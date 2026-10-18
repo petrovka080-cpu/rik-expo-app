@@ -1,0 +1,1009 @@
+{
+  "contract": "painting03002-known-accepted-evidence/r1",
+  "identityAdmitted": false,
+  "publicationAllowed": false,
+  "knownPins": {
+    "rootClassification": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/rootClassification-r1.json",
+      "sha256": "27235c6d88417f64dfa6f70ade8addf2d7e0ced5b773b901e0575abd088e42be",
+      "bytes": 892392
+    },
+    "initialHeaders": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/initialHeaders-r1.json",
+      "sha256": "8d5b19fb2345dbe75224bcaa849f7a8f9cfb599dd5099b3d949a487e922aecb9",
+      "bytes": 55346
+    },
+    "standardBodies": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/standardBodies-r1.json",
+      "sha256": "13cca934af144a4c7d6225f5c1d79ed83be7e198020b0029e86b53c80f5b435f",
+      "bytes": 1886154
+    },
+    "smallAreaBodies": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/smallAreaBodies-r1.json",
+      "sha256": "6a88ce5ffbb5d98f48aafe0875f7830170a50f984feebe3ef869bd0c872bfabf",
+      "bytes": 1902524
+    },
+    "largeAreaBodies": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/largeAreaBodies-r1.json",
+      "sha256": "5758cd99dd3baeb75c69f5c4826703355d77a0aab7e9de4f49296e4f0e038c24",
+      "bytes": 1902883
+    },
+    "wetZoneBodies": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/wetZoneBodies-r1.json",
+      "sha256": "3b76fe23745ac3bbb5a0eb7c720d1bf5ff4bc13b21e34f977b1c039de4afb3be",
+      "bytes": 1886045
+    },
+    "historicalR7GroupFailure": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/historicalR7GroupFailure-r1.json",
+      "sha256": "646df82862c0d3807115c2e25fc7c76e0db983d18368a6b98199d71b1b7d180e",
+      "bytes": 5235
+    },
+    "historicalR7ClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/historicalR7ClosedGuard-r1.json",
+      "sha256": "39da018212c2ae685e3477f4c2dc93166b846a71f51a96c6658d26b84a3a3b10",
+      "bytes": 911679
+    },
+    "standardBodiesClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/standardBodiesClosedGuard-r1.json",
+      "sha256": "ce6439be9cc8d17fc9f8cf8455b514731824f009fab9f5fdfe8bfbc3cf7be4e7",
+      "bytes": 910842
+    },
+    "smallAreaClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/smallAreaClosedGuard-r1.json",
+      "sha256": "ea5e44fba5420678ff637af88ccc2feb1472afaad1b032758e61d625823e902e",
+      "bytes": 914127
+    },
+    "largeAreaClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/largeAreaClosedGuard-r1.json",
+      "sha256": "cda440058cb0a90fbcbf0403429ac33be1240f3bdd7a196c3e5e31f205d1eb42",
+      "bytes": 913915
+    },
+    "wetZoneClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/wetZoneClosedGuard-r1.json",
+      "sha256": "602d7f987ebf16e2e33700ba488fcbd425ae0d5d4b750f2e3952003866859766",
+      "bytes": 913912
+    },
+    "continuation": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/continuation-r1.json",
+      "sha256": "464b86314076af3b8d73b2de98548ef9a1eafa3296c65613e271c00ee609f60e",
+      "bytes": 40166
+    },
+    "continuationClosedGuard": {
+      "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/continuationClosedGuard-r1.json",
+      "sha256": "5eb0f3d6418ec1825b94648d0db99a257a642afbf89ad6e166e113a27ea6fcde",
+      "bytes": 915728
+    }
+  },
+  "rawSetPins": {
+    "initialHeaders": {
+      "currentCheapIdentitySearchHeaders": {
+        "rowCount": 24,
+        "sha256": "96780e84efd83be3136389cbc23950e39bfcd56ba1c0179d80103036c65979fa"
+      },
+      "candidateBoundSourceLocatorHeaders": {
+        "rowCount": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exactProposedSourcePreimageCurrentConsumers": {
+        "rowCount": 1,
+        "sha256": "246f2944d1aed58551a9c5652e4b981d295e4dfac6648b98fa7ba989721540a0"
+      }
+    },
+    "standardBodies": {
+      "exactSixCurrentAnchorsAndBodyBudget": {
+        "rowCount": 6,
+        "sha256": "4a05e2d6d8ba5267e92501dbe20bbf53caffe5e79550a54db78532ac335b38d6"
+      },
+      "exactSixFullDefinitionPreimages": {
+        "rowCount": 6,
+        "sha256": "93a27ae6f65f90d52aa612b27717f1ae6a65f45970582d9da766c90984556bc6"
+      },
+      "exactSixFullApprovedBaselines": {
+        "rowCount": 6,
+        "sha256": "4c60e855302e096e7edca6aa47b0ed9ed0ea96220d1ae59845da7bd31cc8ab5d"
+      },
+      "exactSixFullParameters": {
+        "rowCount": 6,
+        "sha256": "6ae99f5b2a9ee3aabbd55113cd7c3355a586b6445beace9bf1adef2ccc391a5b"
+      },
+      "exactSixFullFormulas": {
+        "rowCount": 354,
+        "sha256": "69885ee2737d9801d098d5a9d98e48c185ad1f138b6f40ba6a66d3842454af81"
+      },
+      "exactSixFullResources": {
+        "rowCount": 354,
+        "sha256": "b2c783fbaa566d149bbc7e33d787525e65086975dd2149e880b71525d227c0af"
+      },
+      "exactSixOwnedContentPassports": {
+        "rowCount": 6,
+        "sha256": "8c9535b4a06e606e0f48ca0c4f7ff8ee9671c98a0efe72cb4c68b96d3d504cea"
+      }
+    },
+    "smallAreaBodies": {
+      "partitionSixCurrentAnchorsAndBodyBudget": {
+        "rowCount": 6,
+        "sha256": "659c493c855aa5fc988bd646ebe1beac62660bd1efbc855a1c434b4600d32f42"
+      },
+      "partitionSixFullDefinitionPreimages": {
+        "rowCount": 6,
+        "sha256": "608b3ab0d0acaa29f787495a2d6013e0e594181127cec64aff234669fc35a759"
+      },
+      "partitionSixFullApprovedBaselines": {
+        "rowCount": 6,
+        "sha256": "71e4487ed99fe8153bfbb609912a7ae976cfc547c6a94e540561f2b58a5b3178"
+      },
+      "partitionSixFullParameters": {
+        "rowCount": 6,
+        "sha256": "01108600fac7b05324a7e6c333bbb663efb101c36e60960f49469f4e9695c31d"
+      },
+      "partitionSixFullFormulas": {
+        "rowCount": 354,
+        "sha256": "2d3b499a3655f405688960af069447a0f711adb035a17cfa7fb601ec46d401b6"
+      },
+      "partitionSixFullResources": {
+        "rowCount": 354,
+        "sha256": "8ddd1614076bc898d2ef89fc0219919b443c8ff33ae027702493ff433b48858d"
+      },
+      "partitionSixOwnedContentPassports": {
+        "rowCount": 6,
+        "sha256": "b9e4ed7d14b87a89f1ee649bc5aba309a7ce76e778756da4d6a9180b86e75d3e"
+      }
+    },
+    "largeAreaBodies": {
+      "partitionSixCurrentAnchorsAndBodyBudget": {
+        "rowCount": 6,
+        "sha256": "0a97823fa1f4f04025bfa0c7f215d2ca219e013d5607c96651d3db7f8d142a0d"
+      },
+      "partitionSixFullDefinitionPreimages": {
+        "rowCount": 6,
+        "sha256": "ebfb4e16d4945d7dea0605cb65a2b78dd66652049b9892218721032a1e238d3a"
+      },
+      "partitionSixFullApprovedBaselines": {
+        "rowCount": 6,
+        "sha256": "e7a52ca948b19b6f87fc9ccf60f09dba33b05034968e1bfb12c8c3800379a9fd"
+      },
+      "partitionSixFullParameters": {
+        "rowCount": 6,
+        "sha256": "1717a2527700ef9b781412a0b93aeb94a4e0e474fe7e7de22914376cfead445c"
+      },
+      "partitionSixFullFormulas": {
+        "rowCount": 354,
+        "sha256": "8d7fc2c054da81e46b0c3fe917f770e5f587f641529b0a192bc63c73d293f7bf"
+      },
+      "partitionSixFullResources": {
+        "rowCount": 354,
+        "sha256": "d50d4ccf110c6a04732f98c21680ababc41937fb56f53296d22caefcb22ef477"
+      },
+      "partitionSixOwnedContentPassports": {
+        "rowCount": 6,
+        "sha256": "dea4e08bee2d222ddb7b913b7b6a7af237504bb9510bc920b6eb8d0877916b8f"
+      }
+    },
+    "wetZoneBodies": {
+      "partitionSixCurrentAnchorsAndBodyBudget": {
+        "rowCount": 6,
+        "sha256": "39872cd93a4e88bcb293a77e409b411d775c0ad7e28d21b99f5d064119e47c01"
+      },
+      "partitionSixFullDefinitionPreimages": {
+        "rowCount": 6,
+        "sha256": "17d461c51de5d892b308694d186193dfa7972772e8aee5e8fa82b1a1b38d6fd4"
+      },
+      "partitionSixFullApprovedBaselines": {
+        "rowCount": 6,
+        "sha256": "2ab1b867edcfff522022813acdc488490b1aec7c5408b9bffb5a56f9809eca96"
+      },
+      "partitionSixFullParameters": {
+        "rowCount": 6,
+        "sha256": "05652f59c26e6d10e5f28634143fdcd1819c9ea87465f7bfd9bad173fbb175ac"
+      },
+      "partitionSixFullFormulas": {
+        "rowCount": 354,
+        "sha256": "a774d77352bd743b8295246686c6e586ac0d553e69eeb0a386e6f5c94b857a02"
+      },
+      "partitionSixFullResources": {
+        "rowCount": 354,
+        "sha256": "995eb05a28d0bfec388310967cef3c351b8b12217055425b9d0e1c0afb0d12a4"
+      },
+      "partitionSixOwnedContentPassports": {
+        "rowCount": 6,
+        "sha256": "0c1f5914aa5c52fa0925cb99d54aec80d37f0f390e899875bf338adae558eee2"
+      }
+    },
+    "historicalR7GroupFailure": {
+      "exactFenceGroupCountDiagnosis": {
+        "rowCount": 1,
+        "sha256": "356aeda81c0bcbfc5d828fb40b5fbf5b43d960c6623b4b9ca7b44f4e620640cd"
+      },
+      "exactFourHeaderByteDiagnosis": {
+        "rowCount": 1,
+        "sha256": "4e27c03f079418ff18f6424bef3a31f3a25589f37ec99cbfb7135bbe6d110587"
+      },
+      "exactOneFullCurrentFenceGroup": {
+        "rowCount": 1,
+        "sha256": "6eafba49e74ecdfbea25195f5c0e3f2d943d5a859f3e93b3a5f1e53fb0254c69"
+      }
+    },
+    "continuation": {
+      "currentScalarGroupBusinessHashAndFourMemberCount": {
+        "rowCount": 1,
+        "sha256": "359d2d47b585d65e60f504f78a8cc50f4cbc294bf69816134bb8c7c3e64f86f8"
+      },
+      "exactFourFullCurrentMemberIdentityManifestSearchHeaders": {
+        "rowCount": 4,
+        "sha256": "bdde0c33eced14b8462ba226da99fec397c6aa2d933def368d4dbf76801a86ce"
+      },
+      "exactPainting03002SourcePreimageAndCurrentConsumers": {
+        "rowCount": 1,
+        "sha256": "246f2944d1aed58551a9c5652e4b981d295e4dfac6648b98fa7ba989721540a0"
+      }
+    }
+  },
+  "existing24": [
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_canopy_paint_large_area",
+      "definition_version_id": "a05a82ab-0c02-5e7a-8e8a-be84c051d273",
+      "approved_template_baseline_id": "3bc83ed1-1ef6-5869-b29f-006eaab2fc08",
+      "definition_hash": "b6497e1c195ec372767ddce254910285381db50bb35788ea0204b0b30b79fc41",
+      "source_identity": "base-work:carpentry_metal_interior_canopy_paint_large_area",
+      "work_key": "carpentry_metal_interior_canopy_paint_large_area",
+      "group_id": "wg:base:carpentry_metal_interior_canopy_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_canopy_paint_small_area",
+      "definition_version_id": "f079afa7-2951-5d9c-ba63-ce74146c5f5c",
+      "approved_template_baseline_id": "d8031848-752e-52ee-bf3d-6bc11a554569",
+      "definition_hash": "8a1c4758ddbffe240461c88a30ac78ed16160617327b77fe7def7a80dd5b90ac",
+      "source_identity": "base-work:carpentry_metal_interior_canopy_paint_small_area",
+      "work_key": "carpentry_metal_interior_canopy_paint_small_area",
+      "group_id": "wg:base:carpentry_metal_interior_canopy_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_canopy_paint_standard",
+      "definition_version_id": "946b00d9-cbe2-560a-9406-fc77e85723d3",
+      "approved_template_baseline_id": "e41cf72b-f8e8-57b7-8c1e-907f4bd08475",
+      "definition_hash": "82ee08bb811c5dbb4514c974ce552971e35d8ad53eb38a73c23f9dbe294fc396",
+      "source_identity": "base-work:carpentry_metal_interior_canopy_paint_standard",
+      "work_key": "carpentry_metal_interior_canopy_paint_standard",
+      "group_id": "wg:base:carpentry_metal_interior_canopy_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_canopy_paint_wet_zone",
+      "definition_version_id": "6e7d8453-c23f-5d5b-ae3a-608ad21ade5f",
+      "approved_template_baseline_id": "6051c63c-18fa-5b5a-a474-9d330a8d9fd6",
+      "definition_hash": "5c9748753ac3860eb104d3f6c1263dd681ce2a82ee0df54f160f9cdf2bd8ab63",
+      "source_identity": "base-work:carpentry_metal_interior_canopy_paint_wet_zone",
+      "work_key": "carpentry_metal_interior_canopy_paint_wet_zone",
+      "group_id": "wg:base:carpentry_metal_interior_canopy_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_fence_paint_large_area",
+      "definition_version_id": "5a852790-046c-5242-849f-e50b1dd783c8",
+      "approved_template_baseline_id": "50b624a5-4bc7-5394-b0b8-ce669dc0f1c0",
+      "definition_hash": "0949465d5e921f6d4b7511d997f2be8d13552be3e98fc327a5169eff4bb2ef1c",
+      "source_identity": "base-work:carpentry_metal_interior_fence_paint_large_area",
+      "work_key": "carpentry_metal_interior_fence_paint_large_area",
+      "group_id": "wg:base:carpentry_metal_interior_fence_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_fence_paint_small_area",
+      "definition_version_id": "5f531bb6-23ec-5d63-8e39-12ea2e49ecc5",
+      "approved_template_baseline_id": "afcd897f-0365-5bd3-8bc3-f91e7e257afa",
+      "definition_hash": "1915465c822520445181594c222ccef923a86cb1d689497431b3c2bcbf21e5e0",
+      "source_identity": "base-work:carpentry_metal_interior_fence_paint_small_area",
+      "work_key": "carpentry_metal_interior_fence_paint_small_area",
+      "group_id": "wg:base:carpentry_metal_interior_fence_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_fence_paint_standard",
+      "definition_version_id": "de4c340f-6401-51d7-b2f3-82c17bb230b7",
+      "approved_template_baseline_id": "c411171a-98f3-58cc-b654-2214db761524",
+      "definition_hash": "715ad0181d1905fb1eda57d0a2287f338a72857e57195f94568ec2b59f1d8319",
+      "source_identity": "base-work:carpentry_metal_interior_fence_paint_standard",
+      "work_key": "carpentry_metal_interior_fence_paint_standard",
+      "group_id": "wg:base:carpentry_metal_interior_fence_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone",
+      "definition_version_id": "699c8e1b-fbef-5e60-b79f-cf4e30d5cb4f",
+      "approved_template_baseline_id": "cbad440b-bb9c-53a0-ba4d-8f81d00eaa58",
+      "definition_hash": "2fa5753bb18aeb7a7302013de7e5dc9903c437d304ca0a07005154a392fce49e",
+      "source_identity": "base-work:carpentry_metal_interior_fence_paint_wet_zone",
+      "work_key": "carpentry_metal_interior_fence_paint_wet_zone",
+      "group_id": "wg:base:carpentry_metal_interior_fence_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_gate_paint_large_area",
+      "definition_version_id": "453ad531-0a33-5343-8d62-52e5500e3872",
+      "approved_template_baseline_id": "6f67ddc2-97e3-596b-b166-ac889656279d",
+      "definition_hash": "6ff4c992091fe31b03937a3c4107832893d9c3f16a9cc11bfd2f9bb566761cd9",
+      "source_identity": "base-work:carpentry_metal_interior_gate_paint_large_area",
+      "work_key": "carpentry_metal_interior_gate_paint_large_area",
+      "group_id": "wg:base:carpentry_metal_interior_gate_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_gate_paint_small_area",
+      "definition_version_id": "7d4bd727-e9bb-523f-bb5b-8d32b67cb339",
+      "approved_template_baseline_id": "74a36b40-c751-552d-a52e-1078b999f3fe",
+      "definition_hash": "9e2899dcf7d47f0610525c88f0764758dc3f51594794c79bc1589a4de7de0284",
+      "source_identity": "base-work:carpentry_metal_interior_gate_paint_small_area",
+      "work_key": "carpentry_metal_interior_gate_paint_small_area",
+      "group_id": "wg:base:carpentry_metal_interior_gate_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_gate_paint_standard",
+      "definition_version_id": "6f985370-0f3d-5d61-a00e-60015c2f7504",
+      "approved_template_baseline_id": "cb50168b-a95d-524b-ad97-89b83e31f466",
+      "definition_hash": "9f236e05ba34e01e1d9ea9a6d566afd69f5346d685166d2da7623a733f754a45",
+      "source_identity": "base-work:carpentry_metal_interior_gate_paint_standard",
+      "work_key": "carpentry_metal_interior_gate_paint_standard",
+      "group_id": "wg:base:carpentry_metal_interior_gate_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_gate_paint_wet_zone",
+      "definition_version_id": "66e62c7d-d256-503e-8742-1eb13071ad59",
+      "approved_template_baseline_id": "fa6b5cbe-5751-5fd6-a77f-8f7b2d99e9fc",
+      "definition_hash": "40db6466d577be55b2f8e678884c0b08de9ca2669b31f9c7ff7b82ab94b246b8",
+      "source_identity": "base-work:carpentry_metal_interior_gate_paint_wet_zone",
+      "work_key": "carpentry_metal_interior_gate_paint_wet_zone",
+      "group_id": "wg:base:carpentry_metal_interior_gate_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_metal_frame_paint_large_area",
+      "definition_version_id": "1310f7c4-fff5-50f2-abb8-87f1933693d1",
+      "approved_template_baseline_id": "12034851-de1b-567e-ba74-1cd216275a1c",
+      "definition_hash": "f7bdff615d78ac53641e60a6f2e08363d4dd46b367ccd7fcf9683bc2848a55df",
+      "source_identity": "base-work:carpentry_metal_interior_metal_frame_paint_large_area",
+      "work_key": "carpentry_metal_interior_metal_frame_paint_large_area",
+      "group_id": "wg:base:carpentry_metal_interior_metal_frame_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_metal_frame_paint_small_area",
+      "definition_version_id": "04b18103-17b0-50b3-92de-3499e2d09c99",
+      "approved_template_baseline_id": "79dab8cb-234f-5f12-9fe9-6448409e3f55",
+      "definition_hash": "3c396ad2f6af741253e4d463b380c82db7d9221d8ae254d2f6521773d5bcc702",
+      "source_identity": "base-work:carpentry_metal_interior_metal_frame_paint_small_area",
+      "work_key": "carpentry_metal_interior_metal_frame_paint_small_area",
+      "group_id": "wg:base:carpentry_metal_interior_metal_frame_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_metal_frame_paint_standard",
+      "definition_version_id": "71fcf36a-00e5-5382-8d12-18bceb8dd53b",
+      "approved_template_baseline_id": "4ed7d46a-a159-5340-b7da-eeb461eec08c",
+      "definition_hash": "e8f2c61994eb59522cf63e3c6ce18b46f2ae043a3298a7805db4af21ebc57c2f",
+      "source_identity": "base-work:carpentry_metal_interior_metal_frame_paint_standard",
+      "work_key": "carpentry_metal_interior_metal_frame_paint_standard",
+      "group_id": "wg:base:carpentry_metal_interior_metal_frame_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_metal_frame_paint_wet_zone",
+      "definition_version_id": "67151b67-9952-5f3a-8ce7-503e2ff7b808",
+      "approved_template_baseline_id": "ab88e7c6-5162-5e7b-bb58-1881a00a647e",
+      "definition_hash": "aa721c19abfc15eebfa796704a308e44ba0c45ae52cc4d04f2ee85278d1a6bad",
+      "source_identity": "base-work:carpentry_metal_interior_metal_frame_paint_wet_zone",
+      "work_key": "carpentry_metal_interior_metal_frame_paint_wet_zone",
+      "group_id": "wg:base:carpentry_metal_interior_metal_frame_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_railing_paint_large_area",
+      "definition_version_id": "000c67c0-8c36-5377-aa61-896e54cba472",
+      "approved_template_baseline_id": "5c819b0d-7110-52fb-bb68-8a062fc8de3f",
+      "definition_hash": "00e8661a0090b5e743489c725624c627e2ec07d11ab3016f4ed62e9bdde23d04",
+      "source_identity": "base-work:carpentry_metal_interior_railing_paint_large_area",
+      "work_key": "carpentry_metal_interior_railing_paint_large_area",
+      "group_id": "wg:base:carpentry_metal_interior_railing_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_railing_paint_small_area",
+      "definition_version_id": "1e253156-464e-5776-a9b3-ace59f81fa2a",
+      "approved_template_baseline_id": "256c46dc-7d75-5e8f-a4f4-4bfbccf812d4",
+      "definition_hash": "404f39250a2c64c36c792f509f86e0d34264d5f6dc9f9ce9212035ad0371201f",
+      "source_identity": "base-work:carpentry_metal_interior_railing_paint_small_area",
+      "work_key": "carpentry_metal_interior_railing_paint_small_area",
+      "group_id": "wg:base:carpentry_metal_interior_railing_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_railing_paint_standard",
+      "definition_version_id": "2b4c2c7d-6087-5201-ab30-3fc47af6f48f",
+      "approved_template_baseline_id": "5dba914d-4449-54eb-82b6-a7f419c56f5f",
+      "definition_hash": "3a3ccb61ab46161af112c3ee0cf01fc7323037563d3084462becfd6b14deca8d",
+      "source_identity": "base-work:carpentry_metal_interior_railing_paint_standard",
+      "work_key": "carpentry_metal_interior_railing_paint_standard",
+      "group_id": "wg:base:carpentry_metal_interior_railing_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_railing_paint_wet_zone",
+      "definition_version_id": "22ee03cb-cca5-5bb1-ac60-07bc940138c3",
+      "approved_template_baseline_id": "9b566b13-7ef7-5b62-8c09-faaf8aae9753",
+      "definition_hash": "2c43bf498792ef3090d871daf3fcb26956d8dee11a46cf3e14c40e061e26f720",
+      "source_identity": "base-work:carpentry_metal_interior_railing_paint_wet_zone",
+      "work_key": "carpentry_metal_interior_railing_paint_wet_zone",
+      "group_id": "wg:base:carpentry_metal_interior_railing_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_stairs_paint_large_area",
+      "definition_version_id": "587260c4-7257-55e8-b95b-f34616edbc86",
+      "approved_template_baseline_id": "465d183f-1920-57b9-80a1-85db0bfe28db",
+      "definition_hash": "6a51805defd1b4df3834d16858fe6eab38d4b290a22c26f3d59c8f6600fd2478",
+      "source_identity": "base-work:carpentry_metal_interior_stairs_paint_large_area",
+      "work_key": "carpentry_metal_interior_stairs_paint_large_area",
+      "group_id": "wg:base:carpentry_metal_interior_stairs_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_stairs_paint_small_area",
+      "definition_version_id": "210cd28c-beb6-5fb3-a656-8d0442735083",
+      "approved_template_baseline_id": "0c9a5c44-ca1d-5602-aacf-fe0995b6a2b1",
+      "definition_hash": "1dd9774098ea6c7081802c2e52d5b14ec6d75f9e971e5a47df9aa2f8b0f21d6b",
+      "source_identity": "base-work:carpentry_metal_interior_stairs_paint_small_area",
+      "work_key": "carpentry_metal_interior_stairs_paint_small_area",
+      "group_id": "wg:base:carpentry_metal_interior_stairs_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_stairs_paint_standard",
+      "definition_version_id": "695f01f5-3755-5e0e-b6ad-0f3aae5fced2",
+      "approved_template_baseline_id": "b4c595e2-ad6c-584e-806d-b20c0084e8de",
+      "definition_hash": "eb0d4c704300c097f8e4fd2766de8e6ad6fe3f37f5e19568008f4bf203ea877d",
+      "source_identity": "base-work:carpentry_metal_interior_stairs_paint_standard",
+      "work_key": "carpentry_metal_interior_stairs_paint_standard",
+      "group_id": "wg:base:carpentry_metal_interior_stairs_paint"
+    },
+    {
+      "catalog_id": "canonical-work:base:carpentry_metal_interior_stairs_paint_wet_zone",
+      "definition_version_id": "38013cad-f449-555b-a049-fb23dbfc1de5",
+      "approved_template_baseline_id": "5c488938-4bd3-562e-9a49-b58eb5159ccf",
+      "definition_hash": "9313b70a0530128cfef474adf026fa65dc67b8c0f5605e2e178469ee31da8326",
+      "source_identity": "base-work:carpentry_metal_interior_stairs_paint_wet_zone",
+      "work_key": "carpentry_metal_interior_stairs_paint_wet_zone",
+      "group_id": "wg:base:carpentry_metal_interior_stairs_paint"
+    }
+  ],
+  "rootClassificationStatus": "ROOT_REVIEWED_ACTUAL18_PLUS_ACCEPTED_STANDARD6_SCOPE_ONLY_NOT_APPEND_ADMISSION",
+  "historicalGroupFailureStatus": "NOT_ACCEPTED",
+  "futureContinuationStatus": "PASS_PAINTING03002_R8_CURRENT_FOUR_HEADERS_SOURCE0_WITH_PINNED_HISTORICAL_GROUP_R7",
+  "futureContinuationPin": {
+    "path": ".release-runtime/r568/next-wave/painting03002/current-proofs-r1/continuation-r1.json",
+    "sha256": "464b86314076af3b8d73b2de98548ef9a1eafa3296c65613e271c00ee609f60e",
+    "bytes": 40166
+  },
+  "fenceGroupId": "wg:base:carpentry_metal_interior_fence_paint",
+  "fenceTargets": [
+    {
+      "catalogId": "canonical-work:base:carpentry_metal_interior_fence_paint_large_area",
+      "definitionVersionId": "5a852790-046c-5242-849f-e50b1dd783c8",
+      "approvedTemplateBaselineId": "50b624a5-4bc7-5394-b0b8-ce669dc0f1c0",
+      "definitionSha256": "0949465d5e921f6d4b7511d997f2be8d13552be3e98fc327a5169eff4bb2ef1c",
+      "sourceIdentity": "base-work:carpentry_metal_interior_fence_paint_large_area",
+      "workKey": "carpentry_metal_interior_fence_paint_large_area",
+      "primaryUom": "м²",
+      "headerRawSha256": "2c1fc217e8afe122b27d1d1be1f71a8cb0a022713459a2a66e387b487c3a3f1e",
+      "immutableDefinitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "baselineAcceptedReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "bodyReadPin": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-variant-large_area-actual-r1/painting03002-variant-result-r1.json",
+        "sha256": "5758cd99dd3baeb75c69f5c4826703355d77a0aab7e9de4f49296e4f0e038c24",
+        "bytes": 1902883
+      }
+    },
+    {
+      "catalogId": "canonical-work:base:carpentry_metal_interior_fence_paint_small_area",
+      "definitionVersionId": "5f531bb6-23ec-5d63-8e39-12ea2e49ecc5",
+      "approvedTemplateBaselineId": "afcd897f-0365-5bd3-8bc3-f91e7e257afa",
+      "definitionSha256": "1915465c822520445181594c222ccef923a86cb1d689497431b3c2bcbf21e5e0",
+      "sourceIdentity": "base-work:carpentry_metal_interior_fence_paint_small_area",
+      "workKey": "carpentry_metal_interior_fence_paint_small_area",
+      "primaryUom": "м²",
+      "headerRawSha256": "2eca93d73d3cc7a1ebc95d82e2dd13ba1569bbb417c926adc807c90d02eaecb2",
+      "immutableDefinitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "baselineAcceptedReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "bodyReadPin": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-variant-small_area-actual-r1/painting03002-variant-result-r1.json",
+        "sha256": "6a88ce5ffbb5d98f48aafe0875f7830170a50f984feebe3ef869bd0c872bfabf",
+        "bytes": 1902524
+      }
+    },
+    {
+      "catalogId": "canonical-work:base:carpentry_metal_interior_fence_paint_standard",
+      "definitionVersionId": "de4c340f-6401-51d7-b2f3-82c17bb230b7",
+      "approvedTemplateBaselineId": "c411171a-98f3-58cc-b654-2214db761524",
+      "definitionSha256": "715ad0181d1905fb1eda57d0a2287f338a72857e57195f94568ec2b59f1d8319",
+      "sourceIdentity": "base-work:carpentry_metal_interior_fence_paint_standard",
+      "workKey": "carpentry_metal_interior_fence_paint_standard",
+      "primaryUom": "м²",
+      "headerRawSha256": "2f2c199c233da99b42e9f3d3995aca8b3b448cd2f46b71480942657e6dca0663",
+      "immutableDefinitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "baselineAcceptedReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "bodyReadPin": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-six-bodies-actual-r1/painting03002-six-bodies-result-r1.json",
+        "sha256": "13cca934af144a4c7d6225f5c1d79ed83be7e198020b0029e86b53c80f5b435f",
+        "bytes": 1886154
+      }
+    },
+    {
+      "catalogId": "canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone",
+      "definitionVersionId": "699c8e1b-fbef-5e60-b79f-cf4e30d5cb4f",
+      "approvedTemplateBaselineId": "cbad440b-bb9c-53a0-ba4d-8f81d00eaa58",
+      "definitionSha256": "2fa5753bb18aeb7a7302013de7e5dc9903c437d304ca0a07005154a392fce49e",
+      "sourceIdentity": "base-work:carpentry_metal_interior_fence_paint_wet_zone",
+      "workKey": "carpentry_metal_interior_fence_paint_wet_zone",
+      "primaryUom": "м²",
+      "headerRawSha256": "3102b6c19dee149318cfbc6eb1af7cc975bb0f2752aecbb8b8347a0103cb761d",
+      "immutableDefinitionReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "baselineAcceptedReleaseId": "3788cc88-701d-5cc9-9130-c61262cb9979",
+      "bodyReadPin": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-variant-wet_zone-actual-r1/painting03002-variant-result-r1.json",
+        "sha256": "3b76fe23745ac3bbb5a0eb7c720d1bf5ff4bc13b21e34f977b1c039de4afb3be",
+        "bytes": 1886045
+      }
+    }
+  ],
+  "quantityFrozenPins": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-metal-painting-finishing-a/quantity-candidate-r2/after/data/estimate-benchmarks/source-packs/flat-metal-oil-two-coats-krer15-030-02-quantity-r1.json",
+      "sha256": "9cf784f9848df164187529d8aeee2442ccd736e91ea04ae0f729e488f7ee42f7",
+      "bytes": 19960
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-metal-painting-finishing-a/quantity-candidate-r2/after/src/lib/estimate/v4/flatMetalOil03002QuantityR1.ts",
+      "sha256": "841207b20df000e30d778f5f5f045481f3bb26196ce471b0e0afb219901202f9",
+      "bytes": 14996
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-metal-painting-finishing-a/quantity-candidate-r2/after/src/lib/estimate/v4/flatMetalOil03002QuantityR1.test.ts",
+      "sha256": "40d882082e09a0a5103b130bf78a069b7ad1f0bfcc86022a42500da61e8520ae",
+      "bytes": 12713
+    }
+  ],
+  "sourceKey": "kg_krer15_04_030_02_flat_metal_oil_two_coats_r1",
+  "sourceArtifactSha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+  "primaryArtifactBytes": 2472569,
+  "r2Shape": [
+    19,
+    17,
+    17
+  ],
+  "r2ProspectiveTestsNotRun": 62,
+  "sourceHeadAtPreparation": "589f9bb51578b8984d5dd1d7a76effcec4897da1",
+  "actualProofsRemainHistorical": true,
+  "independentSnapshotsNoCommonSnapshotClaim": true,
+  "knownStatuses": {
+    "rootClassification": "ROOT_REVIEWED_ACTUAL18_PLUS_ACCEPTED_STANDARD6_SCOPE_ONLY_NOT_APPEND_ADMISSION",
+    "initialHeaders": "PASS_EXACT24_FLAT_METAL_OIL03002_HEADERS_SOURCE_LOCATORS_ONLY",
+    "standardBodies": "PASS_EXACT_PAINTING03002_SIX_STANDARD_PASSPORTS_COMPOSITIONS",
+    "smallAreaBodies": "PASS_EXACT_PAINTING03002_SIX_VARIANT_PARTITION_COMPOSITIONS_R5",
+    "largeAreaBodies": "PASS_EXACT_PAINTING03002_SIX_VARIANT_PARTITION_COMPOSITIONS_R5",
+    "wetZoneBodies": "PASS_EXACT_PAINTING03002_SIX_VARIANT_PARTITION_COMPOSITIONS_R5",
+    "historicalR7GroupFailure": "NOT_ACCEPTED",
+    "historicalR7ClosedGuard": "NOT_ACCEPTED",
+    "standardBodiesClosedGuard": "PASS_BOUNDED_PAINTING03002_EXACT6_CURRENT_BODIES_READ_R3",
+    "smallAreaClosedGuard": "PASS_BOUNDED_PAINTING03002_VARIANT_SMALL_AREA_READ_R1",
+    "largeAreaClosedGuard": "PASS_BOUNDED_PAINTING03002_VARIANT_LARGE_AREA_READ_R1",
+    "wetZoneClosedGuard": "PASS_BOUNDED_PAINTING03002_VARIANT_WET_ZONE_READ_R1",
+    "continuation": "PASS_PAINTING03002_R8_CURRENT_FOUR_HEADERS_SOURCE0_WITH_PINNED_HISTORICAL_GROUP_R7",
+    "continuationClosedGuard": "PASS_BOUNDED_PAINTING03002_ADDRESSED_CONTINUATION_R8"
+  },
+  "knownGuardKeys": [
+    "historicalR7ClosedGuard",
+    "standardBodiesClosedGuard",
+    "smallAreaClosedGuard",
+    "largeAreaClosedGuard",
+    "wetZoneClosedGuard",
+    "continuationClosedGuard"
+  ],
+  "knownClosedReadKeys": [
+    "initialHeaders",
+    "standardBodies",
+    "smallAreaBodies",
+    "largeAreaBodies",
+    "wetZoneBodies",
+    "continuation"
+  ],
+  "formalRootDecisionSha256": "9be99f15ca3928d4bc0f2c39b487875a79591585a4d181417cf0bc084961cb2c",
+  "formalRootDecisionSemantic": {
+    "contract": "painting03002-root-source-specific-partial-create-admission/r1",
+    "status": "ROOT_REVIEWED_PAINTING03002_SOURCE_SPECIFIC_PARTIAL_CREATE_NOT_PUBLISHED_R1",
+    "published": false,
+    "identityAdmittedForFactoryPreparation": true,
+    "productionAllowed": false,
+    "fullTechnicalAcceptance": false,
+    "sourceHead": "589f9bb51578b8984d5dd1d7a76effcec4897da1",
+    "sourceTree": "63e7f5b134dec11cc205d7cfb169eeaa1e1abc72",
+    "identity": {
+      "catalogId": "canonical-work:master:metal_flat_interior_oil_two_coats_ma25_krer15_04_030_02",
+      "workKey": "metal_flat_interior_oil_two_coats_ma25_krer15_04_030_02",
+      "sourceIdentity": "kg:krer15:15-04-030-02:flat-nonstructural-metal:interior:ma25-light-colours:two-coats:actual-painted-m2"
+    },
+    "titleRu": "Окраска больших плоских металлических поверхностей внутри помещения, МА-25, 2 слоя",
+    "searchPlacement": {
+      "groupMode": "create",
+      "groupId": "wg:master:metal_flat_interior_oil_two_coats_ma25_krer15_04_030_02",
+      "domainId": "carpentry_metal",
+      "systemId": "carpentry_metal",
+      "membershipOrdinal": 0
+    },
+    "rejectedExistingGroupJoin": {
+      "groupId": "wg:base:carpentry_metal_interior_fence_paint",
+      "reason": "Actual name/breadcrumb describes fence protective painting. R2 project subset is general large flat nonstructural interior metal. Sameunit alone is no admission; existing4members/all24models remain immutable."
+    },
+    "readPins": {
+      "actualRemainingHeadersAndSource0": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-group-lineage-actual-r9/painting03002-group-lineage-result-r9.json",
+        "sha256": "464b86314076af3b8d73b2de98548ef9a1eafa3296c65613e271c00ee609f60e",
+        "bytes": 40166
+      },
+      "closedGuard": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-group-lineage-actual-r9/painting03002-group-lineage-owned-r9-receipt.json",
+        "sha256": "5eb0f3d6418ec1825b94648d0db99a257a642afbf89ad6e166e113a27ea6fcde",
+        "bytes": 915728
+      },
+      "historicalGroup3SetsWithFailurePreserved": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-group-lineage-actual-r7/painting03002-group-lineage-result-r7.json",
+        "sha256": "646df82862c0d3807115c2e25fc7c76e0db983d18368a6b98199d71b1b7d180e",
+        "bytes": 5235
+      },
+      "all24BodyClassification": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/root-painting18-actual-classification-r5/root-painting18-actual-classification-r5.json",
+        "sha256": "27235c6d88417f64dfa6f70ade8addf2d7e0ced5b773b901e0575abd088e42be",
+        "bytes": 892392
+      }
+    },
+    "primarySource": {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-35/wall-putty-sources/KRER-15.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "bytes": 2472569
+    },
+    "primaryImagesActuallyViewedByRoot": [
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-metal-painting-finishing-a/primary-intake-r1/krer15-pdf194-readable.png",
+        "sha256": "ac1afd7ad56e2df68480720fa4a541d3f438f0239a339e2a96a36ce85845e3a3",
+        "bytes": 575221
+      },
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-metal-painting-finishing-a/primary-intake-r1/krer15-pdf8-readable.png",
+        "sha256": "19d3145c3747ae77711950c025e5958b2ed0d777f525f42d53cb125333a18306",
+        "bytes": 303031
+      },
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-metal-painting-finishing-a/primary-intake-r1/krer15-pdf9-readable.png",
+        "sha256": "b5bd82e36c606f33caeb6f961ab2aea116f0511a01e68c2fef103b385b209d0d",
+        "bytes": 386543
+      },
+      {
+        "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-54/old-partial-quantity-review/krer15-page-12.png",
+        "sha256": "d8bc77be5afcbaf5bdd758c70dfedbe3a0fc18f26db000f6bbdd4654723a2dff",
+        "bytes": 601902
+      }
+    ],
+    "scope": {
+      "normId": "KRER15-04-030-02",
+      "primaryParameter": "actual_flat_metal_oil_painted_area_m2",
+      "primaryUnitId": "m2",
+      "printedDenominator": "100m2 actualpaintedsurface",
+      "wholeLabourManHoursPer100m2": "12.21",
+      "operatorInfoManHoursPer100m2": "0.01",
+      "liftInfoMachineHoursPer100m2": "0.01",
+      "truckInfoMachineHoursPer100m2": "0.03",
+      "ma25InfoTonnesPer100m2": "0.0277",
+      "dryingOilInfoKgPer100m2": "3.2",
+      "ragsInfoKgPer100m2": "0.1",
+      "includedOperations": [
+        "cleaning",
+        "drying-oil-prime",
+        "first-coat",
+        "second-coat"
+      ],
+      "literalLargeSurfaceQualifierRequired": true,
+      "numericLargeAreaThreshold": null,
+      "flatIsSelectedNarrowProjectSubsetNotLiteralSourceWord": true,
+      "roomsHeightAtMostM": "3.5",
+      "structuralSteelRequiresKrer13PerTechnical1_26": true,
+      "interiorMa25AllowedColours": [
+        "pink-beige",
+        "light-beige",
+        "light-grey"
+      ],
+      "roofPipesGrillesStructuralSteelExcluded": true,
+      "coatMultiplierForbidden": true,
+      "noExistingQConversion": true
+    },
+    "newPaidOwners": 1,
+    "newInfoRows": 6,
+    "openNeeds": 10,
+    "priceBindings": 0,
+    "all24ExistingModelsKeepFullBodiesOwnersAndSavedHistory": true,
+    "globalPhysicalAbsenceProved": false,
+    "remainingPublicationGates": [
+      "ordinaryCREATEpreflight+lockedgroup/catalog/source/workkeynull",
+      "actualnextparentseal and exactsourcefixture pins",
+      "canonicaladoption and newfocusedtests+fullaffectedTS",
+      "independentfull8payloadandsaved39preservation",
+      "ordinaryAPI/reopen/negative/documents/client-waveacceptance"
+    ],
+    "noPublicationAuthorityFromThisFileAlone": true
+  },
+  "formalRootDecisionOriginalPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/root-painting03002-source-specific-create-decision-r1.json",
+    "sha256": "9be99f15ca3928d4bc0f2c39b487875a79591585a4d181417cf0bc084961cb2c",
+    "bytes": 5868
+  },
+  "formalRootDecisionCanonicalMirrorProposal": ".release-runtime/r568/next-wave/painting03002/root-proofs-r1/root-painting03002-source-specific-create-decision-r1.json",
+  "identityAdmittedForFactoryPreparation": true,
+  "continuationSemanticForPureTestsOnly": {
+    "contract": "painting03002-r7-historical-group-plus-current-member-source-continuation/r8",
+    "commonSnapshotAcrossPartitions": false,
+    "status": "PASS_PAINTING03002_R8_CURRENT_FOUR_HEADERS_SOURCE0_WITH_PINNED_HISTORICAL_GROUP_R7",
+    "executionContext": {
+      "sourceHead": "589f9bb51578b8984d5dd1d7a76effcec4897da1",
+      "recordedReleaseSourceCommit": "4c94a77771d55fe0776eccd3817bea6ca356f5ac",
+      "definitionReleaseId": "93e620ee-d5c3-5eff-af15-353d636faa00",
+      "searchReleaseId": "305738c2-1070-50ce-af24-2d601cfac550"
+    },
+    "sourceHeadAtPreparation": "b6212dda610ec25bf08aeff2b78077ab2682f671",
+    "actualQueryHead": "589f9bb51578b8984d5dd1d7a76effcec4897da1",
+    "sets": {
+      "currentScalarGroupBusinessHashAndFourMemberCount": {
+        "rowCount": 1,
+        "rawRows": [
+          "{\"group_count\":1,\"declared_member_count\":4,\"group_business_exact\":true,\"current_group_business_sha256\":\"6db55f995baf7ab8e5bf58ecdacd3048af531488408f57abe836454bd330e1fd\",\"captured_group_business_sha256\":\"6db55f995baf7ab8e5bf58ecdacd3048af531488408f57abe836454bd330e1fd\",\"member_count\":4,\"distinct_catalog_count\":4,\"distinct_ordinal_count\":4,\"next_tail_ordinal\":4,\"expected_catalog_count\":4,\"negative_ordinal_count\":0}"
+        ],
+        "sha256": "359d2d47b585d65e60f504f78a8cc50f4cbc294bf69816134bb8c7c3e64f86f8"
+      },
+      "exactFourFullCurrentMemberIdentityManifestSearchHeaders": {
+        "rowCount": 4,
+        "rawRows": [
+          "{\"membership\":{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_large_area\",\"ordinal\":0,\"independent_disposition\":{\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}},\"manifest\":{\"release_id\":\"93e620ee-d5c3-5eff-af15-353d636faa00\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_large_area\",\"definition_version_id\":\"5a852790-046c-5242-849f-e50b1dd783c8\",\"source_batch\":\"rik-expo-app.r568.r4-a6-group50-default-binding-remediation.v2\",\"source_release_id\":\"3788cc88-701d-5cc9-9130-c61262cb9979\",\"domain_id\":\"carpentry_metal\",\"publication_state\":\"CANONICAL_SUCCESSOR\",\"approved_template_baseline_id\":\"50b624a5-4bc7-5394-b0b8-ce669dc0f1c0\",\"baseline_ready\":true,\"scenario_ready\":true,\"definition_hash\":\"0949465d5e921f6d4b7511d997f2be8d13552be3e98fc327a5169eff4bb2ef1c\",\"entry_sha256\":\"68d05fbb37edf01937e59abf4eb8a748072373d0ecb06ede3c79037609256a42\",\"created_at\":\"2026-10-19T03:05:26.740924+05:00\",\"runtime_publication_state\":\"CANDIDATE\"},\"identity\":{\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_large_area\",\"namespace\":\"global\",\"domain\":\"carpentry_metal\",\"source_identity\":\"base-work:carpentry_metal_interior_fence_paint_large_area\",\"work_key\":\"carpentry_metal_interior_fence_paint_large_area\",\"title_ru\":\"защитная окраска забора на большой площади\",\"denominator_eligible\":true,\"canonical_owner\":\"backend\",\"created_at\":\"2026-08-26T20:45:21.918901+05:00\",\"retired_at\":null},\"search\":{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_large_area\",\"domain_id\":\"carpentry_metal\",\"system_id\":\"profile_sheet_fence\",\"subsystem_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"assembly_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"work_family_id\":\"profile_sheet_fence\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"subgroup_id\":null,\"element_type\":\"WORK\",\"operation_kind\":\"NEW_INSTALLATION\",\"technology_variant\":\"Каноническая технологическая работа версии 5.5.5\",\"construction_state\":\"EXISTING_OR_NEW\",\"primary_uom\":\"м²\",\"canonical_name_ru\":\"защитная окраска забора на большой площади\",\"aliases\":[\"защитная окраска забора на большой площади\"],\"normative_classifiers\":[],\"applicability_tags\":[],\"publication_state\":\"ADMITTED_BACKEND\",\"catalog_origin\":\"GLOBAL\",\"definition_release_id\":\"93e620ee-d5c3-5eff-af15-353d636faa00\",\"short_scope_ru\":\"защитная окраска забора на большой площади\",\"key_distinguishing_parameters\":[{\"unitId\": \"m2\", \"titleRu\": \"Объем работ\", \"required\": true, \"parameterId\": \"q\"}],\"required_inputs_count\":1,\"clarification_fields\":[{\"unitId\": \"m2\", \"titleRu\": \"Объем работ\", \"parameterId\": \"q\"}],\"included_boundaries\":[\"защитная окраска забора на большой площади; профессиональная смета; 59 строк; нормативный пакет и закупочная ведомость включены\"],\"excluded_boundaries\":[\"Работы и ресурсы, отсутствующие в технологическом паспорте, не включены.\"],\"replacement_catalog_id\":null,\"normalized_catalog_id\":\"canonical work base carpentry metal interior fence paint large area\",\"normalized_canonical_name\":\"защитная окраска забора на большой площади\",\"normalized_aliases\":[\"защитная окраска забора на большой площади\"],\"normalized_search_terms\":[\"защитная окраска забора на большой площади защитная окраска забора на большой площади\",\"защитная окраска забора на большой площади\",\"защитная\",\"окраска\",\"забора\",\"на\",\"большой\",\"площади\"],\"normalized_search_blob\":\"защитная окраска забора на большой площади защитная окраска забора на большой площади\",\"source_provenance\":{\"contract\": \"gox-build.curb03-exposed-b15-antisol-material-retained/r2\", \"sourceTree\": \"83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05\", \"payloadContract\": \"rik-expo-app-r555.cumulative-successor.v1\", \"searchReleaseId\": \"02b3df75-ba42-5534-98b4-2cea3cf6ca15\", \"sourceFingerprint\": \"d1572a06d678dfed405b02253bf1525649864f8cd6dafa85906c01f93a3ac899\", \"sourceIdentityIds\": [\"base-work:carpentry_metal_interior_fence_paint_large_area\"], \"definitionReleaseId\": \"93e620ee-d5c3-5eff-af15-353d636faa00\", \"sourceDocumentSha256\": \"6b78e43d4132f6701c04c5b701bec3bfad53b6f1249aa546da68067c5fb2135f\", \"ownerSourceIdentityId\": \"base-work:carpentry_metal_interior_fence_paint_large_area\", \"parentSearchReleaseId\": \"586398af-8acf-5af8-a6d7-b37fa7ec57b6\", \"firstEstimateThenRefine\": true},\"document_sha256\":\"61ce96ade047834dd2cc440c9ecfdcf52e0429c7fe50de479978e16177fc9809\",\"adjudication_class\":\"EFFECTIVE_WORK\",\"selectable\":true,\"canonical_target_catalog_id\":null,\"definition_version_id\":\"5a852790-046c-5242-849f-e50b1dd783c8\"},\"definition_anchor\":{\"id\" : \"5a852790-046c-5242-849f-e50b1dd783c8\", \"catalog_id\" : \"canonical-work:base:carpentry_metal_interior_fence_paint_large_area\", \"definition_sha256\" : \"0949465d5e921f6d4b7511d997f2be8d13552be3e98fc327a5169eff4bb2ef1c\", \"definition_version\" : 3, \"release_id\" : \"3788cc88-701d-5cc9-9130-c61262cb9979\"},\"baseline_anchor\":{\"id\" : \"50b624a5-4bc7-5394-b0b8-ce669dc0f1c0\", \"catalog_id\" : \"canonical-work:base:carpentry_metal_interior_fence_paint_large_area\", \"definition_version_id\" : \"5a852790-046c-5242-849f-e50b1dd783c8\", \"accepted_release_id\" : \"3788cc88-701d-5cc9-9130-c61262cb9979\"},\"normative_binding_count\":0}",
+          "{\"membership\":{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_small_area\",\"ordinal\":1,\"independent_disposition\":{\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}},\"manifest\":{\"release_id\":\"93e620ee-d5c3-5eff-af15-353d636faa00\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_small_area\",\"definition_version_id\":\"5f531bb6-23ec-5d63-8e39-12ea2e49ecc5\",\"source_batch\":\"rik-expo-app.r568.r4-a6-group50-default-binding-remediation.v2\",\"source_release_id\":\"3788cc88-701d-5cc9-9130-c61262cb9979\",\"domain_id\":\"carpentry_metal\",\"publication_state\":\"CANONICAL_SUCCESSOR\",\"approved_template_baseline_id\":\"afcd897f-0365-5bd3-8bc3-f91e7e257afa\",\"baseline_ready\":true,\"scenario_ready\":true,\"definition_hash\":\"1915465c822520445181594c222ccef923a86cb1d689497431b3c2bcbf21e5e0\",\"entry_sha256\":\"0863bd94e4364a0c1c113e38d499436a97234e1d1817c48f7f9effff72606041\",\"created_at\":\"2026-10-19T03:05:26.740924+05:00\",\"runtime_publication_state\":\"CANDIDATE\"},\"identity\":{\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_small_area\",\"namespace\":\"global\",\"domain\":\"carpentry_metal\",\"source_identity\":\"base-work:carpentry_metal_interior_fence_paint_small_area\",\"work_key\":\"carpentry_metal_interior_fence_paint_small_area\",\"title_ru\":\"защитная окраска забора на малой площади\",\"denominator_eligible\":true,\"canonical_owner\":\"backend\",\"created_at\":\"2026-08-26T20:45:21.918901+05:00\",\"retired_at\":null},\"search\":{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_small_area\",\"domain_id\":\"carpentry_metal\",\"system_id\":\"profile_sheet_fence\",\"subsystem_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"assembly_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"work_family_id\":\"profile_sheet_fence\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"subgroup_id\":null,\"element_type\":\"WORK\",\"operation_kind\":\"NEW_INSTALLATION\",\"technology_variant\":\"Каноническая технологическая работа версии 5.5.5\",\"construction_state\":\"EXISTING_OR_NEW\",\"primary_uom\":\"м²\",\"canonical_name_ru\":\"защитная окраска забора на малой площади\",\"aliases\":[\"защитная окраска забора на малой площади\"],\"normative_classifiers\":[],\"applicability_tags\":[],\"publication_state\":\"ADMITTED_BACKEND\",\"catalog_origin\":\"GLOBAL\",\"definition_release_id\":\"93e620ee-d5c3-5eff-af15-353d636faa00\",\"short_scope_ru\":\"защитная окраска забора на малой площади\",\"key_distinguishing_parameters\":[{\"unitId\": \"m2\", \"titleRu\": \"Объем работ\", \"required\": true, \"parameterId\": \"q\"}],\"required_inputs_count\":1,\"clarification_fields\":[{\"unitId\": \"m2\", \"titleRu\": \"Объем работ\", \"parameterId\": \"q\"}],\"included_boundaries\":[\"защитная окраска забора на малой площади; профессиональная смета; 59 строк; нормативный пакет и закупочная ведомость включены\"],\"excluded_boundaries\":[\"Работы и ресурсы, отсутствующие в технологическом паспорте, не включены.\"],\"replacement_catalog_id\":null,\"normalized_catalog_id\":\"canonical work base carpentry metal interior fence paint small area\",\"normalized_canonical_name\":\"защитная окраска забора на малой площади\",\"normalized_aliases\":[\"защитная окраска забора на малой площади\"],\"normalized_search_terms\":[\"защитная окраска забора на малой площади защитная окраска забора на малой площади\",\"защитная окраска забора на малой площади\",\"защитная\",\"окраска\",\"забора\",\"на\",\"малой\",\"площади\"],\"normalized_search_blob\":\"защитная окраска забора на малой площади защитная окраска забора на малой площади\",\"source_provenance\":{\"contract\": \"gox-build.curb03-exposed-b15-antisol-material-retained/r2\", \"sourceTree\": \"83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05\", \"payloadContract\": \"rik-expo-app-r555.cumulative-successor.v1\", \"searchReleaseId\": \"02b3df75-ba42-5534-98b4-2cea3cf6ca15\", \"sourceFingerprint\": \"d1572a06d678dfed405b02253bf1525649864f8cd6dafa85906c01f93a3ac899\", \"sourceIdentityIds\": [\"base-work:carpentry_metal_interior_fence_paint_small_area\"], \"definitionReleaseId\": \"93e620ee-d5c3-5eff-af15-353d636faa00\", \"sourceDocumentSha256\": \"3d656e50f16141a4c8dd3d4d2f91aad9f1207cd2812694f78e99a4a4ddabb851\", \"ownerSourceIdentityId\": \"base-work:carpentry_metal_interior_fence_paint_small_area\", \"parentSearchReleaseId\": \"586398af-8acf-5af8-a6d7-b37fa7ec57b6\", \"firstEstimateThenRefine\": true},\"document_sha256\":\"e6d02832fc9efc69674538314fbc31a0e7faf91a2b7f801b30c7e03371458dbc\",\"adjudication_class\":\"EFFECTIVE_WORK\",\"selectable\":true,\"canonical_target_catalog_id\":null,\"definition_version_id\":\"5f531bb6-23ec-5d63-8e39-12ea2e49ecc5\"},\"definition_anchor\":{\"id\" : \"5f531bb6-23ec-5d63-8e39-12ea2e49ecc5\", \"catalog_id\" : \"canonical-work:base:carpentry_metal_interior_fence_paint_small_area\", \"definition_sha256\" : \"1915465c822520445181594c222ccef923a86cb1d689497431b3c2bcbf21e5e0\", \"definition_version\" : 3, \"release_id\" : \"3788cc88-701d-5cc9-9130-c61262cb9979\"},\"baseline_anchor\":{\"id\" : \"afcd897f-0365-5bd3-8bc3-f91e7e257afa\", \"catalog_id\" : \"canonical-work:base:carpentry_metal_interior_fence_paint_small_area\", \"definition_version_id\" : \"5f531bb6-23ec-5d63-8e39-12ea2e49ecc5\", \"accepted_release_id\" : \"3788cc88-701d-5cc9-9130-c61262cb9979\"},\"normative_binding_count\":0}",
+          "{\"membership\":{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_standard\",\"ordinal\":2,\"independent_disposition\":{\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}},\"manifest\":{\"release_id\":\"93e620ee-d5c3-5eff-af15-353d636faa00\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_standard\",\"definition_version_id\":\"de4c340f-6401-51d7-b2f3-82c17bb230b7\",\"source_batch\":\"rik-expo-app.r568.r4-a6-group50-default-binding-remediation.v2\",\"source_release_id\":\"3788cc88-701d-5cc9-9130-c61262cb9979\",\"domain_id\":\"carpentry_metal\",\"publication_state\":\"CANONICAL_SUCCESSOR\",\"approved_template_baseline_id\":\"c411171a-98f3-58cc-b654-2214db761524\",\"baseline_ready\":true,\"scenario_ready\":true,\"definition_hash\":\"715ad0181d1905fb1eda57d0a2287f338a72857e57195f94568ec2b59f1d8319\",\"entry_sha256\":\"742134cb4f041ad753286277aaf7865e0c73e2183d54e84d3d9eaa2ebb2137ef\",\"created_at\":\"2026-10-19T03:05:26.740924+05:00\",\"runtime_publication_state\":\"CANDIDATE\"},\"identity\":{\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_standard\",\"namespace\":\"global\",\"domain\":\"carpentry_metal\",\"source_identity\":\"base-work:carpentry_metal_interior_fence_paint_standard\",\"work_key\":\"carpentry_metal_interior_fence_paint_standard\",\"title_ru\":\"защитная окраска забора в стандартной зоне\",\"denominator_eligible\":true,\"canonical_owner\":\"backend\",\"created_at\":\"2026-08-26T20:45:21.918901+05:00\",\"retired_at\":null},\"search\":{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_standard\",\"domain_id\":\"carpentry_metal\",\"system_id\":\"profile_sheet_fence\",\"subsystem_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"assembly_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"work_family_id\":\"profile_sheet_fence\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"subgroup_id\":null,\"element_type\":\"WORK\",\"operation_kind\":\"NEW_INSTALLATION\",\"technology_variant\":\"Каноническая технологическая работа версии 5.5.5\",\"construction_state\":\"EXISTING_OR_NEW\",\"primary_uom\":\"м²\",\"canonical_name_ru\":\"защитная окраска забора в стандартной зоне\",\"aliases\":[\"защитная окраска забора в стандартной зоне\"],\"normative_classifiers\":[],\"applicability_tags\":[],\"publication_state\":\"ADMITTED_BACKEND\",\"catalog_origin\":\"GLOBAL\",\"definition_release_id\":\"93e620ee-d5c3-5eff-af15-353d636faa00\",\"short_scope_ru\":\"защитная окраска забора в стандартной зоне\",\"key_distinguishing_parameters\":[{\"unitId\": \"m2\", \"titleRu\": \"Объем работ\", \"required\": true, \"parameterId\": \"q\"}],\"required_inputs_count\":1,\"clarification_fields\":[{\"unitId\": \"m2\", \"titleRu\": \"Объем работ\", \"parameterId\": \"q\"}],\"included_boundaries\":[\"защитная окраска забора в стандартной зоне; профессиональная смета; 59 строк; нормативный пакет и закупочная ведомость включены\"],\"excluded_boundaries\":[\"Работы и ресурсы, отсутствующие в технологическом паспорте, не включены.\"],\"replacement_catalog_id\":null,\"normalized_catalog_id\":\"canonical work base carpentry metal interior fence paint standard\",\"normalized_canonical_name\":\"защитная окраска забора в стандартной зоне\",\"normalized_aliases\":[\"защитная окраска забора в стандартной зоне\"],\"normalized_search_terms\":[\"защитная окраска забора в стандартной зоне защитная окраска забора в стандартной зоне\",\"защитная окраска забора в стандартной зоне\",\"защитная\",\"окраска\",\"забора\",\"стандартной\",\"зоне\"],\"normalized_search_blob\":\"защитная окраска забора в стандартной зоне защитная окраска забора в стандартной зоне\",\"source_provenance\":{\"contract\": \"gox-build.curb03-exposed-b15-antisol-material-retained/r2\", \"sourceTree\": \"83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05\", \"payloadContract\": \"rik-expo-app-r555.cumulative-successor.v1\", \"searchReleaseId\": \"02b3df75-ba42-5534-98b4-2cea3cf6ca15\", \"sourceFingerprint\": \"d1572a06d678dfed405b02253bf1525649864f8cd6dafa85906c01f93a3ac899\", \"sourceIdentityIds\": [\"base-work:carpentry_metal_interior_fence_paint_standard\"], \"definitionReleaseId\": \"93e620ee-d5c3-5eff-af15-353d636faa00\", \"sourceDocumentSha256\": \"d2ac44891289a4e3253fb15e796125d3c6d20a0414e2649d7f9ea8cbdd4c8321\", \"ownerSourceIdentityId\": \"base-work:carpentry_metal_interior_fence_paint_standard\", \"parentSearchReleaseId\": \"586398af-8acf-5af8-a6d7-b37fa7ec57b6\", \"firstEstimateThenRefine\": true},\"document_sha256\":\"f66281471e13c712295d5513389f0548c9f0390b36364d1c09ba4418312bcb9d\",\"adjudication_class\":\"EFFECTIVE_WORK\",\"selectable\":true,\"canonical_target_catalog_id\":null,\"definition_version_id\":\"de4c340f-6401-51d7-b2f3-82c17bb230b7\"},\"definition_anchor\":{\"id\" : \"de4c340f-6401-51d7-b2f3-82c17bb230b7\", \"catalog_id\" : \"canonical-work:base:carpentry_metal_interior_fence_paint_standard\", \"definition_sha256\" : \"715ad0181d1905fb1eda57d0a2287f338a72857e57195f94568ec2b59f1d8319\", \"definition_version\" : 3, \"release_id\" : \"3788cc88-701d-5cc9-9130-c61262cb9979\"},\"baseline_anchor\":{\"id\" : \"c411171a-98f3-58cc-b654-2214db761524\", \"catalog_id\" : \"canonical-work:base:carpentry_metal_interior_fence_paint_standard\", \"definition_version_id\" : \"de4c340f-6401-51d7-b2f3-82c17bb230b7\", \"accepted_release_id\" : \"3788cc88-701d-5cc9-9130-c61262cb9979\"},\"normative_binding_count\":0}",
+          "{\"membership\":{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone\",\"ordinal\":3,\"independent_disposition\":{\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}},\"manifest\":{\"release_id\":\"93e620ee-d5c3-5eff-af15-353d636faa00\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone\",\"definition_version_id\":\"699c8e1b-fbef-5e60-b79f-cf4e30d5cb4f\",\"source_batch\":\"rik-expo-app.r568.r4-a6-group50-default-binding-remediation.v2\",\"source_release_id\":\"3788cc88-701d-5cc9-9130-c61262cb9979\",\"domain_id\":\"carpentry_metal\",\"publication_state\":\"CANONICAL_SUCCESSOR\",\"approved_template_baseline_id\":\"cbad440b-bb9c-53a0-ba4d-8f81d00eaa58\",\"baseline_ready\":true,\"scenario_ready\":true,\"definition_hash\":\"2fa5753bb18aeb7a7302013de7e5dc9903c437d304ca0a07005154a392fce49e\",\"entry_sha256\":\"4bda27f055bf1659f959e9d15a315723eeca741677048096a9286936a39fe6a6\",\"created_at\":\"2026-10-19T03:05:26.740924+05:00\",\"runtime_publication_state\":\"CANDIDATE\"},\"identity\":{\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone\",\"namespace\":\"global\",\"domain\":\"carpentry_metal\",\"source_identity\":\"base-work:carpentry_metal_interior_fence_paint_wet_zone\",\"work_key\":\"carpentry_metal_interior_fence_paint_wet_zone\",\"title_ru\":\"защитная окраска забора во влажной зоне\",\"denominator_eligible\":true,\"canonical_owner\":\"backend\",\"created_at\":\"2026-08-26T20:45:21.918901+05:00\",\"retired_at\":null},\"search\":{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"catalog_id\":\"canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone\",\"domain_id\":\"carpentry_metal\",\"system_id\":\"profile_sheet_fence\",\"subsystem_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"assembly_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"work_family_id\":\"profile_sheet_fence\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"subgroup_id\":null,\"element_type\":\"WORK\",\"operation_kind\":\"NEW_INSTALLATION\",\"technology_variant\":\"Каноническая технологическая работа версии 5.5.5\",\"construction_state\":\"EXISTING_OR_NEW\",\"primary_uom\":\"м²\",\"canonical_name_ru\":\"защитная окраска забора во влажной зоне\",\"aliases\":[\"защитная окраска забора во влажной зоне\"],\"normative_classifiers\":[],\"applicability_tags\":[],\"publication_state\":\"ADMITTED_BACKEND\",\"catalog_origin\":\"GLOBAL\",\"definition_release_id\":\"93e620ee-d5c3-5eff-af15-353d636faa00\",\"short_scope_ru\":\"защитная окраска забора во влажной зоне\",\"key_distinguishing_parameters\":[{\"unitId\": \"m2\", \"titleRu\": \"Объем работ\", \"required\": true, \"parameterId\": \"q\"}],\"required_inputs_count\":1,\"clarification_fields\":[{\"unitId\": \"m2\", \"titleRu\": \"Объем работ\", \"parameterId\": \"q\"}],\"included_boundaries\":[\"защитная окраска забора во влажной зоне; профессиональная смета; 59 строк; нормативный пакет и закупочная ведомость включены\"],\"excluded_boundaries\":[\"Работы и ресурсы, отсутствующие в технологическом паспорте, не включены.\"],\"replacement_catalog_id\":null,\"normalized_catalog_id\":\"canonical work base carpentry metal interior fence paint wet zone\",\"normalized_canonical_name\":\"защитная окраска забора во влажной зоне\",\"normalized_aliases\":[\"защитная окраска забора во влажной зоне\"],\"normalized_search_terms\":[\"защитная окраска забора во влажной зоне защитная окраска забора во влажной зоне\",\"защитная окраска забора во влажной зоне\",\"защитная\",\"окраска\",\"забора\",\"во\",\"влажной\",\"зоне\"],\"normalized_search_blob\":\"защитная окраска забора во влажной зоне защитная окраска забора во влажной зоне\",\"source_provenance\":{\"contract\": \"gox-build.curb03-exposed-b15-antisol-material-retained/r2\", \"sourceTree\": \"83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05\", \"payloadContract\": \"rik-expo-app-r555.cumulative-successor.v1\", \"searchReleaseId\": \"02b3df75-ba42-5534-98b4-2cea3cf6ca15\", \"sourceFingerprint\": \"d1572a06d678dfed405b02253bf1525649864f8cd6dafa85906c01f93a3ac899\", \"sourceIdentityIds\": [\"base-work:carpentry_metal_interior_fence_paint_wet_zone\"], \"definitionReleaseId\": \"93e620ee-d5c3-5eff-af15-353d636faa00\", \"sourceDocumentSha256\": \"af4114f1a550cdd24c9d02e29222e248e9ce852a22a6d633a2ae165aaef4b58e\", \"ownerSourceIdentityId\": \"base-work:carpentry_metal_interior_fence_paint_wet_zone\", \"parentSearchReleaseId\": \"586398af-8acf-5af8-a6d7-b37fa7ec57b6\", \"firstEstimateThenRefine\": true},\"document_sha256\":\"3663702c4935dc2c73d01edc881d35e2ba2454fd54978d43713da0f522b35882\",\"adjudication_class\":\"EFFECTIVE_WORK\",\"selectable\":true,\"canonical_target_catalog_id\":null,\"definition_version_id\":\"699c8e1b-fbef-5e60-b79f-cf4e30d5cb4f\"},\"definition_anchor\":{\"id\" : \"699c8e1b-fbef-5e60-b79f-cf4e30d5cb4f\", \"catalog_id\" : \"canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone\", \"definition_sha256\" : \"2fa5753bb18aeb7a7302013de7e5dc9903c437d304ca0a07005154a392fce49e\", \"definition_version\" : 3, \"release_id\" : \"3788cc88-701d-5cc9-9130-c61262cb9979\"},\"baseline_anchor\":{\"id\" : \"cbad440b-bb9c-53a0-ba4d-8f81d00eaa58\", \"catalog_id\" : \"canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone\", \"definition_version_id\" : \"699c8e1b-fbef-5e60-b79f-cf4e30d5cb4f\", \"accepted_release_id\" : \"3788cc88-701d-5cc9-9130-c61262cb9979\"},\"normative_binding_count\":0}"
+        ],
+        "sha256": "bdde0c33eced14b8462ba226da99fec397c6aa2d933def368d4dbf76801a86ce"
+      },
+      "exactPainting03002SourcePreimageAndCurrentConsumers": {
+        "rowCount": 1,
+        "rawRows": [
+          "{\"source_key\":\"kg_krer15_04_030_02_flat_metal_oil_two_coats_r1\",\"exact_source_count\":0,\"source_preimage\":null,\"current_consumer_count\":0,\"current_consumer_headers\":[]}"
+        ],
+        "sha256": "246f2944d1aed58551a9c5652e4b981d295e4dfac6648b98fa7ba989721540a0"
+      }
+    },
+    "metrics": {
+      "rawBytes": 24747,
+      "currentScalarGroupBusinessHashAndFourMemberCountObservedRows": 1,
+      "exactFourFullCurrentMemberIdentityManifestSearchHeadersObservedRows": 4,
+      "exactPainting03002SourcePreimageAndCurrentConsumersObservedRows": 1
+    },
+    "globalResourceJsonRead": false,
+    "globalAbsenceProved": false,
+    "newIdentityAccepted": false,
+    "appJobs": false,
+    "databaseWrites": false,
+    "deepScope": "Pinned NOT_ACCEPTED R7 count/budget/fullgroup three sets are historical only. Fresh SQL: cheap scalar group business-hash/count gate, four remaining full member/manifest/identity/search headers, exact source preimage0. Group-parent taxonomy and search-leaf fields are separate. No fullgroup/body24 replay or shared snapshot claim.",
+    "caps": {
+      "groupRows": 1,
+      "metadataRows": 1,
+      "members": 4,
+      "maxMembers": 32,
+      "exactSources": 1,
+      "sourceConsumers": 32,
+      "rowBytes": 524288,
+      "totalRawBytes": 1048576
+    },
+    "rootExecutionProofSha256": "abb19806f660914a7ea1e72952f942a2cd30b1eab310d5aeee34f6377a80ec7e",
+    "session": {
+      "db": "rik_r4_runtime_b5_v2",
+      "address": "127.0.0.1",
+      "port": 55432,
+      "pid": 19604,
+      "snapshot": "537455:537455:",
+      "read_only": "on",
+      "isolation": "repeatable read"
+    },
+    "headers": {
+      "definition": {
+        "id": "93e620ee-d5c3-5eff-af15-353d636faa00",
+        "status": "prepared",
+        "source_commit": "4c94a77771d55fe0776eccd3817bea6ca356f5ac",
+        "source_tree": "00c704c95c2f7c8cd852d0c9d64fc855e2c2147d",
+        "source_manifest_sha256": "30030eeb972247b730cb9f534a0cfcf137b5dcfc24a11698b9c615434752d2df",
+        "activated_at": null
+      },
+      "search": {
+        "id": "305738c2-1070-50ce-af24-2d601cfac550",
+        "status": "draft",
+        "source_commit": "4c94a77771d55fe0776eccd3817bea6ca356f5ac",
+        "source_tree": "00c704c95c2f7c8cd852d0c9d64fc855e2c2147d",
+        "snapshot_sha256": "0389b7c8962da1422af2ec749e8b13cf0378a4d4f926f7e347dc91fbe5319759",
+        "activated_at": null,
+        "sealed_at": null,
+        "definition_release_id": "93e620ee-d5c3-5eff-af15-353d636faa00"
+      }
+    },
+    "executionSourceGate": {
+      "contract": "painting03002-continuation-current-source-gate/r9",
+      "historicalAppendGuard": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-metal-painting-finishing-a/current-fence-group-lineage-continuation-r9/masterSingleDefinitionAppendGuardsR1.git-b621-historical.ts",
+        "sha256": "3d6bc05bb0f80e38a8422a36372c6ab016e2844dea34c6dc7d103570f76e2ef1",
+        "bytes": 19419
+      },
+      "checkedCurrentAppendGuard": {
+        "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts",
+        "sha256": "9d9d7600e89c5b6bfbd278b7f02cee36f40ca12487c6e6d0ca33d132d32f5f4a",
+        "bytes": 20278
+      },
+      "checkedCommit": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor-sand-source-wave-r1/root-floor-source0-checked-source-commit-r1.json",
+        "sha256": "43743491f3768fc2cd30bc07f1f358cffa5faffd8600308dd6565950ef109835",
+        "bytes": 4249
+      },
+      "checkedAcceptance": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor-sand-source-wave-r1/root-floor-source0-465-and159-typescript-acceptance-r1.json",
+        "sha256": "170614cd08410de2b26e5bf7d72d161c8e47505d9614ec018d47f1486c9d0b52",
+        "bytes": 5550
+      },
+      "checkedFreeze": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor-sand-source-wave-r1/current-postcommit-floor-source0-freeze-r1.json",
+        "sha256": "4f08e3e21453a779e29ce6351930a91381769c72b6e2b03ea390b6472f296603",
+        "bytes": 723600
+      },
+      "historicalContextEvidence": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor-sand-source-wave-r1/root-floor-current-postcommit-context-r1.json",
+        "sha256": "84ba0d08aa80d77ef3311bb7132c4ee45560b8e17a3a115419184bf2ff047fac",
+        "bytes": 2394
+      }
+    },
+    "historicalGroupEvidence": {
+      "resultPin": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-group-lineage-actual-r7/painting03002-group-lineage-result-r7.json",
+        "sha256": "646df82862c0d3807115c2e25fc7c76e0db983d18368a6b98199d71b1b7d180e",
+        "bytes": 5235
+      },
+      "closedGuardPin": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/painting03002-group-lineage-actual-r7/painting03002-group-lineage-owned-r7-receipt.json",
+        "sha256": "39da018212c2ae685e3477f4c2dc93166b846a71f51a96c6658d26b84a3a3b10",
+        "bytes": 911679
+      },
+      "status": "NOT_ACCEPTED",
+      "failedBeforeRemainingPayload": true,
+      "executionContext": {
+        "sourceHead": "b6212dda610ec25bf08aeff2b78077ab2682f671",
+        "recordedReleaseSourceCommit": "4c94a77771d55fe0776eccd3817bea6ca356f5ac",
+        "definitionReleaseId": "93e620ee-d5c3-5eff-af15-353d636faa00",
+        "searchReleaseId": "305738c2-1070-50ce-af24-2d601cfac550"
+      },
+      "session": {
+        "db": "rik_r4_runtime_b5_v2",
+        "address": "127.0.0.1",
+        "port": 55432,
+        "pid": 17832,
+        "snapshot": "537454:537454:",
+        "read_only": "on",
+        "isolation": "repeatable read"
+      },
+      "sets": {
+        "exactFenceGroupCountDiagnosis": {
+          "rowCount": 1,
+          "rawRows": [
+            "{\"group_count\":1,\"declared_member_count\":4,\"group_payload_bytes\":\"889\",\"member_count\":4,\"distinct_catalog_count\":4,\"distinct_ordinal_count\":4,\"next_tail_ordinal\":4}"
+          ],
+          "sha256": "356aeda81c0bcbfc5d828fb40b5fbf5b43d960c6623b4b9ca7b44f4e620640cd"
+        },
+        "exactFourHeaderByteDiagnosis": {
+          "rowCount": 1,
+          "rawRows": [
+            "{\"member_count\":4,\"member_payload_bytes\":\"24161\",\"member_max_row_bytes\":\"6084\"}"
+          ],
+          "sha256": "4e27c03f079418ff18f6424bef3a31f3a25589f37ec99cbfb7135bbe6d110587"
+        },
+        "exactOneFullCurrentFenceGroup": {
+          "rowCount": 1,
+          "rawRows": [
+            "{\"search_release_id\":\"305738c2-1070-50ce-af24-2d601cfac550\",\"group_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"group_name_ru\":\"защитная окраска забора на большой площади\",\"domain_id\":\"carpentry_metal\",\"system_id\":\"carpentry_metal\",\"subsystem_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"assembly_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"work_family_id\":\"wg:base:carpentry_metal_interior_fence_paint\",\"breadcrumb\":[\"защитная окраска забора на большой площади\"],\"member_count\":4,\"member_set_sha256\":\"7c962cff1ae74f106d969bf4ededb138bd9283663f403bc7bb4118e8b5524d6a\",\"oracle_disposition\":{\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"disposition\": \"EXACT_PHYSICAL_WORK_GROUP\", \"memberCatalogIdsSha256\": \"7c962cff1ae74f106d969bf4ededb138bd9283663f403bc7bb4118e8b5524d6a\"}}"
+          ],
+          "sha256": "6eafba49e74ecdfbea25195f5c0e3f2d943d5a859f3e93b3a5f1e53fb0254c69"
+        }
+      },
+      "rawBytes": 1135
+    },
+    "historicalGroupRow": {
+      "search_release_id": "305738c2-1070-50ce-af24-2d601cfac550",
+      "group_id": "wg:base:carpentry_metal_interior_fence_paint",
+      "group_name_ru": "защитная окраска забора на большой площади",
+      "domain_id": "carpentry_metal",
+      "system_id": "carpentry_metal",
+      "subsystem_id": "wg:base:carpentry_metal_interior_fence_paint",
+      "assembly_id": "wg:base:carpentry_metal_interior_fence_paint",
+      "work_family_id": "wg:base:carpentry_metal_interior_fence_paint",
+      "breadcrumb": [
+        "защитная окраска забора на большой площади"
+      ],
+      "member_count": 4,
+      "member_set_sha256": "7c962cff1ae74f106d969bf4ededb138bd9283663f403bc7bb4118e8b5524d6a",
+      "oracle_disposition": {
+        "contract": "rik-expo-app-r555.full-cumulative-successor-db.v1",
+        "disposition": "EXACT_PHYSICAL_WORK_GROUP",
+        "memberCatalogIdsSha256": "7c962cff1ae74f106d969bf4ededb138bd9283663f403bc7bb4118e8b5524d6a"
+      }
+    },
+    "commonSnapshotClaim": false,
+    "currentGroupBusinessContinuity": {
+      "group_count": 1,
+      "declared_member_count": 4,
+      "group_business_exact": true,
+      "current_group_business_sha256": "6db55f995baf7ab8e5bf58ecdacd3048af531488408f57abe836454bd330e1fd",
+      "captured_group_business_sha256": "6db55f995baf7ab8e5bf58ecdacd3048af531488408f57abe836454bd330e1fd",
+      "member_count": 4,
+      "distinct_catalog_count": 4,
+      "distinct_ordinal_count": 4,
+      "next_tail_ordinal": 4,
+      "expected_catalog_count": 4,
+      "negative_ordinal_count": 0,
+      "contextualFieldExcluded": "search_release_id",
+      "historicalResultSha256": "646df82862c0d3807115c2e25fc7c76e0db983d18368a6b98199d71b1b7d180e"
+    },
+    "actualSourcePreimage": {
+      "source_key": "kg_krer15_04_030_02_flat_metal_oil_two_coats_r1",
+      "exact_source_count": 0,
+      "source_preimage": null,
+      "current_consumer_count": 0,
+      "current_consumer_headers": []
+    },
+    "capturedJoinGroupMembers": {
+      "groupId": "wg:base:carpentry_metal_interior_fence_paint",
+      "members": [
+        {
+          "catalogId": "canonical-work:base:carpentry_metal_interior_fence_paint_large_area",
+          "ordinal": 0,
+          "definitionVersionId": "5a852790-046c-5242-849f-e50b1dd783c8",
+          "approvedTemplateBaselineId": "50b624a5-4bc7-5394-b0b8-ce669dc0f1c0",
+          "definitionSha256": "0949465d5e921f6d4b7511d997f2be8d13552be3e98fc327a5169eff4bb2ef1c",
+          "sourceIdentity": "base-work:carpentry_metal_interior_fence_paint_large_area",
+          "workKey": "carpentry_metal_interior_fence_paint_large_area",
+          "searchGroupId": "wg:base:carpentry_metal_interior_fence_paint"
+        },
+        {
+          "catalogId": "canonical-work:base:carpentry_metal_interior_fence_paint_small_area",
+          "ordinal": 1,
+          "definitionVersionId": "5f531bb6-23ec-5d63-8e39-12ea2e49ecc5",
+          "approvedTemplateBaselineId": "afcd897f-0365-5bd3-8bc3-f91e7e257afa",
+          "definitionSha256": "1915465c822520445181594c222ccef923a86cb1d689497431b3c2bcbf21e5e0",
+          "sourceIdentity": "base-work:carpentry_metal_interior_fence_paint_small_area",
+          "workKey": "carpentry_metal_interior_fence_paint_small_area",
+          "searchGroupId": "wg:base:carpentry_metal_interior_fence_paint"
+        },
+        {
+          "catalogId": "canonical-work:base:carpentry_metal_interior_fence_paint_standard",
+          "ordinal": 2,
+          "definitionVersionId": "de4c340f-6401-51d7-b2f3-82c17bb230b7",
+          "approvedTemplateBaselineId": "c411171a-98f3-58cc-b654-2214db761524",
+          "definitionSha256": "715ad0181d1905fb1eda57d0a2287f338a72857e57195f94568ec2b59f1d8319",
+          "sourceIdentity": "base-work:carpentry_metal_interior_fence_paint_standard",
+          "workKey": "carpentry_metal_interior_fence_paint_standard",
+          "searchGroupId": "wg:base:carpentry_metal_interior_fence_paint"
+        },
+        {
+          "catalogId": "canonical-work:base:carpentry_metal_interior_fence_paint_wet_zone",
+          "ordinal": 3,
+          "definitionVersionId": "699c8e1b-fbef-5e60-b79f-cf4e30d5cb4f",
+          "approvedTemplateBaselineId": "cbad440b-bb9c-53a0-ba4d-8f81d00eaa58",
+          "definitionSha256": "2fa5753bb18aeb7a7302013de7e5dc9903c437d304ca0a07005154a392fce49e",
+          "sourceIdentity": "base-work:carpentry_metal_interior_fence_paint_wet_zone",
+          "workKey": "carpentry_metal_interior_fence_paint_wet_zone",
+          "searchGroupId": "wg:base:carpentry_metal_interior_fence_paint"
+        }
+      ]
+    },
+    "actualGroupMemberCount": 4,
+    "nextTailOrdinal": 4,
+    "captureScopeForFactory": null,
+    "captureScopeNote": "ROOT binds ACTUAL R8 result SHA to bounded count4/max32 captureScope; all four current anchors are fresh. Historical R7 group row retains historical search_release_id. New config.parentSearchReleaseId supplies current contextual release for ordinary normal/locked reread.",
+    "conditionalJoinDecision": "PENDING_ROOT_GROUP_AND_LEAF_TAXONOMY_PLUS_PROJECT_PHYSICAL_SCOPE_REVIEW",
+    "error": null,
+    "transactionRolledBack": true,
+    "connectionClosed": true,
+    "completeReadSet": true,
+    "inputSha256": "d4560cd89f4786b2d7af4de85841102691aff99c2eca6557e0625a86423d7ff0",
+    "elapsedMs": 551,
+    "rootObservedClientElapsedMs": 552,
+    "allTransactionsRolledBack": true,
+    "allConnectionsClosed": true
+  },
+  "futureContinuationPinWasResolvedByActualR9": true
+}

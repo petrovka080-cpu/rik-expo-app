@@ -1,0 +1,307 @@
+{
+  "contract": "flat-metal-oil-two-coats-krer15-030-02-quantity/r1",
+  "catalogId": null,
+  "identityAdmitted": false,
+  "actualCurrentClassification": null,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "titleRu": "Масляная окраска больших плоских металлических поверхностей в два слоя — КРЕР 15-04-030-02",
+  "scopeRu": "Фактическая проектная площадь окрашиваемой большой плоской металлической поверхности, отнесённой проектировщиком к области колонки 02, внутри помещения высотой до 3,5 м, кроме кровель, труб, решёток и стальных строительных конструкций. Готовая внутренняя краска МА-25 розово-бежевого, светло-бежевого или светло-серого исполнения; два слоя, включённые очистка и проолифка. Применимость к конкретной поверхности и действующему проекту не утверждена.",
+  "normId": "KRER15-04-030-02",
+  "sourceKeyProposal": "kg_krer15_04_030_02_flat_metal_oil_two_coats_r1",
+  "source": {
+    "titleRu": "КРЕР-2015. Сборник 15. Отделочные работы",
+    "edition": "КРЕР-2015; утверждён приказом от 28.03.2016 № 2-нпа, зарегистрирован 29.03.2016 № 34; текущая применимость требует проверки",
+    "officialPublicationUrl": "https://minstroy.gov.kg/ru/kyzmat/431/show",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+    "localArtifact": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-35/wall-putty-sources/KRER-15.pdf",
+    "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+    "bytes": 2472569,
+    "locatorRu": "PDF / печатная 194: таблица 15-04-030, колонка 02, измеритель 100 м² окрашиваемой поверхности; состав для норм 02–05. Техническая часть: PDF 8–9, пп. 1.1 и 1.2; PDF 11, п. 1.17; PDF 12, п. 1.26; PDF 16, пп. 2.32, 2.36–2.37 (исключённые геометрии). PDF 2: утверждение и регистрация. Подзаголовок колонки 01/02 содержит «больших поверхностей (кроме кровель)»; численный порог размера не дан.",
+    "sourceTextLayer": "SCANNED_VISUAL_EXACT_COLUMN",
+    "foreignNormSubstitution": false
+  },
+  "primaryMeasure": {
+    "parameterId": "actual_flat_metal_oil_painted_area_m2",
+    "unitId": "m2",
+    "kind": "ACTUAL_PROJECT_PAINTED_SURFACE_AREA",
+    "printedDenominator": "100 m2",
+    "noPipeLengthOrProjectionConversion": true,
+    "noCoatMultiplier": "Два слоя уже включены; площадь не умножается на два."
+  },
+  "rows": [
+    {
+      "suffix": "whole-oil-painting-labor",
+      "resourceCode": "000-1003-3",
+      "printedNameRu": "Рабочие-строители среднего разряда 3,3",
+      "titleRu": "Очистка, проолифка и двухслойная масляная окраска плоского металла",
+      "category": "labor",
+      "unitId": "man_hour",
+      "ratePer100M2": "12.21",
+      "costTreatment": "OWN_COST",
+      "procurement": false
+    },
+    {
+      "suffix": "machine-operator-info",
+      "resourceCode": null,
+      "printedNameRu": "Затраты труда машинистов",
+      "titleRu": "Табличный труд машинистов — справочно",
+      "category": "labor",
+      "unitId": "man_hour",
+      "ratePer100M2": "0.01",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurement": false
+    },
+    {
+      "suffix": "mast-hoist-info",
+      "resourceCode": "03-0327",
+      "printedNameRu": "Подъёмники грузоподъёмностью до 500 кг: одномачтовые, высота подъёма 45 м",
+      "titleRu": "Одномачтовый подъёмник до 500 кг — справочно",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.01",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurement": false
+    },
+    {
+      "suffix": "truck-info",
+      "resourceCode": "40-0001",
+      "printedNameRu": "Автомобили бортовые грузоподъёмностью до 5 т",
+      "titleRu": "Бортовой автомобиль до 5 т — справочно",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.03",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurement": false
+    },
+    {
+      "suffix": "ready-ma25-paint-consumption",
+      "resourceCode": "01-3804-0037",
+      "printedNameRu": "Краска цветная, готовая к применению для внутренних работ МА-25: розово-бежевая, светло-бежевая, светло-серая",
+      "titleRu": "Готовая внутренняя масляная краска МА-25 указанного цвета — расход",
+      "category": "material",
+      "unitId": "t",
+      "ratePer100M2": "0.0277",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurement": false
+    },
+    {
+      "suffix": "natural-drying-oil-consumption",
+      "resourceCode": "01-7104-0038",
+      "printedNameRu": "Олифа натуральная",
+      "titleRu": "Натуральная олифа — расход для проолифки",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "3.2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurement": false
+    },
+    {
+      "suffix": "rags-consumption",
+      "resourceCode": "01-7204-0001",
+      "printedNameRu": "Ветошь",
+      "titleRu": "Ветошь — расход",
+      "category": "material",
+      "unitId": "kg",
+      "ratePer100M2": "0.1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurement": false
+    }
+  ],
+  "includedOperations": [
+    {
+      "id": "cleaning",
+      "printedRu": "Очистка.",
+      "paymentOwnerSuffix": "whole-oil-painting-labor"
+    },
+    {
+      "id": "drying-oil-prime",
+      "printedRu": "Проолифка.",
+      "paymentOwnerSuffix": "whole-oil-painting-labor"
+    },
+    {
+      "id": "first-coat",
+      "printedRu": "Первая окраска.",
+      "paymentOwnerSuffix": "whole-oil-painting-labor"
+    },
+    {
+      "id": "second-coat",
+      "printedRu": "Вторая окраска.",
+      "paymentOwnerSuffix": "whole-oil-painting-labor"
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "norm-and-project-applicability",
+      "titleRu": "Применимость нормы и классификация металлической поверхности",
+      "category": "service",
+      "missingFact": "Не подтверждены действующая для объекта редакция и проектная классификация плоской поверхности вне стальных строительных конструкций. Не доказано отнесение к буквальной области «больших поверхностей»; минимальная площадь таблицей не задана.",
+      "nextTask": "Сверить редакцию, п. 1.26 и проект. Для окраски стальных конструкций применять отдельное решение по КРЕР 13.",
+      "owner": "Проектировщик и сметчик"
+    },
+    {
+      "id": "prior-coating-and-corrosion-treatment",
+      "titleRu": "Состояние старого покрытия и дополнительная антикоррозионная подготовка",
+      "category": "labor",
+      "missingFact": "Табличная очистка не задаёт степень коррозии, удаление старого покрытия, обезжиривание, абразивную подготовку или отдельную грунтовку.",
+      "nextTask": "По обследованию установить операции сверх включённой очистки, совместимость системы и самостоятельные объёмы. Не оплачивать очистку повторно.",
+      "owner": "Проектировщик и производитель работ"
+    },
+    {
+      "id": "product-conditions-and-drying",
+      "titleRu": "Подтверждённый продукт, условия нанесения и высыхание",
+      "category": "material",
+      "missingFact": "Нет изготовителя и паспорта готовой МА-25 нужного цвета, допустимого основания, температуры, влажности, межслойной выдержки и высыхания.",
+      "nextTask": "Получить первичный паспорт и согласованную технологическую карту. Не переносить условия CT54, PF-133 или иной краски.",
+      "owner": "Производитель материала и проектировщик"
+    },
+    {
+      "id": "material-order-and-stock",
+      "titleRu": "Заказ, запас и фасовка краски, олифы и ветоши",
+      "category": "material",
+      "missingFact": "Исходные расходы не определяют запас, фасовку, квант отгрузки, резерв, пригодный остаток и цену.",
+      "nextTask": "Установить товарные исполнения и отдельные остатки каждого материала; подключать закупку только по подтверждённым единицам и фасовкам.",
+      "owner": "Снабжение и производитель работ"
+    },
+    {
+      "id": "hand-tools-ppe-and-ventilation",
+      "titleRu": "Ручной инструмент, СИЗ, вентиляция и пожарная безопасность",
+      "category": "equipment",
+      "missingFact": "Не установлены кисти, валики, тара, СИЗ, вентиляция, противопожарные меры, срок использования и отдельная оплата.",
+      "nextTask": "По технологии и паспорту безопасности составить перечень оснащения; проверить включение в цену исполнителя.",
+      "owner": "Производитель работ и специалист по охране труда"
+    },
+    {
+      "id": "protection-and-junctions",
+      "titleRu": "Укрытие соседних поверхностей и границы примыканий",
+      "category": "material",
+      "missingFact": "Не заданы защищаемые поверхности, примыкания, площадь укрытия, совместимая лента и их отдельный расход.",
+      "nextTask": "По проекту определить зоны защиты и окончания покрытия. Не переносить норму плёнки или ленты из минеральной окраски.",
+      "owner": "Проектировщик и производитель работ"
+    },
+    {
+      "id": "access-and-scaffolding",
+      "titleRu": "Доступ, подмости и условия работы по высоте",
+      "category": "equipment",
+      "missingFact": "Строка подъёмника не доказывает фактический доступ, комплект лесов, его количество или отдельную цену.",
+      "nextTask": "Подтвердить высоту помещения до 3,5 м и способ доступа по п. 1.2; определить отдельные меры без повторной оплаты механизации.",
+      "owner": "Проектировщик и производитель работ"
+    },
+    {
+      "id": "machine-and-logistics-payment",
+      "titleRu": "Обеспечение механизации и отдельная логистика",
+      "category": "transport",
+      "missingFact": "Нет точного владельца оплаты подъёмника и автомобиля с полным составом услуги, маршрута и партии внешней доставки.",
+      "nextTask": "Получить условия собственной или наёмной механизации с включённым машинистом. Не назначать цену по коду и не превращать машино-часы в рейсы.",
+      "owner": "Сметчик, производитель работ и перевозчик"
+    },
+    {
+      "id": "quality-and-acceptance",
+      "titleRu": "Контроль качества и приёмка покрытия",
+      "category": "service",
+      "missingFact": "Не заданы критерии покрытия, способ контроля, объём испытаний, исполнительные документы и отдельная оплата.",
+      "nextTask": "По проекту и паспорту продукта определить контроль и приёмку. Отдельный труд не выводить из числа слоёв.",
+      "owner": "Технический надзор и производитель работ"
+    },
+    {
+      "id": "cleanup-and-waste",
+      "titleRu": "Заключительная уборка и обращение с отходами",
+      "category": "service",
+      "missingFact": "Нет границ уборки сверх очистки, состава отходов, массы, тары, вывоза и приёмки.",
+      "nextTask": "По продукту установить обращение с остатками и ветошью, отдельную уборку и подтверждённые услуги. Не считать ветошь полной уборкой.",
+      "owner": "Производитель работ и принимающая организация"
+    }
+  ],
+  "excludedRu": [
+    "Кровля и норма 15-04-031; стальные строительные конструкции по п. 1.26 относятся к КРЕР 13.",
+    "Трубы, балки, решётки, переплёты, приборы, проекции и коэффициенты развитой поверхности; нормы 03–05 не подставляются.",
+    "Один или три слоя, наружная краска, иной материал или цвет, антикоррозионная система, грунтовка или снятие ржавчины сверх явно включённой очистки.",
+    "Повторная оплата очистки, проолифки или отдельного второго слоя поверх целой нормы труда.",
+    "Цены из издания, цена по совпадению кода, отдельная оплата машиниста, автоматические фасовки, плотность, запас, остаток и рейсы.",
+    "Малая деталь или неподтверждённая классификация «большая поверхность»: численный порог по площади не выдумывать; требуется проектное отнесение к колонке 02."
+  ],
+  "machinePriceMappings": [],
+  "purchaseOrderOwners": [],
+  "knownScopeFacts": [
+    "flat_metal_surface_class",
+    "oil_paint_interior_scope",
+    "oil_paint_product_and_two_coats",
+    "oil_paint_included_preparation_boundary",
+    "oil_paint_room_height_m",
+    "oil_paint_area_reference",
+    "oil_paint_project_scope_reference",
+    "oil_paint_payment_boundary_reference"
+  ],
+  "fullCycle": [
+    {
+      "stage": "PREPARATION",
+      "sourceCoverageRu": "Включены только буквальная очистка и проолифка; ремонт и антикоррозионная система не установлены.",
+      "openNeedIds": [
+        "norm-and-project-applicability",
+        "prior-coating-and-corrosion-treatment"
+      ]
+    },
+    {
+      "stage": "MATERIALS",
+      "sourceCoverageRu": "Расход готовой внутренней МА-25, натуральной олифы и ветоши; не заказ.",
+      "openNeedIds": [
+        "product-conditions-and-drying",
+        "material-order-and-stock"
+      ]
+    },
+    {
+      "stage": "COMPONENTS_AND_JUNCTIONS",
+      "sourceCoverageRu": "Компоненты не заданы; границы и защита требуют проекта.",
+      "openNeedIds": [
+        "protection-and-junctions"
+      ]
+    },
+    {
+      "stage": "APPLICATION",
+      "sourceCoverageRu": "Два слоя включены в одну норму; условия и выдержки требуют точного продукта.",
+      "openNeedIds": [
+        "product-conditions-and-drying"
+      ]
+    },
+    {
+      "stage": "LABOUR",
+      "sourceCoverageRu": "Один владелец 12,21 чел·ч/100 м² за целую операцию, без повторной подготовки и слоёв.",
+      "openNeedIds": [
+        "norm-and-project-applicability"
+      ]
+    },
+    {
+      "stage": "MACHINES_AND_TOOLS",
+      "sourceCoverageRu": "Машинист, подъёмник и автомобиль только справочно, не отдельные платежи.",
+      "openNeedIds": [
+        "hand-tools-ppe-and-ventilation",
+        "access-and-scaffolding",
+        "machine-and-logistics-payment"
+      ]
+    },
+    {
+      "stage": "QUALITY_AND_ACCEPTANCE",
+      "sourceCoverageRu": "Критерии, испытания и документы не назначены нормой количества.",
+      "openNeedIds": [
+        "quality-and-acceptance"
+      ]
+    },
+    {
+      "stage": "COMPLETION_AND_SERVICES",
+      "sourceCoverageRu": "Уборка сверх очистки, отходы и внешняя доставка не рассчитаны.",
+      "openNeedIds": [
+        "cleanup-and-waste",
+        "machine-and-logistics-payment"
+      ]
+    }
+  ],
+  "sourceScopePrecision": {
+    "printedQualifierRu": "больших поверхностей (кроме кровель)",
+    "projectSubsetRu": "Выбранное подмножество: большие плоские металлические поверхности, не стальные строительные конструкции. Слово «плоские» является ограничением проекта этого кандидата, а не дополнительной нормой источника.",
+    "numericLargeAreaThreshold": null,
+    "numericThresholdInvented": false,
+    "requiredProjectFactParameterId": "flat_metal_surface_class",
+    "requiredProjectFactValue": "LARGE_FLAT_NONSTRUCTURAL_METAL_NOT_ROOF_PIPE_GRILLE",
+    "largeSurfaceConfirmationIsNotSufficientForNormApproval": true
+  }
+}
