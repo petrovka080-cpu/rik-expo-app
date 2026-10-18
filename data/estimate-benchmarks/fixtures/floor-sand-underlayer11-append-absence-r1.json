@@ -1,0 +1,289 @@
+{
+  "contract": "floor-sand-underlayer11-append-scope-absence-proof/v1",
+  "capturedSourceHead": "1574f8ec2c5da122e9d314a70e6c3b408e2f08ea",
+  "pair": {
+    "definitionReleaseId": "081efc6f-0192-557c-8ce7-5f789e216373",
+    "searchReleaseId": "f54ff3a7-4f74-5e7b-876a-db9b26b088c5"
+  },
+  "proposedAppend": {
+    "workKey": "floor_sand_underlayer_krer11_01_002_01",
+    "catalogId": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01",
+    "groupId": "floor_sand_underlayer_krer11_01_002_01",
+    "sourceKey": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+    "locatorKey": "KRER11-01-002-01-P7-8-SAND-UNDERLAYER-M3"
+  },
+  "sourcePreimageSha256": "8f050e2fec2b9383c3b34942349a047a669adde95a87d5ee54df2283a45facfe",
+  "readerReceiptSha256": "d9d66e9f72ac1ee2af971443e6da8a372de13705036f696066ecf4d9591446de",
+  "readerSha256": "11eafa9c04ea0db6836e118646f4ff7f0467722de2c5e24f2aa2b07f21347dcd",
+  "readerInputsSha256": "3409062b5e31fba2d5c1a14eb6bc2894edc2b9ad618968a7681e15e4a1564c38",
+  "rootGuardReceiptSha256": "11097f935a996eb7b19c31881436a4ea688236b5652bd25efdc35d43ed884acb",
+  "rootGuardSourceFreezeSha256": "1836a97981d397fcefa2b6164f4576490fe7fe9e1bab62e17fcd265ee02bdd90",
+  "completeReadSet": true,
+  "transactionRolledBack": true,
+  "connectionClosed": true,
+  "noOwnedProcessStillRunning": true,
+  "session": {
+    "database_name": "rik_r4_runtime_b5_v2",
+    "server_address": "127.0.0.1",
+    "server_port": 55432,
+    "backend_pid": 6380,
+    "snapshot": "536714:536714:",
+    "read_only": "on",
+    "isolation": "repeatable read"
+  },
+  "absenceSets": {
+    "proposedAppendIdentityCollisions": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendCurrentMembership": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendCurrentSearch": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendGroupCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendSourceKeyCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendLocatorCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "allCurrentReadSets": {
+    "proposedAppendIdentityCollisions": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendCurrentMembership": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendCurrentSearch": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendGroupCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendSourceKeyCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "proposedAppendLocatorCollision": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "identities": {
+      "rowCount": 2,
+      "rawRowsSha256": "3e50ac03667a1a8efcfbeeb07b37e1c4ae4c6a7b5b2efa655edd7873169bdc23"
+    },
+    "currentMemberships": {
+      "rowCount": 2,
+      "rawRowsSha256": "51e39dc02d4481d97a8e34c5fe152764d5028cc47de367ab34fcdf0d9bf79324"
+    },
+    "currentSearchDocuments": {
+      "rowCount": 2,
+      "rawRowsSha256": "8407d4e9e0a45509760f151575469e5ccde20aed4992e017bdca68868ced6f89"
+    },
+    "currentDefinitions": {
+      "rowCount": 2,
+      "rawRowsSha256": "08b24794bc0798f3fe24893646b319eca90f98a199f1356da584051fb5633d8c"
+    },
+    "currentContentPassports": {
+      "rowCount": 2,
+      "rawRowsSha256": "6a3b41152d5102aa2e0e32f2092f8d9b423264d3a947e47e2d19a69679d77f95"
+    },
+    "scopeNormativeLocatorHeaders": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "targetApprovedBaseline": {
+      "rowCount": 1,
+      "rawRowsSha256": "d5f4dcf12553a119c6ab8a96f7353305ef36b1663a2b97e3f8f14e49348eaad5"
+    },
+    "targetParameters": {
+      "rowCount": 1,
+      "rawRowsSha256": "8ef03eed203e6242658913cda2925189d8fc3d0653efaa530e538e60992ede61"
+    },
+    "targetFormulas": {
+      "rowCount": 59,
+      "rawRowsSha256": "d94b5e87c278341da24024a95f1438e61e025ef38dc83b44e64534724d243d06"
+    },
+    "targetResources": {
+      "rowCount": 59,
+      "rawRowsSha256": "618717351a324cee50bbc99987d5fbe64f4a668540964c2656c1187e688fe0d8"
+    },
+    "targetNormativeBindings": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "targetNormativeSources": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "targetPriceBindings": {
+      "rowCount": 59,
+      "rawRowsSha256": "470c575415ae0db317d23793aea2926b0ff785f16d674ba1503291f91167dc43"
+    },
+    "targetPriceRouteHeaders": {
+      "rowCount": 1,
+      "rawRowsSha256": "09550e5a4c16c3cb2ea4af6eeee63447ba10e9b876ce1cf90b103a91c4c911da"
+    },
+    "targetPriceItems": {
+      "rowCount": 59,
+      "rawRowsSha256": "2930c6c573722545c361710e904b4c039516d98ccadea990f79fbf3613ffc922"
+    },
+    "targetPriceSnapshotHeaders": {
+      "rowCount": 1,
+      "rawRowsSha256": "dc5da64f205e1dc7e16469dee89e71057dcbf4f555f356916132090a9020af24"
+    },
+    "targetSavedRevisions": {
+      "rowCount": 1,
+      "rawRowsSha256": "59fa3adea5dc7fa09aba0320d6b8e90d6b78072efa098d87c81062ffd464e0d9"
+    },
+    "targetSavedRows": {
+      "rowCount": 59,
+      "rawRowsSha256": "158c76c38ec38761979ad47e44aca0ba5bda12058140dec1d97d1e88ff3c52be"
+    },
+    "targetSavedPrices": {
+      "rowCount": 59,
+      "rawRowsSha256": "cbbae15fd5fd26dff8bb6a4f4d761b6689598678559edcc688deec3036b8c894"
+    },
+    "targetSavedArtifactMetadata": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "reviewedExistingConsumers": [
+    {
+      "catalogId": "canonical-work:base:earthworks_interior_sand_base_prepare_standard",
+      "definitionId": "b939814c-5251-5ce6-b9c0-3683703e5845",
+      "definitionVersion": 3,
+      "definitionSha256": "75529ec45872dae405ca8ad3337b6079e188a5977ebfabf1bbe2221bab7d37fd",
+      "fullMutablePreimageCaptured": true,
+      "scopeDecision": "Existing generic sand preparation title/passport does not prove floor11-01-002-01 physical method. Preserve identity/current membership/saved data; no replacement."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_sand_base_prepare_standard",
+      "definitionId": "71c481b0-9123-5d63-96c6-b604ae673e3d",
+      "definitionVersion": 3,
+      "definitionSha256": "e69f6feac29452cc5ff803c832d85c8fbb3d16ae1da24d9d0ab53f8ab9ec1568",
+      "fullMutablePreimageCaptured": false,
+      "scopeDecision": "Existing generic sand preparation title/passport does not prove floor11-01-002-01 physical method. Preserve identity/current membership/saved data; no replacement."
+    }
+  ],
+  "genericTargetPreimagePreserved": {
+    "targetApprovedBaseline": {
+      "rowCount": 1,
+      "rawRowsSha256": "d5f4dcf12553a119c6ab8a96f7353305ef36b1663a2b97e3f8f14e49348eaad5"
+    },
+    "targetParameters": {
+      "rowCount": 1,
+      "rawRowsSha256": "8ef03eed203e6242658913cda2925189d8fc3d0653efaa530e538e60992ede61"
+    },
+    "targetFormulas": {
+      "rowCount": 59,
+      "rawRowsSha256": "d94b5e87c278341da24024a95f1438e61e025ef38dc83b44e64534724d243d06"
+    },
+    "targetResources": {
+      "rowCount": 59,
+      "rawRowsSha256": "618717351a324cee50bbc99987d5fbe64f4a668540964c2656c1187e688fe0d8"
+    },
+    "targetNormativeBindings": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "targetNormativeSources": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "targetPriceBindings": {
+      "rowCount": 59,
+      "rawRowsSha256": "470c575415ae0db317d23793aea2926b0ff785f16d674ba1503291f91167dc43"
+    },
+    "targetPriceRouteHeaders": {
+      "rowCount": 1,
+      "rawRowsSha256": "09550e5a4c16c3cb2ea4af6eeee63447ba10e9b876ce1cf90b103a91c4c911da"
+    },
+    "targetPriceItems": {
+      "rowCount": 59,
+      "rawRowsSha256": "2930c6c573722545c361710e904b4c039516d98ccadea990f79fbf3613ffc922"
+    },
+    "targetPriceSnapshotHeaders": {
+      "rowCount": 1,
+      "rawRowsSha256": "dc5da64f205e1dc7e16469dee89e71057dcbf4f555f356916132090a9020af24"
+    },
+    "targetSavedRevisions": {
+      "rowCount": 1,
+      "rawRowsSha256": "59fa3adea5dc7fa09aba0320d6b8e90d6b78072efa098d87c81062ffd464e0d9"
+    },
+    "targetSavedRows": {
+      "rowCount": 59,
+      "rawRowsSha256": "158c76c38ec38761979ad47e44aca0ba5bda12058140dec1d97d1e88ff3c52be"
+    },
+    "targetSavedPrices": {
+      "rowCount": 59,
+      "rawRowsSha256": "cbbae15fd5fd26dff8bb6a4f4d761b6689598678559edcc688deec3036b8c894"
+    },
+    "targetSavedArtifactMetadata": {
+      "rowCount": 0,
+      "rawRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "scopeDecision": "SOURCE_SPECIFIC_FLOOR_SAND_APPEND",
+  "scopeReasonRu": "КРЕР11-01-002-01 — определённый песчаный подстилающий слой ПОД ПОЛЫ с чистым объёмом §2.1 и исходной схемой автопогрузчик/компрессор/пневмотрамбовка. Actual generic earthworks и landscaping паспорта не доказывают эту схему;0нормативных привязок и0locatorheaders. Это не альтернативная редакция всех genericfloor и не шесть новых variants по названию.",
+  "noHistoricPriceOrManualMigration": true,
+  "genericResourceRowsExcludedByOldRemediationRemainHistorical": true,
+  "identityAllocated": false,
+  "published": false,
+  "runtimeAccepted": false,
+  "acceptedNewCompleteTypes": 0,
+  "currentParentRebase": {
+    "contract": "floor-current-parent-addressed-rebase/v1",
+    "historicalProofStableSha256": "693f25d52e9347725f9a98f463e3427c8e6c05395032f0b0c3bca904ec40d52e",
+    "historicalPreimageSha256": "ec75d26f5e9c3081a85d97bf422561a6928526558f793e7dace4948f4587f18e",
+    "historicalCapturedSourceHead": "b56e311d5a34094d19cd2a38b8cecbb386aef304",
+    "historicalPair": {
+      "definitionReleaseId": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+      "searchReleaseId": "756fad32-723d-553c-8215-1e6271c05ec7"
+    },
+    "newParentHeaders": {
+      "definition": {
+        "id": "081efc6f-0192-557c-8ce7-5f789e216373",
+        "status": "prepared",
+        "source_commit": "80d69e2aecf919f96ffc76f8018d38bb33cc248e",
+        "source_tree": "de93fbdb51f04e74dc08db4cad5cd766a58ec83d",
+        "activated_at": null,
+        "source_manifest_sha256": "377043ef24c656e3e97ce656a4fdfcba97371b2606f1a30c40fd12a252d40ca1",
+        "created_at": "2026-10-18T10:47:00.145Z"
+      },
+      "search": {
+        "id": "f54ff3a7-4f74-5e7b-876a-db9b26b088c5",
+        "status": "draft",
+        "source_commit": "80d69e2aecf919f96ffc76f8018d38bb33cc248e",
+        "source_tree": "de93fbdb51f04e74dc08db4cad5cd766a58ec83d",
+        "activated_at": null,
+        "sealed_at": null,
+        "snapshot_sha256": "b4687f064f9fc23cd39a78d32ce7b7a1e607533fe461f6b4c324d3d33dea17b2",
+        "created_at": "2026-10-18T10:47:00.145Z",
+        "definition_release_id": "081efc6f-0192-557c-8ce7-5f789e216373",
+        "contract": "rik-expo-app.euroflex-factory-half-current.r3",
+        "parent_search_release_id": "6407fee7-e9ea-58ee-827f-2a6b0e1b2e18",
+        "source_fingerprint": "9c1db0697b65a26564479bcc4fcce7d6528bc7ba5ad6ead1e8449e8f933e67cb"
+      }
+    },
+    "all26CurrentReadSetComparisonsPassed": true,
+    "inheritedPublicationWrappersValidatedSeparately": true,
+    "existingGenericPayloadAndSaved59RowsPricesUnchanged": true,
+    "historicalReadNotReplayed": true
+  }
+}

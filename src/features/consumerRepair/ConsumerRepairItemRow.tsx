@@ -41,7 +41,7 @@ import {
 import { useConsumerRepairItemRowEditing } from "./useConsumerRepairItemRowEditing";
 import { useCanonicalPreliminaryNeedEvidence } from "./useCanonicalPreliminaryNeedEvidence";
 import {consumerMachineHourPriceDecision,consumerMachineHourPriceNeedsConfirmation} from '../../lib/consumerRequests/consumerMachineHourPriceCoverage';
-import {CANONICAL_MACHINE_HOUR_PRICE_CONFIRMATION_RU} from '../../lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1';
+import {canonicalMachineHourPriceConfirmationRuV1,canonicalMachineHourPricePromptRuV1} from '../../lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1';
 
 type Props = {
   parameterRequirementTables?: import("../../lib/consumerRequests/consumerCanonicalParameterRequirements").CanonicalParameterRequirementTables | null;
@@ -361,11 +361,11 @@ function ConsumerRepairItemRowComponent({
           </Text>
         ) : null}
         {!nonPayableRow&&consumerMachineHourPriceDecision(item)?<View testID={`consumer-repair-machine-hour-price-${item.id}`}>
-          <Text style={styles.nonPayableNotice}>{item.unitPrice==null?'Нужна цена полной эксплуатации за машино-час.':consumerMachineHourPriceNeedsConfirmation(item)
+          <Text style={styles.nonPayableNotice}>{item.unitPrice==null?canonicalMachineHourPricePromptRuV1(String(item.sourceParameters?.rowCode??'')):consumerMachineHourPriceNeedsConfirmation(item)
             ?'Состав цены эксплуатации не подтверждён. Введённая сумма предварительная.'
             :consumerMachineHourPriceDecision(item)?.status==='CONFIRMED_MANUAL'?'Состав цены подтверждён пользователем.':'Состав цены подтверждён ценовым источником.'}</Text>
           {consumerMachineHourPriceNeedsConfirmation(item)&&!itemOptional&&onConfirmMachineHourPrice?<>
-            <Text style={styles.nonPayableNotice}>{CANONICAL_MACHINE_HOUR_PRICE_CONFIRMATION_RU}</Text>
+            <Text style={styles.nonPayableNotice}>{canonicalMachineHourPriceConfirmationRuV1(String(item.sourceParameters?.rowCode??''))}</Text>
             <Pressable accessibilityRole="button" accessibilityLabel={`Подтвердить состав цены эксплуатации ${item.titleRu}`}
               testID={`consumer-repair-confirm-machine-hour-price-${item.id}`} onPress={()=>onConfirmMachineHourPrice(item.id)} style={styles.traceButton}>
               <Text style={styles.traceButtonText}>Подтвердить этот состав цены</Text>

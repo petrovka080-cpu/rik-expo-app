@@ -8,13 +8,13 @@ export type CanonicalMachineHourPriceCoverageV1 = {
   currencyCode:string;
   unitPrice:string;
   billingBasis:'MACHINE_HOUR';
-  operationScope:'FULL_SOURCE_OPERATION';
+  operationScope:'FULL_SOURCE_OPERATION'|'MACHINE_ONLY_WORKER_AND_COMPRESSED_AIR_SEPARATE';
   minimumBillableHours:'0';
   fixedFees:'0';
   separateNormedInputs:'EXCLUDED_FROM_RATE';
   source:{kind:'MANUAL';rowId:string;priceProvenanceReason:string|null}|{kind:'SNAPSHOT';snapshotId:string;priceKey:string};
 };
-type Requirement={resourceCode:string;operator:'OPERATOR'|'DRIVER'|'NO_ADDITIONAL_OPERATOR_NORM'};
+type Requirement={resourceCode:string;operator:'OPERATOR'|'DRIVER'|'NO_ADDITIONAL_OPERATOR_NORM';operationScope?:CanonicalMachineHourPriceCoverageV1['operationScope']};
 const owners:Record<string,Requirement>={};
 const add=(prefix:string,roles:Record<string,string>)=>Object.entries(roles).forEach(([role,resourceCode])=>{
   owners[prefix+':'+role]={resourceCode,operator:resourceCode==='40-0001'?'DRIVER':['15-0060','10-0007','12-0340'].includes(resourceCode)?'NO_ADDITIONAL_OPERATOR_NORM':'OPERATOR'};
@@ -39,12 +39,23 @@ const roadUpperOwners:Record<string,Requirement>={
   'road-upper-base:krer27-04-005-02:equipment:spreader':{resourceCode:'12-0540',operator:'OPERATOR'},
 };
 Object.assign(owners,roadUpperOwners);
+const floorSandCatalog='canonical-work:master:floor_sand_underlayer_krer11_01_002_01';
+const floorRammerRow='floor-underlayer:sand:krer11-01-002-01:equipment:pneumaticRammer';
+const floorRammerScope='MACHINE_ONLY_WORKER_AND_COMPRESSED_AIR_SEPARATE' as const;
+const floorSandOwners:Record<string,Requirement>={
+ 'floor-underlayer:sand:krer11-01-002-01:equipment:forklift5t':{resourceCode:'03-0020',operator:'OPERATOR'},
+ 'floor-underlayer:sand:krer11-01-002-01:equipment:compressor':{resourceCode:'05-0005',operator:'OPERATOR'},
+ [floorRammerRow]:{resourceCode:'33-0741',operator:'NO_ADDITIONAL_OPERATOR_NORM',operationScope:floorRammerScope},
+};
+Object.assign(owners,floorSandOwners);
 const aliases=new Set(['FULL_OPERATED_MACHINE_HOUR','FULL_OPERATED_VEHICLE_HOUR_DRIVER_INCLUDED_NOT_IN_INFO','FULL_OPERATED','FULL_DRIVER','FULL_MACHINE_SOURCE_COST','EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED']);
 const admittedCatalogs=new Set(['canonical-work:base:roofing_interior_flat_roof_install_technical_room','canonical-work:base:roofing_interior_flat_roof_install_wet_zone']);
-const admittedOwner=(catalogId:string,rowId:string)=>Object.prototype.hasOwnProperty.call(roadUpperOwners,rowId)
-  ?catalogId===roadUpperCatalog
-  :admittedCatalogs.has(catalogId)
-    ||standalone.targets.some(t=>t.catalogId===catalogId)&&rowId.startsWith('roof:cement-screed25:krer12-017-01-plus-10x02:');
+const admittedOwner=(catalogId:string,rowId:string)=>Object.prototype.hasOwnProperty.call(floorSandOwners,rowId)
+  ?catalogId===floorSandCatalog
+  :Object.prototype.hasOwnProperty.call(roadUpperOwners,rowId)
+    ?catalogId===roadUpperCatalog
+    :admittedCatalogs.has(catalogId)
+      ||standalone.targets.some(t=>t.catalogId===catalogId)&&rowId.startsWith('roof:cement-screed25:krer12-017-01-plus-10x02:');
 const record=(value:unknown):Record<string,unknown>=>value!=null&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{};
 const decimal=(value:unknown)=>typeof value==='string'&&/^\d+(?:\.\d+)?$/.test(value)&&value.length<=80;
 export function canonicalMachineHourPriceRequirementV1(rowId:string,unitId:string):Requirement|null{
@@ -54,7 +65,8 @@ export function assertCanonicalMachineHourDefinitionV1(input:{catalogId:string;r
   if(!admittedOwner(input.catalogId,input.rowId))return null;
   const requirement=canonicalMachineHourPriceRequirementV1(input.rowId,input.unitId);
   if(!requirement)return null;
-  if(input.sourceMetadata?.normativeResourceCode!==requirement.resourceCode||!aliases.has(String(input.sourceMetadata?.machinePriceCoverageRequired??'')))
+  if(input.sourceMetadata?.normativeResourceCode!==requirement.resourceCode||!aliases.has(String(input.sourceMetadata?.machinePriceCoverageRequired??''))
+    ||requirement.operationScope!==undefined&&input.sourceMetadata?.machinePriceOperationScope!==requirement.operationScope)
     throw Object.assign(Error('Machine-hour definition identity is not admitted'),{code:'DEFINITION_INTEGRITY_FAILED'});
   return requirement;
 }
@@ -64,10 +76,11 @@ export function parseCanonicalMachineHourPriceCoverageV1(value:unknown):Canonica
   if(Object.keys(v).length!==keys.length||Object.keys(v).some(k=>!keys.includes(k))
     ||v.contractVersion!=='canonical-machine-hour-price-coverage/v1'||!/^\d{2}-\d{4}$/.test(String(v.resourceCode))
     ||v.unitId!=='machine_hour'||! /^[A-Z]{3}$/.test(String(v.currencyCode))||!decimal(v.unitPrice)
-    ||v.billingBasis!=='MACHINE_HOUR'||v.operationScope!=='FULL_SOURCE_OPERATION'||v.minimumBillableHours!=='0'||v.fixedFees!=='0'
+    ||v.billingBasis!=='MACHINE_HOUR'||(v.operationScope!=='FULL_SOURCE_OPERATION'&&!(v.operationScope===floorRammerScope&&v.resourceCode==='33-0741'))||v.minimumBillableHours!=='0'||v.fixedFees!=='0'
     ||v.separateNormedInputs!=='EXCLUDED_FROM_RATE')return null;
   if(s.kind==='MANUAL'){
     if(Object.keys(s).length!==3||typeof s.rowId!=='string'||!owners[s.rowId]
+      ||v.operationScope===floorRammerScope&&s.rowId!==floorRammerRow
       ||!(s.priceProvenanceReason===null||typeof s.priceProvenanceReason==='string'&&s.priceProvenanceReason.length<=240))return null;
   }else if(s.kind==='SNAPSHOT'){
     if(Object.keys(s).length!==3||typeof s.snapshotId!=='string'||!/^[0-9a-f-]{36}$/i.test(s.snapshotId)
@@ -82,6 +95,7 @@ export function resolveCanonicalMachineHourPriceCoverageV1(input:{catalogId:stri
   const price=String(input.unitPrice??'');
   const matches=evidence!=null&&decimal(price)&&compareFormulaGraphDecimals(evidence.unitPrice,price)===0
     &&evidence.currencyCode===input.currencyCode&&evidence.resourceCode===requirement.resourceCode
+    &&evidence.operationScope===(requirement.operationScope??'FULL_SOURCE_OPERATION')
     &&(input.manual?evidence.source.kind==='MANUAL'&&evidence.source.rowId===input.rowId&&evidence.source.priceProvenanceReason===(input.manualProvenanceReason??null)
       :evidence.source.kind==='SNAPSHOT'&&evidence.source.snapshotId===input.snapshotId&&evidence.source.priceKey===input.priceKey);
   return {contractVersion:'canonical-machine-hour-price-decision/v1' as const,...requirement,
@@ -102,6 +116,15 @@ export function canonicalMachineHourPriceNeedsConfirmationV1(row:Parameters<type
 export function canonicalManualMachineHourPriceCoverageV1(input:{rowId:string;unitPrice:string;currencyCode:string}):CanonicalMachineHourPriceCoverageV1{
   const requirement=canonicalMachineHourPriceRequirementV1(input.rowId,'machine_hour');if(!requirement)throw Error('MACHINE_HOUR_OWNER_REQUIRED');
   return {contractVersion:'canonical-machine-hour-price-coverage/v1',resourceCode:requirement.resourceCode,unitId:'machine_hour',currencyCode:input.currencyCode,unitPrice:input.unitPrice,
-    billingBasis:'MACHINE_HOUR',operationScope:'FULL_SOURCE_OPERATION',minimumBillableHours:'0',fixedFees:'0',separateNormedInputs:'EXCLUDED_FROM_RATE',source:{kind:'MANUAL',rowId:input.rowId,priceProvenanceReason:'consumer_estimate_row_batch_edit'}};
+    billingBasis:'MACHINE_HOUR',operationScope:requirement.operationScope??'FULL_SOURCE_OPERATION',minimumBillableHours:'0',fixedFees:'0',separateNormedInputs:'EXCLUDED_FROM_RATE',source:{kind:'MANUAL',rowId:input.rowId,priceProvenanceReason:'consumer_estimate_row_batch_edit'}};
 }
 export const CANONICAL_MACHINE_HOUR_PRICE_CONFIRMATION_RU='Цена за машино-час включает полную эксплуатацию и обслуживание, оператора или водителя там, где они предусмотрены нормой. Нет минимальной смены, выезда и иных фиксированных доплат. Отдельно рассчитанные материалы и технологический газ повторно в цену не включены.';
+
+export function canonicalMachineHourPriceConfirmationRuV1(rowId:string){
+ return rowId===floorRammerRow
+  ?'Цена за машино-час включает эксплуатацию и обслуживание пневматической трамбовки. Рабочий и работа компрессора со сжатым воздухом учитываются отдельно и в эту цену не входят. Нет минимальной смены, выезда и иных фиксированных доплат.'
+  :CANONICAL_MACHINE_HOUR_PRICE_CONFIRMATION_RU;
+}
+export function canonicalMachineHourPricePromptRuV1(rowId:string){
+ return rowId===floorRammerRow?'Нужна цена эксплуатации трамбовки за машино-час без рабочего, компрессора и сжатого воздуха.':'Нужна цена полной эксплуатации за машино-час.';
+}

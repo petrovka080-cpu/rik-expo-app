@@ -64,6 +64,7 @@ export function canonicalStoredManualPricesCanMigrate(input:{
   const evidenceValid=override.machineHourPriceCoverageV1==null||evidence!=null&&hasPrice&&price!=null
     &&/^\d+(?:\.\d+)?$/.test(String(price))&&compareFormulaGraphDecimals(evidence.unitPrice,String(price))===0
     &&evidence.currencyCode===input.currency&&evidence.resourceCode===canonicalMachineHourPriceRequirementV1(id,'machine_hour')?.resourceCode
+    &&evidence.operationScope===(canonicalMachineHourPriceRequirementV1(id,'machine_hour')?.operationScope??'FULL_SOURCE_OPERATION')
     &&evidence.source.kind==='MANUAL'&&evidence.source.rowId===id&&evidence.source.priceProvenanceReason===(provenance.reason??null);
   return evidenceValid&&(hasPrice||hasExclusion)&&Object.keys(override).every(key=>['unitPrice','machineHourPriceCoverageV1','provenance','includedInEstimate','includedInProcurement'].includes(key))
    &&provenance.kind==='manual'

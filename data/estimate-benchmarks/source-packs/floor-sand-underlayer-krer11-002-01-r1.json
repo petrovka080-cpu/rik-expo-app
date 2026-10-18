@@ -1,0 +1,237 @@
+{
+  "contract": "rik-expo-app.floor-sand-underlayer-krer11-002-01.r1",
+  "status": "CURRENT_PARENT_REBASE_VERIFIED_NOT_PUBLISHED",
+  "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+  "normId": "KRER11-01-002-01",
+  "prefix": "floor-underlayer:sand:krer11-01-002-01",
+  "primaryMeasureParameterId": "floor_sand_net_volume_m3",
+  "primaryUnitId": "m3",
+  "titleRu": "Песчаный подстилающий слой под полы: планировка, устройство, разравнивание и уплотнение по КРЕР11-01-002-01",
+  "source": {
+    "officialPage": "https://www.gosstroy.gov.kg/ru/kyzmat/427/show",
+    "officialPdf": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/no11poly_compressed-73969083537959524.32310342.pdf",
+    "localArtifact": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-69/cn69-krer11-labor-candidate/KRER-11-official.pdf",
+    "sha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223",
+    "edition": "КРЕР11-2015, Полы; введён с 01.01.2016",
+    "table": "11-01-002",
+    "column": "11-01-002-01",
+    "printedAndPdfPages": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "locatorRu": "Стр.7 состав для норм01–04: планировка основания; устройство подстилающего слоя с разравниванием и уплотнением. Стр.8 измеритель м³ слоя и точная колонка01 (песчаный). Стр.6 §2.1 чистый объём под полы.",
+    "path": ".release-runtime/r568/s27-69/cn69-krer11-labor-candidate/KRER-11-official.pdf",
+    "basis": "1m3 net underfloor sand underlayer",
+    "scope": "Только песчаный подстилающий слой под полы; планировка основания и устройство слоя с разравниванием и уплотнением по исходной схеме. Чистый объём по §2.1.",
+    "operations": [
+      "Планировка основания",
+      "Устройство подстилающего слоя с разравниванием и уплотнением"
+    ]
+  },
+  "resources": [
+    {
+      "id": "worker",
+      "resourceCode": "000-1002-5",
+      "titleRu": "Рабочие-строители среднего разряда 2,5",
+      "unitId": "man_hour",
+      "rate": "2.3",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "operators",
+      "resourceCode": null,
+      "titleRu": "Затраты труда машинистов — справочно в составе ставок автопогрузчика и компрессора",
+      "unitId": "man_hour",
+      "rate": "0.30",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "forklift5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчики 5 т",
+      "unitId": "machine_hour",
+      "rate": "0.08",
+      "operator": "OPERATOR"
+    },
+    {
+      "id": "compressor",
+      "resourceCode": "05-0005",
+      "titleRu": "Компрессоры передвижные с двигателем внутреннего сгорания, давлением до 686 кПа (7 ат), 5 м³/мин",
+      "unitId": "machine_hour",
+      "rate": "0.22",
+      "operator": "OPERATOR"
+    },
+    {
+      "id": "pneumaticRammer",
+      "resourceCode": "33-0741",
+      "titleRu": "Трамбовки пневматические при работе от стационарного компрессора",
+      "unitId": "machine_hour",
+      "rate": "0.44",
+      "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+    },
+    {
+      "id": "sand",
+      "resourceCode": "01-6208-0005",
+      "titleRu": "Песок природный для строительных работ средний",
+      "unitId": "m3",
+      "rate": "1.2",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "water",
+      "resourceCode": "01-0601-0001",
+      "titleRu": "Вода",
+      "unitId": "m3",
+      "rate": "0.15",
+      "costTreatment": "OWN_COST"
+    }
+  ],
+  "projectConditionsValueRu": "Проектом выбран именно песчаный подстилающий слой под полы по КРЕР11-01-002-01; средний природный строительный песок; исходная технологическая и организационная схема с автопогрузчиком5т, компрессором05-0005 и пневматическими трамбовками33-0741 применима участку и доступна",
+  "acceptedBaseValueRu": "Основание подготовлено и принято к устройству песчаного слоя; включённая в исходную норму планировка выполняется один раз; разработка, растительный грунт и отдельное укрепление не объявлены выполненными этой нормой",
+  "netVolumeValueRu": "Объём слоя подтверждён проектом или обмером по КРЕР11 §2.1: объёмы под печами, колоннами, выступающими фундаментами и подобными элементами исключены; площадь и толщина из объёма не выведены",
+  "machineFulfillmentValues": [
+    "Собственные механизмы; машино-час включает полную эксплуатацию и обслуживание, предусмотренного нормой машиниста; отдельно нормированные песок и вода не включены Для пневмотрамбовки оплачиваются только эксплуатация и обслуживание инструмента; рабочий и компрессор/сжатый воздух имеют отдельных существующих владельцев и не включены в её ставку.",
+    "Аренда; машино-час включает полную эксплуатацию и обслуживание, предусмотренного нормой машиниста; отдельно нормированные песок и вода не включены Для пневмотрамбовки оплачиваются только эксплуатация и обслуживание инструмента; рабочий и компрессор/сжатый воздух имеют отдельных существующих владельцев и не включены в её ставку."
+  ],
+  "materialFactIds": {
+    "sand": "floor_sand_material",
+    "water": "floor_sand_water"
+  },
+  "includedOperations": [
+    {
+      "id": "base-planning",
+      "titleRu": "Планировка основания"
+    },
+    {
+      "id": "place-level-compact",
+      "titleRu": "Устройство подстилающего слоя с разравниванием и уплотнением"
+    }
+  ],
+  "unresolvedNeeds": [
+    {
+      "id": "external-delivery-unloading",
+      "titleRu": "Фактическая внешняя доставка песка и воды и отдельная разгрузка вне включённой операции автопогрузчика",
+      "unitId": "item",
+      "missingFactOwner": "Снабжение/поставщик и сметчик",
+      "taskRu": "Сопоставить поставочный договор и PPR с включёнными0.08ч автопогрузчика на м³; установить плечо, транспорт, груз, разгрузку и единственного владельца цены. Не вывести рейсы/часы из объёма без грузовых данных."
+    },
+    {
+      "id": "extra-mobilization",
+      "titleRu": "Дополнительная мобилизация, сменный минимум и фиксированные платы механизмов",
+      "unitId": "item",
+      "missingFactOwner": "Подрядчик/арендодатель механизмов",
+      "taskRu": "Подтвердить доступ и фактический способ обеспечения трёх механизмов; выделить только договорные выезд/подачу/минимум сверх полной часовой ставки, исключить дубль обслуживания/машинистов."
+    },
+    {
+      "id": "quality-control",
+      "titleRu": "Проектные испытания и приёмочный контроль песчаного слоя",
+      "unitId": "item",
+      "missingFactOwner": "Проектировщик/геотехник/технадзор и лаборатория",
+      "taskRu": "Из проекта получить допустимую толщину, требуемую плотность, метод/частоту испытаний, границы партий и акты; установить отдельный платёжный объём только для фактически отдельной услуги. КРЕР11-002-01 не назначает эти факты."
+    },
+    {
+      "id": "protection-tools",
+      "titleRu": "Применимые ограждения, индивидуальный инструмент, СИЗ и обеспечение безопасного участка",
+      "unitId": "item",
+      "missingFactOwner": "Подрядчик и составитель PPR",
+      "taskRu": "По фактическим соседним конструкциям/проходам и условиям пневматического оснащения определить защиту/снабжение/инструмент и границу включения в труд/машинные ставки. Не создавать комплект на м³."
+    },
+    {
+      "id": "cleanup-waste",
+      "titleRu": "Фактические упаковка, непригодный материал, уборка и вывоз вне исходного состава",
+      "unitId": "item",
+      "missingFactOwner": "Подрядчик/снабжение/владелец отходов",
+      "taskRu": "Снять упаковку, возвратную тару, браковку и требуемую уборку по договору/PPR; назначить объём/транспорт/пункт и владельца. Коэффициент1.2 исходного песка не превращать в20% отходов."
+    }
+  ],
+  "excluded": [
+    "Дорожный верхний слой150мм КРЕР27",
+    "Произвольная подушка внутри здания с недоказанной схемой",
+    "Песчаная постель трубы/обсыпка траншеи",
+    "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+    "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+    "Уплотнение самоходным катком из отдельной11-01-003",
+    "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+    "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+    "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+    "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+    "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+  ],
+  "machineCoverageAdmissionRequired": {
+    "mechanism": "canonicalMachineHourPriceCoverageV1",
+    "resourceRows": [
+      {
+        "rowId": "floor-underlayer:sand:krer11-01-002-01:equipment:forklift5t",
+        "resourceCode": "03-0020",
+        "operator": "OPERATOR",
+        "operationScope": "FULL_SOURCE_OPERATION",
+        "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST"
+      },
+      {
+        "rowId": "floor-underlayer:sand:krer11-01-002-01:equipment:compressor",
+        "resourceCode": "05-0005",
+        "operator": "OPERATOR",
+        "operationScope": "FULL_SOURCE_OPERATION",
+        "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST"
+      },
+      {
+        "rowId": "floor-underlayer:sand:krer11-01-002-01:equipment:pneumaticRammer",
+        "resourceCode": "33-0741",
+        "operator": "NO_ADDITIONAL_OPERATOR_NORM",
+        "operationScope": "MACHINE_ONLY_WORKER_AND_COMPRESSED_AIR_SEPARATE",
+        "machinePriceCoverageRequired": "EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED",
+        "separatePaidOwners": [
+          {
+            "rowId": "floor-underlayer:sand:krer11-01-002-01:worker",
+            "resourceCode": "000-1002-5",
+            "unitId": "man_hour",
+            "sourceQuantityPerNetM3": "2.3",
+            "scope": "Construction-worker work, including rammer use, within aggregate source labour; no invented split."
+          },
+          {
+            "rowId": "floor-underlayer:sand:krer11-01-002-01:equipment:compressor",
+            "resourceCode": "05-0005",
+            "unitId": "machine_hour",
+            "sourceQuantityPerNetM3": "0.22",
+            "scope": "Full compressor operation and compressed-air provision, including its prescribed machinist."
+          }
+        ],
+        "confirmationRu": "Ставка за машино-час включает только эксплуатацию и обслуживание пневмотрамбовки33-0741. Рабочий уже учтён в агрегированном труде2,3чел.-ч/м³, а компрессор05-0005 и сжатый воздух — в отдельной строке0,22маш.-ч/м³; в эту ставку они не входят. Минимальная смена, выезд, подача, возврат и иные фиксированные доплаты отсутствуют. Подтверждение — заявление о составе цены, а не независимая проверка коммерческого предложения."
+      }
+    ]
+  },
+  "expectedAppend": {
+    "workKey": "floor_sand_underlayer_krer11_01_002_01",
+    "catalogId": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01",
+    "groupId": "floor_sand_underlayer_krer11_01_002_01",
+    "sourceKey": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+    "locatorKey": "KRER11-01-002-01-P7-8-SAND-UNDERLAYER-M3"
+  },
+  "bindingDecision": "SOURCE_SPECIFIC_FLOOR_SAND_APPEND",
+  "runtimeAccepted": false,
+  "fullTechnicalAcceptance": false,
+  "newCompleteTypesAccepted": 0,
+  "runtimeDefaults": {},
+  "parentPair": {
+    "definitionReleaseId": "081efc6f-0192-557c-8ce7-5f789e216373",
+    "searchReleaseId": "f54ff3a7-4f74-5e7b-876a-db9b26b088c5"
+  },
+  "sourcePreimageSha256": "8f050e2fec2b9383c3b34942349a047a669adde95a87d5ee54df2283a45facfe",
+  "expectedAbsenceProofStableSha256": "987e7d688ee6292ef30a7aa01f3f3a5f95633790a7361ff81d9dd873d2a36bd0",
+  "paymentScopeReview": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor11-machine-hour-payment-review-v1.json",
+    "sha256": "227abfa2c6dc90c5b89b476ceee4701531ee935f01a983e8b0be2c0c31526f75",
+    "decision": "Reuse existing coverage contract/role; exact rammer equipment-only scope only. Root owns shared adaptation.",
+    "historicalPricesNotAdopted": true,
+    "workerHoursNotSplit": true,
+    "machineHoursNotConvertedToLabor": true
+  },
+  "rammerPriceConfirmationRu": "Ставка за машино-час включает только эксплуатацию и обслуживание пневмотрамбовки33-0741. Рабочий уже учтён в агрегированном труде2,3чел.-ч/м³, а компрессор05-0005 и сжатый воздух — в отдельной строке0,22маш.-ч/м³; в эту ставку они не входят. Минимальная смена, выезд, подача, возврат и иные фиксированные доплаты отсутствуют. Подтверждение — заявление о составе цены, а не независимая проверка коммерческого предложения.",
+  "parentRebaseEvidence": {
+    "readerReceiptSha256": "d9d66e9f72ac1ee2af971443e6da8a372de13705036f696066ecf4d9591446de",
+    "guardReceiptSha256": "11097f935a996eb7b19c31881436a4ea688236b5652bd25efdc35d43ed884acb",
+    "historicalParentPairPreservedInProof": true
+  }
+}
