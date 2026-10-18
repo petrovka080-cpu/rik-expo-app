@@ -185,6 +185,26 @@ export function assertMasterSingleDefinitionCompositeSourceR1(
   input, phase === "BEFORE" ? "COMPOSITE_SOURCE_ARTIFACT_IMMUTABLE" : "COMPOSITE_SOURCE_ARTIFACT_PERSISTENCE");
 }
 
+/** Shared pure predicate for the already-governed source preimage. The append
+ * caller retains its historical undefined omission and exact error prefix.
+ * Retained REPLACE opts in separately with exact-key validation. No SQL/DML. */
+export function assertMasterSingleDefinitionCapturedSourcePreimageR1(
+  input: Readonly<{stopCode: string; sourceId: string}>,
+  captured: unknown, actual: Json | null | undefined,
+  phase: "BEFORE" | "REGISTERED",
+): void {
+  const requireSource = (ok: unknown, suffix: string) => {
+    if (!ok) throw new Error(`STOP_${input.stopCode}_CAPTURED_SOURCE_PREIMAGE_${suffix}`);
+  };
+  requireSource(phase === "BEFORE" || phase === "REGISTERED", "PHASE_INVALID");
+  requireSource(object(captured) && captured.sourceKey === input.sourceId
+    && captured.expected === null, "INVALID");
+  // Exact source/locator business fields are still checked by their existing
+  // full snapshot validators. This predicate governs only absent -> present.
+  requireSource(phase === "BEFORE" ? actual === null : object(actual),
+    phase === "BEFORE" ? "CHANGED" : "PERSISTENCE");
+}
+
 export function assertMasterSingleDefinitionAppendSnapshotR1(
   input: MasterSingleDefinitionAppendGuardInput, snapshot: Json,
 ): void {
@@ -224,12 +244,10 @@ export function assertMasterSingleDefinitionAppendSnapshotR1(
   assertCapturedJoinGroupMembers(input, snapshot);
   const capturedSource = append.capturedSourcePreimage;
   if (capturedSource !== undefined) {
-    invariant(capturedSource != null && typeof capturedSource === "object"
-      && !Array.isArray(capturedSource) && capturedSource.sourceKey === input.config.sourceId
-      && capturedSource.expected === null,
-    input, "APPEND_CAPTURED_SOURCE_PREIMAGE_INVALID");
-    // Identical artifact bytes do not authorize a source row absent from capture.
-    invariant(snapshot.source === null, input, "APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED");
+    assertMasterSingleDefinitionCapturedSourcePreimageR1(
+      {stopCode: input.config.stopCode + "_APPEND", sourceId: input.config.sourceId},
+      capturedSource, snapshot.source, "BEFORE",
+    );
   }
   assertMasterSingleDefinitionCompositeSourceR1(input, snapshot.source, "BEFORE");
 }

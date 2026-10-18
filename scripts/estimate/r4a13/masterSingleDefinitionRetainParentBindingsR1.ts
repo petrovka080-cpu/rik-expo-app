@@ -1,5 +1,7 @@
 // WORK PROPOSAL R2 ONLY; extends frozen R1 without editing it. No writer/API.
 import { createHash } from "node:crypto";
+import { assertMasterSingleDefinitionCapturedSourcePreimageR1 } from
+  "./masterSingleDefinitionAppendGuardsR1";
 import type { Client } from "pg";
 import { canonicalDefinitionPublicationStableValueR1 as stable } from
   "../../../src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1";
@@ -23,6 +25,9 @@ export type MasterRetainParentBindingsR1 = Readonly<{
   capturedParentSha256: string;
   /** Exact keys: ONLY newly declared parameter IDs, including unresolved []. */
   newParameterSources: MasterExplicitParameterSourcesR1;
+  /** Optional captured absence at normal and locked preflight. Omission preserves
+   * the accepted absent-or-managed-exact registry behavior. Not registry reuse. */
+  capturedSourcePreimage?: Readonly<{sourceKey: string; expected: null}>;
   /** Explicit successor-only text correction; captured AST, inputs and old rows stay immutable. */
   formulaExpressionRepairs?: Readonly<Record<string, Readonly<{
     capturedExpressionSource: string; correctedExpressionSource: string;
@@ -31,7 +36,7 @@ export type MasterRetainParentBindingsR1 = Readonly<{
 export type MasterRetainedBindingGuardInputR1 = Readonly<{
   config: Readonly<{
     stopCode: string; catalogId: string; parentReleaseId: string; catalogAppend?: unknown;
-    binding: Readonly<{ retainParentBindings?: MasterRetainParentBindingsR1 }>;
+    binding: Readonly<{ retainParentBindings?: MasterRetainParentBindingsR1; reuseExistingNormativeRegistry?: unknown }>;
   }>;
   /** Full managed source row: every DDL column EXCEPT server-created created_at. */
   newSource: Json;
@@ -144,6 +149,14 @@ export function masterRetainParentBindingsOptInR1(
     input, "NEW_LOCATOR_DISTINCT_COMPLETE_ROWS");
   unique(input.newLocators, l => String(l.id ?? ""), "NEW_LOCATOR_IDS");
   unique(input.newLocators, l => String(l.locator_key ?? ""), "NEW_LOCATOR_KEYS");
+  if (Object.hasOwn(value, "capturedSourcePreimage")) {
+    const preimage = value.capturedSourcePreimage;
+    requireThat(object(preimage) && exactKeys(preimage, ["sourceKey", "expected"])
+      && preimage.sourceKey === input.newSource.source_key && preimage.expected === null,
+    input, "CAPTURED_SOURCE_PREIMAGE_INVALID");
+    requireThat(!Object.hasOwn(input.config.binding, "reuseExistingNormativeRegistry"),
+      input, "CAPTURED_SOURCE_PREIMAGE_REUSE_CONFLICT");
+  }
   if (Object.hasOwn(value, "formulaExpressionRepairs")) {
     const repairs = value.formulaExpressionRepairs;
     requireThat(object(repairs) && Object.keys(repairs).length > 0
@@ -193,8 +206,9 @@ function required(input: MasterRetainedBindingGuardInputR1): MasterRetainParentB
 /** Call this at normal preflight, and again immediately after table locks before DML. */
 export function assertMasterRetainedBindingSnapshotR1(
   input: MasterRetainedBindingGuardInputR1, actual: MasterRetainedBindingSnapshotR1,
+  phase: "BEFORE" | "REGISTERED" = "BEFORE",
 ): void {
-  const c = required(input).capturedParent;
+  const retained = required(input), c = retained.capturedParent;
   requireThat(same(actual.membership, [{release_id: input.config.parentReleaseId,
     catalog_id: input.config.catalogId, definition_version_id: c.definition.id,
     approved_template_baseline_id: c.baseline.id, definition_hash: c.definition.definition_sha256}]),
@@ -215,6 +229,16 @@ export function assertMasterRetainedBindingSnapshotR1(
     requireThat(newById.has(locator.id) && !observedIds.has(locator.id)
       && same(locator, newById.get(locator.id)), input, "NEW_LOCATOR_NOT_EXACT");
     observedIds.add(locator.id);
+  }
+  if (Object.hasOwn(retained, "capturedSourcePreimage")) {
+    assertMasterSingleDefinitionCapturedSourcePreimageR1(
+      {stopCode: input.config.stopCode + "_RETAIN", sourceId: input.newSource.source_key},
+      retained.capturedSourcePreimage, actual.newSources[0] ?? null, phase,
+    );
+    // BEFORE already requires [] locators when source[]; REGISTERED requires the
+    // full exact declared closure, not only one exact source or a locator subset.
+    if (phase === "REGISTERED") requireThat(actual.newLocators.length === input.newLocators.length,
+      input, "CAPTURED_SOURCE_PREIMAGE_REGISTERED_LOCATOR_CLOSURE");
   }
 }
 export function assertMasterRetainedBindingPreflightUnchangedR1(
@@ -255,6 +279,7 @@ export async function lockMasterRetainedBindingPreconditionsR1(
 /** Raw row_to_json text prevents PG Date conversion from changing captured microseconds. */
 export async function readMasterRetainedBindingPreconditionsR1(
   client: QueryClient, input: MasterRetainedBindingGuardInputR1,
+  phase: "BEFORE" | "REGISTERED" = "BEFORE",
 ): Promise<MasterRetainedBindingSnapshotR1> {
   const c = required(input).capturedParent;
   const read = async (sql: string, values: unknown[], cap: number): Promise<Json[]> => {
@@ -298,7 +323,7 @@ export async function readMasterRetainedBindingPreconditionsR1(
     [input.newLocators.map(l => l.id), input.newSource.id], input.newLocators.length);
   const snapshot = {membership, capture: {definition: definition[0], baseline: baseline[0], parameters, formulas,
     resources, bindings, normativeSources, normativeLocators}, newSources, newLocators};
-  assertMasterRetainedBindingSnapshotR1(input, snapshot); return snapshot;
+  assertMasterRetainedBindingSnapshotR1(input, snapshot, phase); return snapshot;
 }
 type Computation = Readonly<{
   parameters: readonly Json[]; formulas: readonly Json[]; resources: readonly Json[];

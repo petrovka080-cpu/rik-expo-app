@@ -1,0 +1,82 @@
+{
+  "status": "EXACT_ACCEPTED_SAVED_NEED_HISTORICAL_WITNESS_NOT_FRESH_CURRENT_READ",
+  "catalogId": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01",
+  "revisionId": "2609bf68-3b7b-4c31-8fdb-d94240b7a019",
+  "revisionChecksumSha256": "c363562c2a1b72b2b77da2b66b728646bf91a3aebbfc5cdfbf8125274ac45100",
+  "releaseId": "77fb927f-72aa-5981-b243-c0a5e68bc3d9",
+  "sourceArtifactPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/outputs/floor-p31-floor11-procurement.json",
+    "sha256": "2f0b107686ea74ece16d1cc3de69e9ad26085ffe740176248729d75ba9e089d4"
+  },
+  "jsonPointer": "/amendmentContract/parameterSources/preliminaryNeeds/2",
+  "rawNeed": {
+    "calculation_trace": {
+      "compilerVersion": "canonical-estimate-local-runtime.r6",
+      "formulaAstSha256": "4665e4f13882f958f29794f7c89dc231a0fa1db691283d289a573cf74344e362",
+      "formulaId": "floor-underlayer:sand:krer11-01-002-01:formula:open:quality-control",
+      "inputParameterIds": [
+        "unresolved_quality_control"
+      ],
+      "missingParameterIds": [
+        "unresolved_quality_control"
+      ],
+      "needState": "QUANTITY_REQUIRED",
+      "preliminaryNeed": true,
+      "resourceGraph": {
+        "costOwner": "resource",
+        "costTreatment": "OWN_COST",
+        "formulaId": "floor-underlayer:sand:krer11-01-002-01:formula:open:quality-control",
+        "inputParameterIds": [
+          "floor_sand_project_conditions",
+          "floor_sand_accepted_base",
+          "floor_sand_net_volume_basis"
+        ],
+        "normalizedUom": "item",
+        "operationCompositionV1": {
+          "completionCriterionRu": "Ресурсы исходной колонки учтены; проектная приёмка, поставки и дополнительные обязанности требуют отдельных фактов",
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "floor-underlayer:sand:krer11-01-002-01",
+          "groupTitleRu": "Песчаный подстилающий слой под полы: планировка, устройство, разравнивание и уплотнение по КРЕР11-01-002-01",
+          "operationId": "floor-underlayer:sand:krer11-01-002-01:floor-underlayer",
+          "operationTitleRu": "Планировка основания и устройство песчаного подстилающего слоя под полы"
+        },
+        "publicResourcePresentationV1": {
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1",
+          "detailsRu": [
+            "Из проекта получить допустимую толщину, требуемую плотность, метод/частоту испытаний, границы партий и акты; установить отдельный платёжный объём только для фактически отдельной услуги. КРЕР11-002-01 не назначает эти факты.",
+            "Владелец недостающего доказательства: Проектировщик/геотехник/технадзор и лаборатория"
+          ],
+          "nameRu": "Проектные испытания и приёмочный контроль песчаного слоя",
+          "sourceTitleRu": "Проектные испытания и приёмочный контроль песчаного слоя",
+          "specificationRu": null
+        },
+        "scopeContextParameterIds": [
+          "floor_sand_net_volume_m3"
+        ],
+        "semanticOwnerId": "floor-underlayer:sand:krer11-01-002-01:floor-underlayer:sand:krer11-01-002-01:open:quality-control"
+      }
+    },
+    "category": "service",
+    "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:open:quality-control",
+    "missing_parameter_ids": [
+      "unresolved_quality_control"
+    ],
+    "need_sha256": "5fede139bd621d84a322fab2699f0374923a1f39a3d20214a546081c162ba21a",
+    "need_state": "QUANTITY_REQUIRED",
+    "normative_trace": [],
+    "ordinal": 23,
+    "procurement_eligible": false,
+    "quantity": null,
+    "resource_spec_id": "a739869d-452a-5dd9-ba43-38aeeb0a5b81",
+    "row_id": "floor-underlayer:sand:krer11-01-002-01:open:quality-control",
+    "section": "Песчаный подстилающий слой под полы: планировка, устройство, разравнивание и уплотнение по КРЕР11-01-002-01",
+    "selected": true,
+    "title_ru": "Проектные испытания и приёмочный контроль песчаного слоя",
+    "unit_id": "item",
+    "unit_price": null
+  },
+  "needSha256": "5fede139bd621d84a322fab2699f0374923a1f39a3d20214a546081c162ba21a",
+  "noAPIOrSQLReplay": true,
+  "freshParentCapturePending": true
+}

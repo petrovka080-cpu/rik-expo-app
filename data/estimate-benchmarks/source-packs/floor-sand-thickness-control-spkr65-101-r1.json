@@ -1,0 +1,151 @@
+{
+  "contract": "gox-build.floor-sand-one-room-thickness-control/r1",
+  "status": "WORK_ONLY_SOURCE_BOUND_MINIMUM_CONTROL_QUANTITY_NOT_RUN",
+  "catalogId": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01",
+  "parentPrimaryMeasureParameterId": "floor_sand_net_volume_m3",
+  "parentExpectedShape": [
+    22,
+    26,
+    26
+  ],
+  "parentExpectedBindingCount": 11,
+  "parentExpectedPriceBindingCount": 0,
+  "parentSourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+  "parentNormId": "KRER11-01-002-01",
+  "prefix": "floor-underlayer:sand:krer11-01-002-01:thickness-control",
+  "completionNeedRowId": "floor-underlayer:sand:krer11-01-002-01:open:quality-control",
+  "completionNeedSha256": "5fede139bd621d84a322fab2699f0374923a1f39a3d20214a546081c162ba21a",
+  "completionNeedRemainsOpen": true,
+  "sourceId": "kg_sp_kr65_101_2025_floor_sand_thickness_control_r1",
+  "normId": "SP_KR65_101_2025_TABLE8_5_THICKNESS_MINIMUM_CONTROL_NOT_LABOUR",
+  "source": {
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/obedinennyeizolacionnye-13267ac76cb422108.87225877.pdf",
+    "actualIntakePath": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-floor-sand-completion-b/source-review/sp-kr65-101-2025-official.pdf",
+    "path": ".release-runtime/next-wave/floor-sand-thickness-control/sources/sp-kr65-101-2025-official.pdf",
+    "sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+    "bytes": 3283661,
+    "edition": "СП КР65-101:2025; приказ10.02.2025№51",
+    "pdfPages": [
+      1,
+      142,
+      149,
+      150,
+      151
+    ],
+    "printedPages": [
+      46,
+      53,
+      54,
+      55
+    ],
+    "exactLocatorRu": "Опубликованный приказ №51 на PDF1; §8.1.2/8.1.5 на печ.46/PDF142; §8.7/табл.8.5 на печ.53–55/PDF149–151. Только измерительный контроль отклонения толщины подстилающего слоя, не лабораторная плотность.",
+    "forewordBlankFieldsPresent": true,
+    "formalRootSourceAdmissionPending": true,
+    "publishedApprovalOrderWithDateNumberAndStampVisuallyRead": true,
+    "handwrittenSignatureIndependentlyVerified": false,
+    "effectiveFromDateNotInferred": true
+  },
+  "primaryFacts": {
+    "measurementsPerArea": "1",
+    "areaM2PerMinimumMeasurement": "100",
+    "maximumThicknessDeviationFraction": "0.1",
+    "registration": "Журнал работ",
+    "scope": "Промежуточный нежесткий песчаный подстилающий слой пола; одна отдельно измеренная фактическая комната/помещение, один слой."
+  },
+  "selectionParameter": "floor_sand_thickness_control_option",
+  "selectedValue": "ONE_ROOM_MINIMUM_THICKNESS_CONTROL_NOT_PAID",
+  "otherValue": "OTHER_OR_UNCONFIRMED_CONTROL_SCOPE",
+  "requiredFacts": [
+    {
+      "id": "floor_sand_thickness_control_scope",
+      "valueType": "enum",
+      "unitId": null,
+      "value": "ONE_ACTUAL_ROOM_ONE_CONTINUOUS_UNDERFLOOR_SAND_LAYER",
+      "titleRu": "Область расчёта минимума толщинных измерений",
+      "guideRu": "Одно фактическое помещение и один непрерывный песчаный подстилающий слой под полы. Площади разных помещений не суммируются: ceil общей площади может занизить число проверок."
+    },
+    {
+      "id": "floor_sand_control_room_reference",
+      "valueType": "text",
+      "unitId": null,
+      "titleRu": "Помещение, слой и ведомость отдельного обмера",
+      "guideRu": "Укажите помещение и слой по проекту, границы поверхности и ссылку на обмер. Эта площадь не выводится из чистого объёма, количества песка или воды."
+    },
+    {
+      "id": "floor_sand_control_room_area_m2",
+      "valueType": "decimal",
+      "unitId": "m2",
+      "min": 1e-06,
+      "titleRu": "Отдельно измеренная площадь песчаного слоя в одном помещении",
+      "guideRu": "Площадь контролируемого элемента пола, м². Минимум ceil(площадь / 100) не подтверждает выполнение контроля и не заменяет более строгий проектный план."
+    },
+    {
+      "id": "floor_sand_project_thickness_mm",
+      "valueType": "decimal",
+      "unitId": "mm",
+      "min": 1e-06,
+      "titleRu": "Проектная толщина именно контролируемого песчаного слоя",
+      "guideRu": "Фактическое проектное значение, мм; толщина не назначается приложением и не вычисляется из объёма/площади. Предел отклонения по табл.8.5 — 10 % проектной толщины."
+    },
+    {
+      "id": "floor_sand_control_plan_reference",
+      "valueType": "text",
+      "unitId": null,
+      "titleRu": "План точек измерения толщины и регистрация контроля",
+      "guideRu": "Подтвердить точки/доступ к измерению, метод, применимое измерительное средство и запись в журнале. При большем проектном объёме расчётный минимум не является полным заказом испытаний."
+    },
+    {
+      "id": "floor_sand_control_payment_scope",
+      "valueType": "enum",
+      "unitId": null,
+      "value": "NO_SEPARATE_PAID_CONTROL_NORM_PROVED",
+      "titleRu": "Граница оплаты контрольного минимума",
+      "guideRu": "Только информационный минимум и допуск. КРЕР11 учитывает комплекс работ, а таблица8.5 не задаёт отдельный оплачиваемый труд, цену или часы. Здесь новый платёж не создаётся."
+    }
+  ],
+  "rows": {
+    "minimumCount": "floor-underlayer:sand:krer11-01-002-01:thickness-control:minimum-thickness-measurements",
+    "deviationLimit": "floor-underlayer:sand:krer11-01-002-01:thickness-control:maximum-thickness-deviation-mm"
+  },
+  "formulaBasis": {
+    "minimumCount": "ceil(floor_sand_control_room_area_m2/100)",
+    "deviationLimit": "floor_sand_project_thickness_mm*0.1"
+  },
+  "paymentBoundary": {
+    "newPaidOwners": 0,
+    "newPriceBindings": 0,
+    "newProcurementRows": 0,
+    "costTreatment": "INFORMATIONAL_SCOPE",
+    "wholeWorkerRatePerNetM3": "2.3",
+    "loaderRatePerNetM3": "0.08",
+    "compressorRatePerNetM3": "0.22",
+    "pneumaticRammerRatePerNetM3": "0.44",
+    "machineOperatorAggregate": "0.30",
+    "allOldRowsUnchanged": true
+  },
+  "limitations": [
+    "Не определяет лабораторную плотность, коэффициент уплотнения или частоту её испытаний.",
+    "Не является результатом контроля и не подтверждает принятие слоя.",
+    "Не переносит дорожные машины, методы или труд в интерьер.",
+    "Не выводит площадь, толщину или число помещений из м³.",
+    "Не закрывает исходный quality-control need или остальные4потребности.",
+    "Не задаёт цену, время, инструмент, материал, воду или протокол1шт по умолчанию.",
+    "Несколько помещений и неоднородные слои требуют отдельного подтверждённого плана; ceil общей площади не применяется."
+  ],
+  "needFixture": {
+    "path": "data/estimate-benchmarks/fixtures/floor-sand-quality-control-open-need-r1.json",
+    "sha256": "816e80535a7cbba34e8976fc2feba2818bfef5d1b7551661ca6a7a40ad45fa65"
+  },
+  "futureExistingPublisherOnly": true,
+  "freshCurrentParentRequired": true,
+  "newCatalogIds": 0,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "runtimeAccepted": false,
+  "formulaInterpretation": {
+    "minimumCount": "Integer round-up of the source minimum1measurement/100m², applied separately to one actual room only; minimum, not actual ordered/performed count.",
+    "minimumCountLiteralCeilPrintedInSource": false,
+    "rootReviewOfSingleRoomIntegerCoverageRequired": true,
+    "deviationLimit": "10% of separately supplied project thickness; tolerance only, no compliance result."
+  }
+}

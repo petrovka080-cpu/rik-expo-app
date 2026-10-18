@@ -1,0 +1,763 @@
+{
+  "status": "ROOT_REVIEWED_PRIMARY_SP65_ONE_ROOM_INFORMATIONAL_THICKNESS_CONTROL_ONLY_R1",
+  "sourceHead": "ca2e833af86d2bb1ea5e626b64c8f43d96b3c65a",
+  "sourcePdf": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-floor-sand-completion-b/source-review/sp-kr65-101-2025-official.pdf",
+    "sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+    "bytes": 3283661
+  },
+  "authorPrimaryReview": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-floor-sand-completion-b/primary-source-compatibility-proof-r1.json",
+    "sha256": "b94d830824ee29aa96d89b851f4e4ca53926c35a0ceb4599291cc19041323474",
+    "bytes": 3765
+  },
+  "rootActuallyViewedPages": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-floor-sand-completion-b/source-review/sp65-order-001.png",
+      "sha256": "b6715134842bd3ac1a440a0cb9b92c98237f8cc15fa655e527d8218c446f899a",
+      "bytes": 879543
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/root-floor-sand-source-review-r1/sp65-nonrigid-floor-scope-142.png",
+      "sha256": "2cb6ef23a659c8fec78c0d3bbef7273c5796fb537b89baf2663c5e19d767ebbd",
+      "bytes": 285716
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-floor-sand-completion-b/source-review/sp65-table85-150.png",
+      "sha256": "5771f50cf8ac6f825824511afcff6830f96d8deaa00ab73dd7f70476ecadee65",
+      "bytes": 316457
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-floor-sand-completion-b/source-review/sp65-table85-151.png",
+      "sha256": "683c66e91511305b6abcc239afb713d6bb4e718b1a2987aa6b46d2e37829a108",
+      "bytes": 321172
+    }
+  ],
+  "visualFindings": {
+    "order": "Published order10Feb2025 no51 approves attachedSP65; number/date/redstamp observed. Handwritten signature not independently verified; effective date not inferred.",
+    "scope": "PDF142/printed46 §8.1.2/8.1.5 explicitly covers nonrigid sand floor underlayer and requires project/PPR; references do not import road machinery/labour into this consumer.",
+    "table": "PDF151/printed55 Table8.5 thickness row specifies measurement minimum1 per100m2 orone smallerroom, project thickness deviation≤10%, worklog. Table8.5 other rows address flatness/slope separately and are not claimed completed."
+  },
+  "integerMinimumDisposition": {
+    "decision": "ADMIT_EXPLICIT_ONE_ROOM_CEIL_COVERAGE_INTERPRETATION",
+    "areaDomain": "strictlypositive independently measured actual area ofone room andone layer",
+    "expression": "ceil(floor_sand_control_room_area_m2/100)",
+    "rationale": "Integer coverage count includes every100m2 block andthe remaining positivepart; any positive smallerroom requiresone. This is an explicit computation interpretation, not a literal printed ceil formula.",
+    "examples": [
+      {
+        "m2": "1",
+        "minimum": "1"
+      },
+      {
+        "m2": "100",
+        "minimum": "1"
+      },
+      {
+        "m2": "100.000001",
+        "minimum": "2"
+      },
+      {
+        "m2": "250",
+        "minimum": "3"
+      }
+    ],
+    "roomAggregationAllowed": false,
+    "projectMayRequireMore": true,
+    "actualTestCountOrAcceptanceClaimed": false
+  },
+  "deviationDisposition": {
+    "expression": "floor_sand_project_thickness_mm*0.1",
+    "objectFact": "positive actual project thickness; no volume/area inference or default",
+    "actualMeasurementCompared": false
+  },
+  "paymentDisposition": {
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0,
+    "newPriceBindings": 0,
+    "newLabourNorm": false,
+    "bothNewRows": "INFORMATIONAL_SCOPE/PARAMETERS_ONLY",
+    "oldWholeLabour2_3AndThreeMachines": "KEEP_EXACT",
+    "originalFiveNeeds": "KEEP_OPEN_EXACT",
+    "fullTechnicalAcceptance": false,
+    "newCompleteTypesAccepted": 0
+  },
+  "beforeCanonicalAdoptionRequired": [
+    {
+      "path": "data/estimate-benchmarks/source-packs/floor-sand-thickness-control-spkr65-101-r1.json",
+      "field": "source.exactLocatorRu",
+      "from": "Подписанный приказ",
+      "to": "Опубликованный приказ",
+      "reason": "Published order observed; handwriting not independentlyverified. FrozenR1 preserved andsuccessor correction explicit."
+    },
+    "Exactcurrent fullretention/old11binding sourcearrays andactualsourcepreimage must be used inone existingMaster retainedreplacement factory.",
+    "Run prepared45 cases plus actualfactory cases/fullaffectedtypes onfinalcanonical wave; no tests claimedrun inthis review.",
+    "Bind actual postcurrentwave parent pair andROOTsource/context atintegration; no futureUUID guesses."
+  ],
+  "actualCurrentReadback": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor-sand-current-retention-actual-r1/floor-sand-current-retention-result-r1.json",
+    "sha256": "cc2401e3a8fcc72eef0e6fa0e4f294ed9723f3ceff90fa4d38a574c6134deb5a",
+    "bytes": 1592519
+  },
+  "closedGuard": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor-sand-current-retention-actual-r1/floor-sand-current-retention-owned-r1-receipt.json",
+    "sha256": "7c5bad6b77ede90252630afd0751c5f8c2823a0dc67c046e6f4f82b16f1eeeed",
+    "bytes": 914631
+  },
+  "capturedParentSha256": "c308453dce262e0cd09249b00af35b0dbe17efd399a51f7a7a4eac1782b4d884",
+  "fullBindingOriginSeal": {
+    "count": 11,
+    "sha256": "f2f7de35ed9aa12a06d942e03bed37ec5512c41730dc5a843d76f8ec16e00439",
+    "rows": [
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "8934713b-e079-58eb-9074-da2d2e7085c6",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:equipment:compressor",
+        "unit_id": "machine_hour",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:equipment:compressor",
+        "category": "equipment",
+        "row_type": "equipment",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:equipment:compressor",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:equipment:compressor",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": "05-0005",
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "machinePriceOperationScope": "FULL_SOURCE_OPERATION",
+          "sourceNormQuantityAccepted": true,
+          "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST",
+          "machineCoverageAdmissionPending": true
+        },
+        "physicalCostTreatment": "OWN_COST",
+        "row_sha256": "a9f972c92b386d7c23bd60cd72a1eea05209f10ec3f99aef0a08820f45bfb2ab"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "699d2237-ee98-538f-8364-9d5d651abd92",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:equipment:forklift5t",
+        "unit_id": "machine_hour",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:equipment:forklift5t",
+        "category": "equipment",
+        "row_type": "equipment",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:equipment:forklift5t",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:equipment:forklift5t",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": "03-0020",
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "machinePriceOperationScope": "FULL_SOURCE_OPERATION",
+          "sourceNormQuantityAccepted": true,
+          "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST",
+          "machineCoverageAdmissionPending": true
+        },
+        "physicalCostTreatment": "OWN_COST",
+        "row_sha256": "4b5f05a0c6feb84049ff8bd366b5ea04675ed17024ae33a0e602c6e0772e8251"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "72f767b8-4569-5684-a6d7-23e8bc8f03c0",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:equipment:pneumaticRammer",
+        "unit_id": "machine_hour",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:equipment:pneumaticRammer",
+        "category": "equipment",
+        "row_type": "equipment",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:equipment:pneumaticRammer",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:equipment:pneumaticRammer",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": "33-0741",
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "machinePriceOperationScope": "MACHINE_ONLY_WORKER_AND_COMPRESSED_AIR_SEPARATE",
+          "sourceNormQuantityAccepted": true,
+          "machinePriceCoverageRequired": "EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED",
+          "machinePriceSeparatePaidOwners": [
+            {
+              "rowId": "floor-underlayer:sand:krer11-01-002-01:worker",
+              "unitId": "man_hour",
+              "resourceCode": "000-1002-5",
+              "sourceQuantityPerNetM3": "2.3"
+            },
+            {
+              "rowId": "floor-underlayer:sand:krer11-01-002-01:equipment:compressor",
+              "unitId": "machine_hour",
+              "resourceCode": "05-0005",
+              "sourceQuantityPerNetM3": "0.22"
+            }
+          ],
+          "machineCoverageAdmissionPending": true,
+          "machinePriceSeparatePaidOwnerRowIds": [
+            "floor-underlayer:sand:krer11-01-002-01:worker",
+            "floor-underlayer:sand:krer11-01-002-01:equipment:compressor"
+          ]
+        },
+        "physicalCostTreatment": "OWN_COST",
+        "row_sha256": "aba5c7021b037b1e11c6f745c7815780d6e714c590003475115aad16dae4b745"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "4fa8bb05-fc6b-53d2-85b0-f225b7b956c2",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:included:base-planning",
+        "unit_id": "m3",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:included:base-planning",
+        "category": "work",
+        "row_type": "other",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:included:base-planning",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:included:base-planning",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "INCLUDED_SOURCE_OPERATION",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": null,
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "sourceNormQuantityAccepted": true
+        },
+        "physicalCostTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "row_sha256": "c7a6aad22deae6c01521c9d8453ff679291f344c9acfdfdd1cbe632b4b6ec976"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "a705c6ea-9390-57cf-a5d1-2475b27dc710",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:included:place-level-compact",
+        "unit_id": "m3",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:included:place-level-compact",
+        "category": "work",
+        "row_type": "other",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:included:place-level-compact",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:included:place-level-compact",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "INCLUDED_SOURCE_OPERATION",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": null,
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "sourceNormQuantityAccepted": true
+        },
+        "physicalCostTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "row_sha256": "9483783f0de32acd56222f11b215fca5a94a8236dd5016f7ea22f5d754a72890"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "8e6ced51-655b-5a02-9953-edd1701e5c38",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:material:sand",
+        "unit_id": "m3",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:material:sand",
+        "category": "material",
+        "row_type": "material",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:material:sand",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:material:sand",
+        "procurement_eligible": true,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": "01-6208-0005",
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "sourceNormQuantityAccepted": true
+        },
+        "physicalCostTreatment": "OWN_COST",
+        "row_sha256": "e8e516d73183185dfd37c1cd3609bef149031cca119d96751ea1657daf0e5d5e"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "a3251e30-27db-5a10-ac66-015c9680c4d8",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:material:sand:consumed",
+        "unit_id": "m3",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:material:sand:consumed",
+        "category": "material",
+        "row_type": "material",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:material:sand:consumed",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:material:sand:consumed",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": "01-6208-0005",
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "sourceNormQuantityAccepted": true
+        },
+        "physicalCostTreatment": "INFORMATIONAL_SCOPE",
+        "row_sha256": "37173dcaa6fe5c9363b7b609e202372b8d26287cc33b5943d563ed11e254b649"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "742d0eda-2aa8-569b-8519-171866a22145",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:material:water",
+        "unit_id": "m3",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:material:water",
+        "category": "material",
+        "row_type": "material",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:material:water",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:material:water",
+        "procurement_eligible": true,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": "01-0601-0001",
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "sourceNormQuantityAccepted": true
+        },
+        "physicalCostTreatment": "OWN_COST",
+        "row_sha256": "0358932642508d2f61b062ce78c0d2f5a5b43c5d3c495266be0eba3dcce8780d"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "37fbf32f-28a2-5674-b8fd-b64d26826bea",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:material:water:consumed",
+        "unit_id": "m3",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:material:water:consumed",
+        "category": "material",
+        "row_type": "material",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:material:water:consumed",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:material:water:consumed",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": "01-0601-0001",
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "sourceNormQuantityAccepted": true
+        },
+        "physicalCostTreatment": "INFORMATIONAL_SCOPE",
+        "row_sha256": "48cfbb508830b89fb91e5cac10226eb18541bcbbb96cff9d8c099c3ad3abc427"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "b21ba12f-7443-5f53-a8a4-f4f25707843d",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:operators",
+        "unit_id": "man_hour",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:operators",
+        "category": "labor",
+        "row_type": "other",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:operators",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:operators",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": null,
+          "machineRateOwnerRowIds": [
+            "floor-underlayer:sand:krer11-01-002-01:equipment:forklift5t",
+            "floor-underlayer:sand:krer11-01-002-01:equipment:compressor"
+          ],
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "sourceNormQuantityAccepted": true,
+          "operatorHoursInformationalOnly": true
+        },
+        "physicalCostTreatment": "INFORMATIONAL_SCOPE",
+        "row_sha256": "1694b40408f549d0601ed726ae8d690e14cbab13dbdf9ab1f80726bdf9a9fbec"
+      },
+      {
+        "definition_version_id": "48a311a2-6e70-5479-9507-420cec8c3f50",
+        "resource_spec_id": "ec2fec90-d266-5b50-ad80-d28703031a8f",
+        "locator_id": "973178d5-7102-52e1-9831-85bc1a1640cf",
+        "applicability": {
+          "exactColumn": "11-01-002-01",
+          "quantityBasis": "NET_M3_UNDERFLOOR_LAYER",
+          "sourceArtifactSha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+        },
+        "row_id": "floor-underlayer:sand:krer11-01-002-01:worker",
+        "unit_id": "man_hour",
+        "formula_id": "floor-underlayer:sand:krer11-01-002-01:formula:worker",
+        "category": "labor",
+        "row_type": "other",
+        "cost_owner_id": "floor-underlayer:sand:krer11-01-002-01:worker",
+        "semantic_owner": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01:floor-underlayer:sand:krer11-01-002-01:worker",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "OFFICIAL_NORM",
+          "exactColumn": "11-01-002-01",
+          "normativeTrace": [
+            {
+              "normId": "KRER11-01-002-01",
+              "norm_id": "KRER11-01-002-01",
+              "sourceId": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "source_id": "kg_krer11_01_002_01_floor_sand_underlayer_r1",
+              "sourceRole": "VISIBLE_PRELIMINARY_ENGINEERING_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+              "normVersion": "КРЕР11-2015, Полы; введён с 01.01.2016",
+              "source_title": "КРЕР11-2015,11-01-002-01: песчаный подстилающий слой под полы",
+              "exact_locator": "Физические/печатные стр.6 §2.1, стр.7 состав01–04, стр.8 только11-01-002-01; измеритель м³ чистого слоя",
+              "source_definition_hash": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223"
+            }
+          ],
+          "normativeResourceCode": "000-1002-5",
+          "truth_contract_version": "R3",
+          "full_technical_acceptance": false,
+          "excludedUnownedAssumptions": [
+            "Дорожный верхний слой150мм КРЕР27",
+            "Произвольная подушка внутри здания с недоказанной схемой",
+            "Песчаная постель трубы/обсыпка траншеи",
+            "Песчано-гравийная смесь, мелкий/крупный песок либо шлак вместо среднего песка без правила допуска",
+            "Разработка/растительный грунт/нижние слои, отсечная гидроизоляция, стяжка или покрытие автоматически",
+            "Уплотнение самоходным катком из отдельной11-01-003",
+            "Универсальная плотность, слой/число проходов, дополнительные1.2 или20% потерь поверх исходной нормы",
+            "Исторические базовые цены и отдельная повторная оплата0.30ч машинистов",
+            "Произвольное выделение отдельной оплаты планировки из агрегированного труда2.3ч",
+            "All-in ставка пневмотрамбовки вместе с рабочим/компрессором/воздухом не становится допустимой при исключении их строк; требуется совместимое предложение или отдельное согласование состава, без вычитания0.44ч из труда2.3ч",
+            "Минимальная смена/выезд/подача/возврат не распределяются на0.44V нормативных машино-часа, даже если предложена условная часовая цена"
+          ],
+          "sourceNormQuantityAccepted": true
+        },
+        "physicalCostTreatment": "OWN_COST",
+        "row_sha256": "ec2f62144c306b2b2b6bbc75a3926466d72dfdcea46c6f142c8c494f5d48ec61"
+      }
+    ],
+    "fullBindingsRawSetSha256": "696592e2eb2a019d49af471a46c7ab60ffec15c7c1603d2f5c66b74e51613fca"
+  },
+  "proposedRegistryPreimageSummary": {
+    "sources": 0,
+    "locators": 0,
+    "formalRegistryReuseAdmitted": false
+  },
+  "savedQcAnchor": {
+    "revisionId": "2609bf68-3b7b-4c31-8fdb-d94240b7a019",
+    "checksumSha256": "c363562c2a1b72b2b77da2b66b728646bf91a3aebbfc5cdfbf8125274ac45100",
+    "needSha256": "5fede139bd621d84a322fab2699f0374923a1f39a3d20214a546081c162ba21a"
+  },
+  "canonicalAdopted": false,
+  "publicationPerformed": false
+}

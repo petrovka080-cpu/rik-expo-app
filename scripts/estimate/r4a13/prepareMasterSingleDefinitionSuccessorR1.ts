@@ -1765,7 +1765,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
           `${stop(config, "NORMATIVE_LOCATOR_IMMUTABLE")}:${resolvedLocator.key}`);
         }
         if(retentionInput){
-          const registered=await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
+          const registered=await readMasterRetainedBindingPreconditionsR1(client,retentionInput,"REGISTERED");
           assertMasterExistingNormativeRegistrySnapshotR1(existingRegistryReuse,registered);
           invariant(registered.newSources.length===1&&registered.newLocators.length===retentionInput.newLocators.length,
             stop(config,"RETAIN_COMPLETE_REGISTRY_REQUIRED"));
