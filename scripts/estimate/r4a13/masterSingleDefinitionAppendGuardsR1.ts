@@ -129,6 +129,15 @@ export function assertMasterSingleDefinitionAppendSnapshotR1(
       && equal(group.breadcrumb, placement.breadcrumb),
     input, "APPEND_SEARCH_GROUP_DRIFT");
   }
+  const capturedSource = append.capturedSourcePreimage;
+  if (capturedSource !== undefined) {
+    invariant(capturedSource != null && typeof capturedSource === "object"
+      && !Array.isArray(capturedSource) && capturedSource.sourceKey === input.config.sourceId
+      && capturedSource.expected === null,
+    input, "APPEND_CAPTURED_SOURCE_PREIMAGE_INVALID");
+    // Identical artifact bytes do not authorize a source row absent from capture.
+    invariant(snapshot.source === null, input, "APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED");
+  }
   assertMasterSingleDefinitionCompositeSourceR1(input, snapshot.source, "BEFORE");
 }
 

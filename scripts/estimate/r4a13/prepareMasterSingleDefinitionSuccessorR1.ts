@@ -113,6 +113,13 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
   catalogAppend?: Readonly<{
     /** An explicitly new physical profile may require this exact key to be absent. */
     requireUniqueWorkKey?: true;
+    /** Opt-in captured absence for this exact emitted source key. Checked at
+     * normal preflight and again under the existing append locks before DML.
+     * Omission preserves legacy source-reuse behavior. */
+    capturedSourcePreimage?: Readonly<{
+      sourceKey: string;
+      expected: null;
+    }>;
     identity: Readonly<{
       namespace: "global";
       domain: string;

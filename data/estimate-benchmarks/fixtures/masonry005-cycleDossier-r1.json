@@ -1,0 +1,328 @@
+{
+  "status": "OFFICIAL_PRIMARY_SCOPE_DRAFT_NOT_RUN_NOT_ADOPTED",
+  "sourceHeadAtPreparation": "741bf109ebf57bd6aeaaab71ca5cf1d8bd0f2abe",
+  "nextPackets": [
+    "curb03",
+    "this_masonry005"
+  ],
+  "thirdNextPacketCreated": false,
+  "sourceCapture": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/official-source-capture-v1.json",
+    "bytes": 614,
+    "sha256": "5ce60f99cecf6776a1b8eef6adfb262c9be2ad1a3280989a974122ab2825981c"
+  },
+  "primaryPdf": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/KRER08-official-2015.pdf",
+    "bytes": 2521223,
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436"
+  },
+  "visualPages": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/source-page-001.png",
+      "bytes": 473497,
+      "sha256": "6d08ddb89563ac31cf121d67d944d776530156ca61629ccb0cfc1994b7ba6100"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/source-page-005.png",
+      "bytes": 364451,
+      "sha256": "f789643e427e2472d12d4c664f46317dfd429ecf7946acd0d5445628b0bdf252"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/source-page-006.png",
+      "bytes": 468952,
+      "sha256": "fbb949f9d0ca5fdbef1e60199e0f02bfca57c155926f5babe3c10792fac385b2"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/source-page-007.png",
+      "bytes": 401803,
+      "sha256": "ba4f76fff51f61287cfd00f139d581bd78eaf1421801732195a7f30cf07586a5"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/source-page-008.png",
+      "bytes": 462344,
+      "sha256": "d45fb195a7e78a82780574a1d3b3138e9e45b99c5c29468545661788ea4bc0ad"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/source-page-009.png",
+      "bytes": 317280,
+      "sha256": "42eb6310f110c49afd6bb9078e8fce52dd0d01942009333b94ae598f93df7166"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/source-page-019.png",
+      "bytes": 399993,
+      "sha256": "f7a1921f19381a2a4b8f4e527d729e96ec7242209e3ec4224b0ae7c1e20f0158"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/source-page-020.png",
+      "bytes": 406121,
+      "sha256": "36ea238503f8ec7b28d4a89d862a6ee11fd61d7b1ebc24cabdf41c3d5addf643"
+    }
+  ],
+  "existingCodeComparison": [
+    {
+      "candidate": "BIA TN10 wall",
+      "status": "EXISTING_NOT_NEW",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+        "canonical-work:base:masonry_interior_brick_wall_lay_small_area",
+        "canonical-work:base:masonry_interior_brick_wall_lay_large_area",
+        "canonical-work:base:masonry_interior_brick_wall_lay_technical_room"
+      ],
+      "physicalDifference": "Source routing of selected fired-clay brick table4 per net wall area; does not supply KRER005 labour/crane/material composition."
+    },
+    {
+      "candidate": "Existing partition lay family",
+      "status": "EXACT_CURRENT_PREIMAGE_REQUIRED_IMPROVEMENT_CANDIDATES",
+      "catalogIds": [
+        "canonical-work:base:masonry_interior_partition_lay_standard",
+        "canonical-work:base:masonry_interior_partition_lay_small_area",
+        "canonical-work:base:masonry_interior_partition_lay_large_area",
+        "canonical-work:base:masonry_interior_partition_lay_technical_room",
+        "canonical-work:base:masonry_interior_partition_lay_wet_zone",
+        "canonical-work:base:masonry_interior_partition_lay_high_load"
+      ],
+      "baseRegistryUnitPolicy": "unit_policy_masonry_m2_v1",
+      "currentQUnitsVersionsResourcesUnconfirmed": true
+    },
+    {
+      "candidate": "KRER08-02-002-05",
+      "status": "SELECTED_SINGLE_SOURCE_PROFILE_PENDING_CURRENT_DEDUP",
+      "scope": "Unreinforced half-brick partition,storey<=4m,netprojectarea;not05+reinforcedhybrid"
+    }
+  ],
+  "sourceFacts": {
+    "rawNormRows": 8,
+    "normalizedUnitConversions": {
+      "brick": "5.04thousand→5040item/100m2",
+      "forgings": "0.0023t→2.3kg/100m2"
+    },
+    "measurementLocator": "PDF8§2.10",
+    "dimensionLocator": "PDF5§1.2",
+    "inclusiveHeightLocator": "PDF7§1.18",
+    "includedCarryLocator": "PDF7§1.21",
+    "noTruckIn005": true
+  },
+  "fullCycle": [
+    {
+      "id": "PREPARATION",
+      "boundaryRu": "Опора/разметка/проектнаяготовность;§2.10 требуетотдельнойчистойплощади,неплощадипола.",
+      "openNeedIds": [
+        "base-and-dpc"
+      ]
+    },
+    {
+      "id": "STRUCTURAL_INTERFACES",
+      "boundaryRu": "Проектненесущейнеармированнойполкирпичнойперегородки,связи/примыкания/проёмы;арматуранеизобретена.",
+      "openNeedIds": [
+        "connections-lintels"
+      ]
+    },
+    {
+      "id": "MATERIALS",
+      "boundaryRu": "Пятьименованныхисточникомматериалов;только×1000для1000шт→шт/т→кг;безрецептасухойсмесииразмеровпоставщика.",
+      "openNeedIds": []
+    },
+    {
+      "id": "MASONRY_AND_LABOUR",
+      "boundaryRu": "Однаполнаянормакладки143.99ч/100м²;неразделятьеёнафиктивныеподработы.",
+      "openNeedIds": []
+    },
+    {
+      "id": "MACHINES_AND_HANDLING",
+      "boundaryRu": "Одинбашенныйкран4.11маш.-ч/100м²;машинист4.11чтолькоинформационно;кирпичдо5мвключён.",
+      "openNeedIds": [
+        "external-logistics"
+      ]
+    },
+    {
+      "id": "ACCESS_TOOLS",
+      "boundaryRu": "Неоплачиватьподмостиповторно;границу§1.13дляперегородкиподтвердить,оснастка/СИЗпофактам.",
+      "openNeedIds": [
+        "access-boundary",
+        "tools-ppe"
+      ]
+    },
+    {
+      "id": "CURING_VERIFICATION",
+      "boundaryRu": "Нормыуходабетона/стяжкинеприменятькМ50кладочномураствору;контрользаказчикаподтверждается.",
+      "openNeedIds": [
+        "curing-protection",
+        "quality-control"
+      ]
+    },
+    {
+      "id": "CLOSEOUT_SERVICES",
+      "boundaryRu": "Остатки,упаковка,уборка/погрузка/вывозимеютсвоюфактическуюграницуинеисточник0/1.",
+      "openNeedIds": [
+        "cleanup-waste",
+        "external-logistics"
+      ]
+    }
+  ],
+  "sourceIntakes": [
+    {
+      "id": "base-and-dpc",
+      "titleRu": "Готовность опоры, разметка и применимая отсечная гидроизоляция",
+      "ownerRu": "Проектировщик/производитель работ",
+      "nextTaskRu": "Подтвердить основание, отметки/разбивку, необходимость выравнивания/гидроизоляции и существующего смежного владельца.",
+      "acceptanceRu": "Утверждённый узел/акт готовности; применимый первичный источник, измеримые объёмы дополнительных работ и включение/исключение цены.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "connections-lintels",
+      "titleRu": "Примыкания, связи, верхний зазор и перемычки по проекту",
+      "ownerRu": "Конструктор/проектировщик",
+      "nextTaskRu": "Дать расчёт/узлы ненесущей неармированной перегородки, опирание и проёмы; отдельно установить применимые связи/перемычки без автоматического армирования.",
+      "acceptanceRu": "Проектная ведомость сечений/креплений/позиций/количества; применимые паспорта/нормы и один владелец оплаты. Арматура01–04 не переносится.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "access-boundary",
+      "titleRu": "Граница подмостей/доступа без двойной оплаты",
+      "ownerRu": "Сметчик/разработчикППР",
+      "nextTaskRu": "Сопоставить§1.13 с выбранной перегородкой до4м и табличными древесиной/поковками. Не добавлять отдельную аренду/монтаж подмостей поверх143.99ч и включённых ресурсов без доказательства иной границы.",
+      "acceptanceRu": "Письменное применимое толкование/ППР и точный непересекающийся состав, единица и объём; при неопределённости отдельная цена не принимается.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "tools-ppe",
+      "titleRu": "Ручной инструмент, оснастка иСИЗ",
+      "ownerRu": "Производитель работ/служба охраны труда",
+      "nextTaskRu": "Определить фактические инструмент, принадлежность исполнителю, оборот и расходники; новый комплект на100м² не назначать.",
+      "acceptanceRu": "ППР/паспорт/договор обеспечения с реальной единицей/сроком и подтверждённой отдельной либо включённой оплатой.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "curing-protection",
+      "titleRu": "Уход/выдержка раствора и защита кладки",
+      "ownerRu": "Технолог/поставщик раствора",
+      "nextTaskRu": "Подтвердить режим ухода/защиты именно кладочного цементно-известковогоМ50 и условия объекта. Не переносить нормы ухода за бетоном или стяжкой.",
+      "acceptanceRu": "Применимый паспорт раствора/ППР и норматив; площадь/срок/материал/количество/цена с явной границей включения.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "quality-control",
+      "titleRu": "Приёмка геометрии и качества перегородки",
+      "ownerRu": "Служба качества/заказчик",
+      "nextTaskRu": "Установить контроль вне исходной кладки, допуски, частоту, документы и оплату; число осмотров из площади не выводить.",
+      "acceptanceRu": "Утверждённая проектная программа/применимые нормы и измеримый дополнительный объём с одним владельцем цены.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "external-logistics",
+      "titleRu": "Внешняя доставка/разгрузка и перемещение сверх5м",
+      "ownerRu": "Поставщик/логист/сметчик",
+      "nextTaskRu": "Отделить внешний маршрут/партию и разгрузку от учтённой переноски кирпича5м и крана4.11маш.-ч/100м². Автомобиль0.11из01–04 исключён.",
+      "acceptanceRu": "Документы фактической партии/массы/дистанции/подачи и цены; exact-row reconciliation доставки, крана и общего труда. Не выводить рейсы из площади или часов.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "cleanup-waste",
+      "titleRu": "Уборка, остатки, упаковка и отходы",
+      "ownerRu": "Подрядчик/оператор отходов",
+      "nextTaskRu": "Подтвердить остатки/тару/отходы, сбор/погрузку/передачу и внешний вывоз; не добавлять произвольный процент боя или контейнер на100м².",
+      "acceptanceRu": "Фактическая ведомость и применимый источник массы/тары/маршрута; отдельные единицы/количества и непересекающийся владелец цены.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    }
+  ],
+  "independentQuantityScenarios": [
+    {
+      "netAreaM2": "100",
+      "normalizedExpectedQuantities": {
+        "worker": "143.99",
+        "operatorInformation": "4.11",
+        "towerCraneMachineHours": "4.11",
+        "water": "0.3",
+        "brick": "5040",
+        "timber": "0.016",
+        "forgings": "2.3",
+        "mortar": "2.3"
+      }
+    },
+    {
+      "netAreaM2": "35.5",
+      "normalizedExpectedQuantities": {
+        "worker": "51.11645",
+        "operatorInformation": "1.45905",
+        "towerCraneMachineHours": "1.45905",
+        "water": "0.1065",
+        "brick": "1789.200",
+        "timber": "0.005680",
+        "forgings": "0.8165",
+        "mortar": "0.8165"
+      }
+    }
+  ],
+  "meaningfulFutureScenarios": [
+    "Net100m2 vs35.5m2 quantities;no04mortarrateortruck",
+    "Height4accepted,4.01rejected;heightisstoreyheight,notguessedwallheight",
+    "Missingopening/designreferencespreservemissingneed;netfloorareanotsubstitute",
+    "Differentbricksize/material,reinforcement,wrongmortarM25/M100arenotthisprofile",
+    "Whole5040brickitempurchaseat100m2;quantumonlysupplierfact;mass→piecesforforgingsforbidden",
+    "Explicitmaterialstock/reserve/quantumandpositive-stockcompatibility;unknownnot0",
+    "Manualmaterialorder/price/title/exclusionrecalculatepreservedwithoutreplacingnorm",
+    "Craneown/hiredexclusive;operatorinfoalwaysnonpayable",
+    "Exactfuturecranecataloggatesrejectforeignroof/road/floor/curbmanualandsnapshots",
+    "All8sourcegapIDsremainvisible;manual0/1notnorms"
+  ],
+  "factoryPlan": "Use buildAutomaticConstructionOwnerR1/effectivePurchaseBalanceExpressionsR1/compileCanonicalEstimateCore only. Ordinary net_partition_area_m2 plus explicit story-height and project/product/supply facts; no new engine/API/table.",
+  "paymentDevelopmentNeed": "One physical towercrane02-0005,twoexclusiveown/hiredrowIDs,exactcatalogprioritygatebeforerooffallbackunderexistingmachinehourv1 FULL_SOURCE_OPERATION. No extra paid operator or truck. Actualtarget/rowpreimage required beforeallowlist.",
+  "savedDataBoundary": "No current target or definition version claimed. If existing matchingpartition is found, root captures full baseline/parameters/formulas/resources/bindings/prices/saved rows/artifacts before adaptation. Never renameq,changeunits,dropmanualfieldsoroverwriteprices/exclusionsbyvariantname.",
+  "preparedPack": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-masonry-krer08-r1/candidate/data/estimate-benchmarks/source-packs/brick-partition-half-unreinforced-krer08-002-05-r1.json",
+    "bytes": 14867,
+    "sha256": "a03614e223902861b5c358c67a301939356e2e3c806287fd61fa02e005ebaa50"
+  },
+  "mechanismPins": [
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "bytes": 18358,
+      "sha256": "d4c2192d1d5c4ef0285668b3c1aeb2994c2b57c3e8b9d8d6a776ee4c3e10d7ae"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+      "bytes": 6309,
+      "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+      "bytes": 90408,
+      "sha256": "4b5abc5b4eba6c74b8d58e554a6353a461f50f9b8e4396d85c56485f87e6579f"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
+      "bytes": 12441,
+      "sha256": "81d2663db71a94100cbc11cdf153bd5f09da631305d28029d1fd9a9b5b2de556"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/data/estimate-norms/professional/masonry.json",
+      "bytes": 4472,
+      "sha256": "719fb6aaef220d986eefd6a0104253f08257a17e669923fbce9edca9ae7b52c1"
+    },
+    {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/src/lib/estimate/v4/masonryBrickWallBiaTn10R1.ts",
+      "bytes": 47547,
+      "sha256": "eb2134727404d4e0e048c55cc666db925a12d22c18f2489cbd0ba531dc1cf5d3"
+    }
+  ],
+  "acceptedNewTypes": 0,
+  "fullTechnicalAcceptance": false,
+  "canonicalEdits": false,
+  "nodeOrDBOrHeavyRun": false
+}

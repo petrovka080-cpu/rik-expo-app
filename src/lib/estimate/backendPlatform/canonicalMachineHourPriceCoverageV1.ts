@@ -57,9 +57,18 @@ const graniteKerb1gpOwners:Record<string,Requirement>={
  'granite-kerb:1gp-cement-pavement:truck-hired':{resourceCode:'40-0001',operator:'DRIVER',operationScope:'FULL_SOURCE_OPERATION'},
 };
 Object.assign(owners,graniteKerb1gpOwners);
+// Exact unreinforced half-brick partition; physical crane ownership is source-specific.
+const brickPartitionHalfCatalog='canonical-work:master:brick_partition_half_unreinforced_upto4m_krer08_02_002_05';
+const brickPartitionHalfOwners:Record<string,Requirement>={
+ 'masonry:brick-partition:krer08-02-002-05:crane-own':{resourceCode:'02-0005',operator:'OPERATOR',operationScope:'FULL_SOURCE_OPERATION'},
+ 'masonry:brick-partition:krer08-02-002-05:crane-hired':{resourceCode:'02-0005',operator:'OPERATOR',operationScope:'FULL_SOURCE_OPERATION'},
+};
+Object.assign(owners,brickPartitionHalfOwners);
 const aliases=new Set(['FULL_OPERATED_MACHINE_HOUR','FULL_OPERATED_VEHICLE_HOUR_DRIVER_INCLUDED_NOT_IN_INFO','FULL_OPERATED','FULL_DRIVER','FULL_MACHINE_SOURCE_COST','EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED']);
 const admittedCatalogs=new Set(['canonical-work:base:roofing_interior_flat_roof_install_technical_room','canonical-work:base:roofing_interior_flat_roof_install_wet_zone']);
-const admittedOwner=(catalogId:string,rowId:string)=>Object.prototype.hasOwnProperty.call(graniteKerb1gpOwners,rowId)
+const admittedOwner=(catalogId:string,rowId:string)=>Object.prototype.hasOwnProperty.call(brickPartitionHalfOwners,rowId)
+  ?catalogId===brickPartitionHalfCatalog
+  :Object.prototype.hasOwnProperty.call(graniteKerb1gpOwners,rowId)
   ?catalogId===graniteKerb1gpCatalog
   :Object.prototype.hasOwnProperty.call(floorSandOwners,rowId)
   ?catalogId===floorSandCatalog

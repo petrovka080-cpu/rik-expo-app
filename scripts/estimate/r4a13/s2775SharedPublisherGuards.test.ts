@@ -176,3 +176,103 @@ describe('shared append preconditions and immutable composite source', () => {
     expect(calls.every(call => !/^\s*(?:insert|update|delete|begin|commit|rollback)\b/iu.test(String(call[0])))).toBe(true);
   });
 });
+
+describe('optional captured emitted-source absence in the shared append guard', () => {
+  const capturedInput = (): MasterSingleDefinitionAppendGuardInput => ({
+    ...input(), config: { ...config, catalogAppend: { ...config.catalogAppend!,
+      capturedSourcePreimage: { sourceKey: config.sourceId, expected: null } } },
+  });
+  const appeared = (artifact_sha256: string | null) => ({
+    id: 'source-created-after-capture', source_key: config.sourceId, artifact_sha256,
+  });
+
+  it('accepts the exact captured absence at preflight and locked reread', () => {
+    const current = capturedInput(), before = snapshot();
+    expect(() => assertMasterSingleDefinitionAppendSnapshotR1(current, before)).not.toThrow();
+    expect(() => assertMasterSingleDefinitionAppendUnchangedR1(current, before, snapshot())).not.toThrow();
+  });
+
+  it.each(['a'.repeat(64), 'b'.repeat(64), null])(
+    'rejects a source appearing before preflight or locked reread regardless of artifact %s', artifact => {
+      const current = capturedInput(), after = { ...snapshot(), source: appeared(artifact) };
+      expect(() => assertMasterSingleDefinitionAppendSnapshotR1(current, after))
+        .toThrow('APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED');
+      expect(() => assertMasterSingleDefinitionAppendUnchangedR1(current, snapshot(), after))
+        .toThrow('APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED');
+    },
+  );
+
+  it('does not substitute matching live preflight/reread tuples for the captured absence', () => {
+    const alreadyAppeared = { ...snapshot(), source: appeared('a'.repeat(64)) };
+    expect(() => assertMasterSingleDefinitionAppendUnchangedR1(capturedInput(), alreadyAppeared, alreadyAppeared))
+      .toThrow('APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED');
+  });
+
+  it('requires explicit null from the reader rather than an omitted source result', () => {
+    expect(() => assertMasterSingleDefinitionAppendSnapshotR1(capturedInput(), { ...snapshot(), source: undefined }))
+      .toThrow('APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED');
+  });
+
+  const malformedCaptures: Array<[string, unknown]> = [
+    ['null', null], ['empty object', {}], ['array', []],
+    ['different case', { sourceKey: config.sourceId.toUpperCase(), expected: null }],
+    ['empty key', { sourceKey: '', expected: null }],
+    ['missing expected null', { sourceKey: config.sourceId, expected: undefined }],
+    ['existing preimage unsupported', { sourceKey: config.sourceId, expected: {} }],
+    ['boolean expected unsupported', { sourceKey: config.sourceId, expected: false }],
+  ];
+  it.each(malformedCaptures)('rejects a malformed or differently keyed absence declaration %s', (_label, capture) => {
+    // Deliberately bypass the static type to exercise untrusted runtime config shapes.
+    const current = { ...input(), config: { ...config, catalogAppend: { ...config.catalogAppend!,
+      capturedSourcePreimage: capture } } } as unknown as MasterSingleDefinitionAppendGuardInput;
+    expect(() => assertMasterSingleDefinitionAppendSnapshotR1(current, snapshot()))
+      .toThrow('APPEND_CAPTURED_SOURCE_PREIMAGE_INVALID');
+  });
+
+  it('enforces captured absence independently of the optional composite artifact gate', () => {
+    expect(() => assertMasterSingleDefinitionAppendSnapshotR1({ ...capturedInput(), compositeSourceArtifactSha256: null },
+      { ...snapshot(), source: appeared('a'.repeat(64)) })).toThrow('APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED');
+  });
+
+  it('preserves legacy identical-artifact source reuse when the new field is omitted', () => {
+    const legacy = input(), before = { ...snapshot(), source: appeared('a'.repeat(64)) };
+    expect(legacy.config.catalogAppend?.capturedSourcePreimage).toBeUndefined();
+    expect(() => assertMasterSingleDefinitionAppendSnapshotR1(legacy, before)).not.toThrow();
+    expect(() => assertMasterSingleDefinitionAppendUnchangedR1(legacy, before, before)).not.toThrow();
+  });
+
+  const readerMock = (getSource: () => ReturnType<typeof appeared> | null) => ({
+    query: jest.fn().mockImplementation(async (sql: string, values: unknown[]) => {
+      if (sql.startsWith('select * from public.estimate_definition_release')) return { rows: [snapshot().parent] };
+      if (sql.startsWith('select * from public.estimate_search_index_release')) return { rows: [snapshot().parentSearch] };
+      if (sql.includes('count(*)::int value')) return { rows: [{ value: 0 }] };
+      if (sql.startsWith('select id::text,source_key,artifact_sha256')) {
+        expect(values).toEqual([config.sourceId]);
+        const source = getSource();
+        return { rows: source == null ? [] : [source] };
+      }
+      return { rows: [] };
+    }),
+  });
+
+  it('uses the actual shared reader and existing locks to reject the same-artifact race before DML', async () => {
+    let actual: ReturnType<typeof appeared> | null = null;
+    const client = readerMock(() => actual), current = capturedInput();
+    const before = await readMasterSingleDefinitionAppendPreconditionsR1(client, current);
+    expect(before.source).toBeNull();
+    actual = appeared('a'.repeat(64));
+    await lockMasterSingleDefinitionAppendPreconditionsR1(client, current);
+    await expect(readMasterSingleDefinitionAppendPreconditionsR1(client, current))
+      .rejects.toThrow('APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED');
+    const calls = client.query.mock.calls;
+    expect(calls.filter(call => String(call[0]).startsWith('select id::text,source_key,artifact_sha256'))).toHaveLength(2);
+    expect(calls.some(call => String(call[0]).includes('in share row exclusive mode'))).toBe(true);
+    expect(calls.every(call => !/^\s*(?:insert|update|delete|begin|commit|rollback)\b/iu.test(String(call[0])))).toBe(true);
+  });
+
+  it('rejects an identical-artifact source already present at the first actual reader call', async () => {
+    const client = readerMock(() => appeared('a'.repeat(64)));
+    await expect(readMasterSingleDefinitionAppendPreconditionsR1(client, capturedInput()))
+      .rejects.toThrow('APPEND_CAPTURED_SOURCE_PREIMAGE_CHANGED');
+  });
+});
