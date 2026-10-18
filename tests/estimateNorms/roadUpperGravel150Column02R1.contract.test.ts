@@ -85,7 +85,10 @@ test('all six actual factory rows retain existing confirmed manual coverage with
 });
 test('included source operations and five unresolved application-owned needs cannot become duplicate paid norms',async()=>{
  const r=await compile(),d=roadUpperGravel150DefinitionR1();
- for(const included of d.resources.filter(r=>r.row_id.startsWith(data.prefix+':included:')))expect(r.rows.find(r=>r.row_id===included.row_id)?.included_in_estimate).toBe(false);
+ for(const included of d.resources.filter(r=>r.row_id.startsWith(data.prefix+':included:'))){
+  expect(included.resource_graph.parentCostOwnerId).toBe(id('worker'));
+  expect(r.rows.find(r=>r.row_id===included.row_id)?.included_in_estimate).toBe(false);
+ }
  for(const gap of data.unresolvedNeeds)expect(r.preliminaryNeeds.some(n=>n.row_id===id('open:'+gap.id)&&n.quantity==null)).toBe(true);
  await expect(compile({...facts,unresolved_quality_control:1})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
 });

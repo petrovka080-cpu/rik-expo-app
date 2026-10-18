@@ -8,7 +8,7 @@ import {canonicalMachineHourPriceRequirementV1,assertCanonicalMachineHourDefinit
 import {roadUpperGravel150DefinitionR1,roadUpperGravel150PackR1 as data,
  roadUpperGravel150CatalogIdR1 as catalogId,roadUpperGravel150WorkKeyR1 as workKey} from '../../../src/lib/estimate/v4/roadUpperGravel150Krer27Column02R1';
 import proofFixture from '../../../data/estimate-benchmarks/fixtures/road-upper-gravel02-append-absence-r1.json';
-import type {MasterSingleDefinitionSuccessorConfig} from './prepareMasterSingleDefinitionSuccessorR1';
+import {validateIndependentCompletenessMapReferences,type MasterSingleDefinitionSuccessorConfig} from './prepareMasterSingleDefinitionSuccessorR1';
 type Json=Record<string,any>;
 const hash=(v:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(v)).digest('hex');
 function need(v:unknown,code:string):asserts v{if(!v)throw Error('ROAD_UPPER02_APPEND:'+code);}
@@ -88,6 +88,8 @@ export function prepareRoadUpperGravel150Column02AppendR1(proof:Json=proofFixtur
     publicationState:'ADMITTED_BACKEND',catalogOrigin:'GLOBAL',adjudicationClass:'EFFECTIVE_WORK',selectable:true}},
   forbiddenAdjacentMatchers:[/asphalt:|road-base:|gravel-base:|professional_.*_set|materials_0[1-6]/iu],owner:'NEXT_WAVE_ROAD_UPPER02_SINGLE_INTEGRATOR',receiptFileStem:'road_upper_gravel150_column02',
   verifyCore:async()=>{
+   need(validateIndependentCompletenessMapReferences({completenessMap:completeness,
+    formulaDefinitions:definition.formulas,resourceDefinitions:definition.resources}).length===0,'EXACT_INCLUDED_OPERATION_PARENT_MAP_REQUIRED');
    need(createHash('sha256').update(readFileSync(resolve(data.source.path))).digest('hex')===data.source.sha256,'PRIMARY_PDF_PIN_REQUIRED');
    need(definition.parameters.every(p=>p.default_value==null)&&Object.keys(definition.runtimeInput).length===0,'HIDDEN_SITE_DEFAULT_FORBIDDEN');
    for(const expected of data.machineCoverageAdmissionRequired.resourceRows){

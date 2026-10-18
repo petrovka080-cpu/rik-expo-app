@@ -70,7 +70,7 @@ export function roadUpperGravel150DefinitionR1():AutomaticOwnerDefinition {
    const machine=pack.machineCoverageAdmissionRequired.resourceRows.find(m=>m.rowId===r.row_id),included=r.row_id.startsWith(owner('included:'));
    const {row_sha256:_old,...body}=r;
    const value={...body,resource_graph:{...r.resource_graph,
-    ...(included?{includedInResourceOwnerRowId:owner('worker')}:{}),
+    ...(included?{parentCostOwnerId:owner('worker')}:{}),
     operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:prefix,groupTitleRu:pack.titleRu,
      operationId:prefix+':upper-layer',operationTitleRu:'Устройство выбранного верхнего слоя; нижний слой уже принят',
      completionCriterionRu:'Нормативные ресурсы верхнего слоя учтены; проект, фактические поставки, границы оплаты и дополнительный контроль требуют своих данных'},
