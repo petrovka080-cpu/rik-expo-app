@@ -1,5 +1,5 @@
 import {prepareCanonicalSelectedMaterialDeliveryServerR1,assertCanonicalSelectedDeliveryNotDroppedR1,canonicalSelectedDeliveryPreviewR1,isSelectedMaterialDeliveryCatalogR1} from './canonicalSelectedMaterialDeliveryServerR1';
-import {finalizeCanonicalSelectedDeliveryReceiptR1,selectedMaterialDeliveryRowOverridesR1} from './canonicalSelectedMaterialDeliveryAdmissionR1';
+import {canonicalSelectedDeliveryDerivedParametersR1,finalizeCanonicalSelectedDeliveryReceiptR1,selectedMaterialDeliveryRowOverridesR1} from './canonicalSelectedMaterialDeliveryAdmissionR1';
 import { canonicalParameterMigrationBindingCompatibleV1 } from "../../../src/lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1";
 import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyReadyV1 } from "../../../src/lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1";
 import {admitPvcFloorCompleteFourMigrationProofS2769} from '../../../src/lib/estimate/backendPlatform/canonicalPvcFloorCompleteFourMigrationS2769';
@@ -2806,6 +2806,11 @@ async function compileClaimedJob(
     hashJson: sha256,
   });
   const { parameters, rows, totals } = compiled;
+  const commitDerivedParameters = selectedDelivery ? canonicalSelectedDeliveryDerivedParametersR1({
+    admission: selectedDelivery.admission, parameterDefinitions, parameters,
+    derivedParameters: compiled.derivedParameters, submittedParameters,
+    userParameters: effectiveUserParameters, baselineParameters,
+  }) : compiled.derivedParameters;
   const roofPrimerPrerequisiteV1=parentRevision?await admitRoofPrimerPrerequisiteServerV1(client,{
     ownerUserId:String(job.owner_user_id),organizationId:job.organization_id==null?null:String(job.organization_id),
     fieldRevisionId:String(job.parent_revision_id),fieldCatalogId:String(job.catalog_id),fieldParameters:parameters,
@@ -2814,7 +2819,7 @@ async function compileClaimedJob(
   }):null;
   effectiveUserParameters = mergeCanonicalEffectiveResourceQuantityProvenanceV1({
     parameterDefinitions, resourceDefinitions: resources, formulaDefinitions: formulas,
-    userParameters: effectiveUserParameters, derivedParameters: compiled.derivedParameters,
+    userParameters: effectiveUserParameters, derivedParameters: commitDerivedParameters,
     separateDerivedProvenance: true,
   });
   const baselineAssumptions = Object.fromEntries(
@@ -2870,7 +2875,7 @@ async function compileClaimedJob(
     effectiveUserParameters,
     parentRevisionId:
       job.parent_revision_id == null ? null : String(job.parent_revision_id),
-    derivedParameters: compiled.derivedParameters,
+    derivedParameters: commitDerivedParameters,
     identityContract,
     preliminaryNeeds: compiled.preliminaryNeeds,
     purchaseSupplyIndexV1: compiled.purchaseSupplyIndexV1,

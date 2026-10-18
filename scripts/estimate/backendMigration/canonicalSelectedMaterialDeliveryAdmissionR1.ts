@@ -126,6 +126,28 @@ export function admitCanonicalSelectedMaterialDeliveryR1(input:Readonly<{
   globalConsignmentPaymentUniquenessProven:false as const};
 }
 
+/** Admission outputs are compiler inputs, so the compiler's changed-input
+ * derivations do not include them. Keep their separate server provenance
+ * rather than attributing the accepted trip count to a user or baseline.
+ */
+export function canonicalSelectedDeliveryDerivedParametersR1(input:Readonly<{
+ admission:ReturnType<typeof admitCanonicalSelectedMaterialDeliveryR1>;
+ parameterDefinitions:readonly Json[];parameters:Readonly<Record<string,unknown>>;
+ derivedParameters:Readonly<Record<string,unknown>>;submittedParameters:Readonly<Record<string,unknown>>;
+ userParameters:Readonly<Record<string,unknown>>;baselineParameters:Readonly<Record<string,unknown>>;
+}>):Record<string,unknown>{
+ const definitions=input.parameterDefinitions.filter(parameter=>parameter.parameter_id===quantityId),definition=definitions[0];
+ const value=input.parameters[quantityId],text=String(value),admitted=input.admission.confirmedParameters[quantityId];
+ if(definitions.length!==1||definition?.value_type!=='integer'||definition.unit_id!=='trip'
+  ||definition.truth_metadata?.contract!=='rik-expo-app.selected-material-delivery-forward.r1'
+  ||definition.truth_metadata.visibility_role!=='INTERNAL_ONLY'||definition.truth_metadata.value_source_role!=='BACKEND_DERIVED'
+  ||!['string','number'].includes(typeof value)||!/^[1-9]\d*$/u.test(text)||!Number.isSafeInteger(Number(text))
+  ||!sameDecimal(text,admitted)
+  ||[input.submittedParameters,input.userParameters,input.baselineParameters].some(parameters=>Object.hasOwn(parameters,quantityId))
+  ||Object.hasOwn(input.derivedParameters,quantityId)&&!sameDecimal(String(input.derivedParameters[quantityId]),admitted))throw fail('compiled-delivery-provenance-invalid');
+ return {...input.derivedParameters,[quantityId]:value};
+}
+
 export function finalizeCanonicalSelectedDeliveryReceiptR1(admission:ReturnType<typeof admitCanonicalSelectedMaterialDeliveryR1>,rows:readonly Json[]){
  // Intake sees the immutable parent. The same command may also add a custom
  // transport row, so apply its existing scope rule to the actual final rows

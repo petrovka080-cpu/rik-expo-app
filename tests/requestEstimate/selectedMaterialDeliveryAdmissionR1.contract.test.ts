@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import {selectedMaterialDeliveryTestContextR1} from './selectedMaterialDeliveryTestContextR1';
-import {admitCanonicalSelectedMaterialDeliveryR1 as admit,finalizeCanonicalSelectedDeliveryReceiptR1 as finish,selectedMaterialDeliveryRowOverridesR1 as retainOverrides} from '../../scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryAdmissionR1';
+import {admitCanonicalSelectedMaterialDeliveryR1 as admit,canonicalSelectedDeliveryDerivedParametersR1 as provenance,finalizeCanonicalSelectedDeliveryReceiptR1 as finish,selectedMaterialDeliveryRowOverridesR1 as retainOverrides} from '../../scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryAdmissionR1';
+import {canonicalInheritedConfirmedParameters} from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
 import {buildSelectedMaterialDeliveryForwardR1 as build,SELECTED_DELIVERY_ROW_R1 as rowId,SELECTED_DELIVERY_PREFIX_R1 as prefix} from '../../scripts/estimate/r4a13/selectedMaterialDeliveryForwardR1';
 import {compileCanonicalEstimateCore as compile} from '../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
 import {FORD_TRANSIT_V363_DELIVERY_PRODUCT_PROFILE_ID as profile} from '../../src/lib/estimate/v4/domainFactory/deliveryFordTransitPhysicalNormV1';
@@ -48,6 +49,28 @@ test('the saved order supplies quantities and units; a request supplies no trust
  const current=setup(),before=JSON.stringify(current),result=admit(current);
  expect(result.planned).toMatchObject({status:'PLANNING_PROPOSAL',proposal:{quantityText:'3',unitPrice:null}});
  expect(result.confirmedParameters[prefix+'admitted_trip_count']).toBe('3');expect(JSON.stringify(current)).toBe(before);
+});
+
+test('the actual compiler admission input is saved separately and stripped before fresh admission',async()=>{
+ const child=await createChild(),key=prefix+'admitted_trip_count';
+ expect(Object.hasOwn(child.compiled.derivedParameters,key)).toBe(false);
+ const parameters={...child.parameters};delete parameters[key];
+ const derived=provenance({admission:child.admission,parameterDefinitions:child.model.parameters,parameters:child.compiled.parameters,
+  derivedParameters:child.compiled.derivedParameters,submittedParameters:parameters,userParameters:parameters,baselineParameters:{}});
+ expect(derived[key]).toBe(child.compiled.parameters[key]);
+ expect({...parameters,...derived}).toEqual(child.compiled.parameters);
+ expect(canonicalInheritedConfirmedParameters(child.compiled.parameters,derived)).not.toHaveProperty(key);
+ expect(child.compiled.derivedParameters).not.toHaveProperty(key);
+});
+
+test.each(['submittedParameters','userParameters','baselineParameters','parameters','derivedParameters','parameterDefinitions'])(
+ 'a server trip derivation rejects a conflicting %s',async field=>{
+ const child=await createChild(),key=prefix+'admitted_trip_count',parameters={...child.parameters};delete parameters[key];
+ const input:any={admission:child.admission,parameterDefinitions:structuredClone(child.model.parameters),parameters:child.compiled.parameters,
+  derivedParameters:child.compiled.derivedParameters,submittedParameters:parameters,userParameters:parameters,baselineParameters:{}};
+ if(field==='parameterDefinitions')input.parameterDefinitions.find((p:any)=>p.parameter_id===key).truth_metadata.value_source_role='USER_INPUT';
+ else input[field]={...input[field],[key]:field==='parameters'||field==='derivedParameters'?'4':'3'};
+ expect(()=>provenance(input)).toThrow(expect.objectContaining({reason:'compiled-delivery-provenance-invalid'}));
 });
 test('parent to child and reopen preserve the original shipment identity and one owner',async()=>{
  const child=await createChild(),reopened=admit(child);
