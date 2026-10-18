@@ -6,6 +6,8 @@ import { canonicalDefinitionPublicationStableValueR1 as stable } from
 
 import { planCanonicalEffectiveResourceQuantitiesV1 } from
   "../../../src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1";
+import { compileFormulaGraph } from
+  "../../../src/lib/estimate/backendPlatform/formulaGraph";
 
 type Json = Record<string, any>;
 type QueryClient = Pick<Client, "query">;
@@ -19,6 +21,10 @@ export type MasterRetainParentBindingsR1 = Readonly<{
   /** Exact keys: ONLY newly declared parameter IDs, including unresolved []. */
   newParameterSources: Readonly<Record<string, Readonly<{
     kind: "KNOWN" | "DERIVED" | "UNRESOLVED"; sourceIds: readonly string[];
+  }>>>;
+  /** Explicit successor-only text correction; captured AST, inputs and old rows stay immutable. */
+  formulaExpressionRepairs?: Readonly<Record<string, Readonly<{
+    capturedExpressionSource: string; correctedExpressionSource: string;
   }>>>;
 }>;
 export type MasterRetainedBindingGuardInputR1 = Readonly<{
@@ -137,6 +143,46 @@ export function masterRetainParentBindingsOptInR1(
     input, "NEW_LOCATOR_DISTINCT_COMPLETE_ROWS");
   unique(input.newLocators, l => String(l.id ?? ""), "NEW_LOCATOR_IDS");
   unique(input.newLocators, l => String(l.locator_key ?? ""), "NEW_LOCATOR_KEYS");
+  if (Object.hasOwn(value, "formulaExpressionRepairs")) {
+    const repairs = value.formulaExpressionRepairs;
+    requireThat(object(repairs) && Object.keys(repairs).length > 0
+      && Object.keys(repairs).length <= c.formulas.length, input, "FORMULA_EXPRESSION_REPAIR_MAP");
+    const oldById = new Map(c.formulas.map(f => [f.formula_id, f]));
+    const parameterIds = new Set(c.parameters.map(p => p.parameter_id));
+    for (const [id, repair] of Object.entries(repairs)) {
+      const old = oldById.get(id);
+      requireThat(old != null && object(repair)
+        && exactKeys(repair, ["capturedExpressionSource", "correctedExpressionSource"])
+        && typeof old.expression_source === "string"
+        && repair.capturedExpressionSource === old.expression_source
+        && typeof repair.correctedExpressionSource === "string"
+        && repair.correctedExpressionSource.trim().length > 0
+        && repair.correctedExpressionSource.length <= 16384
+        && repair.correctedExpressionSource !== old.expression_source,
+        input, "FORMULA_EXPRESSION_REPAIR_DECLARATION");
+      requireThat(object(old.ast) && Array.isArray(old.input_parameter_ids)
+        && old.input_parameter_ids.every((p: unknown) => typeof p === "string" && parameterIds.has(p))
+        && new Set(old.input_parameter_ids).size === old.input_parameter_ids.length
+        && old.ast_sha256 === createHash("sha256").update(encoded(old.ast)).digest("hex"),
+        input, "FORMULA_EXPRESSION_REPAIR_OLD_WITNESS");
+      try {
+        const corrected = compileFormulaGraph(repair.correctedExpressionSource);
+        requireThat(same(corrected.ast, old.ast)
+          && same([...corrected.inputParameterIds].sort(), [...old.input_parameter_ids].sort()),
+          input, "FORMULA_EXPRESSION_REPAIR_SEMANTICS");
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith(`STOP_${input.config.stopCode}_RETAIN_`)) throw error;
+        fail(input, "FORMULA_EXPRESSION_REPAIR_COMPILE");
+      }
+      let oldIsConsistent = false;
+      try {
+        const original = compileFormulaGraph(old.expression_source);
+        oldIsConsistent = same(original.ast, old.ast)
+          && same([...original.inputParameterIds].sort(), [...old.input_parameter_ids].sort());
+      } catch { fail(input, "FORMULA_EXPRESSION_REPAIR_OLD_COMPILE"); }
+      requireThat(!oldIsConsistent, input, "FORMULA_EXPRESSION_REPAIR_UNNECESSARY");
+    }
+  }
   return value;
 }
 function required(input: MasterRetainedBindingGuardInputR1): MasterRetainParentBindingsR1 {
@@ -274,7 +320,7 @@ export function assertMasterRetainedParentComputationR1(
   input: MasterRetainedBindingGuardInputR1, next: Computation,
   phase: "REPRESENTATIVE" | "PLAN",
 ): void {
-  const c = required(input).capturedParent;
+  const opt = required(input), c = opt.capturedParent;
   requireThat(Array.isArray(next.formulas), input, "NEXT_FORMULAS_REQUIRED");
   const formulaIds = next.formulas.map(f => f.formula_id);
   requireThat(formulaIds.every(id => typeof id === "string" && id.length > 0)
@@ -282,7 +328,9 @@ export function assertMasterRetainedParentComputationR1(
   const formulas = new Map(next.formulas.map(f => [f.formula_id, f]));
   for (const old of c.formulas) {
     const actual = formulas.get(old.formula_id);
-    requireThat(actual != null && same(formulaValue(old, phase), formulaValue(actual, phase)),
+    const repair = opt.formulaExpressionRepairs?.[old.formula_id];
+    const expected = repair == null ? old : {...old, expression_source: repair.correctedExpressionSource};
+    requireThat(actual != null && same(formulaValue(expected, phase), formulaValue(actual, phase)),
       input, "OLD_FORMULA_SEMANTICS_DRIFT");
   }
   requireThat(Array.isArray(next.resources) && Array.isArray(next.parameters), input, "NEXT_COMPUTATION_REQUIRED");

@@ -16,7 +16,7 @@ import {estimateDeterministicHash} from '../../../src/lib/estimate/estimateDeter
 type Json=Record<string,any>;
 type Pin=Readonly<{path:string;sha256:string}>;
 type EvidencePaths=Readonly<{inputPath?:string;fullReadPath?:string;closedGuardPath?:string;historicalReadContextPath?:string}>;
-const INPUT={"path": "data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retained-config-inputs-r3.json", "sha256": "4df25cc0a05fa1c3ae60f31553593f528930ecbf7ff9e07c8f3a3941f966a82b", "bytes": 8106};
+const INPUT={"path": "data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retained-config-inputs-r4.json", "sha256": "be0a9e2de7b46fb3c75d697e1d98ccc8a9e02e3beea785898650f6640f35a47e", "bytes": 8793};
 const sha=(value:string|Uint8Array)=>createHash('sha256').update(value).digest('hex');
 const exact=(p:Pin):Json=>{const b=readFileSync(resolve(p.path));assert.equal(sha(b),p.sha256,'DOKA_R2_EXACT_PIN:'+p.path);return JSON.parse(b.toString('utf8'));};
 const clone=<T>(value:T):T=>JSON.parse(JSON.stringify(value));
@@ -77,7 +77,18 @@ export function stairsDokaStandardFullRetainedComputationR2(paths:EvidencePaths=
   return {...clone(old),inclusion_ast:clone(variant.inclusion_ast),resource_graph:clone(variant.resource_graph),row_sha256:variant.row_sha256};
  }),...d.resources.filter(r=>!c.resources.some(old=>old.row_id===r.row_id))];
  const parameters=[...clone(c.parameters),...d.parameters.filter(p=>!oldParameterIds.has(p.parameter_id))];
- const formulas=[...clone(c.formulas),...d.formulas.filter(f=>!oldFormulaIds.has(f.formula_id))];
+ const formulaExpressionRepairs:NonNullable<MasterRetainParentBindingsR1['formulaExpressionRepairs']>={
+  concrete_order_quantity_v1:{
+   capturedExpressionSource:'plan_dimension_concrete_volume_m3 * (1 + selected_contingency_percent / 100)',
+   correctedExpressionSource:'stairs_concrete_volume_m3 * (1 + placement_selected_contingency_percent / 100)',
+  },
+ };
+ const formulas=[...c.formulas.map(old=>{
+  const repair=formulaExpressionRepairs[old.formula_id];
+  if(repair==null)return clone(old);
+  assert.equal(old.expression_source,repair.capturedExpressionSource,'DOKA_EXPRESSION_REPAIR_EXACT_OLD_TEXT');
+  return {...clone(old),expression_source:repair.correctedExpressionSource};
+ }),...d.formulas.filter(f=>!oldFormulaIds.has(f.formula_id))];
  assert.deepEqual([parameters.length,formulas.length,resources.length],[301,137,140]);
  const newParameterSources:MasterRetainParentBindingsR1['newParameterSources']=Object.fromEntries(parameters.filter(p=>!oldParameterIds.has(p.parameter_id)).map(p=>{
   const role=String(p.truth_metadata.value_source_role),unresolved=role==='UNRESOLVED_APPLICATION_NORM',derived=role.includes('DERIVED');
@@ -86,7 +97,7 @@ export function stairsDokaStandardFullRetainedComputationR2(paths:EvidencePaths=
   return [p.parameter_id,{kind:unresolved?'UNRESOLVED':derived?'DERIVED':'KNOWN',sourceIds:unresolved||reciprocal?[]:[source.sourceId]}];
  }));
  assert.equal(Object.keys(newParameterSources).length,113);
- const retainParentBindings:MasterRetainParentBindingsR1={capturedParent:c,capturedParentSha256:full.capturedParentSha256,newParameterSources};
+ const retainParentBindings:MasterRetainParentBindingsR1={capturedParent:c,capturedParentSha256:full.capturedParentSha256,newParameterSources,formulaExpressionRepairs};
  const ids=Object.keys(c.baseline.input_classification).filter(id=>c.baseline.input_classification[id]!=='VALIDATION_FIXTURE');assert.equal(ids.length,24);
  const runtimeProfileInput:Json={},runtimeProfileClassification:Record<string,'NORMATIVE'|'ASSUMPTION'|'DERIVED'|'RUNTIME_STRUCTURAL_DEFAULT'>={},runtimeProfileSourceIds:Record<string,readonly string[]>={};
  for(const id of ids){const kind=c.baseline.input_classification[id];assert(['NORMATIVE','ASSUMPTION','DERIVED','RUNTIME_STRUCTURAL_DEFAULT'].includes(kind));
@@ -143,6 +154,9 @@ export function prepareStairsDokaStandardFullRetainedMasterDraftR2(paths:Evidenc
    return {...proof,fullCaptureByteSha256:prepared.evidencePins.fullRead.sha256,retainedParentCaptureSha256:prepared.capturedParentSha256,
     fullPreimages:{parameters:188,formulas:92,resources:95,bindings:8,sources:2,locators:2},oldRuntimeProfileSlotsRetained:24,
     oldBaselineSourceArraysRetained:188,newParameterSourceMap:113,expectedFinalBindings:28,normalAndLockedRetentionRequired:true,
+    formulaExpressionRepairWitnesses:Object.entries(prepared.retainParentBindings.formulaExpressionRepairs!).map(([formulaId,repair])=>({
+     formulaId,...repair,astSha256:c.formulas.find(f=>f.formula_id===formulaId)!.ast_sha256,
+     sameAstAndInputIdsRequiredByRetainedGuard:true,oldCapturedFormulaUnchanged:true})),
     actualNextElecorParentAccepted:false,publicationPerformed:false};
   },
  };

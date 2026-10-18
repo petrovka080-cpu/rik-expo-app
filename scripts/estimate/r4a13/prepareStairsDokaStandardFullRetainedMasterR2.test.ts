@@ -2,6 +2,7 @@ import {prepareStairsDokaStandardFullRetainedMasterDraftR2 as draft,stairsDokaSt
  stairsDokaStandardFullRetainedComputationR2 as computation} from './prepareStairsDokaStandardFullRetainedMasterR2';
 import {masterRetainedParentCaptureSha256R1} from './masterSingleDefinitionRetainParentBindingsR1';
 import {stairsDokaStandardVariantSelectorR1 as selector} from '../../../src/lib/estimate/v4/stairsDokaStandardSourceVariantR1';
+import {validateMasterFormulaGraphConsistency} from './prepareMasterSingleDefinitionSuccessorR1';
 
 it('uses exact full nine-set raw capture and all actual DDL source fields, never projected substitutes',()=>{
  const p=capture(),c=p.capturedParent;
@@ -13,16 +14,27 @@ it('uses exact full nine-set raw capture and all actual DDL source fields, never
  expect(c.parameters.every(p=>!Object.hasOwn(p,'catalog_id'))).toBe(true);
  expect(c.parameters.every(p=>Object.hasOwn(p,'approved_template_baseline_id'))).toBe(true);
 });
-it('retains exact old188 parameters and92formulas, all95logical rows and8physical bindings while declaring only20new binding rows',()=>{
+it('retains old188 parameters and92formula computations, all95logical rows and8physical bindings while declaring only20new binding rows',()=>{
  const p=computation(),c=p.capturedParent,d=p.definition;
  expect([d.parameters.length,d.formulas.length,d.resources.length]).toEqual([301,137,140]);
- expect(d.parameters.slice(0,188)).toEqual(c.parameters);expect(d.formulas.slice(0,92)).toEqual(c.formulas);
+ expect(d.parameters.slice(0,188)).toEqual(c.parameters);
+ for(const old of c.formulas){const now=d.formulas.find(f=>f.formula_id===old.formula_id)!;
+  expect({...now,expression_source:old.expression_source}).toEqual(old);
+  if(now.expression_source!==old.expression_source)expect(old.formula_id).toBe('concrete_order_quantity_v1');
+ }
  for(const old of c.resources){const row=d.resources.find(r=>r.row_id===old.row_id)!;
   expect(row.id).toBe(old.id);expect(row.unit_id).toBe(old.unit_id);expect(row.formula_id).toBe(old.formula_id);
   expect(row.cost_owner_id).toBe(old.cost_owner_id);expect(row.procurement_eligible).toBe(old.procurement_eligible);expect(row.source_metadata).toEqual(old.source_metadata);
  }
  const r=draft();expect(r.knownConfigFields.binding.retainParentBindings).toEqual(p.retainParentBindings);
  expect(r.knownConfigFields.binding.additionalRowIds!.length+1).toBe(20);expect(r.catalogAppend).toBeNull();expect(r.newCatalogIds).toBe(0);
+});
+it('repairs one successor display expression with the same immutable AST and ordered inputs, passing the strict shared formula validator',()=>{
+ const p=computation(),id='concrete_order_quantity_v1',old=p.capturedParent.formulas.find(f=>f.formula_id===id)!,now=p.definition.formulas.find(f=>f.formula_id===id)!;
+ expect(validateMasterFormulaGraphConsistency(p.definition.formulas)).toEqual([]);
+ expect(p.retainParentBindings.formulaExpressionRepairs![id]).toEqual({capturedExpressionSource:old.expression_source,correctedExpressionSource:now.expression_source});
+ expect(now.ast).toEqual(old.ast);expect(now.ast_sha256).toBe(old.ast_sha256);expect(now.input_parameter_ids).toEqual(old.input_parameter_ids);
+ expect(old.expression_source).toBe('plan_dimension_concrete_volume_m3 * (1 + selected_contingency_percent / 100)');
 });
 it('keeps the188 baseline source arrays intact and assigns only113new parameter source entries with precise unresolved/derived roles',()=>{
  const p=computation(),c=p.capturedParent,n=p.retainParentBindings.newParameterSources;
