@@ -1,0 +1,418 @@
+{
+  "contract": "rik-expo-app.next-wave.legrand-p31-blind-ep-joint-fasteners.r1",
+  "status": "WORK_EP_ONLY_REPLACEMENT_PROPOSAL_FOR_UNRUN_EP_ER_PACKET",
+  "titleRu": "Крепёж прямого стыка глухого лотка Legrand P31 GS/PG75–300мм с EP341213 — частичная подработка",
+  "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+  "rowPrefix": "legrand:p31-blind-ep-joint",
+  "existingNormId": "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
+  "existingNormSourcePack": "data/estimate-norms/professional/electrical.json",
+  "existingNormSourcePackSha256": "359faadef4c58270f658f8f0b5c3e188c2ec576620b213aec91c59162db362cb",
+  "existingProductProfileId": "manufacturer-profile:legrand-p31:symmetrical-tray:75-300mm:v1",
+  "sourceEdition": "FT0955-02 updated14.06.2021 plus coupler-specific internalFT1045EN-01 updated02.03.2023 (URL FT1045FR-01)",
+  "manufacturerArtifacts": [
+    {
+      "path": ".release-runtime/r568/next-wave/legrand-p31/primary/FT0955-02.pdf",
+      "sha256": "971fd93f9972fc9fbf64a74e3e0a1d557fb659845ba874c9d6429fb8d6b8e305",
+      "officialUrl": "https://assets.legrand.com/pim/NP-FT-GT/FT0955-02.pdf",
+      "locatorRu": "PDF8/печатная8, верхняя таблица глухих GS/PG лотков60мм; PDF11/печатная11, монтажная схема75–300мм: EP341213 или ER482219,8M6,11Нм. Схема400–600мм с4дополнительными нижнимиM6 исключена."
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/legrand-p31/primary/341895-product.html",
+      "sha256": "c01e8d8de422a8779e61704e355412323b5193761ec6a9cbd5a924b68e26008b",
+      "officialUrl": "https://www.legrand.fr/pro/catalogue/boulon-poelier-pour-chemin-de-cables-tole-p31-mf-avec-ecrous-btrcc-6x12-finition-ez",
+      "locatorRu": "Ref341895: BTRCC6x12, finitionEZ; metric thread6, thread length12мм, below-head length10мм, avecécrou=oui. ЦенаEUR и фасовка не приняты."
+    },
+    {
+      "path": ".release-runtime/r568/next-wave/legrand-p31/primary/FT1045FR-01.pdf",
+      "sha256": "ce874eb3c1be70e384dd97fb7cd73aae7d5fcaa37db995d7e977e08c1f1ac0a9",
+      "officialUrl": "https://assets.legrand.com/pim/NP-FT-GT/FT1045FR-01.pdf",
+      "locatorRu": "URL basenameFT1045FR-01, internalFT1045EN-01; created23.02.2022, updated02.03.2023. PDF2 §4.1 EP341213 PG H50–60; PDF11 §§18.1/18.3:341895 PG M6x12,11Нм,2боковые EP детали×4винта. PDF12 §18.4 ER method differs; ER excluded from this packet, not assigned zero."
+    }
+  ],
+  "trayProducts": [
+    {
+      "sku": "480301",
+      "widthMm": 75,
+      "heightMm": 60,
+      "finish": "GS/PG",
+      "kind": "BLIND_SYMMETRICAL_P31"
+    },
+    {
+      "sku": "480302",
+      "widthMm": 100,
+      "heightMm": 60,
+      "finish": "GS/PG",
+      "kind": "BLIND_SYMMETRICAL_P31"
+    },
+    {
+      "sku": "480303",
+      "widthMm": 150,
+      "heightMm": 60,
+      "finish": "GS/PG",
+      "kind": "BLIND_SYMMETRICAL_P31"
+    },
+    {
+      "sku": "480304",
+      "widthMm": 200,
+      "heightMm": 60,
+      "finish": "GS/PG",
+      "kind": "BLIND_SYMMETRICAL_P31"
+    },
+    {
+      "sku": "480305",
+      "widthMm": 300,
+      "heightMm": 60,
+      "finish": "GS/PG",
+      "kind": "BLIND_SYMMETRICAL_P31"
+    }
+  ],
+  "couplerChoices": [
+    {
+      "sku": "341213",
+      "normValue": "EP Coupler LG-341213"
+    }
+  ],
+  "fastener": {
+    "sku": "341895",
+    "titleRu": "Болт с гайкой Legrand341895 BTRCC M6, для принятого стыка P31 GS/PG",
+    "unitId": "item",
+    "oneUnitRu": "Одна болтовая сборка с гайкой; гайка включена, отдельной платной строки гайки нет.",
+    "factoryPackageAccepted": false,
+    "supplierQuantumExplicit": true,
+    "unitPriceInherited": false
+  },
+  "scopeFactRu": "Подтверждены глухие P31 GS/PG высотой60мм, шириной75–300мм, принятые концы/опоры/среда, только EP341213 и карта прямых стыков; ER482219 и другие методы исключены; электротехническая безопасность всей трассы этой подработой не подтверждается",
+  "primary": {
+    "parameterId": "p31_joint_count",
+    "unitId": "pcs",
+    "valueType": "integer",
+    "minimum": 1,
+    "meaningRu": "Количество реальных прямых стыков по проектной ведомости, не метры и не электроточки. Нулевой стык означает отсутствие этой выбранной подработы."
+  },
+  "sourceNeeds": [
+    {
+      "id": "couplers",
+      "titleRu": "Поставка EP341213 и граница включённого комплекта",
+      "category": "material",
+      "unitId": "pcs",
+      "reasonRu": "НоваяFT1045EN-01p11 подтверждает2боковые EP детали на стык. Единица/комплект поставки exact341213, фактическая кратность/наличие/резерв и included-supply/cost boundary не приняты; новый оплачиваемый заказ не выдуман.",
+      "nextTaskRu": "Связать подтверждённые2EPдетали на стык с exact341213 единицей поставки, фактической упаковкой/кратностью/наличием и отдельной границей цены; не подменять сборочные2детали неизвестным заказнымкомплектом.",
+      "ownerRu": "Sol A — адресный manufacturer intake; инженер/договорной владелец — фактический выбор и inclusion",
+      "acceptanceRu": "Официальная карточка exactEP341213 с единицей/комплектом, подтверждённые2боковые детали на стык, фактическая кратность/наличие/резерв и отдельная документированная граница поставки/цены"
+    },
+    {
+      "id": "assembly-labour",
+      "titleRu": "Труд подготовки, выверки, сборки и затяжки стыка",
+      "category": "labor",
+      "unitId": "man_hour",
+      "reasonRu": "Neither FT0955-02 nor specificFT1045EN-01 publishes an accepted man_hour norm.8M6/11Nm are not labourhours. Official guidance1.6–1.7 requires applicable approved source/individual norm; contract commercialpcs may not close technicalhours.",
+      "nextTaskRu": "Obtain official KRERm08 applicable full table/technical part (candidate indices08-02-153/395 are locator hints only, not accepted norms); compare measured scope and installed supports/length-or-tonne versus isolatedpcs joint. If broader full-tray assembly, do not divide labour bybolt/joint or add it to already-paid installation. If no applicable cell, prepare approved individual norm underguidance1.6–1.7.",
+      "ownerRu": "Sol A/сметчик — нормативный intake; производитель работ — условия",
+      "acceptanceRu": "Exact official source bytes/hash/page/table/column/resource unit/conditions/included tasks, and written applicability to exactEP341213 blind GS/PG h60 joint scope."
+    },
+    {
+      "id": "tools-access",
+      "titleRu": "Инструмент, контролируемая затяжка и безопасный доступ",
+      "category": "service",
+      "unitId": "service",
+      "reasonRu": "Требование11Нм не определяет время инструмента, расходники и обеспечение доступа. Установить фактическое оснащение и его включение в монтаж.",
+      "nextTaskRu": "Состав инструмента/доступа для11Нм и документированную границу обеспечения; время инструмента не выводить из8болтов.",
+      "ownerRu": "Производитель работ — оснащение/доступ; Sol A — source linkage",
+      "acceptanceRu": "Поверенный ключ/оснащение и exact included owner либо применимая самостоятельная норма/единица"
+    },
+    {
+      "id": "verification",
+      "titleRu": "Проверка стыка и проектных интерфейсов",
+      "category": "service",
+      "unitId": "service",
+      "reasonRu": "Нужны применимая программа, документ и граница проверки. Опоры, нагрузка и непрерывность защитного соединения не подтверждаются одним количеством болтов.",
+      "nextTaskRu": "Принять карту контроля стыка и проектные интерфейсы опор/нагрузки/электробезопасности, приёмочный документ и границу оплаты проверки.",
+      "ownerRu": "Ответственный инженер/приёмка; Sol A — source linkage",
+      "acceptanceRu": "Проект/редакция и запись проверки, exact paid owner; не manufacturer8M6 как доказательство всей безопасности"
+    },
+    {
+      "id": "delivery-handling",
+      "titleRu": "Доставка, разгрузка и перемещение крепежа/комплектующих",
+      "category": "logistics",
+      "unitId": "service",
+      "reasonRu": "Нет фактической логистики/массы/объёма и границы включённой доставки.8M6 на стык не являются рейсом; старую aggregate услугу проверять по persisted scope.",
+      "nextTaskRu": "Фактическую поставку/массу/маршрут/разгрузку и exact inclusion/aggregate row, включая saved preliminaryNeeds и исключения.",
+      "ownerRu": "Логист/договорной владелец; root — integration/writer",
+      "acceptanceRu": "Заказ/условия поставки и узкая граница оплачиваемой услуги; без рейсов по числу болтов"
+    },
+    {
+      "id": "cleanup-leftovers",
+      "titleRu": "Завершение, уборка и пригодные остатки",
+      "category": "service",
+      "unitId": "service",
+      "reasonRu": "Нет применимого количества/оплаты уборки и отходов. Пригодные крепёжные сборки сохраняются отдельно; отходы и вывоз не выводятся из8M6.",
+      "nextTaskRu": "Фактические отходы/тару, обязанность уборки и exact inclusion; пригодные сборки из баланса не считать отходом.",
+      "ownerRu": "Производитель работ/договорной владелец; Sol A — source/scope",
+      "acceptanceRu": "Ведомость отходов/тары, граница уборки/вывоза и сохранённые historical exclusions/needs"
+    }
+  ],
+  "excludedRu": [
+    "ER482219 отложен: новая specific инструкция описывает загиб крыльев, а неEP8M6; норма0болтов дляER также не принята. EA/EDU/TWIST и другие сопряжения исключены.",
+    "Eclic LG480221, перфорированный вариант поPDF6, ширины400–600 и иные покрытия/системы вне выбранного firstscope.",
+    "Опоры, анкеры к зданию, расчёт несущей способности, кабели, прокладка, заземляющие проводники, огнезащита и испытания всей трассы не входят в подтверждённый ресурс8M6.",
+    "Не перенесены нормы/производительность ELECOR, PPR, кровли или общие planning rates.",
+    "Неизвестная цена остаётся пустой. Ни французскаяEUR цена, ни generic старыеpricebindings не наследуются.",
+    "Существующие catalog IDs/primary/rows/manualfields/exclusions не изменяются без точного actualpreimage и предметного решения об owners."
+  ],
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0,
+  "catalogId": null,
+  "consumerBinding": "DECLARED_HEADER_SCOPE_COMPLETE_ZERO_MATCHES_ROOT_CLASSIFICATION_AND_SHARED_APPEND_GUARDS_REQUIRED",
+  "proposedIdentity": {
+    "persisted": false,
+    "decision": "PROPOSED_EP_ONLY_PHYSICAL_APPEND_NOT_EXISTING_CATALOG_ID",
+    "catalogId": "canonical-work:master:electrical_legrand_p31_blind_75_300_ep_joint_fasteners",
+    "workKey": "electrical_legrand_p31_blind_75_300_ep_joint_fasteners",
+    "sourceIdentity": "manufacturer:legrand:p31:blind:GS-PG:height60:width75-300:EP341213:joint-fasteners341895-with-nut"
+  },
+  "supplyScopeFactRu": "Сборки341895 с гайкой поставляются и оплачиваются отдельно: они не включены в поставку лотков, муфт, монтажную или общую услугу; граница подтверждена документом и исторические владельцы/исключения сохранены",
+  "knownRowIds": [
+    "legrand:p31-blind-ep-joint:joint-count",
+    "legrand:p31-blind-ep-joint:fastener-consumed",
+    "legrand:p31-blind-ep-joint:fastener-order",
+    "legrand:p31-blind-ep-joint:fastener-remaining",
+    "legrand:p31-blind-ep-joint:fastener-free",
+    "legrand:p31-blind-ep-joint:fastener-shortage",
+    "legrand:p31-blind-ep-joint:fastener-reserve-deficit"
+  ],
+  "normativeBindingRowIds": [
+    "legrand:p31-blind-ep-joint:fastener-consumed",
+    "legrand:p31-blind-ep-joint:fastener-order"
+  ],
+  "currentEvidence": {
+    "resultSha256": "794206da3f79a1cee519bf6dd1d9e541b91e81b5625a1bcdd158201dd7ce0240",
+    "actualQueryHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+    "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5",
+    "definitionReleaseId": "22e0a9f4-5112-55c9-bf15-7ec2f8c68a55",
+    "searchReleaseId": "6cbe0213-0537-51a8-b7e6-1ae089b3002e",
+    "allSixDeclaredHeaderMetrics": 0,
+    "completeDeclaredReadSet": true,
+    "resourceJsonRead": false,
+    "globalAbsenceProved": false,
+    "boundaryRu": "Точные P31 source keys, заголовки P31/SKU, текущая публичная классификация electrical-tray и identity. Скрытые или ошибочно классифицированные resource JSON вне этого readset не опровергнуты."
+  },
+  "independentCompletenessMap": {
+    "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+    "sourceKind": "PRODUCT_SYSTEM_TDS",
+    "generatedFromCurrentRows": false,
+    "evidenceSha256": "971fd93f9972fc9fbf64a74e3e0a1d557fb659845ba874c9d6429fb8d6b8e305",
+    "evidenceReferences": [
+      ".release-runtime/r568/next-wave/legrand-p31/primary/FT0955-02.pdf PDF8/печатная8, верхняя таблица глухих GS/PG лотков60мм; PDF11/печатная11, монтажная схема75–300мм: EP341213 или ER482219,8M6,11Нм. Схема400–600мм с4дополнительными нижнимиM6 исключена.",
+      ".release-runtime/r568/next-wave/legrand-p31/primary/341895-product.html Ref341895: BTRCC6x12, finitionEZ; metric thread6, thread length12мм, below-head length10мм, avecécrou=oui. ЦенаEUR и фасовка не приняты.",
+      ".release-runtime/r568/next-wave/legrand-p31/primary/FT1045FR-01.pdf PDF2§4.1/PDF11§18.1/18.3; ER excluded bynewmethod evidence"
+    ],
+    "fullTechnicalAcceptance": false,
+    "entries": [
+      {
+        "operationId": "project-joints",
+        "expectedResourceId": "actual-joint-schedule",
+        "condition": "EXACT_BLIND_GS_PG_60MM_75_300_EP_ONLY_APPROVED_JOINT_AND_SEPARATE_341895_SUPPLY",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "quantityRule": "INTEGER_PROJECT_JOINT_COUNT_NOT_METRES_OR_POINTS",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:joint-count",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:joint-count"
+        }
+      },
+      {
+        "operationId": "fasteners",
+        "expectedResourceId": "eight-M6-with-nut",
+        "condition": "EXACT_BLIND_GS_PG_60MM_75_300_EP_ONLY_APPROVED_JOINT_AND_SEPARATE_341895_SUPPLY",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "quantityRule": "EXISTING_REVIEWED_8_M6_PER_EXACT_75_300_EP_ONLY_JOINT",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:fastener-consumed",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:fastener-consumed"
+        }
+      },
+      {
+        "operationId": "separate-supply",
+        "expectedResourceId": "341895-new-order",
+        "condition": "EXACT_BLIND_GS_PG_60MM_75_300_EP_ONLY_APPROVED_JOINT_AND_SEPARATE_341895_SUPPLY",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "quantityRule": "EXPLICIT_SUPPLIER_QUANTUM_STOCK_RESERVE_NOT_FACTORY_PACKAGE_DEFAULT",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:fastener-order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:fastener-order"
+        }
+      },
+      {
+        "operationId": "supply-balance",
+        "expectedResourceId": "usable-341895-remaining",
+        "condition": "EXACT_BLIND_GS_PG_60MM_75_300_EP_ONLY_APPROVED_JOINT_AND_SEPARATE_341895_SUPPLY",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "quantityRule": "STOCK_PLUS_EFFECTIVE_ORDER_MINUS_SOURCE_CONSUMPTION",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:fastener-remaining",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:fastener-remaining"
+        }
+      },
+      {
+        "operationId": "open-completion",
+        "expectedResourceId": "couplers",
+        "condition": "APPLICABLE_OBLIGATION_NOT_RESOLVED_BY_EIGHT_M6_NORM",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "unitId": "pcs",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:open-couplers",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:open-couplers"
+        }
+      },
+      {
+        "operationId": "open-completion",
+        "expectedResourceId": "assembly-labour",
+        "condition": "APPLICABLE_OBLIGATION_NOT_RESOLVED_BY_EIGHT_M6_NORM",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "unitId": "man_hour",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:open-assembly-labour",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:open-assembly-labour"
+        }
+      },
+      {
+        "operationId": "open-completion",
+        "expectedResourceId": "tools-access",
+        "condition": "APPLICABLE_OBLIGATION_NOT_RESOLVED_BY_EIGHT_M6_NORM",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:open-tools-access",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:open-tools-access"
+        }
+      },
+      {
+        "operationId": "open-completion",
+        "expectedResourceId": "verification",
+        "condition": "APPLICABLE_OBLIGATION_NOT_RESOLVED_BY_EIGHT_M6_NORM",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:open-verification",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:open-verification"
+        }
+      },
+      {
+        "operationId": "open-completion",
+        "expectedResourceId": "delivery-handling",
+        "condition": "APPLICABLE_OBLIGATION_NOT_RESOLVED_BY_EIGHT_M6_NORM",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:open-delivery-handling",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:open-delivery-handling"
+        }
+      },
+      {
+        "operationId": "open-completion",
+        "expectedResourceId": "cleanup-leftovers",
+        "condition": "APPLICABLE_OBLIGATION_NOT_RESOLVED_BY_EIGHT_M6_NORM",
+        "sourceId": "legrand_p31_blind_ep_joint_fasteners_r1",
+        "unitId": "service",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "formulaId": "legrand:p31-blind-ep-joint:formula:open-cleanup-leftovers",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "legrand:p31-blind-ep-joint:open-cleanup-leftovers"
+        }
+      }
+    ]
+  },
+  "sourceConflictAddendum": {
+    "sha256": "3809f58947a225d90ac6de76d51aa03837a8226bf2f7a45a85e2b6277a5b0a5f",
+    "oldEpErPacketNotRunNotAdopted": true,
+    "erDeferred": true,
+    "erZeroBoltNormNotClaimed": true
+  },
+  "knownEpAssemblyFacts": {
+    "couplerSku": "341213",
+    "sidePiecesPerJoint": 2,
+    "m6PerSidePiece": 4,
+    "m6PerJoint": 8,
+    "quantityProof": "FT1045EN-01 PDF11§18.3 plus FT0955-02 PDF11 exactblind75–300",
+    "couplerPurchaseUnitOrPackageAccepted": false,
+    "couplerPaidOrderImplemented": false,
+    "labourManHourAccepted": false
+  },
+  "currentEvidenceRebase": {
+    "policy": "EXPLICIT_POST_FLOOR_SCOPED_READ_REBASE_NO_PHYSICAL_SOURCE_CHANGE",
+    "historicalCapturedEvidence": {
+      "resultSha256": "2aa53ba10c409bb666039488f6d91c430a3ed80736c0b3643bc75d34a3272fe0",
+      "actualQueryHead": "a0e97806662867f5f54d59409930024859148c48",
+      "recordedReleaseSourceCommit": "71ec0b70ea40c77fa094459958ad1606b8c24784",
+      "definitionReleaseId": "d7516c4b-e80f-547d-8357-650572931304",
+      "searchReleaseId": "6407fee7-e9ea-58ee-827f-2a6b0e1b2e18",
+      "allSixDeclaredHeaderMetrics": 0,
+      "completeDeclaredReadSet": true,
+      "resourceJsonRead": false,
+      "globalAbsenceProved": false,
+      "boundaryRu": "Точные P31 source keys, заголовки P31/SKU, текущая публичная классификация electrical-tray и identity. Скрытые или ошибочно классифицированные resource JSON вне этого readset не опровергнуты."
+    },
+    "actualContext": {
+      "definitionReleaseId": "22e0a9f4-5112-55c9-bf15-7ec2f8c68a55",
+      "searchReleaseId": "6cbe0213-0537-51a8-b7e6-1ae089b3002e",
+      "sourceHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+      "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5"
+    },
+    "actualRead": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-p31/current-parent-successor-v1/current-read-v5/p31-current-root-v3-result.json",
+      "sha256": "794206da3f79a1cee519bf6dd1d9e541b91e81b5625a1bcdd158201dd7ce0240",
+      "bytes": 5239
+    },
+    "actualReadGuard": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-p31/current-parent-successor-v1/current-read-v5/p31-current-root-v3-receipt.json",
+      "sha256": "2392e2ad6ef5fa283cce8eb1318aa7d0bfb59deb8c42143145e3b00e816bdd74",
+      "bytes": 6979
+    },
+    "floorAcceptance": {
+      "guard": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor11-publication-scoped-apply-v1-receipt.json",
+        "sha256": "e1bf94d0d971cf9bc2fab23ae8c27cb2d57cb8406bac6051c63c316bfef7c01c",
+        "bytes": 843833
+      },
+      "result": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor11-governed-publication-apply-v1-result.json",
+        "sha256": "532d519eb8f091de41fb9147f660edc4d36fbec66238b84650261545c751b5c1",
+        "bytes": 23397
+      },
+      "readback": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor11-publication-scoped-apply-v1-independent-readback.json",
+        "sha256": "7a84005827f24639c7a737bdb12bf4835872952acd309612730c083080ae823d",
+        "bytes": 3111
+      },
+      "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5",
+      "newState": {
+        "payloadSha256": "9f7f422f01aa5c1afb1078f77db5c14a0900292b7904bd080d2faaf3baa3d1c6",
+        "parameters": 22,
+        "formulas": 26,
+        "resources": 26,
+        "normativeBindings": 11,
+        "priceBindings": 0,
+        "definitionVersion": 1
+      }
+    },
+    "allSixScopedAbsencesProved": true,
+    "globalAbsenceProved": false,
+    "sixOpenNeedsRetained": true,
+    "fullTechnicalAcceptance": false,
+    "acceptedNewCompleteTypes": 0
+  }
+}

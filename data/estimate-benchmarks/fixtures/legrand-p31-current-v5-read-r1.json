@@ -1,0 +1,146 @@
+{
+  "contract": "p31-current-source-owner-scope-header/v5",
+  "executionContext": {
+    "definitionReleaseId": "22e0a9f4-5112-55c9-bf15-7ec2f8c68a55",
+    "searchReleaseId": "6cbe0213-0537-51a8-b7e6-1ae089b3002e",
+    "sourceHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+    "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5"
+  },
+  "sourceHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+  "actualQueryHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+  "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5",
+  "releaseSourceRelation": "RECORDED_EXACT_RELEASE_COMMIT_IS_ANCESTOR_OF_ACTUAL_QUERY_HEAD",
+  "ancestryBefore": {
+    "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5",
+    "actualQueryHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+    "status": 0
+  },
+  "ancestryAfter": {
+    "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5",
+    "actualQueryHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+    "status": 0
+  },
+  "sourceHeadAtPreparation": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+  "originV1SourceHeadAtPreparation": "b56e311d5a34094d19cd2a38b8cecbb386aef304",
+  "pair": {
+    "definitionReleaseId": "22e0a9f4-5112-55c9-bf15-7ec2f8c68a55",
+    "searchReleaseId": "6cbe0213-0537-51a8-b7e6-1ae089b3002e"
+  },
+  "inputSha256": "8df41863439af5546a17634964aef9e096af99288e15ec3ed1dad2372dfc6b3d",
+  "sqlSha256": "e799dd34a86fdf17266a48e10f6b58c9c8ea1fd4a6d41c12cfe24637463bf005",
+  "currentPointerSha256": "c9889ca26d621d634151076f79e4dccb4d136c18098b351a72eb1dbfdb2082f4",
+  "transaction": {
+    "address": "127.0.0.1",
+    "port": 55432,
+    "database": "rik_r4_runtime_b5_v2",
+    "backend_pid": 19896,
+    "ro": "on",
+    "iso": "repeatable read"
+  },
+  "status": "SCOPED_SOURCE_OWNER_HEADER_READ_COMPLETE",
+  "payload": {
+    "pair": {
+      "search": {
+        "id": "6cbe0213-0537-51a8-b7e6-1ae089b3002e",
+        "status": "draft",
+        "sealedAt": null,
+        "sourceHead": "24f33000a7a75188035707fe3852b34f92ce18c5",
+        "sourceTree": "a9695e699258954661348da8b8fb3fbcb1ba74c7",
+        "activatedAt": null,
+        "snapshotSha256": "b6b6742122a098d36483215a3ff0ae075518e23aca7e355f205a79fbf344b92d",
+        "definitionReleaseId": "22e0a9f4-5112-55c9-bf15-7ec2f8c68a55"
+      },
+      "definition": {
+        "id": "22e0a9f4-5112-55c9-bf15-7ec2f8c68a55",
+        "status": "prepared",
+        "sourceHead": "24f33000a7a75188035707fe3852b34f92ce18c5",
+        "sourceTree": "a9695e699258954661348da8b8fb3fbcb1ba74c7",
+        "activatedAt": null,
+        "sourceManifestSha256": "723891119b980497aeed42a463581645a1eadfed70b98ae844b4ee99a5c4666b"
+      },
+      "contextSourceHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+      "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5",
+      "sourceHeadersMatchRecordedCommit": true
+    },
+    "metrics": {
+      "sourceRows": 0,
+      "identityRows": 0,
+      "searchDocuments": 0,
+      "boundResourceRows": 0,
+      "titleMatchingRows": 0,
+      "candidateDefinitions": 0
+    },
+    "sources": [],
+    "boundRows": [],
+    "titleRows": [],
+    "candidates": [],
+    "identities": [],
+    "searchDocuments": [],
+    "searchReleaseId": "6cbe0213-0537-51a8-b7e6-1ae089b3002e",
+    "resourceJsonRead": false,
+    "definitionReleaseId": "22e0a9f4-5112-55c9-bf15-7ec2f8c68a55"
+  },
+  "scopeCaps": {
+    "sourceRows": 32,
+    "boundResourceRows": 64,
+    "titleMatchingRows": 64,
+    "searchDocuments": 32,
+    "identityRows": 32,
+    "candidateDefinitions": 32
+  },
+  "completeDeclaredReadSet": true,
+  "globalAbsenceProved": false,
+  "scopedAbsences": [
+    {
+      "metric": "sourceRows",
+      "rowCount": 0,
+      "returnedRows": 0,
+      "absenceProved": true
+    },
+    {
+      "metric": "boundResourceRows",
+      "rowCount": 0,
+      "returnedRows": 0,
+      "absenceProved": true
+    },
+    {
+      "metric": "titleMatchingRows",
+      "rowCount": 0,
+      "returnedRows": 0,
+      "absenceProved": true
+    },
+    {
+      "metric": "searchDocuments",
+      "rowCount": 0,
+      "returnedRows": 0,
+      "absenceProved": true
+    },
+    {
+      "metric": "identityRows",
+      "rowCount": 0,
+      "returnedRows": 0,
+      "absenceProved": true
+    },
+    {
+      "metric": "candidateDefinitions",
+      "rowCount": 0,
+      "returnedRows": 0,
+      "absenceProved": true
+    }
+  ],
+  "allSixScopedAbsencesProved": true,
+  "acceptedNewCompleteTypes": 0,
+  "fullTechnicalAcceptance": false,
+  "headerHashesVerified": true,
+  "frozenPublisherParentRebound": false,
+  "boundary": "Exact P31 source keys, current P31/SKU titles, public electrical-tray search classification and exact P31 identities; no global resource JSON read. Misclassified profiles outside this scope are not disproved.",
+  "decision": "REVIEW_ACTUAL_CANDIDATE_IDS_AND_SOURCE_BINDINGS_BEFORE_CHOOSING_ADAPTER_OR_APPEND",
+  "transactionRolledBack": true,
+  "dbWrites": false,
+  "appJobs": false,
+  "publicationReady": false,
+  "nextStep": "Read exact compatible actual models; existing P31 mechanisms and already-filled consumers are not replayed as new content.",
+  "connectionClosed": true,
+  "databaseWritesPerformed": false,
+  "completeReadSet": true
+}

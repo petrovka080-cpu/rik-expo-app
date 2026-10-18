@@ -1,0 +1,166 @@
+{
+  "status": "ROOT_REVIEWED_EP_ONLY_SCOPED_PHYSICAL_PROFILE_ADMITTED",
+  "decision": "ADMIT_DISTINCT_PHYSICAL_PROFILE",
+  "probeResultSha256": "794206da3f79a1cee519bf6dd1d9e541b91e81b5625a1bcdd158201dd7ce0240",
+  "sourcePackSha256": "48a88f5dab61309d95ad589ebd4964004884e6cb2d9c10a74314a7ddda8c8749",
+  "cycleDossierSha256": "c8e1eb77a0f6e286a286f35e80efe48d952d425eba760234d63ab1890c4f0433",
+  "proposedIdentity": {
+    "persisted": false,
+    "decision": "PROPOSED_EP_ONLY_PHYSICAL_APPEND_NOT_EXISTING_CATALOG_ID",
+    "catalogId": "canonical-work:master:electrical_legrand_p31_blind_75_300_ep_joint_fasteners",
+    "workKey": "electrical_legrand_p31_blind_75_300_ep_joint_fasteners",
+    "sourceIdentity": "manufacturer:legrand:p31:blind:GS-PG:height60:width75-300:EP341213:joint-fasteners341895-with-nut"
+  },
+  "boundedCandidateScopeSufficientForPhysicalDuplicateReview": true,
+  "globalAbsenceProved": false,
+  "existingConsumersUnchanged": true,
+  "genericNormTransferForbidden": true,
+  "oneBoltWithNutPaidOwner": true,
+  "sourceOnlyPartialNotCompleteEstimate": true,
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0,
+  "searchPlacement": {
+    "groupMode": "create",
+    "groupId": "wg:master:electrical_legrand_p31_blind_ep_joint_fasteners",
+    "groupNameRu": "Legrand P31 EP: крепёж прямого стыка глухого лотка",
+    "domainId": "electrical",
+    "systemId": "electrical",
+    "subsystemId": "wg:master:electrical_legrand_p31_blind_ep_joint_fasteners",
+    "assemblyId": "wg:master:electrical_legrand_p31_blind_ep_joint_fasteners",
+    "workFamilyId": "electrical_cable_tray_joint_fasteners",
+    "breadcrumb": [
+      "Электромонтаж",
+      "Legrand P31 EP: крепёж прямого стыка глухого лотка"
+    ],
+    "membershipOrdinal": 0,
+    "groupOracleDisposition": {
+      "contract": "rik-expo-app.next-wave.legrand-p31-blind-ep-joint-fasteners.r1",
+      "disposition": "EXACT_PHYSICAL_WORK_GROUP",
+      "partialSourceBoundJointFastenerProfile": true
+    },
+    "independentDisposition": {
+      "contract": "rik-expo-app.next-wave.legrand-p31-blind-ep-joint-fasteners.r1",
+      "classification": "CANONICAL_VISIBLE",
+      "exactPhysicalIdentity": true,
+      "scope": "PARTIAL_P31_BLIND_GS_PG_H60_75_300_EP_ONLY_341895_WITH_NUT",
+      "fullTechnicalAcceptance": false
+    },
+    "elementType": "WORK",
+    "operationKind": "NEW_INSTALLATION",
+    "technologyVariant": "LEGRAND_P31_BLIND_GS_PG_H60_75_300_EP341213_8M6_341895_WITH_NUT_PARTIAL",
+    "constructionState": "NEW_PROJECT_APPROVED_STRAIGHT_EP_JOINT_WITH_EXPLICIT_SEPARATE_FASTENER_SUPPLY",
+    "normativeClassifiers": [
+      "Legrand:FT0955-02:p11:blind75-300",
+      "Legrand:FT1045EN-01:p11:EP341213",
+      "Legrand:341895",
+      "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1"
+    ],
+    "applicabilityTags": [
+      "P31_BLIND_GS_PG_H60",
+      "WIDTH75_300",
+      "EP341213_ONLY",
+      "EIGHT_M6_11NM",
+      "341895_WITH_NUT",
+      "ER_DEFERRED",
+      "PARTIAL_SIX_OPEN_NEEDS"
+    ],
+    "publicationState": "ADMITTED_BACKEND",
+    "catalogOrigin": "GLOBAL",
+    "adjudicationClass": "EFFECTIVE_WORK",
+    "selectable": true
+  },
+  "physicalDistinctnessRu": "EP-only уточнение одного следующего P31пакета после новогоprimaryconflict; не третийтип. СтарыйEP/ERpacket неRUN/неADOPT. Proposedidentity/newgroup требуютrootreviewиsharedabsenceguards.",
+  "requiredRootReview": [
+    "Inspect and explicitly accept the declared bounded P31 zero-match scope; global resource JSON absence remains false.",
+    "Review intersection of old exactblind GS/PGh60/75–300 with new specificEP341213/8M6; ER deferred after explicitmethodconflict, notassigned0bolt.",
+    "Approve proposed source-specific catalog/work key/source identity/new neutral electrical group, or change through a separately pinned proposal. Never claim these as current IDs.",
+    "Review8phase full cycle/6concrete open source intakes and the mandatory separate-supply scope/reference; no labor/service/material kit inclusion guessed.",
+    "After ownEP-only review, create reviewed copy with decisionADMIT_DISTINCT_PHYSICAL_PROFILE and boundedCandidateScopeSufficientForPhysicalDuplicateReview=true. Shared exactidentity/history/workkey/newgroup/ordinal/sourcehashguards stillmustpass. Do not accept oldEP/ERproposal.",
+    "If the selected parent pointer changes before publication, this fixed-parent config rejects; record/review exact new parent evidence instead of silently substituting it."
+  ],
+  "sourceConflictAddendum": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-p31/addendum-labour-v1/p31-method-labour-source-addendum-v1.json",
+    "bytes": 11376,
+    "sha256": "3809f58947a225d90ac6de76d51aa03837a8226bf2f7a45a85e2b6277a5b0a5f"
+  },
+  "epOnly": true,
+  "erDeferred": true,
+  "explicitCurrentParentRebase": {
+    "policy": "EXPLICIT_POST_FLOOR_SCOPED_READ_REBASE_NO_PHYSICAL_SOURCE_CHANGE",
+    "historicalCapturedEvidence": {
+      "resultSha256": "2aa53ba10c409bb666039488f6d91c430a3ed80736c0b3643bc75d34a3272fe0",
+      "actualQueryHead": "a0e97806662867f5f54d59409930024859148c48",
+      "recordedReleaseSourceCommit": "71ec0b70ea40c77fa094459958ad1606b8c24784",
+      "definitionReleaseId": "d7516c4b-e80f-547d-8357-650572931304",
+      "searchReleaseId": "6407fee7-e9ea-58ee-827f-2a6b0e1b2e18",
+      "allSixDeclaredHeaderMetrics": 0,
+      "completeDeclaredReadSet": true,
+      "resourceJsonRead": false,
+      "globalAbsenceProved": false,
+      "boundaryRu": "Точные P31 source keys, заголовки P31/SKU, текущая публичная классификация electrical-tray и identity. Скрытые или ошибочно классифицированные resource JSON вне этого readset не опровергнуты."
+    },
+    "actualContext": {
+      "definitionReleaseId": "22e0a9f4-5112-55c9-bf15-7ec2f8c68a55",
+      "searchReleaseId": "6cbe0213-0537-51a8-b7e6-1ae089b3002e",
+      "sourceHead": "893ba8f2e575afcd6529d0dbdeeff4c567fd2c84",
+      "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5"
+    },
+    "actualRead": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-p31/current-parent-successor-v1/current-read-v5/p31-current-root-v3-result.json",
+      "sha256": "794206da3f79a1cee519bf6dd1d9e541b91e81b5625a1bcdd158201dd7ce0240",
+      "bytes": 5239
+    },
+    "actualReadGuard": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-p31/current-parent-successor-v1/current-read-v5/p31-current-root-v3-receipt.json",
+      "sha256": "2392e2ad6ef5fa283cce8eb1318aa7d0bfb59deb8c42143145e3b00e816bdd74",
+      "bytes": 6979
+    },
+    "floorAcceptance": {
+      "guard": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor11-publication-scoped-apply-v1-receipt.json",
+        "sha256": "e1bf94d0d971cf9bc2fab23ae8c27cb2d57cb8406bac6051c63c316bfef7c01c",
+        "bytes": 843833
+      },
+      "result": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor11-governed-publication-apply-v1-result.json",
+        "sha256": "532d519eb8f091de41fb9147f660edc4d36fbec66238b84650261545c751b5c1",
+        "bytes": 23397
+      },
+      "readback": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/floor11-publication-scoped-apply-v1-independent-readback.json",
+        "sha256": "7a84005827f24639c7a737bdb12bf4835872952acd309612730c083080ae823d",
+        "bytes": 3111
+      },
+      "recordedReleaseSourceCommit": "24f33000a7a75188035707fe3852b34f92ce18c5",
+      "newState": {
+        "payloadSha256": "9f7f422f01aa5c1afb1078f77db5c14a0900292b7904bd080d2faaf3baa3d1c6",
+        "parameters": 22,
+        "formulas": 26,
+        "resources": 26,
+        "normativeBindings": 11,
+        "priceBindings": 0,
+        "definitionVersion": 1
+      }
+    },
+    "allSixScopedAbsencesProved": true,
+    "globalAbsenceProved": false,
+    "sixOpenNeedsRetained": true,
+    "fullTechnicalAcceptance": false,
+    "acceptedNewCompleteTypes": 0
+  },
+  "rootReview": {
+    "at": "2026-10-18T11:53:25.576888+00:00",
+    "scope": "ExactP31 blind GS/PG H60 width75–300 EP341213 straight joint, eightM6 341895 withnut, explicitseparatefastener supply only",
+    "basis": [
+      "Actualpostfloor V5 sixscopes completezero-match withreadonlyrollback/ownedclosure",
+      "SpecificFT1045EN-01 EP2sidepieces×4M6 +FT0955 exactblind75–300; ER method conflict deferred",
+      "Official341895 includesnut, nosecondpaidnutowner",
+      "Actualsharedcompilerprospective50 passed; missing/wrongmaterial_system rejected; no sharedguardchange",
+      "Eightcyclephases andsix concrete open sourceintakes retained"
+    ],
+    "globalAbsenceProved": false,
+    "fullTechnicalAcceptance": false,
+    "acceptedNewCompleteTypes": 0,
+    "approvedDraftSha256": "7a8cd5113770b29e7700291aed5dd6947a406fcaefe8d1bf604c0ef2c19db848"
+  }
+}
