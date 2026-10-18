@@ -18,7 +18,17 @@ import {
   preflightCanonicalDefinitionPublishPlans,
   publishCanonicalDefinitionDraft,
   resolveCanonicalApprovedBaselineLeaf,
+  auditPersistedCanonicalDefinition,
 } from "./canonicalDefinitionPublisherR1";
+import {
+  masterRetainParentBindingsOptInR1,
+  prepareMasterRetainedBindingRepresentativeR1,
+  assertMasterRetainedBindingPlanR1,
+  readMasterRetainedBindingPreconditionsR1,
+  lockMasterRetainedBindingPreconditionsR1,
+  assertMasterRetainedBindingPreflightUnchangedR1,
+  type MasterRetainParentBindingsR1,
+} from "./masterSingleDefinitionRetainParentBindingsR1";
 import {
   assertMasterSingleDefinitionAppendParentAnchorR1,
   assertMasterSingleDefinitionAppendUnchangedR1,
@@ -95,6 +105,8 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     applicability: Json;
     /** Explicit per-row source columns within the same composite locator. */
     applicabilityByRowId?: Readonly<Record<string, Json>>;
+    /** Replace one definition while preserving its exact source-aware bindings. */
+    retainParentBindings?: MasterRetainParentBindingsR1;
   }>;
   locator: Readonly<{
     key: string;
@@ -893,6 +905,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
     ...(config.catalogAppend == null && config.binding.additionalRowIds == null ? [] : [
       "scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts",
     ]),
+    ...(Object.hasOwn(config.binding,"retainParentBindings")
+      ?["scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts"]:[]),
     "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts",
     "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts",
   ])];
@@ -940,7 +954,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const parameterRows: Json[] = config.parameterDefinitions.map((parameter) => ({ ...parameter }));
   const formulaRows: Json[] = config.formulaDefinitions.map((formula) => ({
     ...formula,
-    ast_sha256: sha256(formula.ast),
+    ast_sha256: config.binding.retainParentBindings?.capturedParent.formulas
+      .some(row=>row.formula_id===formula.formula_id)?formula.ast_sha256:sha256(formula.ast),
   }));
   const resourceRows: Json[] = config.resourceDefinitions.map((resource) => ({
     ...resource,
@@ -1101,6 +1116,25 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const locatorIds = resolvedLocators.map((locator) => projectSourcePackage == null
     ? uuid(`${config.contract}:${config.sourceId}:${locator.key}:locator`)
     : uuid(`${config.sourceId}:${locator.key}:normative-locator`));
+  const registrySourceMetadata={
+    contract:config.contract,
+    sourceKind:resolvedSourceMetadata.source_kind??"PROJECT_DOCUMENTATION_REQUIRED",
+    useRestriction:resolvedSourceMetadata.use_restriction,
+    universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false,
+    ...(projectSourcePackage==null?{}:{projectSourcePackage:{
+      packageId:projectSourcePackage.packageId,packagePayloadSha256:projectSourcePackage.packagePayloadSha256,
+      ...(projectSourcePackageSet==null?{}:{completePackageSet:projectSourcePackageSet}),
+      artifactReceipts:projectSourcePackage.artifactReceipts,excerptReceipts:projectSourcePackage.excerptReceipts,
+      projectMetadata:projectSourcePackage.projectMetadata,
+    }}),
+  };
+  const retentionCandidate={config,newSource:{id:sourceId,source_key:config.sourceId,
+    title_ru:resolvedSourceMetadata.source_title,authority:resolvedSourceMetadata.source_authority,
+    official_url:resolvedSourceMetadata.official_url??null,artifact_sha256:resolvedSourceMetadata.artifact_sha256??null,
+    effective_from:resolvedSourceMetadata.effective_from??null,effective_to:null,metadata:registrySourceMetadata},
+    newLocators:resolvedLocators.map((locator,index)=>({id:locatorIds[index]!,source_id:sourceId,
+      locator_key:locator.key,locator:locator.payload,excerpt_sha256:locator.excerptSha256}))};
+  const retentionInput=masterRetainParentBindingsOptInR1(retentionCandidate)==null?null:retentionCandidate;
   const releaseKey = `${config.contract}:${fingerprint.slice(0, 20)}`;
   const current = JSON.parse(readFileSync(config.currentReleasePath, "utf8")) as Json;
   invariant(current.productionAccessed === false, stop(config, "CURRENT_PRODUCTION_ACCESS_FLAG"));
@@ -1208,6 +1242,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
     };
     const appendPreflight = appendGuardInput == null ? null
       : await readMasterSingleDefinitionAppendPreconditionsR1(client, appendGuardInput);
+    const retentionPreflight=retentionInput==null?null
+      :await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
     if (appendGuardInput != null && appendPreflight != null) {
       assertMasterSingleDefinitionAppendParentAnchorR1(
         appendGuardInput, appendPreflight, parent!, parentSearch!,
@@ -1265,6 +1301,17 @@ export async function runMasterSingleDefinitionSuccessorR1(
     };
     const normativeBindingRowIds = resolveMasterSingleDefinitionBindingRowIds(config, resourceRows, locatorIds);
     const normativeApplicabilityByRowId = resolveMasterSingleDefinitionBindingApplicabilityByRowId(config, resourceRows, locatorIds);
+    const newNormativeBindings=normativeBindingRowIds.flatMap(rowId=>locatorIds.map(locatorId=>({
+      row_id:rowId,locator_id:locatorId,applicability:normativeApplicabilityByRowId[rowId],
+    })));
+    const retainedRepresentative=retentionInput==null?null:prepareMasterRetainedBindingRepresentativeR1(retentionInput,{
+      parameters:parameterRows,formulas:formulaRows,resources:resourceRows,newBindings:newNormativeBindings,
+      successorProvenance:{contract:config.contract,sourceId:config.sourceId,normId:config.normId,
+        parentDefinitionId:old!.definition_version_id,parentBaselineId:old!.approved_template_baseline_id,
+        capturedParentSha256:config.binding.retainParentBindings!.capturedParentSha256,sourceFingerprint:fingerprint},
+      lifecycleMetadata:{contract:config.contract,masterSha256:config.masterSha256,sourceFingerprint:fingerprint},
+    });
+    if(retainedRepresentative)baselineRepresentative.normative_source_ids=retainedRepresentative.normativeSourceIds;
     const plan = createCanonicalDefinitionClonePlan({
       contract: config.contract,
       definition: {
@@ -1281,7 +1328,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
         },
         applicability: config.applicability,
         definitionSha256: targetDefinitionSha256,
-        sourceMetadata: {
+        sourceMetadata: retainedRepresentative?.sourceMetadata??{
           contract: config.contract,
           masterSha256: config.masterSha256,
           sourceFingerprint: fingerprint,
@@ -1298,11 +1345,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
         parameters: parameterRows,
         formulas: formulaRows,
         resources: resourceRows,
-        bindings: normativeBindingRowIds.flatMap(rowId => locatorIds.map((locatorId) => ({
-          row_id: rowId,
-          locator_id: locatorId,
-          applicability: normativeApplicabilityByRowId[rowId],
-        }))),
+        bindings: retainedRepresentative?[...retainedRepresentative.bindings]:newNormativeBindings,
         baseline: baselineRepresentative,
         passport: {
           contract_version: CONTENT_PASSPORT_CONTRACT,
@@ -1320,7 +1363,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
       resourceId: (resource) => uuid(
         `${config.contract}:${fingerprint}:${config.catalogId}:resource:${resource.row_id}`,
       ),
-      resourceSemanticOwner: (resource) => `${config.catalogId}:${resource.row_id}`,
+      resourceSemanticOwner: (resource) => retentionInput?.config.binding.retainParentBindings?.capturedParent.resources
+        .find(row=>row.row_id===resource.row_id)?.semantic_owner??`${config.catalogId}:${resource.row_id}`,
       resourceSha256: (resource) => sha256({
         contract: config.contract,
         targetCatalogId: config.catalogId,
@@ -1369,8 +1413,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
         sourceTree: tree,
       },
       bindingApplicability: (binding) => ({ ...binding.applicability }),
-      expectedNormativeBindingCount: normativeBindingRowIds.length,
+      expectedNormativeBindingCount: retainedRepresentative?.expectedNormativeBindingCount??normativeBindingRowIds.length,
     });
+    if(retentionInput&&retainedRepresentative)assertMasterRetainedBindingPlanR1(retentionInput,plan,retainedRepresentative);
 
     const existing = (await client.query(
       "select id,status from public.estimate_definition_release where id=$1",
@@ -1395,6 +1440,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
     }
     if (existing) {
       invariant(existing.status === "prepared", stop(config, "EXISTING_RELEASE_NOT_PREPARED"));
+      const retainedPersistedAudit=retentionInput==null?null:await auditPersistedCanonicalDefinition(client,plan);
       receipt = {
         status: `GREEN_${config.stopCode}_PREPARED_NOT_ACTIVE`,
         idempotent: true,
@@ -1405,14 +1451,32 @@ export async function runMasterSingleDefinitionSuccessorR1(
         },
         successor: { releaseId, searchReleaseId, releaseKey, definitionId, baselineId, nextCounts },
         coreAcceptance,
+        ...(retainedPersistedAudit==null?{}:{retainedPersistedAudit}),
         audit: await auditState(client, config, releaseId, searchReleaseId, definitionId),
       };
     } else {
-      await client.query("begin");
+      await client.query(retentionInput?"begin isolation level read committed":"begin");
       await client.query("set local lock_timeout='5s'");
       await client.query("set local statement_timeout='600s'");
       await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [config.contract]);
       try {
+        let lockedRetention=retentionPreflight;
+        if(retentionInput&&retentionPreflight){
+          await lockMasterRetainedBindingPreconditionsR1(client,retentionInput);
+          lockedRetention=await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
+          assertMasterRetainedBindingPreflightUnchangedR1(retentionInput,retentionPreflight,lockedRetention);
+          const lockedPointer=JSON.parse(readFileSync(config.currentReleasePath,"utf8")) as Json;
+          invariant(lockedPointer.productionAccessed===false&&lockedPointer.definitionReleaseId===config.parentReleaseId
+            &&lockedPointer.searchReleaseId===config.parentSearchReleaseId&&sha256(lockedPointer)===sha256(current),
+            stop(config,"RETAIN_POINTER_CHANGED_BEFORE_WRITE"));
+          const lockedParent=(await client.query("select * from public.estimate_definition_release where id=$1",[config.parentReleaseId])).rows[0];
+          const lockedSearch=(await client.query("select * from public.estimate_search_index_release where id=$1",[config.parentSearchReleaseId])).rows[0];
+          invariant(lockedParent?.status==="prepared"&&lockedParent.activated_at==null
+            &&lockedSearch?.status==="draft"&&lockedSearch.activated_at==null&&lockedSearch.sealed_at==null
+            &&sha256(JSON.parse(JSON.stringify(lockedParent)))===sha256(JSON.parse(JSON.stringify(parent)))
+            &&sha256(JSON.parse(JSON.stringify(lockedSearch)))===sha256(JSON.parse(JSON.stringify(parentSearch))),
+            stop(config,"RETAIN_PARENT_RELEASE_CHANGED_BEFORE_WRITE"));
+        }
         if (appendGuardInput != null && appendPreflight != null) {
           await lockMasterSingleDefinitionAppendPreconditionsR1(client, appendGuardInput);
           const underTransaction = await readMasterSingleDefinitionAppendPreconditionsR1(
@@ -1439,14 +1503,14 @@ export async function runMasterSingleDefinitionSuccessorR1(
             === projectSourcePackage.packagePayloadSha256,
           `${stop(config, "PROJECT_SOURCE_ARTIFACT_IMMUTABLE")}:${sourceBefore.artifact_sha256}`);
         }
-        await client.query(`insert into public.estimate_normative_source(
+        if(retentionInput==null||lockedRetention!.newSources.length===0)await client.query(`insert into public.estimate_normative_source(
             id,source_key,title_ru,authority,official_url,artifact_sha256,effective_from,metadata)
           values($1,$2,$3,$4,$5,$6,$7,$8::jsonb)
-          on conflict(source_key) do update set title_ru=excluded.title_ru,
+          ${retentionInput?"":`on conflict(source_key) do update set title_ru=excluded.title_ru,
             authority=excluded.authority,official_url=coalesce(excluded.official_url,public.estimate_normative_source.official_url),
             artifact_sha256=coalesce(public.estimate_normative_source.artifact_sha256,excluded.artifact_sha256),
             effective_from=coalesce(excluded.effective_from,public.estimate_normative_source.effective_from),
-            metadata=public.estimate_normative_source.metadata||excluded.metadata`, [
+            metadata=public.estimate_normative_source.metadata||excluded.metadata`}`, [
           sourceId,
           config.sourceId,
           resolvedSourceMetadata.source_title,
@@ -1454,26 +1518,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
           resolvedSourceMetadata.official_url ?? null,
           resolvedSourceMetadata.artifact_sha256 ?? null,
           resolvedSourceMetadata.effective_from ?? null,
-          JSON.stringify({
-            contract: config.contract,
-            sourceKind: resolvedSourceMetadata.source_kind ?? "PROJECT_DOCUMENTATION_REQUIRED",
-            useRestriction: resolvedSourceMetadata.use_restriction,
-            universalProductivityClaimed: false,
-            universalConsumptionClaimed: false,
-            activationAllowed: false,
-            ...(projectSourcePackage == null ? {} : {
-              projectSourcePackage: {
-                packageId: projectSourcePackage.packageId,
-                packagePayloadSha256: projectSourcePackage.packagePayloadSha256,
-                ...(projectSourcePackageSet == null ? {} : {
-                  completePackageSet: projectSourcePackageSet,
-                }),
-                artifactReceipts: projectSourcePackage.artifactReceipts,
-                excerptReceipts: projectSourcePackage.excerptReceipts,
-                projectMetadata: projectSourcePackage.projectMetadata,
-              },
-            }),
-          }),
+          JSON.stringify(registrySourceMetadata),
         ]);
         const actualSource = (await client.query(
           "select id::text,artifact_sha256 from public.estimate_normative_source where source_key=$1",
@@ -1490,10 +1535,10 @@ export async function runMasterSingleDefinitionSuccessorR1(
         }
         for (const [index, resolvedLocator] of resolvedLocators.entries()) {
           const locatorId = locatorIds[index]!;
-          await client.query(`insert into public.estimate_normative_locator(
+          if(retentionInput==null||!lockedRetention!.newLocators.some(row=>row.id===locatorId))await client.query(`insert into public.estimate_normative_locator(
               id,source_id,locator_key,locator,excerpt_sha256)
             values($1,$2,$3,$4::jsonb,$5)
-            on conflict(source_id,locator_key) do nothing`, [
+            ${retentionInput?"":"on conflict(source_id,locator_key) do nothing"}`, [
             locatorId,
             actualSourceId,
             resolvedLocator.key,
@@ -1509,6 +1554,11 @@ export async function runMasterSingleDefinitionSuccessorR1(
             && sha256(actualLocator.locator) === sha256(resolvedLocator.payload)
             && String(actualLocator.excerpt_sha256).toLowerCase() === resolvedLocator.excerptSha256,
           `${stop(config, "NORMATIVE_LOCATOR_IMMUTABLE")}:${resolvedLocator.key}`);
+        }
+        if(retentionInput){
+          const registered=await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
+          invariant(registered.newSources.length===1&&registered.newLocators.length===retentionInput.newLocators.length,
+            stop(config,"RETAIN_COMPLETE_REGISTRY_REQUIRED"));
         }
         const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan]);
         await client.query(`insert into public.estimate_definition_release(

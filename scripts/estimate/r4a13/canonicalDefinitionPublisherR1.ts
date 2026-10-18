@@ -138,13 +138,29 @@ export function canonicalPublisherQuantityScopeIsConsistent(input: Readonly<{
     || parameter.truth_metadata.provenance?.consumer_input_role_v1 !== 'APPLICATION_TECHNICAL'
     || Object.hasOwn(input.baseline.input_values ?? {}, parameter.parameter_id))) return false;
   const pendingIds = new Set(pending.map(parameter => parameter.parameter_id));
-  const requiredResourceGateIds = new Set(pending.filter(parameter => parameter.required === true)
+  const requiredResourceGateIds = new Set(pending.filter(parameter => parameter.required === true
+    || canonicalPublisherExplicitConditionalNormGateV1(parameter,input.parameters))
     .map(parameter => parameter.parameter_id));
   const expected = input.resources.filter(resource => input.formulas.some(formula => formula.formula_id === resource.formula_id
     && formula.input_parameter_ids?.some((id: string) => pendingIds.has(id)))
     || (Array.isArray(resource.resource_graph?.inputParameterIds)
       && resource.resource_graph.inputParameterIds.some((id: string) => requiredResourceGateIds.has(id)))).map(resource => resource.row_id);
   return JSON.stringify([...ids].sort()) === JSON.stringify(expected.sort());
+}
+
+/** A source gap may belong only to an explicitly selected method. Its static
+ * passport includes that potential obligation; the compiler applies the same
+ * existing `selected` condition to the active method at calculation time. */
+function canonicalPublisherExplicitConditionalNormGateV1(parameter:CanonicalPublisherJson,
+  parameters:readonly CanonicalPublisherJson[]):boolean{
+  const condition=parameter.constraints_json?.requiredWhen;
+  if(!isObject(condition)||Object.keys(condition).sort().join('|')!=='kind|parameterId|value'
+    ||condition.kind!=='selected'||typeof condition.parameterId!=='string'||typeof condition.value!=='string')return false;
+  const selector=parameters.find(p=>p.parameter_id===condition.parameterId);
+  return selector?.value_type==='enum'&&selector.default_value===null
+    &&selector.truth_metadata?.value_source_role==='PROJECT_SPECIFIC_INPUT'
+    &&selector.truth_metadata?.visibility_role==='USER_INPUT'
+    &&Array.isArray(selector.constraints_json?.values)&&selector.constraints_json.values.includes(condition.value);
 }
 
 function invariant(value: unknown, code: string): asserts value {
