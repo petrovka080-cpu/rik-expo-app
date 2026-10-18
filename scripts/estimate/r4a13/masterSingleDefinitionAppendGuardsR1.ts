@@ -37,18 +37,33 @@ function object(value: unknown): value is Json {
 function exactKeys(value: Json, expected: readonly string[]): boolean {
   return equal(Object.keys(value).sort(), [...expected].sort());
 }
-/** Omission is the only legacy fallback. Four is the accepted bounded intake,
- * not a global group-size policy or an inferred physical-work catalogue. */
+/** Omission of captureScope preserves the accepted exact-four intake.
+ * A declared bounded scope is strict and never falls back on malformed input.
+ * Factories must pin captureSha256 to their actual accepted capture file. */
 function capturedJoinGroupOf(input: MasterSingleDefinitionAppendGuardInput): CapturedJoinGroup | null {
   const append = appendOf(input);
   if (!Object.prototype.hasOwnProperty.call(append, "capturedJoinGroupMembers")) return null;
   const value = append.capturedJoinGroupMembers;
   const placement = append.searchPlacement;
-  invariant(object(value) && exactKeys(value, ["groupId", "members"])
+  invariant(object(value)
+    && exactKeys(value, Object.prototype.hasOwnProperty.call(value, "captureScope")
+      ? ["groupId", "members", "captureScope"] : ["groupId", "members"])
     && placement.groupMode === "join" && typeof value.groupId === "string"
     && value.groupId.length > 0 && value.groupId === value.groupId.trim() && value.groupId === placement.groupId
-    && Array.isArray(value.members) && value.members.length === 4,
+    && Array.isArray(value.members),
   input, "APPEND_CAPTURED_JOIN_GROUP_INVALID");
+  if (Object.prototype.hasOwnProperty.call(value, "captureScope")) {
+    const scope = value.captureScope;
+    invariant(object(scope) && exactKeys(scope, ["contract", "memberCount", "maxMembers", "captureSha256"])
+      && scope.contract === "master-bounded-join-group-capture/r1"
+      && Number.isSafeInteger(scope.memberCount) && scope.memberCount >= 1 && scope.memberCount <= 32
+      && scope.maxMembers === 32
+      && typeof scope.captureSha256 === "string" && /^[0-9a-f]{64}$/u.test(scope.captureSha256)
+      && scope.memberCount === value.members.length,
+    input, "APPEND_CAPTURED_JOIN_GROUP_CAPTURE_SCOPE_INVALID");
+  } else {
+    invariant(value.members.length === 4, input, "APPEND_CAPTURED_JOIN_GROUP_INVALID");
+  }
   const keys = ["catalogId", "ordinal", "definitionVersionId", "approvedTemplateBaselineId",
     "definitionSha256", "sourceIdentity", "workKey", "searchGroupId"];
   const text = (v: unknown) => typeof v === "string" && v.length > 0 && v === v.trim();

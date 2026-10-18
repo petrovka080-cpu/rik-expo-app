@@ -141,12 +141,19 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
       sourceKey: string;
       expected: null;
     }>;
-    /** Optional exact four-member join-group capture. Construct only from a
-     * ROOT-pinned accepted capture; this guard checks its actual current DB
-     * anchors at normal preflight and under the existing append locks. Release
-     * FKs are current config context, not historical immutable member fields. */
+    /** Exact join-group capture from a ROOT-pinned accepted file. Omitted
+     * captureScope preserves the historical exact-four rule. A bounded scope
+     * must be pinned to the actual capture by the factory/sourcePaths; its
+     * declared hash alone is not a generic publication admission. Current DB
+     * anchors are checked before and under the existing append locks. */
     capturedJoinGroupMembers?: Readonly<{
       groupId: string;
+      captureScope?: Readonly<{
+        contract: "master-bounded-join-group-capture/r1";
+        memberCount: number;
+        maxMembers: 32;
+        captureSha256: string;
+      }>;
       members: readonly Readonly<{
         catalogId: string;
         ordinal: number;
