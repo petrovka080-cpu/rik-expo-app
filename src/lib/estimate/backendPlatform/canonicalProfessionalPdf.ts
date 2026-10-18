@@ -23,7 +23,7 @@ import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHo
 import { assertCanonicalPurchaseSupplyRevisionV1, canonicalPurchaseSupplyWarningV1 } from "./canonicalPurchaseSupplyReadinessV1";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-80-selected-delivery-facts-template53" as const;
+  "canonical-professional-pdf.r4-a13-s27-83-construction-public-names-template54" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */

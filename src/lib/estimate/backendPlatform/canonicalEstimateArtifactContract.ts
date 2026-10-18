@@ -14,7 +14,7 @@ import { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBa
 export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r11";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r12-manual-supply-confirmation";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r13-construction-public-names";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:19";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */

@@ -1,0 +1,88 @@
+{
+  "status": "ROOT_REVIEWED_PARTIAL_CASTIRON_RADIATOR_APPEND_R1",
+  "at": "2026-10-18T15:09:26.001631+00:00",
+  "proposal": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-heating-radiator-r1/formal-proposal-r1/radiator-source-specific-partial-append-proposal-r1.json",
+    "sha256": "e80c9e0e99ce3e44817dbd0904ca7b9e2f28cbb5cf1555c3e121056b43e3e9e7"
+  },
+  "executionContext": {
+    "definitionReleaseId": "edab86f3-c3c5-5187-943b-415f23a5653e",
+    "searchReleaseId": "43f02a25-c82d-576c-9009-a0d38fde6c64",
+    "sourceHead": "513dc2fa8d75b773d057c19b0c4c00c11dba148f",
+    "recordedReleaseSourceCommit": "2e491e35520e9c06d0c278007e60599f0fcef7d9"
+  },
+  "exactCollisionRead": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/radiator-exact-collision-actual-v1/radiator-exact-collision-actual-v3.json",
+    "sha256": "889565b422adace389c38dc5b7d82ce2a7ac02ad05daa66e32d45c17a09f1043"
+  },
+  "exactCollisionClosedGuard": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/radiator-exact-collision-actual-v1/radiator-exact-collision-owned-read-v1-receipt.json",
+    "sha256": "c042b566e1db40a6c0d409357a794bcab5ed5c5bd71bd3653a94d952a14602b8"
+  },
+  "decision": "ADMIT_SOURCE_SPECIFIC_PARTIAL_QUANTITY_APPEND_DESIGN_FOR_CANONICAL_CHECKS",
+  "catalogId": "canonical-work:master:internal_castiron_sectional_radiator_install_prepare_krer18_03_001_01_04",
+  "identity": {
+    "catalogId": "canonical-work:master:internal_castiron_sectional_radiator_install_prepare_krer18_03_001_01_04",
+    "workKey": "internal_castiron_sectional_radiator_install_prepare_krer18_03_001_01_04",
+    "namespace": "global",
+    "domain": "heating_hvac",
+    "sourceIdentity": "master-work:internal_castiron_sectional_radiator_install_prepare_krer18_03_001_01_04",
+    "titleRu": "Установка чугунных секционных радиаторов с подготовкой по необходимости",
+    "rootApproved": false,
+    "persisted": false,
+    "identityAbsenceCaptured": false
+  },
+  "searchPlacement": {
+    "groupMode": "create",
+    "groupId": "wg:master:internal_castiron_sectional_radiator_krer18_03_001_01_04",
+    "groupNameRu": "Установка чугунных секционных радиаторов с подготовкой по необходимости",
+    "domainId": "heating_hvac",
+    "systemId": "hvac",
+    "subsystemId": "wg:master:internal_castiron_sectional_radiator_krer18_03_001_01_04",
+    "assemblyId": "wg:master:internal_castiron_sectional_radiator_krer18_03_001_01_04",
+    "workFamilyId": "wg:master:internal_castiron_sectional_radiator_krer18_03_001_01_04",
+    "breadcrumb": [
+      "Установка чугунных секционных радиаторов с подготовкой по необходимости"
+    ],
+    "membershipOrdinal": 0,
+    "primaryUom": "kW",
+    "elementType": "WORK",
+    "operationKind": "NEW_INSTALLATION",
+    "constructionState": "EXISTING_OR_NEW",
+    "newGroupAbsenceCaptured": false,
+    "reason": "Separatephysicalsourcecycle useskW andconditional04; bothlegacygroupnames/breadcrumbs saylargearea. Newgroupwillmatchmember/currentdocument systemhvac; do not fix legacygroup systemheating_hvac or renamegroups inthispacket."
+  },
+  "sourceId": "kg_krer18_internal_heating_2015_castiron_radiator_001_01_04",
+  "existing18Headers9PassportsAndLegacyGroupsPreserved": true,
+  "noGlobalAbsenceClaim": true,
+  "rootVisuallyInspectedOfficialPages": [
+    25,
+    26
+  ],
+  "twoSourceColumnsRequired": [
+    "18-03-001-01",
+    "18-03-001-04"
+  ],
+  "prepOnlyConfirmedSubsetKW": true,
+  "noCountSectionsKWConversionAllowedWithoutProductEvidence": true,
+  "bothBracketSourceRowsRetainedApplicationNeedOpen": true,
+  "thermalTestingThreePercentMoneyNotHours": true,
+  "machinePricesAndRatedKWDeviceOwnerNotAdmitted": true,
+  "paidMachineOwners": 0,
+  "priceBindings": 0,
+  "bindingRowsExpected": 30,
+  "sourceAwareBindingPer01Or04Required": true,
+  "unboundControlRowsExpected": 40,
+  "unresolvedNeedsExpected": 8,
+  "ordinaryManual0or1CannotCloseApplicationNeed": true,
+  "sourcePriceTransferAllowed": false,
+  "canonicalAdopted": false,
+  "actualTestsRequiredBeforePublication": true,
+  "fullTechnicalAcceptance": false,
+  "newCompleteTypes": 0,
+  "published": false,
+  "master": {
+    "path": "C:/Users/User/Downloads/MASTER_TZ_GOX_BUILD_PRODUCTION (11).md",
+    "sha256": "dfbb757a1562962636259c1c4cffd9127d15882b00cdd49baa8fcd4831bcacf2"
+  }
+}

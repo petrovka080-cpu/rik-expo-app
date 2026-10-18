@@ -93,6 +93,8 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     /** Opt in to multiple resources backed by one composite source locator. */
     additionalRowIds?: readonly string[];
     applicability: Json;
+    /** Explicit per-row source columns within the same composite locator. */
+    applicabilityByRowId?: Readonly<Record<string, Json>>;
   }>;
   locator: Readonly<{
     key: string;
@@ -195,6 +197,28 @@ export function resolveMasterSingleDefinitionBindingRowIds(
     typeof row.ordinal === "number" ? row.ordinal : index]));
   invariant(declared.every(id => ordinalById.has(id)), "COMPOSITE_BINDING_UNKNOWN_ROW_ID");
   return [...declared].sort((left, right) => ordinalById.get(left)! - ordinalById.get(right)!);
+}
+
+/** Optional source-specific binding metadata. Omitted maps preserve the exact
+ * legacy shared applicability; an opted-in map must cover every declared row. */
+export function resolveMasterSingleDefinitionBindingApplicabilityByRowId(
+  config: Pick<MasterSingleDefinitionSuccessorConfig, "binding" | "projectSourcePackagePath">,
+  resources: readonly Json[],
+  locatorIds: readonly string[],
+): Readonly<Record<string, Json>> {
+  const rows = resolveMasterSingleDefinitionBindingRowIds(config, resources, locatorIds);
+  if (!Object.prototype.hasOwnProperty.call(config.binding, "applicabilityByRowId")) {
+    return Object.fromEntries(rows.map(id => [id, config.binding.applicability]));
+  }
+  const map = config.binding.applicabilityByRowId;
+  invariant(map != null && typeof map === "object" && !Array.isArray(map), "BINDING_APPLICABILITY_MAP_OBJECT_REQUIRED");
+  invariant(JSON.stringify(Object.keys(map).sort()) === JSON.stringify([...rows].sort()),
+    "BINDING_APPLICABILITY_MAP_EXACT_DECLARED_ROWS_REQUIRED");
+  for (const id of rows) {
+    invariant(map[id] != null && typeof map[id] === "object" && !Array.isArray(map[id])
+      && Object.keys(map[id]).length > 0, "BINDING_APPLICABILITY_ROW_OBJECT_REQUIRED");
+  }
+  return Object.fromEntries(rows.map(id => [id, map[id]]));
 }
 
 export function resolveMasterSingleDefinitionNextCounts(input: Readonly<{
@@ -1240,6 +1264,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
       contract_version: BASELINE_CONTRACT,
     };
     const normativeBindingRowIds = resolveMasterSingleDefinitionBindingRowIds(config, resourceRows, locatorIds);
+    const normativeApplicabilityByRowId = resolveMasterSingleDefinitionBindingApplicabilityByRowId(config, resourceRows, locatorIds);
     const plan = createCanonicalDefinitionClonePlan({
       contract: config.contract,
       definition: {
@@ -1276,7 +1301,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
         bindings: normativeBindingRowIds.flatMap(rowId => locatorIds.map((locatorId) => ({
           row_id: rowId,
           locator_id: locatorId,
-          applicability: config.binding.applicability,
+          applicability: normativeApplicabilityByRowId[rowId],
         }))),
         baseline: baselineRepresentative,
         passport: {

@@ -1,0 +1,405 @@
+{
+  "contract": "rik-expo-app.castiron-radiator-krer18-install-prep.quantity-candidate.r1",
+  "status": "WORK_SOURCE_QUANTITIES_ONLY_NOT_CURRENT_CONSUMER_OR_PUBLICATION_ACCEPTANCE",
+  "prefix": "krer18-castiron-rad-r1",
+  "sourceId": "kg_krer18_internal_heating_2015_castiron_radiator_001_01_04",
+  "normId": "18-03-001-01+04",
+  "normIds": {
+    "INSTALL": "18-03-001-01",
+    "PREPARATION": "18-03-001-04"
+  },
+  "titleRu": "Установка чугунных секционных радиаторов с условной подготовкой",
+  "scopeRu": "Только чугунные секционные радиаторы внутреннего отопления по проектной установленной номинальной мощности. Норма04 применяется лишь к подтверждённомуkWобъёму, требующему подготовки; стальные панели02/конвекторы03 не входят.",
+  "source": {
+    "path": ".release-runtime/r568/s27-23/q6-wavin-hep2o-official-sources/KG_KRER_18_INTERNAL_HEATING.pdf",
+    "sha256": "e03a5b71d06410d6e3cb5ac8035abee343ab0a778d98150cb772704e001ad5dc",
+    "bytes": 1881651,
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no18otoplenievnutrennieustrojstva_compressed-531690838924cbc41.43459761.pdf",
+    "edition": "КРЕР18-2015, утверждение28.03.2016 №2-нпа",
+    "locatorRu": "КРЕР18-2015: техническая часть §§1.1,1.3,1.7,1.11,1.15,1.16; §2.1; табл.18-03-001, стр.25–26, колонки01 и04, измеритель100кВт",
+    "sourceBasePricesUsed": false
+  },
+  "catalogBinding": null,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "workOnlyTestCatalogId": "work-only:test:castiron-radiator-krer18-install-prep-r1",
+  "primaryMeasureParameterId": "installed_nominal_output_kw",
+  "preparationParameterId": "preparation_nominal_output_kw",
+  "preparationModeParameterId": "radiator_preparation_mode",
+  "verifiedAt": "2026-10-18T00:00:00+06:00",
+  "sourceDenominatorKW": "100",
+  "worker": {
+    "INSTALL": {
+      "id": "install-worker",
+      "sourceCode": "000-1003-4",
+      "grade": "3.4",
+      "ratePer100KW": "75.70"
+    },
+    "PREPARATION": {
+      "id": "prep-worker",
+      "sourceCode": "000-1003-4",
+      "grade": "3.4",
+      "ratePer100KW": "37.5"
+    }
+  },
+  "operators": {
+    "id": "included-operators",
+    "ratePer100KW": "2.72",
+    "costTreatment": "INFORMATIONAL_SCOPE",
+    "newPaidOwnerAllowed": false
+  },
+  "machines": [
+    {
+      "id": "truck-crane",
+      "titleRu": "Кран автомобильный10т",
+      "sourceCode": "02-0075",
+      "ratePer100KW": "0.14",
+      "paidPriceOwnerAdmitted": false,
+      "codeSpecificRole": null,
+      "operationScope": null,
+      "machinePriceScopeStatus": "MACHINE_PRICE_SCOPE_PENDING"
+    },
+    {
+      "id": "mast-hoist",
+      "titleRu": "Подъёмник мачтовый500кг/45м",
+      "sourceCode": "03-0327",
+      "ratePer100KW": "2.58",
+      "paidPriceOwnerAdmitted": false,
+      "codeSpecificRole": null,
+      "operationScope": null,
+      "machinePriceScopeStatus": "MACHINE_PRICE_SCOPE_PENDING"
+    },
+    {
+      "id": "electric-drill",
+      "titleRu": "Дрель электрическая",
+      "sourceCode": "33-0241",
+      "ratePer100KW": "0.21",
+      "paidPriceOwnerAdmitted": false,
+      "codeSpecificRole": null,
+      "operationScope": null,
+      "machinePriceScopeStatus": "MACHINE_PRICE_SCOPE_PENDING"
+    },
+    {
+      "id": "flatbed-truck",
+      "titleRu": "Автомобиль бортовой до5т",
+      "sourceCode": "40-0001",
+      "ratePer100KW": "3.34",
+      "paidPriceOwnerAdmitted": false,
+      "codeSpecificRole": null,
+      "operationScope": null,
+      "machinePriceScopeStatus": "MACHINE_PRICE_SCOPE_PENDING"
+    }
+  ],
+  "radiatorSource": {
+    "id": "radiator-capacity-consumed",
+    "sourceCode": "22-1101-0080",
+    "printedSourceCode": "22-1101-0080*",
+    "unitId": "kW",
+    "ratePer100KW": "100",
+    "costTreatment": "INFORMATIONAL_SCOPE",
+    "paidPriceOwnerAdmitted": false,
+    "pcsBridgeAdmitted": false
+  },
+  "materials": [
+    {
+      "id": "calibrated-head-dowels",
+      "branch": "INSTALL",
+      "nameRu": "Дюбели с калиброванной головкой3×68,5мм",
+      "sourceCode": "01-1912-0013",
+      "printedSourceUnit": "t",
+      "printedRatePer100KW": "0.00632",
+      "sourceUnitId": "t",
+      "ratePer100KW": "0.00632",
+      "orderUnitId": "kg",
+      "sourceToOrderMultiplier": "1000",
+      "parameterPrefix": "rad_calibrated_head_dowels",
+      "identityGuideRu": "Дюбели с калиброванной головкой3×68,5мм: подтвердите точный материал и партию, соответствующие исходной строке; нет автопроцента запаса/отходов."
+    },
+    {
+      "id": "cement-mortar-m50",
+      "branch": "INSTALL",
+      "nameRu": "Раствор цементный марки50",
+      "sourceCode": "03-0406-0002",
+      "printedSourceUnit": "m3",
+      "printedRatePer100KW": "0.0505",
+      "sourceUnitId": "m3",
+      "ratePer100KW": "0.0505",
+      "orderUnitId": "m3",
+      "sourceToOrderMultiplier": "1",
+      "parameterPrefix": "rad_cement_mortar_m50",
+      "identityGuideRu": "Раствор цементный марки50: подтвердите точный материал и партию, соответствующие исходной строке; нет автопроцента запаса/отходов."
+    },
+    {
+      "id": "brackets-131",
+      "branch": "INSTALL",
+      "nameRu": "Кронштейны радиаторные131мм для кирпичных/бетонных стен",
+      "sourceCode": "22-1101-0026",
+      "printedSourceUnit": "100pcs",
+      "printedRatePer100KW": "2.53",
+      "sourceUnitId": "pcs",
+      "ratePer100KW": "253.00",
+      "orderUnitId": "pcs",
+      "sourceToOrderMultiplier": "1",
+      "parameterPrefix": "rad_brackets_131",
+      "identityGuideRu": "Кронштейны радиаторные131мм для кирпичных/бетонных стен: подтвердите точный материал и партию, соответствующие исходной строке; нет автопроцента запаса/отходов."
+    },
+    {
+      "id": "brackets-325",
+      "branch": "INSTALL",
+      "nameRu": "Кронштейны радиаторные325мм для кирпичных/бетонных стен",
+      "sourceCode": "22-1101-0027",
+      "printedSourceUnit": "100pcs",
+      "printedRatePer100KW": "2.53",
+      "sourceUnitId": "pcs",
+      "ratePer100KW": "253.00",
+      "orderUnitId": "pcs",
+      "sourceToOrderMultiplier": "1",
+      "parameterPrefix": "rad_brackets_325",
+      "identityGuideRu": "Кронштейны радиаторные325мм для кирпичных/бетонных стен: подтвердите точный материал и партию, соответствующие исходной строке; нет автопроцента запаса/отходов."
+    },
+    {
+      "id": "prep-water",
+      "branch": "PREPARATION",
+      "nameRu": "Вода для подготовки радиаторов",
+      "sourceCode": "01-0601-0001",
+      "printedSourceUnit": "m3",
+      "printedRatePer100KW": "0.81",
+      "sourceUnitId": "m3",
+      "ratePer100KW": "0.81",
+      "orderUnitId": "m3",
+      "sourceToOrderMultiplier": "1",
+      "parameterPrefix": "rad_prep_water",
+      "identityGuideRu": "Вода для подготовки радиаторов: подтвердите точный материал и партию, соответствующие исходной строке; нет автопроцента запаса/отходов."
+    },
+    {
+      "id": "paronite-gaskets",
+      "branch": "PREPARATION",
+      "nameRu": "Прокладки паронитовые",
+      "sourceCode": "01-4809-0021",
+      "printedSourceUnit": "1000pcs",
+      "printedRatePer100KW": "0.31",
+      "sourceUnitId": "pcs",
+      "ratePer100KW": "310.00",
+      "orderUnitId": "pcs",
+      "sourceToOrderMultiplier": "1",
+      "parameterPrefix": "rad_paronite_gaskets",
+      "identityGuideRu": "Прокладки паронитовые: подтвердите точный материал и партию, соответствующие исходной строке; нет автопроцента запаса/отходов."
+    },
+    {
+      "id": "linseed-oil",
+      "branch": "PREPARATION",
+      "nameRu": "Олифа комбинированнаяК3",
+      "sourceCode": "01-7104-0005",
+      "printedSourceUnit": "t",
+      "printedRatePer100KW": "0.0041",
+      "sourceUnitId": "t",
+      "ratePer100KW": "0.0041",
+      "orderUnitId": "kg",
+      "sourceToOrderMultiplier": "1000",
+      "parameterPrefix": "rad_linseed_oil",
+      "identityGuideRu": "Олифа комбинированнаяК3: подтвердите точный материал и партию, соответствующие исходной строке; нет автопроцента запаса/отходов."
+    },
+    {
+      "id": "radiator-plugs",
+      "branch": "PREPARATION",
+      "nameRu": "Пробки радиаторные",
+      "sourceCode": "22-1101-0060",
+      "printedSourceUnit": "pcs",
+      "printedRatePer100KW": "8",
+      "sourceUnitId": "pcs",
+      "ratePer100KW": "8",
+      "orderUnitId": "pcs",
+      "sourceToOrderMultiplier": "1",
+      "parameterPrefix": "rad_radiator_plugs",
+      "identityGuideRu": "Пробки радиаторные: подтвердите точный материал и партию, соответствующие исходной строке; нет автопроцента запаса/отходов."
+    }
+  ],
+  "operations": [
+    {
+      "id": "install-connect",
+      "branch": "INSTALL",
+      "nameRu": "Установка чугунных радиаторов с присоединением к трубопроводам",
+      "parentLaborId": "install-worker"
+    },
+    {
+      "id": "prep-unscrew-plugs",
+      "branch": "PREPARATION",
+      "nameRu": "Вывёртывание пробок",
+      "parentLaborId": "prep-worker"
+    },
+    {
+      "id": "prep-remove-sections",
+      "branch": "PREPARATION",
+      "nameRu": "Снятие секций радиатора",
+      "parentLaborId": "prep-worker"
+    },
+    {
+      "id": "prep-add-sections",
+      "branch": "PREPARATION",
+      "nameRu": "Добавление секций радиатора",
+      "parentLaborId": "prep-worker"
+    },
+    {
+      "id": "prep-screw-plugs",
+      "branch": "PREPARATION",
+      "nameRu": "Ввёртывание пробок",
+      "parentLaborId": "prep-worker"
+    },
+    {
+      "id": "prep-pressure-test",
+      "branch": "PREPARATION",
+      "nameRu": "Опрессовывание радиатора",
+      "parentLaborId": "prep-worker"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "radiator-product-power-bridge",
+      "titleRu": "Подтвердить точный чугунный прибор и базис номинальной мощности",
+      "missingFactOwnerRu": "Проектировщик отопления/производитель",
+      "sourceOrFactRu": "Проектная спецификация и паспорт с номинальнымиkW при указанных температурах: соответствие модели/числа секций/штук. КРЕР задаётkW, не число приборов.",
+      "acceptanceRu": "Записать проверенный SKU↔номинальныеkW; до этого исходныеkW радиатора INFO, без оплаты/закупочного количестваpcs."
+    },
+    {
+      "id": "machine-price-role-boundaries",
+      "titleRu": "Допустить четыре точных машинных ставки с распределением труда",
+      "missingFactOwnerRu": "Root machine-price owner/механик",
+      "sourceOrFactRu": "Официальные калькуляции02-0075/03-0327/33-0241/40-0001 и existing canonicalMachineHourPriceCoverageV1 exactcatalog/row gates; особенно дрель33-0241.",
+      "acceptanceRu": "Нет выводаNO_ADDITIONAL по отсутствию строки;2,72ч машинистов INFO, без второго paidowner и без пропорционирования минимальной смены/выезда."
+    },
+    {
+      "id": "typical-bracket-source-application",
+      "titleRu": "Подтвердить применение обеих типовых крепёжных строк и основание",
+      "missingFactOwnerRu": "Проектировщик креплений/нормативный reviewer",
+      "sourceOrFactRu": "Таблица01 содержит обе131мм и325мм по2,53сотни/100kW, §1.11 включает типовые крепления; проект стены/узла и при необходимости официальное разъяснение.",
+      "acceptanceRu": "Не выбирать произвольно одну строку и не добавлять вторые типовые крепления; несоответствие требует адресной корректировки источника/метода."
+    },
+    {
+      "id": "thermal-commissioning-money-basis",
+      "titleRu": "Подготовить денежный базис теплового испытания3%",
+      "missingFactOwnerRu": "Root cost-basis owner/теплотехник",
+      "sourceOrFactRu": "КРЕР18 §1.16:3% от оплаты труда строительных рабочих и стоимости эксплуатации машин при установке систем; подтверждённые актуальные цены и граница системы.",
+      "acceptanceRu": "Существующий общий cost mechanism должен применить правильный денежный базис; не3%часов/материалов/всегоquote. До доказательства самостоятельный need, не нулевой факт."
+    },
+    {
+      "id": "connection-kit-and-pipes",
+      "titleRu": "Определить комплектную арматуру и отдельные подводки",
+      "missingFactOwnerRu": "Проектировщик отопления",
+      "sourceOrFactRu": "КРЕР18 §1.3, проектная схема подключения и комплект поставки. Разводка и внешняя арматура отдельно КРЕР16.",
+      "acceptanceRu": "Назвать фактические отдельные подработы/количества без автоматического1комплекта на прибор и без повторного подключения, уже включённого01."
+    },
+    {
+      "id": "system-flush-test-boundary",
+      "titleRu": "Разграничить локальную подготовку04 и испытание системы",
+      "missingFactOwnerRu": "Теплотехник/владелец программы испытаний",
+      "sourceOrFactRu": "§§1.7,1.15, табл.04: опрессовка отдельного радиатора; промывка/гидравлическое испытание трубопроводов отопления поКРЕР16.",
+      "acceptanceRu": "Утвердить программу и владельца отдельного системного испытания, не заимствовать водопроводную005-01 или стальнуюрадиаторную02 установку04-0440."
+    },
+    {
+      "id": "external-logistics-and-fees",
+      "titleRu": "Подтвердить внешнюю доставку/разгрузку/мобилизацию",
+      "missingFactOwnerRu": "Снабжение/руководитель участка",
+      "sourceOrFactRu": "Фактическая поставка/маршрут/доступ, состав услуги и включённые source crane/hoist/truck машиночасы.",
+      "acceptanceRu": "Не дублировать включённые машины; минимальные смены/выезды не прятать в пропорциональной ставке, нужны существующие отдельные owners по доказанным фактам."
+    },
+    {
+      "id": "site-acceptance-waste-leftovers",
+      "titleRu": "Принять подготовку места, безопасность и обращение с остатками",
+      "missingFactOwnerRu": "Руководитель участка/приёмщик/снабжение",
+      "sourceOrFactRu": "Осмотр основания, крепления, доступа, акт готовности/приёмки, возврат/совместимое наличие секций/пробок и фактические отходы.",
+      "acceptanceRu": "Назвать исполнителя и проверенные задачи; остаток не равен отходам, универсальный% и дополнительный оплачиваемый демонтаж не придуманы."
+    }
+  ],
+  "scopeFacts": [
+    {
+      "id": "radiator_material_scope",
+      "value": "CAST_IRON_SECTIONAL",
+      "titleRu": "Материал и тип отопительного прибора"
+    },
+    {
+      "id": "nominal_output_basis",
+      "value": "PROJECT_RATED_NOMINAL_KW",
+      "titleRu": "Базис установленной номинальной мощности"
+    },
+    {
+      "id": "fixing_substrate_scope",
+      "value": "BRICK_OR_CONCRETE_TYPICAL_SOURCE_FIXING",
+      "titleRu": "Основание для типовых кронштейнов131/325 по исходной таблице"
+    }
+  ],
+  "projectReferenceFacts": [
+    {
+      "id": "nominal_output_project_reference",
+      "titleRu": "Проектная ведомость номинальной мощности и паспортный базис"
+    },
+    {
+      "id": "connection_fixing_reference",
+      "titleRu": "Подтверждённый узел подключения и основание/крепление"
+    },
+    {
+      "id": "access_handling_reference",
+      "titleRu": "ППР доступа, подъёма и перемещения"
+    }
+  ],
+  "excludedRu": [
+    "Нет стальнойпанели02, конвектора03 и автоматическогоpcs→kW.",
+    "Нет04длязаводскиготовойподгруппы, неизвестныйобъёмподготовки не=0.",
+    "Нет новой оплаты2.72операторскихчасов, машинныхставок без exactadmission и неизвестного04-0440.",
+    "Нет процентаотходов, автоматическогокомплектаподводок/арматуры, скрытой3%денежнойстроки."
+  ],
+  "expectedDefinitionRows": 78,
+  "materialsOrderOwners": 8,
+  "balanceControlsPerMaterial": [
+    "packages",
+    "remaining",
+    "free",
+    "shortage",
+    "reserve-deficit"
+  ],
+  "technicalSequence": [
+    {
+      "ordinal": 10,
+      "phaseRu": "Приёмка проектного и продуктового базиса",
+      "factsRu": "Чугунный секционный тип, проектная номинальная мощностьkW и условия рейтинга, узел подключения/основание/доступ; не теплопотери площади и не число приборов без паспорта.",
+      "gapIds": [
+        "radiator-product-power-bridge",
+        "typical-bracket-source-application"
+      ]
+    },
+    {
+      "ordinal": 20,
+      "phaseRu": "Условная подготовка требующей её подгруппы",
+      "factsRu": "Отдельно подтвердить kWобъём04; извлечение пробок, снятие/добавление секций, ввёртывание пробок, опрессование. Заводски готовая подгруппа04 исключена.",
+      "gapIds": [
+        "system-flush-test-boundary"
+      ]
+    },
+    {
+      "ordinal": 30,
+      "phaseRu": "Установка и подключение01",
+      "factsRu": "Подъём/перемещение исходными машинами, типовые крепления и установка с присоединением; единый труд75.70ч/100kW. Вне комплектные подводки/арматура отдельно по проекту.",
+      "gapIds": [
+        "machine-price-role-boundaries",
+        "connection-kit-and-pipes"
+      ]
+    },
+    {
+      "ordinal": 40,
+      "phaseRu": "Контроль и тепловое испытание",
+      "factsRu": "Системная промывка/гидравлическое испытание отдельная границаКРЕР16; тепловое испытание§1.16 использует3%денежной базы труда+эксплуатации машин, пока не рассчитано.",
+      "gapIds": [
+        "thermal-commissioning-money-basis",
+        "system-flush-test-boundary"
+      ]
+    },
+    {
+      "ordinal": 50,
+      "phaseRu": "Доставка, приёмка, остатки и отходы",
+      "factsRu": "Выделить применимые внешние логистические задачи, не повторить sourcecrane/hoist/truck; документировать безопасность/приёмку/пригодное наличие/резерв/остатки без универсального%отходов.",
+      "gapIds": [
+        "external-logistics-and-fees",
+        "site-acceptance-waste-leftovers"
+      ]
+    }
+  ]
+}

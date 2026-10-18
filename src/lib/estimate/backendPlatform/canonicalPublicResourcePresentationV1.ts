@@ -44,7 +44,8 @@ export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<t
   // exact saved row. Never repair or borrow a malformed source descriptor.
   if (input.descriptor != null && !parseCanonicalPublicResourcePresentationV1(input.descriptor)) return null;
   const presentation = canonicalPublicResourcePresentationV1(input);
-  const details = canonicalPublicEstimateRowDetailsRu({ rowId: input.rowId, titleRu: input.titleRu });
+  const details = canonicalPublicEstimateRowDetailsRu({ rowId: input.rowId, sourceTitleRu: input.titleRu,
+    titleRu: presentation?.nameRu ?? input.titleRu });
   if (!presentation) return details.length ? {
     contractVersion: 'canonical-public-resource-presentation/v1', sourceTitleRu: input.titleRu,
     nameRu: canonicalPublicEstimateRowNameRu({ rowId: input.rowId, titleRu: input.titleRu }),

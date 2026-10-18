@@ -131,7 +131,7 @@ describe("canonical estimate artifact contract", () => {
   it("builds the one canonical procurement projection and artifact provenance", () => {
     const selection = selectCanonicalArtifactRows(rows);
     const projection = buildCanonicalProcurementProjection({ revision, procurementRows: selection.procurementRows });
-    expect(projection.schemaVersion).toBe("canonical_estimate_procurement_r10");
+    expect(projection.schemaVersion).toBe("canonical_estimate_procurement_r11");
     expect(projection.rows).toHaveLength(1);
     expect(projection.rows[0]?.quantity).toBe("12.5");
     expect(buildCanonicalArtifactMetadata({
@@ -204,7 +204,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:18",
+      templateVersion: "professional-estimate-pdf:19",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,

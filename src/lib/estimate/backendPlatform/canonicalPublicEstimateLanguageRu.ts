@@ -48,6 +48,9 @@ export function canonicalPublicEstimateChoiceLabelRu(value: string): string {
 }
 
 export function canonicalPublicEstimateParameterTitleRu(parameterId: string, titleRu: string): string {
+  const authored = publicBindings.parameterBindings.find(binding => binding.parameterId === parameterId
+    && binding.sourceTitleRu === titleRu);
+  if (authored) return authored.nameRu;
   if(parameterId==='existing_covering_confirmed'&&titleRu==='На чём выполнено бетонное основание')return 'Какое бетонное основание разбираем';
   // Area is a separate object measurement. The legacy rate's base thickness
   // does not describe the observed thickness entered in another field.
@@ -64,7 +67,18 @@ export function canonicalPublicEstimateParameterTitleRu(parameterId: string, tit
     .replace('Сохранить в запасе: купола ISD', 'Прозрачные купола, которые оставить в запасе');
 }
 
-export function canonicalPublicEstimateWorkTitleRu(value: string): string {
+export function canonicalPublicEstimateWorkTitleRu(value: string, options: { manualTitleOverride?: boolean } = {}): string {
+  if (options.manualTitleOverride) return value;
+  for (const binding of publicBindings.workBindings) {
+    if (value === binding.sourceTitleRu) return binding.nameRu;
+    if (!value.startsWith(binding.sourceTitleRu)) continue;
+    const measure = value.slice(binding.sourceTitleRu.length);
+    // Only the system-authored measurement suffix may follow an exact source title.
+    // A custom title or a different physical variant remains unchanged.
+    if (/^\s*[—–]\s*\d[\d\s\u00a0\u202f.,]*\s*(?:м(?:²|³|2|3)?|m[23]?|шт\.?|pcs|item)\s*$/u.test(measure)) {
+      return binding.nameRu + measure;
+    }
+  }
   if (/кровельн[а-яё]*\s+(?:светов[а-яё]*\s+)?фонар.*\bCFP\s+100100\b/iu.test(value)) {
     const quantity = value.match(/\s*[—–]\s*\d[\d\s,.]*\s*(?:шт\.?|м²|м2)\s*$/u)?.[0] ?? '';
     return `Окна в крыше${quantity}`;
@@ -81,18 +95,25 @@ export function canonicalPublicEstimateRowNameRu(input: {
       .replace('со снятой асфальтовым', 'со снятым асфальтовым')
       .replace('приём снятой асфальтового', 'приём снятого асфальтового'));
   }
-  const authored = publicBindings.bindings.find(binding => binding.rowId === input.rowId
-    && binding.sourceTitleRu === (input.sourceTitleRu ?? input.titleRu));
+  const authored = publicRowBinding(input);
   if (authored) return authored.nameRu;
   return canonicalPublicEstimateTextRu(input.titleRu);
 }
 
 /** Details of the same exact authored name; no quantity or source admission. */
 export function canonicalPublicEstimateRowDetailsRu(input: {
-  rowId?: string | null; titleRu: string; manualTitleOverride?: boolean;
+  rowId?: string | null; titleRu: string; sourceTitleRu?: string; manualTitleOverride?: boolean;
 }): readonly string[] {
   if (input.manualTitleOverride) return [];
-  const authored = publicBindings.bindings.find(binding => binding.rowId === input.rowId
-    && binding.sourceTitleRu === input.titleRu);
+  const authored = publicRowBinding(input);
   return authored?.detailsRu ?? [];
+}
+
+function publicRowBinding(input: {rowId?: string | null; titleRu: string; sourceTitleRu?: string}) {
+  return publicBindings.bindings.find(binding => binding.rowId === input.rowId
+    && (binding.sourceTitleRu === (input.sourceTitleRu ?? input.titleRu)
+      // A validated saved descriptor can append a selected specification to its
+      // exact original title. Keep that specification in the existing details.
+      || binding.sourceTitleRu === input.titleRu
+        && input.sourceTitleRu?.startsWith(binding.sourceTitleRu + ' — ')));
 }

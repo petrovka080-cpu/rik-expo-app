@@ -1,5 +1,6 @@
 import { euroflexRecycling50MaterialsS2775Config } from './prepareS2775EuroflexRecycling50Materials';
-import { resolveMasterSingleDefinitionBindingRowIds } from './prepareMasterSingleDefinitionSuccessorR1';
+import { resolveMasterSingleDefinitionBindingRowIds, resolveMasterSingleDefinitionBindingApplicabilityByRowId,
+  type MasterSingleDefinitionSuccessorConfig } from './prepareMasterSingleDefinitionSuccessorR1';
 import {
   assertMasterSingleDefinitionAppendParentAnchorR1, assertMasterSingleDefinitionAppendSnapshotR1,
   assertMasterSingleDefinitionAppendUnchangedR1, assertMasterSingleDefinitionCompositeSourceR1,
@@ -20,6 +21,41 @@ const snapshot = () => ({
     sealed_at: null, snapshot_sha256: 'c'.repeat(64) },
   parentTargetCount: 0, catalogDefinitionCount: 0, identities: [], parentSearchTargetCount: 0,
   group: null, ordinalCollisionCount: 0, successorReleaseCount: 0, successorSearchReleaseCount: 0, source: null,
+});
+
+describe('opt-in per-row applicability within the existing composite locator',()=>{
+  const resources=[{row_id:'install',ordinal:0},{row_id:'prep',ordinal:1}];
+  const make=():Pick<MasterSingleDefinitionSuccessorConfig,'binding'|'projectSourcePackagePath'>=>({
+    binding:{rowId:'prep',additionalRowIds:['install'],applicability:{shared:true}},
+  });
+  it('keeps legacy shared applicability and does not mutate the source objects',()=>{
+    const c=make(),before=JSON.stringify(c);
+    const result=resolveMasterSingleDefinitionBindingApplicabilityByRowId(c,resources,['one']);
+    expect(Object.keys(result)).toEqual(['install','prep']);
+    expect(result.install).toBe(c.binding.applicability);expect(result.prep).toBe(c.binding.applicability);
+    expect(JSON.stringify(c)).toBe(before);
+  });
+  it('persists distinct installation and preparation columns without blending their source volumes',()=>{
+    const c=make(),map={install:{exactColumn:'18-03-001-01',sourceVolumeParameterId:'installed_kw'},
+      prep:{exactColumn:'18-03-001-04',sourceVolumeParameterId:'prepared_subset_kw'}};
+    const result=resolveMasterSingleDefinitionBindingApplicabilityByRowId({...c,binding:{...c.binding,applicabilityByRowId:map}},resources,['one']);
+    expect(result).toEqual(map);expect(result.install).not.toHaveProperty('shared');expect(result.prep).not.toHaveProperty('shared');
+  });
+  it('preserves the legacy single-row path with multiple locators when the opt-in is omitted',()=>{
+    const c={binding:{rowId:'legacy',applicability:{legacy:true}},projectSourcePackagePath:'legacy-package'};
+    expect(resolveMasterSingleDefinitionBindingApplicabilityByRowId(c,[],['first','second'])).toEqual({legacy:{legacy:true}});
+  });
+  it.each([
+    ['explicit undefined',undefined],['null map',null],['array map',[]],['empty map',{}],
+    ['missing preparation row',{install:{exactColumn:'01'}}],
+    ['unknown extra row',{install:{exactColumn:'01'},prep:{exactColumn:'04'},extra:{exactColumn:'04'}}],
+    ['null row',{install:{exactColumn:'01'},prep:null}],
+    ['array row',{install:{exactColumn:'01'},prep:[]}],
+    ['empty row',{install:{exactColumn:'01'},prep:{}}],
+  ])('rejects %s before a plan can be published',(_label,map)=>{
+    const c=make();expect(()=>resolveMasterSingleDefinitionBindingApplicabilityByRowId({
+      ...c,binding:{...c.binding,applicabilityByRowId:map as unknown as Record<string,Record<string,unknown>>}},resources,['one'])).toThrow('BINDING_APPLICABILITY');
+  });
 });
 
 describe('shared single-definition composite bindings', () => {
