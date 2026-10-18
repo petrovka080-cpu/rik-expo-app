@@ -134,6 +134,23 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
       sourceKey: string;
       expected: null;
     }>;
+    /** Optional exact four-member join-group capture. Construct only from a
+     * ROOT-pinned accepted capture; this guard checks its actual current DB
+     * anchors at normal preflight and under the existing append locks. Release
+     * FKs are current config context, not historical immutable member fields. */
+    capturedJoinGroupMembers?: Readonly<{
+      groupId: string;
+      members: readonly Readonly<{
+        catalogId: string;
+        ordinal: number;
+        definitionVersionId: string;
+        approvedTemplateBaselineId: string;
+        definitionSha256: string;
+        sourceIdentity: string;
+        workKey: string;
+        searchGroupId: string;
+      }>[];
+    }>;
     identity: Readonly<{
       namespace: "global";
       domain: string;

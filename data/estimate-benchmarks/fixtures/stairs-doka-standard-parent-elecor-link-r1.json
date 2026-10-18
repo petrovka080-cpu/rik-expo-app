@@ -1,0 +1,159 @@
+{
+  "contract": "doka-full9951-explicit-elecor-successor-parent-link/v1",
+  "status": "ROOT_INTEGRATION_PROPOSAL_FROM_ALREADY_ACCEPTED_PROOFS_NOT_NEW_SNAPSHOT_NOT_PUBLICATION_AUTHORIZATION",
+  "frozenR2Handoff": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-monolith-stairs-a/full-retained-master-config-r2/integration-handoff-r2.json",
+    "sha256": "d427b4b57a9756a546783707b94ff5644367e1e6e7d397332434665e36008381",
+    "bytes": 5587
+  },
+  "frozenR2Inputs": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-monolith-stairs-a/full-retained-master-config-r2/config-inputs-r2.json",
+    "sha256": "d0a0f4430f9d1daa60c67d9703992967c2417d3ed6c2745f0cb203538455a262",
+    "bytes": 4700
+  },
+  "evidence": {
+    "historicalFullDokaCapture": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/doka-full-retention-actual-r2/doka-exact-full-retention-actual-r1.json",
+      "sha256": "9951b6c5d3ef3b67e158567b25d2266aff20526fd19b2d45d2429ef34959e5b4",
+      "bytes": 1177118
+    },
+    "actualElecorApply": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/elecor-r3-governed-apply-v1/elecor-r3-actual-apply-result-v1.json",
+      "sha256": "a7476b936e6e2f70b83fcf5f5ea7538ad3dee10cc90e8c24a2b54596429e69fd",
+      "bytes": 26211
+    },
+    "actualElecorIndependentReadback": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/elecor-r3-governed-apply-v1/elecor-r3-publication-scoped-apply-v1-independent-readback.json",
+      "sha256": "3f704d386b9a0f6667cc9ee18d5e341caaeb000a8694d89247b7c6e6718917c7",
+      "bytes": 6538
+    },
+    "rootUserProof": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/outputs/elecor-ppr-fixings-publication-and-readback-v1.json",
+      "sha256": "38e4fc6ef5a162d16a2466e3be66d5dac050d8a48971b30d2429e29bf3da0601",
+      "bytes": 3486
+    },
+    "rootPointerOnlyCommit": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/elecor-r3-governed-apply-v1/root-pointer-commit-v1.json",
+      "sha256": "3a619c8e4c9e1cebf6eaec7042bcbd0fcaf7fa24be59c59be97159d4e8d550dd",
+      "bytes": 6871
+    },
+    "acceptedManifestComparisonSql": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-elecor-installation-completion-r1/independent-publication-readback-v2/elecor-r3-unrelated-manifest-preservation-v2.sql",
+      "sha256": "7ab0dd74950dda3492afcfddc3f3aff17b54860e8521a95f90cd571a73f585c3",
+      "bytes": 1635
+    },
+    "acceptedIndependentReaderCode": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-elecor-installation-completion-r1/independent-publication-readback-v2/read-elecor-r3-apply-independent-v2.mjs",
+      "sha256": "f944cfc8ef0449239559c8937af9fe099aa14861b9fd919befd92783717c7b0c",
+      "bytes": 24431
+    }
+  },
+  "historicalDokaContextUnchanged": {
+    "definitionReleaseId": "60f8d40d-3c34-5ab6-850b-3a332c9f56b8",
+    "searchReleaseId": "e71616a3-54b5-57b4-aa90-3a86bcb3e119",
+    "sourceHead": "7f5754c0212613f563ca823e9f958b46c200cf1b",
+    "recordedReleaseSourceCommit": "19b3b1856468d9889de48cec24d81fff17afafb8"
+  },
+  "historicalFullCaptureDefinitionReleaseId": "636a3456-f2f8-5934-85b4-9234c7b23da0",
+  "originalCurrentDokaManifestAnchorFiveFields": {
+    "release_id": "60f8d40d-3c34-5ab6-850b-3a332c9f56b8",
+    "catalog_id": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+    "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+    "approved_template_baseline_id": "2e9f5528-f67f-5e00-883a-bffc1b13c586",
+    "definition_hash": "dced81ba161e260554f046b4e8dea2d4c9f764981fe5aa7174fc6d3711e968a2"
+  },
+  "originalCurrentDokaManifestRawWitness": {
+    "set": "manifestFiveFieldAnchor",
+    "setSha256": "3a805ae40f9d063c2034c8a4983927501491c7de3f7faa8cde722a63f2ceb39d",
+    "rawRowSha256": "c09840eab3e45938b9ab244e4d83f1ecad2734fc6ecce3cd132d865e31633852"
+  },
+  "acceptedParentTransition": {
+    "fromDefinitionReleaseId": "60f8d40d-3c34-5ab6-850b-3a332c9f56b8",
+    "fromSearchReleaseId": "e71616a3-54b5-57b4-aa90-3a86bcb3e119",
+    "toDefinitionReleaseId": "d3bc6c1a-e16d-5fcc-b36c-cc584a31c529",
+    "toSearchReleaseId": "c97fa9c9-338e-5c6a-8ce5-216deaa73176",
+    "changedCatalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+    "dokaCatalogIsNotChangedElecorCatalog": true,
+    "replacementNotAppend": true
+  },
+  "expectedCurrentDokaManifestAnchorForExistingRetainedReader": {
+    "release_id": "d3bc6c1a-e16d-5fcc-b36c-cc584a31c529",
+    "catalog_id": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+    "definition_version_id": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+    "approved_template_baseline_id": "2e9f5528-f67f-5e00-883a-bffc1b13c586",
+    "definition_hash": "dced81ba161e260554f046b4e8dea2d4c9f764981fe5aa7174fc6d3711e968a2"
+  },
+  "anchorSemantics": {
+    "contextualFieldChanged": [
+      "release_id"
+    ],
+    "unchangedAnchorBusinessFields": [
+      "catalog_id",
+      "definition_version_id",
+      "approved_template_baseline_id",
+      "definition_hash"
+    ],
+    "criticalDistinction": "The original membership5 is historical R60f. New config.parentReleaseId supplies d3bc for the next actual membership check; full9951 definition.release_id and every old raw row remain historical. It would be false to call release_id unchanged.",
+    "unchangedMappingFieldsComparedByAcceptedSql": [
+      "definition_version_id",
+      "source_batch",
+      "source_release_id",
+      "domain_id",
+      "publication_state",
+      "approved_template_baseline_id",
+      "baseline_ready",
+      "scenario_ready",
+      "definition_hash",
+      "runtime_publication_state"
+    ],
+    "acceptedSqlResult": {
+      "parent_count": 10467,
+      "successor_count": 10467,
+      "unrelated_count": 10466,
+      "unrelated_changed": 0
+    },
+    "deduction": "Doka exists in captured old parent and is not the sole changed ELECOR catalog. Accepted FULL JOIN equality for all10466 other catalog mappings entails its four anchor business values remain exact in the successor. This is a deduction from accepted readback, not an additional targeted read."
+  },
+  "sourceAndPointerCommit": {
+    "publicationSourceHead": "7f5754c0212613f563ca823e9f958b46c200cf1b",
+    "publicationSourceTree": "676c567e35379f39171931855e7d5ea81a4cf288",
+    "pointerOnlyHead": "c124a69eba49cfaf7319f07be6569d77e5d95faa",
+    "pointerOnlyTree": "b7644af001e4c0752e7a9b9e6d7193ac22fdad44",
+    "pointerCommitParentEqualsPublicationSource": true,
+    "publicationSourceAncestorOfPointerHead": true,
+    "pointerOnlyChangedFiles": [
+      "data/estimate-benchmarks/r568-local-developer-canonical-release.json"
+    ],
+    "actualPointer": {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/data/estimate-benchmarks/r568-local-developer-canonical-release.json",
+      "sha256": "ea48cd4ff3f10ee05865ebee594ad91e16dbfa4847369ca8b970252c56e20634",
+      "bytes": 1152
+    },
+    "mutablePointerExcludedFromSourcePaths": true
+  },
+  "configurationProposal": {
+    "baseFactory": "prepareStairsDokaStandardFullRetainedMasterDraftR2",
+    "parentReleaseId": "d3bc6c1a-e16d-5fcc-b36c-cc584a31c529",
+    "parentSearchReleaseId": "c97fa9c9-338e-5c6a-8ce5-216deaa73176",
+    "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+    "retainedCapturedParentDefinitionId": "f4d62d59-abe5-584a-8ab0-073ce5a713ea",
+    "retainedCapturedParentBaselineId": "2e9f5528-f67f-5e00-883a-bffc1b13c586",
+    "retainedCapturedParentDefinitionSha256": "dced81ba161e260554f046b4e8dea2d4c9f764981fe5aa7174fc6d3711e968a2",
+    "retainParentBindingsUsesFull9951": true,
+    "automaticParentRebase": false,
+    "formalRootDecisionPin": null,
+    "freshRootExecutionPin": null
+  },
+  "stillMandatoryBeforeRootIntegrationAndPublication": [
+    "ROOT formal reviewed existing-source-variant/new-estimate-only admission and saved-switch guard proof",
+    "Fresh separately pinned actual sourceHEAD/pointer/recordedrelease context after ROOT integrates config; do not use c124 as future sourceHEAD automatically",
+    "Existing retained reader checks membership5 against real config.parentReleaseId plus old exact definition/baseline/hash at normal preflight and under existing locks",
+    "Existing full capture/source/locator/baseline/8bindings/188p/92f/95r snapshot equality, new113source closure,8+20 plan and independent readback remain unchanged",
+    "All runtime QA and actual tests/governed stages remain ROOT-owned; this addendum grants none"
+  ],
+  "sourceAtAuthoringReadOnly": "c124a69eba49cfaf7319f07be6569d77e5d95faa",
+  "nodeDbHeavyRunsByAuthor": 0,
+  "canonicalChangedByAuthor": false,
+  "oldCapturesAndR2Changed": false,
+  "publicationPerformed": false
+}

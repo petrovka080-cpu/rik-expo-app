@@ -1,0 +1,550 @@
+{
+  "schemaVersion": "rik-expo-app.elecor-ppr-fixings-master-successor.r3.receipt.v1",
+  "capturedAt": "2026-10-18T17:16:34.275Z",
+  "globalStatus": "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
+  "source": {
+    "branch": "codex/r4-a5-clean-08b18902",
+    "head": "7f5754c0212613f563ca823e9f958b46c200cf1b",
+    "tree": "676c567e35379f39171931855e7d5ea81a4cf288",
+    "fingerprint": "e1a3f03e3cbd9fc0cb8881782eed54c7bf4a926739c4a27a15d3ea3100747ee9",
+    "sourceHashes": [
+      {
+        "path": "scripts/estimate/r4a13/prepareElecorMechanicalFixingsMasterSuccessorR3.ts",
+        "sha256": "6c5ee9cfb3cd31110040324846c8dd80b5677048bbbccccc4d21391ab18d8d86",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/r4a13/prepareElecorMechanicalFixingsCurrentPublicationR2.ts",
+        "sha256": "d1182865b9a07dfc879ab7c5742aa0705113742428f4cfb23773649963347c30",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+        "sha256": "b3777ee2eba4a81d793e469f3e2b1e4177a4259ae231b4aca875914f6cc6acdf",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+        "sha256": "4ce9e202bae18068836addb84ec4af6351b67e15bd8624316d38cbc284849a3b",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+        "sha256": "7b0651c5b0f42fc8526a54c79ee409aff5ed298a284a552629837f8856dd977d",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "src/lib/estimate/v4/elecorMechanicalProjectFixingsCompletionR1.ts",
+        "sha256": "04744fce8de898c9cd6507ca97e68c695d62582f3dc40b7b2112a6fc4b489f87",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "src/lib/estimate/v4/elecorSingleRouteMaterialR1.ts",
+        "sha256": "2006e830eb5c5b00b40091e2d68dfd8be89d3146980178a0b0fbd816ac7e12db",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+        "sha256": "d4c2192d1d5c4ef0285668b3c1aeb2994c2b57c3e8b9d8d6a776ee4c3e10d7ae",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+        "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+        "sha256": "4b5abc5b4eba6c74b8d58e554a6353a461f50f9b8e4396d85c56485f87e6579f",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts",
+        "sha256": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts",
+        "sha256": "1a563f44d0987d3cbd30efea1659d2a9ba066b1fdea77780f76163e53dedbcfa",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/backendMigration/canonicalImmutableCalculationContinuityR1.ts",
+        "sha256": "b1fb85368a69a9f37d305abcb1574d72d36e7a41054677191c8a9210903246b3",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "src/lib/estimate/backendPlatform/canonicalImmutableCalculationContinuityV1.ts",
+        "sha256": "107dfb72b2a3ba99ec3e6473a5af05f67ac41e2d556b86953879b7692130af5d",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts",
+        "sha256": "7550de384c6367b8ff0012a92a00eef6a89740233764bcfa8e7861fc0337ff1c",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/elecor-mechanical-fixings-current-parent-r2.json",
+        "sha256": "3097e5f9497ccde7749f961f3b4a602cfb4d61c1e160c90439b30c3143e8b587",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/elecor-mechanical-fixings-current-read-r1.json",
+        "sha256": "5104941defb379f6e31c287b2577dd0e3401a26fe42f3f595fa99f9b96c8f332",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/elecor-root-completion-decision-r1.json",
+        "sha256": "b2058ac7d67a41761aa4f5535d3906a60ad87bc2e19b75db53f53e8dc268c9dd",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/elecor-project-mechanical-fixings-completion-r1.json",
+        "sha256": "4ff75bc9f8374afc6cd268fbf91574b556625a0cb324ee048faa00a4f7388928",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json",
+        "sha256": "0143c1ca5f414b766773095fa6a25fd698a2c53c0e566e44bed0649ae42bd887",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/iek-elecor-ckk10-001-1-edition8-official-r1.pdf",
+        "sha256": "9b7dd702dd3ef94f74f17d96aa8baf296eb198732f1a58261ee7b100529f3d24",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/fischer-duopower-535463-official-product-r1.html",
+        "sha256": "25dbca1b88027f5854263f6341b8800921abba0a05080b2dbc373225cfb7c3bf",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "data/estimate-benchmarks/fixtures/iek-elecor-60x40-official-product-edition8-link-r1.html",
+        "sha256": "f63a1cc6befe3c72c10231841be3bd4c79b30e27621b43a6db539800b6270323",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts",
+        "sha256": "689d2bcc2a088447dd610bade3fbb5a0710ef52ffa94d607f4edf81341360d19",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts",
+        "sha256": "5d94c0531fd94374538acc1da163a785f4020555554646d2ffcf3cddb8d0fb63",
+        "trackedState": "CLEAN_AT_HEAD"
+      },
+      {
+        "path": "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts",
+        "sha256": "83ea7468adce2e240879984f82dbaa4623d874f55fc17937eadae41e7bc1f44e",
+        "trackedState": "CLEAN_AT_HEAD"
+      }
+    ],
+    "projectSourcePackage": null,
+    "projectSourcePackageSet": null,
+    "hashedDirtySourceAccepted": false
+  },
+  "master": {
+    "path": "C:/Users/User/Downloads/MASTER_TZ_GOX_BUILD_PRODUCTION (11).md",
+    "sha256": "dfbb757a1562962636259c1c4cffd9127d15882b00cdd49baa8fcd4831bcacf2"
+  },
+  "status": "GREEN_ELECOR_PPR_FIXINGS_CURRENT_R3_PREPARED_NOT_ACTIVE",
+  "idempotent": false,
+  "mutationPerformed": true,
+  "predecessor": {
+    "releaseId": "60f8d40d-3c34-5ab6-850b-3a332c9f56b8",
+    "searchReleaseId": "e71616a3-54b5-57b4-aa90-3a86bcb3e119",
+    "catalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+    "definitionId": "be917bf2-b982-541b-89cc-43ffdc9110fa",
+    "shape": [
+      22,
+      26,
+      26
+    ],
+    "targetAbsentForAppend": false
+  },
+  "successor": {
+    "releaseId": "d3bc6c1a-e16d-5fcc-b36c-cc584a31c529",
+    "searchReleaseId": "c97fa9c9-338e-5c6a-8ce5-216deaa73176",
+    "releaseKey": "rik-expo-app.elecor-ppr-fixings-master-successor.r3:e1a3f03e3cbd9fc0cb88",
+    "definitionId": "6d2a0632-e348-524b-bc04-b2f06875f9d7",
+    "baselineId": "43fef1fe-1332-5952-8edd-1141a5b134ba",
+    "definitionVersion": 2,
+    "shape": [
+      39,
+      32,
+      32
+    ],
+    "nextCounts": {
+      "definitions": 10467,
+      "parameters": 94530,
+      "formulas": 581251,
+      "resources": 581684
+    }
+  },
+  "coreAcceptance": {
+    "status": "PASS_PARTIAL_ELECOR_FIXINGS_MASTER_CONFIG_AND_RETAINED_SOURCE_CORE_ONLY",
+    "shape": [
+      39,
+      32,
+      32
+    ],
+    "bindings": 20,
+    "oldBindingsPreserved": 18,
+    "newBindings": 2,
+    "staticNeeds": 8,
+    "activeMechanicalNeeds": 7,
+    "priceBindings": 0,
+    "noOldUnknownNormPriceOrQuantityCarry": true,
+    "registryAdmissionPending": true,
+    "manualRightsMigrationAdmissionPending": true,
+    "fullTechnicalAcceptance": false,
+    "serializedSha256": "dcdbd427dc9740906215d71d00592dcdfef5bb1505335e93115bf796c8127906",
+    "newCatalogs": 0,
+    "newCompleteTypes": 0
+  },
+  "projectSourcePackage": null,
+  "publisherPreflight": {
+    "status": "GREEN_CANONICAL_PUBLISHER_PAYLOAD_PREFLIGHT",
+    "mutationPerformed": false,
+    "schema": {
+      "status": "GREEN_CANONICAL_PUBLISHER_SCHEMA_PREFLIGHT",
+      "columnCount": 67,
+      "constraintCount": 52,
+      "schemaSha256": "b3546105f8102051e36b741d8e0624db44d34a8123f417f665af9afaa0f465af",
+      "normativeSourceIdsStorage": "jsonb_parameter_source_map",
+      "resourceRowTypes": [
+        "equipment",
+        "labor",
+        "material",
+        "other",
+        "service",
+        "waste"
+      ],
+      "passportCapabilityCount": 4
+    },
+    "plans": [
+      {
+        "catalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+        "parameters": 39,
+        "formulas": 32,
+        "resources": 32,
+        "normativeBindings": 20,
+        "normativeSourceKeys": [
+          "iek_elecor_60x40_single_route_materials_r1",
+          "iek_elecor_ckk10_001_1_edition8_project_mechanical_fixings"
+        ],
+        "payloadSha256": "57a663b38fe06bab530899ca7eef3221f1886c18f2733967f6c58005e6022456"
+      }
+    ],
+    "plansSha256": "70ed4213505034c7d2c36b003e67aa5cf4155320b433b9cc5da401281351b676"
+  },
+  "publisherPersistedSelfAudit": {
+    "status": "GREEN_CANONICAL_PUBLISHER_PERSISTED_SELF_AUDIT",
+    "definitionId": "6d2a0632-e348-524b-bc04-b2f06875f9d7",
+    "catalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+    "parameterCount": 39,
+    "formulaCount": 32,
+    "resourceCount": 32,
+    "normativeBindingCount": 20,
+    "compatiblePriceBindingCount": 0,
+    "payloadSha256": "57a663b38fe06bab530899ca7eef3221f1886c18f2733967f6c58005e6022456",
+    "decision": {
+      "contract": "real-professional-estimates-r3.content-passport.v1",
+      "status": "GREEN",
+      "allowed": true,
+      "quantityScope": "PARTIAL",
+      "priceState": "PARTIAL_NEEDS_PRICE",
+      "activationAllowed": false,
+      "productionEligible": false,
+      "waveContract": "rik-expo-app.elecor-ppr-fixings-master-successor.r3",
+      "technicalScopeStatus": "NEEDS_SOURCE",
+      "preliminaryCompositionOnly": true,
+      "unresolvedResourceRowIds": [
+        "electrical:elecor-60x40-single-route:open-installation-labour",
+        "electrical:elecor-60x40-single-route:open-fixings",
+        "electrical:elecor-60x40-single-route:open-end-node-components",
+        "electrical:elecor-60x40-single-route:open-tools",
+        "electrical:elecor-60x40-single-route:open-access-protection",
+        "electrical:elecor-60x40-single-route:open-acceptance",
+        "electrical:elecor-60x40-single-route:open-delivery-handling",
+        "electrical:elecor-60x40-single-route:open-cleanup-disposal"
+      ]
+    },
+    "inheritedCompatiblePriceBindingCount": 0
+  },
+  "audit": {
+    "release": {
+      "id": "d3bc6c1a-e16d-5fcc-b36c-cc584a31c529",
+      "status": "prepared",
+      "activated_at": null,
+      "definition_count": 10467,
+      "parameter_count": 94530,
+      "formula_count": 581251,
+      "resource_row_count": 581684,
+      "source_manifest_sha256": "5e63db225af77871ff096e2787e21c1ecd1bc9d81a69a038244dd707b4eb5fa6"
+    },
+    "manifest": {
+      "identities": 10467,
+      "replaced": 1,
+      "snapshot": "5e63db225af77871ff096e2787e21c1ecd1bc9d81a69a038244dd707b4eb5fa6"
+    },
+    "target": {
+      "catalog_id": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+      "definition_version_id": "6d2a0632-e348-524b-bc04-b2f06875f9d7",
+      "source_batch": "rik-expo-app.elecor-ppr-fixings-master-successor.r3",
+      "runtime_publication_state": "CANDIDATE",
+      "definition_version": 2,
+      "content_status": "CANDIDATE_READY",
+      "content_gate_status": "GREEN",
+      "decision": {
+        "status": "GREEN",
+        "allowed": true,
+        "contract": "real-professional-estimates-r3.content-passport.v1",
+        "priceState": "PARTIAL_NEEDS_PRICE",
+        "waveContract": "rik-expo-app.elecor-ppr-fixings-master-successor.r3",
+        "quantityScope": "PARTIAL",
+        "activationAllowed": false,
+        "productionEligible": false,
+        "technicalScopeStatus": "NEEDS_SOURCE",
+        "unresolvedResourceRowIds": [
+          "electrical:elecor-60x40-single-route:open-installation-labour",
+          "electrical:elecor-60x40-single-route:open-fixings",
+          "electrical:elecor-60x40-single-route:open-end-node-components",
+          "electrical:elecor-60x40-single-route:open-tools",
+          "electrical:elecor-60x40-single-route:open-access-protection",
+          "electrical:elecor-60x40-single-route:open-acceptance",
+          "electrical:elecor-60x40-single-route:open-delivery-handling",
+          "electrical:elecor-60x40-single-route:open-cleanup-disposal"
+        ],
+        "independentCompletenessMap": {
+          "entries": [
+            {
+              "unitId": "item",
+              "category": "material",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "EXACT_CONFIRMED_SINGLE_STRAIGHT_NEW_ROUTE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:channel-order",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:channel-order"
+              },
+              "operationId": "material-plan",
+              "quantityRule": "PROJECT_SECTION_JOINT_GEOMETRY_PLUS_EXACT_FACTORY_PACK_BALANCE",
+              "specification": "CKK10-060-040-1-K01-018",
+              "expectedResourceId": "channel"
+            },
+            {
+              "unitId": "item",
+              "category": "material",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "EXACT_CONFIRMED_SINGLE_STRAIGHT_NEW_ROUTE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:kms-order",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:kms-order"
+              },
+              "operationId": "material-plan",
+              "quantityRule": "PROJECT_SECTION_JOINT_GEOMETRY_PLUS_EXACT_FACTORY_PACK_BALANCE",
+              "specification": "CKMP10D-S-060-040-K01",
+              "expectedResourceId": "kms"
+            },
+            {
+              "unitId": "man_hour",
+              "category": "labor",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:open-installation-labour",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:open-installation-labour"
+              },
+              "operationId": "completion",
+              "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+              "specification": "Труд монтажа кабель-канала по принятому основанию",
+              "expectedResourceId": "installation-labour"
+            },
+            {
+              "unitId": "pcs",
+              "category": "material",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "FIXING_METHOD_UNRESOLVED_SOURCE_NEED_REMAINS",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:open-fixings",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:open-fixings"
+              },
+              "operationId": "completion",
+              "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+              "specification": "Крепёж и узлы крепления к фактическому основанию",
+              "expectedResourceId": "fixings"
+            },
+            {
+              "unitId": "pcs",
+              "category": "material",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:open-end-node-components",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:open-end-node-components"
+              },
+              "operationId": "completion",
+              "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+              "specification": "Концевые, переходные и прочие узловые элементы",
+              "expectedResourceId": "end-node-components"
+            },
+            {
+              "unitId": "service",
+              "category": "equipment",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:open-tools",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:open-tools"
+              },
+              "operationId": "completion",
+              "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+              "specification": "Инструмент и оснастка для резки и монтажа",
+              "expectedResourceId": "tools"
+            },
+            {
+              "unitId": "service",
+              "category": "service",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:open-access-protection",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:open-access-protection"
+              },
+              "operationId": "completion",
+              "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+              "specification": "Доступ, защита зоны и средства безопасности",
+              "expectedResourceId": "access-protection"
+            },
+            {
+              "unitId": "service",
+              "category": "service",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:open-acceptance",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:open-acceptance"
+              },
+              "operationId": "completion",
+              "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+              "specification": "Проверка монтажа и приёмка электротехнического решения",
+              "expectedResourceId": "acceptance"
+            },
+            {
+              "unitId": "service",
+              "category": "logistics",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:open-delivery-handling",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:open-delivery-handling"
+              },
+              "operationId": "completion",
+              "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+              "specification": "Доставка, разгрузка и перемещение материалов",
+              "expectedResourceId": "delivery-handling"
+            },
+            {
+              "unitId": "service",
+              "category": "service",
+              "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+              "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:open-cleanup-disposal",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:open-cleanup-disposal"
+              },
+              "operationId": "completion",
+              "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+              "specification": "Уборка и обращение с отходами",
+              "expectedResourceId": "cleanup-disposal"
+            },
+            {
+              "unitId": "pcs",
+              "category": "material",
+              "sourceId": "iek_elecor_ckk10_001_1_edition8_project_mechanical_fixings",
+              "condition": "EXACT_PPR_CONCRETE_WALL_MECHANICAL535463_BRANCH",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:fixings-consumed",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:fixings-consumed"
+              },
+              "operationId": "project-mechanical-fixings",
+              "quantityRule": "EXACT_ACCEPTED_PPR_POINT_COUNT_ONE_COMPLETE_PRODUCT_PER_POINT",
+              "specification": "50 комплектов в заводской коробке: 50 дюбелей DuoPower 6×30 и 50 винтов Panhead 4,5×40. Строка измеряется в комплектных парах, цена за одну пару, не за коробку.",
+              "expectedResourceId": "mechanical-fixings-project-535463"
+            },
+            {
+              "unitId": "pcs",
+              "category": "material",
+              "sourceId": "iek_elecor_ckk10_001_1_edition8_project_mechanical_fixings",
+              "condition": "EXACT_PPR_CONCRETE_WALL_MECHANICAL535463_BRANCH",
+              "formulaId": "electrical:elecor-60x40-single-route:formula:fixings-535463-order",
+              "resolution": {
+                "kind": "ROW",
+                "rowId": "electrical:elecor-60x40-single-route:fixings-535463-order"
+              },
+              "operationId": "project-mechanical-fixings",
+              "quantityRule": "FIXED50_PAIR_FACTORY_QUANTUM_PLUS_ACTUAL_STOCK_RESERVE_AND_SUPPLIER_MULTIPLE",
+              "specification": "50 комплектов в заводской коробке: 50 дюбелей DuoPower 6×30 и 50 винтов Panhead 4,5×40. Строка измеряется в комплектных парах, цена за одну пару, не за коробку.",
+              "expectedResourceId": "mechanical-fixings-order-535463"
+            }
+          ],
+          "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+          "sourceKind": "PRODUCT_SYSTEM_TDS",
+          "evidenceSha256": "cd936577d94a7ab3a877a5548055bebd91dc7738a4476835e188ab1b2f5eb59a",
+          "evidenceReferences": [
+            ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_PLASTIC_CABLE_SYSTEMS.pdf PDF9/10/12",
+            ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_ELECOR_ACCESSORIES_40X25.html exact KMS60x40"
+          ],
+          "generatedFromCurrentRows": false
+        },
+        "preliminaryCompositionOnly": true
+      },
+      "parameters": 39,
+      "formulas": 32,
+      "resources": 32,
+      "forbidden_adjacent_rows": 0
+    },
+    "search": {
+      "release_status": "draft",
+      "catalog_id": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+      "canonical_name_ru": "Материалы IEK ELECOR 60×40: прямой участок и крепёж по ППР — частичный состав",
+      "primary_uom": "m",
+      "definition_release_id": "d3bc6c1a-e16d-5fcc-b36c-cc584a31c529",
+      "definition_version_id": "6d2a0632-e348-524b-bc04-b2f06875f9d7",
+      "selectable": true,
+      "adjudication_class": "EFFECTIVE_WORK",
+      "documents": 10458,
+      "snapshot_sha256": "7baeee2e0605a53a44bfb7a96d29b587b4e756beed1765109aba18f2762a015f"
+    },
+    "identity": {
+      "catalog_id": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+      "namespace": "global",
+      "domain": "electrical",
+      "source_identity": "manufacturer:iek:elecor:CKK10-060-040-1-K01-018:single-straight-route:CKMP10D-S-060-040-K01",
+      "work_key": "electrical_elecor_60x40_white_single_straight_route_materials",
+      "title_ru": "Материалы IEK ELECOR 60×40 для одного нового прямого участка — частичный состав",
+      "denominator_eligible": true,
+      "canonical_owner": "backend",
+      "retired_at": null
+    },
+    "searchPlacement": null,
+    "unrelatedManifestChanges": 0
+  },
+  "productionAccessed": false,
+  "deployPerformed": false,
+  "activationPerformed": false,
+  "releasePerformed": false,
+  "otaPerformed": false,
+  "receiptSha256": "7891a5b305614d6fcdf02eb31eec8b4f635727f72b2bc702e9d552939e118fa9"
+}

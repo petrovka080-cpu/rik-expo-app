@@ -1,0 +1,146 @@
+{
+  "contract": "gox-build.paving-cut-stationary70-quantity-candidate/v1",
+  "status": "WORK_CATALOG_NULL_PURE_QUANTITY_ONLY_NOT_RUN_NOT_ADOPTED",
+  "catalogId": null,
+  "publicationAllowed": false,
+  "titleRu": "Резка тротуарной плитки толщиной 70 мм на стационарном станке",
+  "sourceKeyProposal": "kg_krer27_07_005_04_paving_cut_stationary_70mm_r1",
+  "normId": "KRER27-07-005-04",
+  "source": {
+    "titleRu": "КРЕР27-2015: резка тротуарной плитки 70 мм, колонка 27-07-005-04",
+    "edition": "КРЕР27-2015, сборник «Автомобильные дороги»",
+    "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+    "localArtifact": ".release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+    "locatorRu": "Таблица27-07-005, состав для04–07 «Резка тротуарной плитки»; измеритель1мреза; только колонка27-07-005-04 «Резка тротуарной плитки толщиной70мм наотрезномстанке». Труд/машинисты/станок настр.141, диск продолжение настр.142.",
+    "basisQuantity": "1",
+    "basisUnitId": "m"
+  },
+  "rows": [
+    {
+      "suffix": "whole-cutting-labor",
+      "resourceCode": "000-1005-0",
+      "titleRu": "Рабочие-строители, средний разряд5,0",
+      "printedNameRu": "Рабочие-строители, средний разряд5,0",
+      "unitId": "man_hour",
+      "ratePerCutM": "0.39",
+      "category": "labor"
+    },
+    {
+      "suffix": "operator-information",
+      "resourceCode": null,
+      "titleRu": "Затраты труда машинистов — справочно",
+      "printedNameRu": "Затраты труда машинистов — справочно",
+      "unitId": "man_hour",
+      "ratePerCutM": "0.16",
+      "category": "labor"
+    },
+    {
+      "suffix": "stationary-machine-consumed",
+      "resourceCode": "33-0667",
+      "titleRu": "Станок для исходной операции резки — нормативный ресурс",
+      "printedNameRu": "Станки плоскошлифовальные с прямоугольным столом и горизонтальным шпинделем высокой точности",
+      "unitId": "machine_hour",
+      "ratePerCutM": "0.16",
+      "category": "equipment"
+    },
+    {
+      "suffix": "diamond-disc-consumed",
+      "resourceCode": "01-6102-0002",
+      "titleRu": "Алмазный диск AR-SUPER для твёрдых материалов, 350 × 25,4 мм",
+      "printedNameRu": "Алмазный диск AR-SUPER для твёрдых материалов, 350 × 25,4 мм",
+      "unitId": "piece",
+      "ratePerCutM": "0.014",
+      "category": "material"
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "stationary-equipment-source-mapping",
+      "phase": 5,
+      "unitId": null,
+      "state": "APPLICATION_SOURCE_UNRESOLVED",
+      "missingFact": "Resolve printed method wording against literal machine code33-0667 nomenclature using a primary machine/PPR compatibility source; define exact own/hired full-hour coverage and blade exclusion.",
+      "owner": "Technologist/equipment supplier/ROOT strict machine-price mapper",
+      "nextTask": "Supply exact suitable machine manual and method statement; ROOT may then review finite own/hired mappings. No fallback admission."
+    },
+    {
+      "id": "blade-specification-purchase-contract",
+      "phase": 3,
+      "unitId": null,
+      "state": "PROJECT_AND_SUPPLY_CONTRACT_REQUIRED",
+      "missingFact": "Exact compatible product, supply quantum, whole new stock/reserve and aggregate quote inclusion boundary.",
+      "owner": "Supplier/estimator",
+      "nextTask": "Supply SKU/specification/packing and explicit separate cost scope. Reuse purchase balance after review."
+    },
+    {
+      "id": "site-preparation-protection-scope",
+      "phase": 2,
+      "unitId": null,
+      "state": "APPLICATION_SOURCE_UNRESOLVED",
+      "missingFact": "Which setup/protection/material handling operations are included in the whole cutting norm and which are separately needed.",
+      "owner": "Method designer/site supervisor",
+      "nextTask": "Source and mark site-specific additional work; do not invent item1 or split0.39h."
+    },
+    {
+      "id": "utilities-cooling-dust-ppe",
+      "phase": 7,
+      "unitId": null,
+      "state": "APPLICATION_SOURCE_UNRESOLVED",
+      "missingFact": "Actual machine/blade safety method, water/cooling, electrical supply, dust control and PPE scope; no l/m or kWh/m established.",
+      "owner": "Technologist/safety specialist",
+      "nextTask": "Obtain applicable primary manuals and project method, then isolate quantities/costs already included in equipment quote."
+    },
+    {
+      "id": "edge-quality-acceptance",
+      "phase": 8,
+      "unitId": null,
+      "state": "PROJECT_ACCEPTANCE_SCOPE_REQUIRED",
+      "missingFact": "Project edge geometry/tolerances/finish and any separate inspection operation beyond source cutting composition.",
+      "owner": "Designer/site acceptance owner",
+      "nextTask": "State acceptance criteria and separately sourced extras, without deriving them from cut length alone."
+    },
+    {
+      "id": "waste-logistics-adjacent-reconciliation",
+      "phase": 8,
+      "unitId": null,
+      "state": "PROJECT_SCOPE_AND_OWNERSHIP_REQUIRED",
+      "missingFact": "Real offcuts/packaging/handling route and separate payment scope; existing laying profiles require NO_CUT and cannot be silently combined.",
+      "owner": "Estimator/site logistics/ROOT composition review",
+      "nextTask": "Keep waste/logistics needs visible and resolve actual neighboring laying contract; no tile purchase, mass, trips or extra laying price inferred."
+    }
+  ],
+  "excludedColumns": [
+    "27-07-005-01",
+    "27-07-005-02",
+    "27-07-005-03",
+    "27-07-005-05",
+    "27-07-005-06",
+    "27-07-005-07"
+  ],
+  "excludedRu": [
+    "Устройство покрытия на готовом основании, измеритель10м²; уже существующие no-cut physical profiles. Их труд10.5/11.8/17.9 не переносится вмреза.",
+    "Ручная угловая шлифмашина — другой способ/состав. Не смешивать с выбранным станком.",
+    "Толщинные добавки/исключения накаждые10мм. В этом пакете только70мм, без интерполяции/поправок.",
+    "Покупка плитки, устройство основания/постели, укладка/швы/виброуплотнение, борта, водоотвод и иные соседние работы не являются резкой.",
+    "Цена и марка станка по коду33-0667 не допущены; буквальное печатное название сохраняется.",
+    "Дробный расход диска не является заказом, ресурсом резки или физически пригодным остатком использованного диска.",
+    "Проектные ссылки и факты не устанавливают исходную норму и не создают скрытых значений по умолчанию.",
+    "Этот фрагмент не принимает saved-child overrides и не мигрирует исторические владельцы, цены или исключения."
+  ],
+  "existingNoCutReferenceCatalogIds": [
+    "canonical-work:master:paving_tile_prepared_base_40_pieces_m2_no_cut_standard",
+    "canonical-work:master:paving_tile_prepared_base_55_pieces_m2_no_cut_standard",
+    "canonical-work:master:paving_tile_prepared_base_90_pieces_m2_no_cut_standard"
+  ],
+  "sourceIntakePin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-landscape-paving-a/paving-cut-stationary70-source-fullcycle-v1.json",
+    "sha256": "b15f3b5cc7d85ae16cfc11b222e84f5afadad7cd0e38cd485a5fbb04d0026db1",
+    "bytes": 14348
+  },
+  "machinePriceAdmission": false,
+  "machinePriceMappings": [],
+  "discOrderOwner": null,
+  "fullTechnicalAcceptance": false,
+  "actualCurrentClassification": null
+}

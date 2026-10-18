@@ -1,0 +1,52 @@
+{
+  "status": "ROOT_VERIFIED_DOKA_STANDARD_FULL_RETENTION_READER_CONTEXT",
+  "executionContext": {
+    "definitionReleaseId": "60f8d40d-3c34-5ab6-850b-3a332c9f56b8",
+    "searchReleaseId": "e71616a3-54b5-57b4-aa90-3a86bcb3e119",
+    "sourceHead": "7f5754c0212613f563ca823e9f958b46c200cf1b",
+    "recordedReleaseSourceCommit": "19b3b1856468d9889de48cec24d81fff17afafb8"
+  },
+  "pointer": {
+    "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/data/estimate-benchmarks/r568-local-developer-canonical-release.json",
+    "sha256": "9bdfbb3b481c05b1cf0b9538cc8ffb4dd3fac276168974315e2314771e623b2c",
+    "bytes": 1178
+  },
+  "releaseSourceTree": "bfd0ad1975a3866b494b61d8f44525003e719359",
+  "proofPins": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/names-radiator-current-integration-r1/pointer-commit.json",
+      "sha256": "859858f08d247f7aa35fd163e065e8ee8833adb945906234498463e0a62a7163",
+      "bytes": 515
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/names-radiator-current-integration-r1/accepted-checks-r1.json",
+      "sha256": "7ec148c5de8fc764c21c73f2addbd8b4bc8a21244fcd4b8669a705dba8f8d86f",
+      "bytes": 6501
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/outputs/castiron-radiator-publication-and-readback-v1.json",
+      "sha256": "7b0a8c970a1f1d9057792a2322ba8355199610931a2123e7491543a710fb9a50",
+      "bytes": 2982
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/immutable-continuity-canonical-checks-r1/root-source-commit-r1.json",
+      "sha256": "4888b6a7672d7f3cbf75eefed77049ee4c671348a6a94881a9a5fe9f6f21f041",
+      "bytes": 1767
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/elecor-completion-root-integration-r1/root-source-commit-r1.json",
+      "sha256": "f5cf111f2a25e6c5ed81b67ba67b886a6a8e81c622bdb1b7536dc9a89f43d890",
+      "bytes": 778
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/doka-source-root-integration-r1/root-source-commit-r1.json",
+      "sha256": "7b0d08a2064b5569f2a45e3eb3220e4c6b8427f3573d8529304714bf3a6c3065",
+      "bytes": 461
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/retained-binding-root-integration-r1/root-source-commit-r1.json",
+      "sha256": "bc4a596fb207a5b99e35a0a67af40ae08bff8e2284f956bd8821d266eefb3b88",
+      "bytes": 465
+    }
+  ]
+}

@@ -30,6 +30,77 @@ function equal(left: unknown, right: unknown): boolean {
   return JSON.stringify(stable(normalized(left))) === JSON.stringify(stable(normalized(right)));
 }
 
+type CapturedJoinGroup = NonNullable<NonNullable<MasterSingleDefinitionSuccessorConfig["catalogAppend"]>["capturedJoinGroupMembers"]>;
+function object(value: unknown): value is Json {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+function exactKeys(value: Json, expected: readonly string[]): boolean {
+  return equal(Object.keys(value).sort(), [...expected].sort());
+}
+/** Omission is the only legacy fallback. Four is the accepted bounded intake,
+ * not a global group-size policy or an inferred physical-work catalogue. */
+function capturedJoinGroupOf(input: MasterSingleDefinitionAppendGuardInput): CapturedJoinGroup | null {
+  const append = appendOf(input);
+  if (!Object.prototype.hasOwnProperty.call(append, "capturedJoinGroupMembers")) return null;
+  const value = append.capturedJoinGroupMembers;
+  const placement = append.searchPlacement;
+  invariant(object(value) && exactKeys(value, ["groupId", "members"])
+    && placement.groupMode === "join" && typeof value.groupId === "string"
+    && value.groupId.length > 0 && value.groupId === value.groupId.trim() && value.groupId === placement.groupId
+    && Array.isArray(value.members) && value.members.length === 4,
+  input, "APPEND_CAPTURED_JOIN_GROUP_INVALID");
+  const keys = ["catalogId", "ordinal", "definitionVersionId", "approvedTemplateBaselineId",
+    "definitionSha256", "sourceIdentity", "workKey", "searchGroupId"];
+  const text = (v: unknown) => typeof v === "string" && v.length > 0 && v === v.trim();
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/u;
+  invariant(value.members.every(member => object(member) && exactKeys(member, keys)
+    && text(member.catalogId) && member.catalogId !== input.config.catalogId
+    && Number.isSafeInteger(member.ordinal) && member.ordinal >= 0
+    && typeof member.definitionVersionId === "string" && uuid.test(member.definitionVersionId)
+    && typeof member.approvedTemplateBaselineId === "string" && uuid.test(member.approvedTemplateBaselineId)
+    && typeof member.definitionSha256 === "string" && /^[0-9a-f]{64}$/u.test(member.definitionSha256)
+    && text(member.sourceIdentity) && text(member.workKey) && member.searchGroupId === placement.groupId),
+  input, "APPEND_CAPTURED_JOIN_GROUP_MEMBER_INVALID");
+  for (const key of ["catalogId", "ordinal", "definitionVersionId", "approvedTemplateBaselineId"] as const) {
+    invariant(new Set(value.members.map(member => member[key])).size === value.members.length,
+      input, "APPEND_CAPTURED_JOIN_GROUP_DUPLICATE");
+  }
+  invariant(placement.membershipOrdinal === Math.max(...value.members.map(member => member.ordinal)) + 1,
+    input, "APPEND_CAPTURED_JOIN_GROUP_TAIL_ORDINAL");
+  return value;
+}
+function assertCapturedJoinGroupMembers(input: MasterSingleDefinitionAppendGuardInput, snapshot: Json): void {
+  const captured = capturedJoinGroupOf(input);
+  if (captured == null) return;
+  const actual = snapshot.groupMembers;
+  invariant(snapshot.group?.member_count === captured.members.length,
+    input, "APPEND_CAPTURED_JOIN_GROUP_COUNT_METADATA");
+  invariant(Array.isArray(actual) && actual.length === captured.members.length,
+    input, "APPEND_CAPTURED_JOIN_GROUP_MEMBER_COUNT");
+  invariant(actual.every(row => object(row)
+    && row.searchReleaseId === input.config.parentSearchReleaseId
+    && row.membershipGroupId === captured.groupId
+    && row.manifestReleaseId === input.config.parentReleaseId
+    && row.actualDefinitionId === row.definitionVersionId
+    && row.definitionCatalogId === row.catalogId
+    && row.actualDefinitionSha256 === row.definitionSha256
+    && row.actualBaselineId === row.approvedTemplateBaselineId
+    && row.baselineCatalogId === row.catalogId
+    && row.baselineDefinitionVersionId === row.definitionVersionId
+    && row.identityCatalogId === row.catalogId && row.identityRetiredAt === null
+    && row.searchCatalogId === row.catalogId && row.searchGroupId === captured.groupId
+    && row.searchDefinitionReleaseId === input.config.parentReleaseId
+    && row.searchDefinitionVersionId === row.definitionVersionId),
+  input, "APPEND_CAPTURED_JOIN_GROUP_CURRENT_ANCHOR_INCOHERENT");
+  const projection = (row: Json) => ({catalogId: row.catalogId, ordinal: row.ordinal,
+    definitionVersionId: row.definitionVersionId, approvedTemplateBaselineId: row.approvedTemplateBaselineId,
+    definitionSha256: row.definitionSha256, sourceIdentity: row.sourceIdentity,
+    workKey: row.workKey, searchGroupId: row.searchGroupId});
+  const ordered = (rows: readonly Json[]) => [...rows].sort((a, b) => a.ordinal - b.ordinal);
+  invariant(equal(ordered(actual.map(projection)), ordered(captured.members)),
+    input, "APPEND_CAPTURED_JOIN_GROUP_MEMBERS_CHANGED");
+}
+
 export function masterSingleDefinitionAppendLockKeysR1(
   input: MasterSingleDefinitionAppendGuardInput,
 ): readonly string[] {
@@ -53,6 +124,12 @@ export async function lockMasterSingleDefinitionAppendPreconditionsR1(
   client: QueryClient, input: MasterSingleDefinitionAppendGuardInput,
 ): Promise<void> {
   const append = appendOf(input);
+  const capturedGroup = capturedJoinGroupOf(input);
+  if (capturedGroup != null) {
+    const isolation = (await client.query("show transaction_isolation")).rows[0];
+    invariant(isolation?.transaction_isolation === "read committed", input,
+      "APPEND_CAPTURED_JOIN_GROUP_LOCKED_REREAD_REQUIRES_READ_COMMITTED");
+  }
   for (const key of masterSingleDefinitionAppendLockKeysR1(input)) {
     await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [key]);
   }
@@ -61,7 +138,7 @@ export async function lockMasterSingleDefinitionAppendPreconditionsR1(
     public.estimate_definition_release,
     public.estimate_definition_version,
     public.estimate_normative_locator,
-    public.estimate_normative_source,
+    public.estimate_normative_source,${capturedGroup == null ? "" : "\n    public.estimate_approved_template_baseline,"}
     public.estimate_search_document,
     public.estimate_search_group,
     public.estimate_search_group_membership,
@@ -129,6 +206,7 @@ export function assertMasterSingleDefinitionAppendSnapshotR1(
       && equal(group.breadcrumb, placement.breadcrumb),
     input, "APPEND_SEARCH_GROUP_DRIFT");
   }
+  assertCapturedJoinGroupMembers(input, snapshot);
   const capturedSource = append.capturedSourcePreimage;
   if (capturedSource !== undefined) {
     invariant(capturedSource != null && typeof capturedSource === "object"
@@ -147,6 +225,7 @@ export async function readMasterSingleDefinitionAppendPreconditionsR1(
   client: QueryClient, input: MasterSingleDefinitionAppendGuardInput,
 ): Promise<Json> {
   const append = appendOf(input);
+  const capturedGroup = capturedJoinGroupOf(input);
   const one = async (sql: string, values: unknown[]) =>
     (await client.query(sql, values)).rows[0] as Json | undefined;
   const count = async (sql: string, values: unknown[]) => Number((await one(sql, values))?.value);
@@ -179,6 +258,32 @@ export async function readMasterSingleDefinitionAppendPreconditionsR1(
     source: await one("select id::text,source_key,artifact_sha256 from public.estimate_normative_source where source_key=$1",
       [input.config.sourceId]) ?? null,
   };
+  if (capturedGroup != null) {
+    // LEFT joins preserve a missing current anchor as NULL, rather than hiding
+    // that member. n+1 distinguishes an unexpected fifth member with no deep
+    // JSON or release-wide scan. Historical release_id/entry_sha256 are not
+    // compared to current contextual release FKs.
+    const members = await client.query(`select
+      x.catalog_id "catalogId",x.ordinal,x.search_release_id::text "searchReleaseId",x.group_id "membershipGroupId",
+      m.release_id::text "manifestReleaseId",m.definition_version_id::text "definitionVersionId",
+      m.approved_template_baseline_id::text "approvedTemplateBaselineId",m.definition_hash "definitionSha256",
+      d.id::text "actualDefinitionId",d.catalog_id "definitionCatalogId",d.definition_sha256 "actualDefinitionSha256",
+      b.id::text "actualBaselineId",b.catalog_id "baselineCatalogId",b.definition_version_id::text "baselineDefinitionVersionId",
+      i.catalog_id "identityCatalogId",i.source_identity "sourceIdentity",i.work_key "workKey",i.retired_at "identityRetiredAt",
+      s.catalog_id "searchCatalogId",s.group_id "searchGroupId",s.definition_release_id::text "searchDefinitionReleaseId",
+      s.definition_version_id::text "searchDefinitionVersionId"
+      from public.estimate_search_group_membership x
+      left join public.estimate_cumulative_manifest_entry m on m.release_id=$3::uuid and m.catalog_id=x.catalog_id
+      left join public.estimate_definition_version d on d.id=m.definition_version_id
+      left join public.estimate_approved_template_baseline b on b.id=m.approved_template_baseline_id
+      left join public.estimate_work_identity i on i.catalog_id=x.catalog_id
+      left join public.estimate_search_document s on s.search_release_id=x.search_release_id and s.catalog_id=x.catalog_id
+      where x.search_release_id=$1::uuid and x.group_id=$2::text
+      order by x.ordinal,x.catalog_id limit $4::int`,
+    [input.config.parentSearchReleaseId, capturedGroup.groupId, input.config.parentReleaseId, capturedGroup.members.length + 1]);
+    invariant(members.rows.length <= capturedGroup.members.length, input, "APPEND_CAPTURED_JOIN_GROUP_READ_CAP");
+    snapshot.groupMembers = members.rows;
+  }
   assertMasterSingleDefinitionAppendSnapshotR1(input, snapshot);
   return normalized(snapshot) as Json;
 }

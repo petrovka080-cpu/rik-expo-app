@@ -1,0 +1,69 @@
+{
+  "status": "ROOT_ACCEPTED_EXISTING_STANDARD_DOKA_SOURCE_VARIANT_SCOPE_ONLY_CHECKS_PENDING",
+  "contract": "gox-build.stairs-doka-existing-standard-root-decision/r3",
+  "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+  "decision": "REPLACE_EXISTING_STANDARD_WITH_EXPLICIT_NEW_ESTIMATE_SOURCE_VARIANT",
+  "newCatalogIds": 0,
+  "newCompleteTypes": 0,
+  "selector": "stairs_quantity_source_variant",
+  "newSourceValue": "KRER06_111_01_DOKA",
+  "legacyValue": "EXISTING_PROJECT_SCHEDULE",
+  "missingSelectorMeansLegacy": true,
+  "runtimeDefaultSelectsDoka": false,
+  "savedMethodSwitchAllowed": false,
+  "sameMethodSavedChildrenUseOrdinaryWriter": true,
+  "sourceScope": {
+    "quantityUnit": "m3",
+    "primaryMeasure": "stairs_concrete_volume_m3",
+    "geometry": "ONE_RECTANGULAR_STAIR_FLIGHT_PROJECT_VOLUME_NO_LANDING_ALIAS",
+    "wholeWorkerHoursPer100m3": "2412.60",
+    "concreteM3Per100m3": "101.5",
+    "machinePaidOwnerAdmitted": false,
+    "rebarFixed197KgPerM3Admitted": false,
+    "formworkCapacityInvented": false
+  },
+  "composition": {
+    "oldParameters": 188,
+    "oldFormulas": 92,
+    "oldResources": 95,
+    "successorParameters": 301,
+    "successorFormulas": 137,
+    "successorResources": 140,
+    "oldBindings": 8,
+    "newBindings": 20,
+    "totalBindings": 28,
+    "oldRuntimeFacts": 24,
+    "staticOpenNeeds": 67,
+    "newSourceOpenNeeds": 9,
+    "legacyOpenNeeds": 58
+  },
+  "fullCapturePin": {
+    "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/data/estimate-benchmarks/fixtures/stairs-doka-standard-full-retention-read-r2.json",
+    "sha256": "9951b6c5d3ef3b67e158567b25d2266aff20526fd19b2d45d2429ef34959e5b4",
+    "bytes": 1177118
+  },
+  "parentBinding": {
+    "definitionReleaseId": "d3bc6c1a-e16d-5fcc-b36c-cc584a31c529",
+    "searchReleaseId": "c97fa9c9-338e-5c6a-8ce5-216deaa73176",
+    "applyPin": {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/data/estimate-benchmarks/fixtures/stairs-doka-standard-parent-elecor-apply-r1.json",
+      "sha256": "a7476b936e6e2f70b83fcf5f5ea7538ad3dee10cc90e8c24a2b54596429e69fd",
+      "bytes": 26211
+    },
+    "readbackPin": {
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/data/estimate-benchmarks/fixtures/stairs-doka-standard-parent-elecor-readback-r1.json",
+      "sha256": "3f704d386b9a0f6667cc9ee18d5e341caaeb000a8694d89247b7c6e6718917c7",
+      "bytes": 6538
+    },
+    "historicalReleaseIdChangesOnlyContextualMembershipField": true,
+    "sameFourDefinitionBaselineCatalogHashAnchorsPreserved": true
+  },
+  "requiredBeforePublication": [
+    "ROOT affected Jest and full TS",
+    "Existing Master full normal+READ COMMITTED locked reread and retention/source/plan guards",
+    "Actual governed dry then single apply and independent full readback; no publication from this decision alone"
+  ],
+  "activationAllowed": false,
+  "productionEligible": false,
+  "fullTechnicalAcceptance": false
+}
