@@ -71,6 +71,129 @@ def validate_contract(s,root,snapshot):
  return expected
 def inventory(root,dirs):
  return sorted([dict(path=p.relative_to(root).as_posix(),bytes=p.stat().st_size,sha256=sha(p))for d in dirs for p in d.rglob('*')if p.is_file()],key=lambda x:x['path'])
+# Operational observation only; source/native/signature checks remain authoritative.
+def remember_owned_members(job,psutil,owned):
+ for pid in job.pids():
+  try:
+   p=psutil.Process(pid);created=p.create_time();owned[(pid,created)]={'pid':pid,'created':created}
+  except psutil.NoSuchProcess:pass
+
+def remaining_owned_identities(psutil,owned):
+ remaining=[];errors=[];reused=[]
+ for (pid,created),identity in owned.items():
+  try:
+   actual=psutil.Process(pid).create_time()
+   if actual==created:remaining.append(identity)
+   else:reused.append({'pid':pid,'ownedCreated':created,'currentCreated':actual,'foreignProcessTouched':False})
+  except psutil.NoSuchProcess:pass
+  except Exception as exc:errors.append({'pid':pid,'created':created,'error':repr(exc)})
+ return remaining,errors,reused
+
+def cleanup_owned_phase(job,child,psutil,owned,clock=time.monotonic,sleep=time.sleep):
+ started=clock();errors=[];last_job_pids=[];reused=[];remaining=[];identity_errors=[]
+ try:
+  try:remember_owned_members(job,psutil,owned)
+  except Exception as exc:errors.append('OWNED_MEMBERS_BEFORE_TERMINATE:'+repr(exc))
+  try:job.terminate()
+  except Exception as exc:errors.append('TERMINATE_OWNED_JOB:'+repr(exc))
+  if child:
+   try:child.wait(timeout=5)
+   except Exception as exc:errors.append('OWNED_LAUNCHER_WAIT:'+repr(exc))
+  deadline=clock()+10
+  while True:
+   try:
+    last_job_pids=list(job.pids());remember_owned_members(job,psutil,owned)
+   except Exception as exc:errors.append('OWNED_JOB_FINAL_PID_QUERY:'+repr(exc));break
+   remaining,identity_errors,reused=remaining_owned_identities(psutil,owned)
+   if not last_job_pids and not remaining and not identity_errors:break
+   if clock()>=deadline:break
+   sleep(.05)
+ finally:
+  try:job.close()
+  except Exception as exc:errors.append('CLOSE_OWNED_JOB:'+repr(exc))
+ # KILL_ON_JOB_CLOSE remains active; prove exact recorded identities exited,
+ # rather than treating a close/terminate request or a reused PID as proof.
+ deadline=clock()+5
+ while True:
+  remaining,identity_errors,reused=remaining_owned_identities(psutil,owned)
+  if not remaining and not identity_errors:break
+  if clock()>=deadline:break
+  sleep(.05)
+ clean=not errors and not last_job_pids and not remaining and not identity_errors
+ return dict(noOwnedProcessStillRunning=clean,cleanupErrors=errors,identityQueryErrors=identity_errors,
+  remainingOwnedProcesses=remaining,lastJobPidsBeforeClose=last_job_pids,reusedForeignPidsUntouched=reused,
+  ownedIdentities=list(owned.values()),elapsedSeconds=clock()-started,foreignProcessesTerminated=False)
+
+class PhaseObservation:
+ def __init__(self,out,label,psutil,started,timeout):
+  self.out=out;self.label=label;self.psutil=psutil;self.started=started;self.timeout=timeout
+  self.trace=(out/(label+'.samples.jsonl')).open('x',encoding='utf8');self.last_emit=-1;self.last_heartbeat=-30
+  self.cpu_previous={};self.io_previous={};self.cpu_total=0.;self.io_read=0;self.io_write=0;self.last=None
+ def emit(self,measured,owned,event='running',force=False):
+  elapsed=time.monotonic()-self.started
+  if not force and elapsed-self.last_emit<1:return
+  processes=[];cpu_delta=0.;read_delta=write_delta=0;query_errors=[]
+  identities=[(os.getpid(),self.psutil.Process().create_time()),*owned.keys()]
+  for pid,created in dict.fromkeys(identities):
+   try:
+    p=self.psutil.Process(pid)
+    if p.create_time()!=created:continue
+    cpu=p.cpu_times();raw_cpu=cpu.user+cpu.system;io=p.io_counters();key=(pid,created)
+    previous=self.cpu_previous.get(key,raw_cpu);cpu_delta+=max(0.,raw_cpu-previous);self.cpu_previous[key]=raw_cpu
+    old_io=self.io_previous.get(key,(io.read_bytes,io.write_bytes));read_delta+=max(0,io.read_bytes-old_io[0]);write_delta+=max(0,io.write_bytes-old_io[1]);self.io_previous[key]=(io.read_bytes,io.write_bytes)
+    m=p.memory_info();processes.append(dict(pid=pid,created=created,cpuUserSeconds=cpu.user,cpuSystemSeconds=cpu.system,rssBytes=m.rss,privateBytes=m.private,readBytes=io.read_bytes,writeBytes=io.write_bytes))
+   except self.psutil.NoSuchProcess:pass
+   except Exception as exc:query_errors.append({'pid':pid,'created':created,'error':repr(exc)})
+  self.cpu_total+=cpu_delta;self.io_read+=read_delta;self.io_write+=write_delta
+  logs={}
+  for stream in ['stdout','stderr']:
+   p=self.out/(self.label+'.'+stream+'.log');st=p.stat()if p.exists()else None
+   logs[stream]=dict(bytes=st.st_size if st else 0,lastWriteUnixSeconds=st.st_mtime if st else None)
+  task_event=None;task_log=self.out/'gradle.task-events.jsonl'
+  if self.label=='gradle'and task_log.exists()and task_log.stat().st_size:
+   with task_log.open('rb')as stream:stream.seek(max(0,task_log.stat().st_size-65536));lines=stream.read().splitlines()
+   for line in reversed(lines):
+    try:task_event=json.loads(line);break
+    except (ValueError,UnicodeDecodeError):continue
+  row=dict(event=event,at=datetime.now(timezone.utc).isoformat(),phase=self.label,elapsedSeconds=elapsed,timeoutSeconds=self.timeout,
+   **measured,cpuObservedDeltaSeconds=cpu_delta,cpuObservedTotalSeconds=self.cpu_total,cpuMeasureScope='observed process-time deltas; exited-before-sample work is not reconstructed',
+   ioObservedReadBytes=self.io_read,ioObservedWriteBytes=self.io_write,logs=logs,lastTaskEvent=task_event,processes=processes,queryErrors=query_errors)
+  self.trace.write(json.dumps(row)+'\n');self.trace.flush();self.last=row;self.last_emit=elapsed
+  if elapsed-self.last_heartbeat>=30 or event!='running':
+   print(json.dumps(dict(phaseHeartbeat=self.label,event=event,elapsedSeconds=elapsed,cpuObservedTotalSeconds=self.cpu_total,rssBytes=measured.get('combinedRssBytes'),availablePhysicalBytes=measured.get('availablePhysicalBytes'),lastTaskEvent=task_event)),flush=True);self.last_heartbeat=elapsed
+ def close(self):self.trace.close()
+
+def write_gradle_task_observer(out):
+ events=out/'gradle.task-events.jsonl';assert not events.exists();events.write_text('',encoding='utf8')
+ observer=out/'gradle-task-observer.init.gradle';assert not observer.exists()
+ observer.write_text(r'''import groovy.json.JsonOutput
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+def destination = System.getProperty('gox.phaseTaskLog')
+if (!destination) throw new GradleException('GOX_TASK_EVENT_DESTINATION_REQUIRED')
+def eventFile = new File(destination)
+if (!eventFile.parentFile.isDirectory()) throw new GradleException('GOX_TASK_EVENT_PARENT_REQUIRED')
+def starts = new ConcurrentHashMap<String, Long>()
+def emitEvent = { Map value ->
+    synchronized (System.getProperties()) { eventFile.append(JsonOutput.toJson(value) + '\n', 'UTF-8') }
+}
+gradle.taskGraph.beforeTask { task ->
+    def key = task.project.rootDir.canonicalPath + '|' + task.path
+    starts.put(key, System.nanoTime())
+    emitEvent([event:'TASK_BEGIN', at:Instant.now().toString(), taskPath:task.path, buildRoot:task.project.rootDir.canonicalPath])
+}
+gradle.taskGraph.afterTask { task, state ->
+    def key = task.project.rootDir.canonicalPath + '|' + task.path
+    def began = starts.remove(key)
+    emitEvent([event:'TASK_END', at:Instant.now().toString(), taskPath:task.path, buildRoot:task.project.rootDir.canonicalPath,
+        elapsedMilliseconds:began == null ? null : (System.nanoTime()-began)/1000000,
+        skipped:state.skipped, skipMessage:state.skipMessage, upToDate:state.upToDate,
+        failed:state.failure != null, failureMessage:state.failure == null ? null : state.failure.toString().take(500)])
+}
+''',encoding='utf8')
+ return observer,events
+
+
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--root',required=True);ap.add_argument('--spec',required=True);ap.add_argument('--spec-sha256',required=True);ap.add_argument('--source-commit',required=True);ap.add_argument('--output',required=True);ap.add_argument('--contract-only',action='store_true');a=ap.parse_args()
  root=pathlib.Path(a.root).resolve();out=pathlib.Path(a.output).resolve();assert not out.exists();out.mkdir(parents=True)
@@ -96,19 +219,22 @@ def main():
  def run(label,argv,cap=1024,timeout=300):
   assert check_source(),'SOURCE_DRIFT_BEFORE_'+label
   admission=memory();assert admission['availablePhysicalBytes']>=(3584+cap+64)*MIB and admission['commitHeadroomBytes']>=(cap+1024)*MIB,'RESOURCE_ADMISSION_'+label
-  job=OwnedLauncherJob();child=None;peak=private=0;started=time.monotonic();error=None;code=None;owned={}
+  job=OwnedLauncherJob();child=None;peak=private=0;started=time.monotonic();error=None;code=None;owned={};last_measure=dict(admission)
+  observer=PhaseObservation(out,label,psutil,started,timeout);cleanup=None
   try:
    with(out/(label+'.stdout.log')).open('wb')as stdout,(out/(label+'.stderr.log')).open('wb')as stderr:
     child=subprocess.Popen([str(v)for v in argv],cwd=root,env=env,stdin=subprocess.DEVNULL,stdout=stdout,stderr=stderr,creationflags=subprocess.CREATE_NO_WINDOW|0x00000004)
     job.assign_and_resume_suspended(child)
     while True:
-     rss=pr=0
+     remember_owned_members(job,psutil,owned);rss=pr=0
      for pid in job.pids():
-      try:q=psutil.Process(pid);owned[pid]=q.create_time();m=q.memory_info();rss+=m.rss;pr+=m.private
+      try:q=psutil.Process(pid);m=q.memory_info();rss+=m.rss;pr+=m.private
       except psutil.NoSuchProcess:pass
      cm=psutil.Process().memory_info();rss+=cm.rss;pr+=cm.private;peak=max(peak,rss);private=max(private,pr)
+     current=memory();last_measure=dict(combinedRssBytes=rss,combinedPrivateBytes=pr,peakCombinedRssBytes=peak,peakCombinedPrivateBytes=private,**current)
+     observer.emit(last_measure,owned)
      assert rss<=cap*MIB and pr<=(cap+512)*MIB,'OWNED_TREE_MEMORY_CAP_'+label
-     current=memory();assert current['availablePhysicalBytes']>=3584*MIB and current['commitHeadroomBytes']>=512*MIB,'OS_HEADROOM_STOP_'+label
+     assert current['availablePhysicalBytes']>=3584*MIB and current['commitHeadroomBytes']>=512*MIB,'OS_HEADROOM_STOP_'+label
      assert time.monotonic()-started<timeout,'PHASE_TIMEOUT_'+label
      code=child.poll()
      if code is not None:break
@@ -116,15 +242,17 @@ def main():
     assert code==0,'PHASE_EXIT_'+label+':'+str(code)
   except BaseException as e:error=repr(e);raise
   finally:
-   job.terminate()
-   if child:child.wait(timeout=10)
-   job.close();remaining=[]
-   for pid,ctime in owned.items():
-    try:
-     if psutil.Process(pid).create_time()==ctime:remaining.append(pid)
-    except psutil.NoSuchProcess:pass
-   receipt=dict(phase=label,exitCode=code,error=error,elapsedSeconds=time.monotonic()-started,peakCombinedRssBytes=peak,peakCombinedPrivateBytes=private,admission=admission,endMemory=memory(),remainingOwnedProcesses=remaining,foreignProcessesTerminated=False)
-   write(out/(label+'.receipt.json'),receipt);receipts.append(receipt);assert not remaining
+   try:observer.emit(last_measure,owned,event='before-owned-cleanup',force=True)
+   finally:
+    cleanup=cleanup_owned_phase(job,child,psutil,owned)
+    observer.close()
+    receipt=dict(phase=label,exitCode=code,error=error,peakCombinedRssBytes=peak,peakCombinedPrivateBytes=private,admission=admission,endMemory=memory(),
+     configuredTimeoutSeconds=timeout,configuredRssCapBytes=cap*MIB,configuredPrivateCapBytes=(cap+512)*MIB,
+     samplesPath=str(out/(label+'.samples.jsonl')),lastMeasuredSample=observer.last,**cleanup)
+    # Preserve phase duration and cleanup duration separately.
+    receipt['elapsedSeconds']=time.monotonic()-started;receipt['cleanupElapsedSeconds']=cleanup['elapsedSeconds']
+    write(out/(label+'.receipt.json'),receipt);receipts.append(receipt)
+    assert cleanup['noOwnedProcessStillRunning'],'OWNED_CLEANUP_UNCONFIRMED_'+label
   assert check_source(),'SOURCE_DRIFT_AFTER_'+label
   return(out/(label+'.stdout.log')).read_text(encoding='utf8',errors='replace')
  npm_cli=pathlib.Path(node).parent/'node_modules/npm/bin/npm-cli.js';assert npm_cli.is_file()
@@ -163,7 +291,8 @@ def main():
  precomputed=dict(status='PASS_CURRENT_SOURCE_PRECOMPUTED_PHASE_UNION',sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],files=inventory(root,dirs));write(out/'precomputed.json',precomputed)
  init=(HERE/'precomputed.init.gradle').read_text(encoding='utf8').replace('@ROOT_JSON@',json.dumps(str(root))).replace('@RECEIPT_JSON@',json.dumps(str(out/'precomputed.json')))
  (out/'precomputed.init.gradle').write_text(init,encoding='utf8')
- glog=run('gradle',[java,'-Xmx64m','-Xms64m','-Dorg.gradle.appname=gradlew','-classpath',root/'android/gradle/wrapper/gradle-wrapper.jar','org.gradle.wrapper.GradleWrapperMain',':app:assembleWaterProof','-p','android','--no-daemon','--max-workers=1','--stacktrace','-Dorg.gradle.workers.max=1','-Dorg.gradle.daemon=false','-Dorg.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC','-Pkotlin.compiler.execution.strategy=in-process','-PreactNativeArchitectures=x86_64','-Pandroid.enablePngCrunchInReleaseBuilds=false','--init-script',out/'precomputed.init.gradle'],3072,1500)
+ task_observer,task_events=write_gradle_task_observer(out)
+ glog=run('gradle',[java,'-Xmx64m','-Xms64m','-Dorg.gradle.appname=gradlew','-classpath',root/'android/gradle/wrapper/gradle-wrapper.jar','org.gradle.wrapper.GradleWrapperMain',':app:assembleWaterProof','-p','android','--no-daemon','--max-workers=1','--stacktrace','--console=plain','--no-configuration-cache','-Dgox.phaseTaskLog='+str(task_events),'-Dorg.gradle.workers.max=1','-Dorg.gradle.daemon=false','-Dorg.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC','-Pkotlin.compiler.execution.strategy=in-process','-PreactNativeArchitectures=x86_64','-Pandroid.enablePngCrunchInReleaseBuilds=false','--init-script',out/'precomputed.init.gradle','--init-script',task_observer],3072,2700)
  for task in ['createBundleWaterProofJsAndAssets','createWaterProofUpdatesResources']:assert 'VERIFIED_PRECOMPUTED_PHASE :app:'+task+' files='in glog
  assert inventory(root,dirs)==precomputed['files']
  apk=root/'android/app/build/outputs/apk/waterProof/app-waterProof.apk';assert apk.is_file()
