@@ -39,6 +39,9 @@ import {
   lockMasterSingleDefinitionAppendPreconditionsR1,
   readMasterSingleDefinitionAppendPreconditionsR1,
 } from "./masterSingleDefinitionAppendGuardsR1";
+import {resolveMasterScopedNormativeRegistryOptInR1,
+ readMasterScopedNormativeRegistryPreconditionsR1,assertMasterScopedNormativeRegistryUnchangedR1,
+ type MasterCapturedScopedNormativeRegistryR1} from "./masterScopedNormativeRegistryPreimageR1";
 import { CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT } from "./catalogFirstEstimateMinimumInputAudit.shared";
 import { loadVerifiedProjectSourcePackageBinding } from "./projectSourcePackageBindingR1";
 import {
@@ -49,6 +52,7 @@ import {
 } from "./projectSourcePackagePreflightR1";
 
 import { stringifyCanonicalEstimateJson } from "../../../src/lib/estimate/estimateDeterministicHash";
+import {masterReviewedNormPackRegistryEvidenceR1, type MasterReviewedNormPackProofR1} from './masterReviewedNormPackRegistryReuseR1';
 
 type Json = Record<string, any>;
 
@@ -78,6 +82,8 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     effective_from?: string | null;
   }>;
   projectSourcePackagePath?: string;
+  /** Optional exact official-artifact/norm scope preimage; normal/locked/registered. */
+  capturedScopedNormativeRegistry?: MasterCapturedScopedNormativeRegistryR1;
   parameterDefinitions: readonly Json[];
   formulaDefinitions: readonly Json[];
   resourceDefinitions: readonly Json[];
@@ -233,7 +239,9 @@ export function resolveMasterAppendExplicitParameterSourcesR1(
 export type MasterExistingNormativeRegistryReuseR1 = Readonly<{
   contract: "master-existing-normative-registry-reuse/r1";
   /** Preserve the original publisher's excerpt hash algorithm explicitly. */
-  locatorExcerptHashKind: "SOURCE_LOCATOR_TEXT_SHA256" | "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1";
+  locatorExcerptHashKind: "SOURCE_LOCATOR_TEXT_SHA256" | "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1" | "REVIEWED_NORM_PACK_ITEM_SHA256_R1";
+  /** Only for an existing reviewed-pack owner whose original metadata has no contract slot. */
+  reviewedNormPack?: MasterReviewedNormPackProofR1;
   /** Exact current row, including the unconverted PostgreSQL created_at text. */
   source: Readonly<Json>;
   /** Complete current locator rows. No locator creation or partial reuse. */
@@ -257,6 +265,14 @@ export function resolveMasterSingleDefinitionLocatorExcerptSha256R1(
   if (kind === "SOURCE_LOCATOR_TEXT_SHA256") return sha256(config.sourceMetadata.exact_locator);
   if (kind === "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1")
     return createHash("sha256").update(stringifyCanonicalEstimateJson(config.locator.payload)).digest("hex");
+  if (kind === "REVIEWED_NORM_PACK_ITEM_SHA256_R1") {
+    const d = config.binding.reuseExistingNormativeRegistry!;
+    const evidence = masterReviewedNormPackRegistryEvidenceR1({proof: d.reviewedNormPack!, source: d.source, locators: d.locators});
+    const excerpt = evidence.excerptByLocatorKey[config.locator.key];
+    if (!excerpt || JSON.stringify(stable(d.locators.find(l => l.locator_key === config.locator.key)?.locator))
+      !== JSON.stringify(stable(config.locator.payload))) throw Error(`STOP_${config.stopCode}_EXISTING_REGISTRY_REVIEWED_LOCATOR_CHANGED`);
+    return excerpt;
+  }
   throw new Error(`STOP_${config.stopCode}_EXISTING_REGISTRY_EXCERPT_HASH_KIND_REQUIRED`);
 }
 /** Reuse is explicit, replace-only and new to the retained parent. The existing
@@ -280,15 +296,17 @@ export function resolveMasterExistingNormativeRegistryReuseR1(input: Readonly<{
     && Object.hasOwn(input.config.binding, "retainParentBindings")
     && object(input.config.binding.retainParentBindings), "RETAINED_REPLACEMENT_ONLY");
   const value = input.config.binding.reuseExistingNormativeRegistry;
-  requireThat(object(value) && keys(value!, ["contract", "source", "locators", "locatorExcerptHashKind"])
+  const reviewedPack = value?.locatorExcerptHashKind === "REVIEWED_NORM_PACK_ITEM_SHA256_R1";
+  requireThat(object(value) && keys(value!, ["contract", "source", "locators", "locatorExcerptHashKind", ...(reviewedPack ? ['reviewedNormPack'] : [])])
     && value!.contract === "master-existing-normative-registry-reuse/r1"
-    && ["SOURCE_LOCATOR_TEXT_SHA256", "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1"]
+    && ["SOURCE_LOCATOR_TEXT_SHA256", "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1", "REVIEWED_NORM_PACK_ITEM_SHA256_R1"]
       .includes(value!.locatorExcerptHashKind), "EXACT_DECLARATION_REQUIRED");
   const source = value!.source;
   requireThat(object(source) && keys(source, ["id", "source_key", "title_ru", "authority", "official_url",
     "artifact_sha256", "effective_from", "effective_to", "metadata", "created_at"])
     && uuid(source.id) && object(source.metadata)
-    && typeof source.metadata.contract === "string" && source.metadata.contract.trim().length > 0
+    && (reviewedPack ? !Object.hasOwn(source.metadata, 'contract')
+      : typeof source.metadata.contract === "string" && source.metadata.contract.trim().length > 0)
     && typeof source.created_at === "string"
     && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/u.test(source.created_at),
   "COMPLETE_SOURCE_WITH_RAW_TIMESTAMP_REQUIRED");
@@ -296,7 +314,7 @@ export function resolveMasterExistingNormativeRegistryReuseR1(input: Readonly<{
   // The original registry contract belongs to its first publisher. Consumer
   // provenance stays in this definition's source envelope; no metadata rewrite.
   requireThat(same(managedSource, {...input.newSource, id: source.id,
-    metadata: {...input.newSource.metadata, contract: source.metadata.contract}}), "SOURCE_FACTS_OR_METADATA_DRIFT");
+    metadata: reviewedPack ? source.metadata : {...input.newSource.metadata, contract: source.metadata.contract}}), "SOURCE_FACTS_OR_METADATA_DRIFT");
   requireThat(Array.isArray(value!.locators) && value!.locators.length > 0
     && value!.locators.length === input.newLocators.length && value!.locators.length <= 32,
   "COMPLETE_LOCATOR_SET_REQUIRED");
@@ -307,10 +325,12 @@ export function resolveMasterExistingNormativeRegistryReuseR1(input: Readonly<{
     && /^[a-f0-9]{64}$/u.test(l.excerpt_sha256))
     && new Set(declared.map(l => l.id)).size === declared.length
     && new Set(declared.map(l => l.locator_key)).size === declared.length, "LOCATOR_IDENTITIES_OR_SHAPE");
+  const reviewedEvidence = reviewedPack ? masterReviewedNormPackRegistryEvidenceR1({proof: value!.reviewedNormPack!, source, locators: declared}) : null;
   const ordered = input.newLocators.map(candidate => {
     if (value!.locatorExcerptHashKind === "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1")
       requireThat(candidate.excerpt_sha256 === createHash("sha256")
         .update(stringifyCanonicalEstimateJson(candidate.locator)).digest("hex"), "LOCATOR_EXCERPT_POLICY_DRIFT");
+    if (reviewedEvidence) requireThat(candidate.excerpt_sha256 === reviewedEvidence.excerptByLocatorKey[candidate.locator_key], "LOCATOR_EXCERPT_POLICY_DRIFT");
     const row = declared.find(l => l.locator_key === candidate.locator_key);
     requireThat(row != null && same(row, {...candidate, id: row!.id, source_id: source.id}),
       "LOCATOR_FACTS_OR_EXCERPT_DRIFT");
@@ -1333,11 +1353,19 @@ export async function runMasterSingleDefinitionSuccessorR1(
     newLocators:resolvedLocators.map((locator,index)=>({id:generatedLocatorIds[index]!,source_id:generatedSourceId,
       locator_key:locator.key,locator:locator.payload,excerpt_sha256:locator.excerptSha256}))};
   const existingRegistryReuse=resolveMasterExistingNormativeRegistryReuseR1(generatedRetentionCandidate);
+  if(existingRegistryReuse?.declaration.locatorExcerptHashKind==='REVIEWED_NORM_PACK_ITEM_SHA256_R1'){
+    for(const p of [existingRegistryReuse.declaration.reviewedNormPack!.artifactPath,'scripts/estimate/r4a13/masterReviewedNormPackRegistryReuseR1.ts'])
+      invariant(config.sourcePaths.some(item=>resolve(item)===resolve(p)),stop(config,'REVIEWED_NORM_PACK_PROOF_MUST_BE_FINGERPRINTED'));
+  }
   const retentionCandidate=existingRegistryReuse==null?generatedRetentionCandidate:{config,
     newSource:existingRegistryReuse.managedSource,newLocators:existingRegistryReuse.locators};
   const sourceId=String(retentionCandidate.newSource.id);
   const locatorIds=retentionCandidate.newLocators.map(locator=>String(locator.id));
   const retentionInput=masterRetainParentBindingsOptInR1(retentionCandidate)==null?null:retentionCandidate;
+  const scopedRegistryInput=resolveMasterScopedNormativeRegistryOptInR1(retentionCandidate);
+  if(scopedRegistryInput!=null)invariant(config.sourcePaths.some(p=>resolve(p)===resolve(
+    "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts")),
+    stop(config,"SCOPED_REGISTRY_HELPER_MUST_BE_FINGERPRINTED"));
   const releaseKey = `${config.contract}:${fingerprint.slice(0, 20)}`;
   const current = JSON.parse(readFileSync(config.currentReleasePath, "utf8")) as Json;
   invariant(current.productionAccessed === false, stop(config, "CURRENT_PRODUCTION_ACCESS_FLAG"));
@@ -1449,6 +1477,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
     const retentionPreflight=retentionInput==null?null
       :await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
     assertMasterExistingNormativeRegistrySnapshotR1(existingRegistryReuse,retentionPreflight);
+    const scopedRegistryPreflight=scopedRegistryInput==null?null
+      :await readMasterScopedNormativeRegistryPreconditionsR1(client,scopedRegistryInput);
     if (appendGuardInput != null && appendPreflight != null) {
       assertMasterSingleDefinitionAppendParentAnchorR1(
         appendGuardInput, appendPreflight, parent!, parentSearch!,
@@ -1456,6 +1486,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
     }
     const acceptanceEvidenceSha256 = sha256({
       contract: config.contract,
+      ...(scopedRegistryInput==null?{}:{scopedNormativeRegistryCaptureSha256:scopedRegistryInput.declaration.captureSha256}),
       shortInput: config.shortInput,
       acceptanceInput: config.acceptanceInput,
       runtimeProfileInput,
@@ -1663,7 +1694,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
       runtimeAdmissionMetadata = resolveMasterRuntimeAdmissionMetadataR1(
         current, Number(parent.definition_count), nextCounts.definitions,
       );
-      await client.query(retentionInput?"begin isolation level read committed":"begin");
+      await client.query(retentionInput||scopedRegistryInput!=null?"begin isolation level read committed":"begin");
       await client.query("set local lock_timeout='5s'");
       await client.query("set local statement_timeout='600s'");
       await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [config.contract]);
@@ -1700,6 +1731,10 @@ export async function runMasterSingleDefinitionSuccessorR1(
             && lockedCurrent.searchReleaseId === config.parentSearchReleaseId
             && sha256(lockedCurrent) === sha256(current),
           stop(config, "APPEND_POINTER_CHANGED_BEFORE_WRITE"));
+        }
+        if(scopedRegistryInput!=null&&scopedRegistryPreflight!=null){
+          const lockedScope=await readMasterScopedNormativeRegistryPreconditionsR1(client,scopedRegistryInput,"LOCKED_BEFORE");
+          assertMasterScopedNormativeRegistryUnchangedR1(scopedRegistryInput,scopedRegistryPreflight,lockedScope);
         }
         const sourceBefore = (await client.query(`select id::text,artifact_sha256
           from public.estimate_normative_source where source_key=$1`, [config.sourceId]))
@@ -1770,6 +1805,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
           invariant(registered.newSources.length===1&&registered.newLocators.length===retentionInput.newLocators.length,
             stop(config,"RETAIN_COMPLETE_REGISTRY_REQUIRED"));
         }
+        if(scopedRegistryInput!=null)await readMasterScopedNormativeRegistryPreconditionsR1(
+          client,scopedRegistryInput,"REGISTERED");
         const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan]);
         await client.query(`insert into public.estimate_definition_release(
             id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,

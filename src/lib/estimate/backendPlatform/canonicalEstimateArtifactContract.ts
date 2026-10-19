@@ -1,7 +1,7 @@
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
 import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
-import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu } from './canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateFixtureTextRu } from './canonicalPublicEstimateLanguageRu';
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
 import { assertCanonicalPurchaseSupplyRowV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyReadyV1, canonicalPurchaseSupplyBlocksV1 } from "./canonicalPurchaseSupplyReadinessV1";
@@ -14,7 +14,7 @@ import { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBa
 export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r11";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r13-construction-public-names";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r16-public-example-wording";
 export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:19";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
@@ -151,7 +151,7 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
     const label = Object.prototype.hasOwnProperty.call(labels, id) && typeof rawLabel === "string"
       && rawLabel.trim().length > 0 && rawLabel.length <= 100 && /[А-Яа-яЁё]/u.test(rawLabel)
       ? rawLabel.trim() : null;
-    return [{ parameterId: id, value: String(parameters[id]),
+    return [{ parameterId: id, value: canonicalPublicEstimateFixtureTextRu(String(parameters[id])),
       parts: (options?.splitSelectedValues === false ? [String(parameters[id])] : String(parameters[id]).split(/\s*;\s*/u))
         .filter(Boolean).map(part => canonicalPublicEstimateChoiceLabelRu(label ? `${label}: ${part}` : part)) }];
   });
@@ -160,10 +160,13 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
   const selectedValues = new Set(selected.map(spec => canonicalPublicEstimateChoiceLabelRu(spec.value).trim()));
   const presentation = canonicalArtifactPublicResourcePresentationV1(row);
   const namedDetails = canonicalPublicEstimateRowDetailsRu({ rowId: typeof row.row_id === 'string' ? row.row_id : null,
-    titleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
+    titleRu: canonicalArtifactSourceRowTitle(row, parameters),
+    sourceTitleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
     manualTitleOverride: objectValue(row.calculation_trace).manualTitleOverride === true });
   const details = [...new Set([...(presentation ? [presentation.brandAndModelRu, presentation.specificationRu, ...presentation.detailsRu] : []), ...namedDetails]
-    .filter((part): part is string => typeof part === 'string' && !selectedParts.includes(part)
+    .filter((part): part is string => typeof part === 'string')
+    .map(canonicalPublicEstimateFixtureTextRu)
+    .filter(part => !selectedParts.includes(part)
       && part !== selectedSpecification && !selectedValues.has(part.trim())))];
   return [...selected, ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: details }] : [])];
 }
@@ -401,7 +404,7 @@ export function canonicalProfessionalArtifactMetadataIdentityMatches(input: {
 }
 
 export function escapeCanonicalArtifactHtml(value: unknown): string {
-  return String(value ?? "")
+  return canonicalPublicEstimateFixtureTextRu(String(value ?? ""))
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

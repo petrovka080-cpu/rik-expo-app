@@ -1,0 +1,196 @@
+{
+  "contract": "gox-build.vent-pitot-port-caps-project-p-reference-completion/r1",
+  "status": "WORK_SOURCE_PROJECT_QUANTITY_REFERENCE_NOT_ADMITTED_NOT_RUN",
+  "catalogId": null,
+  "workKey": null,
+  "groupId": null,
+  "rootExecutionPin": null,
+  "identityAdmissionPin": null,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "parentModule": "galvanizedRoundDuct200Normal00101QuantityR1",
+  "parentShape": [
+    30,
+    27,
+    27
+  ],
+  "parentPrefix": "ventilation:krer20-01-001-01:source-only",
+  "targetNeedRowId": "ventilation:krer20-01-001-01:source-only:open:pitot-port-caps-project-P",
+  "legacyNeedUnchanged": true,
+  "sourceId": "kg_krer20_01_001_01_pitot_caps_project_p_reference_completion_r1",
+  "normId": "20-01-001-01",
+  "resourceCode": "23-1103-0001*",
+  "printedQuantityToken": "П",
+  "printedUnitRu": "шт.",
+  "unitId": "pcs",
+  "prefix": "ventilation:krer20-01-001-01:source-only:project-p-pitot-cap-reference",
+  "titleRu": "Проектное количество заглушек питотметражных лючков и справочный баланс — без оплаты и закупки",
+  "source": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-ventilation-metal-duct-a/source-intake-r1/KRER20-2015-official.pdf",
+    "sha256": "6201e55037dcfd46fb9c7f12d8a37dbfc05f5f029c77ecc8773da28d29525d94",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no20ventilaciaikondicionirovanievozduha_compressed-216690839a2451120.15137181.pdf",
+    "edition": "КРЕР20-2015; приказ 28.03.2016 №2-нпа; ввод 01.01.2016; текущая проектная применимость требует подтверждения",
+    "exactLocatorRu": "КРЕР20-2015: PDF/стр. 5, §1.5 — монтаж заглушек питотметражных лючков включён в прокладку воздуховодов; количество, типы и размеры по проекту, стоимость изделий дополнительно. PDF/стр. 11, строка 23-1103-0001*, шт., П, колонка 20-01-001-01.",
+    "pages": [
+      5,
+      11
+    ]
+  },
+  "selectionParameter": "vent_pitot_cap_scope",
+  "states": {
+    "active": "PROJECT_P_PITOT_CAP_REFERENCE_ONLY",
+    "unconfirmed": "OTHER_OR_UNCONFIRMED_PITOT_CAP_SCOPE"
+  },
+  "primaryParameter": "actual_galvanized_round200_duct_surface_m2",
+  "countParameter": "vent_pitot_cap_count_pcs",
+  "projectFacts": [
+    {
+      "id": "vent_pitot_cap_count_pcs",
+      "titleRu": "Число заглушек по отдельной утверждённой ведомости, шт.",
+      "valueType": "integer",
+      "unitId": "pcs",
+      "min": 1
+    },
+    {
+      "id": "vent_pitot_cap_kind",
+      "titleRu": "Заглушка питотметражного лючка, не торцевая заглушка воздуховода",
+      "values": [
+        "PROJECT_P_PITOT_MEASUREMENT_PORT_CAP_ONLY"
+      ]
+    },
+    {
+      "id": "vent_pitot_cap_unit",
+      "titleRu": "Единица проектного количества — целые штуки",
+      "values": [
+        "WHOLE_PCS_NOT_KG_M2_OR_METRES"
+      ]
+    },
+    {
+      "id": "vent_pitot_cap_compatibility",
+      "titleRu": "Совместимость с точным типом и размером лючка по проекту",
+      "values": [
+        "SAME_PROJECT_PORT_TYPE_SIZE_AND_DUCT_ROUTE_CONFIRMED"
+      ]
+    },
+    {
+      "id": "vent_pitot_cap_installation_scope",
+      "titleRu": "Монтаж уже включён в цельный труд воздуховода",
+      "values": [
+        "INSTALLATION_ALREADY_IN_WHOLE167_86_NO_NEW_LABOUR"
+      ]
+    },
+    {
+      "id": "vent_pitot_cap_commercial_status",
+      "titleRu": "Количество справочное; цена и закупка ещё не допущены",
+      "values": [
+        "REFERENCE_ONLY_NO_PAID_OR_PROCUREMENT_ADMISSION"
+      ]
+    },
+    {
+      "id": "vent_pitot_cap_position_scope",
+      "titleRu": "Одна однородная проектная позиция без смешения комплектов",
+      "values": [
+        "ONE_HOMOGENEOUS_CAP_POSITION_NO_MIXED_SIZES_OR_KIT"
+      ]
+    },
+    {
+      "id": "vent_pitot_cap_designation",
+      "titleRu": "Полное проектное наименование, тип, размер и артикул при наличии"
+    },
+    {
+      "id": "vent_pitot_cap_type_designation",
+      "titleRu": "Фактический тип и конструкция заглушки по проектной позиции"
+    },
+    {
+      "id": "vent_pitot_cap_size_designation",
+      "titleRu": "Точный размер сопряжения заглушки и лючка по проектному узлу; не диаметр воздуховода"
+    },
+    {
+      "id": "vent_pitot_cap_schedule_reference",
+      "titleRu": "Проект, редакция и строка ведомости с фактическим числом заглушек"
+    },
+    {
+      "id": "vent_pitot_cap_route_reference",
+      "titleRu": "Принадлежность всех заглушек этой трассе и ведомости поверхности воздуховода"
+    },
+    {
+      "id": "vent_pitot_cap_compatibility_reference",
+      "titleRu": "Проектный узел и подтверждение совместимости конкретного лючка и заглушки"
+    },
+    {
+      "id": "vent_pitot_cap_material_boundary_reference",
+      "titleRu": "Незакрытая граница материальной стоимости; отдельно от уже включённого монтажа"
+    }
+  ],
+  "balanceFacts": [
+    {
+      "id": "vent_pitot_cap_stock_pcs",
+      "titleRu": "Пригодные заглушки той же позиции в наличии, шт.; неизвестное не равно нулю",
+      "valueType": "integer",
+      "unitId": "pcs",
+      "min": 0
+    },
+    {
+      "id": "vent_pitot_cap_reserve_pcs",
+      "titleRu": "Сохраняемый резерв той же позиции, шт.",
+      "valueType": "integer",
+      "unitId": "pcs",
+      "min": 0
+    },
+    {
+      "id": "vent_pitot_cap_quantum_pcs",
+      "titleRu": "Подтверждённая кратность поставки той же позиции, шт.",
+      "valueType": "integer",
+      "unitId": "pcs",
+      "min": 1
+    },
+    {
+      "id": "vent_pitot_cap_stock_reference",
+      "titleRu": "Подтверждение пригодности и наличия, включая явно установленный ноль"
+    },
+    {
+      "id": "vent_pitot_cap_reserve_reference",
+      "titleRu": "Подтверждение сохраняемого резерва, включая явно установленный ноль"
+    },
+    {
+      "id": "vent_pitot_cap_quantum_reference",
+      "titleRu": "Документ кратности поставки; не норма расхода и не допуск цены"
+    },
+    {
+      "id": "vent_pitot_cap_supplier_position_reference",
+      "titleRu": "Одна конкретная поставочная позиция, совпадающая с проектной заглушкой"
+    }
+  ],
+  "rowIds": {
+    "consumed": "ventilation:krer20-01-001-01:source-only:project-p-pitot-cap-reference:project-count",
+    "order": "ventilation:krer20-01-001-01:source-only:project-p-pitot-cap-reference:order-reference",
+    "remaining": "ventilation:krer20-01-001-01:source-only:project-p-pitot-cap-reference:remaining-reference",
+    "free": "ventilation:krer20-01-001-01:source-only:project-p-pitot-cap-reference:free-reference"
+  },
+  "finance": {
+    "newRowsInfoOnly": 4,
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0,
+    "allNewAutomaticGenericPriceInheritanceAllowed": false,
+    "legacyWholeRateManHourPer100M2": "167.86",
+    "newLabourHours": null,
+    "manual77": "QA_REFERENCE_ONLY_NEVER_PAYMENT_OR_PROCUREMENT",
+    "realMaterialAdmissionStillRequired": true
+  },
+  "noAssumptions": [
+    "П не является нулём, единицей или числом заглушек на м².",
+    "Количество заглушек не выводится из площади, диаметра, числа стыков или длины воздуховода.",
+    "Одна штука допустима только как явно указанная проектная позиция, не замена исходной неизвестной нормы.",
+    "Монтаж заглушек уже в цельном труде; дополнительные часы, стоимость установки или испытаний не создаются.",
+    "Баланс не допускает цену, заказ, ассортимент или поставщика; пригодность, резерв и кратность всегда отдельные факты.",
+    "Тип, размер и совместимость не выбираются по умолчанию; торцевая заглушка, клапан, прибор или комплект не подменяют строку источника."
+  ],
+  "sourceNormRateForCaps": null,
+  "actualProjectOrBOMApproved": false,
+  "otherLegacyNeedsRetained": 10,
+  "testsRun": false,
+  "parentRetainedLineageCapturePin": null,
+  "parentActualCatalogOrDefinitionId": null,
+  "registryAdmissionPin": null,
+  "requiresFutureRootActualCaptureAndDecision": true
+}

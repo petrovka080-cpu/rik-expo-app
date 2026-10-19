@@ -51,7 +51,7 @@ import { extractBiaTn10MasonryCanonicalParametersV1 } from "../../lib/estimate/o
 import { extractConcretePlacementCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/concretePlacementProductionBindingR1";
 import { extractStripFoundationReinforcementCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1";
 import { extractAnchorGroupInstallationCanonicalParametersR1 } from "../../lib/estimate/ownedDomain/anchorGroupInstallationProductionBindingR1";
-import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory";
+import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../lib/estimate/v4/domainFactory/clientRuntimeV1";
 import { MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS } from "../../lib/estimate/v4/masonryBrickWallBiaTn10R1";
 import {
   FILTRATION_STATION_CATALOG_ID,

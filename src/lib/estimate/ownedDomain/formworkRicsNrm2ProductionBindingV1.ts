@@ -10,7 +10,7 @@ import {
   RICS_NRM2_FORMWORK_SOURCE_ID,
   RICS_NRM2_FORMWORK_SOURCE_METADATA,
   resolveProfessionalPhysicalNormParameterValuesV1,
-} from "../v4/domainFactory";
+} from "../v4/domainFactory/clientRuntimeV1";
 
 type Primitive = string | number | boolean;
 

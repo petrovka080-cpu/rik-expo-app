@@ -15,7 +15,7 @@ import {
 } from "./canonicalEstimateArtifactContract";
 import { canonicalEstimateResourceOperationSections } from "./canonicalEstimateOperationComposition";
 import { canonicalArtifactPurchaseRequirement } from "./canonicalPersistedPurchaseBalance";
-import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu, canonicalPublicEstimatePendingRowTitleRu } from './canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu, canonicalPublicEstimatePendingRowTitleRu, canonicalPublicEstimatePendingRowGuideRu } from './canonicalPublicEstimateLanguageRu';
 import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimateRowCategory';
 import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1} from './canonicalScopeRequirementV1';
 import {readRoofPrimerPrerequisiteDecisionV1,roofPrimerPhaseRuV1} from './canonicalRoofPrimerPrerequisiteV1';
@@ -23,7 +23,7 @@ import {canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHo
 import { assertCanonicalPurchaseSupplyRevisionV1, canonicalPurchaseSupplyWarningV1 } from "./canonicalPurchaseSupplyReadinessV1";
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-s27-83-construction-public-names-template54" as const;
+  "canonical-professional-pdf.r4-a13-public-example-wording-template57" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */
@@ -218,6 +218,8 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
   const pendingTitle = supplyWarning && trace.manualTitleOverride === true
     ? canonicalArtifactVisibleRowTitle(row)
     : canonicalPublicEstimatePendingRowTitleRu(canonicalArtifactVisibleRowTitle(row));
+  const pendingGuide = canonicalPublicEstimatePendingRowGuideRu({ rowId: String(row.row_id),
+    titleRu: String(row.title_ru), manualTitleOverride: trace.manualTitleOverride === true });
   const savedUnitPrice = supplyWarning && row.unit_price != null
     ? `${canonicalArtifactMoney(row.unit_price, row.currency_code)} (справочно)` : "—";
   const graph = objectValue(trace.resourceGraph), decision = objectValue(graph.commercialCostCoverageDecisionV1);
@@ -240,7 +242,7 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
   const specificationRows = specifications.map(detail => `<tr class="preliminary-need-specification"><td></td><td colspan="6"><strong>${escapeCanonicalArtifactHtml(canonicalArtifactVisibleRowTitle(row))}:</strong> ${escapeCanonicalArtifactHtml(detail)}</td></tr>`).join("");
   return `<tr class="preliminary-need">
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(pendingTitle)}</strong>${requirementText ? `<span>${escapeCanonicalArtifactHtml(requirementText)}</span>` : ''}${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}${supplyWarning ? `<span>${escapeCanonicalArtifactHtml(supplyWarning)}</span>` : ''}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(pendingTitle)}</strong>${pendingGuide ? `<span>${escapeCanonicalArtifactHtml(pendingGuide)}</span>` : ''}${requirementText ? `<span>${escapeCanonicalArtifactHtml(requirementText)}</span>` : ''}${coverageText ? `<span>${escapeCanonicalArtifactHtml(coverageText)}</span>` : ''}${supplyWarning ? `<span>${escapeCanonicalArtifactHtml(supplyWarning)}</span>` : ''}</td>
     <td>${escapeCanonicalArtifactHtml(CATEGORY_TITLES[canonicalProfessionalPdfCategory(row)])}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(quantityLabel)}</td>
@@ -433,7 +435,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     .name ul{padding-left:12px;margin:3px 0;font-size:8px;color:#526174}.operation{break-after:avoid;page-break-after:avoid}.operation td{background:#eef7f2}.operation span{display:block;color:#526174;margin-top:3px}.preliminary-need{break-inside:avoid;page-break-inside:avoid;break-after:auto;page-break-after:auto}.preliminary-need-detail{break-before:avoid;page-break-before:avoid}.preliminary-need td{background:#fff7ed}.preliminary-need .numeric{white-space:normal}.purchase-supply-block .numeric{white-space:normal;overflow-wrap:anywhere}.preliminary-need-detail td{color:#7c4a03;font-size:8px}.preliminary-need-specification td{color:#526174;font-size:8px}.signatures{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px;break-inside:avoid}.signature{border:1px solid #cbd4df;padding:7px;min-height:84px}.signature strong{display:block;margin-bottom:7px}.signature div{border-bottom:1px solid #758195;margin-top:13px;color:#526174}.approval-block{break-inside:avoid;page-break-inside:avoid}.organization{margin-top:12px;border-bottom:1px solid #758195;padding-bottom:3px;break-inside:avoid}
   </style></head><body>
     <header><h1>Профессиональная смета</h1><div class="subtitle">${escapeCanonicalArtifactHtml(workTitleRu || "Строительно-монтажные работы")}</div>
-      ${explicitDemo ? '<div class="notice"><strong>ДЕМО / VALIDATION_FIXTURE — испытательный документ. Не является утверждённой проектной сметой.</strong></div>' : ""}
+      ${explicitDemo ? '<div class="notice"><strong>Проверочный пример. Не является утверждённой проектной сметой.</strong></div>' : ""}
       ${nullableText(revision.source_request_text) ? `<div><strong>Исходный запрос:</strong> ${escapeCanonicalArtifactHtml(canonicalPublicEstimateRequestTextRu(String(revision.source_request_text)))}</div>` : ""}
       <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(workTitleRu)}</div><div><strong>${workMeasure ? "Объём работы" : "Первичная мера"}:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
     </header>

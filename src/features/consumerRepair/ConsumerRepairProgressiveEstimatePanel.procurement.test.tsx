@@ -111,6 +111,7 @@ it("preserves the actual tray mortar ratio in Buyer projection and rendered rows
   expect(projected).toHaveLength(1);
   expect(projected[0].titleRu.match(/1:3/gu)).toHaveLength(2);
   expect(projected[0].titleRu).not.toContain("1 — 3");
+  expect(projected[0].titleRu).not.toContain("CONTROL_ONLY");
   expect(projected[0].quantity).toBe("0.017");
   expect(projected[0].quantityDetails).toEqual([
     "Расход: 0,01633 м³", "В наличии: 0 м³", "Сохраняемый резерв: 0 м³",
@@ -122,6 +123,7 @@ it("preserves the actual tray mortar ratio in Buyer projection and rendered rows
   const rendered = JSON.stringify(renderer.toJSON());
   expect(rendered).toContain("цементный 1:3");
   expect(rendered).not.toContain("1 — 3");
+  expect(rendered).not.toContain("CONTROL_ONLY");
   expect(rendered).toContain("К закупке: 0,017 м³");
   expect(JSON.stringify(current)).toBe(before);
   act(() => renderer.unmount());

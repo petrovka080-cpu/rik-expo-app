@@ -146,7 +146,7 @@ function CanonicalEstimateMeaningfulPreviewCard({
       <Text style={styles.meaningfulPreviewEyebrow}>Предварительная смета рассчитана</Text>
       {preview.explicitValidationFixture ? (
         <Text style={styles.meaningfulPreviewSaving} testID="consumer-estimate-preview-fixture-marker">
-          ДЕМО / VALIDATION_FIXTURE — испытательный состав. Проектная смета не утверждена.
+          Проверочный пример. Проектная смета не утверждена.
         </Text>
       ) : null}
       <Text

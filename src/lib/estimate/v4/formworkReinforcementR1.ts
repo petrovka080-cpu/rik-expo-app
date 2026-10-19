@@ -5,7 +5,7 @@ import {
   type ReinforcementFamilyDescriptorR1,
   type StripFoundationReinforcementParameter,
 } from "./stripFoundationReinforcementR1";
-import { REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID } from "./domainFactory";
+import { REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID } from "./domainFactory/clientRuntimeV1";
 
 type InputValue = string | number | boolean;
 

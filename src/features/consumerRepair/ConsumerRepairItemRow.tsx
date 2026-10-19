@@ -15,7 +15,7 @@ import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateM
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { canonicalArtifactPurchaseRequirement } from "../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance";
 import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
-import { canonicalPublicEstimatePendingRowTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimatePendingRowTitleRu, canonicalPublicEstimatePendingRowGuideRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
@@ -131,6 +131,10 @@ function ConsumerRepairItemRowComponent({
     calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
   const requirementNotice = supplyWarning ?? consumerRepairRowRequirementNotice(item, parameterRequirementTables);
   const publicResourcePresentation = React.useMemo(() => consumerRepairRowPublicResourcePresentation(item), [item]);
+  const pendingGuide = applicationPending ? canonicalPublicEstimatePendingRowGuideRu({
+    rowId: consumerRepairRowCode(item), titleRu: publicResourcePresentation?.sourceTitleRu ?? item.titleRu,
+    manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true,
+  }) : undefined;
   const {
     quantityInputRef,
     quantityText,
@@ -237,6 +241,7 @@ function ConsumerRepairItemRowComponent({
             ) : null}
           </View>
         )}
+        {pendingGuide ? <Text style={styles.traceLine} testID={`consumer-repair-item-pending-guide-${item.id}`}>{pendingGuide}</Text> : null}
         <View style={styles.fields}>
           <View style={styles.field}>
             <Text style={styles.label}>Количество</Text>

@@ -13,7 +13,7 @@ import {
   NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_ID,
   NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
   resolveProfessionalPhysicalNormParameterValuesV1,
-} from "./domainFactory";
+} from "./domainFactory/clientRuntimeV1";
 import type { ProfessionalParameterValueV4 } from "./professionalProjectAssemblyV4";
 
 export type ConcretePlacementInputValueR1 = string | number | boolean;
