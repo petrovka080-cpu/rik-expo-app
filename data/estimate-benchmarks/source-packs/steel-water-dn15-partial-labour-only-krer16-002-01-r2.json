@@ -1,0 +1,771 @@
+{
+  "status": "SOURCE_BOUND_PARTIAL_LABOUR_ONLY_QUANTITY_DESIGN_R2_NOT_RUN_NO_CATALOG_DECISION",
+  "contract": "work.steel-water-galvanized-dn15.krer16-02-002-01.partial-labour-only/r2",
+  "sourceId": "kg_krer16_02_002_01_galvanized_water_dn15_r1",
+  "sourceKeyStatus": "PROPOSED_SOURCE_SCOPE_NOT_REGISTERED",
+  "normId": "16-02-002-01",
+  "catalogId": null,
+  "catalogBinding": null,
+  "publicationAllowed": false,
+  "runtimeAccepted": false,
+  "fullTechnicalAcceptance": false,
+  "titleRu": "Монтаж внутреннего стального оцинкованного водопровода DN15 из укрупнённых узлов — КРЕР16-02-002-01",
+  "source": {
+    "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-23/q5-valtec-ppr-official-sources/KG_KRER_16_INTERNAL_PIPELINES.pdf",
+    "sha256": "4fb2b609cf72486f9ef5f110cd606f6632fba3302cd3d52015f41dac24cbd17b",
+    "bytes": 2692853,
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no16truboprovodyvnutrennie_compressed-154690837388a4dd7.26767770.pdf",
+    "edition": "КРЕР16-2015, утверждён28.03.2016№2-нпа, ввод01.01.2016",
+    "tablePages": [
+      19,
+      20,
+      21
+    ],
+    "selectedColumn": "16-02-002-01",
+    "sourceQuantityDenominator": "100",
+    "sourceQuantityUnit": "m",
+    "technicalPages": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "basePricesImported": false
+  },
+  "physicalSourceRows": [
+    {
+      "id": "whole-worker",
+      "category": "labor",
+      "resourceCode": "000-1004-0",
+      "titleRu": "Рабочие-строители среднего разряда 4,0",
+      "sourceUnit": "man_hour",
+      "ratePer100M": "37.07",
+      "paidBoundary": "ONE_WHOLE_INSTALLATION_LABOUR_OWNER_NO_OPERATION_SPLIT",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": null,
+      "includedInEstimateMayBeTrue": true,
+      "manualPriceOrSnapshotCannotEnablePayment": false,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "machinists-reference",
+      "category": "labor",
+      "resourceCode": null,
+      "titleRu": "Затраты труда машинистов — агрегат исходной колонки",
+      "sourceUnit": "man_hour",
+      "ratePer100M": "0.15",
+      "paidBoundary": "INFORMATIONAL_ONLY_NOT_ADDITIONAL_PAID_OPERATOR",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": null,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "tower-crane8t",
+      "category": "equipment",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный 8 т для других видов строительства",
+      "sourceUnit": "machine_hour",
+      "ratePer100M": "0.08",
+      "paidBoundary": "MACHINE_PRICE_SCOPE_PENDING_INFORMATIONAL_UNTIL_EXACT_CODE_AND_CATALOG_ADMISSION",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": null,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "truck-crane10t",
+      "category": "equipment",
+      "resourceCode": "02-0075",
+      "titleRu": "Кран на автомобильном ходу 10 т для других видов строительства",
+      "sourceUnit": "machine_hour",
+      "ratePer100M": "0.07",
+      "paidBoundary": "MACHINE_PRICE_SCOPE_PENDING_INFORMATIONAL_UNTIL_EXACT_CODE_AND_CATALOG_ADMISSION",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": null,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "gas-welding-cutting-apparatus",
+      "category": "equipment",
+      "resourceCode": "04-0041",
+      "titleRu": "Аппараты для газовой сварки и резки",
+      "sourceUnit": "machine_hour",
+      "ratePer100M": "1.39",
+      "paidBoundary": "MACHINE_PRICE_SCOPE_PENDING_NO_AUTOMATIC_NO_ADDITIONAL_OPERATOR_ROLE",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": null,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "flatbed-truck5t",
+      "category": "equipment",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "sourceUnit": "machine_hour",
+      "ratePer100M": "0.44",
+      "paidBoundary": "MACHINE_PRICE_SCOPE_PENDING_FULL_OPERATING_DRIVER_BOUNDARY_REVIEW",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": null,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "water",
+      "category": "material",
+      "resourceCode": "01-0601-0001",
+      "titleRu": "Вода",
+      "sourceUnit": "m3",
+      "ratePer100M": "0.25",
+      "orderUnit": "m3",
+      "sourceToOrderMultiplier": "1",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "acetylene",
+      "category": "material",
+      "resourceCode": "01-0903-0002",
+      "titleRu": "Ацетилен растворённый технический марки А",
+      "sourceUnit": "t",
+      "ratePer100M": "0.00019",
+      "orderUnit": "kg",
+      "sourceToOrderMultiplier": "1000",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "oxygen",
+      "category": "material",
+      "resourceCode": "01-0909-0001",
+      "titleRu": "Кислород технический газообразный",
+      "sourceUnit": "m3",
+      "ratePer100M": "0.342",
+      "orderUnit": "m3",
+      "sourceToOrderMultiplier": "1",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "chlorinated-lime",
+      "category": "material",
+      "resourceCode": "01-2309-0002",
+      "titleRu": "Известь строительная негашёная хлорная марки А",
+      "sourceUnit": "kg",
+      "ratePer100M": "0.0009",
+      "orderUnit": "kg",
+      "sourceToOrderMultiplier": "1",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "oil-paint",
+      "category": "material",
+      "resourceCode": "01-3808-0001",
+      "titleRu": "Краски масляные земляные МА-0115: мумия, сурик железный",
+      "sourceUnit": "t",
+      "ratePer100M": "0.00044",
+      "orderUnit": "kg",
+      "sourceToOrderMultiplier": "1000",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "welding-wire4mm",
+      "category": "material",
+      "resourceCode": "01-5002-0014",
+      "titleRu": "Проволока сварочная легированная диаметром 4 мм",
+      "sourceUnit": "t",
+      "ratePer100M": "0.0004",
+      "orderUnit": "kg",
+      "sourceToOrderMultiplier": "1000",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "linseed-oil",
+      "category": "material",
+      "resourceCode": "01-7104-0005",
+      "titleRu": "Олифа комбинированная К-3",
+      "sourceUnit": "t",
+      "ratePer100M": "0.00053",
+      "orderUnit": "kg",
+      "sourceToOrderMultiplier": "1000",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "linen",
+      "category": "material",
+      "resourceCode": "01-7223-0001",
+      "titleRu": "Очес льняной",
+      "sourceUnit": "kg",
+      "ratePer100M": "0.05",
+      "orderUnit": "kg",
+      "sourceToOrderMultiplier": "1",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "assembled-galvanized-dn15-nodes",
+      "category": "material",
+      "resourceCode": "16-1108-0001",
+      "titleRu": "Узлы укрупнённые монтажные из стальных водогазопроводных оцинкованных труб с гильзами для водоснабжения DN15",
+      "sourceUnit": "m",
+      "ratePer100M": "100",
+      "orderUnit": "m",
+      "sourceToOrderMultiplier": "1",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    },
+    {
+      "id": "pipe-fastenings",
+      "category": "material",
+      "resourceCode": "21-1009-0002",
+      "titleRu": "Крепления для трубопроводов: кронштейны, планки, хомуты",
+      "sourceUnit": "kg",
+      "ratePer100M": "61",
+      "orderUnit": "kg",
+      "sourceToOrderMultiplier": "1",
+      "paidBoundary": "SOURCE_QUANTITY_INFORMATIONAL_ONLY_NO_MATERIAL_PAYMENT_OR_PROCUREMENT_IN_R2",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "includedInProcurement": false,
+      "materialPaymentAdmitted": false,
+      "includedInEstimateMayBeTrue": false,
+      "manualPriceOrSnapshotCannotEnablePayment": true,
+      "quantityEditPolicy": "PARAMETERS_ONLY"
+    }
+  ],
+  "operationsIncludedInWholeLabour": [
+    {
+      "id": "lay-assembled-nodes",
+      "source": "table16-02-002 composition01",
+      "titleRu": "Прокладка трубопровода из готовых узлов или из труб",
+      "owner": "whole-worker",
+      "quantityBasis": "project_length_m",
+      "extraPaidLabour": false
+    },
+    {
+      "id": "install-seal-fastenings",
+      "source": "table16-02-002 composition02; §1.1",
+      "titleRu": "Установка и заделка креплений; не автоматическое изготовление опор",
+      "owner": "whole-worker",
+      "quantityBasis": "project_length_m",
+      "extraPaidLabour": false
+    },
+    {
+      "id": "flush-with-water",
+      "source": "table16-02-002 composition03",
+      "titleRu": "Промывка трубопровода водой",
+      "owner": "whole-worker",
+      "quantityBasis": "project_length_m",
+      "extraPaidLabour": false
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "node-bom-and-valves",
+      "titleRu": "Коммерческая комплектация и непересекающаяся стоимость узлов, арматуры и креплений",
+      "sourceOrFact": "§1.5/1.6, §2.4; П в строке17-0101-0001*",
+      "evidenceOwner": "Проектировщик/сметчик/поставщик",
+      "task": "После обязательного подтверждения физического узла, гильз и границ установленной арматуры установить состав цены узла. Сверить материальную стоимость муфтовой арматуры П, креплений и прочих компонентов с точной спецификацией и котировкой. Число, тип, DN, управление и членство арматуры для границы монтажа подтверждаются обязательным проектным reference; цена или П как численный коэффициент не подставляются.",
+      "acceptance": "Точная коммерческая BOM, проектная количественная ведомость и непересекающаяся граница каждой оплаты. В R2 все десять материалов остаются INFO без закупки; будущий допуск требует отдельного ROOT решения и проверок.",
+      "authority": "APPLICATION_TECHNICAL",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true,
+      "physicalGateSeparateFromThisNeed": true
+    },
+    {
+      "id": "supports-fabrication",
+      "titleRu": "Проектное изготовление/устройство опор вне включённой установки",
+      "sourceOrFact": "§1.1, строка21-1009-0002=61кг/100м; проект опор",
+      "evidenceOwner": "Проектировщик/сметчик",
+      "task": "Отделить включённые установку и заделку креплений в 37,07 ч от проектного изготовления или устройства опор. Подтвердить исходную материальную спецификацию креплений в кг. Расход 61 кг на 100 м не является количеством хомутов. R2 не оплачивает этот материал; коммерческая граница с узлом и другими комплектами остаётся неразрешённой.",
+      "acceptance": "Нет новых часов/штук из массы61кг; отдельная оплата лишь по отдельному доказанному составу.",
+      "authority": "APPLICATION_TECHNICAL",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "through-openings-sealing",
+      "titleRu": "Готовность сквозных отверстий и отдельная заделка проходов",
+      "sourceOrFact": "§1.4; проект проходок/огнезащиты",
+      "evidenceOwner": "Проектировщик/генподрядчик",
+      "task": "Подтвердить готовые отверстия для трассы; назначить проектный состав последующей заделки/огнестойкости, не дублируя отверстия под крепления из§1.1.",
+      "acceptance": "Проектная ведомость проходок и отдельный применимый источник; количество/расходы не выдумывать.",
+      "authority": "APPLICATION_TECHNICAL",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "separate-hydraulic-test",
+      "titleRu": "Отдельное гидроиспытание с исключением повторной оплаты",
+      "sourceOrFact": "§1.5/§2.5; опубликованный источник16-07-005-01",
+      "evidenceOwner": "Проектировщик/исполнитель испытаний",
+      "task": "Связать реальный испытательный участок, программу, номинальный диаметр и один владелец испытания; не добавлять5.01ч/100м к монтажу по умолчанию.",
+      "acceptance": "Отдельный совместимый consumer/задание и документированная граница; текущий монтаж испытание не закрывает.",
+      "authority": "APPLICATION_TECHNICAL",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true,
+      "existingSeparateComparator": {
+        "catalogId": "canonical-work:master:internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+        "definitionVersionId": "c7a94a94-d3fa-5754-9aab-d9f63c953d1b",
+        "definitionSha256": "1634a187a5baf61cd2d8a55218c07f200f7f87b362f2c3909829b080b8abf7d8",
+        "classification": "KEEP_SEPARATE_HYDROTEST_NOT_INSTALLATION",
+        "reason": "Separate16-07-005-01 test scope, not16-02-002-01 installation; potential future paired use requires independent payment scope and must not repeat included flushing.",
+        "keepCurrentImmutable": true,
+        "automaticCompileOrPaymentTransferAllowed": false,
+        "sameRouteLengthNotAssumed": true
+      }
+    },
+    {
+      "id": "machine-price-scope",
+      "titleRu": "Допуск цены эксплуатации четырёх конкретных машин",
+      "sourceOrFact": "Точные коды02-0005/02-0075/04-0041/40-0001; существующий canonicalMachineHourPriceCoverageV1",
+      "evidenceOwner": "Приложение/источниковед/сметчик",
+      "task": "Доказать роль и состав машино-часа по каждому коду; добавить exact catalog/row admission только интегратором. Газ/проволока отдельно из нормы не входят повторно в ставку,0.15ч агрегат не отдельный платный машинист.",
+      "acceptance": "Четыре машины и 0,15 ч машинистов остаются INFO и не оплачиваются при manual/snapshot или inclusion override. Exact shared price admission отсутствует. Никакая минимальная смена, выезд, газ или проволока не включаются повторно в ставку.",
+      "authority": "APPLICATION_TECHNICAL",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "extra-logistics",
+      "titleRu": "Доставка/разгрузка/мобилизация сверх исходного состава",
+      "sourceOrFact": "§1.1 перемещение баллонов;4машины исходной колонки; ППР/маршрут поставки",
+      "evidenceOwner": "Логист/сметчик",
+      "task": "Определить только дополнительные подтверждённые границы, не оплачивая второй раз нормативные краны/бортовой транспорт/перемещение баллонов.",
+      "acceptance": "Маршрут, отправления, груз и отличие от нормы; без тонн/рейсов из длины или массы по умолчанию.",
+      "authority": "APPLICATION_TECHNICAL",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "hot-work-safety",
+      "titleRu": "Доступ, газовая/огневая безопасность и защита действующих помещений",
+      "sourceOrFact": "Проект/ППР/наряд на огневые работы, конкретные условия здания",
+      "evidenceOwner": "Ответственный производитель работ/ОТ",
+      "task": "Подтвердить безопасные условия газовой сварки/резки и подачи газов, эксплуатацию действующих систем и защиту людей/покрытий.",
+      "acceptance": "ППР и условия; никаких количествСИЗ/огнетушителей/часов наблюдения из отсутствующего источника.",
+      "authority": "APPLICATION_TECHNICAL",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "flush-acceptance-waste",
+      "titleRu": "Программа промывки, отвод воды, приёмка и отходы",
+      "sourceOrFact": "Состав03 промывка; исходная вода/хлорная известь; проект санитарных требований/отвода",
+      "evidenceOwner": "Проектировщик/эксплуатант/исполнитель",
+      "task": "Согласовать программу/воду/отвод и критерии результата; наличие хлорной извести в составе не доказывает выполненную дезинфекцию или пригодность питьевой воды. Уборку/вывоз назначать только по фактам.",
+      "acceptance": "Программа и акты/протоколы отдельно; full acceptance остаётсяfalse.",
+      "authority": "APPLICATION_TECHNICAL",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    }
+  ],
+  "scopeFacts": [
+    {
+      "id": "material_scope",
+      "allowedValues": [
+        "GALVANIZED_STEEL_WATER_GAS_PIPE_DN15"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "system_scope",
+      "allowedValues": [
+        "INTERNAL_BUILDING_WATER_SUPPLY_LE_1_6_MPA"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "diameter_basis",
+      "allowedValues": [
+        "NOMINAL_BORE_DN15_NOT_OUTSIDE_DIAMETER"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "measurement_basis",
+      "allowedValues": [
+        "PROJECT_STEEL_LENGTH_WITH_FITTINGS_VALVES_U_COMPENSATORS"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "route_excludes_building_inlet",
+      "allowedValues": [
+        "INTERNAL_DISTRIBUTION_ONLY_NOT_STEEL_BUILDING_WATER_INLET_TABLE16_02_004_005"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "route_excludes_complex_accounted_lengths",
+      "allowedValues": [
+        "EXCLUDE_METER_NODE_ELEVATOR_HAND_PUMP_CONDENSATE_TRAP_DISTRIBUTION_MANIFOLD_COMPLEX_INCLUDED_LENGTHS"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "supply_method",
+      "allowedValues": [
+        "TRANSPORTABLE_ASSEMBLED_NODES_WITH_SLEEVES_PHYSICAL_SUPPLY_CONFIRMED"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "node_valve_inventory_scope",
+      "allowedValues": [
+        "PROJECT_IDENTIFIED_HANDWHEEL_VALVES_IN_MOUNTED_NODES",
+        "PROJECT_DOCUMENTED_ABSENCE_OF_VALVES_IN_THIS_SCOPE"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "height_scope",
+      "allowedValues": [
+        "AT_MOST_3_M_FROM_FLOOR_OR_CONTINUOUS_DECK"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "through_holes",
+      "allowedValues": [
+        "READY_THROUGH_OPENINGS_NOT_NEW_STRUCTURAL_BORING"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    },
+    {
+      "id": "payment_boundary",
+      "allowedValues": [
+        "WHOLE_INSTALLATION_LABOUR_ONCE_FLUSH_AND_FIXING_INSTALL_INCLUDED_TEST_SEPARATE"
+      ],
+      "requiredForPositiveLength": true,
+      "missingFactWithholdsSourceQuantities": true,
+      "incompatibleValue": "REFUSE_NARROW_VARIANT_NO_SOURCE_OR_COEFFICIENT_SWITCH"
+    }
+  ],
+  "projectFactsRequired": [
+    {
+      "id": "route_measurement_reference",
+      "requiredForPositiveLength": true,
+      "evidence": "Measured internal DN15 route, segments, fittings/valves/Ucompensators; excludesinlet and§2.3bundledlengths."
+    },
+    {
+      "id": "node_supply_identity_reference",
+      "requiredForPositiveLength": true,
+      "evidence": "Actual project/assembly supply reference proves transportable assembled galvanizedDN15 nodes withsleeves; a barepipe quote cannot establishthis identity."
+    },
+    {
+      "id": "node_valve_inventory_reference",
+      "requiredForPositiveLength": true,
+      "evidence": "Project count/type/DN/actuation and membership ofmounted valves; manualhandwheel boundary or explicitdocumentedabsence. Does not provecommercialmaterialquoteinclusions."
+    },
+    {
+      "id": "support_installation_boundary_reference",
+      "requiredForPositiveLength": true,
+      "evidence": "Fasteninginstallation vsprojectsupportconstruction boundary andkgmaterialidentity; notcountfrom61kg."
+    },
+    {
+      "id": "project_conditions_reference",
+      "requiredForPositiveLength": true,
+      "evidence": "Waterpressure/height/deck/readythrough-openings and source-compatibleprojectconditions."
+    },
+    {
+      "id": "safe_execution_and_flush_program_reference",
+      "requiredForPositiveLength": true,
+      "evidence": "Permittedgaswork/occupiedbuildingaccess andordinaryincludedflushprogramme; programme isnotperformedacceptance."
+    }
+  ],
+  "projectNumericFacts": [
+    {
+      "id": "project_length_m",
+      "unit": "m",
+      "minExclusive": "0",
+      "default": null
+    },
+    {
+      "id": "nominal_bore_mm",
+      "unit": "mm",
+      "min": "15",
+      "max": "15",
+      "default": null,
+      "basis": "§1.3 conditional nominalbore; noOD15orDN20source switch"
+    },
+    {
+      "id": "working_pressure_mpa",
+      "unit": "MPa",
+      "minExclusive": "0",
+      "max": "1.6",
+      "default": null
+    },
+    {
+      "id": "working_height_m",
+      "unit": "m",
+      "min": "0",
+      "max": "3",
+      "default": null
+    }
+  ],
+  "stockReserveSupplyFacts": "NOT_REQUIRED_FOR_R2_PHYSICAL_INFO_AND_NO_MATERIAL_ORDER_ROW_EMITTED; futurecommercialadmissionneed cannot close bysupplyingstock/reserve/quantumalone",
+  "noAutomaticClaims": [
+    "threaded-only joining method",
+    "bare pipe equals assembled node",
+    "P project valve quantity from length",
+    "support count from61kg",
+    "hydrotest included",
+    "allBOM/acceptance proven",
+    "machine price admission from helpernull",
+    "current catalog/source absence",
+    "one-off fees apportioned into source machine-hours"
+  ],
+  "visualEvidencePins": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-steel-water-installation-b/krer16-steel-water-19.png",
+      "sha256": "1b667e56955e601f1e30e91f84b73ab4252853df4dbb37e2ad80a49dc047d0f0",
+      "bytes": 718252
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-steel-water-installation-b/krer16-steel-water-20.png",
+      "sha256": "447357a823f49551e8b0792e5c028b85cbf160aa988b16759e6f6fafe09041ec",
+      "bytes": 691702
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-steel-water-installation-b/krer16-steel-water-21.png",
+      "sha256": "5c5fbee6449065d5efe72a7bdf6fc1c648a712230a05ce21b10cead376741b37",
+      "bytes": 661965
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/krer16-tech-05.png",
+      "sha256": "5fe51fbbb66a8eb9d8ed841885a4682464a3e8732eda2167dc51143a456a097b",
+      "bytes": 719899
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/krer16-tech-06.png",
+      "sha256": "64e78171e9f91050df2939c5d9b7fe2097cd9a159de51c0e689164cd1e51df7d",
+      "bytes": 919337
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/krer16-tech-07.png",
+      "sha256": "ab7230f33d02d6dbd89d456f96f4c0dbc542e6aa0e72926d130ab95e26fba51d",
+      "bytes": 492067
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/krer16-tech-08.png",
+      "sha256": "62e375627c4020ab24f63fcdac29b1f34cf3af35da915165d54e7ec3fde0530e",
+      "bytes": 25491
+    }
+  ],
+  "forkOrigin": {
+    "frozenR1CandidatePin": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-steel-water-installation-b/steel-water-dn15-source-quantity-candidate-r1.json",
+      "sha256": "6aa525117c64c251e0a4beaefb30fda99822061f600c678545d7415dbb432a1c",
+      "bytes": 21891
+    },
+    "frozenR1HandoffPin": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-steel-water-installation-b/steel-water-dn15-source-first-handoff-r1.json",
+      "sha256": "9d0aada208c2a049ae2ed99ace9f41559bf584d6ecee87ce5eb5e69d0de2e147",
+      "bytes": 6950
+    },
+    "addressedReviewPin": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/steel-water-norm-boundary-review-r1/review-r1.json",
+      "sha256": "3a7bb44a9d1d867ff57356efa593f44155ddd01cfb01dff89adf5dd02c1c4f14",
+      "bytes": 9525
+    },
+    "actualBoundedClassificationPin": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/root-steel-water-current14-classification-r1.json",
+      "sha256": "5136b0845188b97b4f7cfd696c32487350dedf9b4776a6f52b37f1c593eacd7b",
+      "bytes": 10507
+    },
+    "sourceRatesUnitsPhysicalCodeAndColumnChanged": false,
+    "defaultPricesOrPaymentAdded": false,
+    "r1Mutated": false
+  },
+  "actualCurrentClassification": {
+    "pin": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/root-steel-water-current14-classification-r1.json",
+      "sha256": "5136b0845188b97b4f7cfd696c32487350dedf9b4776a6f52b37f1c593eacd7b",
+      "bytes": 10507
+    },
+    "status": "ROOT_REVIEWED_26_HEADERS_AND14_FINITE_CURRENT_DEFINITIONS_NO_COMPATIBLE_REPLACEMENT_IN_SCOPE_R1",
+    "executionContext": {
+      "sourceHead": "c465dfa5af45c0a5b7a0afd56b26647b05a8fc55",
+      "recordedReleaseSourceCommit": "589f9bb51578b8984d5dd1d7a76effcec4897da1",
+      "definitionReleaseId": "0ad99b94-6219-5341-a46a-4d7c11b63054",
+      "searchReleaseId": "865215d5-0cab-5ab3-bfdc-9fe481ff48b6"
+    },
+    "scopedHeaderCount": 26,
+    "currentImmutableDefinitions": 14,
+    "legacyWithoutCurrentManifest": 12,
+    "groupsObserved": 4,
+    "replacementCompatibleInScope": 0,
+    "dispositionCounts": {
+      "pointComplexKeep": 12,
+      "pprMetresKeep": 1,
+      "hydrotestMetresSeparateKeep": 1
+    },
+    "all14RemainImmutable": true,
+    "newIdentityAdmitted": false,
+    "newCatalogId": null,
+    "globalAbsenceProved": false,
+    "commonSnapshotClaim": false,
+    "futureRuntimeContext": null
+  },
+  "partialPhysicalPaymentShape": {
+    "quantifiedPhysicalRows": 16,
+    "paidWholeLabourOwners": 1,
+    "physicalInfoRows": 15,
+    "includedOperationRows": 3,
+    "applicationNeedRows": 8,
+    "proposedResourceDefinitionRows": 27,
+    "emittedPurchaseOrderRows": 0,
+    "emittedPurchaseBalanceControlRows": 0,
+    "materialPaidOwners": 0,
+    "materialProcurementOwners": 0,
+    "machinePaidOwners": 0,
+    "operatorPaidOwners": 0,
+    "priceBindings": 0,
+    "bindingPlanPendingRootClassificationAndExactAbsence": true
+  },
+  "sourceRowIdentityContract": {
+    "positivePhysicalQuantitiesRequireAllPhysicalGates": true,
+    "unknownPhysicalAssemblyOrArmatureIdentity": "WITHHOLD_SOURCE_QUANTITIES_AND_WHOLE_LABOUR; no barepipe/implicitmethod fallback",
+    "commercialBomUnresolvedAllowedForInfoQuantitiesOnly": true,
+    "materialAndMachinePricesCannotCloseCommercialOrTechnicalNeed": true
+  },
+  "futureMaterialAdmission": {
+    "isPartOfR2": false,
+    "paymentAllowed": false,
+    "procurementAllowed": false,
+    "emittedOwnerRows": 0,
+    "emittedControlRows": 0,
+    "requires": [
+      "Exact compatible deliveredassembly/sleeves/valveBOMwithproject count/type/DN/handwheelmembership already confirmedphysically",
+      "Nonoverlappingcommercialquotepriceinclusions fornode/valves/fastenings andmachinegases/wire",
+      "ROOT exactsource/catalog/row decision andfullnormal+locked publisherguards",
+      "Only thenexplicitcompatible stock/reserve/quantum/stockreference through existingbalancecontract"
+    ],
+    "priceNullIsNotTheEnforcement": true
+  },
+  "authoringOriginR1": {
+    "head": "94ee27aa27a3aaa604c89fd8bee53a05ba71653e",
+    "tree": "b0f4ca5e434ddd6e26022416db893eb545092ec9"
+  },
+  "r2EvidenceContext": {
+    "sourceHead": "c465dfa5af45c0a5b7a0afd56b26647b05a8fc55",
+    "recordedReleaseSourceCommit": "589f9bb51578b8984d5dd1d7a76effcec4897da1",
+    "definitionReleaseId": "0ad99b94-6219-5341-a46a-4d7c11b63054",
+    "searchReleaseId": "865215d5-0cab-5ab3-bfdc-9fe481ff48b6"
+  },
+  "futureExecutionContext": null
+}

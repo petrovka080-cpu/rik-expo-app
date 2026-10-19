@@ -21,9 +21,9 @@ function input():SelectedMaterialDeliveryInputR1 {
       load_securing_and_compatibility_confirmed:fact(true),route_and_access_confirmed:fact(true),
       supplier_billing_scope:fact('SUPPLIER_SCOPE:synthetic per-trip quotation')}}};
 }
-test('the finite mapping covers exactly the declared seven/eight/one consumers without duplicates',()=>{
-  expect(pack.catalogIds).toHaveLength(16);expect(new Set(pack.catalogIds).size).toBe(16);
-  expect(pack.groups.map(group=>group.catalogIds.length)).toEqual([7,8,1]);
+test('the finite mapping preserves seven/eight/one consumers and adds exactly the declared masonry consumer',()=>{
+  expect(pack.catalogIds).toHaveLength(17);expect(new Set(pack.catalogIds).size).toBe(17);
+  expect(pack.groups.map(group=>group.catalogIds.length)).toEqual([7,8,1,1]);
   expect(pack.catalogIds).toEqual(pack.groups.flatMap(group=>group.catalogIds));
 });
 test('one existing applicability owner supplies whole trips, never copied material prices or unloading',()=>{

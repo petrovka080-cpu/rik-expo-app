@@ -8,7 +8,7 @@ import {
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import {
   NRMCA_CIP31_SELECTED_CONTINGENCY_SOURCE_METADATA,
-} from "./domainFactory";
+} from "./domainFactory/clientRuntimeV1";
 import {
   STAIRS_CONCRETE_PLACEMENT_FORMULAS,
   STAIRS_CONCRETE_PLACEMENT_PARAMETERS,

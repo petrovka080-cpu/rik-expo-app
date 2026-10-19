@@ -32,6 +32,12 @@
       "catalogIds": [
         "canonical-work:master:rubber_playground_surface_euroflex_recycling_50mm_rectangular"
       ]
+    },
+    {
+      "key": "brick-partition-krer08-002-05",
+      "catalogIds": [
+        "canonical-work:master:brick_partition_half_unreinforced_upto4m_krer08_02_002_05"
+      ]
     }
   ],
   "catalogIds": [
@@ -50,11 +56,39 @@
     "canonical-work:base:facade_interior_facade_paint_install_small_area",
     "canonical-work:base:facade_interior_facade_paint_install_standard",
     "canonical-work:base:facade_interior_facade_paint_install_technical_room",
-    "canonical-work:master:rubber_playground_surface_euroflex_recycling_50mm_rectangular"
+    "canonical-work:master:rubber_playground_surface_euroflex_recycling_50mm_rectangular",
+    "canonical-work:master:brick_partition_half_unreinforced_upto4m_krer08_02_002_05"
   ],
   "existingNormOwner": "resolveFordTransitV363DeliveryPhysicalNormV1",
   "newNorms": 0,
   "confirmedShipmentRequired": true,
   "unloadingLaborIncluded": false,
-  "publicationReady": false
+  "publicationReady": false,
+  "orderRowScopes": [
+    {
+      "catalogId": "canonical-work:master:brick_partition_half_unreinforced_upto4m_krer08_02_002_05",
+      "rows": [
+        {
+          "rowId": "masonry:brick-partition:krer08-02-002-05:water",
+          "unitId": "m3"
+        },
+        {
+          "rowId": "masonry:brick-partition:krer08-02-002-05:brick",
+          "unitId": "item"
+        },
+        {
+          "rowId": "masonry:brick-partition:krer08-02-002-05:timber",
+          "unitId": "m3"
+        },
+        {
+          "rowId": "masonry:brick-partition:krer08-02-002-05:forgings",
+          "unitId": "kg"
+        },
+        {
+          "rowId": "masonry:brick-partition:krer08-02-002-05:mortar",
+          "unitId": "m3"
+        }
+      ]
+    }
+  ]
 }
