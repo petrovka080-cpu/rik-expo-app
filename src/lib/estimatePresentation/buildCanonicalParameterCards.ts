@@ -1,4 +1,6 @@
 import type { AiEstimateParameterCard } from "../estimate/aiEstimateParameterCardContract";
+import { canonicalPublicEstimateFixtureTextRu, canonicalPublicEstimateParameterGuideRu, canonicalPublicEstimateParameterTitleRu } from '../estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import type { CanonicalPublicInputContext } from '../estimate/backendPlatform/canonicalPublicEstimateInputWordingRu';
 import {
   aiEstimateRuLabelForParameter,
   aiEstimateRuSourceLabel,
@@ -23,7 +25,7 @@ const COMPOSITE_DERIVED_COUNT: Readonly<Record<string, string>> = Object.freeze(
 });
 
 function publicParameterText(value: string | null | undefined): string {
-  return String(value ?? "")
+  return canonicalPublicEstimateFixtureTextRu(String(value ?? ""))
     .replace(/\s*Проверочный\s+объект\s+BATCH[-\s]*\d+\s*\.?/giu, "")
     .replace(/\b(?:backend|release|revision|child|server(?:-side)?)\b/gi, "")
     .replace(/\bBATCH[-\s]*\d+\b\.?/gi, "")
@@ -66,7 +68,7 @@ function revisionDisplayValue(
   if (typeof value === "boolean") return value ? "Да" : "Нет";
   const text = typeof value === "number"
     ? displayNumber(value)
-    : String(value);
+    : canonicalPublicEstimateFixtureTextRu(String(value));
   if (containsForbiddenAiEstimateVisibleToken(text) || /^[a-z0-9]+(?:_[a-z0-9]+)+$/iu.test(text)) {
     return "уточняется";
   }
@@ -149,7 +151,7 @@ export function buildRevisionParameterCards(
   }).sort((a, b) => a.labelRu.localeCompare(b.labelRu, "ru"));
 }
 
-function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificParameterV4 | null): {
+function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificParameterV4 | null, context: CanonicalPublicInputContext): {
   guideShortRu: string;
   guideKind: NonNullable<AiEstimateParameterCard["guideKind"]>;
   guideDetailsRu: string[];
@@ -160,7 +162,12 @@ function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificP
   const affected = [...parameter.affectsFormula, ...parameter.affectsRows].join(", ") || "только паспорт параметров";
   let guideShortRu: string;
   let guideKind: NonNullable<AiEstimateParameterCard["guideKind"]>;
-  if (asphalt?.structured_group) {
+  const authoredGuide = canonicalPublicEstimateParameterGuideRu(parameter.parameterId, parameter.label, context);
+  if (authoredGuide) {
+    guideShortRu = authoredGuide;
+    guideKind = parameter.allowedValues.length > 0 ? 'ENUM_DECISION_RULE'
+      : parameter.valueType === 'number' ? 'MEASUREMENT_RULE' : 'PROJECT_DEFINED';
+  } else if (asphalt?.structured_group) {
     guideShortRu = `Добавьте каждый ${asphalt.structured_group.item_label_ru.toLocaleLowerCase("ru-RU")} отдельно; количество рассчитывается автоматически`;
     guideKind = "DERIVED_VALUE_RULE";
   } else if (parameter.allowedValues.length > 0 || parameter.valueType === "boolean") {
@@ -186,6 +193,7 @@ function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificP
     guideShortRu: publicParameterText(guideShortRu),
     guideKind,
     guideDetailsRu: [
+      ...(authoredGuide ? [`Полное условие поля: ${publicParameterText(parameter.description)}`] : []),
       `Почему нужен параметр: ${publicParameterText(parameter.description)}`,
       source
         ? `Нормативный документ: ${publicParameterText(source.document)}; редакция ${publicParameterText(source.revision)}; точный пункт ${publicParameterText(source.locator)}.`
@@ -254,11 +262,11 @@ function requiredLabel(parameter: CanonicalParameter): string {
 function displayValue(parameter: CanonicalParameter): string {
   if (parameter.value == null) return "нужно уточнить";
   const choice = parameter.allowedValues.find((candidate) => candidate.value === parameter.value);
-  if (choice) return choice.label;
+  if (choice) return canonicalPublicEstimateFixtureTextRu(choice.label);
   if (typeof parameter.value === "boolean") return parameter.value ? "Да" : "Нет";
   const value = typeof parameter.value === "number"
     ? displayNumber(parameter.value)
-    : String(parameter.value);
+    : canonicalPublicEstimateFixtureTextRu(String(parameter.value));
   const unit = aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit);
   return unit ? `${value} ${unit}` : value;
 }
@@ -300,17 +308,18 @@ export function buildCanonicalParameterCards(input: {
     .filter((key): key is string => Boolean(key)));
   return visibleParameters.filter((parameter) => !derivedCountKeys.has(parameter.parameterId)).map((parameter) => {
     const asphalt = getAsphaltParameterV4(parameter.parameterId);
-    const guide = guideForParameter(parameter, asphalt);
+    const context = {catalogId: input.session!.workPassportId, unitId: parameter.unit, descriptionRu: parameter.description};
+    const guide = guideForParameter(parameter, asphalt, context);
     const affectedRowIds = input.revision?.trace.params.find(
       (candidate) => candidate.key === parameter.parameterId,
     )?.affectsRowIds ?? [...parameter.affectsRows];
     const choices = parameter.valueType === "boolean" && parameter.allowedValues.length === 0
       ? [{ value: "true", labelRu: "Да" }, { value: "false", labelRu: "Нет" }]
-      : parameter.allowedValues.map((choice) => ({ value: String(choice.value), labelRu: choice.label }));
+      : parameter.allowedValues.map((choice) => ({ value: String(choice.value), labelRu: canonicalPublicEstimateFixtureTextRu(choice.label) }));
     return {
       key: parameter.parameterId,
       consumerInputRole: parameter.consumerInputRole,
-      labelRu: publicParameterText(parameter.label),
+      labelRu: publicParameterText(canonicalPublicEstimateParameterTitleRu(parameter.parameterId, parameter.label, context)),
       value: parameter.value,
       displayValueRu: displayValue(parameter),
       unitRu: aiEstimateRuUnitForParameter(parameter.parameterId, parameter.unit),
@@ -329,7 +338,11 @@ export function buildCanonicalParameterCards(input: {
         ? "open_parameter_editor"
         : "read_only",
       noStepperControls: true,
-      missing: parameter.value == null && parameter.state !== "NOT_APPLICABLE",
+      missing: parameter.value == null && (parameter.state !== "NOT_APPLICABLE"
+        // An unanswered visible object/scope choice is not a filled field.
+        // Optionality stays in requiredFor and never invents a default answer.
+        || parameter.consumerInputRole === 'OBJECT_FACT' && parameter.resourceSelectionInput === true
+          && parameter.allowedValues.length > 0),
       requiredFor: requiredFor(parameter),
       requiredForLabelRu: requiredLabel(parameter),
       affectsRowIds: affectedRowIds,

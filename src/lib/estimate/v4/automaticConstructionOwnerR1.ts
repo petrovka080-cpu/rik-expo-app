@@ -11,6 +11,7 @@ import { estimateDeterministicHash } from "../estimateDeterministicHash";
 import { NUMERIC_PARAMETER_RELATIONS, type NumericParameterPeerConstraints } from "../backendPlatform/numericParameterRelations";
 import { resolveInclusionGraph } from "../backendPlatform/inclusionGraph";
 import type { CanonicalPurchaseBalanceV1 } from "../backendPlatform/canonicalPurchaseBalanceV1";
+import type { CanonicalEstimateOperationReference } from "../backendPlatform/canonicalEstimateOperationComposition";
 
 type Json = Record<string, unknown>;
 
@@ -113,6 +114,9 @@ type OwnerConfig = Readonly<{
   /** Actual unconditional project inventory/physical ratios, never norms,
    * manufacturer passports or compiler-derived quantities. */
   unconditionalProjectFactParameterIds?: readonly string[];
+  /** Trusted source-module opt-in. Existing callers keep their exact graph.
+   * Declares presentation relationships; never partitions quantities or cost. */
+  operationCompositionGroupId?: string;
 }>;
 
 function constraints(spec: AutomaticParameterSpec): Json {
@@ -272,6 +276,45 @@ export function buildAutomaticConstructionOwnerR1(
     } satisfies CanonicalEstimateFormulaDefinition;
   });
 
+  const operationGroupId = config.operationCompositionGroupId;
+  if (operationGroupId !== undefined && (!operationGroupId.trim() || !config.sourceMetadata.source_title.trim())) {
+    throw new Error("AUTOMATIC_SOURCE_OPERATION_GROUP_INVALID");
+  }
+  const includedOperationRows = operationGroupId === undefined ? []
+    : config.rows.filter(row => row.costTreatment === "INCLUDED_IN_RESOURCE_ROWS");
+  const wholeLaborOwners = operationGroupId === undefined ? [] : config.rows.filter(row =>
+    ["labor", "work", "construction_work"].includes(row.category)
+      && (row.costTreatment ?? "OWN_COST") === "OWN_COST");
+  if (includedOperationRows.length && wholeLaborOwners.length !== 1) {
+    throw new Error("AUTOMATIC_INCLUDED_OPERATION_LABOR_OWNER_AMBIGUOUS");
+  }
+  const includedOperations = includedOperationRows.map((row, index) => ({
+    operationId: row.rowId,
+    operationTitleRu: row.title,
+    completionCriterionRu: "Операция выполнена в составе общего труда; отдельная оплата не начисляется.",
+    processOrdinal: 10 + index,
+    processRole: "PROCESS" as const,
+  }));
+  const operationForRow = (row: AutomaticRowSpec, ordinal: number): CanonicalEstimateOperationReference => {
+    if (operationGroupId === undefined) throw new Error("AUTOMATIC_SOURCE_OPERATION_OPT_IN_REQUIRED");
+    const included = includedOperations.find(operation => operation.operationId === row.rowId);
+    const pending = row.unitId === "";
+    return {
+      contractVersion: "canonical-operation-resource/v1",
+      groupId: operationGroupId,
+      groupTitleRu: config.sourceMetadata.source_title,
+      operationId: included?.operationId ?? (pending ? row.rowId : operationGroupId + ":execution"),
+      operationTitleRu: included?.operationTitleRu ?? (pending ? row.title : config.sourceMetadata.source_title),
+      completionCriterionRu: included?.completionCriterionRu ?? (pending
+        ? "Подтверждены применимость, источник, единица, количество и самостоятельная граница оплаты."
+        : "Состав и объём соответствуют указанному источнику; выполнение и приёмка подтверждаются отдельно."),
+      processOrdinal: included?.processOrdinal ?? (pending ? 80 + ordinal : 0),
+      processRole: pending ? "REFERENCE_ONLY" : "PROCESS",
+      ...(includedOperations.length && wholeLaborOwners[0]?.rowId === row.rowId
+        ? { additionalOperations: includedOperations } : {}),
+    };
+  };
+
   const resources = config.rows.map((row, ordinal) => {
     if (row.inputParameterIds?.some((id) => !specsById.has(id))) {
       throw new Error(`AUTOMATIC_RESOURCE_INPUT_PARAMETER_INVALID:${row.rowId}`);
@@ -284,6 +327,7 @@ export function buildAutomaticConstructionOwnerR1(
       costOwner: "resource",
       scopeContextParameterIds: [...ordinaryIds],
       costTreatment: row.costTreatment ?? "OWN_COST",
+      ...(operationGroupId === undefined ? {} : { operationCompositionV1: operationForRow(row, ordinal) }),
       ...(row.effectiveQuantityOutput ? { effectiveQuantityOutputV1: row.effectiveQuantityOutput } : {}),
       ...(row.purchaseBalance ? { purchaseBalanceV1: row.purchaseBalance } : {}),
       ...(row.manualTransportQuantityPolicy ? { manualTransportQuantityPolicyV1: row.manualTransportQuantityPolicy } : {}),

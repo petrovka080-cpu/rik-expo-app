@@ -25,6 +25,13 @@ export type MasterRetainParentBindingsR1 = Readonly<{
   capturedParentSha256: string;
   /** Exact keys: ONLY newly declared parameter IDs, including unresolved []. */
   newParameterSources: MasterExplicitParameterSourcesR1;
+  /** Explicit one-time second retained successor. Never rewrites the old slot. */
+  successorProvenanceContinuation?: Readonly<{
+    contract: "master-retained-binding-continuation/r1";
+    capturedSourceMetadata: Json;
+    capturedSourceMetadataSha256: string;
+    capturedPreviousSuccessorSha256: string;
+  }>;
   /** Optional captured absence at normal and locked preflight. Omission preserves
    * the accepted absent-or-managed-exact registry behavior. Not registry reuse. */
   capturedSourcePreimage?: Readonly<{sourceKey: string; expected: null}>;
@@ -75,6 +82,39 @@ function captureValue(capture: MasterRetainedParentCaptureR1): Json {
 }
 export function masterRetainedParentCaptureSha256R1(capture: MasterRetainedParentCaptureR1): string {
   return createHash("sha256").update(encoded(captureValue(capture))).digest("hex");
+}
+function valueSha256(value: unknown): string {
+  return createHash("sha256").update(encoded(value)).digest("hex");
+}
+/** This opt-in is a captured preimage, never caller-supplied replacement history. */
+function successorContinuationOf(
+  input: MasterRetainedBindingGuardInputR1, opt: MasterRetainParentBindingsR1,
+): NonNullable<MasterRetainParentBindingsR1["successorProvenanceContinuation"]> | null {
+  if (!Object.hasOwn(opt, "successorProvenanceContinuation")) return null;
+  const v = opt.successorProvenanceContinuation;
+  requireThat(object(v) && exactKeys(v, ["contract", "capturedSourceMetadata",
+    "capturedSourceMetadataSha256", "capturedPreviousSuccessorSha256"])
+    && v.contract === "master-retained-binding-continuation/r1",
+    input, "CONTINUATION_OPT_IN_OBJECT");
+  const metadata = opt.capturedParent.definition.source_metadata;
+  requireThat(object(metadata) && Object.hasOwn(metadata, "retainedParentBindingSuccessorV1")
+    && object(metadata.retainedParentBindingSuccessorV1), input, "CONTINUATION_OLD_SLOT_REQUIRED");
+  requireThat(!Object.hasOwn(metadata, "retainedParentBindingContinuationV1"),
+    input, "CONTINUATION_SLOT_COLLISION");
+  requireThat(object(v.capturedSourceMetadata) && same(v.capturedSourceMetadata, metadata)
+    && /^[0-9a-f]{64}$/u.test(v.capturedSourceMetadataSha256)
+    && valueSha256(metadata) === v.capturedSourceMetadataSha256,
+    input, "CONTINUATION_SOURCE_METADATA_DRIFT");
+  const previous = metadata.retainedParentBindingSuccessorV1;
+  requireThat(/^[0-9a-f]{64}$/u.test(v.capturedPreviousSuccessorSha256)
+    && valueSha256(previous) === v.capturedPreviousSuccessorSha256,
+    input, "CONTINUATION_PREVIOUS_SUCCESSOR_DRIFT");
+  requireThat(typeof previous.parentDefinitionId === "string"
+    && typeof previous.parentBaselineId === "string"
+    && opt.capturedParent.baseline.source_definition_version_id === previous.parentDefinitionId
+    && opt.capturedParent.baseline.supersedes_baseline_id === previous.parentBaselineId,
+    input, "CONTINUATION_OLD_SOURCE_LINEAGE_DRIFT");
+  return v;
 }
 /** An omitted property is the ONLY fallback. Present undefined/null is not omission. */
 export function masterRetainParentBindingsOptInR1(
@@ -197,6 +237,7 @@ export function masterRetainParentBindingsOptInR1(
       requireThat(!oldIsConsistent, input, "FORMULA_EXPRESSION_REPAIR_UNNECESSARY");
     }
   }
+  successorContinuationOf(input, value);
   return value;
 }
 function required(input: MasterRetainedBindingGuardInputR1): MasterRetainParentBindingsR1 {
@@ -276,12 +317,32 @@ export async function lockMasterRetainedBindingPreconditionsR1(
     public.estimate_work_normative_binding
     in share row exclusive mode`);
 }
+/** The new continuation cannot claim complete previous metadata if a JS parse
+ * rounded any PG JSONB numeric lexeme. Compare exact PG canonical TEXT to the
+ * exact serialized captured object in PG; returning only a bounded boolean.
+ * Existing omitted legacy continuation has no additional query. */
+export async function assertMasterRetainedContinuationMetadataRoundTripR1(
+  client: QueryClient, input: MasterRetainedBindingGuardInputR1,
+): Promise<void> {
+  const opt = required(input), continuation = successorContinuationOf(input, opt);
+  if (continuation == null) return;
+  const expectedJson = JSON.stringify(continuation.capturedSourceMetadata);
+  requireThat(Buffer.byteLength(expectedJson) <= 512 * 1024,
+    input, "CONTINUATION_SOURCE_METADATA_BYTE_CAP");
+  const result = await client.query(`select (octet_length(source_metadata::text)<=524288
+    and source_metadata::text=($1::jsonb)::text) matches
+    from public.estimate_definition_version where id=$2::uuid and catalog_id=$3`,
+    [expectedJson, opt.capturedParent.definition.id, input.config.catalogId]);
+  requireThat(result.rows.length === 1 && result.rows[0]?.matches === true,
+    input, "CONTINUATION_SOURCE_METADATA_LOSSLESS_ROUND_TRIP_REQUIRED");
+}
 /** Raw row_to_json text prevents PG Date conversion from changing captured microseconds. */
 export async function readMasterRetainedBindingPreconditionsR1(
   client: QueryClient, input: MasterRetainedBindingGuardInputR1,
   phase: "BEFORE" | "REGISTERED" = "BEFORE",
 ): Promise<MasterRetainedBindingSnapshotR1> {
   const c = required(input).capturedParent;
+  await assertMasterRetainedContinuationMetadataRoundTripR1(client, input);
   const read = async (sql: string, values: unknown[], cap: number): Promise<Json[]> => {
     const result = await client.query(sql, values);
     requireThat(result.rows.length <= cap, input, "READ_CAP");
@@ -518,15 +579,32 @@ export function prepareMasterRetainedBindingRepresentativeR1(
       parameters: newParameters, newParameterSources: opt.newParameterSources, sourceClosure,
       oldResourceRowIds: c.resources.map(r => r.row_id), next})};
   const oldMetadata = c.definition.source_metadata;
+  const continuation = successorContinuationOf(input, opt);
   requireThat(object(oldMetadata) && object(next.successorProvenance)
-    && !Object.prototype.hasOwnProperty.call(oldMetadata, "retainedParentBindingSuccessorV1"),
+    && (continuation != null || !Object.prototype.hasOwnProperty.call(oldMetadata, "retainedParentBindingSuccessorV1")),
     input, "SUCCESSOR_PROVENANCE_SLOT_COLLISION");
   const lifecycle = next.lifecycleMetadata ?? {};
   requireThat(object(lifecycle) && Object.keys(lifecycle).every(key =>
     ["contract", "masterSha256", "sourceFingerprint"].includes(key)), input, "LIFECYCLE_OVERWRITE_KEYS");
+  if (continuation != null) requireThat(
+    (!Object.hasOwn(next.successorProvenance, "catalogId")
+      || next.successorProvenance.catalogId === input.config.catalogId)
+    && next.successorProvenance.parentDefinitionId === c.definition.id
+    && next.successorProvenance.parentBaselineId === c.baseline.id
+    && next.successorProvenance.capturedParentSha256 === opt.capturedParentSha256,
+    input, "CONTINUATION_CURRENT_PARENT_ANCHOR");
+  const sourceMetadata = {...normalized(oldMetadata), ...normalized(lifecycle),
+    ...(continuation == null
+      ? {retainedParentBindingSuccessorV1: normalized(next.successorProvenance)}
+      : {retainedParentBindingContinuationV1: {
+        contract: continuation.contract,
+        previousSourceMetadata: normalized(continuation.capturedSourceMetadata),
+        previousSourceMetadataSha256: continuation.capturedSourceMetadataSha256,
+        previousSuccessorSha256: continuation.capturedPreviousSuccessorSha256,
+        successor: {...normalized(next.successorProvenance), catalogId: input.config.catalogId},
+      }})};
   return {bindings: [...oldBindings, ...next.newBindings.map(b => normalized(b))],
-    normativeSourceIds, sourceMetadata: {...normalized(oldMetadata), ...normalized(lifecycle),
-      retainedParentBindingSuccessorV1: normalized(next.successorProvenance)},
+    normativeSourceIds, sourceMetadata,
     expectedNormativeBindingCount: oldBindings.length + next.newBindings.length,
     normativeSourceClosure: sourceClosure};
 }

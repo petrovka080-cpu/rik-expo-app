@@ -63,6 +63,29 @@ test('the actual compiler admission input is saved separately and stripped befor
  expect(child.compiled.derivedParameters).not.toHaveProperty(key);
 });
 
+test('a retained Master publication keeps the server derivation after normalizing the outer release contract',async()=>{
+ const child=await createChild(),key=prefix+'admitted_trip_count',parameters={...child.parameters};delete parameters[key];
+ const parameterDefinitions=structuredClone(child.model.parameters);
+ const definition=parameterDefinitions.find((p:any)=>p.parameter_id===key);
+ expect(definition.truth_metadata.guide.guide_version).toBe('rik-expo-app.selected-material-delivery-forward.r1');
+ // The shared Master replaces this publication envelope; the semantic guide,
+ // internal role and backend ownership survive unchanged in the stored row.
+ definition.truth_metadata.contract='gox-build.brick-partition-selected-delivery-master-retained/r1';
+ const input={admission:child.admission,parameterDefinitions,parameters:child.compiled.parameters,
+  derivedParameters:child.compiled.derivedParameters,submittedParameters:parameters,userParameters:parameters,baselineParameters:{}};
+ expect(provenance(input)[key]).toBe(child.compiled.parameters[key]);
+ for(const change of [
+  {guide:{...definition.truth_metadata.guide,guide_version:'unreviewed-other-quantity'}},
+  {visibility_role:'USER_INPUT'},{value_source_role:'USER_INPUT'},
+  {provenance:{consumer_input_role_v1:'OBJECT_FACT'}},{hidden_default_forbidden:false},
+ ]){
+  const changed=parameterDefinitions.map((p:any)=>p.parameter_id===key?{...p,truth_metadata:{...p.truth_metadata,...change}}:p);
+  expect(()=>provenance({...input,parameterDefinitions:changed})).toThrow(expect.objectContaining({reason:'compiled-delivery-provenance-invalid'}));
+ }
+ expect(()=>provenance({...input,parameterDefinitions:parameterDefinitions.map((p:any)=>p.parameter_id===key?{...p,default_value:3}:p)}))
+  .toThrow(expect.objectContaining({reason:'compiled-delivery-provenance-invalid'}));
+});
+
 test.each(['submittedParameters','userParameters','baselineParameters','parameters','derivedParameters','parameterDefinitions'])(
  'a server trip derivation rejects a conflicting %s',async field=>{
  const child=await createChild(),key=prefix+'admitted_trip_count',parameters={...child.parameters};delete parameters[key];

@@ -112,7 +112,8 @@ export function consumerRepairRowMissingRequirementLabels(
   return [...new Set(requirements.flatMap((requirement) => {
     if (!requirement || typeof requirement !== "object" || Array.isArray(requirement)) return [];
     const source = requirement as Record<string, unknown>;
-    const label = canonicalPublicEstimateParameterTitleRu(text(source.parameterId),text(source.titleRu || source.labelRu || source.parameterTitleRu || source.parameterId));
+    const label = canonicalPublicEstimateParameterTitleRu(text(source.parameterId),text(source.titleRu || source.labelRu || source.parameterTitleRu || source.parameterId),
+      {catalogId:consumerRepairRowCanonicalCatalogId(item)});
     return label ? [label] : [];
   }))];
 }
@@ -128,7 +129,8 @@ export function consumerRepairRowRequirementNotice(
   for (const requirement of consumerCanonicalMissingRequirements(item, tables)) {
     const scope = consumerCanonicalApplicationScopeRequirementNotice(requirement);
     if (scope) { if (!scopes.includes(scope)) scopes.push(scope); continue; }
-    const label = canonicalPublicEstimateParameterTitleRu(text(requirement.parameterId),text(requirement.titleRu || requirement.labelRu || requirement.parameterTitleRu || requirement.parameterId));
+    const label = canonicalPublicEstimateParameterTitleRu(text(requirement.parameterId),text(requirement.titleRu || requirement.labelRu || requirement.parameterTitleRu || requirement.parameterId),
+      {catalogId:consumerRepairRowCanonicalCatalogId(item)});
     if (!label) continue;
     const sourceManaged = requirement.valueSourceRole === "UNRESOLVED_APPLICATION_NORM"
       || requirement.sourceConfirmationRequired === true;
@@ -137,7 +139,7 @@ export function consumerRepairRowRequirementNotice(
   }
   const messages = [
     item.quantity != null ? `Количество ${item.quantity} сохранено, но позиция ещё не подтверждена.` : null,
-    inputs.length ? `Заполните в исходных данных: ${inputs.join(", ")}.` : null,
+    inputs.length ? `Заполните в исходных данных: ${inputs.join(", ")}${/[.!?]$/u.test(inputs[inputs.length-1]!) ? '' : '.'}` : null,
     sources.length ? 'Приложение пока не рассчитало эту позицию. Вводить нормы и коэффициенты не требуется.' : null,
     ...scopes,
   ].filter(Boolean);

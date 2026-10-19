@@ -60,6 +60,7 @@ import { logger } from "../../lib/logger";
 import { safeJsonParseValue } from "../../lib/format";
 import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevision, getAllCanonicalEstimateRevisionRows } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { jubileeParameterGroups, jubileeParameterWording } from './consumerJubileeParameterPresentation';
+import { canonicalPublicEstimateFixtureTextRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 
 const LEGACY_ASPHALT_WORK_ID = "asphalt_concrete_pavement";
 
@@ -288,7 +289,7 @@ export function canonicalConsumerParameterInlineGuide(input: {
   const numericBaseline = baseline ? Number(baseline.replace(",", ".")) : Number.NaN;
   const displayBaseline = baseline && Number.isFinite(numericBaseline)
     ? compactRuNumber(numericBaseline)
-    : baseline;
+    : canonicalPublicEstimateFixtureTextRu(baseline);
   // A filled value owns its own provenance. The immutable catalogue reference
   // is consulted only while the field itself is still missing.
   const guideSource = input.parameter?.value != null
@@ -845,6 +846,7 @@ type InlineParamEditorProps = {
   choices?: { value: string; labelRu: string }[];
   guideShortRu: string;
   embeddedGuideRu?: string;
+  showGuide?: boolean;
   structuredGroup?: AiEstimateParameterCard["structuredGroup"];
   clarificationControl?: AiEstimateParameterCard["clarificationControl"];
   onChange: (paramKey: string, rawValue: string) => void;
@@ -1061,7 +1063,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
               ) : null}
             </View>
           )}
-          {!structuredGroup && !compactScalar && guideShortRu ? (
+          {this.props.showGuide !== false && !structuredGroup && !compactScalar && guideShortRu ? (
             <Text style={styles.inlineGuideChip} testID={`editable-param-guide-${paramKey}`}>
               {guideShortRu}
             </Text>
@@ -1651,9 +1653,13 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       : undefined;
     const editableInPlace = paramEditorEnabled && card.editable;
     const guideExpanded = this.state.expandedGuideDetails[card.key] === true;
-    const editorValue = rawValue;
+    // Project known fixture annotations only while rendering. Raw draft and
+    // baseline values remain the owners of dirty detection and saved patches.
+    const editorValue = card.inputKind === 'text'
+      ? canonicalPublicEstimateFixtureTextRu(rawValue) : rawValue;
     const wording = jubileeParameterWording(this.props.canonicalParameterSession?.workPassportId, card.key);
     const label = wording?.label ?? card.labelRu;
+    const visibleGuide = wording?.guide ?? card.guideShortRu;
     const placeholder = canonicalConsumerParameterPlaceholder({
       parameter: canonicalParameter,
       baselineDisplay: meta,
@@ -1686,14 +1692,15 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             : 'Нормы выбранного состава ещё не подтверждены приложением. Поле заполнено; вводить профессиональные коэффициенты не требуется.'}
         </Text> : null}
         {card.missing ? <Text style={styles.requiredParameterHint}>
-          {rawValue.trim() ? 'Проверьте значение и нажмите «Применить»' : 'Нужно заполнить'}
+          {rawValue.trim() ? 'Проверьте значение и нажмите «Применить»'
+            : card.requiredFor === 'better_accuracy' ? 'Выберите, если данные известны' : 'Нужно заполнить'}
         </Text> : null}
         <View style={styles.compactParameterLine}>
           <Text
             style={styles.parameterLabel}
             testID={card.missing ? `request-estimate-missing-param-${card.key}` : undefined}
           >
-            {`${wording ? '' : `№ ${parameterOrdinal}. `}${label}`}{card.missing && actionLabel ? " *" : ""}
+            {`${wording ? '' : `№ ${parameterOrdinal}. `}${label}`}{card.missing && actionLabel && card.requiredFor !== 'better_accuracy' ? " *" : ""}
           </Text>
           {editableInPlace ? (
             <InlineParamEditor
@@ -1707,6 +1714,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
               hint={validationHint}
               choices={card.choices}
               guideShortRu={placeholder}
+              showGuide={!visibleGuide}
               embeddedGuideRu={wording?.source ?? canonicalConsumerParameterInlineGuide({
                 parameter: canonicalParameter,
                 baselineValue: baseline,
@@ -1728,7 +1736,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             <Text style={styles.guideInfoButtonText}>i</Text>
           </Pressable>
         </View>
-        {wording?.source ? <Text style={styles.parameterMeta} testID={`editable-param-explanation-${card.key}`}>{placeholder}</Text> : null}
+        {visibleGuide && !card.structuredGroup ? <Text style={styles.parameterMeta} testID={`editable-param-explanation-${card.key}`}>{visibleGuide}</Text> : null}
         {applicationValueStatus ? (
           <Text
             style={styles.parameterMeta}
@@ -1821,7 +1829,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     }) ? this.state.baselinePlacements[card.key]?.source ?? card.source : card.source;
     const assumptionCards = canonicalSession
       ? cards.filter((card) => !missingCardIds.has(card.key) && groupSource(card) === "catalog_default"
-        && card.consumerInputRole == null)
+        // Keep the legacy primary quantity beside its object question. Its
+        // template value still carries the visible assumption provenance.
+        && card.consumerInputRole == null && card.key !== 'q')
       : [];
     const advancedCards = cards.filter(card => card.consumerInputRole === "ADVANCED_OPTION" || card.consumerInputRole === "APPLICATION_TECHNICAL");
     const advancedCardIds = new Set(advancedCards.map(card => card.key));
@@ -1885,7 +1895,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             : blockingMissingCount > 0
             ? `Нужно уточнить: ${blockingMissingCount} обязательных ${pluralizeRu(blockingMissingCount, "параметр", "параметра", "параметров")}`
             : contractMissingCount > 0
-              ? `До полного состава и подтверждения: ${contractMissingCount} обязательных ${pluralizeRu(contractMissingCount, "параметр", "параметра", "параметров")}.`
+              ? `Поля для уточнения: ${contractMissingCount}. Если данных нет, выберите соответствующий вариант или оставьте поле пустым.`
               : this.props.viewModel?.scopeRequirementGroups?.some(group=>group.statuses.includes('LEGACY_SOURCE_REQUIRED')
                   || group.kinds?.includes('OBJECT_SCOPE') && group.statuses.includes('SCOPE_UNVERIFIED'))
                 ? 'Данные введены. Нормы выбранного состава ещё не подтверждены приложением.'

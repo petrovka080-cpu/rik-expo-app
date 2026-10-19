@@ -338,6 +338,7 @@ function parameterCondition(raw: unknown): CanonicalParameter["visibilityConditi
 
 function buildParameter(input: {
   schema: EditableSchema;
+  catalogId: string;
   parameters: Record<string, unknown>;
   referenceParameters?: Record<string, unknown> | null;
   parentParameters?: Record<string, unknown> | null;
@@ -391,7 +392,10 @@ function buildParameter(input: {
       : "OPTIONAL" as const;
   return {
     parameterId: input.schema.parameterId,
-    label: canonicalPublicEstimateParameterTitleRu(input.schema.parameterId, labelRu),
+    label: canonicalPublicEstimateParameterTitleRu(input.schema.parameterId, labelRu, {
+      catalogId: input.catalogId, unitId: input.schema.unitId,
+      descriptionRu: input.schema.descriptionRu || guide?.guideShortRu || input.schema.titleRu,
+    }),
     consumerInputRole: canonicalEstimateConsumerInputRole(input.schema),
     description: input.schema.descriptionRu || guide?.guideShortRu || labelRu,
     value,
@@ -478,6 +482,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
         && (schema.visibilityRole === "USER_INPUT"
           || isCanonicalEstimateUserEditableParameter(schema))))
     .map((schema) => buildParameter({
+      catalogId: input.catalog.catalogId,
       schema: schema.guide && isRoofScreed25StandaloneCatalogV1({catalogId:input.catalog.catalogId,
         definitionVersion:input.catalog.definitionVersion,metadata:input.catalog.professionalMetadata})
         && roofScreed25StandaloneGuideTextV1(schema.parameterId)

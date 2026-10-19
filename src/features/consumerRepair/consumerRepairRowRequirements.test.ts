@@ -1,4 +1,5 @@
-import { consumerRepairRowRequirementNotice, consumerRepairRowHasSourceManagedQuantity, consumerRepairRowSourceManagedQuantityReason, consumerRepairRowIsTechnicalDetail, consumerRepairRowIsNonPayable } from './consumerRepairRowMetadata';
+import { consumerRepairRowRequirementNotice, consumerRepairRowMissingRequirementLabels, consumerRepairRowHasSourceManagedQuantity, consumerRepairRowSourceManagedQuantityReason, consumerRepairRowIsTechnicalDetail, consumerRepairRowIsNonPayable } from './consumerRepairRowMetadata';
+import publicBindings from '../../../data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json';
 import { buildRequestEstimateSourceGates } from './requestEstimateViewModel';
 import type { ConsumerRepairRequestItem } from '../../lib/consumerRequests/consumerRequestTypes';
 import type { ConsumerRepairDraftBundle } from '../../lib/consumerRequests/consumerRequestTypes';
@@ -8,6 +9,18 @@ import type { CanonicalParameterRequirementTables } from '../../lib/consumerRequ
 const norm = {parameterId:'labor',titleRu:'Норма труда монтажа',sourceConfirmationRequired:true,
   visibilityRole:'INTERNAL_ONLY',valueSourceRole:'UNRESOLVED_APPLICATION_NORM',unitId:'man_hour',guideShortRu:null} as const;
 const stock = {parameterId:'stock',titleRu:'Доступно на объекте',sourceConfirmationRequired:false};
+
+test('inline missing-input instructions use the same exact-catalog question as the actual input form',()=>{
+ const catalogId='canonical-work:master:brick_partition_half_unreinforced_upto4m_krer08_02_002_05';
+ const field=publicBindings.parameterBindings.find(b=>b.parameterId==='timber_quantum'&&'catalogId' in b&&b.catalogId===catalogId)!;
+ const item={sourceParameters:{canonicalBackendCatalogId:catalogId,missingParameterRequirements:[{
+  parameterId:field.parameterId,titleRu:field.sourceTitleRu,sourceConfirmationRequired:false}]}};
+ const before=JSON.stringify(item);
+ expect(consumerRepairRowMissingRequirementLabels(item)).toEqual(['Каким объёмом отпускают брус?']);
+ expect(consumerRepairRowRequirementNotice(item)).toBe('Заполните в исходных данных: Каким объёмом отпускают брус?');
+ expect(consumerRepairRowRequirementNotice({...item,sourceParameters:{...item.sourceParameters,canonicalBackendCatalogId:'other-catalog'}})).toContain(field.sourceTitleRu);
+ expect(JSON.stringify(item)).toBe(before);
+});
 const publicItem=(item:{id:string;quantity:null;sourceParameters:Record<string,unknown>}):ConsumerRepairRequestItem=>({
   ...item,requestDraftId:'CONTROL_DRAFT',itemType:'material',titleRu:'Контрольная потребность',currency:'KGS',
   source:'custom',editableByConsumer:true,createdAt:'2026-10-11T00:00:00Z',

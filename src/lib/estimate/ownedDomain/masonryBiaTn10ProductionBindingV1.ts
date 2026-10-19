@@ -2,7 +2,7 @@ import type { DynamicProfessionalBoqRow, EstimatorReasoningPlan } from "../../ai
 import type { ProfessionalParameterValueV4 } from "../v4/professionalProjectAssemblyV4";
 import { BIA_TN10_MASONRY_NORM_ID, BIA_TN10_MASONRY_PRODUCT_PROFILE_ID, BIA_TN10_MASONRY_REQUIRED_IDS,
   BIA_TN10_MASONRY_SOURCE_ID, BIA_TN10_MASONRY_SOURCE_METADATA,
-  resolveProfessionalPhysicalNormParameterValuesV1 } from "../v4/domainFactory";
+  resolveProfessionalPhysicalNormParameterValuesV1 } from "../v4/domainFactory/clientRuntimeV1";
 
 type Primitive = string | number | boolean;
 const QUESTIONS: Readonly<Record<string, string>> = Object.freeze({

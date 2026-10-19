@@ -1,0 +1,125 @@
+{
+  "contract": "gox-build.floor-sand-small-room-straightedge-control/r1",
+  "status": "PREPARED_SOURCE_PROVED_INFO_CONSUMER_NOT_RUN",
+  "catalogId": "canonical-work:master:floor_sand_underlayer_krer11_01_002_01",
+  "newCatalogIds": 0,
+  "parentExpectedShape": [
+    29,
+    28,
+    28
+  ],
+  "parentBindingCount": 13,
+  "completionNeedRowId": "floor-underlayer:sand:krer11-01-002-01:open:quality-control",
+  "completionNeedRawSha256": "290bad9f539f101b88ab8c0568b91013ba10d1295ae56d2292e16ee2d3232d09",
+  "completionNeedRemainsOpen": true,
+  "prefix": "floor-underlayer:sand:krer11-01-002-01:straightedge-control",
+  "sourceIdProposal": "kg_sp_kr65_101_2025_floor_sand_straightedge_control_r1",
+  "normId": "SP_KR65_101_2025_T8_5_NONRIGID_UNDERLAYER_STRAIGHTEDGE",
+  "source": {
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/obedinennyeizolacionnye-13267ac76cb422108.87225877.pdf",
+    "path": ".release-runtime/next-wave/floor-sand-thickness-control/sources/sp-kr65-101-2025-official.pdf",
+    "localArtifact": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-floor-sand-completion-b/source-review/sp-kr65-101-2025-official.pdf",
+    "sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+    "pdfPage": 150,
+    "printedPage": 54,
+    "table": "8.5",
+    "exactLocatorRu": "Таблица8.5, строка «Просветы между контрольной двухметровой рейкой и проверяемой поверхностью элемента пола», подстрока «нежестких подстилающих слоев»: не более15мм; измерительный контроль не менее5измерений на50–70м² либо в отдельном помещении меньшейплощади ивместах визуальновыявленныхотклонений; журналработ.",
+    "visualImagePin": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-floor-sand-completion-b/source-review/sp65-table85-150.png",
+      "sha256": "5771f50cf8ac6f825824511afcff6830f96d8deaa00ab73dd7f70476ecadee65",
+      "bytes": 316457
+    }
+  },
+  "sourceFacts": {
+    "straightedgeLengthMm": "2000",
+    "maximumGapMm": "15",
+    "minimumBaseMeasurements": "5",
+    "printedAreaRangeM2": [
+      "50",
+      "70"
+    ],
+    "registeredIn": "Журнал работ"
+  },
+  "boundedDesign": {
+    "singleMeasuredRoomOnly": true,
+    "areaGreaterThan": "0",
+    "areaMaximumM2": "50",
+    "area50IsFirstOneSourceRangeUnit": true,
+    "greaterThan50NotAdmitted": true,
+    "noCeilAreaDivisorChosen": true,
+    "noAggregateRoomArea": true,
+    "visuallyDetectedLocationsMustBeCoveredByExplicitPlan": true,
+    "minimumFiveNotMaximumOrActualPerformed": true,
+    "notDensityOrThicknessOrSlopeControl": true
+  },
+  "selectionParameter": "floor_sand_straightedge_option",
+  "planValue": "ONE_SMALL_ROOM_STRAIGHTEDGE_PLAN_INFO_ONLY",
+  "recordedValue": "ONE_SMALL_ROOM_RECORDED_STRAIGHTEDGE_INFO_ONLY",
+  "otherValue": "OTHER_OR_UNCONFIRMED_STRAIGHTEDGE_SCOPE",
+  "rows": {
+    "minimumCount": "floor-underlayer:sand:krer11-01-002-01:straightedge-control:planned-measurements",
+    "recordedMaximum": "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-maximum-gap-mm",
+    "excess": "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-excess-over-gap-limit-mm"
+  },
+  "payment": {
+    "allNewRows": "INFORMATIONAL_SCOPE",
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0,
+    "newPriceBindings": 0,
+    "operatorAggregateStillInfo": "0.30",
+    "wholeWorkerUnchanged": "2.3",
+    "loaderUnchanged": "0.08",
+    "compressorUnchanged": "0.22",
+    "rammerUnchanged": "0.44",
+    "newToolOrCrewOrConsumableNorms": 0,
+    "manualPrice77IsOnlyQANegative": true,
+    "automaticGenericPriceInheritanceAllowedByNewRowId": {
+      "floor-underlayer:sand:krer11-01-002-01:straightedge-control:planned-measurements": false,
+      "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-maximum-gap-mm": false,
+      "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-excess-over-gap-limit-mm": false
+    },
+    "oldPriceBindings": "EXACT_OLD_ROW_BINDINGS_ONLY_NO_REMAP_OR_GENERIC_PRICE_FILL_FOR_NEW_INFO"
+  },
+  "registry": {
+    "status": "ROOT_SOURCE_SCOPE_DECISION_AND_TARGETED_REGISTRY_CAPTURE_REQUIRED",
+    "existingParentSourceKey": "kg_sp_kr65_101_2025_floor_sand_thickness_control_r1",
+    "existingParentScope": "THICKNESS_ONLY_DO_NOT_REUSE_OR_REWRITE_AS_STRAIGHTEDGE",
+    "newProposedSourceKeyIsOnlyDistinctRowScopeProposal": true,
+    "noSourceRowAssumedAbsent": true,
+    "noExistingSourceCopied": true,
+    "normalAndLockedPreimageRequired": true,
+    "retained13Unchanged": true,
+    "newSourceBoundRows": [
+      "minimumCount",
+      "excess"
+    ],
+    "newProjectDerivedRowsUnbound": [
+      "recordedMaximum"
+    ],
+    "bindingsConstraintOnlyNotProofOfObjectObservations": true
+  },
+  "fullTechnicalAcceptance": false,
+  "publicationAllowed": false,
+  "testsRun": false,
+  "quantityAuthority": {
+    "minimum5AndLimit15": "Normative constants in validation/guides; no editable fixed quantity row",
+    "plannedCount": "Explicit actual project/visual point plan integer>=5, never default5 inruntime",
+    "observedCount": "Explicit journal integer>=plannedCount",
+    "recordedMaximum": "Actual full-journal objectfact inmm",
+    "excess": "max(0,recordedMaximumGapMm-15)",
+    "existingParametersOnlyPolicy": "Exact formula/AST inputs; no fake zero*area dependency or new empty-input bypass",
+    "allowance15mmIsNotComputedFromAreaOrThickness": true
+  },
+  "preparedSuccessor": "R2_POSITIVE_AREA_CANONICAL_EXCLUSIVE_MIN_NO_EPSILON_AND_PRICE_INHERITANCE_BAN",
+  "areaValidation": {
+    "sourceDomain": "0<A<=50m2 for addressed small-room branch; source supplies no epsilon",
+    "existingCanonicalPath": "parameterConstraints constraints_json:{min:0,exclusiveMin:0,max:50}",
+    "parameterRole": "context-only objectfact, not arithmeticquantity; conditionalquantity policy would require false formula dependency",
+    "noApplicationEpsilon": true,
+    "noNewPrecisionLimit": true,
+    "transportBoundary": "Existing scalar finite Number-compatible decimal input; not a source dimensional limit. Area is never rounded by a quantity formula in this consumer.",
+    "missingOrNull": "existing preliminary need; withhold newrows",
+    "zeroOrNegative": "existing PARAMETER_VALIDATION_FAILED",
+    "tinyPositiveBelowR1Epsilon": "admitted if existing typed scalar validator represents it as positive"
+  }
+}

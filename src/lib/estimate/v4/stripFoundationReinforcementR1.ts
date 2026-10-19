@@ -14,7 +14,7 @@ import {
   REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
   REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA,
   resolveProfessionalPhysicalNormParameterValuesV1,
-} from "./domainFactory";
+} from "./domainFactory/clientRuntimeV1";
 import type { ProfessionalParameterValueV4 } from "./professionalProjectAssemblyV4";
 
 type InputValue = string | number | boolean;
