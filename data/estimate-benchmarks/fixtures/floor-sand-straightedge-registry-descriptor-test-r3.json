@@ -1,0 +1,152 @@
+{
+  "sourceMetadata": {
+    "source_title": "СП КР 65-101:2025: просвет под двухметровой рейкой нежёсткого песчаного подстилающего слоя пола",
+    "source_authority": "Министерство строительства Кыргызской Республики",
+    "source_kind": "OFFICIAL_INFORMATIONAL_STRAIGHTEDGE_CONSTRAINT_NOT_PAID",
+    "official_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/obedinennyeizolacionnye-13267ac76cb422108.87225877.pdf",
+    "artifact_sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+    "exact_locator": "Таблица8.5, строка «Просветы между контрольной двухметровой рейкой и проверяемой поверхностью элемента пола», подстрока «нежестких подстилающих слоев»: не более15мм; измерительный контроль не менее5измерений на50–70м² либо в отдельном помещении меньшейплощади ивместах визуальновыявленныхотклонений; журналработ.",
+    "use_restriction": "Только отдельно измеренное одно помещение 0<A≤50 м² и один нежёсткий песчаный подстилающий слой под полы. Не менее 5 базовых измерений и все проектные/визуальные точки по явному плану; просвет под 2 м рейкой не более 15 мм. Объектные наблюдения — заявленные пользователем факты полного журнала. Не плотность, толщина, уклон, выполненная услуга, оплата или приёмка."
+  },
+  "locator": {
+    "key": "SPKR65-101-2025-T8-5-FLOOR-SAND-SMALL-ROOM-STRAIGHTEDGE",
+    "payload": {
+      "kind": "EXACT_OFFICIAL_NONRIGID_FLOOR_STRAIGHTEDGE_SMALL_SINGLE_ROOM_CONSTRAINT",
+      "normId": "SP_KR65_101_2025_T8_5_NONRIGID_UNDERLAYER_STRAIGHTEDGE",
+      "sourceArtifact": ".release-runtime/next-wave/floor-sand-thickness-control/sources/sp-kr65-101-2025-official.pdf",
+      "sourceArtifactSha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+      "pdfPages": [
+        150,
+        151
+      ],
+      "printedPages": [
+        54,
+        55
+      ],
+      "table": "8.5",
+      "exactLocatorRu": "Таблица8.5, строка «Просветы между контрольной двухметровой рейкой и проверяемой поверхностью элемента пола», подстрока «нежестких подстилающих слоев»: не более15мм; измерительный контроль не менее5измерений на50–70м² либо в отдельном помещении меньшейплощади ивместах визуальновыявленныхотклонений; журналработ.",
+      "sourceFacts": {
+        "straightedgeLengthMm": "2000",
+        "maximumGapMm": "15",
+        "minimumBaseMeasurements": "5",
+        "printedAreaRangeM2": [
+          "50",
+          "70"
+        ],
+        "registeredIn": "Журнал работ"
+      },
+      "boundedDesign": {
+        "singleMeasuredRoomOnly": true,
+        "areaGreaterThan": "0",
+        "areaMaximumM2": "50",
+        "area50IsFirstOneSourceRangeUnit": true,
+        "greaterThan50NotAdmitted": true,
+        "noCeilAreaDivisorChosen": true,
+        "noAggregateRoomArea": true,
+        "visuallyDetectedLocationsMustBeCoveredByExplicitPlan": true,
+        "minimumFiveNotMaximumOrActualPerformed": true,
+        "notDensityOrThicknessOrSlopeControl": true
+      },
+      "sourceNormativeBindingRowIds": [
+        "floor-underlayer:sand:krer11-01-002-01:straightedge-control:planned-measurements",
+        "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-excess-over-gap-limit-mm"
+      ],
+      "unboundObservationRowId": "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-maximum-gap-mm",
+      "constraintsNotObservationEvidence": true,
+      "minimumNotActualPerformed": true,
+      "newPaidOwners": 0,
+      "newProcurementOwners": 0,
+      "umbrellaQcNeedRowId": "floor-underlayer:sand:krer11-01-002-01:open:quality-control",
+      "umbrellaQcNeedRemainsOpen": true,
+      "fullTechnicalAcceptance": false
+    }
+  },
+  "managedSource": {
+    "id": "d8de5640-2c92-5b01-add8-0981133a8c71",
+    "source_key": "kg_sp_kr65_101_2025_floor_sand_straightedge_control_r1",
+    "title_ru": "СП КР 65-101:2025: просвет под двухметровой рейкой нежёсткого песчаного подстилающего слоя пола",
+    "authority": "Министерство строительства Кыргызской Республики",
+    "official_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/obedinennyeizolacionnye-13267ac76cb422108.87225877.pdf",
+    "artifact_sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+    "effective_from": null,
+    "effective_to": null,
+    "metadata": {
+      "contract": "gox-build.floor-sand-small-room-straightedge-retained/r3",
+      "sourceKind": "OFFICIAL_INFORMATIONAL_STRAIGHTEDGE_CONSTRAINT_NOT_PAID",
+      "useRestriction": "Только отдельно измеренное одно помещение 0<A≤50 м² и один нежёсткий песчаный подстилающий слой под полы. Не менее 5 базовых измерений и все проектные/визуальные точки по явному плану; просвет под 2 м рейкой не более 15 мм. Объектные наблюдения — заявленные пользователем факты полного журнала. Не плотность, толщина, уклон, выполненная услуга, оплата или приёмка.",
+      "universalProductivityClaimed": false,
+      "universalConsumptionClaimed": false,
+      "activationAllowed": false
+    }
+  },
+  "managedLocators": [
+    {
+      "id": "c5387051-7991-5b60-aad4-ee117634e4ed",
+      "source_id": "d8de5640-2c92-5b01-add8-0981133a8c71",
+      "locator_key": "SPKR65-101-2025-T8-5-FLOOR-SAND-SMALL-ROOM-STRAIGHTEDGE",
+      "locator": {
+        "kind": "EXACT_OFFICIAL_NONRIGID_FLOOR_STRAIGHTEDGE_SMALL_SINGLE_ROOM_CONSTRAINT",
+        "normId": "SP_KR65_101_2025_T8_5_NONRIGID_UNDERLAYER_STRAIGHTEDGE",
+        "sourceArtifact": ".release-runtime/next-wave/floor-sand-thickness-control/sources/sp-kr65-101-2025-official.pdf",
+        "sourceArtifactSha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+        "pdfPages": [
+          150,
+          151
+        ],
+        "printedPages": [
+          54,
+          55
+        ],
+        "table": "8.5",
+        "exactLocatorRu": "Таблица8.5, строка «Просветы между контрольной двухметровой рейкой и проверяемой поверхностью элемента пола», подстрока «нежестких подстилающих слоев»: не более15мм; измерительный контроль не менее5измерений на50–70м² либо в отдельном помещении меньшейплощади ивместах визуальновыявленныхотклонений; журналработ.",
+        "sourceFacts": {
+          "straightedgeLengthMm": "2000",
+          "maximumGapMm": "15",
+          "minimumBaseMeasurements": "5",
+          "printedAreaRangeM2": [
+            "50",
+            "70"
+          ],
+          "registeredIn": "Журнал работ"
+        },
+        "boundedDesign": {
+          "singleMeasuredRoomOnly": true,
+          "areaGreaterThan": "0",
+          "areaMaximumM2": "50",
+          "area50IsFirstOneSourceRangeUnit": true,
+          "greaterThan50NotAdmitted": true,
+          "noCeilAreaDivisorChosen": true,
+          "noAggregateRoomArea": true,
+          "visuallyDetectedLocationsMustBeCoveredByExplicitPlan": true,
+          "minimumFiveNotMaximumOrActualPerformed": true,
+          "notDensityOrThicknessOrSlopeControl": true
+        },
+        "sourceNormativeBindingRowIds": [
+          "floor-underlayer:sand:krer11-01-002-01:straightedge-control:planned-measurements",
+          "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-excess-over-gap-limit-mm"
+        ],
+        "unboundObservationRowId": "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-maximum-gap-mm",
+        "constraintsNotObservationEvidence": true,
+        "minimumNotActualPerformed": true,
+        "newPaidOwners": 0,
+        "newProcurementOwners": 0,
+        "umbrellaQcNeedRowId": "floor-underlayer:sand:krer11-01-002-01:open:quality-control",
+        "umbrellaQcNeedRemainsOpen": true,
+        "fullTechnicalAcceptance": false
+      },
+      "excerpt_sha256": "ca9f740c7fdbafa69def93faa1fa54d033e5845bddea5876c5cebdb2d98b8657"
+    }
+  ],
+  "scope": {
+    "artifactSha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+    "normId": "SP_KR65_101_2025_T8_5_NONRIGID_UNDERLAYER_STRAIGHTEDGE",
+    "sourceKey": "kg_sp_kr65_101_2025_floor_sand_straightedge_control_r1",
+    "generatedSourceId": "d8de5640-2c92-5b01-add8-0981133a8c71",
+    "generatedLocatorIds": [
+      "c5387051-7991-5b60-aad4-ee117634e4ed"
+    ],
+    "generatedLocatorKeys": [
+      "SPKR65-101-2025-T8-5-FLOOR-SAND-SMALL-ROOM-STRAIGHTEDGE"
+    ]
+  }
+}

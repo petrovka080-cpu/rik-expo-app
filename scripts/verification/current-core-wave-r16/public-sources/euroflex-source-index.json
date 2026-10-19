@@ -1,0 +1,24 @@
+{
+  "contract": "rik-expo-app.s27-75.euroflex-two-primary-documents.v1",
+  "sources": [
+    {
+      "id": "euroflex-pds-9301-r05-2026-09",
+      "titleRu": "Паспорт ударопоглощающих плит EUROFLEX, № 9301, редакция R-05",
+      "edition": "September 2026",
+      "officialUrl": "https://www.kraiburg-relastec.com/pdfs/data-sheets/euroflex/en/data-sheet-euroflex-impact-protection-slab-32.pdf",
+      "localArtifact": ".release-runtime/r568/s27-75/euroflex-materials/primary/EUROFLEX-9301-R05-2026-09.pdf",
+      "sha256": "5d5a503a1879d7f9ada9939a9c5287a866255311926b6ce9e4b1d4f4c13f28fb",
+      "locatorRu": "Стр. 2: толщина 50 мм, высота падения до 1,50 м, размеры 500 × 500 и 500 × 250 мм; стр. 3: смещение швов; стр. 4: соединительные штифты входят в изделие."
+    },
+    {
+      "id": "euroflex-ii-9301-1-r11-2025-08",
+      "titleRu": "Инструкция по укладке ударопоглощающих плит EUROFLEX, № 9301.1, редакция R-11",
+      "edition": "August 2025",
+      "officialUrl": "https://www.kraiburg-relastec.com/pdfs/installation-instructions/euroflex/en/installation-instruction-euroflex-impact-protection-slab-32.pdf",
+      "localArtifact": ".release-runtime/r568/s27-75/euroflex-materials/primary/EUROFLEX-9301-1-R11-2025-08.pdf",
+      "sha256": "756186d6bd37e6bccbd4d9b6faf31b0747baf121773023eb6a907306fa29f81a",
+      "locatorRu": "Стр. 3–5: пригодность основания; стр. 6–7: каждый второй ряд начинается с половинной плитки, направление Т-образных швов; стр. 10–12: примыкания и склеивание. Расход для краевых профилей на стр. 16 не является расходом клея на всю площадь."
+    }
+  ],
+  "scope": "Manufacturer dimensions and installation conditions; no labor, glue or complete installed-system quantity norm."
+}

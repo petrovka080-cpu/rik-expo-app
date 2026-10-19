@@ -1,0 +1,186 @@
+{
+  "contract": "gox-build.foundation-rubble-side-preparation-krer08-003-08.completion/r1",
+  "status": "PREPARED_SOURCE_BOUND_COMPLETION_NOT_RUN",
+  "catalogId": null,
+  "newCatalogIdClaim": false,
+  "parentModule": "foundationSideHotBitumenTwoCoatsKrer08R1",
+  "parentExpectedShape": [
+    23,
+    18,
+    18
+  ],
+  "parentNormId": "08-01-003-07",
+  "targetNeedRowId": "waterproofing:foundation-side-hot-bitumen:krer08-01-003-07:open:substrate-preparation",
+  "sourceId": "kg_krer08_01_003_08_rubble_side_preparation_completion_r1",
+  "normId": "08-01-003-08",
+  "prefix": "waterproofing:foundation-rubble-preparation:krer08-01-003-08",
+  "titleRu": "Частичная приколка и выравнивание боковой поверхности бутовой кладки перед гидроизоляцией — КРЕР08-01-003-08",
+  "source": {
+    "path": ".release-runtime/r568/next-wave/masonry-krer08/primary/KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "edition": "КРЕР-2015, сборник 08, Бишкек, 2015",
+    "exactLocatorRu": "PDF/печатная стр. 13: норма 08 — частичная приколка изолируемой поверхности; выравнивание поверхности раствором. Измеритель норм 01–08: 100 м² изолируемой поверхности. Строка 08-01-003-08 — выравнивание поверхности бутовой кладки раствором. PDF/стр. 14 — только колонка 003-08. PDF/стр. 6, § 1.4 — частичная приколка и выравнивание при устройстве боковой изоляции по невыровненным бутовым стенам.",
+    "pages": [
+      6,
+      13,
+      14
+    ]
+  },
+  "measurement": {
+    "parameterId": "rubble_prep_area_m2",
+    "unitId": "m2",
+    "basis": "100",
+    "independentMeasuredAreaRequired": true,
+    "sameFaceAreaMustEqualSeparatelySuppliedParentArea": "side_waterproofing_area_m2",
+    "areaEqualityIsNarrowApplicationScopeNotNewNorm": true,
+    "noVolumeAreaOrThicknessInference": true
+  },
+  "selectionParameter": "rubble_prep_state",
+  "states": {
+    "required": "RUBBLE_PREPARATION_REQUIRED_NOT_YET_ACCEPTED_00308",
+    "acceptedWork": "SOURCE00308_WORK_INCLUDED_AND_BASE_SEPARATELY_ACCEPTED",
+    "alreadyReady": "ALREADY_READY_ACCEPTED_NO_NEW00308_WORK",
+    "unconfirmed": "OTHER_OR_UNCONFIRMED_PREPARATION"
+  },
+  "readinessReferenceId": "rubble_prep_readiness_reference",
+  "scopeFacts": [
+    {
+      "id": "rubble_prep_profile",
+      "titleRu": "Точная подготовка бутовой поверхности по норме 008",
+      "values": [
+        "SOURCE00308_PARTIAL_PRICKING_AND_MORTAR_LEVELING_RUBBLE_ONLY"
+      ]
+    },
+    {
+      "id": "rubble_prep_substrate",
+      "titleRu": "Только бутовая кладка, не кирпич и не бетон",
+      "values": [
+        "RUBBLE_MASONRY_SIDE_SURFACE_ONLY"
+      ]
+    },
+    {
+      "id": "rubble_prep_scope",
+      "titleRu": "Один тот же отдельно измеренный боковой участок для подготовки и гидроизоляции",
+      "values": [
+        "ONE_SAME_SIDE_FACE_FULL_REQUIRED_PREPARATION_SCOPE"
+      ]
+    },
+    {
+      "id": "rubble_prep_method",
+      "titleRu": "Частичная приколка и выравнивание, не полный демонтаж или самостоятельная штукатурка",
+      "values": [
+        "PARTIAL_PRICKING_THEN_SOURCE_MORTAR_LEVELING"
+      ]
+    },
+    {
+      "id": "rubble_prep_mortar_spec",
+      "titleRu": "Готовый тяжёлый отделочный цементный раствор 1:3 по источнику",
+      "values": [
+        "READY_HEAVY_FINISHING_CEMENT_MORTAR_1_3_CODE03_0409_0003"
+      ]
+    },
+    {
+      "id": "rubble_prep_payment_scope",
+      "titleRu": "Цельный труд 008 один раз; грунтовка и разогрев 007 сюда не входят",
+      "values": [
+        "WHOLE00308_ONCE_NO007_PRIMER_HEAT_OR_OTHER_PREPARATION_DOUBLE_PAYMENT"
+      ]
+    },
+    {
+      "id": "rubble_prep_quantity_basis",
+      "titleRu": "Исходный расход на 100 м² без вычисления толщины, плотности или состава смеси",
+      "values": [
+        "PRINTED_SOURCE100M2_NO_THICKNESS_DENSITY_OR_RECIPE_INFERENCE"
+      ]
+    },
+    {
+      "id": "rubble_prep_area_reference",
+      "titleRu": "Самостоятельная ведомость обмера того же полного бокового участка"
+    },
+    {
+      "id": "rubble_prep_project_reference",
+      "titleRu": "Проект и ППР частичной приколки и выравнивания бутовой кладки"
+    },
+    {
+      "id": "rubble_prep_payment_reference",
+      "titleRu": "Сверка владельцев оплаты подготовки, источника008 и последующей операции007"
+    }
+  ],
+  "physicalSourceRows": [
+    {
+      "id": "whole-preparation-labour",
+      "code": "000-1003-7",
+      "titleRu": "Рабочие-строители среднего разряда 3,7 — частичная приколка и выравнивание целиком",
+      "category": "labor",
+      "unitId": "man_hour",
+      "ratePer100M2": "96.70",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "flatbed-truck",
+      "code": "40-0001",
+      "titleRu": "Автомобили бортовые грузоподъёмностью до 5 т — исходные машино-часы",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.20",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "water",
+      "code": "01-0601-0001",
+      "titleRu": "Вода — отдельный исходный расход подготовки",
+      "category": "material",
+      "unitId": "m3",
+      "ratePer100M2": "0.105",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "ready-cement-mortar1_3",
+      "code": "03-0409-0003",
+      "titleRu": "Раствор готовый отделочный тяжёлый, цементный 1:3",
+      "category": "material",
+      "unitId": "m3",
+      "ratePer100M2": "3.05",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    }
+  ],
+  "includedOperations": [
+    {
+      "id": "included-partial-pricking",
+      "titleRu": "Частичная приколка бутовой поверхности — включена в цельный труд 008"
+    },
+    {
+      "id": "included-mortar-leveling",
+      "titleRu": "Выравнивание бутовой поверхности готовым раствором — включено в тот же труд 008"
+    }
+  ],
+  "finance": {
+    "wholeNewLabourOwners": 1,
+    "newInfoRows": 3,
+    "newIncludedSteps": 2,
+    "procurementOwners": 0,
+    "nonWholeAutomaticPriceInheritanceAllowed": false,
+    "machineDriverRole": "PENDING_NOT_INFERRED",
+    "newPaidMachineOrMaterials": 0,
+    "whole007RateUnchanged": "21.20",
+    "manualPrice77": "QA_ONLY_CONTROL_NOT_ACTUAL_PRICE"
+  },
+  "integration": {
+    "oldNeedRowIdFormulaUnitCostOwnerTracePreserved": true,
+    "onlyOldNeedDelta": "Existing completionNeedTransitionV1 only + explicit inclusion gate + recomputed rowhash. Formula, row ID, unit, cost owner and old provenance/trace exact; no 0/1/default or legacy-price/quantity transfer.",
+    "defaultUnconfirmed": "Sameoldappliedsource/preliminarybehavior; no new008pay orassumedreadiness.",
+    "requiredNotReady": "008maybecalculatedfromexplicitfacts;007stillneedsoldreadyfacts. Supplyingparentreadyatthesametimeiscontradictoryandrefused.",
+    "alreadyReady": "No new 008 charge. Conditional need coverage additionally requires explicit source00308 method witness/project reference + old prepared RUBBLE/base reference + separate acceptance reference. Missing method witness keeps old need.",
+    "acceptedWork": "008includedonlywithexplicitcompleted/acceptedstate+reference andsameoldpreparedRUBBLE/base_ref; thisisuserdeclaredrecord, notproof generatedbycalculation.",
+    "oldOtherNeedsRemainOpen": 8,
+    "potentialOldUnresolvedRowsRemain": 9,
+    "futureParentCurrentCapturePin": null,
+    "rootIntegrationDecisionPin": null,
+    "missingSelection": "Existing selected-condition graph: no selector disables only optional 008; no assumed readiness or coverage, original 007 behavior preserved.",
+    "areaComparison": "Existing formula_greater_than exact decimal differences in forbiddenWhen; no string or JS Number equality. Same-area binding is an application restriction, not a source norm."
+  },
+  "fullTechnicalAcceptance": false,
+  "publicationAllowed": false,
+  "testsRun": false
+}

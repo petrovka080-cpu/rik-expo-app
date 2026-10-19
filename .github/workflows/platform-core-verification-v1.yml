@@ -1,68 +1,65 @@
 name: Platform Core Verification V1
-
 on:
-  pull_request:
-  push:
-    branches:
-      - "repair/t8-final-r5-*"
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
-  static-and-plan:
-    runs-on: ubuntu-latest
+  exact-current-core:
+    runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-node@v4
-        with: { node-version: 20.19.6, cache: npm }
-      - run: npm ci
-      - run: npm run verify:typecheck
-      - run: npm run lint
-      - run: git diff --check
-      - run: npm run verify:no-test-weakening
-      - run: npm run verify:v1:plan -- --base=${{ github.event.pull_request.base.sha || github.event.before || github.sha }} --head=${{ github.sha }}
-      - uses: actions/upload-artifact@v4
         with:
-          name: verification-v1-plan
-          path: .release-runtime/verification-v1/**/affected/plan.json
-
-  critical-shard:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix: { shard: [0, 1, 2, 3] }
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+          path: source
+          fetch-depth: 1
+          persist-credentials: false
       - uses: actions/setup-node@v4
-        with: { node-version: 20.19.6, cache: npm }
-      - run: npm ci
-      - run: npx tsx scripts/verification/runVerificationCiShard.ts --shard-id=${{ matrix.shard }} --shard-count=4
+        with:
+          node-version: 20.19.6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Restore isolated canonical path
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $canonical = 'C:\dev\rik-expo-app-r4a5-dc4f0ce7'
+          if (Test-Path -LiteralPath $canonical) { throw 'Isolated canonical target must be absent' }
+          New-Item -ItemType Directory -Force -Path 'C:\dev' | Out-Null
+          git clone --no-hardlinks --no-checkout (Join-Path $env:GITHUB_WORKSPACE 'source') $canonical
+          if ($LASTEXITCODE -ne 0) { throw 'clone failed' }
+          git -C $canonical -c core.autocrlf=false checkout --detach $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { throw 'checkout failed' }
+      - name: Cache locked Node dependencies
+        id: dependencies
+        uses: actions/cache/restore@v4
+        with:
+          path: C:/dev/rik-expo-app-r4a5-dc4f0ce7/node_modules
+          key: core-r13-windows-node20.19.6-${{ hashFiles('source/package-lock.json') }}
+      - name: Install locked verification dependencies
+        shell: pwsh
+        working-directory: C:/dev/rik-expo-app-r4a5-dc4f0ce7
+        run: |
+          if ('${{ steps.dependencies.outputs.cache-hit }}' -ne 'true') {
+            npm ci --include=dev --no-audit --no-fund
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          python -m pip install psutil==7.0.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Save verified locked dependencies before source checks
+        if: steps.dependencies.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: C:/dev/rik-expo-app-r4a5-dc4f0ce7/node_modules
+          key: core-r13-windows-node20.19.6-${{ hashFiles('source/package-lock.json') }}
+      - name: Exact full Program and all 41 suites in fresh owned processes
+        shell: pwsh
+        working-directory: C:/dev/rik-expo-app-r4a5-dc4f0ce7
+        run: python scripts/verification/current-core-wave-r16/driver.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: verification-v1-shard-${{ matrix.shard }}
-          path: .release-runtime/verification-v1/ci-shards/${{ matrix.shard }}
-
-  critical-fanin:
-    if: always()
-    needs: critical-shard
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20.19.6, cache: npm }
-      - run: npm ci
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: verification-v1-shard-*
-          path: .release-runtime/verification-v1/downloaded-shards
-      - run: npx tsx scripts/verification/mergeVerificationCiShards.ts
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: verification-v1-fanin-summary
-          path: .release-runtime/verification-v1/ci-merge-summary.json
+          name: current-core-r16-exact-source-results
+          path: C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/current-core-wave-r16-ci
+          if-no-files-found: error
+          retention-days: 7

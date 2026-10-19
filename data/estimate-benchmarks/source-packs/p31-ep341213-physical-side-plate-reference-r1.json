@@ -1,0 +1,163 @@
+{
+  "contract": "legrand-p31-ep341213-physical-side-plate-reference/r1",
+  "status": "WORK_ONLY_SAFE_PHYSICAL_BOM_REFERENCE_NOT_RUN",
+  "catalogId": null,
+  "currentParentDefinitionId": null,
+  "currentParentBaselineId": null,
+  "currentLineage": null,
+  "rootExecutionPin": null,
+  "unitKitDecisionPin": null,
+  "publicationAllowed": false,
+  "commercialAdmission": false,
+  "fullTechnicalAcceptance": false,
+  "parentPackSha256": "48a88f5dab61309d95ad589ebd4964004884e6cb2d9c10a74314a7ddda8c8749",
+  "parentModuleSha256": "71c5bf20d1ad5a7079ea384f62742c1306dc2152ae19db973cff0ac0b7d8a159",
+  "expectedParentShape": [
+    24,
+    13,
+    13
+  ],
+  "prospectiveShape": [
+    26,
+    14,
+    14
+  ],
+  "sourceId": "legrand_p31_ep341213_physical_side_plate_reference_r1",
+  "normId": "MANUFACTURER_EP341213_SIDE_PLATE_ASSEMBLY_NOT_SALES_UNIT",
+  "prefix": "legrand:p31-ep341213-physical-reference",
+  "targetNeedRowId": "legrand:p31-blind-ep-joint:open-couplers",
+  "rowId": "legrand:p31-ep341213-physical-reference:side-plates-required",
+  "unitId": "pcs",
+  "sidePiecesPerAcceptedJoint": 2,
+  "parentRequiredFacts": [
+    "p31_tray_sku",
+    "p31_coupler_sku",
+    "p31_scope_confirmation",
+    "p31_project_reference",
+    "p31_supply_scope",
+    "p31_supply_reference"
+  ],
+  "method": {
+    "parameterId": "p31_ep_side_piece_reference_method",
+    "selected": "PHYSICAL_SIDE_PLATES_ONLY_NO_SALES_UNIT_OR_PAYMENT",
+    "unconfirmed": "UNCONFIRMED_OR_OTHER_EP_SUPPLY",
+    "default": null
+  },
+  "projectReferenceId": "p31_ep_side_piece_schedule_reference",
+  "source": {
+    "path": ".release-runtime/r568/next-wave/legrand-p31/primary/FT1045FR-01.pdf",
+    "sha256": "ce874eb3c1be70e384dd97fb7cd73aae7d5fcaa37db995d7e977e08c1f1ac0a9",
+    "officialUrl": "https://assets.legrand.com/pim/NP-FT-GT/FT1045FR-01.pdf",
+    "edition": "FT1045EN-01 internal reference; URL FT1045FR-01, updated02.03.2023",
+    "locatorRu": "PDF2 §4.1:341213 EP50–60 PG; PDF11 §18.3:две боковые детали EP на стык. Это количество физических деталей, а не товарных единиц или упаковок.",
+    "parentBlindMethod": {
+      "path": ".release-runtime/r568/next-wave/legrand-p31/primary/FT0955-02.pdf",
+      "sha256": "971fd93f9972fc9fbf64a74e3e0a1d557fb659845ba874c9d6429fb8d6b8e305",
+      "officialUrl": "https://assets.legrand.com/pim/NP-FT-GT/FT0955-02.pdf",
+      "locatorRu": "PDF8/печатная8, верхняя таблица глухих GS/PG лотков60мм; PDF11/печатная11, монтажная схема75–300мм: EP341213 или ER482219,8M6,11Нм. Схема400–600мм с4дополнительными нижнимиM6 исключена."
+    }
+  },
+  "unitKitIntakePin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-p31-ep341213-supply-completion-b/source-intake-r1/p31-ep341213-unit-kit-intake-r1.json",
+    "sha256": "a877986e53c16a8cc4bc5d6ea04169840e7cdfd292bd87bb2fc70d890595f9f9",
+    "bytes": 10780
+  },
+  "public": {
+    "titleRu": "Боковые пластины EP341213 для прямых стыков P31 — справочная потребность",
+    "specificationRu": "Две физические боковые пластины на принятый прямой стык глухого P31 GS/PG высотой 60 мм и шириной 75–300 мм.",
+    "detailsRu": [
+      "Это не заказ и не число товарных комплектов. Состав одной единицы продажи пока не допущен.",
+      "Болты 341895 с гайками и восемь M6 на стык остаются у прежнего владельца. Новый труд или момент затяжки отсюда не вычисляется.",
+      "Цена, указанная у этой строки вручную или из снимка, остаётся справочной и не входит в оплату или закупку."
+    ]
+  },
+  "payment": {
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0,
+    "newPriceBindings": 0,
+    "automaticGenericPriceInheritanceAllowed": false,
+    "oldParentPaymentAndManualRights": "EXACT_UNCHANGED",
+    "oldCouplersNeedClosed": false
+  },
+  "futureUnitTask": {
+    "ownerRu": "Производитель и снабженец; решение допуска — интегратор",
+    "missingFactRu": "Не доказано, является ли одна товарная единица 341213 одной боковой пластиной или комплектом из двух, и как соотносится с упаковкой 10 P.",
+    "nextTaskRu": "Получить точную первичную спецификацию состава единицы продажи, упаковки и исключённого крепежа. Затем подтвердить единицу, кратность, пригодное наличие, резерв и цену отдельной поставки.",
+    "doNotAssume": [
+      "Две пластины не означают две упаковки.",
+      "10 P не назначает обязательный заказ 10 или 20 без допуска единицы.",
+      "Не переносить цену/наличие 341895 на 341213.",
+      "Не считать фото или рассчитанную массу доказательством комплектности."
+    ]
+  },
+  "fullCycle": [
+    {
+      "stageRu": "Принятие проекта и подготовка",
+      "coverageRu": "Повторно используются прежние точные факты глухого P31 и ведомость стыков. Доступ/основание не подтверждаются количеством пластин.",
+      "openNeedIds": [
+        "tools-access",
+        "verification"
+      ]
+    },
+    {
+      "stageRu": "Физический состав",
+      "coverageRu": "Подтверждены две боковые детали на стык; это единственная новая справочная строка.",
+      "openNeedIds": [
+        "couplers"
+      ]
+    },
+    {
+      "stageRu": "Поставка и остатки",
+      "coverageRu": "Товарная единица, упаковка, наличие, резерв и цена остаются открыты; баланс заказа до допуска не создаётся.",
+      "openNeedIds": [
+        "couplers"
+      ]
+    },
+    {
+      "stageRu": "Сборка",
+      "coverageRu": "Прежние восемь болтов M6 и 11 Н·м сохраняются; новая оплата монтажа не назначается.",
+      "openNeedIds": [
+        "assembly-labour"
+      ]
+    },
+    {
+      "stageRu": "Инструмент и безопасность",
+      "coverageRu": "Оснащение затяжки и доступ определяются ППР; часов из числа деталей нет.",
+      "openNeedIds": [
+        "tools-access"
+      ]
+    },
+    {
+      "stageRu": "Перемещение и доставка",
+      "coverageRu": "Ни коробка, ни число пластин не задают рейсы или разгрузку.",
+      "openNeedIds": [
+        "delivery-handling"
+      ]
+    },
+    {
+      "stageRu": "Контроль",
+      "coverageRu": "Нужна применимая программа стыков, опор, нагрузки и электрической непрерывности; это не акт приёмки.",
+      "openNeedIds": [
+        "verification"
+      ]
+    },
+    {
+      "stageRu": "Завершение",
+      "coverageRu": "Тара, фактические отходы и пригодные остатки различаются; дополнительная оплата не вычислена.",
+      "openNeedIds": [
+        "cleanup-leftovers"
+      ]
+    }
+  ],
+  "forbiddenCommercialInputs": [
+    "p31_ep_sales_unit",
+    "p31_ep_kit_count",
+    "p31_ep_supplier_quantum",
+    "p31_ep_stock_pcs",
+    "p31_ep_reserve_pcs",
+    "p31_ep_carton_count",
+    "p31_ep_unit_price"
+  ],
+  "prospectiveTests": "NOT_RUN",
+  "runtime": "NOT_RUN"
+}

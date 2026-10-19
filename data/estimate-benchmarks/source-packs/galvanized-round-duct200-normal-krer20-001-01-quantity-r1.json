@@ -1,0 +1,584 @@
+{
+  "contract": "gox-build.ventilation-galvanized-round200-normal00101-source-quantity/r1",
+  "status": "SOURCE_ONLY_QUANTITY_CANDIDATE_NOT_RUN_NOT_ADMITTED",
+  "sourceId": "kg_krer20_01_001_01_galvanized_round_normal_source_only_r1",
+  "normId": "20-01-001-01",
+  "catalogId": null,
+  "workKey": null,
+  "groupId": null,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "titleRu": "Прокладка круглого оцинкованного воздуховода 0,5 мм, до 200 мм, класс Н, до 3 м — исходная норма",
+  "source": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-ventilation-metal-duct-a/source-intake-r1/KRER20-2015-official.pdf",
+    "sha256": "6201e55037dcfd46fb9c7f12d8a37dbfc05f5f029c77ecc8773da28d29525d94",
+    "bytes": 3315508,
+    "officialLandingUrl": "https://minstroy.gov.kg/ru/kyzmat/436/show",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no20ventilaciaikondicionirovanievozduha_compressed-216690839a2451120.15137181.pdf",
+    "edition": "КРЕР20-2015; приказ 28.03.2016 №2-нпа; ввод 01.01.2016; текущая проектная применимость требует подтверждения",
+    "tablePages": [
+      10,
+      11
+    ],
+    "technicalPages": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "selectedColumn": "20-01-001-01",
+    "sourceDenominatorM2": "100",
+    "sourceMeasureRu": "100 м² поверхности воздуховодов",
+    "measurementRule": "§2.1: поверхность прямых участков и фасонных частей; §2.2 длина между пересечениями осей не является автоматическим переводом в площадь",
+    "locatorRu": "КРЕР20-2015, PDF 10–11, колонка20-01-001-01; техническая часть PDF5–8, §1.2–1.6/1.18–1.21 и §2.1–2.2.",
+    "basePricesImported": false
+  },
+  "physicalSourceRows": [
+    {
+      "id": "whole-worker",
+      "titleRu": "Единый труд прокладки круглого воздуховода — рабочие среднего разряда 3,2",
+      "category": "labor",
+      "sourceUnit": "man_hour",
+      "ratePer100M2": "167.86",
+      "resourceCode": "000-1003-2",
+      "costTreatment": "OWN_COST",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "machinists-reference",
+      "titleRu": "Машинисты — справочная исходная норма, не второй владелец оплаты",
+      "category": "labor",
+      "sourceUnit": "man_hour",
+      "ratePer100M2": "0.52",
+      "resourceCode": null,
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "truck-crane10t",
+      "titleRu": "Кран на автомобильном ходу 10 т, другие виды строительства",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "ratePer100M2": "0.52",
+      "resourceCode": "02-0075",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "electric-winch2t",
+      "titleRu": "Лебёдка электрическая, тяговое усилие 19,62 кН (2 т)",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "ratePer100M2": "0.39",
+      "resourceCode": "03-0160",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "dc-arc-welding",
+      "titleRu": "Установка ручной дуговой сварки постоянного тока",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "ratePer100M2": "1.79",
+      "resourceCode": "04-0444",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "flatbed-truck5t",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "ratePer100M2": "0.78",
+      "resourceCode": "40-0001",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "construction-bolts",
+      "titleRu": "Болт строительный с гайками и шайбами",
+      "category": "material",
+      "sourceUnit": "t",
+      "ratePer100M2": "0.015",
+      "resourceCode": "01-0409-0001",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "literal-asbestos-cord-reference",
+      "titleRu": "Шнур асбестовый ШАОН-1 диаметром 8,0–10,0 мм — буквальная строка источника",
+      "category": "material",
+      "sourceUnit": "t",
+      "ratePer100M2": "0.00089",
+      "resourceCode": "01-2409-0039",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "pressed-rubber-gasket",
+      "titleRu": "Прокладка резиновая, пластина техническая прессованная",
+      "category": "material",
+      "sourceUnit": "kg",
+      "ratePer100M2": "8",
+      "resourceCode": "01-2603-0020",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "nonhardening-gelan-mastic",
+      "titleRu": "Мастика герметизирующая нетвердеющая «Гэлан»",
+      "category": "material",
+      "sourceUnit": "t",
+      "ratePer100M2": "0.00501",
+      "resourceCode": "01-4602-0006",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "e42a-electrodes5mm",
+      "titleRu": "Электроды диаметром 5 мм Э42А",
+      "category": "material",
+      "sourceUnit": "t",
+      "ratePer100M2": "0.00045",
+      "resourceCode": "01-5005-0037",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "metal-duct-surface",
+      "titleRu": "Воздуховоды металлические — площадь поверхности по исходной строке",
+      "category": "material",
+      "sourceUnit": "m2",
+      "ratePer100M2": "100",
+      "resourceCode": "23-0502-0001*",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "tablePages": [
+        10,
+        11
+      ]
+    }
+  ],
+  "operationsIncludedInWholeLabour": [
+    {
+      "id": "assemble-blocks",
+      "titleRu": "Сборка звеньев воздуховода в блоки",
+      "separatePaymentAllowed": false,
+      "sourcePage": 10
+    },
+    {
+      "id": "install-fastenings",
+      "titleRu": "Установка и заделка креплений",
+      "separatePaymentAllowed": false,
+      "sourcePage": 10
+    },
+    {
+      "id": "lift-temporary-suspend",
+      "titleRu": "Подъём блоков и временная подвеска",
+      "separatePaymentAllowed": false,
+      "sourcePage": 10
+    },
+    {
+      "id": "position-blocks",
+      "titleRu": "Установка блоков в проектное положение",
+      "separatePaymentAllowed": false,
+      "sourcePage": 10
+    },
+    {
+      "id": "bolt-gasket-joints",
+      "titleRu": "Соединение блоков на болтах с установкой прокладок",
+      "separatePaymentAllowed": false,
+      "sourcePage": 10
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "fastenings-project-P",
+      "titleRu": "Крепления по проекту: тип, раскладка и масса",
+      "sourceOrFact": "Строка 21-1009-0001*, кг, П; §1.5",
+      "evidenceOwner": "Проектировщик/сметчик",
+      "task": "Установить ведомость креплений и массу по проекту; не превращать П в 0, 1 или количество на м². Установочная работа уже входит в цельный труд.",
+      "acceptance": "Точная ведомость и граница материальной стоимости без повторной оплаты установки.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "throttle-valves-project-P",
+      "titleRu": "Дроссель-клапаны в патрубках по проекту",
+      "sourceOrFact": "Строка 23-0801-0001*, шт., П; §1.5",
+      "evidenceOwner": "Проектировщик/сметчик",
+      "task": "Определить наличие, тип и число включённых в эту трассу дроссель-клапанов. Отсутствие должно быть документировано, а не задано числом по умолчанию.",
+      "acceptance": "Проектная спецификация и непересекающаяся граница материальной стоимости; установка в §1.5 не оплачивается повторно.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "pitot-port-caps-project-P",
+      "titleRu": "Заглушки питотметражных лючков по проекту",
+      "sourceOrFact": "Строка 23-1103-0001*, шт., П; §1.5",
+      "evidenceOwner": "Проектировщик/сметчик",
+      "task": "Получить проектную ведомость измерительных лючков и заглушек; не выводить её из площади или длины.",
+      "acceptance": "Подтверждённые количество, единица и принадлежность трассе, отдельная цена без повторного монтажа.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "dampers-project-P",
+      "titleRu": "Шиберы по проекту",
+      "sourceOrFact": "Строка 23-1110-0001*, шт., П; §1.5",
+      "evidenceOwner": "Проектировщик/сметчик",
+      "task": "Уточнить тип, количество и физическую принадлежность шиберов по проекту; не переносить значения соседних колонок.",
+      "acceptance": "Точная спецификация и независимая материальная граница без двойного труда.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "framed-mesh-project-P",
+      "titleRu": "Сетки в рамках по проекту",
+      "sourceOrFact": "Строка 23-1704-0001*, м², П; §1.5",
+      "evidenceOwner": "Проектировщик/сметчик",
+      "task": "Определить площадь и исполнение сеток в рамках по проекту, без коэффициента на м² воздуховода.",
+      "acceptance": "Проектная площадь/исполнение, котировка и подтверждённая непересекающаяся материальная стоимость.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "commercial-bom-and-literal-resource-compatibility",
+      "titleRu": "Коммерческая комплектация и применимость буквальных материалов",
+      "sourceOrFact": "§1.3–1.6/1.20; строки материалов PDF 10–11",
+      "evidenceOwner": "Проектировщик/специалист/сметчик/поставщик",
+      "task": "Подтвердить допустимую проектную схему материалов и состав цены воздуховода, болтов, уплотнения и сварочных расходников. Буквальный асбестовый шнур из нормы не является допуском продукта или разрешением подменить его другим материалом с тем же расходом. Фасовка, остатки, запас и цены не установлены.",
+      "acceptance": "Точный проектный состав и первичное подтверждение применимости; отдельное решение о расходе замены и оплате/заказе. Все материалы R1 остаются INFO, без закупочных владельцев.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "individual-system-tests",
+      "titleRu": "Индивидуальные испытания системы вентиляции",
+      "sourceOrFact": "§1.19: 5% от оплаты труда рабочих и стоимости эксплуатации машин",
+      "evidenceOwner": "Сметчик/инженер наладки",
+      "task": "Установить точный непересекающийся состав испытаний и подтверждённую ценовую базу для правила 5%. Процент стоимости не превращать в дополнительные часы или 5% площади.",
+      "acceptance": "Одобренный отдельный стоимостный владелец испытаний, без повторного учёта включённых работ; R1 его не рассчитывает.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "through-openings-and-sealing",
+      "titleRu": "Сквозные проёмы и их последующая заделка",
+      "sourceOrFact": "§1.2: готовые сквозные отверстия; заделка проходов не учтена",
+      "evidenceOwner": "Проектировщик/подрядчик",
+      "task": "Подтвердить готовность проёмов для исходной ветви. Отдельно определить новую проходку, заделку и противопожарное исполнение, если требуется; сверление отверстий под крепления не дублировать.",
+      "acceptance": "Проектный узел проходки и непересекающаяся норма/цена; новое сквозное сверление не входит в выбранную ветвь.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "insulation-fire-protection",
+      "titleRu": "Теплоизоляция, огнезащита и сопряжённое оборудование",
+      "sourceOrFact": "Выбранная колонка 20-01-001-01 не задаёт эти проектные составы",
+      "evidenceOwner": "Проектировщик/инженер",
+      "task": "Подтвердить необходимость или документированное отсутствие изоляции/огнезащиты и физическую границу оборудования, гибких вставок, вентиляторов и балансировки; не переносить их из соседних норм.",
+      "acceptance": "Отдельные проектные составы и нормы при необходимости; не считать трассу полной системой вентиляции.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "logistics-access-safe-execution",
+      "titleRu": "Доставка, разгрузка, доступ и безопасное выполнение",
+      "sourceOrFact": "§1.2/1.18; доступ и услуги по ППР",
+      "evidenceOwner": "Подрядчик/логист/сметчик",
+      "task": "Разграничить поставку, разгрузку, доступ и устройство лесов/настила. Включённый такелаж и подъём блоков из цельного труда не оплачивать второй раз; высота свыше 3 м требует другой явной ветви.",
+      "acceptance": "ППР и независимые объёмы/единицы/цены услуг, без рейсов или смен по умолчанию.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    }
+  ],
+  "scopeFacts": [
+    {
+      "id": "material_scope",
+      "titleRu": "Оцинкованная листовая сталь",
+      "allowedValues": [
+        "GALVANIZED_SHEET_STEEL_ONLY"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "cross_section_scope",
+      "titleRu": "Круглое сечение",
+      "allowedValues": [
+        "ROUND_ONLY"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "tightness_source_class",
+      "titleRu": "Буквальный класс Н — нормальные по КРЕР20",
+      "allowedValues": [
+        "N_NORMAL_KRER20_ONLY"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "joint_scope",
+      "titleRu": "Болтовые соединения с прокладками",
+      "allowedValues": [
+        "BOLTED_WITH_GASKETS_NO_CLAMPS"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "measurement_scope",
+      "titleRu": "Площадь прямых и фасонных частей по проекту",
+      "allowedValues": [
+        "PROJECT_SURFACE_STRAIGHT_AND_FITTINGS_M2"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "ready_through_holes",
+      "titleRu": "Готовые сквозные проёмы",
+      "allowedValues": [
+        "READY_THROUGH_OPENINGS"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "project_P_scope",
+      "titleRu": "Проектные изделия П учитываются отдельно без вымышленных количеств",
+      "allowedValues": [
+        "PROJECT_P_ITEMS_NOT_INVENTED"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "factory_finish_scope",
+      "titleRu": "Первичное заводское покрытие принято без добавления площадочной окраски",
+      "allowedValues": [
+        "FACTORY_PRIMARY_FINISH_SCOPE_CONFIRMED"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "payment_boundary",
+      "titleRu": "Единый труд, без повторной оплаты пяти операций",
+      "allowedValues": [
+        "WHOLE_INSTALLATION_NO_DUPLICATE_OPERATIONS"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "system_scope",
+      "titleRu": "Обычная вентиляция здания, не технологическое оборудование и не АЭС",
+      "allowedValues": [
+        "BUILDING_VENTILATION_NON_PROCESS_NON_NUCLEAR"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    }
+  ],
+  "projectFactsRequired": [
+    {
+      "id": "surface_schedule_reference",
+      "titleRu": "Проектная ведомость поверхности прямых и фасонных частей",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "physical_profile_reference",
+      "titleRu": "Проектная спецификация оцинкованного круглого воздуховода 0,5 мм, ≤200 мм",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "bolted_joint_reference",
+      "titleRu": "Проектные узлы болтовых соединений и прокладок",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "support_scope_reference",
+      "titleRu": "Проектная граница креплений и устанавливаемых изделий П",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "safe_execution_reference",
+      "titleRu": "ППР подъёма, подвески, высоты и готовности проёмов",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "source_applicability_reference",
+      "titleRu": "Документированная применимость точной колонки к объекту",
+      "requiredForPositiveArea": true
+    }
+  ],
+  "projectNumericFacts": [
+    {
+      "id": "duct_diameter_mm",
+      "titleRu": "Диаметр круглого воздуховода по проекту, до 200 мм включительно",
+      "unit": "mm",
+      "min": "0",
+      "exclusiveMin": 0,
+      "max": "200",
+      "default": null
+    },
+    {
+      "id": "steel_thickness_mm",
+      "titleRu": "Толщина оцинкованной листовой стали, 0,5 мм",
+      "unit": "mm",
+      "min": "0.5",
+      "max": "0.5",
+      "default": null
+    },
+    {
+      "id": "working_height_m",
+      "titleRu": "Высота установки от пола или сплошного настила, не более 3 м",
+      "unit": "m",
+      "min": "0",
+      "max": "3",
+      "default": null
+    }
+  ],
+  "quantityContract": {
+    "primary": "actual_galvanized_round200_duct_surface_m2",
+    "unitId": "m2",
+    "geometryFromRouteLength": false,
+    "normativeSourceBindings": 12,
+    "knownOrProjectScopeParameterArrays": 20,
+    "unresolvedEmptyParameterArrays": 10,
+    "shape": [
+      30,
+      27,
+      27
+    ],
+    "physicalRows": 12,
+    "includedScopeRows": 5,
+    "paidWholeRows": 1,
+    "informationalPhysicalRows": 11,
+    "needs": 10,
+    "procurementRows": 0,
+    "priceBindings": 0
+  },
+  "scopeExclusionsRu": [
+    "Прямоугольное сечение, другая толщина/диаметр, классы П/B и нержавеющая сталь не выбирают коэффициенты автоматически.",
+    "Скобы вместо болтов, высота свыше 3 м, технологическое оборудование и воздуховоды АЭС требуют отдельной доказанной ветви.",
+    "Источник не подтверждает фактический проект, материал замены, поставщика, цену, заказную фасовку, остатки или закупку.",
+    "П в пяти проектных строках не является численной нормой.",
+    "Испытания по §1.19 не включены как дополнительные часы; полная система вентиляции не заявляется."
+  ],
+  "manualRights": "Manual title/price/exclusion may be preserved by existing core within same published method later; source quantities are PARAMETERS_ONLY; missing project facts and unresolved needs cannot be admitted by manual0/1/77.",
+  "existingCodeDisposition": {
+    "catalogId": "canonical-work:base:ventilation_interior_duct_install_standard",
+    "module": "src/lib/estimate/v4/galvanizedSteelDuctR1.ts",
+    "policy": "KEEP_CURRENT_IMMUTABLE_PENDING_ACTUAL_IDENTITY_CLASSIFICATION",
+    "knownCodePrimary": "length_m",
+    "knownCodeMaterial": "rectangular galvanized0.7mm classB project package",
+    "currentDefinitionVersion": null,
+    "noDatabaseNoveltyClaim": true
+  }
+}
