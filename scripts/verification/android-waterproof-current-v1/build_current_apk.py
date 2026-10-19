@@ -77,9 +77,9 @@ def main():
  assert sha(a.spec)==a.spec_sha256;s=read(a.spec)
  assert s['sourceSnapshotCommit']==a.source_commit,'WRONG_SNAPSHOT_BEFORE_RAW_RESTORE'
  from restore_exact_git_blobs import restore_exact_git_blobs
- manifest=s['sourceManifest'];manifest_restore=restore_exact_git_blobs(root,a.source_commit,{manifest['path']:manifest['sha256']})
+ manifest=s['sourceManifest'];manifest_restore=restore_exact_git_blobs(root,a.source_commit,{manifest['path']:manifest['sha256']},out/'source-manifest-restore.receipt.json')
  assert read(inside(root,manifest['path']))['sourcePins']==s['sourcePins'],'RESTORED_MANIFEST_PIN_SET_DIFFERS'
- source_restore=restore_exact_git_blobs(root,a.source_commit,s['sourcePins'])
+ source_restore=restore_exact_git_blobs(root,a.source_commit,s['sourcePins'],out/'source-pins-restore.receipt.json')
  write(out/'source-raw-restoration.json',dict(manifest=manifest_restore,source=source_restore))
  identity_literals=validate_contract(s,root,a.source_commit)
  assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()==a.source_commit
