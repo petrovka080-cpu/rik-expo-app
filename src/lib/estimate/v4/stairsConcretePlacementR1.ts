@@ -1,5 +1,5 @@
 import type { CanonicalEstimateCompileCoreResult } from "../backendPlatform/canonicalEstimateCompileCore";
-import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "./domainFactory";
+import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "./domainFactory/clientRuntimeV1";
 import {
   CONCRETE_PLACEMENT_NORMATIVE_PARAMETER_IDS_R1,
   CONCRETE_PLACEMENT_SOURCE_METADATA_R1,

@@ -1,0 +1,318 @@
+{
+  "contract": "gox-build.brick-partition-external-selected-delivery-reuse.r1",
+  "status": "WORK_ONLY_SOURCE_ADAPTER_NOT_RUN_NOT_ADMITTED",
+  "titleRu": "Отдельная внешняя доставка материалов кирпичной перегородки",
+  "existingTargetCatalogId": "canonical-work:master:brick_partition_half_unreinforced_upto4m_krer08_02_002_05",
+  "newCatalogIdentity": null,
+  "existingPhysicalNormOwner": "resolveFordTransitV363DeliveryPhysicalNormV1",
+  "newPhysicalNorms": 0,
+  "sourceNeedsClosed": 0,
+  "source": {
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "officialPage": "https://minstroy.gov.kg/ru/kyzmat/424/show",
+    "artifactPath": ".release-runtime/r568/next-wave/masonry-krer08/primary/KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "edition": "КРЕР-2015,сборник08,официальноеизданиеБишкек2015",
+    "approval": "28.03.2016№2-нпа;вводится01.01.2016,PDF2",
+    "locatorRu": "PDF/printed19–20,таблица08-02-002,составдля05/06:кладкаконструкцийизкирпича;нижнийблокстр20,толькоколонка05",
+    "basis": "100m2 net partitions after opening deductions"
+  },
+  "parentSourceId": "kg_krer08_02_002_05_half_brick_unreinforced_upto4m_r1",
+  "parentNormId": "08-02-002-05",
+  "parentRowPrefix": "masonry:brick-partition:krer08-02-002-05",
+  "existingExternalLogisticsNeedRowId": "masonry:brick-partition:krer08-02-002-05:external-logistics",
+  "materialOrderRows": [
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:water",
+      "unitId": "m3",
+      "sourceCode": "01-0601-0001"
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:brick",
+      "unitId": "item",
+      "sourceCode": "01-3306-0005"
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:timber",
+      "unitId": "m3",
+      "sourceCode": "01-6302-0095"
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:forgings",
+      "unitId": "kg",
+      "sourceCode": "01-6901-0001"
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:mortar",
+      "unitId": "m3",
+      "sourceCode": "03-0405-0003"
+    }
+  ],
+  "existingDeliverySource": {
+    "path": "data/estimate-norms/professional/delivery.json",
+    "sha256": "69af456c5ccd5fd1b70b525a1abf6865e37c2dc0d93fe169360b6d48437daf1f",
+    "sourceId": "src_professional_norm_pack_delivery_ford_transit_v363_max_payload_trip_per_kg_v1",
+    "normId": "delivery_ford_transit_v363_max_payload_trip_per_kg_v1",
+    "unitId": "trip",
+    "notUniversalTruckRate": true
+  },
+  "boundary": {
+    "includedBrickCarryingMetres": "5",
+    "includedWholeLabourHoursPer100NetM2": "143.99",
+    "includedCraneHoursPer100NetM2": "4.11",
+    "craneResourceCode": "02-0005",
+    "craneOperatorIncludedInFullMachinePrice": true,
+    "unloadingLaborIncluded": false,
+    "carryingBeyond5mIncluded": false,
+    "truck011FromOtherColumnsAllowed": false,
+    "cargoMassOrVolumeFromPartitionAreaOrDensityAllowed": false,
+    "newGenericPriceInheritanceAllowed": false,
+    "existingMaterialPriceOrConsumptionChanged": false,
+    "compositeExternalLogisticsNeedRetainedExact": true
+  },
+  "requiredConsignmentFacts": {
+    "currentSavedRevisionAndChecksum": "AUTHORITATIVE_SELECTED_DELIVERY_READ_SET",
+    "skuRows": "ONLY_ACTUAL_CURRENT_INCLUDED_PROCUREMENT_READY_MATERIAL_ORDERS",
+    "actualPackageMassKg": "EXPLICIT_CONSIGNMENT_DOCUMENT_NO_DEFAULT",
+    "actualPackageVolumeM3": "EXPLICIT_CONSIGNMENT_DOCUMENT_NO_DEFAULT",
+    "vehicle": "EXISTING_EXACT_FORD_TRANSIT_V363_500_L4_H3_PROFILE_ONLY",
+    "routeAndAccess": "EXPLICIT_CHECKED_DOCUMENTED_BOUNDARY",
+    "separatePayment": "EXISTING_COMMAND_SEPARATE_PAYMENT_CONFIRMED_AND_SUPPLIER_SCOPE_REFERENCE",
+    "unloadingAndInternalMovement": "EXCLUDED_FROM_THIS_TRANSPORT_PRICE_NO_NEW_QUANTITY"
+  },
+  "futureRootBindings": {
+    "currentParentCapturePin": null,
+    "rootExecutionPin": null,
+    "currentDefinitionId": null,
+    "currentBaselineId": null,
+    "currentDefinitionSha256": null,
+    "rootClassificationDecisionPin": null,
+    "publicationReceiptPin": null
+  },
+  "historicalPublishedParent": {
+    "evidencePath": "outputs/masonry005-publication-and-readback-v1.json",
+    "evidenceSha256": "d8d1f24d79d56db94b62995784b351efce0992a863ef6d2a186cdef7bb7e6a3a",
+    "definitionId": "28eeeab4-7cec-55fb-994d-96ee963282fb",
+    "baselineId": "82d682d2-4495-584d-b58e-a22993dcb05a",
+    "shape": [
+      52,
+      24,
+      24
+    ],
+    "normativeBindings": 11,
+    "priceBindings": 0,
+    "isCurrentDatabaseEvidence": false
+  },
+  "conditionalProspectiveShape": {
+    "requiresFreshParentShape": [
+      52,
+      24,
+      24
+    ],
+    "newParameters": 17,
+    "newFormulas": 1,
+    "newResources": 1,
+    "successorIfExactParent": [
+      69,
+      25,
+      25
+    ],
+    "oldNormativeBindingsRetained": 11,
+    "additionalFordBindingPendingRootRegistry": 1,
+    "newPriceBindings": 0,
+    "oldOpenNeeds": 8
+  },
+  "fullCycle": [
+    {
+      "stage": "Кладка и включённая переноска",
+      "disposition": "EXISTING_WHOLE_OPERATION_UNCHANGED",
+      "ownerRowIds": [
+        "masonry:brick-partition:krer08-02-002-05:whole-labor"
+      ],
+      "taskRu": "Сохранить 143,99 чел.-ч на 100 м² и переноску кирпича до 5 м; не выделять второй труд за эти операции.",
+      "ownerRu": "Исполнитель кладки"
+    },
+    {
+      "stage": "Подача краном",
+      "disposition": "EXISTING_EXCLUSIVE_MACHINE_OWNER_UNCHANGED",
+      "ownerRowIds": [
+        "masonry:brick-partition:krer08-02-002-05:crane-own",
+        "masonry:brick-partition:krer08-02-002-05:crane-hired"
+      ],
+      "taskRu": "Сохранить 4,11 маш.-ч на 100 м² и одного выбранного владельца полной эксплуатации крана с машинистом.",
+      "ownerRu": "Ответственный за механизацию"
+    },
+    {
+      "stage": "Материалы и запас",
+      "disposition": "EXISTING_FIVE_STOCK_RESERVE_QUANTUM_BALANCES_UNCHANGED",
+      "ownerRowIds": [
+        "masonry:brick-partition:krer08-02-002-05:water",
+        "masonry:brick-partition:krer08-02-002-05:brick",
+        "masonry:brick-partition:krer08-02-002-05:timber",
+        "masonry:brick-partition:krer08-02-002-05:forgings",
+        "masonry:brick-partition:krer08-02-002-05:mortar"
+      ],
+      "taskRu": "Использовать фактический заказ после ручных правок, пригодного наличия, резерва, кратности и исключений; расход исходной нормы не менять.",
+      "ownerRu": "Снабженец"
+    },
+    {
+      "stage": "Внешняя перевозка отдельной партии",
+      "disposition": "PROPOSED_REUSE_EXISTING_SELECTED_DELIVERY",
+      "ownerRowIds": [
+        "delivery:selected-material:ford-transit-v363"
+      ],
+      "taskRu": "Подтвердить актуальный заказ, отдельную партию, её массу и объём, конкретный автомобиль, маршрут, доступ и отдельную границу оплаты. Рейсы определяет только существующий механизм.",
+      "ownerRu": "Снабженец и перевозчик"
+    },
+    {
+      "stage": "Готовность опоры, разметка и применимая отсечная гидроизоляция",
+      "disposition": "OPEN_NEED_UNCHANGED",
+      "rowId": "masonry:brick-partition:krer08-02-002-05:base-and-dpc",
+      "taskRu": "Подтвердить основание, отметки/разбивку, необходимость выравнивания/гидроизоляции и существующего смежного владельца.",
+      "requiredEvidenceRu": "Утверждённый узел/акт готовности; применимый первичный источник, измеримые объёмы дополнительных работ и включение/исключение цены.",
+      "ownerRu": "Проектировщик и ответственный за основание"
+    },
+    {
+      "stage": "Примыкания, связи, верхний зазор и перемычки по проекту",
+      "disposition": "OPEN_NEED_UNCHANGED",
+      "rowId": "masonry:brick-partition:krer08-02-002-05:connections-lintels",
+      "taskRu": "Дать расчёт/узлы ненесущей неармированной перегородки, опирание и проёмы; отдельно установить применимые связи/перемычки без автоматического армирования.",
+      "requiredEvidenceRu": "Проектная ведомость сечений/креплений/позиций/количества; применимые паспорта/нормы и один владелец оплаты. Арматура01–04 не переносится.",
+      "ownerRu": "Проектировщик"
+    },
+    {
+      "stage": "Граница подмостей/доступа без двойной оплаты",
+      "disposition": "OPEN_NEED_UNCHANGED",
+      "rowId": "masonry:brick-partition:krer08-02-002-05:access-boundary",
+      "taskRu": "Сопоставить§1.13 с выбранной перегородкой до4м и табличными древесиной/поковками. Не добавлять отдельную аренду/монтаж подмостей поверх143.99ч и включённых ресурсов без доказательства иной границы.",
+      "requiredEvidenceRu": "Письменное применимое толкование/ППР и точный непересекающийся состав, единица и объём; при неопределённости отдельная цена не принимается.",
+      "ownerRu": "Ответственный за ПОС"
+    },
+    {
+      "stage": "Ручной инструмент, оснастка иСИЗ",
+      "disposition": "OPEN_NEED_UNCHANGED",
+      "rowId": "masonry:brick-partition:krer08-02-002-05:tools-ppe",
+      "taskRu": "Определить фактические инструмент, принадлежность исполнителю, оборот и расходники; новый комплект на100м² не назначать.",
+      "requiredEvidenceRu": "ППР/паспорт/договор обеспечения с реальной единицей/сроком и подтверждённой отдельной либо включённой оплатой.",
+      "ownerRu": "Руководитель работ"
+    },
+    {
+      "stage": "Уход/выдержка раствора и защита кладки",
+      "disposition": "OPEN_NEED_UNCHANGED",
+      "rowId": "masonry:brick-partition:krer08-02-002-05:curing-protection",
+      "taskRu": "Подтвердить режим ухода/защиты именно кладочного цементно-известковогоМ50 и условия объекта. Не переносить нормы ухода за бетоном или стяжкой.",
+      "requiredEvidenceRu": "Применимый паспорт раствора/ППР и норматив; площадь/срок/материал/количество/цена с явной границей включения.",
+      "ownerRu": "Технолог кладочных работ"
+    },
+    {
+      "stage": "Приёмка геометрии и качества перегородки",
+      "disposition": "OPEN_NEED_UNCHANGED",
+      "rowId": "masonry:brick-partition:krer08-02-002-05:quality-control",
+      "taskRu": "Установить контроль вне исходной кладки, допуски, частоту, документы и оплату; число осмотров из площади не выводить.",
+      "requiredEvidenceRu": "Утверждённая проектная программа/применимые нормы и измеримый дополнительный объём с одним владельцем цены.",
+      "ownerRu": "Ответственный за контроль качества"
+    },
+    {
+      "stage": "Внешняя доставка/разгрузка и перемещение сверх5м",
+      "disposition": "OPEN_NEED_UNCHANGED",
+      "rowId": "masonry:brick-partition:krer08-02-002-05:external-logistics",
+      "taskRu": "Отделить внешний маршрут/партию и разгрузку от учтённой переноски кирпича5м и крана4.11маш.-ч/100м². Автомобиль0.11из01–04 исключён.",
+      "requiredEvidenceRu": "Документы фактической партии/массы/дистанции/подачи и цены; exact-row reconciliation доставки, крана и общего труда. Не выводить рейсы из площади или часов.",
+      "ownerRu": "Ответственный за ПОС и перевозчик"
+    },
+    {
+      "stage": "Уборка, остатки, упаковка и отходы",
+      "disposition": "OPEN_NEED_UNCHANGED",
+      "rowId": "masonry:brick-partition:krer08-02-002-05:cleanup-waste",
+      "taskRu": "Подтвердить остатки/тару/отходы, сбор/погрузку/передачу и внешний вывоз; не добавлять произвольный процент боя или контейнер на100м².",
+      "requiredEvidenceRu": "Фактическая ведомость и применимый источник массы/тары/маршрута; отдельные единицы/количества и непересекающийся владелец цены.",
+      "ownerRu": "Руководитель работ и вывозящий отходы"
+    }
+  ],
+  "sourceNeeds": [
+    {
+      "id": "base-and-dpc",
+      "titleRu": "Готовность опоры, разметка и применимая отсечная гидроизоляция",
+      "ownerRu": "Проектировщик/производитель работ",
+      "nextTaskRu": "Подтвердить основание, отметки/разбивку, необходимость выравнивания/гидроизоляции и существующего смежного владельца.",
+      "acceptanceRu": "Утверждённый узел/акт готовности; применимый первичный источник, измеримые объёмы дополнительных работ и включение/исключение цены.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "connections-lintels",
+      "titleRu": "Примыкания, связи, верхний зазор и перемычки по проекту",
+      "ownerRu": "Конструктор/проектировщик",
+      "nextTaskRu": "Дать расчёт/узлы ненесущей неармированной перегородки, опирание и проёмы; отдельно установить применимые связи/перемычки без автоматического армирования.",
+      "acceptanceRu": "Проектная ведомость сечений/креплений/позиций/количества; применимые паспорта/нормы и один владелец оплаты. Арматура01–04 не переносится.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "access-boundary",
+      "titleRu": "Граница подмостей/доступа без двойной оплаты",
+      "ownerRu": "Сметчик/разработчикППР",
+      "nextTaskRu": "Сопоставить§1.13 с выбранной перегородкой до4м и табличными древесиной/поковками. Не добавлять отдельную аренду/монтаж подмостей поверх143.99ч и включённых ресурсов без доказательства иной границы.",
+      "acceptanceRu": "Письменное применимое толкование/ППР и точный непересекающийся состав, единица и объём; при неопределённости отдельная цена не принимается.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "tools-ppe",
+      "titleRu": "Ручной инструмент, оснастка иСИЗ",
+      "ownerRu": "Производитель работ/служба охраны труда",
+      "nextTaskRu": "Определить фактические инструмент, принадлежность исполнителю, оборот и расходники; новый комплект на100м² не назначать.",
+      "acceptanceRu": "ППР/паспорт/договор обеспечения с реальной единицей/сроком и подтверждённой отдельной либо включённой оплатой.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "curing-protection",
+      "titleRu": "Уход/выдержка раствора и защита кладки",
+      "ownerRu": "Технолог/поставщик раствора",
+      "nextTaskRu": "Подтвердить режим ухода/защиты именно кладочного цементно-известковогоМ50 и условия объекта. Не переносить нормы ухода за бетоном или стяжкой.",
+      "acceptanceRu": "Применимый паспорт раствора/ППР и норматив; площадь/срок/материал/количество/цена с явной границей включения.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "quality-control",
+      "titleRu": "Приёмка геометрии и качества перегородки",
+      "ownerRu": "Служба качества/заказчик",
+      "nextTaskRu": "Установить контроль вне исходной кладки, допуски, частоту, документы и оплату; число осмотров из площади не выводить.",
+      "acceptanceRu": "Утверждённая проектная программа/применимые нормы и измеримый дополнительный объём с одним владельцем цены.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "external-logistics",
+      "titleRu": "Внешняя доставка/разгрузка и перемещение сверх5м",
+      "ownerRu": "Поставщик/логист/сметчик",
+      "nextTaskRu": "Отделить внешний маршрут/партию и разгрузку от учтённой переноски кирпича5м и крана4.11маш.-ч/100м². Автомобиль0.11из01–04 исключён.",
+      "acceptanceRu": "Документы фактической партии/массы/дистанции/подачи и цены; exact-row reconciliation доставки, крана и общего труда. Не выводить рейсы из площади или часов.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    },
+    {
+      "id": "cleanup-waste",
+      "titleRu": "Уборка, остатки, упаковка и отходы",
+      "ownerRu": "Подрядчик/оператор отходов",
+      "nextTaskRu": "Подтвердить остатки/тару/отходы, сбор/погрузку/передачу и внешний вывоз; не добавлять произвольный процент боя или контейнер на100м².",
+      "acceptanceRu": "Фактическая ведомость и применимый источник массы/тары/маршрута; отдельные единицы/количества и непересекающийся владелец цены.",
+      "unitConfirmed": false,
+      "quantityAccepted": false,
+      "priceOwnerAccepted": false
+    }
+  ],
+  "fullTechnicalAcceptance": false,
+  "newAcceptedCompleteTypes": 0,
+  "publicationAllowedByThisPacket": false,
+  "pricesKnown": false
+}

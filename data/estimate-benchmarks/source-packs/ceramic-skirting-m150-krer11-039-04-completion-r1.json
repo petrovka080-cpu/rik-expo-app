@@ -1,0 +1,284 @@
+{
+  "contract": "ceramic-floor02703-skirting03904-completion/r1",
+  "status": "WORK_ONLY_SOURCE_BOUND_COMPLETION_NOT_RUN",
+  "catalogId": null,
+  "newCatalogClaim": false,
+  "identityAdmitted": false,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "parentNormId": "KRER11-01-027-03",
+  "parentCatalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "parentExpectedShape": [
+    44,
+    29,
+    29
+  ],
+  "targetNeedRowId": "ceramic-floor:cement-mortar:krer11-01-027-03:skirting",
+  "sourceId": "kg_krer11_01_039_04_ceramic_skirting_m150_completion_r1",
+  "normId": "11-01-039-04",
+  "prefix": "floor:ceramic-skirting:krer11-01-039-04",
+  "titleRu": "Керамический прямой плинтус на готовом растворе М150 — отдельная длина, КРЕР11-01-039-04",
+  "source": {
+    "path": ".release-runtime/r568/s27-69/cn69-krer11-labor-candidate/KRER-11-official.pdf",
+    "sha256": "e56ef148df993609c325b7d505c54b1806e8185a4fd7a1550b15266144538223",
+    "bytes": 2002233,
+    "officialUrl": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/no11poly_compressed-73969083537959524.32310342.pdf",
+    "officialPage": "https://www.gosstroy.gov.kg/ru/kyzmat/427/show",
+    "edition": "КРЕР11-2015, Полы; применимость редакции к объекту проверяется отдельно",
+    "locatorRu": "PDF/печатная 46: состав нормы 04 — устройство плинтусов из плиток на растворе; измеритель 100 м плинтуса. PDF/печатная 47: точная колонка 11-01-039-04, не соседние деревянные/цементные/терраццевые. PDF 6, §1.8: покрытие пола не включает плинтусы; отдельное проектное решение.",
+    "pages": [
+      6,
+      46,
+      47
+    ]
+  },
+  "measurement": {
+    "parameterId": "actual_ceramic_skirting_length_m_03904",
+    "unitId": "m",
+    "sourceDenominator": "100",
+    "independentlyMeasured": true,
+    "noAreaPerimeterConversion": true,
+    "noHeightThicknessOrPieceInference": true
+  },
+  "selector": {
+    "id": "ceramic_skirting_source_method_03904",
+    "selected": "SOURCE03904_CERAMIC_STRAIGHT_ON_READY_M150",
+    "unconfirmed": "OTHER_OR_UNCONFIRMED_SKIRTING_METHOD",
+    "default": null
+  },
+  "scopeFacts": [
+    {
+      "id": "skirting03904_tile_scope",
+      "titleRu": "Готовые прямые керамические плинтусные плитки по источнику",
+      "values": [
+        "CERAMIC_STRAIGHT_SKIRTING_CODE01_3211_0001"
+      ]
+    },
+    {
+      "id": "skirting03904_mortar_scope",
+      "titleRu": "Готовый цементный кладочный раствор М150 по источнику",
+      "values": [
+        "READY_CEMENT_MASONRY_M150_CODE03_0406_0005"
+      ]
+    },
+    {
+      "id": "skirting03904_line_scope",
+      "titleRu": "Отдельно обмеренная линия плинтуса того же помещения пола",
+      "values": [
+        "SEPARATE_PROJECT_SKIRTING_LINE_FOR_PARENT_FLOOR_COMPARTMENT"
+      ]
+    },
+    {
+      "id": "skirting03904_supply_scope",
+      "titleRu": "Исходный расход отдельно от заказа, наличия и плана раскроя",
+      "values": [
+        "SOURCE_CONSUMPTION_NO_COMMERCIAL_STOCK_ORDER_OR_TRIM_ADMISSION"
+      ]
+    },
+    {
+      "id": "skirting03904_payment_scope",
+      "titleRu": "Цельный труд плинтуса один раз без переноса труда пола или другого плинтуса",
+      "values": [
+        "WHOLE03904_ONCE_NO02703_OR_GERFLOR_GLUE_DUPLICATION"
+      ]
+    },
+    {
+      "id": "skirting03904_wall_base_scope",
+      "titleRu": "Принятая линия основания для монтажа на растворе по проекту",
+      "values": [
+        "PREPARED_WALL_LINE_CONFIRMED_BY_SEPARATE_PROJECT_REFERENCE"
+      ]
+    }
+  ],
+  "projectFacts": [
+    {
+      "id": "skirting03904_length_reference",
+      "titleRu": "Ведомость фактической длины плинтуса, участков и исключаемых проёмов"
+    },
+    {
+      "id": "skirting03904_junction_reference",
+      "titleRu": "Узел сопряжения керамического плинтуса с данным полом и стеной"
+    },
+    {
+      "id": "skirting03904_product_reference",
+      "titleRu": "Спецификация прямой керамической плинтусной плитки и готового М150"
+    },
+    {
+      "id": "skirting03904_wall_acceptance_reference",
+      "titleRu": "Отдельный документ готовности линии стены к этому способу"
+    },
+    {
+      "id": "skirting03904_payment_reference",
+      "titleRu": "Разграничение оплаты пола, нового плинтуса и существующих работ"
+    }
+  ],
+  "physicalRows": [
+    {
+      "id": "whole-skirting-labour",
+      "code": "000-1003-9",
+      "titleRu": "Рабочие-строители среднего разряда 3,9 — вся исходная операция керамического плинтуса",
+      "category": "labor",
+      "unitId": "man_hour",
+      "ratePer100M": "23.60",
+      "costTreatment": "OWN_COST"
+    },
+    {
+      "id": "flatbed-truck",
+      "code": "40-0001",
+      "titleRu": "Автомобили бортовые грузоподъёмностью до 5 т — справочная работа плинтуса",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "ratePer100M": "0.06",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "straight-ceramic-skirting",
+      "code": "01-3211-0001",
+      "titleRu": "Плитки керамические плинтусные прямые — исходный расход в метрах",
+      "category": "material",
+      "unitId": "m",
+      "ratePer100M": "101",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "id": "ready-mortar-m150",
+      "code": "03-0406-0005",
+      "titleRu": "Раствор готовый кладочный цементный М150 — исходный расход плинтуса",
+      "category": "material",
+      "unitId": "m3",
+      "ratePer100M": "0.16",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    }
+  ],
+  "includedOperation": {
+    "id": "included-skirting-installation",
+    "titleRu": "Устройство керамического плинтуса на растворе — включено в цельный труд 039-04",
+    "printedRu": "Устройство плинтусов из плиток на растворе."
+  },
+  "openNeeds": [
+    {
+      "id": "wall-line-preparation",
+      "titleRu": "Подготовка линии стены вне исходного монтажа",
+      "missingFactRu": "Норма не задаёт отдельный объём ремонта и выравнивания стены.",
+      "nextTaskRu": "По акту и ППР определить необходимые дополнительные работы, их площади, источники и владельцев; готовность пола не считать готовностью стены.",
+      "ownerRu": "Проектировщик и производитель работ"
+    },
+    {
+      "id": "materials-commercial-scope",
+      "titleRu": "Поставка, пригодное наличие и единый заказ плинтуса/раствора",
+      "missingFactRu": "101 м плинтусной плитки и 0,16 м³ М150 — исходный расход на 100 м, без подтверждённых складов, фасовки, цены и кратности.",
+      "nextTaskRu": "Подтвердить точные изделия, единицы и пригодные остатки. Для М150 явно решить совместимость с партией пола и одного владельца заказа; не переносить заказ пола автоматически. Не считать нормативный запас пригодным остатком.",
+      "ownerRu": "Снабженец, проектировщик и сметчик"
+    },
+    {
+      "id": "machine-and-logistics-scope",
+      "titleRu": "Оплата автомобиля и внешняя логистика плинтуса",
+      "missingFactRu": "0,06 маш.-ч автомобиля — буквальная исходная норма; отдельный оплачиваемый состав эксплуатации и внешних услуг не установлен.",
+      "nextTaskRu": "Получить точную границу машино-часа, роль водителя и коммерческий источник. Сверить с оплачиваемым автомобилем пола и доставкой; совпадение кода 40-0001 не разрешает перенос ставки или вторую оплату.",
+      "ownerRu": "Логист и владелец машинной цены"
+    },
+    {
+      "id": "corners-junctions-and-cut-layout",
+      "titleRu": "Углы, окончания, сопряжения и раскрой",
+      "missingFactRu": "Таблица задаёт прямые плинтусные плитки и общий расход 101 м, но не ведомость угловых изделий, число резов или пригодный остаток раскроя.",
+      "nextTaskRu": "По обмеру и проекту подтвердить углы, окончания и отдельные изделия. Не выводить длину или резы из площади пола; не добавлять второй стандартный процент отходов. Отдельную услугу сверить с цельным трудом.",
+      "ownerRu": "Проектировщик и исполнитель"
+    },
+    {
+      "id": "tools-access-and-protection",
+      "titleRu": "Оснащение, доступ и дополнительная защита",
+      "missingFactRu": "Не установлены табель инструмента, доступ и самостоятельный объём защиты смежных поверхностей.",
+      "nextTaskRu": "Получить ППР и фактическое обеспечение; отдельно подтвердить только ресурсы вне цельного труда и оплачиваемого обеспечения пола. Не назначать нормы инструмента или оператора по названию работы.",
+      "ownerRu": "Производитель работ и сметчик"
+    },
+    {
+      "id": "acceptance-cleanup-and-waste",
+      "titleRu": "Приёмка, уборка и отходы плинтуса",
+      "missingFactRu": "Не заданы отдельный план контроля, документы, массы отходов и коммерческая граница уборки.",
+      "nextTaskRu": "Уточнить проектные критерии и акт приёмки, обращение с тарой и остатками. Не выделять произвольные часы из 23,60 и не переносить воду/опилки ухода за полом на плинтус.",
+      "ownerRu": "Технический надзор и производитель работ"
+    }
+  ],
+  "boundariesRu": [
+    "Плинтусы исключены из покрытия пола по §1.8; длина вводится по самостоятельной ведомости, а не из площади или формы пола.",
+    "Источник указывает 101 м готовых прямых плинтусных плиток на 100 м монтажа; это расход источника, не заказ упаковок, число деталей, норма дополнительного раскроя или пригодный складской остаток.",
+    "0,16 м³ — готовый цементный кладочный раствор М150, не сухая смесь и не рецепт. Нет пересчёта по плотности или переноса 1,30 м³ М150 пола в длину плинтуса.",
+    "23,60 чел.-ч — весь труд исходной операции. Не добавлять отдельное приклеивание, грунтовку/цементную заделку швов пола 02703, либо труд PVC/Gerflor.",
+    "Автомобиль, плитка и М150 справочные до точного допуска цены/коммерческого обеспечения. Старый оплачиваемый автомобиль и заказ М150 пола не расширяются на новый scope автоматически.",
+    "Проектные ссылки и расчёт не являются фактом выполненного монтажа или выданным приложением актом готовности. Неподтверждённый/отсутствующий selector сохраняет старое поведение."
+  ],
+  "payment": {
+    "newWholeLabour": 1,
+    "newINFO": 3,
+    "newIncluded": 1,
+    "newProcurementOwners": 0,
+    "newPriceBindings": 0,
+    "nonWholeAutomaticInheritance": false,
+    "operatorRoleAdmitted": false,
+    "materialOrderAdmitted": false,
+    "manual77": "Только контрольный пример; не цена поставщика"
+  },
+  "eightCycle": [
+    {
+      "stage": "Подготовка",
+      "coverage": "Отдельные проектные готовность линии стены и дополнительные меры",
+      "needIds": [
+        "wall-line-preparation"
+      ]
+    },
+    {
+      "stage": "Материалы и компоненты",
+      "coverage": "Буквальные прямой плинтус и готовый М150 только как исходный расход",
+      "needIds": [
+        "materials-commercial-scope",
+        "corners-junctions-and-cut-layout"
+      ]
+    },
+    {
+      "stage": "Расходники",
+      "coverage": "Не назначаются вода/опилки, клей, грунтовка или упаковка без источника",
+      "needIds": [
+        "materials-commercial-scope",
+        "tools-access-and-protection"
+      ]
+    },
+    {
+      "stage": "Основная работа и сопряжения",
+      "coverage": "Один цельный монтаж 03904; проектные углы и узлы отдельно",
+      "needIds": [
+        "corners-junctions-and-cut-layout"
+      ]
+    },
+    {
+      "stage": "Труд",
+      "coverage": "23,60 ч / 100 м один раз, без разделения на оплачиваемые стадии",
+      "needIds": []
+    },
+    {
+      "stage": "Механизмы и инструмент",
+      "coverage": "0,06 маш.-ч автомобиля — справочно, комплект инструмента не нормирован",
+      "needIds": [
+        "machine-and-logistics-scope",
+        "tools-access-and-protection"
+      ]
+    },
+    {
+      "stage": "Логистика и услуги",
+      "coverage": "Нет рейсов или переноса оплаченного автомобиля пола по коду",
+      "needIds": [
+        "machine-and-logistics-scope"
+      ]
+    },
+    {
+      "stage": "Контроль и завершение",
+      "coverage": "Критерии приёмки, уборка и отходы остаются отдельными задачами",
+      "needIds": [
+        "acceptance-cleanup-and-waste"
+      ]
+    }
+  ],
+  "futureRootCurrentParentPin": null,
+  "futureRootIntegrationDecisionPin": null,
+  "runtimeAdmitted": false,
+  "testsRun": false
+}

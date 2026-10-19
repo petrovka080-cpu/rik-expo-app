@@ -39,6 +39,9 @@ import {
   lockMasterSingleDefinitionAppendPreconditionsR1,
   readMasterSingleDefinitionAppendPreconditionsR1,
 } from "./masterSingleDefinitionAppendGuardsR1";
+import {resolveMasterScopedNormativeRegistryOptInR1,
+ readMasterScopedNormativeRegistryPreconditionsR1,assertMasterScopedNormativeRegistryUnchangedR1,
+ type MasterCapturedScopedNormativeRegistryR1} from "./masterScopedNormativeRegistryPreimageR1";
 import { CATALOG_INDEPENDENT_COMPLETENESS_MAP_CONTRACT } from "./catalogFirstEstimateMinimumInputAudit.shared";
 import { loadVerifiedProjectSourcePackageBinding } from "./projectSourcePackageBindingR1";
 import {
@@ -78,6 +81,8 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     effective_from?: string | null;
   }>;
   projectSourcePackagePath?: string;
+  /** Optional exact official-artifact/norm scope preimage; normal/locked/registered. */
+  capturedScopedNormativeRegistry?: MasterCapturedScopedNormativeRegistryR1;
   parameterDefinitions: readonly Json[];
   formulaDefinitions: readonly Json[];
   resourceDefinitions: readonly Json[];
@@ -1338,6 +1343,10 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const sourceId=String(retentionCandidate.newSource.id);
   const locatorIds=retentionCandidate.newLocators.map(locator=>String(locator.id));
   const retentionInput=masterRetainParentBindingsOptInR1(retentionCandidate)==null?null:retentionCandidate;
+  const scopedRegistryInput=resolveMasterScopedNormativeRegistryOptInR1(retentionCandidate);
+  if(scopedRegistryInput!=null)invariant(config.sourcePaths.some(p=>resolve(p)===resolve(
+    "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts")),
+    stop(config,"SCOPED_REGISTRY_HELPER_MUST_BE_FINGERPRINTED"));
   const releaseKey = `${config.contract}:${fingerprint.slice(0, 20)}`;
   const current = JSON.parse(readFileSync(config.currentReleasePath, "utf8")) as Json;
   invariant(current.productionAccessed === false, stop(config, "CURRENT_PRODUCTION_ACCESS_FLAG"));
@@ -1449,6 +1458,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
     const retentionPreflight=retentionInput==null?null
       :await readMasterRetainedBindingPreconditionsR1(client,retentionInput);
     assertMasterExistingNormativeRegistrySnapshotR1(existingRegistryReuse,retentionPreflight);
+    const scopedRegistryPreflight=scopedRegistryInput==null?null
+      :await readMasterScopedNormativeRegistryPreconditionsR1(client,scopedRegistryInput);
     if (appendGuardInput != null && appendPreflight != null) {
       assertMasterSingleDefinitionAppendParentAnchorR1(
         appendGuardInput, appendPreflight, parent!, parentSearch!,
@@ -1456,6 +1467,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
     }
     const acceptanceEvidenceSha256 = sha256({
       contract: config.contract,
+      ...(scopedRegistryInput==null?{}:{scopedNormativeRegistryCaptureSha256:scopedRegistryInput.declaration.captureSha256}),
       shortInput: config.shortInput,
       acceptanceInput: config.acceptanceInput,
       runtimeProfileInput,
@@ -1663,7 +1675,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
       runtimeAdmissionMetadata = resolveMasterRuntimeAdmissionMetadataR1(
         current, Number(parent.definition_count), nextCounts.definitions,
       );
-      await client.query(retentionInput?"begin isolation level read committed":"begin");
+      await client.query(retentionInput||scopedRegistryInput!=null?"begin isolation level read committed":"begin");
       await client.query("set local lock_timeout='5s'");
       await client.query("set local statement_timeout='600s'");
       await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [config.contract]);
@@ -1700,6 +1712,10 @@ export async function runMasterSingleDefinitionSuccessorR1(
             && lockedCurrent.searchReleaseId === config.parentSearchReleaseId
             && sha256(lockedCurrent) === sha256(current),
           stop(config, "APPEND_POINTER_CHANGED_BEFORE_WRITE"));
+        }
+        if(scopedRegistryInput!=null&&scopedRegistryPreflight!=null){
+          const lockedScope=await readMasterScopedNormativeRegistryPreconditionsR1(client,scopedRegistryInput,"LOCKED_BEFORE");
+          assertMasterScopedNormativeRegistryUnchangedR1(scopedRegistryInput,scopedRegistryPreflight,lockedScope);
         }
         const sourceBefore = (await client.query(`select id::text,artifact_sha256
           from public.estimate_normative_source where source_key=$1`, [config.sourceId]))
@@ -1770,6 +1786,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
           invariant(registered.newSources.length===1&&registered.newLocators.length===retentionInput.newLocators.length,
             stop(config,"RETAIN_COMPLETE_REGISTRY_REQUIRED"));
         }
+        if(scopedRegistryInput!=null)await readMasterScopedNormativeRegistryPreconditionsR1(
+          client,scopedRegistryInput,"REGISTERED");
         const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan]);
         await client.query(`insert into public.estimate_definition_release(
             id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,

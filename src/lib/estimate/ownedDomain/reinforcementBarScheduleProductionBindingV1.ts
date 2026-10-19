@@ -10,7 +10,7 @@ import {
   REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID,
   REINFORCEMENT_BAR_SCHEDULE_SOURCE_METADATA,
   resolveProfessionalPhysicalNormParameterValuesV1,
-} from "../v4/domainFactory";
+} from "../v4/domainFactory/clientRuntimeV1";
 
 type Primitive = string | number | boolean;
 

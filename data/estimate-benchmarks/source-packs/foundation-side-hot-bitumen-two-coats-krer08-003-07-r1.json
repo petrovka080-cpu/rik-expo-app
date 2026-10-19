@@ -1,0 +1,250 @@
+{
+  "contract": "gox-build.foundation-side-hot-bitumen-two-coats-krer08-003-07.quantity/r1",
+  "status": "PREPARED_SOURCE_BOUND_PARTIAL_QUANTITY_NOT_RUN",
+  "catalogId": null,
+  "identityDecision": "ROOT_CURRENT_SCOPED_CLASSIFICATION_PENDING_NO_GLOBAL_ABSENCE_OR_NEW_CATALOG_CLAIM",
+  "sourceId": "kg_krer08_01_003_07_side_hot_bitumen_two_coats_r1",
+  "normId": "08-01-003-07",
+  "prefix": "waterproofing:foundation-side-hot-bitumen:krer08-01-003-07",
+  "titleRu": "Боковая обмазочная битумная гидроизоляция в два слоя по выровненной поверхности — КРЕР08-01-003-07",
+  "source": {
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "officialPage": "https://minstroy.gov.kg/ru/kyzmat/424/show",
+    "path": ".release-runtime/r568/next-wave/masonry-krer08/primary/KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "edition": "КРЕР-2015, сборник08, Бишкек2015; exact cached official edition, no claim of later amendments",
+    "exactLocatorRu": "PDF/printed13: состав нормы07 — грунтовка поверхности; нанесение слоёв битумной мастики с разогревом. Строка08-01-003-07: боковая обмазочная битумная в2слоя по выровненной поверхности бутовой кладки, кирпичу, бетону; измеритель100м². PDF14: только колонка003-07, не соседние005/006/008; техчасть§1.0 PDF5,§1.3–1.4 PDF6 разграничивает соседние технологии, не переносит их правила автоматически."
+  },
+  "measurement": {
+    "parameterId": "side_waterproofing_area_m2",
+    "unitId": "m2",
+    "sourceBasis": "100",
+    "basis": "Measured insulated side surface for exact two-coat operation; no thickness/volume/grossfloorarea proxy",
+    "twoCoatsAlreadyIncluded": true,
+    "noExtraLayerMultiplier": true
+  },
+  "scopeFacts": [
+    {
+      "id": "waterproofing_profile",
+      "titleRu": "Точная колонка 08-01-003-07 по проекту",
+      "values": [
+        "SIDE_HOT_BITUMINOUS_COATING_TWO_COATS_KRER08_01_003_07"
+      ]
+    },
+    {
+      "id": "waterproofing_orientation",
+      "titleRu": "Только боковая изоляция стены/фундамента",
+      "values": [
+        "SIDE_NOT_HORIZONTAL_OR_ROOF_OR_WET_ROOM"
+      ]
+    },
+    {
+      "id": "waterproofing_prepared_substrate",
+      "titleRu": "Фактически выровненная и принятая поверхность из допустимого материала",
+      "values": [
+        "PREPARED_EVEN_RUBBLE_MASONRY",
+        "PREPARED_EVEN_BRICK",
+        "PREPARED_EVEN_CONCRETE"
+      ]
+    },
+    {
+      "id": "waterproofing_layers",
+      "titleRu": "Два слоя уже включены в норму; не множитель количества",
+      "values": [
+        "TWO_SOURCE_COATS_INCLUDED_ONCE"
+      ]
+    },
+    {
+      "id": "waterproofing_method",
+      "titleRu": "Грунтовка и горячая битумная мастика с разогревом",
+      "values": [
+        "INCLUDED_PRIMING_AND_HEATED_BITUMINOUS_MASTIC"
+      ]
+    },
+    {
+      "id": "waterproofing_material_scope",
+      "titleRu": "Точный исходный состав; не произвольная холодная PMBC/эмульсия",
+      "values": [
+        "SOURCE_HOT_ROOFING_MASTIC_BN90_10_KT1_OR_KT2_AND_RAGS"
+      ]
+    },
+    {
+      "id": "waterproofing_payment_scope",
+      "titleRu": "Весь исходный труд один раз, остальные исходные ресурсы справочные до допуска их стоимости",
+      "values": [
+        "WHOLE_LABOUR_ONCE_MACHINE_AND_MATERIAL_PRICE_PENDING_INFO_ONLY"
+      ]
+    },
+    {
+      "id": "waterproofing_conditions",
+      "titleRu": "Применимость исходной нормы без неподтверждённых поправок",
+      "values": [
+        "SOURCE_METHOD_APPLICABLE_NO_UNPROVED_ADJUSTMENTS"
+      ]
+    },
+    {
+      "id": "waterproofing_area_reference",
+      "titleRu": "Ведомость отдельно измеренной боковой изолируемой поверхности; не площадь пола/горизонтальная отсечка"
+    },
+    {
+      "id": "waterproofing_base_reference",
+      "titleRu": "Приёмка выровненного основания, его материал и готовность к указанному способу"
+    },
+    {
+      "id": "waterproofing_design_reference",
+      "titleRu": "Проектный узел системы, экспозиция и границы двухслойного покрытия"
+    },
+    {
+      "id": "waterproofing_hotwork_reference",
+      "titleRu": "Подтверждённая применимость горячего способа/ППР и разрешённые условия работ"
+    },
+    {
+      "id": "waterproofing_scope_boundary_reference",
+      "titleRu": "Граница с комплексным фундаментом/другой сметой: грунтовка, два слоя и разогрев не оплачены второй раз"
+    }
+  ],
+  "worker": {
+    "id": "whole-labour",
+    "code": "000-1003-9",
+    "titleRu": "Рабочие-строители среднего разряда3.9 — вся операция грунтовки и горячего нанесения двух слоёв",
+    "unitId": "man_hour",
+    "ratePer100M2": "21.20",
+    "paidOwnerCount": 1
+  },
+  "machines": [
+    {
+      "id": "bitumen-boiler",
+      "code": "12-0340",
+      "titleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "ratePer100M2": "1.95"
+    },
+    {
+      "id": "flatbed-truck",
+      "code": "40-0001",
+      "titleRu": "Автомобили бортовые грузоподъёмностью до5т",
+      "unitId": "machine_hour",
+      "ratePer100M2": "0.20"
+    }
+  ],
+  "materials": [
+    {
+      "id": "hot-mastic",
+      "code": "01-0202-0003",
+      "titleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "ratePer100M2": "0.24"
+    },
+    {
+      "id": "bitumen-bn90-10",
+      "code": "01-0305-0009",
+      "titleRu": "Битум нефтяной строительный марки БН-90/10",
+      "unitId": "t",
+      "ratePer100M2": "0.016"
+    },
+    {
+      "id": "kerosene",
+      "code": "01-1504-0001",
+      "titleRu": "Керосин для технических целей марок КТ-1, КТ-2",
+      "unitId": "t",
+      "ratePer100M2": "0.024"
+    },
+    {
+      "id": "rags",
+      "code": "01-7204-0001",
+      "titleRu": "Ветошь",
+      "unitId": "kg",
+      "ratePer100M2": "0.1"
+    }
+  ],
+  "includedOperations": [
+    {
+      "id": "included-priming",
+      "titleRu": "Грунтовка поверхности — включена в цельный труд нормы007"
+    },
+    {
+      "id": "included-two-hot-coats",
+      "titleRu": "Нанесение двух слоёв битумной мастики с разогревом — включено в цельный труд нормы007"
+    }
+  ],
+  "sourceNeeds": [
+    {
+      "id": "substrate-preparation",
+      "titleRu": "Отдельная подготовка и выравнивание до принятого основания",
+      "nextTaskRu": "Подтвердить фактическую ведомость дефектов, материал основания и ППР; выбрать совместимую подготовку. Колонка007 начинается с готовой выровненной поверхности. Норма008 относится только к отдельному выравниванию бутовой кладки; её нельзя автоматически применять к кирпичу или бетону.",
+      "owner": "APPLICATION_DESIGNER_AND_ESTIMATOR",
+      "ownerTitleRu": "Проектировщик и сметчик"
+    },
+    {
+      "id": "details-and-junctions",
+      "titleRu": "Узлы, стыки, вводы и сопряжение с горизонтальной изоляцией",
+      "nextTaskRu": "Предоставить проектные детали, дополнительные площади и подтверждение совместимости материалов. Дополнительные слои норм005/006 не входят автоматически в007 и не считаются выполненными.",
+      "owner": "PROJECT_DESIGNER",
+      "ownerTitleRu": "Проектировщик"
+    },
+    {
+      "id": "protection-and-following-works",
+      "titleRu": "Защита гидроизоляции и последующая засыпка/сопряжение",
+      "nextTaskRu": "Определить необходимость и отдельный состав защитного слоя или стенки, порядок освидетельствования до закрытия и границу последующих работ. Норма007 не задаёт расход или оплату этих отдельных работ.",
+      "owner": "PROJECT_DESIGNER_AND_SITE_ENGINEER",
+      "ownerTitleRu": "Проектировщик и инженер участка"
+    },
+    {
+      "id": "machine-price-scope",
+      "titleRu": "Состав оплаты котла12-0340 и автомобиля40-0001",
+      "nextTaskRu": "Подтвердить по первичному источнику состав эксплуатации котла и автомобиля, роль обслуживающего персонала и применимую часовую ставку без произвольного распределения минимальной смены или выезда. Отсутствие отдельной строки машинистов в007 не доказывает отсутствие таких затрат. До отдельного допуска обе машинные строки справочные, без оплаты и закупки.",
+      "owner": "APPLICATION_SOURCE_REVIEW_AND_PRICE_OWNER",
+      "ownerTitleRu": "Сметчик и ответственный за состав машинной ставки"
+    },
+    {
+      "id": "commercial-supply-stock",
+      "titleRu": "Поставочная спецификация, наличие, резерв и заказ четырёх материалов",
+      "nextTaskRu": "Для каждой позиции подтвердить точное вещество и спецификацию поставки, единицу т или кг, пригодное наличие, сохраняемый резерв, фактическую кратность поставки и цену. После допуска рассчитать заказ с одним владельцем оплаты каждой позиции. Плотность, тару и параметры заказа по умолчанию не назначать.",
+      "owner": "BUYER_AND_APPLICATION_MATERIAL_ADMISSION",
+      "ownerTitleRu": "Снабженец и сметчик"
+    },
+    {
+      "id": "external-logistics",
+      "titleRu": "Внешняя доставка/разгрузка и мобилизация",
+      "nextTaskRu": "Определить маршруты, точки поставки, грузопотоки и границы доставки, разгрузки и мобилизации. Нормативные0.20маш.-ч автомобиля и1.95маш.-ч котла не определяют число рейсов, расстояние, выезд или расход топлива.",
+      "owner": "LOGISTICS_OWNER",
+      "ownerTitleRu": "Ответственный за логистику"
+    },
+    {
+      "id": "quality-and-hidden-works",
+      "titleRu": "Контроль результата, журнал и скрытые работы",
+      "nextTaskRu": "Установить проектные критерии слоёв, сплошности и узлов, методы и частоту контроля, а также необходимые документы. Исходная норма не задаёт универсальную толщину, время выдержки или норму испытаний.",
+      "owner": "SITE_QC_AND_DESIGNER",
+      "ownerTitleRu": "Инженер по контролю качества и проектировщик"
+    },
+    {
+      "id": "hotwork-access-environment",
+      "titleRu": "Горячие работы, доступ и защита участка",
+      "nextTaskRu": "Уточнить ППР, доступ к месту работ, оборудование и расходные материалы, условия безопасного выполнения и отдельную границу оплаты. Не назначать тепло, топливо или леса по неподтверждённой норме; условия§1.13 для кладки не переносить автоматически на гидроизоляцию.",
+      "owner": "SITE_PPR_AND_APPLICATION_OWNER",
+      "ownerTitleRu": "Ответственный за ППР и безопасное выполнение"
+    },
+    {
+      "id": "cleanup-waste",
+      "titleRu": "Сбор и удаление отходов после работ",
+      "nextTaskRu": "Подтвердить фактическую схему и единицы обращения с тарой, ветошью и остатками. Нормативный расход0.1кг ветоши не определяет массу вывоза или процент отходов.",
+      "owner": "SITE_AND_WASTE_OWNER",
+      "ownerTitleRu": "Ответственный за участок и обращение с отходами"
+    }
+  ],
+  "payment": {
+    "wholeLabourOwners": 1,
+    "machineRows": "INFORMATIONAL_SCOPE",
+    "materialRows": "INFORMATIONAL_SCOPE",
+    "newProcurementOwners": 0,
+    "machineCrewRole": "PENDING_PRIMARY_MACHINE_EXPLOITATION_COMPOSITION",
+    "noAdditionalOperatorInferred": false,
+    "allInfoAutomaticGenericPriceInheritanceAllowed": false,
+    "manualPrice77QAOnly": true,
+    "commercialOrderBalance": "PENDING_ADMISSION_REUSE_EFFECTIVE_PURCHASE_BALANCE_R1_NOT_IMPLEMENTED_AS_FAKE_OWNER"
+  },
+  "fullTechnicalAcceptance": false,
+  "publicationAllowed": false,
+  "testsRun": false,
+  "noCurrentCatalogClaim": true
+}

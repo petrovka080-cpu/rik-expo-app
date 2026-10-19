@@ -1,0 +1,333 @@
+{
+  "contract": "manual-backfill-soil1-krer01-061-01.quantity/r1",
+  "status": "SOURCE_ONLY_PARTIAL_PROSPECTIVE_NOT_RUN",
+  "catalogId": null,
+  "workKey": null,
+  "groupId": null,
+  "identityAdmitted": false,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "normId": "01-02-061-01",
+  "sourceId": "kg_krer01_02_061_01_manual_backfill_soil1_source_only_r1",
+  "prefix": "earthworks:krer01-02-061-01:source-only",
+  "titleRu": "Ручная засыпка траншей, пазух котлованов и ям ранее выброшенным грунтом группы 1",
+  "source": {
+    "officialPublicationUrl": "https://minstroy.gov.kg/ru/kyzmat/416/show",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no1zemlanyeraboty_a4_compressed-938690319b2ec3751.62616019.pdf",
+    "path": ".release-runtime/r568/next-wave/manual-trench05701/sources/KRER01-2015-official.pdf",
+    "sha256": "91c4f4db762840481de41f57b6771b5ae0adf0dada240dc1f03655e9d71eab6b",
+    "bytes": 4009381,
+    "edition": "КРЕР-2015, сборник 01 «Земляные работы»; применимость редакции к объекту подтверждается отдельно",
+    "locatorRu": "PDF 311 / печатная 310: таблица 01-02-061, состав работ 01–02, измеритель 100 м³ грунта, колонка 01 (группа 1). PDF 12 / печатная 11: пп.1.1–1.2; PDF 21 / печатная 20: п.2.1; PDF 22 / печатная 21: пп.2.10–2.14 — соседние специальные правила не назначают здесь коэффициенты автоматически.",
+    "textLayer": "SCANNED_JBIG2_VISUAL_TRANSCRIPTION",
+    "quantityVerifiedVisually": true
+  },
+  "primaryMeasure": {
+    "parameterId": "actual_manual_backfill_soil_volume_m3",
+    "unitId": "m3",
+    "printedDenominator": "100",
+    "basisRu": "Отдельно подтверждённый проектный объём грунта ручной засыпки по ведомости объёмов; соответствие исходному измерителю проверяется в проектной ссылке.",
+    "bankOrLooseConversionApplied": false,
+    "noPipeOrExcavationAutomaticBalance": true
+  },
+  "scopeFacts": [
+    {
+      "id": "backfill_exact_profile",
+      "titleRu": "Точная ручная засыпка по колонке 01-02-061-01",
+      "allowedValues": [
+        "MANUAL_PREVIOUSLY_THROWN_SOIL_GROUP1_KRER01_02_061_01"
+      ]
+    },
+    {
+      "id": "backfill_object",
+      "titleRu": "Подтверждённый вид заполняемой выемки",
+      "allowedValues": [
+        "TRENCH",
+        "PIT_SIDE_SPACE",
+        "HOLE"
+      ]
+    },
+    {
+      "id": "backfill_soil_group",
+      "titleRu": "Группа грунта по применимой нормативной классификации",
+      "allowedValues": [
+        "GROUP_1_CONFIRMED"
+      ]
+    },
+    {
+      "id": "backfill_soil_conditions",
+      "titleRu": "Подтверждённые условия грунта без неподтверждённых поправок",
+      "allowedValues": [
+        "UNFROZEN_NATURAL_MOISTURE_NO_UNPROVED_ADJUSTMENTS"
+      ]
+    },
+    {
+      "id": "backfill_soil_availability",
+      "titleRu": "Ранее выброшенный пригодный грунт доступен для этой ручной засыпки",
+      "allowedValues": [
+        "PREVIOUSLY_THROWN_SUITABLE_SOIL_AT_WORKPLACE"
+      ]
+    },
+    {
+      "id": "backfill_method",
+      "titleRu": "Ручная засыпка с разбивкой комьев и трамбованием",
+      "allowedValues": [
+        "MANUAL_FILL_CLOD_BREAKING_AND_TAMPING"
+      ]
+    },
+    {
+      "id": "backfill_watering_state",
+      "titleRu": "Поливка по подтверждённому решению; труд уже включён",
+      "allowedValues": [
+        "REQUIRED_INCLUDED_LABOUR_WATER_QUANTITY_UNRESOLVED",
+        "NOT_REQUIRED_CONFIRMED"
+      ]
+    },
+    {
+      "id": "backfill_measurement_basis",
+      "titleRu": "Проектный объём грунта засыпки по ведомости; не длина и не рыхлый заказ",
+      "allowedValues": [
+        "PROJECT_BACKFILL_SOIL_M3_NO_LOOSE_OR_PIPE_PROXY"
+      ]
+    },
+    {
+      "id": "backfill_ready_scope",
+      "titleRu": "Выемка и находящиеся в ней конструкции приняты перед засыпкой",
+      "allowedValues": [
+        "EXCAVATION_STRUCTURES_AND_UTILITIES_APPROVED_FOR_BACKFILL"
+      ]
+    },
+    {
+      "id": "backfill_payment_scope",
+      "titleRu": "Цельный труд один раз; без второй оплаты трамбования и поливки",
+      "allowedValues": [
+        "WHOLE_LABOUR_ONCE_INCLUDED_STEPS_NO_SECOND_CHARGE"
+      ]
+    }
+  ],
+  "projectFactsRequired": [
+    {
+      "id": "backfill_norm_applicability_reference",
+      "titleRu": "Применимая редакция КРЕР и проектная область нормы"
+    },
+    {
+      "id": "backfill_volume_reference",
+      "titleRu": "Ведомость отдельно измеренного объёма засыпки и занятых конструкций"
+    },
+    {
+      "id": "backfill_soil_classification_reference",
+      "titleRu": "Заключение о группе, состоянии и пригодности грунта"
+    },
+    {
+      "id": "backfill_readiness_reference",
+      "titleRu": "Акт готовности выемки, конструкций и сетей к засыпке"
+    },
+    {
+      "id": "backfill_soil_balance_reference",
+      "titleRu": "Баланс пригодного ранее выброшенного грунта и место его наличия"
+    },
+    {
+      "id": "backfill_compaction_reference",
+      "titleRu": "Проектные требования к слоям, трамбованию и приёмке"
+    },
+    {
+      "id": "backfill_watering_reference",
+      "titleRu": "Документальное решение о необходимости поливки и её границах"
+    },
+    {
+      "id": "backfill_payment_boundary_reference",
+      "titleRu": "Разграничение с разработкой, постелью, обсыпкой и комплексной засыпкой"
+    }
+  ],
+  "physicalSourceRows": [
+    {
+      "id": "whole-worker",
+      "resourceCode": "000-1001-5",
+      "printedTitleRu": "Рабочие-строители среднего разряда 1,5",
+      "titleRu": "Цельный труд ручной засыпки с разбивкой комьев и трамбованием; поливка при необходимости включена",
+      "category": "labor",
+      "sourceUnit": "man_hour",
+      "ratePer100M3": "88.50",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    }
+  ],
+  "operationsIncludedInWholeLabour": [
+    {
+      "id": "included-backfill-clods-tamping",
+      "printedRu": "Засыпка ранее выброшенным грунтом с разбивкой комьев и трамбованием.",
+      "titleRu": "Засыпка, разбивка комьев и трамбование — включено в единый труд",
+      "conditionalWatering": false
+    },
+    {
+      "id": "included-watering-if-needed",
+      "printedRu": "Поливка водой при необходимости.",
+      "titleRu": "Поливка при необходимости — труд включён; объём строки относится к засыпке, не к воде",
+      "conditionalWatering": true
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "project-applicability-and-measure",
+      "titleRu": "Проектная применимость и правила учёта объёма",
+      "missingFactRu": "Не подтверждены для выпуска сметы применимость редакции, детализация объёма и возможные особые условия.",
+      "nextTaskRu": "Сверить утверждённую редакцию и ведомость объёмов. Отдельно обосновать любые поправки; здесь нет коэффициента разрыхления или уплотнения.",
+      "ownerRu": "Проектировщик и сметчик",
+      "conditionalWatering": false
+    },
+    {
+      "id": "preparation-and-protection",
+      "titleRu": "Подготовка и защита перед засыпкой",
+      "missingFactRu": "Не определён отдельный состав подготовки участка, защиты конструкций и сетей.",
+      "nextTaskRu": "По акту и ППР определить необходимые подготовительные меры и их самостоятельные величины; не считать их частью повторной разработки.",
+      "ownerRu": "Производитель работ и владельцы конструкций/сетей",
+      "conditionalWatering": false
+    },
+    {
+      "id": "soil-quality-and-commercial-balance",
+      "titleRu": "Пригодность, баланс и коммерческая граница грунта",
+      "missingFactRu": "В колонке нет нормы покупки грунта, его плотности, запасов, резерва или заказа.",
+      "nextTaskRu": "Подтвердить пригодность и баланс ранее выброшенного грунта. При недостатке выбрать отдельный подтверждённый источник поставки и пересчёта; не выводить материал из длины трубы.",
+      "ownerRu": "Проектировщик, геотехник и снабженец",
+      "conditionalWatering": false
+    },
+    {
+      "id": "water-supply",
+      "titleRu": "Вода для необходимой поливки",
+      "missingFactRu": "Труд поливки включён, но количество и поставка воды не нормированы в колонке.",
+      "nextTaskRu": "При подтверждённой необходимости получить проектный объём, единицу, источник и границу поставки воды. Не назначать расход воды, отдельный труд поливки или оплачиваемую машину автоматически.",
+      "ownerRu": "Проектировщик, производитель работ и снабженец",
+      "conditionalWatering": true
+    },
+    {
+      "id": "tools-and-access",
+      "titleRu": "Ручной инструмент и доступ",
+      "missingFactRu": "Не заданы комплект инструмента, срок использования, расходники и отдельная граница оплаты.",
+      "nextTaskRu": "По ППР определить инструмент, доступ и оснащение; проверить покрытие ставкой труда и допускать только самостоятельные доказанные ресурсы.",
+      "ownerRu": "Производитель работ и сметчик",
+      "conditionalWatering": false
+    },
+    {
+      "id": "logistics-and-excess-soil",
+      "titleRu": "Перемещение и остаток грунта вне основной операции",
+      "missingFactRu": "Не установлены перевозка, погрузка, маршрут, рыхлый объём или остаток за пределами ручной засыпки.",
+      "nextTaskRu": "Составить фактический баланс и маршруты. Не считать ранее выброшенный грунт бесплатным доставленным материалом и не начислять рейсы из проектного м³.",
+      "ownerRu": "Проектировщик и логист",
+      "conditionalWatering": false
+    },
+    {
+      "id": "compaction-quality-and-acceptance",
+      "titleRu": "Контроль трамбования и приёмка",
+      "missingFactRu": "Таблица включает трамбование, но не задаёт проектную плотность, толщину слоёв, число проб или испытаний.",
+      "nextTaskRu": "Получить проектные критерии, лабораторную программу и документы. Не переносить коэффициент 0,95, механизированное уплотнение или испытательную норму из соседней работы.",
+      "ownerRu": "Геотехник, лаборатория и технический надзор",
+      "conditionalWatering": false
+    },
+    {
+      "id": "safety-and-water-management",
+      "titleRu": "Безопасность и водоотлив",
+      "missingFactRu": "Не определены отдельные меры безопасности, водоотлив и работа в особых условиях.",
+      "nextTaskRu": "Уточнить коммуникации, допуски, ППР и необходимость водоотлива; отдельно подтвердить источники, величины и владельцев оплаты.",
+      "ownerRu": "Производитель работ и проектировщик",
+      "conditionalWatering": false
+    },
+    {
+      "id": "restoration-and-cleanup",
+      "titleRu": "Восстановление участка и окончательная уборка",
+      "missingFactRu": "Не определены последующее восстановление покрытия, уборка и удаление отходов.",
+      "nextTaskRu": "Установить фактический состав, единицы и непересекающиеся границы последующих работ; не заменять их процентом от грунта или повторной оплатой трамбования.",
+      "ownerRu": "Заказчик и производитель работ",
+      "conditionalWatering": false
+    }
+  ],
+  "sourceRowsNotPrinted": [
+    "машины и машинисты",
+    "поставляемый грунт как материал",
+    "вода как нормированное количество материала",
+    "расходники и ручной инструмент отдельной нормой"
+  ],
+  "payment": {
+    "wholeLabourOwners": 1,
+    "physicalInfoRows": 0,
+    "includedOperations": 2,
+    "noExtraTampingOrWateringLabour": true,
+    "machinePaidOwners": 0,
+    "procurementOwners": 0,
+    "priceBindings": 0,
+    "manual77": "Только контрольный пример, не цена поставщика",
+    "automaticGenericPriceInheritanceAllowedForNonWhole": false
+  },
+  "boundariesRu": [
+    "Грунт группы 1 подтверждается по применимой нормативной классификации и проекту; не по плотности, цене или названию варианта.",
+    "Ручная трамбовка уже включена. Отдельная машинная трамбовка, проектная плотность и испытания не выводятся из нормы.",
+    "Поливка при необходимости включена в труд, но норма количества воды не задана. Подтверждённое отсутствие необходимости убирает только включённую строку поливки и потребность воды, не снижает 88,50 ч/100 м³.",
+    "Нет пересчёта из длины трубы, объёма разработанной траншеи, рыхлого заказа, усадки или плотности. §2.13 о насыпях не назначается автоматически обратной засыпке.",
+    "Условия выбранного узкого профиля: подтверждённый немёрзлый грунт естественной влажности без неподтверждённых поправок. Это ограничение профиля, не заявление об универсальной применимости ко всем грунтам.",
+    "Глубина ≤2 м, откосы и отсутствие креплений из 057-01 не переносятся в 061-01. Готовность и безопасность существующей выемки подтверждаются по проекту.",
+    "Соседние группы 2/3/4, погрузка 060, разработка 057, механизированное уплотнение 01-02-005 и труба не подставляются в колонку 061-01."
+  ],
+  "eightCycle": [
+    {
+      "stage": "Подготовка",
+      "coverage": "Проверяемая готовность и конкретные открытые подготовительные меры",
+      "needs": [
+        "project-applicability-and-measure",
+        "preparation-and-protection",
+        "safety-and-water-management"
+      ]
+    },
+    {
+      "stage": "Материалы и компоненты",
+      "coverage": "Ранее выброшенный пригодный грунт — факт применимости; оплачиваемого заказа нет",
+      "needs": [
+        "soil-quality-and-commercial-balance"
+      ]
+    },
+    {
+      "stage": "Расходники",
+      "coverage": "Вода и инструмент не имеют количественной нормы в колонке",
+      "needs": [
+        "water-supply",
+        "tools-and-access"
+      ]
+    },
+    {
+      "stage": "Основной монтаж и сопряжения",
+      "coverage": "Ручная засыпка, разбивка комьев и трамбование включены единым трудом; отдельные меры защиты открыты",
+      "needs": [
+        "preparation-and-protection"
+      ]
+    },
+    {
+      "stage": "Труд",
+      "coverage": "Один whole-owner 88,50 чел.-ч/100 м³, поливка при необходимости внутри него",
+      "needs": []
+    },
+    {
+      "stage": "Механизмы и инструменты",
+      "coverage": "Машин нет в колонке; оплачиваемых машинных владельцев не создано",
+      "needs": [
+        "tools-and-access",
+        "safety-and-water-management"
+      ]
+    },
+    {
+      "stage": "Логистика и услуги",
+      "coverage": "Поставка/перевозка/остаток не выводятся из нормативного объёма",
+      "needs": [
+        "logistics-and-excess-soil"
+      ]
+    },
+    {
+      "stage": "Контроль и завершение",
+      "coverage": "Проектные критерии, приёмка, восстановление и уборка открыты",
+      "needs": [
+        "compaction-quality-and-acceptance",
+        "restoration-and-cleanup"
+      ]
+    }
+  ],
+  "existingIdentityDisposition": "NOT_CLASSIFIED_CURRENT; preserve all existing granular/PBB/manualexcavation rows and saved rights; same source key absence not proved",
+  "prospectiveOnly": true,
+  "testsRun": false
+}

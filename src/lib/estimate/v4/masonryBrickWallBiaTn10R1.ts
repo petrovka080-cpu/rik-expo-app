@@ -12,7 +12,7 @@ import {
   BIA_TN10_MASONRY_REQUIRED_IDS,
   BIA_TN10_MASONRY_SOURCE_ID,
   BIA_TN10_MASONRY_SOURCE_METADATA,
-} from "./domainFactory";
+} from "./domainFactory/clientRuntimeV1";
 
 export const MASONRY_BRICK_WALL_BIA_TN10_CATALOG_ID =
   "canonical-work:base:masonry_interior_brick_wall_lay_standard" as const;

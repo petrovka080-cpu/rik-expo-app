@@ -38,6 +38,17 @@ export function prepareSelectedMaterialDeliveryR1(input:SelectedMaterialDelivery
   const blocked = (status:string,reasons:readonly string[]) => ({...boundary,status,reasons,
     proposal:null,existingOwnerKey:null,resolution:null});
   if(!series.catalogIds.includes(input.catalogId)) return blocked('NOT_APPLICABLE_CATALOG',['catalog-outside-this-finite-wave']);
+  // A finite catalogue entry establishes eligibility only. For scoped consumers,
+  // the ordinary server adapter must also use only their exact saved material
+  // order rows/units. Consumption, crane, labour, needs and custom rows cannot
+  // be promoted to cargo by a matching purchase-balance-shaped object.
+  const orderScope=series.orderRowScopes.find(scope=>scope.catalogId===input.catalogId);
+  if(orderScope){
+    const allowed=new Map(orderScope.rows.map(row=>[row.rowId,row.unitId] as const));
+    if(input.orderedRows.some(row=>allowed.get(row.rowId)!==row.unitId)) {
+      return blocked('ORDER_SCOPE_CONFLICT',['catalog-material-order-scope-mismatch']);
+    }
+  }
   if(!input.revisionId.trim() || input.orderedRows.length===0
     || new Set(input.orderedRows.map(row=>row.rowId)).size!==input.orderedRows.length
     || input.orderedRows.some(row=>!row.rowId.trim() || !row.skuKey.trim() || !row.unitId.trim()
