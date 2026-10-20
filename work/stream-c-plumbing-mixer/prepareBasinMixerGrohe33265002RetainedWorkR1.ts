@@ -165,7 +165,9 @@ export function prepareBasinMixerGrohe33265002RetainedDraftWorkR1(input:Grohe332
    explicitApiPrimaryMeasuresChecked:['q(point)',pack.primaryParameterId+'(item)'],ordinaryClientBranchPrimaryMeasureProofStillRequired:true,
    fullTechnicalAcceptance:false,publicationPerformed:false};
  };
- return{capture:c,passport,search,next,binding,included,excluded,completenessMap,openRows,compile,verifyCore,
+ const legacyBaselineProfile={input:clone(c.baseline.input_values),classification:clone(c.baseline.input_classification),
+  sourceIds:clone(c.baseline.normative_source_ids)};
+ return{capture:c,passport,search,next,binding,included,excluded,completenessMap,openRows,compile,verifyCore,legacyBaselineProfile,
   applicability:{...c.definition.applicability,grohe33265002CompletionContract:contract,legacyApplicability:clone(c.definition.applicability),
    primaryMeasureSelectionV1:{contract:'canonical-primary-measure-selection/v1',selectorParameterId:choice,selections:[
     {selectorValue:grohe33265002BranchWorkR1.legacy,primaryMeasureParameterId:'q',unitId:'point'},
@@ -218,7 +220,9 @@ export function prepareBasinMixerGrohe33265002RetainedWorkR1(input:Readonly<{roo
   masterPath:b.masterPath,masterSha256:b.masterSha256,parentReleaseId:x.definitionReleaseId,parentSearchReleaseId:x.searchReleaseId,currentReleasePath:b.currentPointerPin.path,
   outputRoot:input.outputRoot,sourcePaths,catalogId:pack.catalogId,sourceId:pack.sourceId,normId:pack.normId,sourceMetadata:registry.sourceMetadata,
   capturedScopedNormativeRegistry:b.capturedScopedNormativeRegistry,parameterDefinitions:draft.next.parameters,formulaDefinitions:draft.next.formulas,resourceDefinitions:draft.next.resources,
-  shortInput:{q:'100'},acceptanceInput:{q:'100',[choice]:grohe33265002BranchWorkR1.legacy},runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},
+  shortInput:{q:'100'},acceptanceInput:{...draft.legacyBaselineProfile.input,[choice]:grohe33265002BranchWorkR1.legacy},
+  runtimeProfileInput:draft.legacyBaselineProfile.input,runtimeProfileClassification:draft.legacyBaselineProfile.classification,
+  runtimeProfileSourceIds:draft.legacyBaselineProfile.sourceIds,
   expectedParentShape:[1,63,63],benchmarkOrdinal:0,validationScenario:'GROHE_RETAIN1_63_63_EXCLUSIVE20_ROWS_LEGACY_MANUAL_PARITY_FIVE_OPEN_NEEDS_NO_POINT_TO_ITEM',
   passport:{canonicalRuName:draft.capture.definition.passport.canonicalRuName??draft.capture.definition.passport.titleRu,
    workKey:draft.capture.definition.passport.workKey??draft.search.work_key,physicalResultRu:scopeRu,includedScopeRu:draft.included,excludedScopeRu:draft.excluded,

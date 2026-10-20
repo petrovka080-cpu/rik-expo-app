@@ -178,7 +178,7 @@
     "scripts/estimate/r4a13/floorSandStraightedgeRetainedMasterR3.test.ts": "d9f06c8626032d2ab2356f8dac8e20009d7110c18840bb91d7318e35f2d03527",
     "scripts/estimate/r4a13/masterExistingNormativeRegistryReuseR1.test.ts": "c9ecc30c0fddfe2b2b8dc6b27b7611022cb77a03206500520bd2ca5b07cd5261",
     "scripts/estimate/r4a13/masterRetainedCapturedSourcePreimageR1.test.ts": "7bb2d07ba13bd65b4807d8b4b0eb76c141d84cfc25856c303f1217b451d7e28f",
-    "scripts/estimate/r4a13/masterRetainedLegacyTemplateAssumptionsR1.test.ts": "71b24613d9f843b675e56c6a30d88adaf04b411194bc150258cb345377387a3b",
+    "scripts/estimate/r4a13/masterRetainedLegacyTemplateAssumptionsR1.test.ts": "479233841e543cfbf9d234433444cac0093ccaccf99c141d0bcdd1d87d9ac87a",
     "scripts/estimate/r4a13/masterRetainedSuccessorProvenanceContinuationR1.test.ts": "2c6f7436d3255b4f1084deeff8d5e3f49cc37e7d2f083f1282f17ca2f11ad905",
     "scripts/estimate/r4a13/masterReviewedNormPackRegistryReuseR1.test.ts": "deedfbddedc0bf73ed1cba14730fc6fc83690a090b44deed937eb9083079d14e",
     "scripts/estimate/r4a13/masterReviewedNormPackRegistryReuseR1.ts": "634ed19917767433c4f7cbc2f8d9eeddc6b10f883391e67be23e4949670b3576",
@@ -1684,7 +1684,7 @@
     "types/migrated-external-shims.d.ts": "8812a1348d65e32266682d75d0907627c0976a223db1aff2b973ffcd53df7756",
     "work/stream-c-facade-ct190/prepareFacadeCt190RetainedWorkR1.ts": "d0a590d95b12d64b678209a2c9398df61ac8f0d71e80d8f0e64188b23af245b0",
     "work/stream-c-plumbing-mixer/grohe33265002RegistryDescriptorWorkR1.ts": "43b6650e7158fcd5c200b8ebefda0a5b7f1dc99b0388908eb06b7567dda9d4c0",
-    "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": "95e7f08a025d9cdf28232d95b6f39818f68befbc7ec0f7bed1baeb7c65d195ec"
+    "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": "b85b7496155f070c836fa08ecc8d25142d41d6ffb56572e8c428774999cc2f88"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -2850,13 +2850,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "821aeb63806d5b97392ba98a9bf55553799ff6cf45db716ce9a28a311f052b4f",
-  "canonicalSourceFreezeSha256": "aa53ee9aa499074ea1467327ba6000fda2a438ba31d16f1055754cf94757820e",
+  "canonicalSourceFreezeSha256": "362784a228d5dcf0250dcbe1ec7005cd7d69938be995c84fb29c9c4ac41d8027",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 38219890
+    "sourceBytes": 38220581
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true
