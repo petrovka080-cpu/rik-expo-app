@@ -86,7 +86,7 @@
     "data/estimate-benchmarks/source-packs/paving-cut-stationary70-quantity-r1.json": "1b0199f7417175fa19c45fe7141249cc02fe7eba3913fe17b37ad9e31d7e5e8a",
     "data/estimate-benchmarks/source-packs/paving-tile-prepared-base-s27-54.json": "d49ae1c03318296d28548bd7e1f4ccdf7d92342f315d1947bd0d06523176ced3",
     "data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json": "eb7ea8fbee1adb18581277f46c62065f0ca6ad6886554fef219c4bf9d3addffe",
-    "data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json": "bbbe20f3493fe3693d4dc6eb36b131f92f45648fb85ce621dfb519a59876f421",
+    "data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json": "4142d39e66a2e03b1be6a802597ff99eb300d5748255921a6c0c7b4f2c773873",
     "data/estimate-benchmarks/source-packs/pvc-bitumen-transition-reinforced-guide2024-s27-37.json": "5084bac5ae48e3b348890afb920e0f37a3eeb8f49c896dc50387dcb01e9a4065",
     "data/estimate-benchmarks/source-packs/pvc-floor-complete-four-s27-69.json": "25edf22881c7cb1ae541bc1cc5420def10281288b1867e1fe63f145aaa21ea5f",
     "data/estimate-benchmarks/source-packs/pvc-roof-cleaner-472219-volume-s27-37.json": "5c1d01789bbd5d23f17556122c066106394e63927fa99712fc22754e7a991628",
@@ -253,7 +253,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "d4499bc91543803d77e2e924a493e433bdfaccbe8e9097857a0b294fcea4a098",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "e266d3cebc07b7ba7e1b1c77605d48e9ee8c072bbba90caa5c42cce4f44b271a",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "77a3181393feaf886c343cb87ea472a5578737abb37cfb2081939a856655fcd3",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "9c24bc7feb7a81ff52ff5cdcc92119c41f7e60cf571398804ee7199acfac4611",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -853,7 +853,7 @@
     "src/lib/estimate/backendPlatform/canonicalCn87SubfloorMigrationS2769.ts": "a8475947c01886b7950313c19245588fb3d02737bed21240cfa75c5ba764fc4a",
     "src/lib/estimate/backendPlatform/canonicalCommercialCostCoverageV1.ts": "5d10c1b14a79f434a82529680ac0dd7b6ccc2150bdb2b11fd3df58e746c5c607",
     "src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769.ts": "754c1edc61d396b8e67fa70ec99edc3185abd66b2b0bc64a22e085213ccd8e7b",
-    "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "63384604022e2d4c91445f8b9b6ec91a842d299f4f87fa92d058a93d9e4d67e8",
+    "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "b9ec77e6a2bd36160bdd9eaf720d87346c370d6f1efab717711259e53678df75",
     "src/lib/estimate/backendPlatform/canonicalCt126SixDryWallMigrationS2769.ts": "28dce79a06bafa82a83c6b11cc7d8e9d1cb2e216ce9488084471892781a0407a",
     "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts": "1078cf8b1fb9841c40ae22ad16a1e6b737a71d9c1ff8d8d75e70c754c93a15aa",
     "src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1.ts": "f86d0c6e9f41f9b416fda818e1349a53783c40339fe10f46b6a2c9becdf5ef4a",
@@ -863,7 +863,7 @@
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "035a68d42228b3bc9e4f90bc004dab69798963cae4cf74e73b573641ea9ed6ef",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "489012b1ed578964222c3ef916447f83abf8430df60dffbf0bca39f09fdd5505",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "f9aa77b39f88eec7fc50514e396d961c3878d17759e0244dcb3425298b6bd068",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "c13ba2a98fba8e03ed2825d1238878a32d7f285e137e3b670cac6441db173ab0",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "652b9b6ecc8b2d7cfced638cbac2dd2221df8ed17a19714a274f66a4d0a1be1c",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.ts": "10bb34fea3a76b7a37db7618163963f8832bdb96ed90192b0294e75977fd4c7c",
@@ -921,8 +921,8 @@
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.test.ts": "d502c5fd4b4062b1c79e9a742e1d8b3c3ea68b92be323b1e4a8ae13cfb321ce0",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "d0ca032828b69d53297aeb4b6040b3f470c4c4cf09d3d2d6593e4c4dd5c64a36",
     "src/lib/estimate/backendPlatform/canonicalProcurementOperationAllocation.test.ts": "7373fdb90c1db221d94919234bbac4246008b602a83dd6169bf75516786aa5e5",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "5b96aa948259eca63a092400c56bd7abad5da669ad139d952d7a5589237abe8b",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "f68e18c0b7017dbf79e468b24189e0ca6c5bd24a654dda325b1beadca2e865ec",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "4a07bc9e979ffa5dfa81a6403a645557201879a40101a24ca048748fb4794c59",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "0c6c2bf930492e32fe57d5ea7ced232fb5fc39956c8eff9d23f518f50154e10d",
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts": "d083dab58274d98404d95407cd25bedb688d140b843ed5397ac45dbb315dc6c1",
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts": "065d1eb5a7769410395d648e0c55943304d90737c169385dece98139645748a6",
     "src/lib/estimate/backendPlatform/canonicalPublicResourceAlternativesV1.ts": "ed5da8cbe6d58095be01861a4f9dd027ef7e3fb9790109d0ced15cd4b5e9026c",
@@ -1684,7 +1684,8 @@
     "types/migrated-external-shims.d.ts": "8812a1348d65e32266682d75d0907627c0976a223db1aff2b973ffcd53df7756",
     "work/stream-c-facade-ct190/prepareFacadeCt190RetainedWorkR1.ts": "d0a590d95b12d64b678209a2c9398df61ac8f0d71e80d8f0e64188b23af245b0",
     "work/stream-c-plumbing-mixer/grohe33265002RegistryDescriptorWorkR1.ts": "43b6650e7158fcd5c200b8ebefda0a5b7f1dc99b0388908eb06b7567dda9d4c0",
-    "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": "b85b7496155f070c836fa08ecc8d25142d41d6ffb56572e8c428774999cc2f88"
+    "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": "b85b7496155f070c836fa08ecc8d25142d41d6ffb56572e8c428774999cc2f88",
+    "src/lib/estimate/backendPlatform/canonicalGrohePublicResourcePresentation.test.ts": "14cd032df6f6d9c1bfde2175e79e1ff5bcc635bb4d27b93963509d22f8110fa8"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -2850,13 +2851,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "821aeb63806d5b97392ba98a9bf55553799ff6cf45db716ce9a28a311f052b4f",
-  "canonicalSourceFreezeSha256": "362784a228d5dcf0250dcbe1ec7005cd7d69938be995c84fb29c9c4ac41d8027",
+  "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 38220581
+    "sourceBytes": 38233794
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true

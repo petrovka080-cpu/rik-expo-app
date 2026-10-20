@@ -44,5 +44,6 @@
   "tests/requestEstimate/selectedMaterialDeliveryServerR1.contract.test.ts": null,
   "tests/requestEstimate/selectedMaterialDeliveryTestContextR1.ts": null,
   "app/_layout.tsx": null,
-  "tests/entry/rootLayoutOfficeWarmup.contract.test.ts": null
+  "tests/entry/rootLayoutOfficeWarmup.contract.test.ts": null,
+  "src/lib/estimate/backendPlatform/canonicalGrohePublicResourcePresentation.test.ts": null
 }

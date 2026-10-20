@@ -25,7 +25,7 @@ import { assertCanonicalPurchaseSupplyRevisionV1, canonicalPurchaseSupplyWarning
 import {canonicalPublicResourceRowKindV1} from './canonicalPublicResourcePresentationV1';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-operation-resource-presentation-template61" as const;
+  "canonical-professional-pdf.r4-a13-operation-resource-presentation-template62" as const;
 
 /** A versioned job must be rendered by the server revision that accepted it.
  * Older jobs without this field retain their existing worker compatibility. */

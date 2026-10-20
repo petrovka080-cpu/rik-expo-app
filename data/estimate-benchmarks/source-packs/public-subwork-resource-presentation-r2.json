@@ -2828,6 +2828,171 @@
       "specificationRu": null,
       "detailsRu": [],
       "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:kit-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "GROHE Eurosmart 33265002, полный комплект",
+      "nameRu": "Смеситель с подводкой, креплением и донным клапаном",
+      "brandAndModelRu": null,
+      "specificationRu": "GROHE Eurosmart 33265002, хром, EAN 4005176861543; штатные подводка, донный клапан 1¼ и крепление.",
+      "detailsRu": [
+        "Гибкая подводка, крепление и донный клапан входят в комплект."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:flexible-hoses-reference",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Штатная подводка в составе смесителя",
+      "nameRu": "Гибкая подводка смесителя",
+      "brandAndModelRu": null,
+      "specificationRu": "Комплект GROHE Eurosmart 33265002.",
+      "detailsRu": [
+        "Входит в комплект смесителя; отдельно не покупать."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:waste-set-reference",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Донный клапан 1¼ в составе смесителя",
+      "nameRu": "Донный клапан, 1¼",
+      "brandAndModelRu": null,
+      "specificationRu": "Комплект GROHE Eurosmart 33265002.",
+      "detailsRu": [
+        "Входит в комплект смесителя; отдельно не покупать."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:mounting-set-reference",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "FastFixation в составе смесителя",
+      "nameRu": "Крепление смесителя FastFixation",
+      "brandAndModelRu": null,
+      "specificationRu": "Комплект GROHE Eurosmart 33265002.",
+      "detailsRu": [
+        "Входит в комплект смесителя; отдельно не покупать."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:complete-installation-work",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Полный монтаж одного комплектного смесителя по согласованной границе",
+      "nameRu": "Монтаж смесителя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Крепление, подключение и местная проверка входят в цену монтажа."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-readiness",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Проверить готовность раковины и выводов",
+      "nameRu": "Проверить готовность раковины и выводов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-mounting",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Закрепить смеситель на раковине",
+      "nameRu": "Закрепить смеситель на раковине",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-water-connection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подключить штатную гибкую подводку",
+      "nameRu": "Подключить штатную гибкую подводку",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-waste-connection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Установить штатный донный клапан",
+      "nameRu": "Установить штатный донный клапан",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-local-check",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Проверить крепление и работу узла",
+      "nameRu": "Проверить крепление и работу узла",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-different-site",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Изменение выводов или несовместимый узел",
+      "nameRu": "Изменение выводов или несовместимый узел",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Переделку водопровода или слива считают отдельно."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-trap-or-basin",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Раковина, сифон и дополнительные детали",
+      "nameRu": "Раковина, сифон и дополнительные детали",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Раковина, сифон и переходники учитываются по проекту."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-delivery",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка комплектов на объект",
+      "nameRu": "Доставка комплектов на объект",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Доставка уточняется по условиям поставки."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-system-testing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Общие испытания и документация системы",
+      "nameRu": "Общие испытания и документация системы",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Общие испытания сети учитываются отдельно."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-special-tools-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Специальный инструмент, защита и отходы",
+      "nameRu": "Специальный инструмент, защита и отходы",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Спецоборудование и дополнительная уборка — при необходимости."
+      ],
+      "rowKind": "PROCESS_NOTE"
     }
   ]
 }

@@ -1,4 +1,5 @@
 import publicBindings from '../../../../data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json';
+import simpleBindings from '../../../../data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json';
 import {canonicalPublicEstimateWorkTitleRu as work,canonicalPublicEstimateRowNameRu as row,
   canonicalPublicEstimateRowDetailsRu as details,canonicalPublicEstimateParameterTitleRu as parameter,
   canonicalPublicEstimateParameterGuideRu,canonicalPublicEstimatePendingRowGuideRu,
@@ -50,9 +51,10 @@ it('keeps selected specifications separate from the concise name through the sha
 });
 it('keeps the six hydraulic obligations visible with concrete public task details',()=>{
  const needs=publicBindings.bindings.filter(x=>x.rowId.startsWith(wp+'open:'));expect(needs).toHaveLength(6);
- for(const b of needs){expect(row({rowId:b.rowId,titleRu:b.sourceTitleRu})).toBe(b.nameRu);expect(b.nameRu.length).toBeLessThan(100);
+ for(const b of needs){const concise=simpleBindings.bindings.find(binding=>binding.rowId===b.rowId&&binding.sourceTitleRu===b.sourceTitleRu)!;
+  expect(concise).toBeDefined();expect(row({rowId:b.rowId,titleRu:b.sourceTitleRu})).toBe(concise.nameRu);expect(concise.nameRu.length).toBeLessThan(100);
   expect(details({rowId:b.rowId,titleRu:b.sourceTitleRu}).join(' ')).not.toMatch(/exactcatalog|snapshot admission|row_id|canonical-work:/u);}
- expect(row({rowId:wp+'hydraulic-plant-consumed',titleRu:binding(wp+'hydraulic-plant-consumed').sourceTitleRu})).toContain('без отдельной оплаты');
+ expect(row({rowId:wp+'hydraulic-plant-consumed',titleRu:binding(wp+'hydraulic-plant-consumed').sourceTitleRu})).toBe('Установка для гидроиспытания трубопровода');
  expect(row({rowId:tp+'truck5t-hired',titleRu:binding(tp+'truck5t-hired').sourceTitleRu})).toContain('с водителем');
 });
 it('renames only the exact parameter title, leaving units and unrelated dimensions to their own contracts',()=>{
@@ -87,10 +89,11 @@ it('distinguishes actual crane choices without overriding an authored contextual
  expect(canonicalEstimateParameterChoiceLabelRu('selected_delivery_selection','NOT_SELECTED')).toBe('Не добавлять отдельную доставку');
 });
 it('versions new document projections while historical artifact bytes and source titles remain independent',()=>{
- expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toContain('template61');
- expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r16-public-example-wording');
+ expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toContain('template62');
+ expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r17-simple-grohe-details');
  const b=binding(wp+'whole-worker');expect(b.sourceTitleRu).toContain('разряда5,3');expect(b.nameRu).not.toContain('разряда5,3');
- expect(details({rowId:b.rowId,titleRu:b.sourceTitleRu}).join(' ')).toContain('разряда5,3');
+ expect(details({rowId:b.rowId,titleRu:b.sourceTitleRu})).toEqual([]);
+ expect(b.detailsRu.join(' ')).toContain('разряда5,3');
 });
 
 it.each(['CONTROL_ONLY QA exact source-compatible supply, not supplier offer',
