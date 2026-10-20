@@ -251,7 +251,7 @@
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job.py": "9b7f796d63045d06a72991a319bfc6e251fc4212ef0e10611b76060aea969242",
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
-    "scripts/verification/gox-current-types-v1/bootstrap_source.py": "2c2be7d5525c2dddf06785cbd9db7a9b8218fa1c66ff47b081a3ad89a48718af",
+    "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "d4499bc91543803d77e2e924a493e433bdfaccbe8e9097857a0b294fcea4a098",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "e266d3cebc07b7ba7e1b1c77605d48e9ee8c072bbba90caa5c42cce4f44b271a",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "9c24bc7feb7a81ff52ff5cdcc92119c41f7e60cf571398804ee7199acfac4611",
@@ -2857,5 +2857,6 @@
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
     "sourceBytes": 38209624
-  }
+  },
+  "bootstrapHelperByteRegressionTests": 2
 }
