@@ -32,7 +32,7 @@ const choice=grohe33265002BranchWorkR1.parameterId,legacy={kind:'equals',paramet
  selected={kind:'equals',parameterId:choice,value:grohe33265002BranchWorkR1.product};
 const target={definitionId:'b7dbf8ab-fea1-52f5-a995-eeeb112c149e',baselineId:'63e182f9-5f5d-596a-a8a0-1d79f283b476',
  definitionSha256:'63626bc17ed4bc917179174d7093a3e470d0be17e54d68498d57450262ac291b',version:3};
-const scopeRu='Две взаимоисключающие ветви одной существующей карточки: прежний состав в точках либо комплект GROHE33265002 на готовом совместимом узле. Старый q в точках не превращается в число изделий. Подводка, FastFixation и донный клапан входят в один комплект, а пять шагов монтажа не начисляют второй труд. Переделки, сифон, доставка, общие испытания и особые инструменты остаются открытыми потребностями.';
+const scopeRu='Выберите прежнее исполнение с объёмом в точках или монтаж комплектного GROHE Eurosmart 33265002 по числу изделий. Для комплекта нужны готовая совместимая раковина и выводы воды. Штатные подводка, крепление FastFixation и донный клапан входят в цену смесителя. Переделка выводов, раковина, сифон, доставка и общие испытания уточняются отдельно.';
 const rehash=(r:Json)=>{const{row_sha256:_previous,...body}=r;return{...body,row_sha256:estimateDeterministicHash(body)};};
 const and=(a:Json,b:Json)=>({kind:'and',operands:[a,b]});
 
@@ -102,12 +102,15 @@ export function prepareBasinMixerGrohe33265002RetainedDraftWorkR1(input:Grohe332
   quantityMeaning:key==='kit-consumed'?'ONE_COMPLETE_PRODUCT_PER_EXPLICIT_INSTALL_COUNT':'REFERENCE_TO_INSTALLED_COMPLETE_PRODUCTS_NOT_SEPARATE_COMPONENT_ORDER',
   laborMachineHoursOrCurrentPriceClaimed:false,fullTechnicalAcceptance:false}])),retainParentBindings:retained};
  const openRows=pack.needs.map(n=>id('open-'+n.id));
- const included=[...passport.included_scope_ru,'Прежний состав применяется только при его явном выборе; объём задаётся в прежних точках.',
-  'Для GROHE33265002 комплект оплачивается целиком; штатные подводка, крепление и донный клапан включены. Пять подработ входят в один полный монтаж.',
-  'Стоимость полного монтажа за изделие возможна только по явной договорной границе; изготовитель не задаёт человеко-часы или расценку.'];
- const excluded=[...passport.excluded_scope_ru,...pack.exclusionsRu,
-  'Нет автоматического переноса прежних цен/количеств, пересчёта точки в изделие или переписывания сохранённой истории.',
-  'Для комплектного смесителя отдельно укажите целое число установок. Прежний объём в точках не определяет число изделий.'];
+ const included=['Прежнее исполнение выбирается отдельно; его объём указывается в точках.',
+  'Для GROHE Eurosmart 33265002 выполняются проверка готовности, крепление смесителя, подключение штатной подводки, установка донного клапана и местная проверка работы.',
+  'Комплект смесителя оплачивается целиком. Пять подработ и обычный ручной инструмент входят в одну согласованную расценку за полный монтаж.',
+  'Защита поверхностей, расходные материалы, вода, доставка, дополнительная уборка и вывоз учитываются по подтверждённой потребности и условиям оплаты.'];
+ const excluded=['Штатные подводка, крепление и донный клапан отдельно не покупаются и не оплачиваются.',
+  'Новая раковина, сифон, переходники и переделка выводов требуют отдельного состава работ.',
+  'Общие испытания сети и дополнительные услуги учитываются при подтверждённом объёме, без повторной оплаты уже включённых работ.',
+  'Для другого артикула, исполнения или резьбы требуется совместимый состав; смеситель без донного клапана не заменяет выбранный комплект.',
+  'Число комплектных смесителей укажите отдельно от прежнего объёма в точках. Цены подтверждаются предложением на точную поставку и монтаж.'];
  // Independent NEW-branch inventory from the reviewed source package. Legacy
  // capture is preserved as predecessor evidence, not relabelled a new TDS norm.
  const independentKeys=['kit-consumed','kit-order','kit-remaining','kit-free','kit-shortage','kit-reserve-deficit',
