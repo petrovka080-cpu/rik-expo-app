@@ -9,7 +9,7 @@ const id=(key:string)=>pack.prefix+':'+key;
 const facts=()=>({...fixture.facts,grohe33265002_work_scope:pack.laborValueRu,grohe33265002_work_reference:'TEST_ONLY confirmed complete installation agreement'});
 const compile=(facts:Record<string,unknown>,overrides:Record<string,Record<string,unknown>>={})=>compileCanonicalEstimateCore({
  operation:'recalculate',catalogId:pack.catalogId,compilerVersion:'grohe-project-resources-r2',primaryMeasureParameterId:pack.primaryParameterId,
- parameterDefinitions:d.parameters,formulaDefinitions:d.formulas,resourceDefinitions:d.resources,submittedParameters:facts,confirmedParameters:{},
+ parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:facts,confirmedParameters:{},
  rowOverrides:overrides,priceItems:[],currencyCode:'KGS',maximumResourceRows:128,hashJson:async value=>estimateDeterministicHash(value)});
 describe('complete mixer subwork resource provision',()=>{
  it('links the real tools, protection, water and applicable services without inventing quantity norms',()=>{

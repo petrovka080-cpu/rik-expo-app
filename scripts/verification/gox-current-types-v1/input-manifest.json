@@ -1086,7 +1086,7 @@
     "src/lib/estimate/v4/automaticConstructionOwnerR1.ts": "56ffadc92ec669df51ab0f94a5bfc1d8f25a12b9eb9121f4c6323ea30a40cfc0",
     "src/lib/estimate/v4/basinMixerGrohe33265002KitR1.test.ts": "0e316a9fe8b6657ba1a8afad60305769d480d8d5faefe8d6bf255b1a2efa91ed",
     "src/lib/estimate/v4/basinMixerGrohe33265002KitR1.ts": "8c6f5f52a21d2d180272f40197500809e6de8ecf335a146a55045af03cd69cf6",
-    "src/lib/estimate/v4/basinMixerGroheProjectResourcesR2.test.ts": "ef49edf38f03cc60059368cb9210c2c49f6a890808f5799edfec515335f1cd3e",
+    "src/lib/estimate/v4/basinMixerGroheProjectResourcesR2.test.ts": "7026d7a736f8f7a2793a7c00d0c7ebc839f8b5784aa4b3d4f8b28f61f619f168",
     "src/lib/estimate/v4/basinMixerGroheProjectResourcesR2.ts": "e00033daba4801f301a621cfd544b16ce2efee5f9529d89f3cd83fa3de96a543",
     "src/lib/estimate/v4/beltConcretePlacementR1.ts": "e3164e3b6b5163a2472b864e1f8c911c9804c72607a8ae06724bd93578af8edc",
     "src/lib/estimate/v4/beltCuringR1.ts": "6848eb265732b70577c7213ba99d2cb4634fcfb6f308814a00125daeec4e4b74",
@@ -2850,13 +2850,14 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "821aeb63806d5b97392ba98a9bf55553799ff6cf45db716ce9a28a311f052b4f",
-  "canonicalSourceFreezeSha256": "de413bcb5288f60c2699677a907453f3da0799b6d20d525a50a9786a225f7312",
+  "canonicalSourceFreezeSha256": "da256b1d3b021522318bdf4bd403c8010767ae4cfd05173edfbd99d43e8d8d34",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 38209624
+    "sourceBytes": 38211160
   },
-  "bootstrapHelperByteRegressionTests": 2
+  "bootstrapHelperByteRegressionTests": 2,
+  "sourceFreezeReferenceIsPredecessor": true
 }
