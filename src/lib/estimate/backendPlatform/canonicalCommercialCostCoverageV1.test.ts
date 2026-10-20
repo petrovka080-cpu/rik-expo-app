@@ -239,7 +239,7 @@ describe('canonical server commercial coverage', () => {
       preliminaryNeeds: canonicalArtifactPreliminaryNeeds(stored), expectedProjectedRowCount: result.rows.length, workTitleRu: catalog.titleRu }).html;
     expect(html).toContain('Включено в стоимость «Труд по предложению №7»');
     expect(html).toContain('Ресурс предоставляет исполнитель этой расценки.');
-    expect(html).toContain('Количество нужно уточнить');
+    expect(html).toContain('<td class="numeric">Не рассчитано</td>');
     const owner = draft.items.find(item => item.sourceParameters?.rowCode === 'lay')!;
     expect(consumerRepairRowCommercialScopeLabel(owner)).toContain('Состав расценки');
   });
@@ -269,9 +269,11 @@ describe('canonical server commercial coverage', () => {
     expect(consumerRepairRowCostCoverageLabel(included)).toContain('Комплекс исполнителя');
     const projection = buildCanonicalProfessionalPdfProjection({ revision: stored,
       rows: sourceRows, preliminaryNeeds: canonicalArtifactPreliminaryNeeds(stored), expectedProjectedRowCount: sourceRows.length, workTitleRu: 'Контрольная смета' });
-    expect(projection.html).toContain('стоимость включена в позицию «Комплекс исполнителя»');
+    expect(projection.html.match(/<td class="money">Включено в №2<\/td>/gu)).toHaveLength(4);
+    expect(projection.html.match(/<td class="money">Без доплаты<\/td>/gu)).toHaveLength(4);
+    expect(projection.html).toContain('<strong>Комплекс исполнителя</strong>');
     expect(projection.html).toContain('Состав расценки: Труд подготовки');
-    expect(projection.html).toContain('Количество нужно уточнить');
+    expect(projection.html).toContain('<td class="numeric">Не рассчитано</td>');
   });
   test('a strict labour-only quote cannot silently cover equipment already included through the original worker owner', async () => {
     const input = fixture('COMPLEX');

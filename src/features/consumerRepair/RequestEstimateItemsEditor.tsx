@@ -17,6 +17,7 @@ import {
   consumerRepairRowCategorySignals,
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsTechnicalDetail,
+  consumerRepairRowProcessNote,
   consumerRepairRowMatchesSearch,
 } from "./consumerRepairRowMetadata";
 
@@ -108,6 +109,8 @@ export function mapCanonicalResourceToCatalogPickerItem(
     catalogItemId: resource.resourceId,
     rikCode: resource.rowId,
     name: resource.titleRu,
+    publicNameRu: resource.displayNameRu,
+    publicDetailsRu: resource.displayDetailsRu,
     category: resource.rowType,
     unit: resource.unitId,
     unitLabel: formatEstimateUnitLabel(resource.unitId),
@@ -213,9 +216,10 @@ export function EstimateMaterialSearchAddControl({
                 style={styles.catalogResultRow}
                 testID={`estimate-material-search-catalog-${item.catalogItemId}`}
               >
-                <Text numberOfLines={2} style={styles.searchResultTitle}>{item.name}</Text>
+                <Text numberOfLines={2} style={styles.searchResultTitle}>{item.publicNameRu ?? item.name}</Text>
+                {item.publicDetailsRu?.map((detail,index)=><Text key={index} style={styles.catalogResultMeta}>{detail}</Text>)}
                 <Text style={styles.catalogResultMeta}>
-                  {item.rikCode} · {formatEstimateUnitLabel(item.unit)} · {item.sourceLabel}
+                  {formatEstimateUnitLabel(item.unit)} · {item.sourceLabel}
                 </Text>
               </Pressable>
             ))}
@@ -453,8 +457,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     } = this.props;
     const hasPreliminaryNeeds = viewModel.sections.some((section) =>
       section.items.some(consumerRepairRowIsCanonicalPreliminaryNeed));
-    const unresolvedItems = viewModel.sections.flatMap((section) =>
-      section.items.filter(consumerRepairRowIsCanonicalPreliminaryNeed));
+    const publicResources = viewModel.sections.flatMap(section=>section.items)
+      .filter(item=>!consumerRepairRowIsTechnicalDetail(item)&&!consumerRepairRowProcessNote(item));
+    const unresolvedItems = publicResources.filter(consumerRepairRowIsCanonicalPreliminaryNeed);
     const compositionIncomplete = incompleteParameterCount == null
       || incompleteParameterCount > 0
       || hasPreliminaryNeeds;
@@ -507,7 +512,11 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
         titleRu: item.titleRu,
         categoryFilterId,
       })));
-    const renderItem = (item: RequestEstimateSectionViewModel["items"][number], index: number) => (
+    const renderItem = (item: RequestEstimateSectionViewModel["items"][number], index: number) => consumerRepairRowProcessNote(item) ? (
+      <Text key={item.id} style={styles.operationSummary} testID={`request-estimate-process-note-${item.id}`}>
+        {consumerRepairRowProcessNote(item)}
+      </Text>
+    ) : (
       <View focusable key={`${item.id}-${index}`} testID={`request-estimate-item-anchor-${item.id}`}>
         {item.sourceParameters?.canonicalPhysicalScopeExcludedV1 && this.props.onCompositionRowsChange
           ? <Pressable accessibilityRole="button" onPress={() => this.props.onCompositionRowsChange?.([String(item.sourceParameters?.rowCode)],false,
@@ -531,9 +540,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
             {compositionIncomplete ? "Материалы и работы — расчёт не завершён" : "Материалы и работы"}
           </Text>
           <Text style={styles.rowCount} testID="request-estimate-items-total-count">
-            {viewModel.preliminaryNeedCount
-              ? `${viewModel.calculatedItemCount ?? 0} рассчитано · ${viewModel.preliminaryNeedCount} пока не рассчитано`
-              : `${viewModel.rawItemCount} ${positionCountLabel(viewModel.rawItemCount)}`}
+            {unresolvedItems.length
+              ? `${publicResources.length-unresolvedItems.length} рассчитано · ${unresolvedItems.length} пока не рассчитано`
+              : `${publicResources.length} ${positionCountLabel(publicResources.length)}`}
           </Text>
         </View>
         {onApplyCanonicalRowEdits ? (
@@ -555,7 +564,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
         {compositionIncomplete ? (
           <View style={styles.incompleteNotice} testID="request-estimate-incomplete-composition-notice">
             <Text style={styles.incompleteNoticeText}>
-              Для {viewModel.preliminaryNeedCount ?? 0} позиций пока нет полного расчёта. Они не включены в общую стоимость и список к покупке. Указанные вами количества сохранены.
+              {unresolvedItems.length
+                ? `Для ${unresolvedItems.length} позиций пока нет полного расчёта. Они не включены в общую стоимость и список к покупке. Указанные вами количества сохранены.`
+                : 'Нужно уточнить исходные данные или условия, указанные в примечаниях. Итог остаётся предварительным.'}
             </Text>
             {unresolvedItems.length > 0 ? (
               <Pressable
@@ -655,7 +666,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           {operationBySectionId.size === 0 ? renderedItems.map(renderItem) : filteredSections.map((section, sectionIndex) => {
             const operation = section.operation;
             if (!operation) return section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem);
-            const resources = section.items.filter(item => !consumerRepairRowIsTechnicalDetail(item));
+            const resources = section.items.filter(item => !consumerRepairRowIsTechnicalDetail(item)&&!consumerRepairRowProcessNote(item));
             const unresolved = resources.filter(consumerRepairRowIsCanonicalPreliminaryNeed).length;
             const expanded = operationExpanded(section);
             return (

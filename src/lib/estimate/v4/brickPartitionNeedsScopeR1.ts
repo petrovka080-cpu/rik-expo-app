@@ -38,6 +38,16 @@ const entries:Entry[]=[
  {id:'cleanup-waste',kind:'FINANCIAL_POLICY',titleRu:'Обычная уборка и сдача: накладные расходы; особые отходы — отдельная граница',
   reasonRu:'Приложение6 III.11/12 относит обычную уборку территории и подготовку к сдаче, включая указанный там вывоз мусора, к накладным расходам. Здесь начисление не подтверждено. Пригодные остатки учитываются существующим балансом материала; особый поток отходов требует фактической ведомости и исключения пересечения с накладными расходами. Процент боя, контейнер и рейс не назначаются.',evidence:[overhead]},
 ];
+const publicNotes:Record<string,{title:string;reason:string}>={
+ 'base-and-dpc':{title:'Подготовить опору под перегородку',reason:'Проверьте готовность основания. Отсечная гидроизоляция добавляется по проекту со своей стоимостью.'},
+ 'connections-lintels':{title:'Выполнить примыкания и перемычки',reason:'Связи, верхний зазор и перемычки выбираются по проектному узлу. Их количество и оплата подтверждаются отдельно.'},
+ 'access-boundary':{title:'Обеспечить доступ к кладке',reason:'Обычные подмости до 4 м уже входят в исходную работу. Дополнительный доступ учитывается только сверх включённого состава.'},
+ 'tools-ppe':{title:'Подготовить инструмент и средства защиты',reason:'Проверьте имеющееся обеспечение и состав цены. Отдельная покупка допускается только для непокрытой потребности.'},
+ 'curing-protection':{title:'Выдержать и защитить кладку',reason:'Способ защиты определяется условиями объекта. Дополнительные укрытия или прогрев требуют отдельного обоснования.'},
+ 'quality-control':{title:'Проверить готовую перегородку',reason:'Обычный контроль выполняется в процессе. Отдельные испытания учитываются по согласованной программе.'},
+ 'external-logistics':{title:'Доставить материалы к месту кладки',reason:'Переноска до 5 м и работа крана уже учтены. Внешнюю доставку оплачивает существующая позиция выбранного автомобиля.'},
+ 'cleanup-waste':{title:'Убрать место работ',reason:'Проверьте включённую уборку и накладные расходы. Особые отходы и дополнительные перевозки учитываются отдельно.'},
+};
 
 /** Classify the eight existing obligations. No new quantity, price, norm,
  * resource, parameter or payment owner is created. Input is not mutated.
@@ -57,8 +67,10 @@ export function applyBrickPartitionNeedsScopeR1<T extends Pick<AutomaticOwnerDef
   if(!entry)return original;
   const covers=(entry.covers??[]).map(row);
   if(covers.some(id=>!ids.has(id)))throw Error('BRICK_EXISTING_COVERING_OWNER_REQUIRED');
+  const note=publicNotes[entry.id]!;
+  const operation=original.resource_graph.operationCompositionV1 as {groupId:string;groupTitleRu:string;operationId:string;operationTitleRu:string};
   const scope:CanonicalScopeRequirementV1={contractVersion:'canonical-scope-requirement/v1',kind:entry.kind,
-   groupId:prefix+':scope:'+entry.id,groupTitleRu:entry.titleRu,titleRu:entry.titleRu,reasonRu:entry.reasonRu,
+   groupId:operation.operationId,groupTitleRu:note.title,titleRu:note.title,reasonRu:note.reason,
    exactScopeWhen,sourceEvidence:entry.evidence,coveringRowIds:covers,originalRowIds:[],
    ...(covers.length?{costExclusionBreaksScopeV1:true as const}:{}),
   };
@@ -66,12 +78,12 @@ export function applyBrickPartitionNeedsScopeR1<T extends Pick<AutomaticOwnerDef
   const updated={...body,title_ru:entry.titleRu,procurement_eligible:false,
    resource_graph:{...original.resource_graph,costTreatment:'INFORMATIONAL_SCOPE',scopeRequirementV1:scope,
     publicResourcePresentationV1:{...(original.resource_graph.publicResourcePresentationV1 as Record<string,unknown>??{}),
-     contractVersion:'canonical-public-resource-presentation/v1',nameRu:entry.titleRu,sourceTitleRu:entry.titleRu,
-     detailsRu:[entry.reasonRu]},
+     contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:entry.titleRu,
+     brandAndModelRu:null,specificationRu:null,nameRu:note.title,detailsRu:[],rowKind:'PROCESS_NOTE'},
    },
    source_metadata:{...original.source_metadata,sourceRole:'SOURCE_CLASSIFIED_SCOPE_REQUIREMENT',
     scopeClassificationContract:BRICK_PARTITION_NEEDS_SCOPE_R1,numericNormAccepted:false,separatePaymentAccepted:false,
-    full_technical_acceptance:false},
+    classificationReasonRu:entry.reasonRu,full_technical_acceptance:false},
   };
   return {...updated,row_sha256:estimateDeterministicHash(updated)};
  });
