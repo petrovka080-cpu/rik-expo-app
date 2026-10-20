@@ -1,4 +1,5 @@
 import { canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu } from './canonicalPublicEstimateLanguageRu';
+import simpleBindings from '../../../../data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json';
 
 /** An authored display projection of a saved resource. It changes no identity,
  * specification, quantity, price or owner and never guesses a generic name. */
@@ -9,14 +10,16 @@ export type CanonicalPublicResourcePresentationV1 = Readonly<{
   brandAndModelRu: string | null;
   specificationRu: string | null;
   detailsRu: readonly string[];
+  rowKind?: 'CALCULATION_DETAIL' | 'PROCESS_NOTE';
 }>;
 
 export function parseCanonicalPublicResourcePresentationV1(value: unknown): CanonicalPublicResourcePresentationV1 | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const candidate = value as Record<string, unknown>;
-  const allowed = ['contractVersion', 'sourceTitleRu', 'nameRu', 'brandAndModelRu', 'specificationRu', 'detailsRu'];
+  const allowed = ['contractVersion', 'sourceTitleRu', 'nameRu', 'brandAndModelRu', 'specificationRu', 'detailsRu', 'rowKind'];
   const text = (v: unknown, max: number): v is string => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
-  if (Object.keys(candidate).length !== allowed.length || Object.keys(candidate).some(key => !allowed.includes(key))
+  if (Object.keys(candidate).length !== (candidate.rowKind == null ? 6 : 7) || Object.keys(candidate).some(key => !allowed.includes(key))
+    || (Object.hasOwn(candidate, 'rowKind') && !['CALCULATION_DETAIL', 'PROCESS_NOTE'].includes(String(candidate.rowKind)))
     || candidate.contractVersion !== 'canonical-public-resource-presentation/v1'
     || !text(candidate.sourceTitleRu, 2000) || !text(candidate.nameRu, 180) || !/[А-Яа-яЁё]/u.test(candidate.nameRu)
     || (candidate.brandAndModelRu !== null && !text(candidate.brandAndModelRu, 300))
@@ -43,7 +46,12 @@ export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<t
   // A complete authored binding is an independent display authority for an
   // exact saved row. Never repair or borrow a malformed source descriptor.
   if (input.descriptor != null && !parseCanonicalPublicResourcePresentationV1(input.descriptor)) return null;
-  const presentation = canonicalPublicResourcePresentationV1(input);
+  const saved = canonicalPublicResourcePresentationV1(input);
+  const binding = simpleBindings.bindings.find(binding => binding.rowId===input.rowId
+    && (binding.sourceTitleRu===input.titleRu || (saved!=null&&input.titleRu.startsWith(binding.sourceTitleRu+' — '))));
+  const {rowId:_bindingRow,...boundDescriptor}=binding??{};
+  const presentation = binding ? parseCanonicalPublicResourcePresentationV1({...boundDescriptor,sourceTitleRu:input.titleRu,
+    specificationRu:saved&&saved.sourceTitleRu!==binding.sourceTitleRu?saved.specificationRu:binding.specificationRu}) : saved;
   const details = canonicalPublicEstimateRowDetailsRu({ rowId: input.rowId, sourceTitleRu: input.titleRu,
     titleRu: presentation?.nameRu ?? input.titleRu });
   if (!presentation) return details.length ? {
@@ -61,8 +69,39 @@ export function canonicalPublicResourcePresentationMatchesV1(actual: unknown, ex
   if (actual == null && expected == null) return true;
   const a = parseCanonicalPublicResourcePresentationV1(actual), b = parseCanonicalPublicResourcePresentationV1(expected);
   return Boolean(a && b && a.sourceTitleRu === b.sourceTitleRu && a.nameRu === b.nameRu
-    && a.brandAndModelRu === b.brandAndModelRu && a.specificationRu === b.specificationRu && a.detailsRu.length === b.detailsRu.length
+    && a.rowKind === b.rowKind && a.brandAndModelRu === b.brandAndModelRu && a.specificationRu === b.specificationRu && a.detailsRu.length === b.detailsRu.length
     && a.detailsRu.every((detail, index) => detail === b.detailsRu[index]));
+}
+
+/** An authored display role never suppresses a priced or purchased resource.
+ * Invalid/stale descriptors and manual changes keep the ordinary resource row. */
+export function canonicalPublicResourceRowKindV1(input: {
+  titleRu: string; descriptor: unknown; manualTitleOverride?: boolean;
+  costTreatment: unknown; includedInEstimate?: boolean; includedInProcurement?: boolean;
+  unitPrice?: unknown; amount?: unknown;
+  rowId?: string; graph?: Readonly<Record<string,unknown>>; category?: string;
+}): 'RESOURCE' | 'CALCULATION_DETAIL' | 'PROCESS_NOTE' {
+  if (input.includedInEstimate === true || input.includedInProcurement === true
+    || input.unitPrice != null || input.amount != null
+    || input.manualTitleOverride
+    || !['INFORMATIONAL_SCOPE', 'CONTROL_OR_DOCUMENT', 'INCLUDED_IN_RESOURCE_ROWS'].includes(String(input.costTreatment))) return 'RESOURCE';
+  const presentation=canonicalPublicResourceDisplayPresentationV1(input);
+  if(presentation?.rowKind)return presentation.rowKind;
+  // Included physical items remain visible. A balance counter instead has
+  // the explicit source role above or the structural identity below.
+  const physicalCategory=['material','tool','equipment','service','transport','delivery'].includes(input.category??'');
+  // Existing immutable definitions already identify their balance counters and
+  // duplicate physical machine-hour counters structurally. Do not inspect a
+  // Russian name, hide an unresolved real need, or change any stored row.
+  const graph=input.graph;
+  if(input.rowId&&graph&&input.costTreatment==='INFORMATIONAL_SCOPE'
+    && ((typeof graph.purchaseBalanceOwnerRowId==='string'&&graph.purchaseBalanceOwnerRowId.trim().length>0&&graph.purchaseBalanceOwnerRowId!==input.rowId)
+      || (graph.physicalNormOwnerRowId===input.rowId&&graph.machinePriceAdmissionPending===true)))return 'CALCULATION_DETAIL';
+  if(physicalCategory)return 'RESOURCE';
+  if(input.rowId&&graph&&input.costTreatment==='INCLUDED_IN_RESOURCE_ROWS'
+    &&typeof graph.includedInResourceOwnerRowId==='string'&&graph.includedInResourceOwnerRowId.trim().length>0&&graph.includedInResourceOwnerRowId!==input.rowId
+    &&graph.operationCompositionV1!=null)return 'CALCULATION_DETAIL';
+  return 'RESOURCE';
 }
 
 export function bindCanonicalPublicResourceSavedTitleV1(input: {

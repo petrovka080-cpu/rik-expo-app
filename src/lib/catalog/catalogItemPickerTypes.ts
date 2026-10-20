@@ -4,6 +4,9 @@ export type CatalogItemPickerItem = Partial<CatalogItemForEstimate> & {
   catalogItemId: string;
   rikCode: string;
   name: string;
+  /** Optional canonical display; selection keeps the full source name. */
+  publicNameRu?: string;
+  publicDetailsRu?: readonly string[];
   unit: string;
   kind?: string | null;
   /** Server-owned eligibility of the selected resource for the procurement artifact. */
