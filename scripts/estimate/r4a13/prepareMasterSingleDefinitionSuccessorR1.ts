@@ -1810,7 +1810,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
         }
         if(scopedRegistryInput!=null)await readMasterScopedNormativeRegistryPreconditionsR1(
           client,scopedRegistryInput,"REGISTERED");
-        const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan]);
+        const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan],
+          retentionInput?.config.binding.retainParentBindings?.legacyTemplateAssumptionSources
+            ? [retentionInput] : []);
         await client.query(`insert into public.estimate_definition_release(
             id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,
             definition_count,resource_row_count,metadata,parent_release_id,source_package_sha256,

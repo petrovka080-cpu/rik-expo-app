@@ -4,6 +4,7 @@ import {prepareBasinMixerGrohe33265002RetainedDraftWorkR1} from '../../../work/s
 import {masterRetainParentBindingsOptInR1,masterRetainedParentCaptureSha256R1,assertMasterRetainedParentComputationR1,
  type MasterRetainedBindingGuardInputR1} from './masterSingleDefinitionRetainParentBindingsR1';
 import {compileFormulaGraph} from '../../../src/lib/estimate/backendPlatform/formulaGraph';
+import {canonicalPublisherRegisteredSourceKeysR1} from './canonicalDefinitionPublisherR1';
 
 const clone=<T>(x:T):T=>JSON.parse(JSON.stringify(x));
 const input=():MasterRetainedBindingGuardInputR1=>{
@@ -51,5 +52,57 @@ describe('explicit frozen legacy template input provenance',()=>{
    newLaborHoursNormClaimed:false,nextShape:[65,103,103]});
   for(const parameter of d.next.parameters.filter(p=>p.truth_metadata.visibility_role!=='INTERNAL_ONLY'))
    expect(parameter.truth_metadata.guide).toMatchObject({applicability:expect.any(String)});
+ });
+});
+
+describe('publisher registered sources and exact historical assumption provenance',()=>{
+ function setup(){
+  const i=input(),c=i.config.binding.retainParentBindings!.capturedParent;
+  const d=prepareBasinMixerGrohe33265002RetainedDraftWorkR1({capturedParent:fixture.capturedParent,capturedParentSha256:fixture.capturedParentSha256,
+   parentPassport:fixture.passport,parentSearch:fixture.search,parentPriceBindings:fixture.priceBindings});
+  const plan:any={...d.next,definition:{catalog_id:c.definition.catalog_id},baseline:{...clone(c.baseline),
+   source_definition_version_id:c.definition.id,supersedes_baseline_id:c.baseline.id,
+   normative_source_ids:{...clone(c.baseline.normative_source_ids),[d.next.parameters[1]!.parameter_id]:[i.newSource.source_key]}}};
+  const observed:string[]=[];
+  const client:any={query:async(sql:string,values:any[])=>{
+   observed.push(sql);expect(sql.trim().startsWith('select ')).toBe(true);
+   let rows:any[];
+   if(sql.includes('estimate_cumulative_manifest_entry'))rows=[{release_id:i.config.parentReleaseId,catalog_id:i.config.catalogId,
+    definition_version_id:c.definition.id,approved_template_baseline_id:c.baseline.id,definition_hash:c.definition.definition_sha256}];
+   else if(sql.includes('from public.estimate_normative_source')&&values[0]===i.newSource.id)rows=[{...clone(i.newSource),created_at:'2026-10-20T00:00:00+00:00'}];
+   else if(sql.includes('from public.estimate_normative_locator')&&values[1]===i.newSource.id)rows=[...i.newLocators];
+   else {const table=sql.match(/from public\.(estimate_[a-z_]+)/)?.[1];
+    const byTable:Record<string,any[]>={estimate_definition_version:[c.definition],estimate_approved_template_baseline:[c.baseline],
+     estimate_parameter_definition:[...c.parameters],estimate_formula_graph:[...c.formulas],estimate_resource_spec:[...c.resources],
+     estimate_work_normative_binding:[...c.bindings],estimate_normative_locator:[...c.normativeLocators],estimate_normative_source:[...c.normativeSources]};
+    if(!table||!Object.hasOwn(byTable,table))throw Error('UNEXPECTED_SQL');rows=byTable[table]!;
+   }
+   return{rows:rows.map(row=>({raw:JSON.stringify(row)}))};
+  }};
+  return{i,c,d,plan,client,observed};
+ }
+ it('default retains the complete source requirement without silently skipping unknown keys',async()=>{
+  const s=setup();expect(await canonicalPublisherRegisteredSourceKeysR1(s.client,s.plan)).toEqual(
+   [s.i.newSource.source_key,...s.c.baseline.normative_source_ids.q].sort());expect(s.observed).toEqual([]);
+ });
+ it('separates only the captured assumption after reading the exact registered source and full parent',async()=>{
+  const s=setup(),before=clone(s.plan);expect(await canonicalPublisherRegisteredSourceKeysR1(s.client,s.plan,s.i)).toEqual([s.i.newSource.source_key]);
+  expect(s.observed.some(sql=>sql.includes('estimate_normative_source'))).toBe(true);expect(s.plan).toEqual(before);
+ });
+ it.each(['newSourceUse','sourceArray','value','unit','classification','lineage','newFormula','forgedParent'])('rejects %s',async kind=>{
+  const s=setup();
+  if(kind==='newSourceUse')s.plan.baseline.normative_source_ids.forged=s.c.baseline.normative_source_ids.q;
+  if(kind==='sourceArray')s.plan.baseline.normative_source_ids.q=[s.i.newSource.source_key];
+  if(kind==='value')s.plan.baseline.input_values.q='777';
+  if(kind==='unit')s.plan.baseline.uom_by_parameter.q='item';
+  if(kind==='classification')s.plan.baseline.input_classification.q='CONFIRMED_NORM';
+  if(kind==='lineage')s.plan.baseline.supersedes_baseline_id='forged';
+  if(kind==='newFormula')s.plan.formulas=[...s.plan.formulas,{formula_id:'FORGED_NEW',input_parameter_ids:['q'],ast:compileFormulaGraph('q')}];
+  if(kind==='forgedParent')s.client.query=async()=>({rows:[]});
+  await expect(canonicalPublisherRegisteredSourceKeysR1(s.client,s.plan,s.i)).rejects.toThrow();
+ });
+ it('requires the explicit retained contract even when a caller supplies a context',async()=>{
+  const s=setup();delete(s.i.config.binding.retainParentBindings as any).legacyTemplateAssumptionSources;
+  await expect(canonicalPublisherRegisteredSourceKeysR1(s.client,s.plan,s.i)).rejects.toThrow('CAPTURE_BASELINE_SOURCE_CLOSURE');
  });
 });

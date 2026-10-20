@@ -3,6 +3,9 @@ import { createHash } from "node:crypto";
 import type { Client } from "pg";
 import { canonicalDefinitionPublicationStableValueR1 as stable } from
   "../../../src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1";
+import {assertMasterRetainedParentComputationR1,masterRetainParentBindingsOptInR1,
+  readMasterRetainedBindingPreconditionsR1,type MasterRetainedBindingGuardInputR1} from
+  "./masterSingleDefinitionRetainParentBindingsR1";
 
 export type CanonicalPublisherJson = Record<string, any>;
 
@@ -489,11 +492,57 @@ export async function preflightCanonicalParameterTruthMetadata(
   };
 }
 
+/** Historical template assumptions remain in the baseline provenance. They are
+ * never physical norms and may be separated only through the exact retained
+ * parent contract, re-read from the database after source registration. */
+export async function canonicalPublisherRegisteredSourceKeysR1(
+  client: Pick<Client,"query">,
+  plan: CanonicalDefinitionPublishPlan,
+  retainedInput?: MasterRetainedBindingGuardInputR1,
+): Promise<string[]> {
+  const prefix=`STOP_CANONICAL_PUBLISHER_PAYLOAD:${plan.definition.catalog_id}`;
+  const sources=flattenNormativeSourceMap(plan.baseline.normative_source_ids,`${prefix}:NORMATIVE_SOURCE_IDS`);
+  if(retainedInput===undefined)return sources;
+  const opt=masterRetainParentBindingsOptInR1(retainedInput),legacy=opt?.legacyTemplateAssumptionSources;
+  invariant(opt&&legacy,`${prefix}:LEGACY_ASSUMPTION_EXPLICIT_RETAINED_CONTRACT`);
+  const old=opt.capturedParent;
+  invariant(retainedInput.config.catalogId===plan.definition.catalog_id
+    &&plan.baseline.source_definition_version_id===old.definition.id
+    &&plan.baseline.supersedes_baseline_id===old.baseline.id,`${prefix}:LEGACY_ASSUMPTION_PARENT`);
+  assertMasterRetainedParentComputationR1(retainedInput,plan,"PLAN");
+  const equals=(a:unknown,b:unknown)=>JSON.stringify(stable(a))===JSON.stringify(stable(b));
+  const legacyKeys=new Set(Object.values(legacy.parameterSources).flat());
+  for(const parameter of old.parameters){
+    const id=parameter.parameter_id;
+    invariant(equals(plan.baseline.normative_source_ids[id],old.baseline.normative_source_ids[id]),
+      `${prefix}:LEGACY_ASSUMPTION_OLD_SOURCE_ARRAY:${id}`);
+  }
+  for(const id of Object.keys(legacy.parameterSources)){
+    invariant(equals(plan.baseline.input_values[id],old.baseline.input_values[id])
+      &&plan.baseline.input_classification[id]==='ASSUMPTION'
+      &&plan.baseline.uom_by_parameter[id]===old.baseline.uom_by_parameter[id],
+      `${prefix}:LEGACY_ASSUMPTION_VALUE_OR_UNIT:${id}`);
+  }
+  const registeredMap=Object.fromEntries(Object.entries(plan.baseline.normative_source_ids).map(([id,keys])=>{
+    invariant(Array.isArray(keys),`${prefix}:NORMATIVE_SOURCE_IDS:${id}`);
+    if(Object.hasOwn(legacy.parameterSources,id))return[id,[]];
+    invariant(!keys.some(key=>legacyKeys.has(key)),`${prefix}:LEGACY_ASSUMPTION_NEW_SOURCE_USE:${id}`);
+    return[id,keys];
+  }));
+  await readMasterRetainedBindingPreconditionsR1(client,retainedInput,"REGISTERED");
+  return flattenNormativeSourceMap(registeredMap,`${prefix}:NORMATIVE_SOURCE_IDS`);
+}
+
 export async function preflightCanonicalDefinitionPublishPlans(
   client: Client,
   plans: readonly CanonicalDefinitionPublishPlan[],
+  retainedLegacyInputs: readonly MasterRetainedBindingGuardInputR1[] = [],
 ) {
   invariant(plans.length > 0, "STOP_CANONICAL_PUBLISHER_EMPTY_PLAN");
+  invariant(Array.isArray(retainedLegacyInputs)
+    &&new Set(retainedLegacyInputs.map(input=>input.config.catalogId)).size===retainedLegacyInputs.length
+    &&retainedLegacyInputs.every(input=>plans.some(plan=>plan.definition.catalog_id===input.config.catalogId)),
+    "STOP_CANONICAL_PUBLISHER_LEGACY_ASSUMPTION_SCOPE");
   for (const plan of plans) automaticPriceInheritanceExcludedResourceIds(plan);
   const schema = await preflightCanonicalDefinitionPublisherSchema(client);
   const auditedPlans: CanonicalPublisherJson[] = [];
@@ -571,10 +620,8 @@ export async function preflightCanonicalDefinitionPublishPlans(
     invariant(plan.bindings.every((binding) => isObject(binding.applicability)),
       `${prefix}:NORMATIVE_BINDING_APPLICABILITY`);
 
-    const expectedSourceKeys = flattenNormativeSourceMap(
-      plan.baseline.normative_source_ids,
-      `${prefix}:NORMATIVE_SOURCE_IDS`,
-    );
+    const expectedSourceKeys = await canonicalPublisherRegisteredSourceKeysR1(client,plan,
+      retainedLegacyInputs.find(input=>input.config.catalogId===plan.definition.catalog_id));
     invariant(expectedSourceKeys.length > 0, `${prefix}:NORMATIVE_SOURCE_IDS_EMPTY`);
     const locatorIds = plan.bindings.map((binding) => String(binding.locator_id));
     const locators = (await client.query(`select locator.id::text locator_id,source.source_key
