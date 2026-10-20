@@ -194,6 +194,44 @@ gradle.taskGraph.afterTask { task, state ->
  return observer,events
 
 
+
+def collect_owned_gradle_gc_logs(root,gradle_home,out):
+ roots=[pathlib.Path(root).resolve(),pathlib.Path(gradle_home).resolve()];found={}
+ for folder in roots:
+  if folder.is_dir():
+   for path in folder.rglob('gox-r453-gc.log*'):
+    resolved=path.resolve();assert any(resolved.is_relative_to(p)for p in roots),'GC_LOG_ESCAPES_OWNED_ROOT'
+    if resolved.is_file():found[str(resolved)]=resolved
+ assert len(found)<=6 and sum(p.stat().st_size for p in found.values())<=16*MIB,'GC_LOG_TOTAL_CAP'
+ logs=[]
+ for index,path in enumerate(sorted(found.values())):
+  assert path.stat().st_size<=5*MIB,'GC_LOG_FILE_CAP'
+  target=out/('gradle-gc-'+str(index)+'.log');assert not target.exists();shutil.copyfile(path,target)
+  logs.append(dict(path=target.name,bytes=target.stat().st_size,sha256=sha(target)))
+ write(out/'gradle-gc-logs.json',dict(status='CAPTURED_OWNED_GC_LOGS'if logs else'NO_GC_LOG_FILE_FOUND',logs=logs,
+  jvmHeapMiB=1536,metaspaceMiB=768,gc='SerialGC',ownedRssCapMiB=3328,ownedPrivateCapMiB=3840))
+
+
+def write_target_abi_init(root,out,abi):
+ assert abi=='x86_64','UNAPPROVED_TARGET_ABI'
+ target=out/'target-abi.init.gradle';assert not target.exists(),'ABI_INIT_ALREADY_EXISTS'
+ text="""def expectedRoot = new File(@ROOT_JSON@).canonicalFile
+gradle.beforeProject { p ->
+    if (p.projectDir.canonicalFile != new File(expectedRoot, 'android/app').canonicalFile) return
+    p.plugins.withId('com.android.application') {
+        p.extensions.getByName('androidComponents').finalizeDsl { dsl ->
+            def original = new LinkedHashSet(dsl.defaultConfig.ndk.abiFilters)
+            assert original.isEmpty() || original == ['armeabi-v7a','arm64-v8a','x86','x86_64'].toSet() : 'UNEXPECTED_EXISTING_ABI_FILTER'
+            dsl.defaultConfig.ndk.abiFilters.clear()
+            dsl.defaultConfig.ndk.abiFilters.add('x86_64')
+            assert dsl.defaultConfig.ndk.abiFilters == ['x86_64'].toSet() : 'TARGET_ABI_NOT_EXACT'
+            p.logger.lifecycle('VERIFIED_TARGET_ABI_FILTER x86_64 previous=' + original.toString())
+        }
+    }
+}
+""".replace('@ROOT_JSON@',json.dumps(str(pathlib.Path(root).resolve())))
+ target.write_text(text,encoding='utf8');return target
+
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--root',required=True);ap.add_argument('--spec',required=True);ap.add_argument('--spec-sha256',required=True);ap.add_argument('--source-commit',required=True);ap.add_argument('--output',required=True);ap.add_argument('--contract-only',action='store_true');a=ap.parse_args()
  root=pathlib.Path(a.root).resolve();out=pathlib.Path(a.output).resolve();assert not out.exists();out.mkdir(parents=True)
@@ -291,12 +329,22 @@ def main():
  precomputed=dict(status='PASS_CURRENT_SOURCE_PRECOMPUTED_PHASE_UNION',sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],files=inventory(root,dirs));write(out/'precomputed.json',precomputed)
  init=(HERE/'precomputed.init.gradle').read_text(encoding='utf8').replace('@ROOT_JSON@',json.dumps(str(root))).replace('@RECEIPT_JSON@',json.dumps(str(out/'precomputed.json')))
  (out/'precomputed.init.gradle').write_text(init,encoding='utf8')
+ gradle_home=root.parent/'gox-r453-gradle-home';assert not gradle_home.exists(),'EXCLUSIVE_GRADLE_HOME_REQUIRED'
+ env['GRADLE_USER_HOME']=str(gradle_home)
+ abi_init=write_target_abi_init(root,out,s['abi'])
  task_observer,task_events=write_gradle_task_observer(out)
- glog=run('gradle',[java,'-Xmx64m','-Xms64m','-Dorg.gradle.appname=gradlew','-classpath',root/'android/gradle/wrapper/gradle-wrapper.jar','org.gradle.wrapper.GradleWrapperMain',':app:assembleWaterProof','-p','android','--no-daemon','--max-workers=1','--stacktrace','--console=plain','--no-configuration-cache','-Dgox.phaseTaskLog='+str(task_events),'-Dorg.gradle.workers.max=1','-Dorg.gradle.daemon=false','-Dorg.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC','-Pkotlin.compiler.execution.strategy=in-process','-PreactNativeArchitectures=x86_64','-Pandroid.enablePngCrunchInReleaseBuilds=false','--init-script',out/'precomputed.init.gradle','--init-script',task_observer],3072,2700)
+ try:
+  glog=run('gradle',[java,'-Xmx64m','-Xms64m','-Dorg.gradle.appname=gradlew','-classpath',root/'android/gradle/wrapper/gradle-wrapper.jar','org.gradle.wrapper.GradleWrapperMain',':app:assembleWaterProof','-p','android','--no-daemon','--max-workers=1','--stacktrace','--console=plain','--no-configuration-cache','-Dgox.phaseTaskLog='+str(task_events),'-Dorg.gradle.workers.max=1','-Dorg.gradle.daemon=false','-Dorg.gradle.jvmargs=-Xmx1536m -XX:MaxMetaspaceSize=768m -XX:+UseSerialGC -Xlog:gc*,safepoint:file=gox-r453-gc.log:time,uptime,level,tags:filecount=2,filesize=4M','-Pkotlin.compiler.execution.strategy=in-process','-PreactNativeArchitectures=x86_64','-Pandroid.enablePngCrunchInReleaseBuilds=false','--init-script',out/'precomputed.init.gradle','--init-script',task_observer,'--init-script',abi_init],3328,2700)
+ finally:
+  collect_owned_gradle_gc_logs(root,gradle_home,out)
+ assert 'VERIFIED_TARGET_ABI_FILTER x86_64 previous='in glog,'ABI_FILTER_HOOK_NOT_OBSERVED'
  for task in ['createBundleWaterProofJsAndAssets','createWaterProofUpdatesResources']:assert 'VERIFIED_PRECOMPUTED_PHASE :app:'+task+' files='in glog
  assert inventory(root,dirs)==precomputed['files']
  apk=root/'android/app/build/outputs/apk/waterProof/app-waterProof.apk';assert apk.is_file()
  aapt=sdk/'build-tools/36.0.0/aapt2.exe';signer=sdk/'build-tools/36.0.0/lib/apksigner.jar';apk_sha=sha(apk)
+ pending_apk=out/'app-waterProof.unaccepted.apk';assert not pending_apk.exists()
+ shutil.copyfile(apk,pending_apk);assert sha(pending_apk)==apk_sha
+ write(out/'built-apk-observation.json',dict(status='BUILT_BYTES_ONLY_NOT_ACCEPTANCE',apkSha256=apk_sha,bytes=apk.stat().st_size,sourceSnapshotCommit=a.source_commit,signatureOrResourceVerificationClaimed=False))
  badging=run('apk-badging',[aapt,'dump','badging',apk],256);xml=run('apk-manifest',[aapt,'dump','xmltree',apk,'--file','AndroidManifest.xml'],256)
  cert=run('apk-signature',[java,'-Xmx128m','-jar',signer,'verify','--verbose','--print-certs',apk],256)
  assert re.findall(r'Signer #\d+ certificate SHA-256 digest: ([a-fA-F0-9]+)',cert)==[CERT]
@@ -319,7 +367,8 @@ def main():
   assert'lib/x86_64/libhermes.so'in z.namelist()
   assert{v.split('/')[1]for v in z.namelist()if v.startswith('lib/')and v.count('/')==2}=={'x86_64'}
  assert sha(apk)==apk_sha and check_source()and utc(s['usableUntil'])>datetime.now(timezone.utc),'END_IDENTITY_OR_INPUT_EXPIRED'
- shutil.copyfile(apk,out/'app-waterProof.apk')
+ accepted_apk=out/'app-waterProof.apk';assert not accepted_apk.exists()and pending_apk.resolve().is_relative_to(out)and accepted_apk.resolve().is_relative_to(out)
+ assert sha(pending_apk)==apk_sha;pending_apk.rename(accepted_apk)
  write(out/'apk-result.json',dict(status='PASS_EXACT_CURRENT_SNAPSHOT_APK_PACKAGING_ONLY',sourceSnapshotCommit=a.source_commit,canonicalSourceHead=s['canonicalSourceHead'],sourceIdentity=s['sourceIdentity'],pair=s['pair'],buildSpecSha256=a.spec_sha256,apkSha256=apk_sha,
   signatureSha256=CERT,resources=verified,phaseReceipts=receipts,installedOnDevice=False,androidUiAccepted=False,publicationPerformed=False,credentialsPrinted=False))
 if __name__=='__main__':main()
