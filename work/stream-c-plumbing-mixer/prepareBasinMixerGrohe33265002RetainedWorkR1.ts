@@ -65,7 +65,7 @@ export function prepareBasinMixerGrohe33265002RetainedDraftWorkR1(input:Grohe332
    source_confirmation_required:false,preliminary_compilation_allowed:true,hidden_default_forbidden:true,
    provenance:{consumer_input_role_v1:'OBJECT_FACT'},resource_branch_consumers:[...oldRows,...subject.resources].map(r=>r.row_id),
    guide:{guide_kind:'PROJECT_DEFINED',guide_short_ru:'Выберите один состав. Прежние точки не пересчитываются в комплектные смесители; для GROHE отдельно укажите целое число монтажей.',
-    full_condition_ru:scopeRu,source_role:'PROJECT_DOCUMENTATION',source_document:pack.sourceId,source_locator:pack.source.locatorRu,
+    full_condition_ru:scopeRu,applicability:scopeRu,source_role:'PROJECT_DOCUMENTATION',source_document:pack.sourceId,source_locator:pack.source.locatorRu,
     guide_version:contract,source_snapshot_hash:pack.source.sha256,verified_at:pack.source.reviewedAt}}};
  const parameters:Json[]=[...oldParams.map(q=>({...q,required:false,constraints_json:{...q.constraints_json,requiredWhen:legacy},
   truth_metadata:{...q.truth_metadata,legacyMixerBranchGuideV1:{previousGuide:clone(q.truth_metadata.guide),previousDefault:clone(q.default_value),

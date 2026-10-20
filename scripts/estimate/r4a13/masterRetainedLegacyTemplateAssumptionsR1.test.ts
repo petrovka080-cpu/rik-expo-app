@@ -49,5 +49,7 @@ describe('explicit frozen legacy template input provenance',()=>{
    parentPassport:fixture.passport,parentSearch:fixture.search,parentPriceBindings:fixture.priceBindings});
   await expect(d.verifyCore()).resolves.toMatchObject({legacyManualTitleQuantityPriceExclusionPreserved:true,oneProductPurchaseOwner:true,
    newLaborHoursNormClaimed:false,nextShape:[65,103,103]});
+  for(const parameter of d.next.parameters.filter(p=>p.truth_metadata.visibility_role!=='INTERNAL_ONLY'))
+   expect(parameter.truth_metadata.guide).toMatchObject({applicability:expect.any(String)});
  });
 });
