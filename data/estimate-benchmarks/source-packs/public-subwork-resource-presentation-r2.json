@@ -1,0 +1,2998 @@
+{
+  "contractVersion": "canonical-public-subwork-resource-bindings/r2",
+  "bindings": [
+    {
+      "rowId": "rc09:facade_mineral_wool_install",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Монтаж фасадного минераловатного утеплителя толщиной 120 мм",
+      "nameRu": "Работа по монтажу утеплителя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "rc09:facade_mineral_wool_board_120mm",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Плита минераловатная фасадная толщиной 120 мм",
+      "nameRu": "Минеральная вата для фасада, 120 мм",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "rc09:facade_mineral_wool_adhesive",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Клеевой состав для фасадных минераловатных плит",
+      "nameRu": "Клей для фасадного утеплителя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "rc09:facade_disc_dowel_200mm_metal_pin",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Дюбель фасадный тарельчатый 200 мм с металлическим стержнем",
+      "nameRu": "Дюбель для утеплителя, 200 мм, металлический стержень",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "rc09:facade_insulation_lift",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подъёмник фасадный для монтажа теплоизоляции",
+      "nameRu": "Подъём материалов на фасад",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "rc09:facade_insulation_pullout_control",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль вырыва фасадных дюбелей",
+      "nameRu": "Проверка прочности крепления дюбелей",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "rc09:mineral_wool_fire_barrier_lamella",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Минераловатная ламель противопожарной рассечки",
+      "nameRu": "Минеральная вата для противопожарных рассечек",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "rc09:facade_start_profile",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Профиль стартовый фасадной теплоизоляционной системы",
+      "nameRu": "Стартовый профиль для утеплителя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:attachment-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "CT 190 для приклеивания плит: предварительный расход",
+      "nameRu": "CT 190 для приклеивания плит: предварительный расход",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:base-layer-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "CT 190 для защитного слоя: предварительный расход",
+      "nameRu": "CT 190 для защитного слоя: предварительный расход",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:dry-mix-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Общий предварительный расход CT 190",
+      "nameRu": "Общий предварительный расход CT 190",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:dry-mix-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "CT 190 исполнения KZ, мешки 25 кг",
+      "nameRu": "Клей Ceresit CT 190 для утеплителя, мешок 25 кг",
+      "brandAndModelRu": null,
+      "specificationRu": "Ceresit CT 190, исполнение KZ, мешок 25 кг. Цена указывается за кг.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:dry-mix-bags",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Мешки CT 190 к заказу",
+      "nameRu": "Мешки CT 190 к заказу",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:dry-mix-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток CT 190 после работы",
+      "nameRu": "Остаток CT 190 после работы",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:dry-mix-free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток CT 190 сверх резерва",
+      "nameRu": "Свободный остаток CT 190 сверх резерва",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:dry-mix-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостающее количество CT 190 для расхода",
+      "nameRu": "Недостающее количество CT 190 для расхода",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:dry-mix-reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв CT 190",
+      "nameRu": "Непокрытый резерв CT 190",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:water-min",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нижняя граница воды затворения по паспорту",
+      "nameRu": "Нижняя граница воды затворения по паспорту",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:water-max",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Верхняя граница воды затворения по паспорту",
+      "nameRu": "Верхняя граница воды затворения по паспорту",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:water-used",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода затворения по фактически выбранной дозировке",
+      "nameRu": "Вода для приготовления клея",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:process-attachment",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Приклеить фасадные минераловатные плиты",
+      "nameRu": "Приклеить фасадные минераловатные плиты",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:process-base-layer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Выполнить защитный слой со стеклосеткой",
+      "nameRu": "Выполнить защитный слой со стеклосеткой",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:open-attachment-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд приклеивания минераловатных плит",
+      "nameRu": "Работа по приклеиванию утеплителя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Уточнить, входит ли приклеивание в цену работы по монтажу утеплителя. Повторно эту работу не начислять."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:open-base-layer-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд устройства защитного слоя",
+      "nameRu": "Работа по нанесению защитного слоя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:open-mesh-layout",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Стеклосетка и её раскрой",
+      "nameRu": "Фасадная стеклосетка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:open-mixing-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Миксер, полутёрки и прочий инструмент",
+      "nameRu": "Инструмент для замешивания и нанесения клея",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:open-delivery",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка смеси и воды",
+      "nameRu": "Доставка клея и воды",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:open-preparation-protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подготовка, защита и контроль фасада",
+      "nameRu": "Подготовка основания и защита фасада",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "До начала работ проверить основание и условия работы. Необходимость ремонта и защиты фасада уточнить."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "facade:ct190-kz:materials:r1:open-potlife-clarification",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Уточнение времени использования смеси",
+      "nameRu": "Время использования приготовленного клея",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Перед работой уточнить допустимое время использования приготовленного клея."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:whole-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Рабочие: бетонный слой со швами и уходом",
+      "nameRu": "Работа по устройству бетонной подстилки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:surface-vibrator-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа поверхностного вибратора",
+      "nameRu": "Нормативная работа поверхностного вибратора",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:surface-vibrator-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Поверхностный вибратор: собственная эксплуатация",
+      "nameRu": "Поверхностный вибратор, собственный",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:surface-vibrator-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Поверхностный вибратор: аренда",
+      "nameRu": "Поверхностный вибратор, аренда",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Нормативный расход: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-available",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодное наличие: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Пригодное наличие: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-required-reserve",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сохраняемый резерв: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Сохраняемый резерв: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-supply-quantum",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кратность поставки: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Кратность поставки: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-order-multiples",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Единицы кратности заказа: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Единицы кратности заказа: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток после устройства слоя: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Остаток после устройства слоя: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток сверх резерва: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Свободный остаток сверх резерва: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостающее количество для расхода: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Недостающее количество для расхода: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:concrete-b125-reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв: Тяжёлый бетон B12,5 (М150)",
+      "nameRu": "Непокрытый резерв: Тяжёлый бетон B12,5 (М150)",
+      "brandAndModelRu": null,
+      "specificationRu": "Тяжёлый бетон классаB12,5 (М150), код03-0206-0008; дополнительные проектные характеристики и соответствие поставки подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Битумно-латексная кровельная мастика",
+      "nameRu": "Нормативный расход: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Битумно-латексная кровельная мастика",
+      "nameRu": "Битумно-латексная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-available",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодное наличие: Битумно-латексная кровельная мастика",
+      "nameRu": "Пригодное наличие: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-required-reserve",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сохраняемый резерв: Битумно-латексная кровельная мастика",
+      "nameRu": "Сохраняемый резерв: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-supply-quantum",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кратность поставки: Битумно-латексная кровельная мастика",
+      "nameRu": "Кратность поставки: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-order-multiples",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Единицы кратности заказа: Битумно-латексная кровельная мастика",
+      "nameRu": "Единицы кратности заказа: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток после устройства слоя: Битумно-латексная кровельная мастика",
+      "nameRu": "Остаток после устройства слоя: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток сверх резерва: Битумно-латексная кровельная мастика",
+      "nameRu": "Свободный остаток сверх резерва: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостающее количество для расхода: Битумно-латексная кровельная мастика",
+      "nameRu": "Недостающее количество для расхода: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:bitumen-latex-mastic-reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв: Битумно-латексная кровельная мастика",
+      "nameRu": "Непокрытый резерв: Битумно-латексная кровельная мастика",
+      "brandAndModelRu": null,
+      "specificationRu": "Мастика битумно-латексная кровельная, код01-0202-0008; не горячий битум, праймер или иной герметик. Торговая марка, фасовка и совместимость подтверждаются отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Вода для устройства и ухода за слоем",
+      "nameRu": "Нормативный расход: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для устройства и ухода за слоем",
+      "nameRu": "Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-available",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодное наличие: Вода для устройства и ухода за слоем",
+      "nameRu": "Пригодное наличие: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-required-reserve",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сохраняемый резерв: Вода для устройства и ухода за слоем",
+      "nameRu": "Сохраняемый резерв: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-supply-quantum",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кратность поставки: Вода для устройства и ухода за слоем",
+      "nameRu": "Кратность поставки: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-order-multiples",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Единицы кратности заказа: Вода для устройства и ухода за слоем",
+      "nameRu": "Единицы кратности заказа: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток после устройства слоя: Вода для устройства и ухода за слоем",
+      "nameRu": "Остаток после устройства слоя: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток сверх резерва: Вода для устройства и ухода за слоем",
+      "nameRu": "Свободный остаток сверх резерва: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостающее количество для расхода: Вода для устройства и ухода за слоем",
+      "nameRu": "Недостающее количество для расхода: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:water-reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв: Вода для устройства и ухода за слоем",
+      "nameRu": "Непокрытый резерв: Вода для устройства и ухода за слоем",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода, код01-0601-0001. Пригодность, источник и способ подачи определяются объектом; вода для затворения готового бетона не добавляется отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Нормативный расход: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-available",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодное наличие: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Пригодное наличие: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-required-reserve",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сохраняемый резерв: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Сохраняемый резерв: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-supply-quantum",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кратность поставки: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Кратность поставки: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-order-multiples",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Единицы кратности заказа: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Единицы кратности заказа: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток после устройства слоя: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Остаток после устройства слоя: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток сверх резерва: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Свободный остаток сверх резерва: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостающее количество для расхода: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Недостающее количество для расхода: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:softwood-board-reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв: Необрезные хвойные доски 32–40мм, IV сорт",
+      "nameRu": "Непокрытый резерв: Необрезные хвойные доски 32–40мм, IV сорт",
+      "brandAndModelRu": null,
+      "specificationRu": "Доски хвойных пород необрезные длиной2–3,75м, все ширины, толщиной32–40мм, IV сорта; код01-6304-0055.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:included-planning",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Спланировать основание",
+      "nameRu": "Спланировать основание",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:included-placement",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Уложить, разровнять и уплотнить бетон",
+      "nameRu": "Уложить, разровнять и уплотнить бетон",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:included-joints",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Устроить деформационные швы",
+      "nameRu": "Устроить деформационные швы",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:included-curing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Выполнить уход за бетонным слоем",
+      "nameRu": "Выполнить уход за бетонным слоем",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:open-external-logistics",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка и разгрузка материалов",
+      "nameRu": "Доставка и разгрузка материалов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:open-tools-access",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ручной инструмент и доступ к участку",
+      "nameRu": "Ручной инструмент и доступ к участку",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:open-quality-acceptance",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль и приёмка слоя",
+      "nameRu": "Контроль и приёмка слоя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "До начала работы согласовать проверку качества и защиту слоя. Отдельные испытания и дополнительные материалы учитывать после уточнения."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:open-project-additions",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Дополнительные детали проектного пола",
+      "nameRu": "Дополнительные детали проектного пола",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Сверить состав пола с проектом. Армирование, гидроизоляцию и другие дополнительные работы учитывать отдельно, если они нужны."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "floor-underlayer:concrete:krer11-01-002-09:open-machine-price-scope",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Состав ставки поверхностного вибратора",
+      "nameRu": "Состав ставки поверхностного вибратора",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Уточнить состав цены техники и где уже оплачена работа оператора."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:whole-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Рабочие: подготовка, укладка, разравнивание и уход за стяжкой",
+      "nameRu": "Работа по устройству стяжки 20 мм",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:operator-information",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд машинистов: справочная исходная величина",
+      "nameRu": "Труд машинистов: справочная исходная величина",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:hoist500kg45m-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа: Одномачтовый подъёмник до 500 кг, высота 45 м",
+      "nameRu": "Нормативная работа: Одномачтовый подъёмник до 500 кг, высота 45 м",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:hoist500kg45m-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Одномачтовый подъёмник до 500 кг, высота 45 м: собственная эксплуатация",
+      "nameRu": "Одномачтовый подъёмник до 500 кг, высота 45 м, собственный",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:hoist500kg45m-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Одномачтовый подъёмник до 500 кг, высота 45 м: аренда",
+      "nameRu": "Одномачтовый подъёмник до 500 кг, высота 45 м, аренда",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:surface-vibrator-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа: Поверхностный вибратор",
+      "nameRu": "Нормативная работа: Поверхностный вибратор",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:surface-vibrator-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Поверхностный вибратор: собственная эксплуатация",
+      "nameRu": "Поверхностный вибратор, собственный",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:surface-vibrator-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Поверхностный вибратор: аренда",
+      "nameRu": "Поверхностный вибратор, аренда",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Вода",
+      "nameRu": "Нормативный расход: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода",
+      "nameRu": "Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-available",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодное наличие: Вода",
+      "nameRu": "Пригодное наличие: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-required-reserve",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сохраняемый резерв: Вода",
+      "nameRu": "Сохраняемый резерв: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-supply-quantum",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кратность поставки: Вода",
+      "nameRu": "Кратность поставки: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-order-multiples",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Единицы кратности заказа: Вода",
+      "nameRu": "Единицы кратности заказа: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток после стяжки: Вода",
+      "nameRu": "Остаток после стяжки: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток сверх резерва: Вода",
+      "nameRu": "Свободный остаток сверх резерва: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостача для расхода: Вода",
+      "nameRu": "Недостача для расхода: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:water-reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв: Вода",
+      "nameRu": "Непокрытый резерв: Вода",
+      "brandAndModelRu": null,
+      "specificationRu": "Вода по ресурсу 01-0601-0001; применимые требования к качеству воды подтверждают проектом.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Готовый цементный кладочный раствор М150",
+      "nameRu": "Нормативный расход: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Готовый цементный кладочный раствор М150",
+      "nameRu": "Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-available",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодное наличие: Готовый цементный кладочный раствор М150",
+      "nameRu": "Пригодное наличие: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-required-reserve",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сохраняемый резерв: Готовый цементный кладочный раствор М150",
+      "nameRu": "Сохраняемый резерв: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-supply-quantum",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кратность поставки: Готовый цементный кладочный раствор М150",
+      "nameRu": "Кратность поставки: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-order-multiples",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Единицы кратности заказа: Готовый цементный кладочный раствор М150",
+      "nameRu": "Единицы кратности заказа: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток после стяжки: Готовый цементный кладочный раствор М150",
+      "nameRu": "Остаток после стяжки: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток сверх резерва: Готовый цементный кладочный раствор М150",
+      "nameRu": "Свободный остаток сверх резерва: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостача для расхода: Готовый цементный кладочный раствор М150",
+      "nameRu": "Недостача для расхода: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:ready-mortar-m150-reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв: Готовый цементный кладочный раствор М150",
+      "nameRu": "Непокрытый резерв: Готовый цементный кладочный раствор М150",
+      "brandAndModelRu": null,
+      "specificationRu": "Готовый кладочный цементный раствор марки 150, код 03-0406-0005; совместимость с проектом стяжки и условиями поставки подтверждают отдельно.",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:included-preparation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подготовка основания под стяжку",
+      "nameRu": "Подготовка основания под стяжку",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:included-placing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Укладка и разравнивание готового раствора 20 мм",
+      "nameRu": "Укладка и разравнивание готового раствора 20 мм",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:included-curing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Уход за цементной стяжкой",
+      "nameRu": "Уход за цементной стяжкой",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:open-machine-price-scope",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Состав ставок механизмов и учёт труда оператора",
+      "nameRu": "Состав ставок механизмов и учёт труда оператора",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Уточнить состав цены техники и где уже оплачена работа оператора."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:open-base-and-project-method",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Готовность основания и проектные условия стяжки",
+      "nameRu": "Готовность основания и проектные условия стяжки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "До начала работы проверить основание и проектный состав пола. При необходимости отдельно учесть ремонт основания."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:open-tools-and-ppe",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Инструмент и защита работников",
+      "nameRu": "Инструмент и защита работников",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:open-control-and-protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль и дополнительная защита стяжки",
+      "nameRu": "Контроль и дополнительная защита стяжки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "До начала работы согласовать проверку качества и защиту слоя. Отдельные испытания и дополнительные материалы учитывать после уточнения."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "floor-screed:cement20mm:krer11-01-011-01:open-additional-logistics-and-waste",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Дополнительная доставка и отходы",
+      "nameRu": "Дополнительная доставка и отходы",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:whole-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд рабочих-строителей, разряд3,0 — вся исходная операция кладки",
+      "nameRu": "Каменщики: полный цикл кладки перегородки в полкирпича",
+      "specificationRu": "Труд рабочих-строителей, разряд3,0 — вся исходная операция кладки",
+      "detailsRu": [
+        "Полное исходное наименование: Труд рабочих-строителей, разряд3,0 — вся исходная операция кладки"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:operator-information",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд машиниста, включённый в цену работы крана; без отдельной оплаты",
+      "nameRu": "Машинист крана: учтён в цене машины, без отдельной оплаты",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Труд машиниста, включённый в цену работы крана; без отдельной оплаты"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:crane-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа: Кран башенный для других видов строительства,кроме монтажа технологического оборудования,8т",
+      "nameRu": "Нормативное время работы башенного крана 8 т",
+      "specificationRu": null,
+      "detailsRu": [
+        "Нормативная работа: Кран башенный для других видов строительства,кроме монтажа технологического оборудования,8т"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:crane-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кран башенный для других видов строительства,кроме монтажа технологического оборудования,8т — собственный, эксплуатация",
+      "nameRu": "Башенный кран 8 т — своя техника",
+      "specificationRu": "Кран башенный для других видов строительства,кроме монтажа технологического оборудования,8т — собственный, эксплуатация",
+      "detailsRu": [
+        "Кран башенный для других видов строительства,кроме монтажа технологического оборудования,8т — собственный, эксплуатация"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:crane-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кран башенный для других видов строительства,кроме монтажа технологического оборудования,8т — аренда с машинистом",
+      "nameRu": "Башенный кран 8 т — аренда с машинистом",
+      "specificationRu": "Кран башенный для других видов строительства,кроме монтажа технологического оборудования,8т — аренда с машинистом",
+      "detailsRu": [
+        "Кран башенный для других видов строительства,кроме монтажа технологического оборудования,8т — аренда с машинистом"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Вода",
+      "nameRu": "Расход воды",
+      "specificationRu": null,
+      "detailsRu": [
+        "Нормативный расход: Вода"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода",
+      "nameRu": "Вода",
+      "specificationRu": null,
+      "detailsRu": [
+        "Вода"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:brick-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Кирпич керамический одинарный250×120×65мм,марка100",
+      "nameRu": "Расход одинарного керамического кирпича М100, 250 × 120 × 65 мм",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативный расход: Кирпич керамический одинарный250×120×65мм,марка100"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:brick",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кирпич керамический одинарный250×120×65мм,марка100",
+      "nameRu": "Одинарный керамический кирпич М100, 250 × 120 × 65 мм",
+      "specificationRu": "Кирпич керамический одинарный250×120×65мм,марка100",
+      "detailsRu": [
+        "Полное исходное наименование: Кирпич керамический одинарный250×120×65мм,марка100"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:timber-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Брусья хвойных пород обрезные4–6,5м,шириной75–150мм,толщиной40–75мм,IVсорта",
+      "nameRu": "Расход обрезного хвойного бруса",
+      "specificationRu": null,
+      "detailsRu": [
+        "Нормативный расход: Брусья хвойных пород обрезные4–6,5м,шириной75–150мм,толщиной40–75мм,IVсорта"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:timber",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Брусья хвойных пород обрезные4–6,5м,шириной75–150мм,толщиной40–75мм,IVсорта",
+      "nameRu": "Обрезной хвойный брус",
+      "specificationRu": "Брусья хвойных пород обрезные4–6,5м,шириной75–150мм,толщиной40–75мм,IVсорта",
+      "detailsRu": [
+        "Брусья хвойных пород обрезные4–6,5м,шириной75–150мм,толщиной40–75мм,IVсорта"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:forgings-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Поковки из квадратных заготовок массой1,8кг",
+      "nameRu": "Расход стальных заготовок (поковок)",
+      "specificationRu": null,
+      "detailsRu": [
+        "Нормативный расход: Поковки из квадратных заготовок массой1,8кг"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:forgings",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Поковки из квадратных заготовок массой1,8кг",
+      "nameRu": "Стальные заготовки (поковки)",
+      "specificationRu": "Поковки из квадратных заготовок массой1,8кг",
+      "detailsRu": [
+        "Поковки из квадратных заготовок массой1,8кг"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:mortar-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Раствор готовый кладочный цементно-известковый,марка50",
+      "nameRu": "Расход готового цементно-известкового кладочного раствора М50",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативный расход: Раствор готовый кладочный цементно-известковый,марка50"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:mortar",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Раствор готовый кладочный цементно-известковый,марка50",
+      "nameRu": "Готовый цементно-известковый кладочный раствор М50",
+      "specificationRu": "Раствор готовый кладочный цементно-известковый,марка50",
+      "detailsRu": [
+        "Полное исходное наименование: Раствор готовый кладочный цементно-известковый,марка50"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "masonry:brick-partition:krer08-02-002-05:whole-masonry-operation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кладка конструкций из кирпича — включена в общий труд143.99ч/100м²",
+      "nameRu": "Кладка перегородки — входит в работу каменщиков",
+      "specificationRu": "Кладка конструкций из кирпича — включена в общий труд143.99ч/100м²",
+      "detailsRu": [
+        "Кладка конструкций из кирпича — включена в общий труд143.99ч/100м²"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:whole-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд рабочих среднего разряда3,2; вся операция керамического пола наМ150",
+      "nameRu": "Плиточники: полный цикл укладки на раствор М150",
+      "specificationRu": "Труд рабочих среднего разряда3,2; вся операция керамического пола наМ150",
+      "detailsRu": [
+        "Полное исходное наименование: Труд рабочих среднего разряда3,2; вся операция керамического пола наМ150"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:operator-information",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Исходные затраты труда машинистов — справочно, без второй оплаты",
+      "nameRu": "Труд машинистов: справочно, без отдельной оплаты",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Исходные затраты труда машинистов — справочно, без второй оплаты"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:forklift5t-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа: Автопогрузчики5т",
+      "nameRu": "Нормативное время автопогрузчика 5 т",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативная работа: Автопогрузчики5т"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:forklift5t-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Автопогрузчики5т — собственная эксплуатация",
+      "nameRu": "Автопогрузчик 5 т: собственная эксплуатация",
+      "specificationRu": "Автопогрузчики5т — собственная эксплуатация",
+      "detailsRu": [
+        "Полное исходное наименование: Автопогрузчики5т — собственная эксплуатация",
+        "Код ресурса в источнике: 03-0020"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:forklift5t-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Автопогрузчики5т — аренда с машинистом",
+      "nameRu": "Автопогрузчик 5 т: аренда с машинистом",
+      "specificationRu": "Автопогрузчики5т — аренда с машинистом",
+      "detailsRu": [
+        "Полное исходное наименование: Автопогрузчики5т — аренда с машинистом",
+        "Код ресурса в источнике: 03-0020"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:hoist500kg45m-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа: Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м",
+      "nameRu": "Нормативное время одномачтового подъёмника до 500 кг, высота 45 м",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативная работа: Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:hoist500kg45m-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м — собственная эксплуатация",
+      "nameRu": "Одномачтовый подъёмник до 500 кг, высота 45 м: собственная эксплуатация",
+      "specificationRu": "Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м — собственная эксплуатация",
+      "detailsRu": [
+        "Полное исходное наименование: Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м — собственная эксплуатация",
+        "Код ресурса в источнике: 03-0327"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:hoist500kg45m-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м — аренда с машинистом",
+      "nameRu": "Одномачтовый подъёмник до 500 кг, высота 45 м: аренда с машинистом",
+      "specificationRu": "Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м — аренда с машинистом",
+      "detailsRu": [
+        "Полное исходное наименование: Подъёмники грузоподъёмностью до500кг, одномачтовые, высота подъёма45м — аренда с машинистом",
+        "Код ресурса в источнике: 03-0327"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:truck5t-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа: Автомобили бортовые грузоподъёмностью до5т",
+      "nameRu": "Нормативное время бортового автомобиля до 5 т",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативная работа: Автомобили бортовые грузоподъёмностью до5т"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:truck5t-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностью до5т — собственная эксплуатация",
+      "nameRu": "Бортовой автомобиль до 5 т: собственная эксплуатация",
+      "specificationRu": "Автомобили бортовые грузоподъёмностью до5т — собственная эксплуатация",
+      "detailsRu": [
+        "Полное исходное наименование: Автомобили бортовые грузоподъёмностью до5т — собственная эксплуатация",
+        "Код ресурса в источнике: 40-0001"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:truck5t-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностью до5т — аренда с водителем",
+      "nameRu": "Бортовой автомобиль до 5 т: аренда с водителем",
+      "specificationRu": "Автомобили бортовые грузоподъёмностью до5т — аренда с водителем",
+      "detailsRu": [
+        "Полное исходное наименование: Автомобили бортовые грузоподъёмностью до5т — аренда с водителем",
+        "Код ресурса в источнике: 40-0001"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Вода для всей исходной операции без выдуманного распределения по этапам",
+      "nameRu": "Расход воды для устройства покрытия",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативный расход: Вода для всей исходной операции без выдуманного распределения по этапам"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для всей исходной операции без выдуманного распределения по этапам",
+      "nameRu": "Вода для устройства покрытия",
+      "specificationRu": "Вода для всей исходной операции без выдуманного распределения по этапам",
+      "detailsRu": [
+        "Полное исходное наименование: Вода для всей исходной операции без выдуманного распределения по этапам"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:ceramic-tile-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные",
+      "nameRu": "Расход гладкой неглазурованной одноцветной напольной плитки с красителем",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативный расход: Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:ceramic-tile-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные",
+      "nameRu": "Гладкая неглазурованная одноцветная напольная плитка с красителем, квадратная или прямоугольная",
+      "specificationRu": "Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные",
+      "detailsRu": [
+        "Полное исходное наименование: Плитки керамические для полов гладкие неглазурованные одноцветные с красителем, квадратные и прямоугольные"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:sawdust-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Опилки древесные",
+      "nameRu": "Расход древесных опилок",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативный расход: Опилки древесные"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:sawdust-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Опилки древесные",
+      "nameRu": "Древесные опилки",
+      "specificationRu": "Опилки древесные",
+      "detailsRu": [
+        "Полное исходное наименование: Опилки древесные"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:ready-mortar-m150-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Раствор готовый кладочный цементный, марка150",
+      "nameRu": "Расход готового цементного кладочного раствора М150",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативный расход: Раствор готовый кладочный цементный, марка150"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:ready-mortar-m150-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Раствор готовый кладочный цементный, марка150",
+      "nameRu": "Готовый цементный кладочный раствор М150",
+      "specificationRu": "Раствор готовый кладочный цементный, марка150",
+      "detailsRu": [
+        "Полное исходное наименование: Раствор готовый кладочный цементный, марка150"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:included-base-preparation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подготовка основания, включённая в цельную исходную операцию",
+      "nameRu": "Подготовка основания: включена в работу",
+      "specificationRu": "Подготовка основания, включённая в цельную исходную операцию",
+      "detailsRu": [
+        "Полное исходное наименование: Подготовка основания, включённая в цельную исходную операцию"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:included-tiles-bedding-joints",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подбор/сортировка плитки, настилка, прослойка и цементная заделка швов",
+      "nameRu": "Подбор и укладка плитки, прослойка и цементные швы: включены в работу",
+      "specificationRu": "Подбор/сортировка плитки, настилка, прослойка и цементная заделка швов",
+      "detailsRu": [
+        "Полное исходное наименование: Подбор/сортировка плитки, настилка, прослойка и цементная заделка швов"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:included-curing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Уход за покрытием, включённый в исходную операцию",
+      "nameRu": "Уход за покрытием: включён в работу",
+      "specificationRu": "Уход за покрытием, включённый в исходную операцию",
+      "detailsRu": [
+        "Полное исходное наименование: Уход за покрытием, включённый в исходную операцию"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:included-cleaning-washing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Очистка и промывка покрытия, включённые в исходную операцию",
+      "nameRu": "Очистка и промывка покрытия: включены в работу",
+      "specificationRu": "Очистка и промывка покрытия, включённые в исходную операцию",
+      "detailsRu": [
+        "Полное исходное наименование: Очистка и промывка покрытия, включённые в исходную операцию"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:whole-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд рабочих-строителей, средний разряд2,7; вся операция установки гранитного борта",
+      "nameRu": "Рабочие: полный цикл установки гранитного бордюра",
+      "specificationRu": "Труд рабочих-строителей, средний разряд2,7; вся операция установки гранитного борта",
+      "detailsRu": [
+        "Полное исходное наименование: Труд рабочих-строителей, средний разряд2,7; вся операция установки гранитного борта"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:machine-operators-included",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Затраты труда машинистов, учтённые в ценах работы машин",
+      "nameRu": "Труд машинистов: включён в цены работы машин",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Затраты труда машинистов, учтённые в ценах работы машин"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:crane-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа: Кран на автомобильном ходу при работе на других видах строительства, грузоподъёмность10т",
+      "nameRu": "Нормативная работа: Кран на автомобильном ходу при работе на других видах строительства, грузоподъёмность10т",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:crane-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кран на автомобильном ходу при работе на других видах строительства, грузоподъёмность10т — собственный, эксплуатация",
+      "nameRu": "Автокран 10 т — собственная эксплуатация",
+      "specificationRu": "Кран на автомобильном ходу при работе на других видах строительства, грузоподъёмность10т — собственный, эксплуатация",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:crane-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кран на автомобильном ходу при работе на других видах строительства, грузоподъёмность10т — аренда с машинистом",
+      "nameRu": "Автокран 10 т — аренда с машинистом",
+      "specificationRu": "Кран на автомобильном ходу при работе на других видах строительства, грузоподъёмность10т — аренда с машинистом",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:truck-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативная работа: Автомобиль бортовой грузоподъёмностью до5т",
+      "nameRu": "Нормативная работа: Автомобиль бортовой грузоподъёмностью до5т",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:truck-own",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Автомобиль бортовой грузоподъёмностью до5т — собственный, эксплуатация",
+      "nameRu": "Бортовой автомобиль до 5 т — собственная эксплуатация",
+      "specificationRu": "Автомобиль бортовой грузоподъёмностью до5т — собственный, эксплуатация",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:truck-hired",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Автомобиль бортовой грузоподъёмностью до5т — аренда с водителем",
+      "nameRu": "Бортовой автомобиль до 5 т — аренда с водителем",
+      "specificationRu": "Автомобиль бортовой грузоподъёмностью до5т — аренда с водителем",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:nails-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Гвозди строительные",
+      "nameRu": "Нормативный расход: Гвозди строительные",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:nails",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Гвозди строительные",
+      "nameRu": "Строительные гвозди",
+      "specificationRu": "Гвозди строительные",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:timber-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Брусья хвойных пород необрезные, длина4–6,5м, все ширины, толщина100/125мм, IV сорт",
+      "nameRu": "Нормативный расход: Брусья хвойных пород необрезные, длина4–6,5м, все ширины, толщина100/125мм, IV сорт",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:timber",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Брусья хвойных пород необрезные, длина4–6,5м, все ширины, толщина100/125мм, IV сорт",
+      "nameRu": "Брус для опалубки основания",
+      "specificationRu": "Брусья хвойных пород необрезные, длина4–6,5м, все ширины, толщина100/125мм, IV сорт",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:concrete-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Бетон тяжёлый готовый классаВ15 (М200)",
+      "nameRu": "Нормативный расход: Бетон тяжёлый готовый классаВ15 (М200)",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:concrete",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Бетон тяжёлый готовый классаВ15 (М200)",
+      "nameRu": "Готовый бетон В15 (М200)",
+      "specificationRu": "Бетон тяжёлый готовый классаВ15 (М200)",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:mortar-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Раствор готовый кладочный цементно-известковый марки100",
+      "nameRu": "Нормативный расход: Раствор готовый кладочный цементно-известковый марки100",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:mortar",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Раствор готовый кладочный цементно-известковый марки100",
+      "nameRu": "Готовый цементно-известковый раствор М100",
+      "specificationRu": "Раствор готовый кладочный цементно-известковый марки100",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:stone-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Камень бортовой гранитный из горных пород, марка1ГП",
+      "nameRu": "Нормативный расход: Камень бортовой гранитный из горных пород, марка1ГП",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:stone",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Камень бортовой гранитный из горных пород, марка1ГП",
+      "nameRu": "Гранитный бортовой камень 1ГП",
+      "specificationRu": "Камень бортовой гранитный из горных пород, марка1ГП",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:foundation-formwork-operation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Устройство и уплотнение бетонного основания; установка и снятие опалубки — в общем труде109ч на100м",
+      "nameRu": "Бетонное основание и опалубка: включены в работу",
+      "specificationRu": "Устройство и уплотнение бетонного основания; установка и снятие опалубки — в общем труде109ч на100м",
+      "detailsRu": [
+        "Полное исходное наименование: Устройство и уплотнение бетонного основания; установка и снятие опалубки — в общем труде109ч на100м"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:installation-joints-operation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Установка и подтёска гранитных бортов; заполнение и расшивка швов — в общем труде109ч на100м",
+      "nameRu": "Установка, подтёска бордюра и заделка швов: включены в работу",
+      "specificationRu": "Установка и подтёска гранитных бортов; заполнение и расшивка швов — в общем труде109ч на100м",
+      "detailsRu": [
+        "Полное исходное наименование: Установка и подтёска гранитных бортов; заполнение и расшивка швов — в общем труде109ч на100м"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "granite-kerb:1gp-cement-pavement:granite-cleaning-operation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Очистка гранитных бортов — включена в общий труд109ч на100м",
+      "nameRu": "Очистка гранитного бордюра: включена в работу",
+      "specificationRu": "Очистка гранитных бортов — включена в общий труд109ч на100м",
+      "detailsRu": [
+        "Полное исходное наименование: Очистка гранитных бортов — включена в общий труд109ч на100м"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "material:concrete:membrane-curing-compound:antisol250w-us",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Состав для ухода за свежим бетоном Sika Antisol-250 W, готовый к применению, канистра 19 л",
+      "nameRu": "Состав для ухода за бетоном Sika Antisol-250 W, 19 л",
+      "specificationRu": "Состав для ухода за свежим бетоном Sika Antisol-250 W, готовый к применению, канистра 19 л",
+      "detailsRu": [],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:worker",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Рабочие-строители среднего разряда 2,5",
+      "nameRu": "Работа по устройству песчаного основания",
+      "specificationRu": "Рабочие-строители среднего разряда 2,5",
+      "detailsRu": [
+        "Полное исходное наименование: Рабочие-строители среднего разряда 2,5"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:operators",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Затраты труда машинистов — справочно в составе ставок автопогрузчика и компрессора",
+      "nameRu": "Машинисты — учтены в работе техники",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Затраты труда машинистов — справочно в составе ставок автопогрузчика и компрессора"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:equipment:forklift5t",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Автопогрузчики 5 т",
+      "nameRu": "Автопогрузчик 5 т",
+      "specificationRu": "Автопогрузчики 5 т",
+      "detailsRu": [
+        "Полное исходное наименование: Автопогрузчики 5 т"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:equipment:compressor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Компрессоры передвижные с двигателем внутреннего сгорания, давлением до 686 кПа (7 ат), 5 м³/мин",
+      "nameRu": "Передвижной компрессор 5 м³/мин",
+      "specificationRu": "Компрессоры передвижные с двигателем внутреннего сгорания, давлением до 686 кПа (7 ат), 5 м³/мин",
+      "detailsRu": [
+        "Полное исходное наименование: Компрессоры передвижные с двигателем внутреннего сгорания, давлением до 686 кПа (7 ат), 5 м³/мин"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:equipment:pneumaticRammer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Трамбовки пневматические при работе от стационарного компрессора",
+      "nameRu": "Пневматическая трамбовка",
+      "specificationRu": "Трамбовки пневматические при работе от стационарного компрессора",
+      "detailsRu": [
+        "Полное исходное наименование: Трамбовки пневматические при работе от стационарного компрессора"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:sand",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Песок природный для строительных работ средний",
+      "nameRu": "Песок средний",
+      "specificationRu": "Песок природный для строительных работ средний",
+      "detailsRu": [
+        "Полное исходное наименование: Песок природный для строительных работ средний"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:sand:consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Песок природный для строительных работ средний",
+      "nameRu": "Песок средний — расход на работу",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативный расход: Песок природный для строительных работ средний"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:sand:packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Партии к заказу: Песок природный для строительных работ средний",
+      "nameRu": "Песок средний — партии к покупке",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Партии к заказу: Песок природный для строительных работ средний"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:sand:remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток после устройства слоя: Песок природный для строительных работ средний",
+      "nameRu": "Песок средний — остаток после работы",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Остаток после устройства слоя: Песок природный для строительных работ средний"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:sand:free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток сверх резерва: Песок природный для строительных работ средний",
+      "nameRu": "Песок средний — свободный остаток",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Свободный остаток сверх резерва: Песок природный для строительных работ средний"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:sand:shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостаток материала для слоя: Песок природный для строительных работ средний",
+      "nameRu": "Песок средний — не хватает для работы",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Недостаток материала для слоя: Песок природный для строительных работ средний"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:sand:reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв: Песок природный для строительных работ средний",
+      "nameRu": "Песок средний — не хватает для запаса",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Непокрытый резерв: Песок природный для строительных работ средний"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода",
+      "nameRu": "Вода",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Вода"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:water:consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный расход: Вода",
+      "nameRu": "Вода — расход на работу",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Нормативный расход: Вода"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:water:packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Партии к заказу: Вода",
+      "nameRu": "Вода — партии к покупке",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Партии к заказу: Вода"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:water:remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Остаток после устройства слоя: Вода",
+      "nameRu": "Вода — остаток после работы",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Остаток после устройства слоя: Вода"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:water:free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Свободный остаток сверх резерва: Вода",
+      "nameRu": "Вода — свободный остаток",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Свободный остаток сверх резерва: Вода"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:water:shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Недостаток материала для слоя: Вода",
+      "nameRu": "Вода — не хватает для работы",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Недостаток материала для слоя: Вода"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:material:water:reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Непокрытый резерв: Вода",
+      "nameRu": "Вода — не хватает для запаса",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Непокрытый резерв: Вода"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:included:base-planning",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Планировка основания — в исходном составе, повторная оплата исключена",
+      "nameRu": "Планировка основания — включена",
+      "specificationRu": "Планировка основания — в исходном составе, повторная оплата исключена",
+      "detailsRu": [
+        "Полное исходное наименование: Планировка основания — в исходном составе, повторная оплата исключена"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:included:place-level-compact",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Устройство подстилающего слоя с разравниванием и уплотнением — в исходном составе, повторная оплата исключена",
+      "nameRu": "Укладка и уплотнение песка — включены",
+      "specificationRu": "Устройство подстилающего слоя с разравниванием и уплотнением — в исходном составе, повторная оплата исключена",
+      "detailsRu": [
+        "Полное исходное наименование: Устройство подстилающего слоя с разравниванием и уплотнением — в исходном составе, повторная оплата исключена"
+      ],
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:thickness-control:minimum-thickness-measurements",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Минимальное число измерений толщины песчаного слоя — не выполненная услуга",
+      "nameRu": "Минимальное число замеров толщины",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Минимальное число измерений толщины песчаного слоя — не выполненная услуга"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:thickness-control:maximum-thickness-deviation-mm",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Предельное отклонение толщины от проектного значения — не результат измерения",
+      "nameRu": "Допустимое отклонение толщины",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Предельное отклонение толщины от проектного значения — не результат измерения"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:straightedge-control:planned-measurements",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Запланированные проверки просвета2мрейкой малого помещения — минимум5и проектные точки, не выполнение",
+      "nameRu": "Замеры ровности по плану",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Запланированные проверки просвета2мрейкой малого помещения — минимум5и проектные точки, не выполнение"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-maximum-gap-mm",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Зарегистрированный максимальный просвет из полного журнала; объектный факт",
+      "nameRu": "Наибольший измеренный просвет",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Зарегистрированный максимальный просвет из полного журнала; объектный факт"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "floor-underlayer:sand:krer11-01-002-01:straightedge-control:recorded-excess-over-gap-limit-mm",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Превышение зарегистрированного просвета над15мм — не автоматическая приёмка",
+      "nameRu": "Превышение допустимого просвета",
+      "specificationRu": null,
+      "detailsRu": [
+        "Полное исходное наименование: Превышение зарегистрированного просвета над15мм — не автоматическая приёмка"
+      ],
+      "rowKind": "CALCULATION_DETAIL",
+      "brandAndModelRu": null
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:whole-worker",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Труд рабочих среднего разряда5,3: весь исходный цикл гидроиспытания",
+      "nameRu": "Работа по гидроиспытанию трубопровода",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:hydraulic-plant-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Установка для гидравлических испытаний трубопроводов — нормативное время, цена пока не допущена",
+      "nameRu": "Установка для гидроиспытания трубопровода",
+      "specificationRu": "Параметры и допустимое давление — по паспорту установки и программе испытания. Цена и граница оплаты оператора требуют подтверждения.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Нормативный расход: Вода",
+      "nameRu": "Нормативный расход: Вода",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Вода",
+      "nameRu": "Вода",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:water:packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Партии к заказу: Вода",
+      "nameRu": "Партии к заказу: Вода",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:water:remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Остаток после нормативного расхода: Вода",
+      "nameRu": "Остаток после нормативного расхода: Вода",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:water:free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Свободный остаток сверх резерва: Вода",
+      "nameRu": "Свободный остаток сверх резерва: Вода",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:water:shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Недостаток для нормативного расхода: Вода",
+      "nameRu": "Недостаток для нормативного расхода: Вода",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:water:reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Непокрытый сохраняемый резерв: Вода",
+      "nameRu": "Непокрытый сохраняемый резерв: Вода",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:paint-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Нормативный расход: Масляная краска МА-0115: мумия или сурик железный",
+      "nameRu": "Нормативный расход: Масляная краска МА-0115: мумия или сурик железный",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:paint",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Масляная краска МА-0115: мумия или сурик железный",
+      "nameRu": "Масляная краска МА-0115",
+      "specificationRu": "МА-0115: мумия или сурик железный",
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:paint:packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Партии к заказу: Масляная краска МА-0115: мумия или сурик железный",
+      "nameRu": "Партии к заказу: Масляная краска МА-0115: мумия или сурик железный",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:paint:remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Остаток после нормативного расхода: Масляная краска МА-0115: мумия или сурик железный",
+      "nameRu": "Остаток после нормативного расхода: Масляная краска МА-0115: мумия или сурик железный",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:paint:free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Свободный остаток сверх резерва: Масляная краска МА-0115: мумия или сурик железный",
+      "nameRu": "Свободный остаток сверх резерва: Масляная краска МА-0115: мумия или сурик железный",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:paint:shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Недостаток для нормативного расхода: Масляная краска МА-0115: мумия или сурик железный",
+      "nameRu": "Недостаток для нормативного расхода: Масляная краска МА-0115: мумия или сурик железный",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:paint:reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Непокрытый сохраняемый резерв: Масляная краска МА-0115: мумия или сурик железный",
+      "nameRu": "Непокрытый сохраняемый резерв: Масляная краска МА-0115: мумия или сурик железный",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Нормативный расход: Комбинированная олифа К-3",
+      "nameRu": "Нормативный расход: Комбинированная олифа К-3",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Комбинированная олифа К-3",
+      "nameRu": "Комбинированная олифа К-3",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Партии к заказу: Комбинированная олифа К-3",
+      "nameRu": "Партии к заказу: Комбинированная олифа К-3",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Остаток после нормативного расхода: Комбинированная олифа К-3",
+      "nameRu": "Остаток после нормативного расхода: Комбинированная олифа К-3",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Свободный остаток сверх резерва: Комбинированная олифа К-3",
+      "nameRu": "Свободный остаток сверх резерва: Комбинированная олифа К-3",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Недостаток для нормативного расхода: Комбинированная олифа К-3",
+      "nameRu": "Недостаток для нормативного расхода: Комбинированная олифа К-3",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Непокрытый сохраняемый резерв: Комбинированная олифа К-3",
+      "nameRu": "Непокрытый сохраняемый резерв: Комбинированная олифа К-3",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linen-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Нормативный расход: Очес льняной",
+      "nameRu": "Нормативный расход: Очес льняной",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linen",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Очес льняной",
+      "nameRu": "Льняной очёс",
+      "specificationRu": "Очес льняной",
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linen:packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Партии к заказу: Очес льняной",
+      "nameRu": "Партии к заказу: Очес льняной",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linen:remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Остаток после нормативного расхода: Очес льняной",
+      "nameRu": "Остаток после нормативного расхода: Очес льняной",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linen:free",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Свободный остаток сверх резерва: Очес льняной",
+      "nameRu": "Свободный остаток сверх резерва: Очес льняной",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linen:shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Недостаток для нормативного расхода: Очес льняной",
+      "nameRu": "Недостаток для нормативного расхода: Очес льняной",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:linen:reserve-deficit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Непокрытый сохраняемый резерв: Очес льняной",
+      "nameRu": "Непокрытый сохраняемый резерв: Очес льняной",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:included-step1",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Наружный осмотр трубопровода — включено в исходный труд",
+      "nameRu": "Осмотреть трубопровод",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:included-step2",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Присоединение водопровода и установки для гидравлического испытания — включено в исходный труд",
+      "nameRu": "Подключить водопровод и установку",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:included-step3",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Установка заглушек и манометра — включено в исходный труд",
+      "nameRu": "Установить заглушки и манометр",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:included-step4",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Наполнение системы водой до заданного давления — включено в исходный труд",
+      "nameRu": "Заполнить систему и поднять давление",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:included-step5",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Осмотр трубопровода и устранение дефектов — включено в исходный труд",
+      "nameRu": "Проверить трубопровод и устранить дефекты",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:included-step6",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Окончательная проверка и сдача системы — включено в исходный труд",
+      "nameRu": "Проверить и сдать систему",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:included-step7",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Спуск воды из системы — включено в исходный труд",
+      "nameRu": "Слить воду из системы",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:included-step8",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Снятие заглушек, манометра и отсоединение установки — включено в исходный труд",
+      "nameRu": "Снять оснастку и отключить установку",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:open:accepted-test-boundary",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Подтвердить по схеме отдельный внутренний стальной участок водоснабжения, границы, DN≤50, проектную длину всех труб с фасонными частями/арматурой, отсутствие дубля уже оплаченной опрессовки.",
+      "nameRu": "Проверить границы испытываемого участка",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:open:approved-test-program",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Задать испытательное давление, выдержку, критерий приёмки, пригодность существующего участка и порядок устранения выявленных дефектов. Не брать0,1/10МПа из названия установки и не переноситьVALTEC1,5×/6бар.",
+      "nameRu": "Подтвердить программу и параметры испытания",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:open:machine-price-and-worker-boundary",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Для04-0440 подтвердить комплект установки, манометр/шланги/заглушки и цену её работы, границу5,01ч отдельного труда; прочитать источник оплаты перед exactcatalog manual/snapshot admission.",
+      "nameRu": "Подтвердить оплату установки и оператора",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:open:water-supply-discharge",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Указать доступный источник воды, качество для испытания и разрешённый отвод после спуска; подтвердить фактически оплачиваемые объёмы/сборы вне включённого труда.",
+      "nameRu": "Согласовать подачу и отведение воды",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:open:access-isolation-safety",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Подтвердить отключение участка, границы безопасной зоны, готовый доступ и исключение потребителей из испытательного давления; оценить специальные подмости/допуск отдельно при применимости.",
+      "nameRu": "Обеспечить доступ и безопасное отключение участка",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "hydrotest:internal-steel:dn50:krer16-005-01:open:external-logistics-material-balance",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Подтвердить мобилизацию/возврат установки, поставку четырёх материалов, пригодное наличие/резерв/кратности и остатки; отдельные фиксированные доплаты не прятать в маш.-ч.",
+      "nameRu": "Проверить поставку и наличие материалов",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:whole-oil-painting-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Очистка, проолифка и двухслойная масляная окраска плоского металла",
+      "nameRu": "Работа по окраске металла в два слоя",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:machine-operator-info",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Табличный труд машинистов — справочно",
+      "nameRu": "Табличный труд машинистов — справочно",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:mast-hoist-info",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Одномачтовый подъёмник до 500 кг — справочно",
+      "nameRu": "Одномачтовый подъёмник до 500 кг, высота 45 м",
+      "specificationRu": "Одномачтовый; грузоподъёмность до 500 кг; высота подъёма 45 м. Самостоятельная цена не подтверждена.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:truck-info",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Бортовой автомобиль до 5 т — справочно",
+      "nameRu": "Бортовой автомобиль до 5 т",
+      "specificationRu": "Грузоподъёмность до 5 т. Самостоятельная цена не подтверждена.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:ready-ma25-paint-consumption",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Готовая внутренняя масляная краска МА-25 указанного цвета — расход",
+      "nameRu": "Готовая внутренняя масляная краска МА-25 указанного цвета — расход",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:natural-drying-oil-consumption",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Натуральная олифа — расход для проолифки",
+      "nameRu": "Натуральная олифа — расход для проолифки",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:rags-consumption",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Ветошь — расход",
+      "nameRu": "Ветошь — расход",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:norm-and-project-applicability",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Применимость нормы и классификация металлической поверхности",
+      "nameRu": "Проверить применимость окраски к поверхности",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:prior-coating-and-corrosion-treatment",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Состояние старого покрытия и дополнительная антикоррозионная подготовка",
+      "nameRu": "Уточнить дополнительную подготовку металла",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:product-conditions-and-drying",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Подтверждённый продукт, условия нанесения и высыхание",
+      "nameRu": "Подтвердить краску и условия высыхания",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:material-order-and-stock",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Заказ, запас и фасовка краски, олифы и ветоши",
+      "nameRu": "Проверить наличие и заказ материалов",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:hand-tools-ppe-and-ventilation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Ручной инструмент, СИЗ, вентиляция и пожарная безопасность",
+      "nameRu": "Проверить инструмент, защиту и вентиляцию",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:protection-and-junctions",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Укрытие соседних поверхностей и границы примыканий",
+      "nameRu": "Защитить примыкания и соседние поверхности",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:access-and-scaffolding",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Доступ, подмости и условия работы по высоте",
+      "nameRu": "Проверить безопасный доступ",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:machine-and-logistics-payment",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Обеспечение механизации и отдельная логистика",
+      "nameRu": "Подтвердить стоимость подъёма и перевозок",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:quality-and-acceptance",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Контроль качества и приёмка покрытия",
+      "nameRu": "Согласовать проверку покрытия",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "flat-metal-oil:krer15-04-030-02:need:cleanup-and-waste",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Заключительная уборка и обращение с отходами",
+      "nameRu": "Согласовать уборку и обращение с отходами",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:whole-manual-excavation-labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Ручная разработка траншеи с зачисткой и откидкой грунта от бровки",
+      "nameRu": "Работа по ручной разработке траншеи",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:project-norm-applicability",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Применимость нормы и подтверждение проектного решения",
+      "nameRu": "Проверить грунт, глубину и проект откосов",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:underground-utilities-and-site-safety",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Подземные сети, допуски и безопасность работ",
+      "nameRu": "Проверить подземные сети и безопасность",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:site-preparation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Подготовка участка перед разработкой траншеи",
+      "nameRu": "Уточнить предварительную подготовку участка",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:setting-out-and-survey",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Разбивка траншеи и геодезический контроль",
+      "nameRu": "Подтвердить разбивку и отметки траншеи",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:temporary-water-management",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Временный отвод воды и защита сухой выемки",
+      "nameRu": "Согласовать защиту сухой выемки от воды",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:tools-and-consumables",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Ручной инструмент, расходники и оснащение",
+      "nameRu": "Проверить инструмент и оснащение",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:spoil-balance-and-haul",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Использование, погрузка и вывоз вынутого грунта",
+      "nameRu": "Определить использование и вывоз грунта",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:follow-on-work-and-reinstatement",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Последующие работы и восстановление участка",
+      "nameRu": "Учесть последующие работы отдельно",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "manual-trench:krer01-02-057-01:need:acceptance-and-final-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "brandAndModelRu": null,
+      "sourceTitleRu": "Приёмка выемки и завершающая уборка",
+      "nameRu": "Согласовать приёмку и уборку участка",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:kit-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "GROHE Eurosmart 33265002, полный комплект",
+      "nameRu": "Смеситель с подводкой, креплением и донным клапаном",
+      "brandAndModelRu": null,
+      "specificationRu": "GROHE Eurosmart 33265002, хром, EAN 4005176861543; штатные подводка, донный клапан 1¼ и крепление.",
+      "detailsRu": [
+        "Гибкая подводка, крепление и донный клапан входят в комплект."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:flexible-hoses-reference",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Штатная подводка в составе смесителя",
+      "nameRu": "Гибкая подводка смесителя",
+      "brandAndModelRu": null,
+      "specificationRu": "Комплект GROHE Eurosmart 33265002.",
+      "detailsRu": [
+        "Входит в комплект смесителя; отдельно не покупать."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:waste-set-reference",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Донный клапан 1¼ в составе смесителя",
+      "nameRu": "Донный клапан, 1¼",
+      "brandAndModelRu": null,
+      "specificationRu": "Комплект GROHE Eurosmart 33265002.",
+      "detailsRu": [
+        "Входит в комплект смесителя; отдельно не покупать."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:mounting-set-reference",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "FastFixation в составе смесителя",
+      "nameRu": "Крепление смесителя FastFixation",
+      "brandAndModelRu": null,
+      "specificationRu": "Комплект GROHE Eurosmart 33265002.",
+      "detailsRu": [
+        "Входит в комплект смесителя; отдельно не покупать."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:complete-installation-work",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Полный монтаж одного комплектного смесителя по согласованной границе",
+      "nameRu": "Монтаж смесителя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Крепление, подключение и местная проверка входят в цену монтажа."
+      ]
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-readiness",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Проверить готовность раковины и выводов",
+      "nameRu": "Проверить готовность раковины и выводов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-mounting",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Закрепить смеситель на раковине",
+      "nameRu": "Закрепить смеситель на раковине",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-water-connection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подключить штатную гибкую подводку",
+      "nameRu": "Подключить штатную гибкую подводку",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-waste-connection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Установить штатный донный клапан",
+      "nameRu": "Установить штатный донный клапан",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:process-local-check",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Проверить крепление и работу узла",
+      "nameRu": "Проверить крепление и работу узла",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-different-site",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Изменение выводов или несовместимый узел",
+      "nameRu": "Изменение выводов или несовместимый узел",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Переделку водопровода или слива считают отдельно."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-trap-or-basin",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Раковина, сифон и дополнительные детали",
+      "nameRu": "Раковина, сифон и дополнительные детали",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Раковина, сифон и переходники учитываются по проекту."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-delivery",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка комплектов на объект",
+      "nameRu": "Доставка комплектов на объект",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Доставка уточняется по условиям поставки."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-system-testing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Общие испытания и документация системы",
+      "nameRu": "Общие испытания и документация системы",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Общие испытания сети учитываются отдельно."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plumbing:basin-mixer:grohe33265002:r1:open-special-tools-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Специальный инструмент, защита и отходы",
+      "nameRu": "Специальный инструмент, защита и отходы",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Спецоборудование и дополнительная уборка — при необходимости."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    }
+  ]
+}

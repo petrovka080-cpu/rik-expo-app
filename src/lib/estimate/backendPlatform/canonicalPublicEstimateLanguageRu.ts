@@ -1,4 +1,5 @@
 import publicBindings from '../../../../data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json';
+import simpleResourceBindings from '../../../../data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json';
 import aggressiveFloorFacts from '../../../../data/estimate-benchmarks/source-packs/aggressive-floor-actual-thickness-four-s27-69.json';
 import concreteBaseFacts from '../../../../data/estimate-benchmarks/source-packs/concrete-floor-base-demolition-s27-54.json';
 import { canonicalPublicEstimateInputWordingRu, type CanonicalPublicInputContext } from './canonicalPublicEstimateInputWordingRu';
@@ -14,6 +15,8 @@ export function canonicalPublicEstimateFixtureTextRu(value: string): string {
   // Keep the public distinction between an example and confirmed object facts;
   // never rewrite saved input, source identities or ordinary model/SKU text.
   const edited = value
+    .replace(/(?:\bCONTROL_ONLY(?:\s+QA)?|Проверочный\s+пример)\s+exact source-compatible supply(?:,?\s+not (?:an actual )?supplier offer)?\b/giu,
+      'Проверочный пример; поставка не подтверждена')
     .replace(/\bCONTROL_ONLY\s+QA\s+exact source-compatible supply, not supplier offer\b/giu,
       'Проверочный пример; поставка не подтверждена')
     .replace(/\bCONTROL_ONLY\s+QA\s+source-compatible project reference\b/giu,
@@ -153,10 +156,11 @@ export function canonicalPublicEstimateRowDetailsRu(input: {
 }
 
 function publicRowBinding(input: {rowId?: string | null; titleRu: string; sourceTitleRu?: string}) {
-  return publicBindings.bindings.find(binding => binding.rowId === input.rowId
+  const matches=(binding:{rowId:string;sourceTitleRu:string})=>binding.rowId === input.rowId
     && (binding.sourceTitleRu === (input.sourceTitleRu ?? input.titleRu)
       // A validated saved descriptor can append a selected specification to its
       // exact original title. Keep that specification in the existing details.
       || binding.sourceTitleRu === input.titleRu
-        && input.sourceTitleRu?.startsWith(binding.sourceTitleRu + ' — ')));
+        && input.sourceTitleRu?.startsWith(binding.sourceTitleRu + ' — '));
+  return simpleResourceBindings.bindings.find(matches)??publicBindings.bindings.find(matches);
 }

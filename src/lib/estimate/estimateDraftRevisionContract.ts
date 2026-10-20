@@ -279,6 +279,9 @@ export type EstimateDraftRevision = {
       contractVersion: 'canonical-preliminary-row-admission/v1';
       needSha256: string;
       publicResourcePresentation: CanonicalPublicResourcePresentationV1 | null;
+      /** Optional in old saved projections; enrich only from this exact need. */
+      category?: string | null;
+      costTreatment?: string | null;
       manualTitleOverride: boolean;
       manualQuantityOverride: boolean;
       calculatedQuantityBeforeOverride: number | null;
