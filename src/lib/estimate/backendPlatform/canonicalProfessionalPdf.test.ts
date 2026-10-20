@@ -22,6 +22,8 @@ test("versioned professional PDF jobs reject an obsolete worker and retain legac
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-s27-75-subwork-resources-template52" }))
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
+  expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-operation-resource-presentation-template60" }))
+    .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   for (const invalid of [null, [], { rendererVersion: null }]) {
     expect(() => assertCanonicalProfessionalPdfJobRendererVersion(invalid))
       .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
@@ -104,7 +106,7 @@ test.each(['LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EX
   expect(projection.html).toContain('<strong>полный итог не рассчитан</strong>');
   expect(projection.html).not.toContain('Полный итог: требуется уточнение цен.');
   expect(projection.html).not.toContain('<strong>требуется уточнение цен</strong>');
-  expect(projection.html).toContain('<strong>Позиций расчёта</strong><br>1');
+  expect(projection.html).toContain('<strong>Позиций сметы</strong><br>1');
   expect(projection.html).toContain('<strong>Количество известно</strong><br>1; ещё не рассчитано 0');
   if(status==='REQUIRED_RESOURCE_EXCLUDED')expect(projection.html).toContain('Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав.');
   expect(source).toHaveLength(1);
@@ -355,7 +357,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-public-example-wording-template57");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-operation-resource-presentation-template61");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -678,7 +680,8 @@ describe("R4-A6 canonical professional PDF", () => {
     const before = JSON.stringify(source);
     const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: "Закладные" });
     expect(projection.html.match(/Сварочный труд &lt;img src=x&gt; &amp; оператор/gu)).toHaveLength(1);
-    expect(projection.html.match(/<td class="money">Не суммируется<\/td>/gu)).toHaveLength(2);
+    expect(projection.html.match(/<td class="money">Без доплаты<\/td>/gu)).toHaveLength(2);
+    expect(projection.html.match(/<td class="money">Включено в №1<\/td>/gu)).toHaveLength(2);
     expect(projection.html).not.toContain("стоимость учитывается в труде и механизмах");
     expect(projection.html).not.toContain("<img");
     expect(projection.html).not.toContain("Проектная комплектация");
@@ -722,7 +725,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).not.toContain("Контрольная или исполнительная позиция; отдельно не суммируется.");
     expect(projection.html).not.toContain("Условие выполнения работ; отдельно не суммируется.");
     expect(projection.html).not.toContain("Позиция исключена из итога сохранённой версии.");
-    expect(projection.html.match(/<td class="money">Не применяется<\/td>/gu)).toHaveLength(3);
+    expect(projection.html.match(/<td class="money">[^<]+ \(справочно\)<\/td>/gu)).toHaveLength(3);
     expect(projection.html.match(/<td class="money">Не суммируется<\/td>/gu)).toHaveLength(3);
     expect(projection).toMatchObject({pricedRowCount:1,nonPayableRowCount:3,categoryTotals:{material:200}});
     expect(projection.html).not.toContain("стоимость включена в позицию");

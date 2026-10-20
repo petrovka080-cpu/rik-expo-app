@@ -57,9 +57,11 @@ import { chromium, type Browser } from "playwright";
 import { evaluateFormulaGraph } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import {
   bindCanonicalEstimateResourcePriceKeys,
+  canonicalEstimateResourceIncludedByDefault,
   canonicalRoundDecimal,
   compileCanonicalEstimateCore,
 } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
+import {canonicalPublicResourceDisplayPresentationV1} from '../../../src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { canonicalEstimateStableJson } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
 import { canonicalManualPriceMigrationBindings, canonicalManualExclusionMigrationBindings, assertCanonicalStoredManualPriceReleaseMigration } from "../../../src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration";
 import {readCanonicalSameImmutableCalculationR1,assertCanonicalImmutableCalculationSavedInputsR1} from './canonicalImmutableCalculationContinuityR1';
@@ -2420,7 +2422,7 @@ async function compileClaimedJob(
     await client.query(
       `
     select effective.id,effective.cumulative_manifest,effective.approved_template_baseline_id,
-      resolved.definition_version,resolved.passport,resolved.catalog_id,resolved.definition_sha256,resolved.source_metadata,identity.title_ru,identity.domain,
+      resolved.definition_version,resolved.passport,resolved.catalog_id,resolved.definition_sha256,resolved.source_metadata,resolved.applicability,identity.title_ru,identity.domain,
       coalesce(baseline.input_values,'{}'::jsonb) baseline_input_values,
       coalesce(baseline.input_classification,'{}'::jsonb) baseline_input_classification
     from public.estimate_definition_release release
@@ -2797,6 +2799,28 @@ async function compileClaimedJob(
     parent:parentRevision?{catalogId:String(parentRevision.catalog_id),parameters:parentRevision.input_parameters}:null,
     submittedParameters,effectiveParameters:{...confirmedParameters,...submittedParameters},
   });
+  if (Object.hasOwn(definition.applicability ?? {}, 'primaryMeasureSelectionV1')) {
+    const { assertCanonicalPrimaryMeasureSelectionV1 } = await import('../../../src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1');
+    const parentPrimary = parentRevision == null ? undefined : {
+      parameterId: String(parentRevision.primary_measure_parameter_id ?? ''),
+      unitId: (await client.query(
+        'select unit_id from public.estimate_parameter_definition where definition_version_id=$1 and parameter_id=$2',
+        [parentRevision.definition_version_id, parentRevision.primary_measure_parameter_id],
+      )).rows[0]?.unit_id,
+    };
+    assertCanonicalPrimaryMeasureSelectionV1({
+      selectionMetadata: definition.applicability.primaryMeasureSelectionV1,
+      parameterSchema: parameterDefinitions.map(p => ({
+        parameterId: p.parameter_id, valueType: p.value_type, unitId: p.unit_id,
+        visibilityRole: p.truth_metadata?.visibility_role, constraints: p.constraints_json ?? {},
+        formulaConsumers: formulas.filter(f => f.input_parameter_ids.includes(p.parameter_id)).map(f => f.formula_id),
+      })),
+      submittedParameters: { ...confirmedParameters, ...submittedParameters },
+      explicitPrimaryMeasureParameterId: parentRevision == null
+        ? (payload.requestIdentity as JsonRecord | undefined)?.primaryMeasureParameterId : undefined,
+      parentPrimaryMeasure: parentPrimary,
+    });
+  }
   const compiled = await compileCanonicalEstimateCore({
     compositionSelectionV1:effectiveCompositionSelectionV1,
     operation: String(job.operation) as "compile" | "recalculate",
@@ -3820,6 +3844,8 @@ type LocalCanonicalResourceSearchRow = {
   procurementEligible: boolean;
   sourceSearchText: string;
   publicSearchText: string;
+  displayNameRu: string;
+  displayDetailsRu: readonly string[];
 };
 
 let localCanonicalResourceIndexPromise: Promise<LocalCanonicalResourceSearchRow[]> | null = null;
@@ -3851,9 +3877,12 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
     withClient(async (client) => (await client.query(`
       select distinct on(lower(title_ru),row_type,unit_id)
         id::text resource_id,definition_version_id::text,row_id,title_ru,row_type,unit_id,
-        semantic_owner,procurement_eligible
+        semantic_owner,procurement_eligible,resource_graph,source_metadata
       from public.estimate_resource_spec
       where definition_version_id=any($1::uuid[]) and trim(title_ru)<>''
+        and trim(coalesce(unit_id,''))<>''
+        and trim(coalesce(resource_graph->>'costTreatment',source_metadata->>'costTreatment',''))
+          not in ('INCLUDED_IN_RESOURCE_ROWS','INFORMATIONAL_SCOPE','CONTROL_OR_DOCUMENT')
       order by lower(title_ru),row_type,unit_id,definition_version_id,row_id
     `, [definitionVersionIds])).rows),
     withClient(async (client) => (await client.query(`
@@ -3870,6 +3899,9 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
     );
     const unique = new Map<string, LocalCanonicalResourceSearchRow>();
     for (const resource of resources as Record<string, any>[]) {
+      // Apply the compiler's exact standalone cost policy before public-name
+      // deduplication. Included items and counters are not new payable rows.
+      if (!canonicalEstimateResourceIncludedByDefault({resource_graph:resource.resource_graph,source_metadata:resource.source_metadata})) continue;
       const semanticOwnerId = String(resource.semantic_owner ?? "").trim();
       const sourceCatalogId = catalogIdFromResourceSemanticOwner(semanticOwnerId);
       const workTitleRu = sourceCatalogId
@@ -3885,7 +3917,15 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
       ) continue;
       const rowType = String(resource.row_type) as LocalCanonicalResourceSearchRow["rowType"];
       if (!["material", "labor", "equipment", "service", "waste"].includes(rowType)) continue;
-      const unitId = String(resource.unit_id ?? "").trim() || "pcs";
+      const unitId = String(resource.unit_id).trim();
+      const presentation=canonicalPublicResourceDisplayPresentationV1({rowId:String(resource.row_id),
+        titleRu:String(resource.title_ru),descriptor:resource.resource_graph?.publicResourcePresentationV1});
+      const displayNameRu=presentation?.nameRu ?? titleRu;
+      // Catalog choices show physical specifications, never legacy method notes.
+      const displayDetailsRu=displayNameRu!==titleRu
+        ? presentation?.specificationRu ? [presentation.specificationRu]
+          : ['material','equipment'].includes(rowType) ? [titleRu] : []
+        : [];
       const key = `${normalizeSearchQuery(titleRu)}\u001f${rowType}\u001f${unitId}`;
       if (unique.has(key)) continue;
       unique.set(key, {
@@ -3894,12 +3934,14 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
         sourceCatalogId,
         rowId: String(resource.row_id),
         titleRu,
+        displayNameRu,
+        displayDetailsRu,
         rowType,
         unitId,
         semanticOwnerId,
         procurementEligible: resource.procurement_eligible === true,
-        sourceSearchText: normalizeSearchQuery(String(resource.title_ru)),
-        publicSearchText: normalizeSearchQuery(titleRu),
+        sourceSearchText: normalizeSearchQuery([String(resource.title_ru),...displayDetailsRu].join(' ')),
+        publicSearchText: normalizeSearchQuery(displayNameRu),
       });
     }
     return [...unique.values()];
@@ -4863,6 +4905,8 @@ async function route(
         sourceCatalogId: row.sourceCatalogId,
         rowId: row.rowId,
         titleRu: row.titleRu,
+        displayNameRu: row.displayNameRu,
+        displayDetailsRu: row.displayDetailsRu,
         rowType: row.rowType,
         unitId: row.unitId,
         semanticOwnerId: row.semanticOwnerId,

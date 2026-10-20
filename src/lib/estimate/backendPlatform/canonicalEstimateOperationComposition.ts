@@ -9,12 +9,14 @@ export type CanonicalEstimateOperationReference = {
   completionCriterionRu: string;
   processOrdinal?: number;
   processRole?: "PROCESS" | "REFERENCE_ONLY" | "COST_SUMMARY";
+  whenResourcePresent?: readonly string[];
   additionalOperations?: readonly {
     operationId: string;
     operationTitleRu: string;
     completionCriterionRu: string;
     processOrdinal?: number;
     processRole?: "PROCESS" | "REFERENCE_ONLY" | "COST_SUMMARY";
+    whenResourcePresent?: readonly string[];
   }[];
 };
 
@@ -24,6 +26,10 @@ export function canonicalEstimateOperationReference(value: unknown): CanonicalEs
   const keys = ["groupId", "groupTitleRu", "operationId", "operationTitleRu", "completionCriterionRu"] as const;
   if (candidate.contractVersion !== "canonical-operation-resource/v1"
     || keys.some(key => typeof candidate[key] !== "string" || !String(candidate[key]).trim())) return null;
+  if (candidate.whenResourcePresent != null && (!Array.isArray(candidate.whenResourcePresent)
+    || candidate.whenResourcePresent.length === 0 || candidate.whenResourcePresent.length > 64
+    || candidate.whenResourcePresent.some(id => typeof id !== 'string' || !id.trim())
+    || new Set(candidate.whenResourcePresent).size !== candidate.whenResourcePresent.length)) return null;
   return candidate as CanonicalEstimateOperationReference;
 }
 
@@ -44,6 +50,7 @@ export function canonicalEstimateOperationReferences(value: unknown): CanonicalE
       operationId: related.operationId, operationTitleRu: related.operationTitleRu,
       completionCriterionRu: related.completionCriterionRu,
       processOrdinal: related.processOrdinal, processRole: related.processRole,
+      whenResourcePresent: related.whenResourcePresent,
     });
     if (!reference || seen.has(reference.operationId)) continue;
     references.push(reference); seen.add(reference.operationId);
@@ -63,10 +70,12 @@ export type CanonicalEstimateResourceOperationSection = {
 /** UI and documents use only the immutable revision's declared relationships.
  * Related operations get a reference to the primary owner, never a second row. */
 export function canonicalEstimateResourceOperationSections(
-  resources: readonly { rowId: string; operation: unknown; titleRu: string; sourceOperation?: unknown; excludedOperationKeys?: readonly string[] }[],
+  resources: readonly { rowId: string; sourceRowId?: string; operation: unknown; titleRu: string; sourceOperation?: unknown; excludedOperationKeys?: readonly string[] }[],
   scopeDecisions: readonly CanonicalScopeRequirementDecisionV1[] = [],
+  scopeResourceOperations: readonly {rowId:string;operation:unknown}[] = [],
 ): CanonicalEstimateResourceOperationSection[] {
   const sections = new Map<string, CanonicalEstimateResourceOperationSection>();
+  const presentResourceIds = new Set(resources.flatMap(resource => [resource.rowId,...(resource.sourceRowId?[resource.sourceRowId]:[])]));
   const keyOf = (reference: CanonicalEstimateOperationReference | null) => reference
     ? JSON.stringify([reference.groupId, reference.operationId]) : 'general';
   const obtain = (operation: CanonicalEstimateOperationReference | null) => {
@@ -83,6 +92,7 @@ export function canonicalEstimateResourceOperationSections(
     const owner = obtain(primary ?? null);
     if (!owner.resourceIds.includes(resource.rowId)) owner.resourceIds.push(resource.rowId);
     for (const reference of related) {
+      if (reference.whenResourcePresent && !reference.whenResourcePresent.some(id => presentResourceIds.has(id))) continue;
       const section = obtain(reference);
       if (!section.sharedResources.some(shared => shared.rowId === resource.rowId)) {
         section.sharedResources.push({ rowId: resource.rowId, titleRu: resource.titleRu,
@@ -97,6 +107,8 @@ export function canonicalEstimateResourceOperationSections(
   // become quantity rows or new cost owners. Completed preparation remains
   // visible at its own stage, with no repeated execution charge.
   const resourceOwner = new Map(resources.map(resource => [resource.rowId,
+    canonicalEstimateOperationReference(resource.operation)]));
+  const scopeSourceOwners=new Map(scopeResourceOperations.map(resource=>[resource.rowId,
     canonicalEstimateOperationReference(resource.operation)]));
   for (const group of groupCanonicalScopeRequirementsV1(scopeDecisions)) {
     if (group.statuses.every(status => status === 'NOT_APPLICABLE')) continue;
@@ -117,7 +129,13 @@ export function canonicalEstimateResourceOperationSections(
       const owner=resourceOwner.get(id);return owner?.groupId===group.groupId?[[keyOf(owner),owner] as const]:[];
     })).values()];
     const declaredOwner=coveringOwners.length===1?coveringOwners[0]:declaredOwners.length===1?declaredOwners[0]:null;
-    const operation: CanonicalEstimateOperationReference = coveredOwner ?? declaredOwner ?? {
+    // Scope rows are omitted from quantity rows, but retain their own authored
+    // operation. Use it only when every obligation in this group declares the
+    // same operation; ambiguity must never borrow an unrelated stage.
+    const sourceDeclarations=decisions.map(decision=>scopeSourceOwners.get(decision.rowId));
+    const sourceOwners=[...new Map(sourceDeclarations.flatMap(owner=>owner?[[keyOf(owner),owner] as const]:[])).values()];
+    const sourceOwner=sourceDeclarations.length>0&&sourceDeclarations.every(Boolean)&&sourceOwners.length===1?sourceOwners[0]:null;
+    const operation: CanonicalEstimateOperationReference = coveredOwner ?? sourceOwner ?? declaredOwner ?? {
       contractVersion: 'canonical-operation-resource/v1', groupId: 'saved-scope-stages',
       groupTitleRu: 'Подработы и ресурсы выбранной работы', operationId: group.groupId,
       operationTitleRu: group.titleRu, completionCriterionRu: group.detailsRu.join(' '),
@@ -176,9 +194,10 @@ export type CanonicalEstimateWorkProcessGroup = {
 
 /** A presentation of saved operation ownership, with no new rows or costs. */
 export function canonicalEstimateWorkProcess(
-  resources: readonly { rowId: string; operation: unknown; titleRu?: string; category?: string; costTreatment?: string }[],
+  resources: readonly { rowId: string; sourceRowId?: string; operation: unknown; titleRu?: string; category?: string; costTreatment?: string }[],
   mainWorkTitleRu = "Основная работа",
 ): CanonicalEstimateWorkProcessGroup[] {
+  const presentResourceIds = new Set(resources.flatMap(resource => [resource.rowId,...(resource.sourceRowId?[resource.sourceRowId]:[])]));
   const resourceBucketTitles = new Set([
     'Материалы, оснащение и совместимая поставка',
     'Готовые операции, граница и контроль',
@@ -197,6 +216,7 @@ export function canonicalEstimateWorkProcess(
   for (const resource of resources) {
     const declaredReferences = canonicalEstimateOperationReferences(resource.operation);
     for (let reference of declaredReferences.length ? declaredReferences : [null]) {
+      if (reference?.whenResourcePresent && !reference.whenResourcePresent.some(id => presentResourceIds.has(id))) continue;
       if (reference?.processRole === "REFERENCE_ONLY" || reference?.processRole === "COST_SUMMARY") continue;
       // Legacy buckets describe resource categories, not an execution step.
       if (reference && resourceBucketTitles.has(reference.operationTitleRu)) reference = null;

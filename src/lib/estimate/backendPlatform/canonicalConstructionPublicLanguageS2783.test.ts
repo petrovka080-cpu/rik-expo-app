@@ -87,7 +87,7 @@ it('distinguishes actual crane choices without overriding an authored contextual
  expect(canonicalEstimateParameterChoiceLabelRu('selected_delivery_selection','NOT_SELECTED')).toBe('Не добавлять отдельную доставку');
 });
 it('versions new document projections while historical artifact bytes and source titles remain independent',()=>{
- expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toContain('template57');
+ expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toContain('template61');
  expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r16-public-example-wording');
  const b=binding(wp+'whole-worker');expect(b.sourceTitleRu).toContain('разряда5,3');expect(b.nameRu).not.toContain('разряда5,3');
  expect(details({rowId:b.rowId,titleRu:b.sourceTitleRu}).join(' ')).toContain('разряда5,3');

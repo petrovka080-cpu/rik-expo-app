@@ -1,0 +1,1408 @@
+{
+  "contract": "remaining-three-project-resource-composition/r5",
+  "status": "CANDIDATE_NOT_PUBLISHED",
+  "universalConsumptionClaimed": false,
+  "fullTechnicalAcceptance": false,
+  "publicNames": {
+    "hydro": {
+      "hydrotest:internal-steel:dn50:krer16-005-01:whole-worker": {
+        "sourceTitleRu": "Труд рабочих среднего разряда5,3: весь исходный цикл гидроиспытания",
+        "nameRu": "Работа по гидроиспытанию трубопровода",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:hydraulic-plant-consumed": {
+        "sourceTitleRu": "Установка для гидравлических испытаний трубопроводов — нормативное время, цена пока не допущена",
+        "nameRu": "Установка для гидроиспытания трубопровода",
+        "specificationRu": "Параметры и допустимое давление — по паспорту установки и программе испытания. Цена и граница оплаты оператора требуют подтверждения.",
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:water-consumed": {
+        "sourceTitleRu": "Нормативный расход: Вода",
+        "nameRu": "Нормативный расход: Вода",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:water": {
+        "sourceTitleRu": "Вода",
+        "nameRu": "Вода",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:water:packages": {
+        "sourceTitleRu": "Партии к заказу: Вода",
+        "nameRu": "Партии к заказу: Вода",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:water:remaining": {
+        "sourceTitleRu": "Остаток после нормативного расхода: Вода",
+        "nameRu": "Остаток после нормативного расхода: Вода",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:water:free": {
+        "sourceTitleRu": "Свободный остаток сверх резерва: Вода",
+        "nameRu": "Свободный остаток сверх резерва: Вода",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:water:shortage": {
+        "sourceTitleRu": "Недостаток для нормативного расхода: Вода",
+        "nameRu": "Недостаток для нормативного расхода: Вода",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:water:reserve-deficit": {
+        "sourceTitleRu": "Непокрытый сохраняемый резерв: Вода",
+        "nameRu": "Непокрытый сохраняемый резерв: Вода",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:paint-consumed": {
+        "sourceTitleRu": "Нормативный расход: Масляная краска МА-0115: мумия или сурик железный",
+        "nameRu": "Нормативный расход: Масляная краска МА-0115: мумия или сурик железный",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:paint": {
+        "sourceTitleRu": "Масляная краска МА-0115: мумия или сурик железный",
+        "nameRu": "Масляная краска МА-0115",
+        "specificationRu": "МА-0115: мумия или сурик железный",
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:paint:packages": {
+        "sourceTitleRu": "Партии к заказу: Масляная краска МА-0115: мумия или сурик железный",
+        "nameRu": "Партии к заказу: Масляная краска МА-0115: мумия или сурик железный",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:paint:remaining": {
+        "sourceTitleRu": "Остаток после нормативного расхода: Масляная краска МА-0115: мумия или сурик железный",
+        "nameRu": "Остаток после нормативного расхода: Масляная краска МА-0115: мумия или сурик железный",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:paint:free": {
+        "sourceTitleRu": "Свободный остаток сверх резерва: Масляная краска МА-0115: мумия или сурик железный",
+        "nameRu": "Свободный остаток сверх резерва: Масляная краска МА-0115: мумия или сурик железный",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:paint:shortage": {
+        "sourceTitleRu": "Недостаток для нормативного расхода: Масляная краска МА-0115: мумия или сурик железный",
+        "nameRu": "Недостаток для нормативного расхода: Масляная краска МА-0115: мумия или сурик железный",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:paint:reserve-deficit": {
+        "sourceTitleRu": "Непокрытый сохраняемый резерв: Масляная краска МА-0115: мумия или сурик железный",
+        "nameRu": "Непокрытый сохраняемый резерв: Масляная краска МА-0115: мумия или сурик железный",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil-consumed": {
+        "sourceTitleRu": "Нормативный расход: Комбинированная олифа К-3",
+        "nameRu": "Нормативный расход: Комбинированная олифа К-3",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil": {
+        "sourceTitleRu": "Комбинированная олифа К-3",
+        "nameRu": "Комбинированная олифа К-3",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:packages": {
+        "sourceTitleRu": "Партии к заказу: Комбинированная олифа К-3",
+        "nameRu": "Партии к заказу: Комбинированная олифа К-3",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:remaining": {
+        "sourceTitleRu": "Остаток после нормативного расхода: Комбинированная олифа К-3",
+        "nameRu": "Остаток после нормативного расхода: Комбинированная олифа К-3",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:free": {
+        "sourceTitleRu": "Свободный остаток сверх резерва: Комбинированная олифа К-3",
+        "nameRu": "Свободный остаток сверх резерва: Комбинированная олифа К-3",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:shortage": {
+        "sourceTitleRu": "Недостаток для нормативного расхода: Комбинированная олифа К-3",
+        "nameRu": "Недостаток для нормативного расхода: Комбинированная олифа К-3",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linseed-oil:reserve-deficit": {
+        "sourceTitleRu": "Непокрытый сохраняемый резерв: Комбинированная олифа К-3",
+        "nameRu": "Непокрытый сохраняемый резерв: Комбинированная олифа К-3",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linen-consumed": {
+        "sourceTitleRu": "Нормативный расход: Очес льняной",
+        "nameRu": "Нормативный расход: Очес льняной",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linen": {
+        "sourceTitleRu": "Очес льняной",
+        "nameRu": "Льняной очёс",
+        "specificationRu": "Очес льняной",
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linen:packages": {
+        "sourceTitleRu": "Партии к заказу: Очес льняной",
+        "nameRu": "Партии к заказу: Очес льняной",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linen:remaining": {
+        "sourceTitleRu": "Остаток после нормативного расхода: Очес льняной",
+        "nameRu": "Остаток после нормативного расхода: Очес льняной",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linen:free": {
+        "sourceTitleRu": "Свободный остаток сверх резерва: Очес льняной",
+        "nameRu": "Свободный остаток сверх резерва: Очес льняной",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linen:shortage": {
+        "sourceTitleRu": "Недостаток для нормативного расхода: Очес льняной",
+        "nameRu": "Недостаток для нормативного расхода: Очес льняной",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:linen:reserve-deficit": {
+        "sourceTitleRu": "Непокрытый сохраняемый резерв: Очес льняной",
+        "nameRu": "Непокрытый сохраняемый резерв: Очес льняной",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:included-step1": {
+        "sourceTitleRu": "Наружный осмотр трубопровода — включено в исходный труд",
+        "nameRu": "Осмотреть трубопровод",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:included-step2": {
+        "sourceTitleRu": "Присоединение водопровода и установки для гидравлического испытания — включено в исходный труд",
+        "nameRu": "Подключить водопровод и установку",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:included-step3": {
+        "sourceTitleRu": "Установка заглушек и манометра — включено в исходный труд",
+        "nameRu": "Установить заглушки и манометр",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:included-step4": {
+        "sourceTitleRu": "Наполнение системы водой до заданного давления — включено в исходный труд",
+        "nameRu": "Заполнить систему и поднять давление",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:included-step5": {
+        "sourceTitleRu": "Осмотр трубопровода и устранение дефектов — включено в исходный труд",
+        "nameRu": "Проверить трубопровод и устранить дефекты",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:included-step6": {
+        "sourceTitleRu": "Окончательная проверка и сдача системы — включено в исходный труд",
+        "nameRu": "Проверить и сдать систему",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:included-step7": {
+        "sourceTitleRu": "Спуск воды из системы — включено в исходный труд",
+        "nameRu": "Слить воду из системы",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:included-step8": {
+        "sourceTitleRu": "Снятие заглушек, манометра и отсоединение установки — включено в исходный труд",
+        "nameRu": "Снять оснастку и отключить установку",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:open:accepted-test-boundary": {
+        "sourceTitleRu": "Подтвердить по схеме отдельный внутренний стальной участок водоснабжения, границы, DN≤50, проектную длину всех труб с фасонными частями/арматурой, отсутствие дубля уже оплаченной опрессовки.",
+        "nameRu": "Проверить границы испытываемого участка",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:open:approved-test-program": {
+        "sourceTitleRu": "Задать испытательное давление, выдержку, критерий приёмки, пригодность существующего участка и порядок устранения выявленных дефектов. Не брать0,1/10МПа из названия установки и не переноситьVALTEC1,5×/6бар.",
+        "nameRu": "Подтвердить программу и параметры испытания",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:open:machine-price-and-worker-boundary": {
+        "sourceTitleRu": "Для04-0440 подтвердить комплект установки, манометр/шланги/заглушки и цену её работы, границу5,01ч отдельного труда; прочитать источник оплаты перед exactcatalog manual/snapshot admission.",
+        "nameRu": "Подтвердить оплату установки и оператора",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:open:water-supply-discharge": {
+        "sourceTitleRu": "Указать доступный источник воды, качество для испытания и разрешённый отвод после спуска; подтвердить фактически оплачиваемые объёмы/сборы вне включённого труда.",
+        "nameRu": "Согласовать подачу и отведение воды",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:open:access-isolation-safety": {
+        "sourceTitleRu": "Подтвердить отключение участка, границы безопасной зоны, готовый доступ и исключение потребителей из испытательного давления; оценить специальные подмости/допуск отдельно при применимости.",
+        "nameRu": "Обеспечить доступ и безопасное отключение участка",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "hydrotest:internal-steel:dn50:krer16-005-01:open:external-logistics-material-balance": {
+        "sourceTitleRu": "Подтвердить мобилизацию/возврат установки, поставку четырёх материалов, пригодное наличие/резерв/кратности и остатки; отдельные фиксированные доплаты не прятать в маш.-ч.",
+        "nameRu": "Проверить поставку и наличие материалов",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      }
+    },
+    "paint": {
+      "flat-metal-oil:krer15-04-030-02:whole-oil-painting-labor": {
+        "sourceTitleRu": "Очистка, проолифка и двухслойная масляная окраска плоского металла",
+        "nameRu": "Работа по окраске металла в два слоя",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "flat-metal-oil:krer15-04-030-02:machine-operator-info": {
+        "sourceTitleRu": "Табличный труд машинистов — справочно",
+        "nameRu": "Табличный труд машинистов — справочно",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "flat-metal-oil:krer15-04-030-02:mast-hoist-info": {
+        "sourceTitleRu": "Одномачтовый подъёмник до 500 кг — справочно",
+        "nameRu": "Одномачтовый подъёмник до 500 кг, высота 45 м",
+        "specificationRu": "Одномачтовый; грузоподъёмность до 500 кг; высота подъёма 45 м. Самостоятельная цена не подтверждена.",
+        "detailsRu": []
+      },
+      "flat-metal-oil:krer15-04-030-02:truck-info": {
+        "sourceTitleRu": "Бортовой автомобиль до 5 т — справочно",
+        "nameRu": "Бортовой автомобиль до 5 т",
+        "specificationRu": "Грузоподъёмность до 5 т. Самостоятельная цена не подтверждена.",
+        "detailsRu": []
+      },
+      "flat-metal-oil:krer15-04-030-02:ready-ma25-paint-consumption": {
+        "sourceTitleRu": "Готовая внутренняя масляная краска МА-25 указанного цвета — расход",
+        "nameRu": "Готовая внутренняя масляная краска МА-25 указанного цвета — расход",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "flat-metal-oil:krer15-04-030-02:natural-drying-oil-consumption": {
+        "sourceTitleRu": "Натуральная олифа — расход для проолифки",
+        "nameRu": "Натуральная олифа — расход для проолифки",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "flat-metal-oil:krer15-04-030-02:rags-consumption": {
+        "sourceTitleRu": "Ветошь — расход",
+        "nameRu": "Ветошь — расход",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "CALCULATION_DETAIL"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:norm-and-project-applicability": {
+        "sourceTitleRu": "Применимость нормы и классификация металлической поверхности",
+        "nameRu": "Проверить применимость окраски к поверхности",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:prior-coating-and-corrosion-treatment": {
+        "sourceTitleRu": "Состояние старого покрытия и дополнительная антикоррозионная подготовка",
+        "nameRu": "Уточнить дополнительную подготовку металла",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:product-conditions-and-drying": {
+        "sourceTitleRu": "Подтверждённый продукт, условия нанесения и высыхание",
+        "nameRu": "Подтвердить краску и условия высыхания",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:material-order-and-stock": {
+        "sourceTitleRu": "Заказ, запас и фасовка краски, олифы и ветоши",
+        "nameRu": "Проверить наличие и заказ материалов",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:hand-tools-ppe-and-ventilation": {
+        "sourceTitleRu": "Ручной инструмент, СИЗ, вентиляция и пожарная безопасность",
+        "nameRu": "Проверить инструмент, защиту и вентиляцию",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:protection-and-junctions": {
+        "sourceTitleRu": "Укрытие соседних поверхностей и границы примыканий",
+        "nameRu": "Защитить примыкания и соседние поверхности",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:access-and-scaffolding": {
+        "sourceTitleRu": "Доступ, подмости и условия работы по высоте",
+        "nameRu": "Проверить безопасный доступ",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:machine-and-logistics-payment": {
+        "sourceTitleRu": "Обеспечение механизации и отдельная логистика",
+        "nameRu": "Подтвердить стоимость подъёма и перевозок",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:quality-and-acceptance": {
+        "sourceTitleRu": "Контроль качества и приёмка покрытия",
+        "nameRu": "Согласовать проверку покрытия",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "flat-metal-oil:krer15-04-030-02:need:cleanup-and-waste": {
+        "sourceTitleRu": "Заключительная уборка и обращение с отходами",
+        "nameRu": "Согласовать уборку и обращение с отходами",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      }
+    },
+    "trench": {
+      "manual-trench:krer01-02-057-01:whole-manual-excavation-labor": {
+        "sourceTitleRu": "Ручная разработка траншеи с зачисткой и откидкой грунта от бровки",
+        "nameRu": "Работа по ручной разработке траншеи",
+        "specificationRu": null,
+        "detailsRu": []
+      },
+      "manual-trench:krer01-02-057-01:need:project-norm-applicability": {
+        "sourceTitleRu": "Применимость нормы и подтверждение проектного решения",
+        "nameRu": "Проверить грунт, глубину и проект откосов",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "manual-trench:krer01-02-057-01:need:underground-utilities-and-site-safety": {
+        "sourceTitleRu": "Подземные сети, допуски и безопасность работ",
+        "nameRu": "Проверить подземные сети и безопасность",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "manual-trench:krer01-02-057-01:need:site-preparation": {
+        "sourceTitleRu": "Подготовка участка перед разработкой траншеи",
+        "nameRu": "Уточнить предварительную подготовку участка",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "manual-trench:krer01-02-057-01:need:setting-out-and-survey": {
+        "sourceTitleRu": "Разбивка траншеи и геодезический контроль",
+        "nameRu": "Подтвердить разбивку и отметки траншеи",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "manual-trench:krer01-02-057-01:need:temporary-water-management": {
+        "sourceTitleRu": "Временный отвод воды и защита сухой выемки",
+        "nameRu": "Согласовать защиту сухой выемки от воды",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "manual-trench:krer01-02-057-01:need:tools-and-consumables": {
+        "sourceTitleRu": "Ручной инструмент, расходники и оснащение",
+        "nameRu": "Проверить инструмент и оснащение",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "manual-trench:krer01-02-057-01:need:spoil-balance-and-haul": {
+        "sourceTitleRu": "Использование, погрузка и вывоз вынутого грунта",
+        "nameRu": "Определить использование и вывоз грунта",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "manual-trench:krer01-02-057-01:need:follow-on-work-and-reinstatement": {
+        "sourceTitleRu": "Последующие работы и восстановление участка",
+        "nameRu": "Учесть последующие работы отдельно",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      },
+      "manual-trench:krer01-02-057-01:need:acceptance-and-final-cleanup": {
+        "sourceTitleRu": "Приёмка выемки и завершающая уборка",
+        "nameRu": "Согласовать приёмку и уборку участка",
+        "specificationRu": null,
+        "detailsRu": [],
+        "rowKind": "PROCESS_NOTE"
+      }
+    }
+  },
+  "sources": {
+    "hydro": {
+      "catalogId": "canonical-work:master:internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+      "sourceId": "kg_krer16_internal_pipelines_2015_steel_hydrotest_005_01",
+      "normId": "16-07-005-01",
+      "sha256": "4fb2b609cf72486f9ef5f110cd606f6632fba3302cd3d52015f41dac24cbd17b",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no16truboprovodyvnutrennie_compressed-154690837388a4dd7.26767770.pdf",
+      "locatorRu": "§1.0/1.3/1.5, §2.5, стр.8 исключение16-07-005 из коэффициентов высоты; стр.76–77, только16-07-005-01; измеритель100м",
+      "parentDefinitionId": "c7a94a94-d3fa-5754-9aab-d9f63c953d1b",
+      "parentCaptureSha256": "f8e4fbbcaa4c1a7197c2097087f33fc64dc3512f8b166495746edd8da57c59b1"
+    },
+    "paint": {
+      "catalogId": "canonical-work:master:metal_flat_interior_oil_two_coats_ma25_krer15_04_030_02",
+      "sourceId": "kg_krer15_04_030_02_flat_metal_oil_two_coats_r1",
+      "normId": "KRER15-04-030-02",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "locatorRu": "PDF / печатная 194: таблица 15-04-030, колонка 02, измеритель 100 м² окрашиваемой поверхности; состав для норм 02–05. Техническая часть: PDF 8–9, пп. 1.1 и 1.2; PDF 11, п. 1.17; PDF 12, п. 1.26; PDF 16, пп. 2.32, 2.36–2.37 (исключённые геометрии). PDF 2: утверждение и регистрация. Подзаголовок колонки 01/02 содержит «больших поверхностей (кроме кровель)»; численный порог размера не дан.",
+      "parentDefinitionId": "02956bd8-3ec2-553b-913f-005bc0c33d8f",
+      "parentCaptureSha256": "dc2c3a2d94fb7b04221b2344452c4cff96c849b2a3b5cecff7ef21f1ec5efc95"
+    },
+    "trench": {
+      "catalogId": "canonical-work:master:manual_trench_sloped_depth_upto2m_soil1_actual_bank_m3_krer01_02_057_01",
+      "sourceId": "kg_krer01_02_057_01_manual_sloped_trench_g1_r1",
+      "normId": "KRER01-02-057-01",
+      "sha256": "91c4f4db762840481de41f57b6771b5ae0adf0dada240dc1f03655e9d71eab6b",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no1zemlanyeraboty_a4_compressed-938690319b2ec3751.62616019.pdf",
+      "locatorRu": "PDF 309 / печатная 308: таблица 01-02-057, состав 01–03, измеритель 100 м³, колонка 01; PDF 12–13 / печатные 11–12: пп. 1.1, 1.2, 1.5; PDF 18–19 / печатные 17–18: пп. 1.55–1.57; PDF 21 / печатная 20: пп. 2.1, 2.5–2.6.",
+      "parentDefinitionId": "a3f71d56-4ea8-5bbe-9f7b-9a00dff70931",
+      "parentCaptureSha256": "79643b219f807f450f699684614a67911d77ff92ffba673dc28cd4274edd4d51"
+    }
+  },
+  "positions": {
+    "hydro": [
+      {
+        "key": "manometer",
+        "titleRu": "Манометр для гидроиспытания",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "connections",
+        "sharedOperations": [
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "adapters",
+        "titleRu": "Переходники для подключения установки",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "connections",
+        "sharedOperations": [
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "plugs",
+        "titleRu": "Испытательные заглушки",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "connections",
+        "sharedOperations": [
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "gaskets",
+        "titleRu": "Уплотнения испытательных соединений",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "connections",
+        "sharedOperations": [
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "pipe-wrench",
+        "titleRu": "Трубный ключ",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "connections",
+        "sharedOperations": [
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "adjustable-wrench",
+        "titleRu": "Разводной ключ",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "connections",
+        "sharedOperations": [
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "pressure-hose",
+        "titleRu": "Рукав высокого давления для испытания",
+        "category": "tool",
+        "unitId": "m",
+        "operation": "connections",
+        "sharedOperations": [
+          "pressure-test"
+        ],
+        "optional": false,
+        "conditionRu": "Длина, соединения и допустимое давление выбираются по утверждённой программе и паспорту установки. Проверьте комплект установки; отдельная оплата оснастки из комплекта запрещена.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "fill-hose",
+        "titleRu": "Шланг для заполнения системы",
+        "category": "tool",
+        "unitId": "m",
+        "operation": "fill",
+        "sharedOperations": [],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "drain-hose",
+        "titleRu": "Шланг для слива воды",
+        "category": "tool",
+        "unitId": "m",
+        "operation": "drain",
+        "sharedOperations": [],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "container",
+        "titleRu": "Ёмкость для сбора воды",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "drain",
+        "sharedOperations": [],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "flashlight",
+        "titleRu": "Переносной светильник",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "inspection",
+        "sharedOperations": [
+          "connections",
+          "pressure-test",
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "gloves",
+        "titleRu": "Защитные перчатки",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "inspection",
+        "sharedOperations": [
+          "connections",
+          "pressure-test",
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "goggles",
+        "titleRu": "Защитные очки",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "inspection",
+        "sharedOperations": [
+          "connections",
+          "pressure-test",
+          "disconnect"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "barrier",
+        "titleRu": "Ограждение зоны испытания",
+        "category": "material",
+        "unitId": "m",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По плану безопасности и фактической границе зоны; не длина испытываемой трубы.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "warning-signs",
+        "titleRu": "Предупреждающие знаки",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "manometer-check",
+        "titleRu": "Поверка или калибровка манометра",
+        "category": "service",
+        "unitId": "test",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только если действующее подтверждение пригодности не предоставлено и требуется программой; не повторная плата за уже поверенный прибор.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "access",
+        "titleRu": "Дополнительные подмости для доступа",
+        "category": "equipment",
+        "unitId": "machine_hour",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только по отдельному плану доступа; не подразумеваются из длины трубы.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "machine-delivery",
+        "titleRu": "Доставка и возврат испытательной установки",
+        "category": "transport",
+        "unitId": "trip",
+        "operation": "logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только вне подтверждённой цены предоставления установки. Число рейсов и обратная доставка подтверждаются предложением.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "material-delivery",
+        "titleRu": "Дополнительная доставка материалов для испытания",
+        "category": "transport",
+        "unitId": "trip",
+        "operation": "logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только сверх включённой поставки четырёх исходных материалов; не повторная покупка воды, краски, олифы или льна.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "water-connection",
+        "titleRu": "Подключение к источнику воды",
+        "category": "service",
+        "unitId": "test",
+        "operation": "fill",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Отдельная услуга только вне включённого присоединения водопровода и цены воды, по условиям объекта.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "water-discharge",
+        "titleRu": "Приём и отведение слитой воды",
+        "category": "service",
+        "unitId": "m3",
+        "operation": "drain",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только по согласованной схеме и фактическому объёму вне включённого спуска воды. Правила отвода и качество воды подтверждаются проектом.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "waste-bags",
+        "titleRu": "Мешки для отходов испытания",
+        "category": "material",
+        "unitId": "piece",
+        "operation": "cleanup",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "waste-transport",
+        "titleRu": "Вывоз отходов испытания",
+        "category": "transport",
+        "unitId": "trip",
+        "operation": "cleanup",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только подтверждённые отходы вне обычной уборки и других перевозок.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      }
+    ],
+    "paint": [
+      {
+        "key": "paint-ma25",
+        "titleRu": "Масляная краска МА-25 для внутренних работ",
+        "category": "material",
+        "unitId": "kg",
+        "operation": "first-coat",
+        "sharedOperations": [
+          "second-coat"
+        ],
+        "optional": false,
+        "conditionRu": "Подтвердите совместимый продукт, цвет и фактический заказ на оба слоя с учётом пригодного наличия и фасовки. Расчётный расход сохранён отдельно и не является автоматически заказом или ещё одной покупкой.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "drying-oil",
+        "titleRu": "Натуральная олифа",
+        "category": "material",
+        "unitId": "kg",
+        "operation": "drying-oil-prime",
+        "sharedOperations": [],
+        "optional": false,
+        "conditionRu": "Выбранная натуральная олифа должна соответствовать проектной системе. Количество заказа учитывает пригодное наличие и фасовку; не дублируйте расчётную строку.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "rags",
+        "titleRu": "Ветошь для очистки металла",
+        "category": "material",
+        "unitId": "kg",
+        "operation": "cleaning",
+        "sharedOperations": [
+          "cleanup"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "wire-brush",
+        "titleRu": "Металлическая щётка",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "cleaning",
+        "sharedOperations": [],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "scraper",
+        "titleRu": "Скребок для очистки металла",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "cleaning",
+        "sharedOperations": [],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "paint-brush",
+        "titleRu": "Малярная кисть",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "first-coat",
+        "sharedOperations": [
+          "drying-oil-prime",
+          "second-coat"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "paint-tray",
+        "titleRu": "Малярная ванночка",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "first-coat",
+        "sharedOperations": [
+          "second-coat"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "mixing-container",
+        "titleRu": "Ёмкость для перемешивания краски",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "first-coat",
+        "sharedOperations": [
+          "drying-oil-prime",
+          "second-coat"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "gloves",
+        "titleRu": "Защитные перчатки",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "preparation",
+        "sharedOperations": [
+          "cleaning",
+          "drying-oil-prime",
+          "first-coat",
+          "second-coat"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "goggles",
+        "titleRu": "Защитные очки",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "preparation",
+        "sharedOperations": [
+          "cleaning",
+          "drying-oil-prime",
+          "first-coat",
+          "second-coat"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "roller",
+        "titleRu": "Малярный валик",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "first-coat",
+        "sharedOperations": [
+          "second-coat"
+        ],
+        "optional": true,
+        "conditionRu": "По выбранному ручному способу нанесения и совместимости с краской; кисть и валик не означают обязательную покупку обоих.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "abrasive",
+        "titleRu": "Шлифовальный материал для металла",
+        "category": "material",
+        "unitId": "piece",
+        "operation": "cleaning",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По состоянию поверхности и проектной подготовке; дополнительное удаление старого покрытия и коррозии требует отдельной работы.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "cleaner",
+        "titleRu": "Очиститель для подготовки металла",
+        "category": "material",
+        "unitId": "l",
+        "operation": "cleaning",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только совместимый состав, прямо предусмотренный проектом и инструкцией выбранного покрытия; растворитель и его дозировка не назначаются автоматически.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "masking-film",
+        "titleRu": "Плёнка для защиты соседних поверхностей",
+        "category": "material",
+        "unitId": "m2",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "masking-tape",
+        "titleRu": "Малярная лента",
+        "category": "material",
+        "unitId": "m",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "respirator",
+        "titleRu": "Респиратор для выбранных окрасочных работ",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Тип защиты выбирается по паспорту безопасности материалов и условиям работ; универсальная модель и срок замены не назначаются.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "ventilation",
+        "titleRu": "Дополнительная вентиляция при окраске",
+        "category": "equipment",
+        "unitId": "machine_hour",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только по плану безопасных работ и паспорту материалов, вне имеющейся вентиляции; не универсальное время на площадь.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "access",
+        "titleRu": "Подмости для окраски металла",
+        "category": "equipment",
+        "unitId": "machine_hour",
+        "operation": "access",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По фактической высоте и плану доступа; не замена исходному подъёмнику и не автоматически полный срок окраски.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "surface-preparation",
+        "titleRu": "Дополнительное удаление старого покрытия и коррозии",
+        "category": "work",
+        "unitId": "m2",
+        "operation": "cleaning",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только согласованный объём сверх включённой очистки. Метод, состояние и граница оплаты подтверждаются обследованием.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "material-delivery",
+        "titleRu": "Доставка краски, олифы и инструмента",
+        "category": "transport",
+        "unitId": "trip",
+        "operation": "logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только за пределами цены поставки и исходного перемещения автомобилем; исходные машино-часы не подтверждают внешние рейсы.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "unloading",
+        "titleRu": "Дополнительная разгрузка материалов для окраски",
+        "category": "service",
+        "unitId": "man_hour",
+        "operation": "logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только подтверждённая услуга сверх основной работы, поставки и предусмотренных подъёмных операций.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "quality-test",
+        "titleRu": "Отдельные испытания окрасочного покрытия",
+        "category": "service",
+        "unitId": "test",
+        "operation": "quality",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только по отдельной программе сверх обычной проверки покрытия; метод и число испытаний задаёт проект.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "waste-container",
+        "titleRu": "Закрывающаяся ёмкость для загрязнённой ветоши",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "cleanup",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По паспорту безопасности и плану обращения с отходами выбранной системы.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "waste-transport",
+        "titleRu": "Вывоз отходов окраски",
+        "category": "transport",
+        "unitId": "trip",
+        "operation": "cleanup",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Отдельная перевозка по фактическому виду отходов и условиям приёма, вне поставки и обычной уборки.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      }
+    ],
+    "trench": [
+      {
+        "key": "spade",
+        "titleRu": "Штыковая лопата",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "dig-and-throw-to-edge",
+        "sharedOperations": [
+          "bottom-and-wall-cleaning",
+          "throw-back-from-edge"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "shovel",
+        "titleRu": "Совковая лопата",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "dig-and-throw-to-edge",
+        "sharedOperations": [
+          "bottom-and-wall-cleaning",
+          "throw-back-from-edge"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "tape-measure",
+        "titleRu": "Рулетка",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "setting-out",
+        "sharedOperations": [
+          "acceptance"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "level",
+        "titleRu": "Строительный уровень",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "setting-out",
+        "sharedOperations": [
+          "acceptance"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "line",
+        "titleRu": "Разметочный шнур",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "setting-out",
+        "sharedOperations": [
+          "acceptance"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "stakes",
+        "titleRu": "Разметочные колышки",
+        "category": "material",
+        "unitId": "piece",
+        "operation": "setting-out",
+        "sharedOperations": [],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "gloves",
+        "titleRu": "Защитные перчатки",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "preparation",
+        "sharedOperations": [
+          "dig-and-throw-to-edge",
+          "bottom-and-wall-cleaning",
+          "throw-back-from-edge"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "boots",
+        "titleRu": "Защитная обувь",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "preparation",
+        "sharedOperations": [
+          "dig-and-throw-to-edge",
+          "bottom-and-wall-cleaning",
+          "throw-back-from-edge"
+        ],
+        "optional": false,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "pick",
+        "titleRu": "Кирка",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "dig-and-throw-to-edge",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По фактическим включениям и выбранному ручному способу в пределах подтверждённой группы грунта; изменение группы требует пересмотра применимости.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "crowbar",
+        "titleRu": "Лом",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "dig-and-throw-to-edge",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "ladder",
+        "titleRu": "Лестница для доступа в траншею",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Способ доступа по плану безопасных работ и фактической глубине; глубина до 2 м не означает автоматическую покупку лестницы.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "barrier",
+        "titleRu": "Ограждение траншеи",
+        "category": "material",
+        "unitId": "m",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Длина по плану ограждения опасной зоны; не удваивается автоматически от длины траншеи.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "warning-signs",
+        "titleRu": "Знаки безопасности у траншеи",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По ведомости объекта и выбранному способу работ. Учтите имеющееся обеспечение и состав основной цены. Отдельная покупка, аренда или услуга — только для непокрытой потребности.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "wheelbarrow",
+        "titleRu": "Тачка для дополнительного перемещения грунта",
+        "category": "tool",
+        "unitId": "piece",
+        "operation": "spoil-logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только если предусмотрено перемещение сверх включённой откидки от бровки. Повторная оплата включённой операции запрещена.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "water-pump",
+        "titleRu": "Насос для защиты сухой траншеи от воды",
+        "category": "equipment",
+        "unitId": "machine_hour",
+        "operation": "water-protection",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только по отдельному плану предварительного отвода воды. Эта смета относится к сухому незамёрзшему грунту: работа в мокром грунте не включается молча.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "water-hose",
+        "titleRu": "Рукав для отвода воды от траншеи",
+        "category": "tool",
+        "unitId": "m",
+        "operation": "water-protection",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По схеме предварительного отвода воды и комплекту насоса, без автоматической длины от объёма траншеи.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности.",
+        "includedInPositionKeys": [
+          "water-pump"
+        ]
+      },
+      {
+        "key": "cover",
+        "titleRu": "Укрытие траншеи от осадков",
+        "category": "material",
+        "unitId": "m2",
+        "operation": "water-protection",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только по плану защиты сухой выемки; не постоянное крепление стенок.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "survey",
+        "titleRu": "Дополнительная геодезическая разбивка и проверка",
+        "category": "service",
+        "unitId": "test",
+        "operation": "setting-out",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только отдельное задание и состав цены вне обычных измерений и других работ объекта.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "utilities-survey",
+        "titleRu": "Обследование подземных коммуникаций",
+        "category": "service",
+        "unitId": "test",
+        "operation": "preparation",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "По исходным данным, допускам и плану безопасных работ, без автоматической универсальной услуги.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "spoil-loading",
+        "titleRu": "Погрузка лишнего грунта для вывоза",
+        "category": "service",
+        "unitId": "m3",
+        "operation": "spoil-logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только отдельная погрузка сверх ручной разработки, выбрасывания и откидки от бровки. Укажите фактическую измеренную основу объёма погрузки; коэффициент разрыхления не предполагается.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "spoil-transport",
+        "titleRu": "Вывоз лишнего грунта",
+        "category": "transport",
+        "unitId": "trip",
+        "operation": "spoil-logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Число фактических рейсов и вместимость подтверждаются перевозчиком. Объём в естественном состоянии не пересчитывается в рыхлый объём или массу без отдельного доказательства.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "spoil-reception",
+        "titleRu": "Приём вывезенного грунта",
+        "category": "service",
+        "unitId": "t",
+        "operation": "spoil-logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только фактическая принятая масса по документам взвешивания и согласованному месту приёма. Плотность грунта не подставляется.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "tool-delivery",
+        "titleRu": "Доставка инструмента на участок",
+        "category": "transport",
+        "unitId": "trip",
+        "operation": "logistics",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только отдельная перевозка вне общей доставки и основной цены.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "waste-bags",
+        "titleRu": "Мешки для мусора с участка",
+        "category": "material",
+        "unitId": "piece",
+        "operation": "cleanup",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Для отдельно собранного мусора, не фиктивная фасовка всего вынутого грунта.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      },
+      {
+        "key": "waste-transport",
+        "titleRu": "Вывоз мусора с участка",
+        "category": "transport",
+        "unitId": "trip",
+        "operation": "cleanup",
+        "sharedOperations": [],
+        "optional": true,
+        "conditionRu": "Только отдельно выделенный мусор без повторного вывоза тех же объёмов как грунта.",
+        "evidence": "Проверочный перечень обеспечения подработы по проекту и предложению исполнителя; не новая норма количества или производительности."
+      }
+    ]
+  },
+  "captureEvidence": {
+    "sha256": "995da139fd5e49fa45aec857a3f8b3ad467c04edd99f35aef3877d6756143cdf",
+    "protectedSavedRevisions": 104
+  },
+  "paymentPolicy": "One confirmed owner per physical resource. Original whole labour, source quantities, material purchase owners and machine-price gates are retained. Project provision is explicit, not a new numerical norm. Unknown project quantities are not zero.",
+  "openBoundaries": [
+    "Hydraulic installation price and operator scope are not admitted by this schedule.",
+    "Flat-metal source hoist and truck price mappings remain unresolved.",
+    "Site-specific extra preparation, pressure program, soil haul and acceptance evidence are required where applicable."
+  ]
+}

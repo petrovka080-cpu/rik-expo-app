@@ -101,7 +101,7 @@ describe("LoginScreen submit handling", () => {
     const button = findSubmitButton(renderer!);
 
     act(() => {
-      inputs[0]?.props.onChangeText("petrovka080@gmail.com");
+      inputs[0]?.props.onChangeText("developer@example.test");
       inputs[1]?.props.onChangeText("secret");
     });
 
@@ -139,7 +139,7 @@ describe("LoginScreen submit handling", () => {
     const button = findSubmitButton(renderer!);
 
     act(() => {
-      inputs[0]?.props.onChangeText("petrovka080@gmail.com");
+      inputs[0]?.props.onChangeText("developer@example.test");
       inputs[1]?.props.onChangeText("wrong");
     });
 
@@ -174,7 +174,7 @@ describe("LoginScreen submit handling", () => {
     const inputs = renderer!.root.findAllByType(TextInput);
 
     act(() => {
-      inputs[0]?.props.onChangeText("petrovka080@gmail.com");
+      inputs[0]?.props.onChangeText("developer@example.test");
       inputs[1]?.props.onChangeText("secret");
     });
 
@@ -233,7 +233,7 @@ describe("LoginScreen submit handling", () => {
     const button = findSubmitButton(renderer!);
 
     act(() => {
-      inputs[0]?.props.onChangeText("petrovka080@gmail.com");
+      inputs[0]?.props.onChangeText("developer@example.test");
       inputs[1]?.props.onChangeText("secret");
     });
 
@@ -285,7 +285,7 @@ describe("LoginScreen submit handling", () => {
     const button = findSubmitButton(renderer!);
 
     act(() => {
-      inputs[0]?.props.onChangeText("petrovka080@gmail.com");
+      inputs[0]?.props.onChangeText("developer@example.test");
       inputs[1]?.props.onChangeText("secret");
     });
 

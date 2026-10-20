@@ -17,6 +17,7 @@ import type { CanonicalParameterSession } from "../../lib/estimate/canonicalPara
 import { createCancellableDelay } from "../../lib/async/mapWithConcurrencyLimit";
 import { logger } from "../../lib/logger";
 import { buildConsumerCanonicalPrecompileParameterSession } from "./consumerCanonicalParameterEditor";
+import { resolvePrimaryMeasureSelectionV1 } from '../../lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1';
 /*
  * This module is deliberately backend-only: it may derive typed inputs from
  * the user's prompt, but it never compiles a fallback estimate on the client.
@@ -2289,8 +2290,25 @@ export function buildCanonicalBaselinePlan(input: {
     : null;
   const selectedJackingInput = input.catalog.catalogId === ROAD_CROSSING_SLEEVES_SELECTED_JACKING_CATALOG_ID_R1
     ? parseRoadCrossingSleevesSelectedJackingPromptR1(input.prompt) : null;
-  const declaredPrimaryMeasureId = typeof input.catalog.applicability?.primaryMeasureParameterId === "string"
-    ? input.catalog.applicability.primaryMeasureParameterId.trim() || null : null;
+  const branchMeasure = resolvePrimaryMeasureSelectionV1({
+    selectionMetadata: input.catalog.applicability?.primaryMeasureSelectionV1,
+    parameterSchema: input.catalog.parameterSchema,
+    submittedParameters: { ...baselineInputs, ...input.parameterOverrides },
+  });
+  if (branchMeasure.kind === 'CLARIFICATION_REQUIRED') {
+    if ((branchMeasure.reason === 'SELECTION_REQUIRED' || branchMeasure.reason === 'UNKNOWN_SELECTION')
+        && branchMeasure.selectorParameterId) {
+      throw new CanonicalBaselineContractMissingError({
+        message: branchMeasure.questionRu, missingParameterIds: [branchMeasure.selectorParameterId],
+        parameters: { ...baselineInputs, ...input.parameterOverrides },
+        userExplicitParameterIds: Object.keys(input.parameterOverrides ?? {}), textExtractedParameterIds: [],
+      });
+    }
+    throw new CanonicalEstimateApiError(branchMeasure.questionRu, {code: 'PRIMARY_MEASURE_SELECTION_INVALID', httpStatus: 422});
+  }
+  const declaredPrimaryMeasureId = branchMeasure.kind === 'RESOLVED' ? branchMeasure.primaryMeasure.parameterId
+    : typeof input.catalog.applicability?.primaryMeasureParameterId === "string"
+      ? input.catalog.applicability.primaryMeasureParameterId.trim() || null : null;
   const declaredPrimaryMeasure = input.catalog.parameterSchema.find(p => p.parameterId === declaredPrimaryMeasureId);
   const ambiguousGenericArea = hasAmbiguousGenericArea(input.catalog.parameterSchema, input.prompt);
   const extractedUserQuantity = pumpStationInput == null && stripFoundationInput == null
@@ -2456,7 +2474,7 @@ export function buildCanonicalBaselinePlan(input: {
   const preferredPrimaryParameter = input.catalog.parameterSchema.find(
     (parameter) => parameter.parameterId === preferredPrimaryMeasureParameterId,
   );
-  const primaryMeasureParameterId = preferredPrimaryMeasureParameterId
+  const primaryMeasureParameterId = branchMeasure.kind === 'RESOLVED' ? branchMeasure.primaryMeasure.parameterId : preferredPrimaryMeasureParameterId
     && preferredPrimaryParameter
     && (preferredPrimaryParameter?.formulaConsumers == null
       || preferredPrimaryParameter.formulaConsumers.length > 0)
@@ -2484,6 +2502,19 @@ export function buildCanonicalBaselinePlan(input: {
     input.catalog.parameterSchema,
     validation.issues,
   );
+  if (branchMeasure.kind === 'RESOLVED') {
+    // A branch can defer project details, but its selected main quantity must
+    // exist before a revision receives that quantity's immutable identity.
+    for (const issue of validation.issues) {
+      if (issue.parameterId === branchMeasure.primaryMeasure.parameterId && !blockingIssues.includes(issue)) blockingIssues.push(issue);
+    }
+    if (validation.parameters[branchMeasure.primaryMeasure.parameterId] == null && blockingIssues.length === 0) {
+      throw new CanonicalBaselineContractMissingError({
+        message: 'Укажите объём выбранного состава работ.', missingParameterIds: [branchMeasure.primaryMeasure.parameterId],
+        parameters: validation.parameters, userExplicitParameterIds: Object.keys(input.parameterOverrides ?? {}), textExtractedParameterIds,
+      });
+    }
+  }
   if (primaryMeasureParameterId === declaredConnectedCompilerDerivedMeasureId) {
     // A missing derived identity cannot be saved by the revision writer until
     // its ordinary object measurements exist. Reuse their validation issues so
