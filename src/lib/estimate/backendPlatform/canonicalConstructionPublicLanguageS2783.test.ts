@@ -93,7 +93,7 @@ it('versions new document projections while historical artifact bytes and source
  expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r17-simple-grohe-details');
  const b=binding(wp+'whole-worker');expect(b.sourceTitleRu).toContain('разряда5,3');expect(b.nameRu).not.toContain('разряда5,3');
  expect(details({rowId:b.rowId,titleRu:b.sourceTitleRu})).toEqual([]);
- expect(b.detailsRu.join(' ')).toContain('разряда5,3');
+ expect(b.detailsRu?.join(' ')).toContain('разряда5,3');
 });
 
 it.each(['CONTROL_ONLY QA exact source-compatible supply, not supplier offer',

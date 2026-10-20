@@ -853,7 +853,7 @@
     "src/lib/estimate/backendPlatform/canonicalCn87SubfloorMigrationS2769.ts": "a8475947c01886b7950313c19245588fb3d02737bed21240cfa75c5ba764fc4a",
     "src/lib/estimate/backendPlatform/canonicalCommercialCostCoverageV1.ts": "5d10c1b14a79f434a82529680ac0dd7b6ccc2150bdb2b11fd3df58e746c5c607",
     "src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769.ts": "754c1edc61d396b8e67fa70ec99edc3185abd66b2b0bc64a22e085213ccd8e7b",
-    "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "b9ec77e6a2bd36160bdd9eaf720d87346c370d6f1efab717711259e53678df75",
+    "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "644383edd1ccbbcdabe1d9487578f48a928bac3d790cb936a425a1bbbe1eddc9",
     "src/lib/estimate/backendPlatform/canonicalCt126SixDryWallMigrationS2769.ts": "28dce79a06bafa82a83c6b11cc7d8e9d1cb2e216ce9488084471892781a0407a",
     "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts": "1078cf8b1fb9841c40ae22ad16a1e6b737a71d9c1ff8d8d75e70c754c93a15aa",
     "src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1.ts": "f86d0c6e9f41f9b416fda818e1349a53783c40339fe10f46b6a2c9becdf5ef4a",
@@ -2857,7 +2857,7 @@
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 38233794
+    "sourceBytes": 38233795
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true
