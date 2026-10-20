@@ -200,7 +200,7 @@ export function resolveCanonicalScopeRequirementV1(input: {
 }
 
 export function canonicalScopeRequirementStatusRuV1(status: CanonicalScopeRequirementStatusV1): string {
-  return ({INCLUDED:'Учтено рассчитанными ресурсами в этой смете',NOT_APPLICABLE:'Не относится к выбранному полю кровли',
+  return ({INCLUDED:'Учтено рассчитанными ресурсами в этой смете',NOT_APPLICABLE:'Не требуется для выбранного состава работ',
     COMPLETED:'Подтверждено исходными данными',USER_EXCLUDED:'Исключено пользователем из этой сметы',PARTLY_INCLUDED:'Часть учтена; отдельный остаток зависит от проекта',
     REQUIRED_RESOURCE_EXCLUDED:'Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав',
     PROCESS_REQUIRED:'Требование к выполнению работ',PROJECT_SCOPE_OPEN:'Отдельный состав зависит от проекта',

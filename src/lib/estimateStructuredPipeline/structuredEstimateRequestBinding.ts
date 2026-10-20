@@ -268,6 +268,7 @@ export function buildStructuredEstimateRequestDraft(
           sourceParameters: {
             rowCode: need.rowId,
             canonicalSourceTitleRu: need.titleRu,
+            ...(need.publicResourceAlternatives?{canonicalPublicResourceAlternativesV1:need.publicResourceAlternatives}:{}),
             canonicalPublicResourcePresentationV1: need.publicResourcePresentation
               ?? (need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined)?.publicResourcePresentationV1 ?? null,
             canonicalManualTitleOverride: need.manualTitleOverride === true || need.calculationTrace?.manualTitleOverride === true,

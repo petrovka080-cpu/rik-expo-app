@@ -10,7 +10,7 @@ import {roofStageRestoreTargetsV1} from '../../lib/estimate/backendPlatform/cano
 import {roofStageRestoreTargetsV2} from '../../lib/estimate/backendPlatform/canonicalRoofScreedMigrationV1';
 import {roofStageRestoreTargetsV3} from '../../lib/estimate/backendPlatform/canonicalRoofMetalTrimMigrationV1';
 import {roofStageRestoreTargetsV4,roofStageExcludeTargetsV4} from '../../lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1';
-import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNamingEvidence,
+import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNamingEvidenceRevisionIds,
   type CanonicalPreliminaryNamingEvidence } from '../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { publishMountedAndroidPdfCaller } from "../../lib/pdf/androidPdfCallerReadiness";
@@ -1124,20 +1124,23 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private hydrateCurrentCanonicalNamingEvidence = async (): Promise<void> => {
     const bundle = this.state.bundle, load = this.props.onLoadCanonicalNamingEvidence;
     const binding = consumerRepairCanonicalBackendBinding(bundle);
-    if (!bundle || !binding || !load || !missingCanonicalPreliminaryNamingEvidence(bundle)
+    const revisionIds=missingCanonicalPreliminaryNamingEvidenceRevisionIds(bundle);
+    if (!bundle || !binding || !load || !revisionIds.length
       || bundle.draft.consumerUserId !== this.props.consumerUserId || this.canonicalNamingEvidenceDisposed) return;
     const generation = this.canonicalNamingEvidenceGeneration;
     const key = `${generation}|${bundle.draft.id}|${binding.revisionId}|${binding.releaseId}`;
     if (this.canonicalNamingEvidenceAttemptKey === key) return;
     this.canonicalNamingEvidenceAttemptKey = key;
-    try {
-      const evidence = await load(binding.revisionId, bundle.draft.id);
-      if (!evidence || this.canonicalNamingEvidenceDisposed || generation !== this.canonicalNamingEvidenceGeneration) return;
+    for(const revisionId of revisionIds)try {
+      if(this.canonicalNamingEvidenceDisposed||generation!==this.canonicalNamingEvidenceGeneration)return;
+      const evidence = await load(revisionId, bundle.draft.id);
+      if (this.canonicalNamingEvidenceDisposed || generation !== this.canonicalNamingEvidenceGeneration) return;
+      if (!evidence) continue;
       this.setState(current => {
         const latest = current.bundle, owner = consumerRepairCanonicalBackendBinding(latest);
         if (!latest || latest.draft.id !== bundle.draft.id || latest.draft.consumerUserId !== this.props.consumerUserId
           || owner?.revisionId !== binding.revisionId || owner.releaseId !== binding.releaseId
-          || evidence.revisionId !== binding.revisionId || evidence.releaseId !== binding.releaseId) return null;
+          || evidence.revisionId !== revisionId) return null;
         const enriched = enrichCanonicalPreliminaryNamingEvidence(latest, evidence);
         return enriched === latest ? null : {bundle: enriched};
       });

@@ -25,6 +25,18 @@ export type MasterRetainParentBindingsR1 = Readonly<{
   capturedParentSha256: string;
   /** Exact keys: ONLY newly declared parameter IDs, including unresolved []. */
   newParameterSources: MasterExplicitParameterSourcesR1;
+  /** R555 template inputs are historical visible assumptions, not registered
+   * physical norms. Preserve only the exact approved old input provenance. */
+  legacyTemplateAssumptionSources?: Readonly<{
+    contract: 'master-retained-legacy-template-assumptions/r1'; templateId: string;
+    parameterSources: Readonly<Record<string,readonly string[]>>;
+    /** Exact original capture, anchored by the already accepted successor slot.
+     * A second successor keeps the original approval; it never re-approves it
+     * against the newer baseline or turns it into a physical norm. */
+    approvedTemplatePredecessor?: Readonly<{
+      capturedParent: MasterRetainedParentCaptureR1; capturedParentSha256: string;
+    }>;
+  }>;
   /** Explicit one-time second retained successor. Never rewrites the old slot. */
   successorProvenanceContinuation?: Readonly<{
     contract: "master-retained-binding-continuation/r1";
@@ -163,7 +175,68 @@ export function masterRetainParentBindingsOptInR1(
     input, "CAPTURE_BASELINE_SOURCE_KEYS");
   const sourceKeys = c.normativeSources.map(s => s.source_key);
   const baselineSources = Object.values(c.baseline.normative_source_ids);
-  requireThat(baselineSources.every(v => Array.isArray(v) && v.every(s => sourceKeys.includes(s))
+  const legacy = value.legacyTemplateAssumptionSources;
+  if (Object.hasOwn(value, 'legacyTemplateAssumptionSources')) {
+    requireThat(object(legacy) && exactKeys(legacy,['contract','templateId','parameterSources',
+      ...(Object.hasOwn(legacy,'approvedTemplatePredecessor')?['approvedTemplatePredecessor']:[])])
+      && legacy.contract === 'master-retained-legacy-template-assumptions/r1'
+      && typeof legacy.templateId === 'string' && legacy.templateId.length > 0
+      && legacy.templateId === c.definition.source_metadata?.templateId
+      && object(legacy.parameterSources) && Object.keys(legacy.parameterSources).length > 0
+      && Object.keys(legacy.parameterSources).length <= 16, input, 'LEGACY_TEMPLATE_ASSUMPTION_DECLARATION');
+    let approvedCapture=c;
+    if(Object.hasOwn(legacy,'approvedTemplatePredecessor')){
+      const continuation=successorContinuationOf(input,value),predecessor=legacy.approvedTemplatePredecessor;
+      requireThat(continuation!=null&&object(predecessor)
+        &&exactKeys(predecessor,['capturedParent','capturedParentSha256'])
+        &&object(predecessor.capturedParent)&&typeof predecessor.capturedParentSha256==='string',
+        input,'LEGACY_TEMPLATE_ASSUMPTION_PREDECESSOR_DECLARATION');
+      const original=predecessor.capturedParent,previous=c.definition.source_metadata.retainedParentBindingSuccessorV1;
+      requireThat(masterRetainedParentCaptureSha256R1(original)===predecessor.capturedParentSha256
+        &&predecessor.capturedParentSha256===previous.capturedParentSha256
+        &&original.definition.id===previous.parentDefinitionId&&original.baseline.id===previous.parentBaselineId
+        &&original.definition.catalog_id===c.definition.catalog_id
+        &&!Object.hasOwn(original.definition.source_metadata,'retainedParentBindingSuccessorV1')
+        &&!Object.hasOwn(original.definition.source_metadata,'retainedParentBindingContinuationV1'),
+        input,'LEGACY_TEMPLATE_ASSUMPTION_PREDECESSOR_ANCHOR');
+      // Re-run the original strict admission. Only one frozen original edge is
+      // permitted, so this cannot become recursive caller-defined provenance.
+      const {approvedTemplatePredecessor:_original,...originalLegacy}=legacy;
+      masterRetainParentBindingsOptInR1({...input,config:{...input.config,parentReleaseId:original.definition.release_id,
+        binding:{retainParentBindings:{capturedParent:original,capturedParentSha256:predecessor.capturedParentSha256,
+          newParameterSources:{},legacyTemplateAssumptionSources:originalLegacy}}}});
+      approvedCapture=original;
+    }
+    for (const [parameterId, declared] of Object.entries(legacy.parameterSources)) {
+      const p = c.parameters.find(p => p.parameter_id === parameterId);
+      const binding = p?.truth_metadata?.provenance?.approvedTemplateBinding;
+      const approvedParameter=approvedCapture.parameters.find(p=>p.parameter_id===parameterId);
+      const connected = c.formulas.filter(f => Array.isArray(f.input_parameter_ids) && f.input_parameter_ids.includes(parameterId));
+      requireThat(p != null && same(declared, ['r555-source:' + legacy.templateId])
+        && !sourceKeys.includes(declared[0]!) && same(c.baseline.normative_source_ids[parameterId], declared)
+        && c.baseline.input_classification?.[parameterId] === 'ASSUMPTION'
+        && p.truth_metadata?.visibility_role === 'USER_INPUT'
+        && p.truth_metadata?.value_source_role === 'VISIBLE_BASELINE_ASSUMPTION'
+        && object(binding) && binding.catalogId === c.definition.catalog_id
+        && typeof approvedCapture.baseline.source_definition_version_id === 'string'
+        && binding.definitionVersionId === approvedCapture.baseline.source_definition_version_id && binding.baselineId === approvedCapture.baseline.id
+        && approvedParameter!=null&&same(binding,approvedParameter.truth_metadata?.provenance?.approvedTemplateBinding)
+        &&p.unit_id===approvedParameter.unit_id&&p.value_type===approvedParameter.value_type
+        &&same(c.baseline.input_values?.[parameterId],approvedCapture.baseline.input_values?.[parameterId])
+        &&same(c.baseline.normative_source_ids[parameterId],approvedCapture.baseline.normative_source_ids[parameterId])
+        &&c.baseline.input_classification?.[parameterId]===approvedCapture.baseline.input_classification?.[parameterId]
+        && binding.parameterId === parameterId && binding.inputClassification === 'ASSUMPTION'
+        && binding.sourceTree === c.definition.source_metadata.sourceTree
+        && same(binding.value, c.baseline.input_values?.[parameterId])
+        && same(binding.normativeSourceIds, declared)
+        && Array.isArray(binding.formulaConsumerIds) && Array.isArray(binding.resourceConsumerRowIds)
+        && same(setOf(binding.formulaConsumerIds),setOf(connected.map(f=>f.formula_id)))
+        && same(setOf(binding.resourceConsumerRowIds),setOf(c.resources.filter(r=>connected.some(f=>f.formula_id===r.formula_id)).map(r=>r.row_id))),
+        input, 'LEGACY_TEMPLATE_ASSUMPTION_EXACT_APPROVED_INPUT');
+    }
+  }
+  requireThat(Object.entries(c.baseline.normative_source_ids).every(([parameterId,v]) => Array.isArray(v)
+    && v.every(s => sourceKeys.includes(s) || legacy?.parameterSources?.[parameterId]?.includes(s))
     && new Set(v).size === v.length), input, "CAPTURE_BASELINE_SOURCE_CLOSURE");
   const referencedLocators = setOf(c.bindings.map(b => String(b.locator_id)));
   requireThat(same(referencedLocators, c.normativeLocators.map(l => String(l.id)).sort()),
@@ -301,7 +374,8 @@ export async function lockMasterRetainedBindingPreconditionsR1(
   requireThat(isolation.rows[0]?.transaction_isolation === "read committed", input,
     "LOCKED_REREAD_REQUIRES_READ_COMMITTED");
   const keys = setOf([`definition:${c.definition.id}`, `source-key:${input.newSource.source_key}`,
-    ...c.normativeSources.map(s => `source-key:${s.source_key}`)]);
+    ...c.normativeSources.map(s => `source-key:${s.source_key}`),
+    ...Object.values(required(input).legacyTemplateAssumptionSources?.parameterSources ?? {}).flat().map(s=>`source-key:${s}`)]);
   for (const key of keys) await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))",
     [`master-single-definition-retain:v1:${key}`]);
   await client.query(`lock table
@@ -341,7 +415,7 @@ export async function readMasterRetainedBindingPreconditionsR1(
   client: QueryClient, input: MasterRetainedBindingGuardInputR1,
   phase: "BEFORE" | "REGISTERED" = "BEFORE",
 ): Promise<MasterRetainedBindingSnapshotR1> {
-  const c = required(input).capturedParent;
+  const opt = required(input), c = opt.capturedParent;
   await assertMasterRetainedContinuationMetadataRoundTripR1(client, input);
   const read = async (sql: string, values: unknown[], cap: number): Promise<Json[]> => {
     const result = await client.query(sql, values);
@@ -377,7 +451,8 @@ export async function readMasterRetainedBindingPreconditionsR1(
   const normativeSources = await full("estimate_normative_source", `id=any($1::uuid[])
     or source_key=any($2::text[]) or id in (select source_id from public.estimate_normative_locator
       where id in(select locator_id from public.estimate_work_normative_binding where definition_version_id=$3))`,
-    [c.normativeSources.map(s => s.id), c.normativeSources.map(s => s.source_key), c.definition.id], c.normativeSources.length);
+    [c.normativeSources.map(s => s.id), setOf([...c.normativeSources.map(s => s.source_key),
+      ...Object.values(opt.legacyTemplateAssumptionSources?.parameterSources ?? {}).flat()]), c.definition.id], c.normativeSources.length);
   const newSources = await full("estimate_normative_source", "id=$1 or source_key=$2",
     [input.newSource.id, input.newSource.source_key], 1);
   const newLocators = await full("estimate_normative_locator", "id=any($1::uuid[]) or source_id=$2",
@@ -413,6 +488,13 @@ export function assertMasterRetainedParentComputationR1(
   requireThat(formulaIds.every(id => typeof id === "string" && id.length > 0)
     && new Set(formulaIds).size === formulaIds.length, input, "NEXT_FORMULA_IDS");
   const formulas = new Map(next.formulas.map(f => [f.formula_id, f]));
+  const legacyAssumptions = Object.keys(opt.legacyTemplateAssumptionSources?.parameterSources ?? {});
+  if (legacyAssumptions.length) {
+    const capturedFormulas = new Set(c.formulas.map(f=>f.formula_id));
+    requireThat(next.formulas.filter(f=>!capturedFormulas.has(f.formula_id)).every(f=>
+      Array.isArray(f.input_parameter_ids) && !f.input_parameter_ids.some((id:string)=>legacyAssumptions.includes(id))),
+      input,'LEGACY_TEMPLATE_ASSUMPTION_NOT_A_NEW_QUANTITY_NORM');
+  }
   for (const old of c.formulas) {
     const actual = formulas.get(old.formula_id);
     const repair = opt.formulaExpressionRepairs?.[old.formula_id];

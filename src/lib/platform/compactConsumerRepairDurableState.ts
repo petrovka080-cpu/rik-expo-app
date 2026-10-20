@@ -588,43 +588,12 @@ export function buildConsumerRepairDurableHistorySummary(
   };
 }
 
-function compactEditableEstimateRowForDurableStorage(row: EditableEstimateRow): EditableEstimateRow {
-  return {
-    ...row,
-    calculationTrace: stringLimit(row.calculationTrace, 720),
-    sourceParameters: compactConsumerRepairSourceParameters(row.sourceParameters),
-    catalogCandidates: [],
-  };
-}
-
 function compactEditableEstimateRowForEmergencyStorage(row: EditableEstimateRow): EditableEstimateRow {
   return {
     ...row,
     calculationTrace: stringLimit(row.calculationTrace, 240),
     sourceParameters: compactConsumerRepairSourceParameters(row.sourceParameters),
     catalogCandidates: [],
-  };
-}
-
-function compactEditableEstimateSnapshotForDurableStorage(
-  snapshot: EditableEstimateSnapshot | null | undefined,
-): EditableEstimateSnapshot | null {
-  if (!snapshot) return null;
-  return {
-    ...snapshot,
-    rows: snapshot.rows.map(compactEditableEstimateRowForDurableStorage),
-  };
-}
-
-function compactEstimateRevisionSnapshotForDurableStorage(
-  revision: EstimateRevisionSnapshot,
-): EstimateRevisionSnapshot {
-  return {
-    ...revision,
-    editable_estimate_snapshot: {
-      ...revision.editable_estimate_snapshot,
-      rows: revision.editable_estimate_snapshot.rows.map(compactEditableEstimateRowForDurableStorage),
-    },
   };
 }
 
@@ -637,33 +606,6 @@ function compactEstimateRevisionSnapshotForEmergencyStorage(
       ...revision.editable_estimate_snapshot,
       rows: revision.editable_estimate_snapshot.rows.map(compactEditableEstimateRowForEmergencyStorage),
     },
-  };
-}
-
-function compactEstimateRevisionStateForDurableStorage(
-  state: EstimateRevisionState | null | undefined,
-): EstimateRevisionState | null {
-  if (!state) return null;
-  return {
-    ...state,
-    revisions: state.revisions.map(compactEstimateRevisionSnapshotForDurableStorage),
-    events: state.events.slice(-32),
-    diffs: state.diffs.slice(-32),
-  };
-}
-
-function compactCurrentEstimateRevisionStateForDurableStorage(
-  state: EstimateRevisionState | null | undefined,
-): EstimateRevisionState | null {
-  if (!state) return null;
-  const current = state.revisions.find((revision) => revision.revision_id === state.current_revision_id)
-    ?? state.revisions.at(-1)
-    ?? null;
-  return {
-    ...state,
-    revisions: current ? [compactEstimateRevisionSnapshotForDurableStorage(current)] : [],
-    events: state.events.slice(-32),
-    diffs: state.diffs.slice(-32),
   };
 }
 
@@ -688,15 +630,6 @@ function compactBoqRowForEmergencyStorage(row: ProfessionalBoqRow): Professional
   };
 }
 
-function compactBoqRowForDurableStorage(row: ProfessionalBoqRow): ProfessionalBoqRow {
-  return {
-    ...row,
-    calculationTrace: stringLimit(row.calculationTrace, 720),
-    sourceParameters: compactConsumerRepairSourceParameters(row.sourceParameters),
-    materialQuantity: null,
-  };
-}
-
 function compactEstimateDraftRevisionForEmergencyStorage(
   revision: EstimateDraftRevision,
 ): EstimateDraftRevision {
@@ -713,22 +646,6 @@ function compactEstimateDraftRevisionForEmergencyStorage(
   };
 }
 
-function compactEstimateDraftRevisionForDurableStorage(
-  revision: EstimateDraftRevision,
-): EstimateDraftRevision {
-  return {
-    ...revision,
-    boq: {
-      sections: revision.boq.sections,
-      rows: revision.boq.rows.map(compactBoqRowForDurableStorage),
-    },
-    trace: {
-      ...revision.trace,
-      rows: [],
-    },
-  };
-}
-
 function compactEstimateDraftRevisionStateForEmergencyStorage(
   state: EstimateDraftRevisionState | null | undefined,
 ): EstimateDraftRevisionState | null {
@@ -737,17 +654,6 @@ function compactEstimateDraftRevisionStateForEmergencyStorage(
     ...state,
     revisions: state.revisions.map(compactEstimateDraftRevisionForEmergencyStorage),
     diffs: state.diffs.slice(-32),
-  };
-}
-
-function compactEstimateDraftRevisionStateForDurableStorage(
-  state: EstimateDraftRevisionState | null | undefined,
-): EstimateDraftRevisionState | null {
-  if (!state) return null;
-  return {
-    ...state,
-    revisions: state.revisions.map(compactEstimateDraftRevisionForDurableStorage),
-    diffs: state.diffs,
   };
 }
 

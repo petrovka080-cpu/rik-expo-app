@@ -682,6 +682,9 @@ function exactDatabaseGuard(config: MasterSingleDefinitionSuccessorConfig): void
     `${stop(config, "DATABASE_NOT_CANONICAL_LOCAL")}:${parsed.port}:${parsed.pathname}`);
 }
 
+/** Shared by retained metadata-only successors; the existing clone and audit
+ * remain the only search-release publication path. */
+export {cloneSearch as cloneMasterSingleDefinitionSearchReleaseR1};
 async function cloneSearch(
   client: Client,
   config: MasterSingleDefinitionSuccessorConfig,
@@ -1807,7 +1810,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
         }
         if(scopedRegistryInput!=null)await readMasterScopedNormativeRegistryPreconditionsR1(
           client,scopedRegistryInput,"REGISTERED");
-        const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan]);
+        const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan],
+          retentionInput?.config.binding.retainParentBindings?.legacyTemplateAssumptionSources
+            ? [retentionInput] : []);
         await client.query(`insert into public.estimate_definition_release(
             id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,
             definition_count,resource_row_count,metadata,parent_release_id,source_package_sha256,

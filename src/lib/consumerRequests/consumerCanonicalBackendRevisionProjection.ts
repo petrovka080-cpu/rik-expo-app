@@ -14,6 +14,7 @@ import type {
 } from "./consumerRequestTypes";
 import { consumerEstimateNormSourceAdmissionReport } from "./consumerEstimateNormSourceReadiness";
 import { isConsumerEstimateCompositionVisibleItem } from "./consumerEstimateReadiness";
+import {canonicalPublicResourcePresentationMatchesV1} from '../estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 
 export const CANONICAL_BACKEND_REVISION_PROJECTION_VERSION =
   "canonical-estimate-backend-projection.v1" as const;
@@ -122,6 +123,8 @@ function preliminaryRowProjection(needs: CanonicalPreliminaryNamingEvidence['pre
       contractVersion: 'canonical-preliminary-row-admission/v1' as const,
       needSha256: need.needSha256,
       publicResourcePresentation: need.publicResourcePresentation ?? null,
+      category: need.category ?? null,
+      costTreatment: need.costTreatment ?? null,
       manualTitleOverride: need.manualTitleOverride === true,
       manualQuantityOverride: need.manualQuantityOverride === true,
       calculatedQuantityBeforeOverride: finite(need.calculatedQuantityBeforeOverride ?? null),
@@ -129,11 +132,34 @@ function preliminaryRowProjection(needs: CanonicalPreliminaryNamingEvidence['pre
   }));
 }
 
-export function missingCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepairDraftBundle | null | undefined): boolean {
+/** At most the current revision and the immediately displayed comparison side.
+ * A saved UUID is readable only with its own verified backend projection. */
+export function canonicalPreliminaryNamingEvidenceReadRevisionIds(bundle: ConsumerRepairDraftBundle | null | undefined): string[] {
   const state = bundle?.estimateDraftRevisionState;
-  const current = state?.revisions.find(row => row.revisionId === state.currentRevisionId);
-  return current?.resolvedIdentity?.compilerVersion === CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
-    && current.preliminaryRows?.some(row => row.canonicalNeedAdmissionV1 == null) === true;
+  if(!state)return [];
+  const previous=[...state.diffs].reverse().find(diff=>diff.toRevisionId===state.currentRevisionId)?.fromRevisionId;
+  const ids=[...new Set([state.currentRevisionId,...(previous?[previous]:[])])];
+  const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/iu;
+  return ids.filter(id=>{
+    const revision=state.revisions.find(row=>row.revisionId===id),identity=revision?.resolvedIdentity;
+    if(!identity||!uuid.test(id)||!uuid.test(identity.canonicalModelVersion)
+      ||identity.compilerVersion!==CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
+      ||identity.canonicalModelId!=='canonical-estimate-backend')return false;
+    const {checksum,...body}=identity;
+    return checksum===resolvedEstimateIdentityChecksum(body);
+  });
+}
+
+export function missingCanonicalPreliminaryNamingEvidenceRevisionIds(bundle: ConsumerRepairDraftBundle | null | undefined): string[] {
+  const state=bundle?.estimateDraftRevisionState;
+  return canonicalPreliminaryNamingEvidenceReadRevisionIds(bundle).filter(id=>
+    state?.revisions.find(row=>row.revisionId===id)?.preliminaryRows?.some(row => row.canonicalNeedAdmissionV1 == null
+      || !Object.hasOwn(row.canonicalNeedAdmissionV1,'category')
+      || !Object.hasOwn(row.canonicalNeedAdmissionV1,'costTreatment'))===true);
+}
+
+export function missingCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepairDraftBundle | null | undefined): boolean {
+  return missingCanonicalPreliminaryNamingEvidenceRevisionIds(bundle).length>0;
 }
 
 /** Add naming evidence only; never replace items, facts, prices or history. */
@@ -158,10 +184,26 @@ export function enrichCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepairD
       const candidate = candidatesById.get(row.rowId);
       return candidate != null && candidate.titleRu === row.titleRu && candidate.quantity === row.quantity
         && candidate.unit === row.unit && candidate.unitPrice === row.unitPrice;
-    }) || !savedRows.some(row => row.canonicalNeedAdmissionV1 == null)) return bundle;
+    }) || savedRows.some(row => {
+      const old=row.canonicalNeedAdmissionV1,next=candidatesById.get(row.rowId)?.canonicalNeedAdmissionV1;
+      return old!=null && (old.needSha256!==next?.needSha256
+        || old.manualTitleOverride!==next?.manualTitleOverride
+        || old.manualQuantityOverride!==next?.manualQuantityOverride
+        || old.calculatedQuantityBeforeOverride!==next?.calculatedQuantityBeforeOverride
+        || !canonicalPublicResourcePresentationMatchesV1(old.publicResourcePresentation,next?.publicResourcePresentation)
+        || (Object.hasOwn(old,'category')&&old.category!==next?.category)
+        || (Object.hasOwn(old,'costTreatment')&&old.costTreatment!==next?.costTreatment));
+    }) || !savedRows.some(row => row.canonicalNeedAdmissionV1 == null
+      || !Object.hasOwn(row.canonicalNeedAdmissionV1,'category')
+      || !Object.hasOwn(row.canonicalNeedAdmissionV1,'costTreatment'))) return bundle;
   return {...bundle, estimateDraftRevisionState: {...state, revisions: state.revisions.map(row => row !== existing ? row
-    : {...row, preliminaryRows: savedRows.map(saved => saved.canonicalNeedAdmissionV1 != null ? saved
-      : {...saved, canonicalNeedAdmissionV1: candidatesById.get(saved.rowId)!.canonicalNeedAdmissionV1})})}};
+    : {...row, preliminaryRows: savedRows.map(saved => {
+      const old=saved.canonicalNeedAdmissionV1,next=candidatesById.get(saved.rowId)!.canonicalNeedAdmissionV1!;
+      return old!=null && Object.hasOwn(old,'category') && Object.hasOwn(old,'costTreatment') ? saved
+        : {...saved,canonicalNeedAdmissionV1:old==null?next:{...old,
+          ...(!Object.hasOwn(old,'category')?{category:next.category}:{}),
+          ...(!Object.hasOwn(old,'costTreatment')?{costTreatment:next.costTreatment}:{})}};
+    })})}};
 }
 
 export function appendCanonicalBackendRevisionProjection(input: {

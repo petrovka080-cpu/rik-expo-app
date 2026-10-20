@@ -454,6 +454,8 @@ export async function waitForCanonicalEstimateJob(input: {
       if (job.status !== "succeeded" || (input.requireRevisionResult !== false && !job.resultRevisionId)) {
         const message = job.errorCode === 'PROJECT_GEOMETRY_PARAMETER_CONFLICT'
           ? 'Выбранная схема трассы противоречит введённым количествам. Выберите проектную раскладку или уточните количества фитингов. Ввод сохранён.'
+          : job.errorCode === 'COMPOSITION_SELECTION_INVALID'
+            ? 'Изменение состава не выполнено. Для выбранной подработы нужно проверить общие ресурсы и применимость состава. Исходная смета и ручные данные сохранены.'
           : `Расчёт не завершён: ${job.errorCode ?? job.status}`;
         throw new CanonicalEstimateApiError(message, {
           code: job.errorCode ?? `JOB_${job.status.toUpperCase()}`,
