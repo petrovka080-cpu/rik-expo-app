@@ -1,0 +1,415 @@
+{
+  "contract": "gox-build.facade-flashings-downpipes00801-source-quantity/r1",
+  "status": "SOURCE_ONLY_QUANTITY_CANDIDATE_NOT_RUN_NOT_ADMITTED",
+  "sourceId": "kg_krer12_01_008_01_facade_flashings_downpipes_source_only_r1",
+  "normId": "12-01-008-01",
+  "catalogId": null,
+  "workKey": null,
+  "groupId": null,
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "titleRu": "Фасадные обделки из оцинкованной стали с изготовлением, сборкой и навеской водосточных труб — КРЕР12-01-008-01",
+  "source": {
+    "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+    "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+    "bytes": 1395590,
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+    "edition": "КРЕР12-2015; утверждён приказом от28.03.2016 №2-нпа",
+    "sourceDenominatorM2": "100",
+    "sourceMeasureRu": "100 м² фасадов",
+    "selectedColumn": "12-01-008-01",
+    "tablePages": [
+      21
+    ],
+    "technicalPages": [
+      4,
+      5
+    ],
+    "locatorRu": "КРЕР12-2015, PDF/печатная стр.21, колонка12-01-008-01, 100м² фасадов; техническая часть PDF4–5, §1.1/1.8 и §2.5.",
+    "basePricesImported": false,
+    "measurementRule": "Полная площадь фасада без вычета проёмов по §2.5; не площадь листовых обделок, не площадь кровли и не длина трубы."
+  },
+  "generalConditionsGuidance": {
+    "id": "krer_general_metal_roof_s2763",
+    "kind": "guidance",
+    "quantityAdmitted": false,
+    "titleRu": "КРЕР-2015, общие указания по применению",
+    "authority": "Госстрой Кыргызской Республики",
+    "printedEdition": "КРЕР-2015",
+    "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+    "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+    "reviewedAt": "2026-10-11T21:25:14.667327+00:00",
+    "locators": "§1.3–1.4;1.7;2.8–2.10;3.5;4.1–4.2; приложение3, высокогорье"
+  },
+  "physicalSourceRows": [
+    {
+      "id": "whole-worker",
+      "titleRu": "Единый труд фасадных обделок с изготовлением, сборкой и навеской водосточных труб, разряд 3,0",
+      "category": "labor",
+      "sourceUnit": "man_hour",
+      "ratePer100M2": "13.40",
+      "resourceCode": "000-1003-0",
+      "costTreatment": "OWN_COST",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "sourcePage": 21
+    },
+    {
+      "id": "flatbed-truck5t",
+      "titleRu": "Автомобили бортовые грузоподъёмностью до 5 т — исходная эксплуатация",
+      "category": "equipment",
+      "sourceUnit": "machine_hour",
+      "ratePer100M2": "0.03",
+      "resourceCode": "40-0001",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "sourcePage": 21
+    },
+    {
+      "id": "roofing-nails3x40",
+      "titleRu": "Гвозди толевые круглые 3,0×40 мм",
+      "category": "material",
+      "sourceUnit": "t",
+      "ratePer100M2": "0.0014",
+      "resourceCode": "01-1113-0005",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "sourcePage": 21
+    },
+    {
+      "id": "galvanized-forgings2_825kg",
+      "titleRu": "Поковки оцинкованные массой 2,825 кг",
+      "category": "material",
+      "sourceUnit": "t",
+      "ratePer100M2": "0.0112",
+      "resourceCode": "01-6902-0002",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "sourcePage": 21
+    },
+    {
+      "id": "galvanized-wire3mm",
+      "titleRu": "Проволока канатная оцинкованная диаметром 3 мм",
+      "category": "material",
+      "sourceUnit": "t",
+      "ratePer100M2": "0.0039",
+      "resourceCode": "10-0105-0029",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "sourcePage": 21
+    },
+    {
+      "id": "galvanized-sheet0_7mm",
+      "titleRu": "Сталь листовая оцинкованная толщиной 0,7 мм",
+      "category": "material",
+      "sourceUnit": "t",
+      "ratePer100M2": "0.053",
+      "resourceCode": "10-0208-0004",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "includedInProcurement": false,
+      "procurementEligible": false,
+      "price": null,
+      "sourceQuantityOnly": true,
+      "sourcePage": 21
+    }
+  ],
+  "operationsIncludedInWholeLabour": [
+    {
+      "id": "cover-exterior-flashings",
+      "titleRu": "Покрытие наружных подоконников, поясков, сандриков и других обделок листовой оцинкованной сталью",
+      "separatePaymentAllowed": false,
+      "sourcePage": 21
+    },
+    {
+      "id": "flash-balconies",
+      "titleRu": "Обделка балконов листовой оцинкованной сталью",
+      "separatePaymentAllowed": false,
+      "sourcePage": 21
+    },
+    {
+      "id": "fabricate-assemble-hang-downpipes",
+      "titleRu": "Изготовление, сборка и навеска водосточных труб с креплением к стенам",
+      "separatePaymentAllowed": false,
+      "sourcePage": 21
+    }
+  ],
+  "openNeeds": [
+    {
+      "id": "project-bom-and-pipe-geometry",
+      "titleRu": "Проектная геометрия и комплектация обделок и водосточных труб",
+      "sourceOrFact": "Колонка 008-01: единый состав, 100 м² фасадов; не норма длины трубы",
+      "evidenceOwner": "Проектировщик/сметчик",
+      "task": "Подтвердить точный перечень обделок, узлы труб, сечения, общую длину, число элементов и принадлежность одному составу. Эти проектные количества не выводятся из площади фасада или разности 008-01 и 008-02.",
+      "acceptance": "Проектная ведомость и физическая граница всего состава; исходные расходные коэффициенты остаются агрегатными, без вымышленных м/шт труб.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "material-price-pack-stock-supply",
+      "titleRu": "Материальная цена, фасовка, остатки и граница поставки",
+      "sourceOrFact": "Четыре исходных материальных расхода в т; закупочный контракт отсутствует",
+      "evidenceOwner": "Сметчик/поставщик",
+      "task": "Получить спецификацию, поставку и котировку листа, проволоки, гвоздей и поковок. Разграничить изготовление из листа и готовые заводские трубы. Масса поковки в названии не задаёт закупочное число штук, а расход не определяет резерв или фасовку.",
+      "acceptance": "Отдельный одобренный материальный/закупочный состав с единицами и непересекающейся стоимостью. В R1 все четыре материала INFO, без заказа.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "supporting-substrate-repair",
+      "titleRu": "Несущая основа, её ремонт и новые проектные анкеры",
+      "sourceOrFact": "Колонка 008-01 не подтверждает пригодность фактического фасада и дополнительные строительные работы",
+      "evidenceOwner": "Проектировщик/подрядчик",
+      "task": "Подтвердить пригодность мест крепления под исходные гвозди, поковки и проволоку. Ремонт основы, другое анкерование или изменение конструкции требуют отдельной нормы; крепление труб, включённое в цельный труд, второй раз не оплачивать.",
+      "acceptance": "Проектное основание принято; отдельные дополнительные работы подтверждены и не перекрывают включённый монтаж.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "gutter-intake-outfall-boundary",
+      "titleRu": "Граница желобов, воронок, приёмных и выпускных узлов",
+      "sourceOrFact": "008-01 не заменяет существующие подвесные желоба 009-02 и проект наружной ливневой сети",
+      "evidenceOwner": "Проектировщик/сметчик",
+      "task": "Разграничить приём воды, желоба, переходы и выпуск. Изготовление элементов труб уже в 008-01; не добавлять универсальную оплату колен или сборки без отдельной границы. Подвесные желоба и существующие покрытия не переименовывать и не удалять.",
+      "acceptance": "Проектные сопряжения и сохранённые существующие владельцы оплаты; отдельные количества/нормы только при доказанной непересекающейся работе.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "quality-water-flow-acceptance",
+      "titleRu": "Приёмка крепления и проверка водоотвода",
+      "sourceOrFact": "Исходная трудоёмкость не подтверждает фактическое выполнение, герметичность или испытание",
+      "evidenceOwner": "Инженер/подрядчик/сметчик",
+      "task": "Получить программу приёмки и проверки водоотвода, измеряемые действия, единицу и границу оплаты. Не задавать один комплект или процент от площади без источника.",
+      "acceptance": "Программа, контрольные записи и независимый источник нормы/стоимости; расчёт не считается актом выполнения.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "machine-full-price-operator-scope",
+      "titleRu": "Полная стоимость машины и граница работы водителя",
+      "sourceOrFact": "40-0001: 0,03 маш.-ч на 100 м² фасада; отдельной строки часов машиниста в 008-01 нет",
+      "evidenceOwner": "Подрядчик/сметчик/владелец машины",
+      "task": "Подтвердить точную машину, область эксплуатации и состав цены с водителем. Совпадение кода с другой кровельной строкой не разрешает перенос цены или владельца; часы водителя не изобретать.",
+      "acceptance": "Отдельный exact paid-owner/FULL coverage допуск ROOT при необходимости; пока исходная машина INFO, отдельного оператора и цены нет.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "access-delivery-unload-waste",
+      "titleRu": "Доступ, доставка, разгрузка, отходы и безопасное выполнение",
+      "sourceOrFact": "ППР и независимые услуги; норму автомобиля не переводить в рейсы",
+      "evidenceOwner": "Подрядчик/логист/сметчик",
+      "task": "Разграничить безопасный доступ, устройство средств подмащивания, внешнюю доставку, разгрузку, уборку и вывоз. Обычный включённый подъём и нормативную эксплуатацию не оплачивать повторно; норму 0,03 маш.-ч не заменять рейсами.",
+      "acceptance": "ППР и самостоятельные объёмы, единицы, источники и цены услуг без 0/1 или смен по умолчанию.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    },
+    {
+      "id": "junction-sealing-corrosion",
+      "titleRu": "Герметизация сопряжений и дополнительная защита",
+      "sourceOrFact": "Узлы примыканий, швов и покрытий по проекту; исходный лист оцинкованной стали не задаёт расход герметика или краски",
+      "evidenceOwner": "Проектировщик/специалист/сметчик",
+      "task": "Подтвердить необходимость или документированное отсутствие дополнительных герметизирующих/защитных составов и ремонтного покрытия. Не переносить расход окраски или герметика из кровельных покрытий и других металлоизделий.",
+      "acceptance": "Точный узел и применимый первичный расход/метод с отдельной непересекающейся оплатой; в R1 количество и цена неизвестны.",
+      "quantity": null,
+      "unitId": null,
+      "price": null,
+      "manualZeroOneCannotClose": true
+    }
+  ],
+  "scopeFacts": [
+    {
+      "id": "work_scope",
+      "titleRu": "Полный состав 008-01: фасадные обделки вместе с водосточными трубами",
+      "allowedValues": [
+        "COMPOSITE_00801_FLASHINGS_AND_DOWNSPOUTS"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "measurement_scope",
+      "titleRu": "Полная площадь фасада без вычета проёмов по §2.5",
+      "allowedValues": [
+        "GROSS_FACADE_AREA_WITHOUT_OPENING_DEDUCTIONS"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "material_scope",
+      "titleRu": "Листовая оцинкованная сталь 0,7 мм",
+      "allowedValues": [
+        "GALVANIZED_SHEET0_7MM"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "pipe_method",
+      "titleRu": "Изготовление элементов, сборка и навеска труб внутри этого состава",
+      "allowedValues": [
+        "FABRICATE_ASSEMBLE_HANG_DOWNPIPES_AT_WALL"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "fastening_scope",
+      "titleRu": "Пригодная проектная основа для исходных гвоздей, поковок и проволоки",
+      "allowedValues": [
+        "SOURCE_NAILS_FORGINGS_WIRE_BASE_CONFIRMED"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "adjacent_scope",
+      "titleRu": "Подвесные желоба и отдельные покрытия в эту колонку не подставляются",
+      "allowedValues": [
+        "NO_GUTTER009_OR_ROOF_COVER010_SUBSTITUTION"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "payment_boundary",
+      "titleRu": "Цельная оплата 008-01 сверена с прочими владельцами",
+      "allowedValues": [
+        "WHOLE_COMPOSITE_SCOPE_RECONCILED_SINGLE_OWNER"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "conditions_scope",
+      "titleRu": "Нормальные условия нового строительства при положительной температуре",
+      "allowedValues": [
+        "NORMAL_NEW_CONSTRUCTION_POSITIVE_TEMPERATURE"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    },
+    {
+      "id": "coefficient_scope",
+      "titleRu": "Базовые условия до 15 м без иных неподтверждённых поправок",
+      "allowedValues": [
+        "BASE_HEIGHT_LE15_NO_OTHER_COEFFICIENTS"
+      ],
+      "requiredForPositiveArea": true,
+      "missingFactWithholdsAppliedRows": true
+    }
+  ],
+  "projectFactsRequired": [
+    {
+      "id": "gross_facade_measurement_reference",
+      "titleRu": "Проектный обмер полной площади фасада по §2.5",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "facade_details_scope_reference",
+      "titleRu": "Проектная ведомость подоконников, поясков, сандриков и балконных обделок",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "downpipe_fabrication_layout_reference",
+      "titleRu": "Проект труб и включённого изготовления элементов, сборки и навески",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "fastening_substrate_reference",
+      "titleRu": "Принятая основа и проектные места крепления исходными материалами",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "cost_scope_reconciliation_reference",
+      "titleRu": "Сверка границ с существующими обделками, водостоком и оплатой",
+      "requiredForPositiveArea": true
+    },
+    {
+      "id": "safe_execution_reference",
+      "titleRu": "ППР доступа, условий и высоты до 15 м",
+      "requiredForPositiveArea": true
+    }
+  ],
+  "projectNumericFacts": [
+    {
+      "id": "steel_thickness_mm",
+      "titleRu": "Толщина оцинкованной стали по исходной колонке, 0,7 мм",
+      "unit": "mm",
+      "min": "0.7",
+      "max": "0.7",
+      "default": null
+    },
+    {
+      "id": "working_height_m",
+      "titleRu": "Высота работ от уровня земли, до 15 м включительно",
+      "unit": "m",
+      "min": "0",
+      "max": "15",
+      "default": null
+    }
+  ],
+  "quantityContract": {
+    "primary": "actual_gross_facade_area_m2_for_composite_flashings_downpipes",
+    "unitId": "m2",
+    "displayMeasureRu": "м² фасада",
+    "standaloneDownpipeMNorm": false,
+    "sourceColumnSubtractionAllowed": false,
+    "normativeSourceBindings": 6,
+    "knownOrProjectScopeParameterArrays": 18,
+    "unresolvedEmptyParameterArrays": 8,
+    "shape": [
+      26,
+      17,
+      17
+    ],
+    "physicalRows": 6,
+    "includedScopeRows": 3,
+    "paidWholeRows": 1,
+    "informationalPhysicalRows": 5,
+    "needs": 8,
+    "procurementRows": 0,
+    "priceBindings": 0,
+    "sourceSeparateMachinistRowPresent": false,
+    "machineOperatorHoursInferred": false
+  },
+  "scopeExclusionsRu": [
+    "Отдельной нормы на метр водосточной трубы в 008-01 нет. Разность 008-01 и 008-02 не является самостоятельной нормой изготовления или монтажа труб.",
+    "Первичная величина — полная площадь фасада без вычета проёмов; площадь кровли, площадь металла, погонная длина, штуки и q не подставляются автоматически.",
+    "Готовые заводские системы труб, ПВХ, иная толщина, другая основа крепления и смешанный состав требуют отдельного решения.",
+    "Подвесные желоба 009-02, настенные желоба 009-01 и мелкие покрытия 010-01 не заменяются этим составом.",
+    "Число поковок, шаг крепления, длина проволоки, заготовки, запас, упаковки, рейсы и цены не выводятся из исходных масс.",
+    "Условия выше 15 м и иные поправки не выбираются автоматически; вся система водоотвода и приёмка не считаются выполненными."
+  ],
+  "existingModelsPolicy": "KEEP_ALL_EXISTING_ROOFING_GUTTERS_TRIM_AND_SAVED_RIGHTS_IMMUTABLE_PENDING_ROOT_CURRENT_CLASSIFICATION"
+}

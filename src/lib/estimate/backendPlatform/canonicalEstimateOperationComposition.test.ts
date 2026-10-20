@@ -19,6 +19,24 @@ test('an ambiguous same-group scope stays separate unless its covering resources
  const exact=canonicalEstimateResourceOperationSections(resources,[check('COMPLETED',[],'PROJECT_SCOPE'),check('INCLUDED',['lining'])]);expect(exact).toHaveLength(2);expect(exact.find(s=>s.resourceIds.includes('lining'))!.scopeRequirements).toHaveLength(1);
 });
 
+test('an unresolved scope check uses its own saved operation without creating a phantom group',()=>{
+ const lining=operation('partition','lining','Обшивка',1),resources=[
+  {rowId:'frame',titleRu:'Каркас',operation:operation('partition','frame','Монтаж каркаса',0)},
+  {rowId:'lining',titleRu:'Обшивка',operation:lining}];
+ const scope=check('OBJECT_FACT_REQUIRED',[],'OBJECT_SCOPE');
+ const sections=canonicalEstimateResourceOperationSections(resources,[scope],[{rowId:scope.rowId,operation:lining}]);
+ expect(sections).toHaveLength(2);expect(sections.find(section=>section.operation?.operationId===lining.operationId)?.scopeRequirements).toHaveLength(1);
+ expect(sections.some(section=>section.operation?.groupId==='saved-scope-stages')).toBe(false);
+});
+
+test('conflicting or incomplete scope declarations retain an explicit unresolved group',()=>{
+ const a=check('OBJECT_FACT_REQUIRED',[],'OBJECT_SCOPE'),b={...a,rowId:'other-check'};
+ const frame=operation('partition','frame','Каркас',0),lining=operation('partition','lining','Обшивка',1);
+ const resources=[{rowId:'frame',titleRu:'Каркас',operation:frame},{rowId:'lining',titleRu:'Обшивка',operation:lining}];
+ for(const declarations of [[{rowId:a.rowId,operation:frame}],[{rowId:a.rowId,operation:frame},{rowId:b.rowId,operation:lining}]])
+  expect(canonicalEstimateResourceOperationSections(resources,[a,b],declarations).some(section=>section.operation?.groupId==='saved-scope-stages')).toBe(true);
+});
+
 test('one process projection orders subworks and retains resource ownership for unrelated construction groups', () => {
   const resources = [
     { rowId: 'sheet', operation: operation('partition', 'lining', 'Обшивка каркаса', 1) },

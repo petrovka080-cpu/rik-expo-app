@@ -1,5 +1,5 @@
 import React from "react";
-import { enrichCanonicalPreliminaryNamingEvidence,
+import { enrichCanonicalPreliminaryNamingEvidence,canonicalPreliminaryNamingEvidenceReadRevisionIds,
   type CanonicalPreliminaryNamingEvidence } from '../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import { canonicalPreviewQuantityCounts } from './consumerCanonicalPreviewQuantityCounts';
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
@@ -96,16 +96,19 @@ export async function loadConsumerRepairCanonicalNamingEvidence(input: {
   const {revisionId, requestDraftId, consumerUserId, workspaceGenerationRef} = input;
   const generation = workspaceGenerationRef.current;
   const existing = findConsumerRepairBundle(requestDraftId);
+  const currentBinding=consumerRepairCanonicalBackendBinding(existing);
   if (!existing || existing.draft.consumerUserId !== consumerUserId
-    || consumerRepairCanonicalBackendBinding(existing)?.revisionId !== revisionId) return null;
+    || !currentBinding || !canonicalPreliminaryNamingEvidenceReadRevisionIds(existing).includes(revisionId)) return null;
   // The caller's live copy may still be legacy even if another opening has
   // already enriched the repository. Return the original owner evidence to it.
   const revision = await getCanonicalEstimateRevision(revisionId);
   const latest = findConsumerRepairBundle(requestDraftId);
   if (workspaceGenerationRef.current !== generation || !latest
     || latest.draft.consumerUserId !== consumerUserId
-    || latest.estimateDraftRevisionState?.currentRevisionId !== revisionId
-    || consumerRepairCanonicalBackendBinding(latest)?.revisionId !== revisionId) return null;
+    || latest.estimateDraftRevisionState?.currentRevisionId !== currentBinding.revisionId
+    || consumerRepairCanonicalBackendBinding(latest)?.revisionId !== currentBinding.revisionId
+    || consumerRepairCanonicalBackendBinding(latest)?.releaseId !== currentBinding.releaseId
+    || !canonicalPreliminaryNamingEvidenceReadRevisionIds(latest).includes(revisionId)) return null;
   const evidence: CanonicalPreliminaryNamingEvidence = {compilerOwner: 'backend',
     revisionId: revision.revisionId, releaseId: revision.releaseId, catalogId: revision.catalogId,
     checksumSha256: revision.checksumSha256, preliminaryNeeds: revision.preliminaryNeeds};
@@ -146,7 +149,7 @@ function CanonicalEstimateMeaningfulPreviewCard({
       <Text style={styles.meaningfulPreviewEyebrow}>Предварительная смета рассчитана</Text>
       {preview.explicitValidationFixture ? (
         <Text style={styles.meaningfulPreviewSaving} testID="consumer-estimate-preview-fixture-marker">
-          ДЕМО / VALIDATION_FIXTURE — испытательный состав. Проектная смета не утверждена.
+          Проверочный пример. Проектная смета не утверждена.
         </Text>
       ) : null}
       <Text

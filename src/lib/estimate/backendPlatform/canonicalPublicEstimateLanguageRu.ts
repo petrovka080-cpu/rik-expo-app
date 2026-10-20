@@ -1,6 +1,8 @@
 import publicBindings from '../../../../data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json';
+import simpleResourceBindings from '../../../../data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json';
 import aggressiveFloorFacts from '../../../../data/estimate-benchmarks/source-packs/aggressive-floor-actual-thickness-four-s27-69.json';
 import concreteBaseFacts from '../../../../data/estimate-benchmarks/source-packs/concrete-floor-base-demolition-s27-54.json';
+import { canonicalPublicEstimateInputWordingRu, type CanonicalPublicInputContext } from './canonicalPublicEstimateInputWordingRu';
 
 /** Public wording only. Saved product/source identities and calculation inputs
  * remain unchanged. Brand recommendations are not enabled. */
@@ -8,8 +10,28 @@ function cleanEditedPublicTextRu(value: string): string {
   return value.replace(/\s{2,}/gu, ' ').replace(/\s+([,;])/gu, '$1').trim();
 }
 
+export function canonicalPublicEstimateFixtureTextRu(value: string): string {
+  // Internal fixture annotations are not product names or supplier evidence.
+  // Keep the public distinction between an example and confirmed object facts;
+  // never rewrite saved input, source identities or ordinary model/SKU text.
+  const edited = value
+    .replace(/(?:\bCONTROL_ONLY(?:\s+QA)?|Проверочный\s+пример)\s+exact source-compatible supply(?:,?\s+not (?:an actual )?supplier offer)?\b/giu,
+      'Проверочный пример; поставка не подтверждена')
+    .replace(/\bCONTROL_ONLY\s+QA\s+exact source-compatible supply, not supplier offer\b/giu,
+      'Проверочный пример; поставка не подтверждена')
+    .replace(/\bCONTROL_ONLY\s+QA\s+source-compatible project reference\b/giu,
+      'Проверочный пример; проектный документ не подтверждён')
+    .replace(/\bCONTROL_ONLY\s+QA\s+consignment document\s+([A-Z0-9-]+);\s*not actual shipment\b/giu,
+      'Проверочный пример $1; фактическая доставка не подтверждена')
+    .replace(/\bCONTROL_ONLY\s+QA:\s*not an actual contract or supplier order\b/giu,
+      'Проверочный пример; договор и заказ поставщику не подтверждены')
+    .replace(/\b(?:CONTROL_ONLY|VALIDATION_FIXTURE(?:_ONLY)?|FIXTURE_ONLY|TEST_ONLY)(?:[ _-]+QA)?\b/giu,
+      'Проверочный пример');
+  return edited === value ? value : cleanEditedPublicTextRu(edited);
+}
+
 export function canonicalPublicEstimateTextRu(value: string): string {
-  const edited = value.replace(/для\s+LOGICROOF/giu, 'для выбранной кровельной мембраны')
+  const edited = canonicalPublicEstimateFixtureTextRu(value).replace(/для\s+LOGICROOF/giu, 'для выбранной кровельной мембраны')
     .replaceAll('Утверждённая новая atomic граница и судьба прежних 59 строк без переписывания истории',
       'Подтверждённый состав и границы подработы')
     .replaceAll('Подтверждённая отдельная физическая граница этой atomic работы: без уже оплаченного объёма укладки или полной конструкции',
@@ -21,7 +43,7 @@ export function canonicalPublicEstimateTextRu(value: string): string {
 
 /** The calculation status is shown separately from a resource's name. */
 export function canonicalPublicEstimatePendingRowTitleRu(value: string): string {
-  const title = value.replace(/^Требует проверки в проекте\s*[—–-]\s*/iu, '').trim();
+  const title = canonicalPublicEstimateTextRu(value).replace(/^Требует проверки в проекте\s*[—–-]\s*/iu, '').trim();
   return title === value ? value : title.charAt(0).toLocaleUpperCase('ru-RU') + title.slice(1);
 }
 
@@ -32,7 +54,11 @@ export function canonicalPublicEstimateRequestTextRu(value: string): string {
   return edited === value ? result : cleanEditedPublicTextRu(result);
 }
 
-export function canonicalPublicEstimateChoiceLabelRu(value: string): string {
+export function canonicalPublicEstimateChoiceLabelRu(value: string, sourceValue?: unknown): string {
+  const authored = publicBindings.choiceBindings.find(binding => binding.sourceValue === (typeof sourceValue === 'string' ? sourceValue : value)
+    && (!('fallbackOnly' in binding) || binding.fallbackOnly !== true
+      || value === binding.sourceValue || value === 'Вариант по проектной документации'));
+  if (authored) return authored.nameRu;
   if(value===concreteBaseFacts.conditionsValue){
     return 'Разбираются отдельные участки бетонного основания пневматическим инструментом. Объём измерен; спуск через окно в лотках и перемещение до 130 м, в том числе до 50 м от объекта.';
   }
@@ -47,10 +73,13 @@ export function canonicalPublicEstimateChoiceLabelRu(value: string): string {
   return edited === value ? result : cleanEditedPublicTextRu(result);
 }
 
-export function canonicalPublicEstimateParameterTitleRu(parameterId: string, titleRu: string): string {
+export function canonicalPublicEstimateParameterTitleRu(parameterId: string, titleRu: string, context: CanonicalPublicInputContext = {}): string {
   const authored = publicBindings.parameterBindings.find(binding => binding.parameterId === parameterId
+    && (!('catalogId' in binding) || binding.catalogId === context.catalogId)
     && binding.sourceTitleRu === titleRu);
   if (authored) return authored.nameRu;
+  const question = canonicalPublicEstimateInputWordingRu(parameterId, titleRu, context);
+  if (question) return question.labelRu;
   if(parameterId==='existing_covering_confirmed'&&titleRu==='На чём выполнено бетонное основание')return 'Какое бетонное основание разбираем';
   // Area is a separate object measurement. The legacy rate's base thickness
   // does not describe the observed thickness entered in another field.
@@ -67,8 +96,25 @@ export function canonicalPublicEstimateParameterTitleRu(parameterId: string, tit
     .replace('Сохранить в запасе: купола ISD', 'Прозрачные купола, которые оставить в запасе');
 }
 
+/** Display questions do not change immutable validation or source ownership. */
+export function canonicalPublicEstimateParameterGuideRu(parameterId: string, titleRu: string, context: CanonicalPublicInputContext = {}): string | undefined {
+  const authored = publicBindings.parameterBindings.find(binding => binding.parameterId === parameterId
+    && (!('catalogId' in binding) || binding.catalogId === context.catalogId)
+    && (binding.sourceTitleRu === titleRu || binding.nameRu === titleRu));
+  return authored && 'guideRu' in authored && typeof authored.guideRu === 'string' ? authored.guideRu
+    : canonicalPublicEstimateInputWordingRu(parameterId, titleRu, context)?.guideRu;
+}
+
+export function canonicalPublicEstimatePendingRowGuideRu(input: {
+  rowId?: string | null; titleRu: string; sourceTitleRu?: string; manualTitleOverride?: boolean;
+}): string | undefined {
+  if (input.manualTitleOverride) return undefined;
+  const authored = publicRowBinding(input);
+  return authored && 'pendingGuideRu' in authored && typeof authored.pendingGuideRu === 'string' ? authored.pendingGuideRu : undefined;
+}
+
 export function canonicalPublicEstimateWorkTitleRu(value: string, options: { manualTitleOverride?: boolean } = {}): string {
-  if (options.manualTitleOverride) return value;
+  if (options.manualTitleOverride) return canonicalPublicEstimateFixtureTextRu(value);
   for (const binding of publicBindings.workBindings) {
     if (value === binding.sourceTitleRu) return binding.nameRu;
     if (!value.startsWith(binding.sourceTitleRu)) continue;
@@ -89,7 +135,7 @@ export function canonicalPublicEstimateWorkTitleRu(value: string, options: { man
 export function canonicalPublicEstimateRowNameRu(input: {
   rowId?: string | null; titleRu: string; sourceTitleRu?: string; manualTitleOverride?: boolean;
 }): string {
-  if (input.manualTitleOverride) return input.titleRu;
+  if (input.manualTitleOverride) return canonicalPublicEstimateFixtureTextRu(input.titleRu);
   if (input.rowId?.startsWith('f09:asphalt_floor_covering_demolition:')) {
     return canonicalPublicEstimateTextRu(input.titleRu
       .replace('со снятой асфальтовым', 'со снятым асфальтовым')
@@ -110,10 +156,11 @@ export function canonicalPublicEstimateRowDetailsRu(input: {
 }
 
 function publicRowBinding(input: {rowId?: string | null; titleRu: string; sourceTitleRu?: string}) {
-  return publicBindings.bindings.find(binding => binding.rowId === input.rowId
+  const matches=(binding:{rowId:string;sourceTitleRu:string})=>binding.rowId === input.rowId
     && (binding.sourceTitleRu === (input.sourceTitleRu ?? input.titleRu)
       // A validated saved descriptor can append a selected specification to its
       // exact original title. Keep that specification in the existing details.
       || binding.sourceTitleRu === input.titleRu
-        && input.sourceTitleRu?.startsWith(binding.sourceTitleRu + ' — ')));
+        && input.sourceTitleRu?.startsWith(binding.sourceTitleRu + ' — '));
+  return simpleResourceBindings.bindings.find(matches)??publicBindings.bindings.find(matches);
 }

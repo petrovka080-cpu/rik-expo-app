@@ -5,6 +5,7 @@ import { canonicalScopeRequirementDecisionV1 } from './canonicalScopeRequirement
 import {parseCanonicalCompositionSelectionV1} from './canonicalEstimateCompositionSelectionV1';
 import type { CanonicalOrderedSpecificationBinding } from './canonicalOrderedSpecificationBindings';
 import { parseCanonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
+import {parseCanonicalPublicResourceAlternativesV1} from './canonicalPublicResourceAlternativesV1';
 import type { AdmissionDecision } from "./estimateAdmissionR3";
 import { canonicalDerivedQuantityEditPolicyV1, type CanonicalDerivedQuantityEditPolicyV1 } from './canonicalDerivedQuantityEditPolicyV1';
 import { canonicalFusionDerivedQuantityClearConsentS2758, type CanonicalFusionDerivedQuantityClearConsentS2758 } from './canonicalFusionDerivedQuantityClearAdmissionS2758';
@@ -336,6 +337,7 @@ export type CanonicalEstimatePreliminaryNeedView = {
   commercialCostCoverageDecision?: CanonicalCommercialCostCoverageDecisionView;
   commercialRateCoverage?: CanonicalCommercialRateCoverageView;
   publicResourcePresentation?: import('./canonicalPublicResourcePresentationV1').CanonicalPublicResourcePresentationV1;
+  publicResourceAlternatives?: import('./canonicalPublicResourceAlternativesV1').CanonicalPublicResourceAlternativesV1;
   manualTitleOverride?: boolean;
   manualQuantityOverride?: boolean;
   calculatedQuantityBeforeOverride?: string | null;
@@ -394,6 +396,7 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       && Array.isArray(need.missing_parameter_ids)
       ? graph.titleSpecificationParameterIds.filter((id): id is string => typeof id === 'string' && (need.missing_parameter_ids as unknown[]).includes(id)) : [];
     const publicResourcePresentation = parseCanonicalPublicResourcePresentationV1(graph?.publicResourcePresentationV1);
+    const publicResourceAlternatives = parseCanonicalPublicResourceAlternativesV1(graph?.publicResourceAlternativesV1);
     const derivedQuantityEditPolicy = canonicalDerivedQuantityEditPolicyV1(
       (need.calculation_trace as Record<string, unknown> | undefined)?.derivedQuantityEditPolicy,
     );
@@ -440,6 +443,7 @@ export function canonicalEstimatePreliminaryNeedsFromAmendmentContract(
       ...(commercialCostCoverageDecision ? { commercialCostCoverageDecision } : {}),
       ...(commercialRateCoverage ? { commercialRateCoverage } : {}),
       ...(publicResourcePresentation ? { publicResourcePresentation } : {}),
+      ...(publicResourceAlternatives ? { publicResourceAlternatives } : {}),
       ...(derivedQuantityEditPolicy?.unitId === String(need.unit_id ?? '') ? { derivedQuantityEditPolicy } : {}),
       ...((need.calculation_trace as Record<string, unknown> | undefined)?.manualTitleOverride === true ? { manualTitleOverride: true } : {}),
       manualQuantityOverride: (need.calculation_trace as Record<string, unknown> | undefined)?.manualQuantityOverride === true,
@@ -687,6 +691,9 @@ export type CanonicalEstimateSearchPage = {
 };
 
 export type CanonicalEstimateResourceSearchItem = {
+  /** Display only; titleRu retains the complete source name for selection. */
+  displayNameRu?: string;
+  displayDetailsRu?: readonly string[];
   resourceId: string;
   definitionVersionId: string;
   definitionReleaseId: string;

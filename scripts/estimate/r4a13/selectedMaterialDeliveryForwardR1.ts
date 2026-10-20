@@ -16,7 +16,7 @@ const contract='rik-expo-app.selected-material-delivery-forward.r1';
 const hash=(v:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(v)).digest('hex');
 const uuid=(v:unknown)=>{const a=hash(v).slice(0,32).split('');a[12]='5';a[16]='8';const s=a.join('');return `${s.slice(0,8)}-${s.slice(8,12)}-${s.slice(12,16)}-${s.slice(16,20)}-${s.slice(20)}`;};
 const descriptions:Record<string,[string,string|null,string]>={
- product_profile_id:['Подтверждённый профиль выбранного автомобиля',null,'enum'],
+ product_profile_id:['Какая модель машины выбрана?',null,'enum'],
  cargo_weight_kg:['Масса партии, кг','kg','decimal'],cargo_volume_m3:['Объём партии, м³','m3','decimal'],
  selected_vehicle_model_and_derivative:['Модель и модификация выбранного автомобиля',null,'enum'],
  selected_verified_usable_payload_kg:['Грузоподъёмность машины, кг','kg','decimal'],
@@ -29,6 +29,25 @@ const descriptions:Record<string,[string,string|null,string]>={
  route_and_access_confirmed:['Маршрут и подъезд подтверждены',null,'boolean'],
  supplier_billing_scope:['Граница оплаты по предложению перевозчика',null,'text'],
  document_reference:['Документ подтверждённой партии',null,'text'],consignment_id:['Идентификатор подтверждённой партии',null,'text'],
+};
+const guides:Record<string,string>={
+ selection:'Добавляйте отдельную перевозку, если она согласована с перевозчиком и ещё не включена в поставку материалов. Сначала сохраните смету без неё, затем заполните данные партии.',
+ product_profile_id:'Здесь поддерживается Ford Transit V363 500 L4 H3. Если приедет другая машина, нужна другая схема перевозки.',
+ cargo_weight_kg:'Перенесите массу всей выбранной партии с упаковкой из накладной или упаковочного листа, например 800 кг. Не рассчитывайте её из площади перегородки.',
+ cargo_volume_m3:'Укажите занимаемый партией объём по упаковочному листу или схеме загрузки, например 4 м³. Объём кладки не заменяет объём груза.',
+ selected_vehicle_model_and_derivative:'Сверьте модель и исполнение с документами именно той машины, которая повезёт груз. Для другого исполнения этот расчёт не подходит.',
+ selected_verified_usable_payload_kg:'Возьмите допустимую массу груза именно этой машины из согласованного расчёта перевозчика с учётом экипажа, оснащения и запаса. Например, подтверждённые 2000 кг вводят как 2000; рекламный максимум не подставляйте.',
+ selected_verified_usable_loadspace_m3:'Возьмите доступный объём кузова для этой партии из схемы загрузки перевозчика. Нужно учесть размеры и крепление груза; семейный максимум автомобиля не подходит.',
+ selected_verified_kerb_mass_kg:'Перенесите снаряжённую массу конкретной машины из её документов, например 2500 кг. Не используйте разрешённую полную массу вместо снаряжённой.',
+ driver_crew_options_and_accessories_weight_kg:'Укажите суммарную массу водителя, экипажа и дополнительного оснащения по расчёту перевозчика. Если данных нет, оставьте поле пустым.',
+ payload_margin_for_error_kg:'Возьмите запас по массе из расчёта перевозчика: здесь проверяется 5% снаряжённой массы машины. Например, при 2500 кг это 125 кг; это не дополнительный материал и не число рейсов.',
+ axle_load_limits_confirmed:'Перевозчик должен проверить разрешённые нагрузки на оси по документам машины и схеме загрузки. Отметьте подтверждение только после этой проверки.',
+ load_securing_and_compatibility_confirmed:'Перевозчик должен проверить размещение, крепление и совместимость грузов в партии. Отметьте подтверждение по согласованной схеме загрузки.',
+ route_and_access_confirmed:'Согласуйте с перевозчиком маршрут, ограничения дороги и подъезд к месту выгрузки. Отметьте подтверждение после проверки этих условий.',
+ supplier_billing_scope:'Укажите предложение перевозчика и что входит в оплату одного рейса. Разгрузка, переноска и возврат тары в эту перевозку не входят.',
+ document_reference:'Укажите номер и дату накладной, упаковочного листа или согласованной ведомости партии. По этому документу выберите перевозимые материалы ниже.',
+ consignment_id:'Укажите обозначение партии из того же документа, например «Поставка 7, партия 2». Оно помогает отличить эту перевозку от других поставок.',
+ admitted_trip_count:'Число рейсов рассчитывается после проверки сохранённой партии и ограничений машины. Вручную это значение не вводят.',
 };
 
 /** Adds one optional definition-owned delivery. Existing logistics, unloading,
@@ -51,12 +70,12 @@ export function buildSelectedMaterialDeliveryForwardR1(parent:Json,pin:Json,conf
    visibility_role:internal?'INTERNAL_ONLY':'USER_INPUT',value_source_role:internal?'BACKEND_DERIVED':'CONDITIONAL_PROJECT_FACT',
    provenance:{consumer_input_role_v1:internal?'APPLICATION_TECHNICAL':'OBJECT_FACT'},hidden_default_forbidden:true,
    preliminary_compilation_allowed:true,source_confirmation_required:!internal,input_origin_class:'APPROVED_PROJECT_OR_METHOD_STATEMENT',
-   guide:{guide_kind:'PROJECT_DEFINED',guide_short_ru:internal?'Количество вычисляет проверенный сервер по сохранённой партии.':title+': подтвердите по документу партии и выбранной машины.',
+   guide:{guide_kind:'PROJECT_DEFINED',guide_short_ru:guides[key],
     source_role:'PROJECT_DOCUMENTATION',source_document:'data/estimate-norms/professional/delivery.json',
     source_locator:'Существующий проверенный профиль Ford Transit V363 500 L4 H3; сведения о партии и оплате задаются отдельно.',
     guide_version:contract,source_snapshot_hash:config.guideSnapshotSha256,applicability:'Только отдельная подтверждённая перевозка; не включает разгрузку, подачу и обратную тару.',
     verified_at:'2026-10-17T00:00:00+06:00',guide_validation_policy:'MANDATORY_BLOCK'}}});
- parameters.push(parameter('selection','Отдельная подтверждённая доставка материалов',null,'enum'));
+ parameters.push(parameter('selection','Нужна ли отдельная перевозка материалов?',null,'enum'));
  for(const [key,[title,unit,type]] of Object.entries(descriptions))parameters.push(parameter(key,title,unit,type));
  parameters.push(parameter('admitted_trip_count','Принятое сервером число рейсов','trip','integer',true));
  for(const added of parameters.slice(parent.parameters.length))if(added.parameter_id!==selection){

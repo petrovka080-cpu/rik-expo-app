@@ -648,7 +648,9 @@ describe("project source package binding", () => {
     );
     expect(setGuardIndex).toBeGreaterThan(0);
     expect(setGuardIndex).toBeLessThan(successorSource.indexOf("const client = new Client"));
-    expect(successorSource).toMatch(/fingerprint = sha256\(\{[\s\S]*projectSourcePackageSet,/u);
+    expect(successorSource).toMatch(/const sourceEnvelope = \{[\s\S]*projectSourcePackageSet,[\s\S]*\n  \};/u);
+    expect(successorSource).toMatch(/buildCanonicalMasterSingleDefinitionSourceOriginR1\(\{ catalogId: config.catalogId, envelope: sourceEnvelope \}\)/u);
+    expect(successorSource).toContain("const fingerprint = sourceOrigin.fingerprint;");
     expect(successorSource).toMatch(
       /projectSourcePackage: \{[\s\S]*completePackageSet: projectSourcePackageSet,[\s\S]*artifactReceipts:/u,
     );

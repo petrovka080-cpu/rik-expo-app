@@ -4,6 +4,7 @@ import {
   getCanonicalEstimateArtifact,
   getCanonicalEstimateJob,
   cancelCanonicalEstimateJob,
+  waitForCanonicalEstimateJob,
   getCanonicalEstimateParameterSessionSnapshot,
   resetCanonicalEstimateRuntimeCompatibilityForTests,
 } from "./canonicalEstimateClient";
@@ -60,6 +61,14 @@ function busyCompatibleManifest() {
 }
 
 describe("canonicalEstimateClient access-token refresh", () => {
+  it('explains a rejected composition change without exposing its code or retrying the mutation', async () => {
+    mockGetSession.mockResolvedValue({data:{session:{access_token:'token',expires_at:Math.floor(Date.now()/1000)+7200}},error:null});
+    mockFetchWithRequestTimeout.mockResolvedValue(new Response(JSON.stringify({jobId:revisionId,status:'failed',errorCode:'COMPOSITION_SELECTION_INVALID',resultRevisionId:null}),{status:200,headers:{'Content-Type':'application/json'}}));
+    await expect(waitForCanonicalEstimateJob({jobId:revisionId})).rejects.toMatchObject({code:'COMPOSITION_SELECTION_INVALID',httpStatus:422,retryable:false,
+      message:'Изменение состава не выполнено. Для выбранной подработы нужно проверить общие ресурсы и применимость состава. Исходная смета и ручные данные сохранены.'});
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout.mock.calls[0]?.[1]?.method??'GET').toBe('GET');
+  });
   beforeEach(() => {
     mockGetSession.mockReset();
     mockRefreshSession.mockReset();

@@ -6,6 +6,7 @@ import {RequestEstimateSummaryCard} from './RequestEstimateSummaryCard';
 import {RequestEstimateItemsEditor} from './RequestEstimateItemsEditor';
 import {consumerRepairCanonicalMissingObjectParameterCount,consumerRepairCanonicalEstimateBlocksApproval} from './consumerRepairCanonicalEstimateReadiness';
 import type {CanonicalParameterSession} from '../../lib/estimate/canonicalParameters';
+import {registerConsumerRepairRowVerifiedPresentation} from './consumerRepairRowMetadata';
 
 jest.mock('@expo/vector-icons',()=>({Ionicons:()=>null}));
 const noop=()=>{};
@@ -25,6 +26,23 @@ test('a missing application norm has a normal name and no customer confirmation 
  expect(r.root.findByProps({testID:'consumer-repair-item-title-pending-fastener'}).props.children).toBe('Крепеж для плоской кровли');
  expect(r.root.findAll(node=>typeof node.type==='string' && node.props.testID==='consumer-repair-item-application-pending-pending-fastener')).toHaveLength(1);
  expect(JSON.stringify(item)).toBe(before);act(()=>r.unmount());
+});
+
+test('a pending floor service explains what is missing beside its name without a norm input',()=>{
+ const sourceTitleRu='Фактическая внешняя доставка песка и воды и отдельная разгрузка вне включённой операции автопогрузчика';
+ const floor={...item,id:'floor-delivery',titleRu:'Доставка и разгрузка песка и воды',sourceParameters:{...item.sourceParameters,
+  rowCode:'floor-underlayer:sand:krer11-01-002-01:open:external-delivery-unloading'}};
+ registerConsumerRepairRowVerifiedPresentation(floor,{contractVersion:'canonical-public-resource-presentation/v1',
+  sourceTitleRu,nameRu:floor.titleRu,brandAndModelRu:null,specificationRu:null,detailsRu:[]});
+ const r=render(<ConsumerRepairItemRow item={floor} onDecrease={noop} onIncrease={noop} onQuantityChange={noop} onUnitPriceChange={noop} onRemove={noop}/>);
+ const guide=r.root.findByProps({testID:'consumer-repair-item-pending-guide-floor-delivery'});
+ expect(guide.props.children).toContain('уточняется у перевозчика');
+ expect(guide.props.children).toContain('пока не включена в итог');
+ expect(r.root.findAllByProps({testID:'consumer-repair-item-quantity-input-floor-delivery'})).toHaveLength(0);
+ act(()=>r.unmount());
+ const manual={...floor,sourceParameters:{...floor.sourceParameters,canonicalManualTitleOverride:true}};
+ const m=render(<ConsumerRepairItemRow item={manual} onDecrease={noop} onIncrease={noop} onQuantityChange={noop} onUnitPriceChange={noop} onRemove={noop}/>);
+ expect(m.root.findAllByProps({testID:'consumer-repair-item-pending-guide-floor-delivery'})).toHaveLength(0);act(()=>m.unmount());
 });
 
 test('a real missing object fact remains a question even when the same row also lacks a norm',()=>{

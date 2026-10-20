@@ -25,6 +25,19 @@ export type MasterRetainParentBindingsR1 = Readonly<{
   capturedParentSha256: string;
   /** Exact keys: ONLY newly declared parameter IDs, including unresolved []. */
   newParameterSources: MasterExplicitParameterSourcesR1;
+  /** R555 template inputs are historical visible assumptions, not registered
+   * physical norms. Preserve only the exact approved old input provenance. */
+  legacyTemplateAssumptionSources?: Readonly<{
+    contract: 'master-retained-legacy-template-assumptions/r1'; templateId: string;
+    parameterSources: Readonly<Record<string,readonly string[]>>;
+  }>;
+  /** Explicit one-time second retained successor. Never rewrites the old slot. */
+  successorProvenanceContinuation?: Readonly<{
+    contract: "master-retained-binding-continuation/r1";
+    capturedSourceMetadata: Json;
+    capturedSourceMetadataSha256: string;
+    capturedPreviousSuccessorSha256: string;
+  }>;
   /** Optional captured absence at normal and locked preflight. Omission preserves
    * the accepted absent-or-managed-exact registry behavior. Not registry reuse. */
   capturedSourcePreimage?: Readonly<{sourceKey: string; expected: null}>;
@@ -76,6 +89,39 @@ function captureValue(capture: MasterRetainedParentCaptureR1): Json {
 export function masterRetainedParentCaptureSha256R1(capture: MasterRetainedParentCaptureR1): string {
   return createHash("sha256").update(encoded(captureValue(capture))).digest("hex");
 }
+function valueSha256(value: unknown): string {
+  return createHash("sha256").update(encoded(value)).digest("hex");
+}
+/** This opt-in is a captured preimage, never caller-supplied replacement history. */
+function successorContinuationOf(
+  input: MasterRetainedBindingGuardInputR1, opt: MasterRetainParentBindingsR1,
+): NonNullable<MasterRetainParentBindingsR1["successorProvenanceContinuation"]> | null {
+  if (!Object.hasOwn(opt, "successorProvenanceContinuation")) return null;
+  const v = opt.successorProvenanceContinuation;
+  requireThat(object(v) && exactKeys(v, ["contract", "capturedSourceMetadata",
+    "capturedSourceMetadataSha256", "capturedPreviousSuccessorSha256"])
+    && v.contract === "master-retained-binding-continuation/r1",
+    input, "CONTINUATION_OPT_IN_OBJECT");
+  const metadata = opt.capturedParent.definition.source_metadata;
+  requireThat(object(metadata) && Object.hasOwn(metadata, "retainedParentBindingSuccessorV1")
+    && object(metadata.retainedParentBindingSuccessorV1), input, "CONTINUATION_OLD_SLOT_REQUIRED");
+  requireThat(!Object.hasOwn(metadata, "retainedParentBindingContinuationV1"),
+    input, "CONTINUATION_SLOT_COLLISION");
+  requireThat(object(v.capturedSourceMetadata) && same(v.capturedSourceMetadata, metadata)
+    && /^[0-9a-f]{64}$/u.test(v.capturedSourceMetadataSha256)
+    && valueSha256(metadata) === v.capturedSourceMetadataSha256,
+    input, "CONTINUATION_SOURCE_METADATA_DRIFT");
+  const previous = metadata.retainedParentBindingSuccessorV1;
+  requireThat(/^[0-9a-f]{64}$/u.test(v.capturedPreviousSuccessorSha256)
+    && valueSha256(previous) === v.capturedPreviousSuccessorSha256,
+    input, "CONTINUATION_PREVIOUS_SUCCESSOR_DRIFT");
+  requireThat(typeof previous.parentDefinitionId === "string"
+    && typeof previous.parentBaselineId === "string"
+    && opt.capturedParent.baseline.source_definition_version_id === previous.parentDefinitionId
+    && opt.capturedParent.baseline.supersedes_baseline_id === previous.parentBaselineId,
+    input, "CONTINUATION_OLD_SOURCE_LINEAGE_DRIFT");
+  return v;
+}
 /** An omitted property is the ONLY fallback. Present undefined/null is not omission. */
 export function masterRetainParentBindingsOptInR1(
   input: MasterRetainedBindingGuardInputR1,
@@ -123,7 +169,38 @@ export function masterRetainParentBindingsOptInR1(
     input, "CAPTURE_BASELINE_SOURCE_KEYS");
   const sourceKeys = c.normativeSources.map(s => s.source_key);
   const baselineSources = Object.values(c.baseline.normative_source_ids);
-  requireThat(baselineSources.every(v => Array.isArray(v) && v.every(s => sourceKeys.includes(s))
+  const legacy = value.legacyTemplateAssumptionSources;
+  if (Object.hasOwn(value, 'legacyTemplateAssumptionSources')) {
+    requireThat(object(legacy) && exactKeys(legacy,['contract','templateId','parameterSources'])
+      && legacy.contract === 'master-retained-legacy-template-assumptions/r1'
+      && typeof legacy.templateId === 'string' && legacy.templateId.length > 0
+      && legacy.templateId === c.definition.source_metadata?.templateId
+      && object(legacy.parameterSources) && Object.keys(legacy.parameterSources).length > 0
+      && Object.keys(legacy.parameterSources).length <= 16, input, 'LEGACY_TEMPLATE_ASSUMPTION_DECLARATION');
+    for (const [parameterId, declared] of Object.entries(legacy.parameterSources)) {
+      const p = c.parameters.find(p => p.parameter_id === parameterId);
+      const binding = p?.truth_metadata?.provenance?.approvedTemplateBinding;
+      const connected = c.formulas.filter(f => Array.isArray(f.input_parameter_ids) && f.input_parameter_ids.includes(parameterId));
+      requireThat(p != null && same(declared, ['r555-source:' + legacy.templateId])
+        && !sourceKeys.includes(declared[0]!) && same(c.baseline.normative_source_ids[parameterId], declared)
+        && c.baseline.input_classification?.[parameterId] === 'ASSUMPTION'
+        && p.truth_metadata?.visibility_role === 'USER_INPUT'
+        && p.truth_metadata?.value_source_role === 'VISIBLE_BASELINE_ASSUMPTION'
+        && object(binding) && binding.catalogId === c.definition.catalog_id
+        && typeof c.baseline.source_definition_version_id === 'string'
+        && binding.definitionVersionId === c.baseline.source_definition_version_id && binding.baselineId === c.baseline.id
+        && binding.parameterId === parameterId && binding.inputClassification === 'ASSUMPTION'
+        && binding.sourceTree === c.definition.source_metadata.sourceTree
+        && same(binding.value, c.baseline.input_values?.[parameterId])
+        && same(binding.normativeSourceIds, declared)
+        && Array.isArray(binding.formulaConsumerIds) && Array.isArray(binding.resourceConsumerRowIds)
+        && same(setOf(binding.formulaConsumerIds),setOf(connected.map(f=>f.formula_id)))
+        && same(setOf(binding.resourceConsumerRowIds),setOf(c.resources.filter(r=>connected.some(f=>f.formula_id===r.formula_id)).map(r=>r.row_id))),
+        input, 'LEGACY_TEMPLATE_ASSUMPTION_EXACT_APPROVED_INPUT');
+    }
+  }
+  requireThat(Object.entries(c.baseline.normative_source_ids).every(([parameterId,v]) => Array.isArray(v)
+    && v.every(s => sourceKeys.includes(s) || legacy?.parameterSources?.[parameterId]?.includes(s))
     && new Set(v).size === v.length), input, "CAPTURE_BASELINE_SOURCE_CLOSURE");
   const referencedLocators = setOf(c.bindings.map(b => String(b.locator_id)));
   requireThat(same(referencedLocators, c.normativeLocators.map(l => String(l.id)).sort()),
@@ -197,6 +274,7 @@ export function masterRetainParentBindingsOptInR1(
       requireThat(!oldIsConsistent, input, "FORMULA_EXPRESSION_REPAIR_UNNECESSARY");
     }
   }
+  successorContinuationOf(input, value);
   return value;
 }
 function required(input: MasterRetainedBindingGuardInputR1): MasterRetainParentBindingsR1 {
@@ -260,7 +338,8 @@ export async function lockMasterRetainedBindingPreconditionsR1(
   requireThat(isolation.rows[0]?.transaction_isolation === "read committed", input,
     "LOCKED_REREAD_REQUIRES_READ_COMMITTED");
   const keys = setOf([`definition:${c.definition.id}`, `source-key:${input.newSource.source_key}`,
-    ...c.normativeSources.map(s => `source-key:${s.source_key}`)]);
+    ...c.normativeSources.map(s => `source-key:${s.source_key}`),
+    ...Object.values(required(input).legacyTemplateAssumptionSources?.parameterSources ?? {}).flat().map(s=>`source-key:${s}`)]);
   for (const key of keys) await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))",
     [`master-single-definition-retain:v1:${key}`]);
   await client.query(`lock table
@@ -276,12 +355,32 @@ export async function lockMasterRetainedBindingPreconditionsR1(
     public.estimate_work_normative_binding
     in share row exclusive mode`);
 }
+/** The new continuation cannot claim complete previous metadata if a JS parse
+ * rounded any PG JSONB numeric lexeme. Compare exact PG canonical TEXT to the
+ * exact serialized captured object in PG; returning only a bounded boolean.
+ * Existing omitted legacy continuation has no additional query. */
+export async function assertMasterRetainedContinuationMetadataRoundTripR1(
+  client: QueryClient, input: MasterRetainedBindingGuardInputR1,
+): Promise<void> {
+  const opt = required(input), continuation = successorContinuationOf(input, opt);
+  if (continuation == null) return;
+  const expectedJson = JSON.stringify(continuation.capturedSourceMetadata);
+  requireThat(Buffer.byteLength(expectedJson) <= 512 * 1024,
+    input, "CONTINUATION_SOURCE_METADATA_BYTE_CAP");
+  const result = await client.query(`select (octet_length(source_metadata::text)<=524288
+    and source_metadata::text=($1::jsonb)::text) matches
+    from public.estimate_definition_version where id=$2::uuid and catalog_id=$3`,
+    [expectedJson, opt.capturedParent.definition.id, input.config.catalogId]);
+  requireThat(result.rows.length === 1 && result.rows[0]?.matches === true,
+    input, "CONTINUATION_SOURCE_METADATA_LOSSLESS_ROUND_TRIP_REQUIRED");
+}
 /** Raw row_to_json text prevents PG Date conversion from changing captured microseconds. */
 export async function readMasterRetainedBindingPreconditionsR1(
   client: QueryClient, input: MasterRetainedBindingGuardInputR1,
   phase: "BEFORE" | "REGISTERED" = "BEFORE",
 ): Promise<MasterRetainedBindingSnapshotR1> {
-  const c = required(input).capturedParent;
+  const opt = required(input), c = opt.capturedParent;
+  await assertMasterRetainedContinuationMetadataRoundTripR1(client, input);
   const read = async (sql: string, values: unknown[], cap: number): Promise<Json[]> => {
     const result = await client.query(sql, values);
     requireThat(result.rows.length <= cap, input, "READ_CAP");
@@ -316,7 +415,8 @@ export async function readMasterRetainedBindingPreconditionsR1(
   const normativeSources = await full("estimate_normative_source", `id=any($1::uuid[])
     or source_key=any($2::text[]) or id in (select source_id from public.estimate_normative_locator
       where id in(select locator_id from public.estimate_work_normative_binding where definition_version_id=$3))`,
-    [c.normativeSources.map(s => s.id), c.normativeSources.map(s => s.source_key), c.definition.id], c.normativeSources.length);
+    [c.normativeSources.map(s => s.id), setOf([...c.normativeSources.map(s => s.source_key),
+      ...Object.values(opt.legacyTemplateAssumptionSources?.parameterSources ?? {}).flat()]), c.definition.id], c.normativeSources.length);
   const newSources = await full("estimate_normative_source", "id=$1 or source_key=$2",
     [input.newSource.id, input.newSource.source_key], 1);
   const newLocators = await full("estimate_normative_locator", "id=any($1::uuid[]) or source_id=$2",
@@ -352,6 +452,13 @@ export function assertMasterRetainedParentComputationR1(
   requireThat(formulaIds.every(id => typeof id === "string" && id.length > 0)
     && new Set(formulaIds).size === formulaIds.length, input, "NEXT_FORMULA_IDS");
   const formulas = new Map(next.formulas.map(f => [f.formula_id, f]));
+  const legacyAssumptions = Object.keys(opt.legacyTemplateAssumptionSources?.parameterSources ?? {});
+  if (legacyAssumptions.length) {
+    const capturedFormulas = new Set(c.formulas.map(f=>f.formula_id));
+    requireThat(next.formulas.filter(f=>!capturedFormulas.has(f.formula_id)).every(f=>
+      Array.isArray(f.input_parameter_ids) && !f.input_parameter_ids.some((id:string)=>legacyAssumptions.includes(id))),
+      input,'LEGACY_TEMPLATE_ASSUMPTION_NOT_A_NEW_QUANTITY_NORM');
+  }
   for (const old of c.formulas) {
     const actual = formulas.get(old.formula_id);
     const repair = opt.formulaExpressionRepairs?.[old.formula_id];
@@ -518,15 +625,32 @@ export function prepareMasterRetainedBindingRepresentativeR1(
       parameters: newParameters, newParameterSources: opt.newParameterSources, sourceClosure,
       oldResourceRowIds: c.resources.map(r => r.row_id), next})};
   const oldMetadata = c.definition.source_metadata;
+  const continuation = successorContinuationOf(input, opt);
   requireThat(object(oldMetadata) && object(next.successorProvenance)
-    && !Object.prototype.hasOwnProperty.call(oldMetadata, "retainedParentBindingSuccessorV1"),
+    && (continuation != null || !Object.prototype.hasOwnProperty.call(oldMetadata, "retainedParentBindingSuccessorV1")),
     input, "SUCCESSOR_PROVENANCE_SLOT_COLLISION");
   const lifecycle = next.lifecycleMetadata ?? {};
   requireThat(object(lifecycle) && Object.keys(lifecycle).every(key =>
     ["contract", "masterSha256", "sourceFingerprint"].includes(key)), input, "LIFECYCLE_OVERWRITE_KEYS");
+  if (continuation != null) requireThat(
+    (!Object.hasOwn(next.successorProvenance, "catalogId")
+      || next.successorProvenance.catalogId === input.config.catalogId)
+    && next.successorProvenance.parentDefinitionId === c.definition.id
+    && next.successorProvenance.parentBaselineId === c.baseline.id
+    && next.successorProvenance.capturedParentSha256 === opt.capturedParentSha256,
+    input, "CONTINUATION_CURRENT_PARENT_ANCHOR");
+  const sourceMetadata = {...normalized(oldMetadata), ...normalized(lifecycle),
+    ...(continuation == null
+      ? {retainedParentBindingSuccessorV1: normalized(next.successorProvenance)}
+      : {retainedParentBindingContinuationV1: {
+        contract: continuation.contract,
+        previousSourceMetadata: normalized(continuation.capturedSourceMetadata),
+        previousSourceMetadataSha256: continuation.capturedSourceMetadataSha256,
+        previousSuccessorSha256: continuation.capturedPreviousSuccessorSha256,
+        successor: {...normalized(next.successorProvenance), catalogId: input.config.catalogId},
+      }})};
   return {bindings: [...oldBindings, ...next.newBindings.map(b => normalized(b))],
-    normativeSourceIds, sourceMetadata: {...normalized(oldMetadata), ...normalized(lifecycle),
-      retainedParentBindingSuccessorV1: normalized(next.successorProvenance)},
+    normativeSourceIds, sourceMetadata,
     expectedNormativeBindingCount: oldBindings.length + next.newBindings.length,
     normativeSourceClosure: sourceClosure};
 }

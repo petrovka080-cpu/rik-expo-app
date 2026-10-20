@@ -1,0 +1,167 @@
+{
+  "contract": "facade-ceresit-ct190-kz-material-subworks/r1",
+  "status": "AUTHORED_EXTENSION_CURRENT_BODY_ADMISSION_PENDING",
+  "isNewWorkType": false,
+  "catalogId": "canonical-work:base:insulation_interior_facade_install_standard",
+  "publicationAllowed": false,
+  "fullTechnicalAcceptance": false,
+  "prefix": "facade:ct190-kz:materials:r1",
+  "sourceId": "manufacturer_ceresit_ct190_kz_tds_20251127_r1",
+  "normId": "manufacturer:ct190:kz:material-coverage:2025-11-27",
+  "titleRu": "Фасад Ceresit WM: клей и армирующий слой CT 190",
+  "source": {
+    "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-190-ru_KZ.pdf",
+    "artifactRelativePath": "work/stream-c-facade-ct190/CERESIT-CT-190-ru_KZ.pdf",
+    "sha256": "58b52276c77deb9d2835cf5464d26506b17e8be7a89b3a31bdca064c0368cdca",
+    "bytes": 654746,
+    "edition": "Русскоязычный паспорт исполнения KZ; цифровая подпись Henkel TDX 2025-11-27T18:11:58.531Z; дата редакции в тексте не указана",
+    "reviewedAt": "2026-10-19",
+    "pages": [
+      1,
+      2
+    ],
+    "locatorRu": "Стр.1 область применения, подготовка, приготовление и крепление; стр.2 защитный слой, рекомендации, упаковка и технические характеристики.",
+    "livePrimaryRetrieved": true,
+    "visuallyVerified": true,
+    "notKgNormativeCode": true
+  },
+  "selectedValueRu": "Ceresit CT 190 исполнения KZ, Ceresit WM, предварительный расход по этому паспорту",
+  "legacyValueRu": "Прежняя проектная смесь и сохранённое количество",
+  "scopeRu": "Только материал CT 190 исполнения KZ для приклеивания фасадных минераловатных плит и устройства защитного слоя Ceresit WM. Оба расхода приблизительные; расход приклеивания зависит от ровности. Это наполнение существующего фасадного профиля, без новой общей сметы или новой идентичности работы.",
+  "rates": {
+    "attachmentKgPerM2": "5",
+    "attachmentRaw": "~ 5,0 кг/м² (в зависимости от ровности стены)",
+    "baseLayerKgPerM2": "5.8",
+    "baseLayerRaw": "~ 5,8 кг/м²",
+    "packageKg": "25",
+    "waterLPerPackageMin": "5.75",
+    "waterLPerPackageMax": "6.25",
+    "waterRaw": "5,75 – 6,25 л на 25 кг сухой смеси",
+    "approximate": true,
+    "additionalWasteProven": false
+  },
+  "conditions": {
+    "temperatureMinC": "5",
+    "temperatureMaxC": "30",
+    "maxHumidityPercent": "80",
+    "minMeshOverlapM": "0.1",
+    "minBaseLayerThicknessMm": "4.5",
+    "rawPotlifeProse": "1,5 часов с момента приготовления",
+    "rawPotlifeTable": "~ 1 час",
+    "potlifeConflictRequiresManufacturerClarification": true
+  },
+  "legacyOwner": {
+    "rowId": "rc09:facade_mineral_wool_adhesive",
+    "formulaId": "facade_mineral_wool_adhesive_mass_v1",
+    "quantityParameterId": "facade_adhesive_mass_kg",
+    "designationParameterId": "facade_adhesive_designation",
+    "unitId": "kg",
+    "scope": "Attachment-only old manual adhesive. CT190 selected branch replaces its payment/procurement, not its history. Legacy branch preserves saved value/price/title/exclusion."
+  },
+  "operations": [
+    {
+      "id": "attachment",
+      "ordinal": 20,
+      "titleRu": "Приклеить фасадные минераловатные плиты",
+      "criterionRu": "Плиты приклеены к принятому минеральному основанию; расход клея предварительный, зависящий от ровности."
+    },
+    {
+      "id": "base-layer",
+      "ordinal": 40,
+      "titleRu": "Выполнить защитный слой со стеклосеткой",
+      "criterionRu": "Сетка утоплена в слое, а не уложена на сухой утеплитель; нахлёст не менее 100 мм, суммарная толщина не менее 4,5 мм по выбранному паспорту."
+    }
+  ],
+  "needs": [
+    {
+      "id": "attachment-labor",
+      "titleRu": "Труд приклеивания минераловатных плит",
+      "operationId": "attachment",
+      "category": "labor",
+      "reasonRu": "Паспорт задаёт материалы и технологию, но не человеко-часы. Совместимый труд существующего профиля нельзя начислять второй раз.",
+      "nextTaskRu": "Сметчик проверяет границу текущего труда и применимую норму; отдельные часы добавляются только для действительно отсутствующего объёма.",
+      "ownerRu": "Сметчик"
+    },
+    {
+      "id": "base-layer-labor",
+      "titleRu": "Труд устройства защитного слоя",
+      "operationId": "base-layer",
+      "category": "labor",
+      "reasonRu": "Труд армирования и заглаживания в паспорте не нормирован и не доказан внутри старого монтажа утеплителя.",
+      "nextTaskRu": "Сметчик выбирает подтверждённую норму защитного слоя без повторной оплаты включённого труда.",
+      "ownerRu": "Сметчик"
+    },
+    {
+      "id": "mesh-layout",
+      "titleRu": "Стеклосетка и её раскрой",
+      "operationId": "base-layer",
+      "category": "material",
+      "reasonRu": "Известен нахлёст не менее 100 мм, но не ширина рулона, раскладка, усиления углов и вырезы. Произвольный коэффициент 1,1 не доказан.",
+      "nextTaskRu": "Проектировщик задаёт марку щелочестойкой сетки, раскладку и усиления; количества считает совместимая геометрическая подработа.",
+      "ownerRu": "Проектировщик и прораб"
+    },
+    {
+      "id": "mixing-tools",
+      "titleRu": "Миксер, полутёрки и прочий инструмент",
+      "operationId": "attachment",
+      "category": "tool",
+      "reasonRu": "Назначены миксер 400–800 об/мин и ручной инструмент, но нет машино-часов, расхода энергии и отдельной границы оплаты.",
+      "nextTaskRu": "Подрядчик сверяет инструмент и включение в действующую цену/НР; требование к процессу не оплачивается автоматически.",
+      "ownerRu": "Подрядчик"
+    },
+    {
+      "id": "delivery",
+      "titleRu": "Доставка смеси и воды",
+      "operationId": "attachment",
+      "category": "delivery",
+      "reasonRu": "Мешки 25 кг известны; рейсы, расстояние, разгрузка и подъём не определены. Старый подъёмник сохраняет собственного владельца.",
+      "nextTaskRu": "Снабжение получает условия доставки и выбирает совместимую готовую подработу; повторный подъём не добавляется.",
+      "ownerRu": "Снабжение и сметчик"
+    },
+    {
+      "id": "preparation-protection",
+      "titleRu": "Подготовка, защита и контроль фасада",
+      "operationId": "attachment",
+      "category": "service",
+      "reasonRu": "Ремонт/грунтование зависят от основания; защита от солнца, ветра и дождя обязательна. Дюбели назначаются расчётом, а не постоянным числом на м².",
+      "nextTaskRu": "Прораб проверяет основание, проект крепления, защиту и применимость существующих подработ; отдельные материалы и услуги подтверждаются по фактическому объёму.",
+      "ownerRu": "Прораб, проектировщик и технадзор"
+    },
+    {
+      "id": "potlife-clarification",
+      "titleRu": "Уточнение времени использования смеси",
+      "operationId": "attachment",
+      "category": "service",
+      "reasonRu": "В одном паспорте расходятся текст «1,5 часов» и таблица «~ 1 час». Время и производительность из этого не рассчитываются.",
+      "nextTaskRu": "Производитель подтверждает время использования для фактически поставленного продукта и условий объекта до технической приёмки.",
+      "ownerRu": "Поставщик и производитель"
+    }
+  ],
+  "reuse": [
+    {
+      "owner": "facadeMineralWoolInstallationR1",
+      "reuseRu": "Существующая работа, площадь area_m2, плиты120мм, проектные дюбели, подъёмник, контроль, рассечки и стартовый профиль; не пересоздавать.",
+      "status": "EXACT_LOCAL_OWNER_VERIFIED_LIVE_BODY_PENDING"
+    },
+    {
+      "owner": "automaticConstructionOwnerR1",
+      "reuseRu": "Штатные определения параметров, формул и строк."
+    },
+    {
+      "owner": "effectivePurchaseBalanceExpressionsR1",
+      "reuseRu": "Один общий заказ CT190 для двух подработ, запасы/резерв/остатки."
+    },
+    {
+      "owner": "canonicalEstimateCompileCore",
+      "reuseRu": "Общая арифметика, цена, ручные правки, защита количества."
+    }
+  ],
+  "exclusionsRu": [
+    "Не переносить KZ значения на BY, РФ, зимний продукт или EPS-крепление.",
+    "Не считать приблизительный расход точной нормой и не начислять дополнительный процент отходов.",
+    "Не переносить старую цену произвольной смеси на CT190.",
+    "Не начислять второй труд, подъёмник, дюбели и контроль из старого профиля.",
+    "Не выводить площадь сетки как площадь фасада×1,1.",
+    "Вода для затворения считается из расходуемой, а не закупленной с остатком смеси; промывка инструмента отдельно не нормирована."
+  ]
+}

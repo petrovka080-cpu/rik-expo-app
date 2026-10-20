@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
 import { primaryConsumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
+import {canonicalPublicEstimateWorkTitleRu} from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 
 type Props = {
   bundle: ConsumerRepairDraftBundle;
@@ -51,7 +52,7 @@ export function ConsumerRepairPdfRow({
         style={styles.main}
         testID="consumer-repair-history-main"
       >
-        <Text style={styles.title} numberOfLines={1}>{bundle.draft.title || "Смета"}</Text>
+        <Text style={styles.title} numberOfLines={1} testID="consumer-repair-history-title">{canonicalPublicEstimateWorkTitleRu(bundle.draft.title || "Смета")}</Text>
         <Text style={styles.meta}>Статус: {status} · {formatDate(bundle.draft.approvedAt ?? bundle.draft.createdAt)}</Text>
         {canonical ? (
           <Text

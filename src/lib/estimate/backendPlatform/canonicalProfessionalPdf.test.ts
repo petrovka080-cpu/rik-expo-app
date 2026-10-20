@@ -22,6 +22,8 @@ test("versioned professional PDF jobs reject an obsolete worker and retain legac
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-s27-75-subwork-resources-template52" }))
     .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
+  expect(() => assertCanonicalProfessionalPdfJobRendererVersion({ rendererVersion: "canonical-professional-pdf.r4-a13-operation-resource-presentation-template60" }))
+    .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
   for (const invalid of [null, [], { rendererVersion: null }]) {
     expect(() => assertCanonicalProfessionalPdfJobRendererVersion(invalid))
       .toThrow(expect.objectContaining({ code: "ARTIFACT_RENDERER_VERSION_MISMATCH" }));
@@ -44,6 +46,20 @@ function revision(rowCount: number) {
     created_at: "2026-09-04T10:30:00.000Z",
   };
 }
+test('public PDF translates saved fixture annotations without presenting them as a supplier confirmation',()=>{
+ const source=rows(1),spec='CONTROL_ONLY QA exact source-compatible supply, not supplier offer';
+ source[0]={...source[0]!,title_ru:'Кирпич М100 — '+spec,calculation_trace:{resourceGraph:{
+  titleSpecificationMode:'APPEND',titleSpecificationSeparator:' — ',titleSpecificationParameterIds:['brick_spec'],
+  publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',
+   sourceTitleRu:'Кирпич М100 — '+spec,nameRu:'Кирпич М100',brandAndModelRu:null,specificationRu:spec,detailsRu:[]}}}};
+ const saved={...revision(1),source_request_text:'CONTROL_ONLY QA кирпичная перегородка; не заказ поставщику',
+  input_parameters:{brick_spec:spec}},before=JSON.stringify({source,saved});
+ const html=buildCanonicalProfessionalPdfProjection({revision:saved,rows:source,workTitleRu:'TEST_ONLY Перегородка'}).html;
+ expect(html).not.toMatch(/CONTROL_ONLY|VALIDATION_FIXTURE|FIXTURE_ONLY|TEST_ONLY|\bQA\b|source-compatible|supplier offer/u);
+ expect(html).toContain('Проверочный пример');expect(html).toContain('поставка не подтверждена');
+ expect(html).toContain('Кирпич М100');expect(JSON.stringify({source,saved})).toBe(before);
+});
+
 test('excluded own-cost row retains its saved reference price without returning it to any total',()=>{
  const source=rows(1);source[0]={...source[0]!,included_in_estimate:false,included_in_procurement:false,unit_price:'125',amount:'1464.38',currency_code:'KGS',
   calculation_trace:{resourceGraph:{costTreatment:'OWN_COST'},manualAmendment:{kind:'manual'}}};
@@ -90,7 +106,7 @@ test.each(['LEGACY_SOURCE_REQUIRED','OBJECT_FACT_REQUIRED','REQUIRED_RESOURCE_EX
   expect(projection.html).toContain('<strong>полный итог не рассчитан</strong>');
   expect(projection.html).not.toContain('Полный итог: требуется уточнение цен.');
   expect(projection.html).not.toContain('<strong>требуется уточнение цен</strong>');
-  expect(projection.html).toContain('<strong>Позиций расчёта</strong><br>1');
+  expect(projection.html).toContain('<strong>Позиций сметы</strong><br>1');
   expect(projection.html).toContain('<strong>Количество известно</strong><br>1; ещё не рассчитано 0');
   if(status==='REQUIRED_RESOURCE_EXCLUDED')expect(projection.html).toContain('Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав.');
   expect(source).toHaveLength(1);
@@ -341,7 +357,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-s27-83-construction-public-names-template54");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-operation-resource-presentation-template61");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
@@ -496,8 +512,9 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).toContain("Не рассчитано");
     expect(projection.html).toContain("Нерассчитанные позиции не включены в стоимость и закупку");
     expect(projection.html).not.toContain(">0 kg<");
-    expect(projection.html).toContain("ДЕМО / VALIDATION_FIXTURE: подтверждение проекта отсутствует &lt;script&gt;");
-    expect(projection.html).toContain("ДЕМО / VALIDATION_FIXTURE — испытательный документ.");
+    expect(projection.html).toContain("Проверочный пример: подтверждение проекта отсутствует &lt;script&gt;");
+    expect(projection.html).toContain("Проверочный пример. Не является утверждённой проектной сметой.");
+    expect(projection.html).not.toContain("VALIDATION_FIXTURE");
     expect(projection.html).not.toContain("Фактический полный расход совместимой грунтовки на квадратный метр");
     expect(projection.html).not.toContain("primer_consumption_kg_m2");
     expect(projection.html).not.toContain("<script>");
@@ -663,7 +680,8 @@ describe("R4-A6 canonical professional PDF", () => {
     const before = JSON.stringify(source);
     const projection = buildCanonicalProfessionalPdfProjection({ revision: revision(3), rows: source, workTitleRu: "Закладные" });
     expect(projection.html.match(/Сварочный труд &lt;img src=x&gt; &amp; оператор/gu)).toHaveLength(1);
-    expect(projection.html.match(/<td class="money">Не суммируется<\/td>/gu)).toHaveLength(2);
+    expect(projection.html.match(/<td class="money">Без доплаты<\/td>/gu)).toHaveLength(2);
+    expect(projection.html.match(/<td class="money">Включено в №1<\/td>/gu)).toHaveLength(2);
     expect(projection.html).not.toContain("стоимость учитывается в труде и механизмах");
     expect(projection.html).not.toContain("<img");
     expect(projection.html).not.toContain("Проектная комплектация");
@@ -707,7 +725,7 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).not.toContain("Контрольная или исполнительная позиция; отдельно не суммируется.");
     expect(projection.html).not.toContain("Условие выполнения работ; отдельно не суммируется.");
     expect(projection.html).not.toContain("Позиция исключена из итога сохранённой версии.");
-    expect(projection.html.match(/<td class="money">Не применяется<\/td>/gu)).toHaveLength(3);
+    expect(projection.html.match(/<td class="money">[^<]+ \(справочно\)<\/td>/gu)).toHaveLength(3);
     expect(projection.html.match(/<td class="money">Не суммируется<\/td>/gu)).toHaveLength(3);
     expect(projection).toMatchObject({pricedRowCount:1,nonPayableRowCount:3,categoryTotals:{material:200}});
     expect(projection.html).not.toContain("стоимость включена в позицию");

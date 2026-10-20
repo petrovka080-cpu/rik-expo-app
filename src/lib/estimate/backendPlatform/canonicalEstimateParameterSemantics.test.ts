@@ -1,3 +1,12 @@
+import choicePack0 from "../../../../data/estimate-benchmarks/source-packs/steel-water-dn15-partial-labour-only-krer16-002-01-r2.json";
+import choicePack1 from "../../../../data/estimate-benchmarks/source-packs/galvanized-round-duct200-normal-krer20-001-01-quantity-r1.json";
+import choicePack2 from "../../../../data/estimate-benchmarks/source-packs/foundation-side-hot-bitumen-two-coats-krer08-003-07-r1.json";
+import choicePack3 from "../../../../data/estimate-benchmarks/source-packs/facade-flashings-with-downpipes-krer12-008-01-quantity-r1.json";
+import choicePack4 from "../../../../data/estimate-benchmarks/source-packs/foundation-rubble-side-preparation-krer08-003-08-r1.json";
+import choicePack5 from "../../../../data/estimate-benchmarks/source-packs/manual-backfill-soil1-krer01-061-01-quantity-r1.json";
+import choicePack6 from "../../../../data/estimate-benchmarks/source-packs/ceramic-skirting-m150-krer11-039-04-completion-r1.json";
+import choicePack7 from "../../../../data/estimate-benchmarks/source-packs/vent-pitot-port-caps-project-p-reference-r1.json";
+import choicePack8 from "../../../../data/estimate-benchmarks/source-packs/floor-sand-small-room-straightedge-spkr65-r1.json";
 import {
   canonicalEstimateBlockingParameterIssues,
   canonicalEstimateParameterAllowsPreliminaryCompilation,
@@ -515,5 +524,60 @@ describe("canonical professional norm ownership", () => {
     expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(false);
     expect(isCanonicalEstimateVisibleReplaceableProfile(schema)).toBe(false);
     expect(isCanonicalEstimateVisibleUserResourceSelectionParameter(schema)).toBe(false);
+  });
+});
+
+describe("source-wave construction choices use the common Russian presentation path", () => {
+  function collectChoices(value: unknown): string[] {
+    if (typeof value === "string") return /^[A-Z][A-Z0-9_]*$/u.test(value) ? [value] : [];
+    if (Array.isArray(value)) return value.flatMap(collectChoices);
+    if (value && typeof value === "object") return Object.entries(value).filter(([key]) => key !== "incompatibleValue").flatMap(([, item]) => collectChoices(item));
+    return [];
+  }
+  const fields = [choicePack0.scopeFacts, choicePack1.scopeFacts, choicePack2.scopeFacts, choicePack3.scopeFacts, choicePack4.scopeFacts, choicePack5.scopeFacts, choicePack6.scopeFacts, choicePack4.states, choicePack6.selector, choicePack7.projectFacts, choicePack7.states, choicePack8.planValue, choicePack8.recordedValue, choicePack8.otherValue];
+  const current = [...new Set(fields.flatMap(collectChoices))];
+  it.each(current)("shows a specific readable label for source choice %s", value => {
+    const label = canonicalEstimateParameterChoiceLabelRu("source_wave_choice", value);
+    expect(label).toMatch(/[А-Яа-яЁё]/u);
+    expect(label).not.toBe("Вариант по проектной документации");
+    expect(label).not.toMatch(/[A-Z]{2,}_[A-Z0-9_]+/u);
+  });
+  it("keeps the three substrate options and three backfill objects distinct", () => {
+    expect(["PREPARED_EVEN_RUBBLE_MASONRY", "PREPARED_EVEN_BRICK", "PREPARED_EVEN_CONCRETE"].map(value => canonicalEstimateParameterChoiceLabelRu("waterproofing_prepared_substrate", value)))
+      .toEqual(["Подготовленная выровненная бутовая кладка", "Подготовленная выровненная кирпичная кладка", "Подготовленная выровненная бетонная поверхность"]);
+    expect(["TRENCH", "PIT_SIDE_SPACE", "HOLE"].map(value => canonicalEstimateParameterChoiceLabelRu("backfill_object", value)))
+      .toEqual(["Траншея", "Пазухи котлована", "Яма"]);
+  });
+  it("distinguishes planned, recorded and unconfirmed checks without turning a label into acceptance", () => {
+    const values = [choicePack8.planValue, choicePack8.recordedValue, choicePack8.otherValue];
+    const labels = values.map(value => canonicalEstimateParameterChoiceLabelRu("floor_check", value));
+    expect(new Set(labels).size).toBe(3);
+    expect(labels).toEqual(['Есть план замеров, результатов ещё нет', 'Есть записанные результаты замеров', 'Данных пока нет или условия другие']);
+    expect(choicePack8.fullTechnicalAcceptance).toBe(false);
+  });
+  it("does not confuse required preparation with accepted work or an already ready base", () => {
+    const labels = Object.values(choicePack4.states).map(value => canonicalEstimateParameterChoiceLabelRu("rubble_preparation", value));
+    expect(new Set(labels).size).toBe(4);expect(labels[0]).toContain("ещё не принято");
+    expect(labels[1]).toContain("подтверждена отдельно");expect(labels[2]).toContain("не добавлять");
+  });
+  it("distinguishes included watering from confirmed absence and leaves the machine values untouched", () => {
+    const values = ["REQUIRED_INCLUDED_LABOUR_WATER_QUANTITY_UNRESOLVED", "NOT_REQUIRED_CONFIRMED"];
+    const before = JSON.stringify(values), labels = values.map(value => canonicalEstimateParameterChoiceLabelRu("backfill_watering_state", value));
+    expect(labels[0]).toContain("расход воды ещё не определён");expect(labels[1]).toContain("не требуется");
+    expect(labels[0]).not.toEqual(labels[1]);expect(JSON.stringify(values)).toBe(before);
+  });
+  it.each(["EXACT_BASE_COLUMN_NO_THICKNESS_HEIGHT_REPAIR_ALTITUDE_OR_SPECIAL_COEFFICIENT", "LITERAL_SOURCE_CONSUMPTION_ONLY_NO_PRODUCT_ORDER_STOCK_OR_RECIPE_ADMISSION", "NET_INTERNAL_WALL_LESS_BOX_OPENINGS_AND_DRAWN_ARCHITRAVES_HEIGHT_FINISHED_FLOOR_TO_CEILING", "PHYSICAL_SIDE_PLATES_ONLY_NO_SALES_UNIT_OR_PAYMENT", "PROJECT_CONFIRMED_READY_STONE_MASONRY_FOR01601_NO_IMPORTED_PREPARATION_NORM", "PROJECT_RECONCILED_NONOVERLAPPING_INCLUDED01601_WINDOW_SURFACES_AND_DISTINCT031_ELEMENTS_NO_DOUBLE_PAYMENT", "READY_HEAVY_CEMENT_LIME_1_1_6_SOURCE03_0410_0001", "SINGLE_WHOLE_LABOUR_INCLUDES_SOURCE_OPERATIONS_NO_KNAUF_CT29_OR_EXTRA_OPERATOR", "SOURCE_SIMPLE_CEMENT_LIME_INTERNAL_STONE_WALL_COLUMN01601", "UNCONFIRMED_OR_OTHER_EP_SUPPLY"])("supports the next frozen package choice %s without importing its pack into the client", value => {
+    const label = canonicalEstimateParameterChoiceLabelRu("next_source_choice", value);
+    expect(label).toMatch(/[А-Яа-яЁё]/u);expect(label).not.toBe("Вариант по проектной документации");
+  });
+  it("keeps the physical P31 reference separate from unconfirmed supply without changing finance", () => {
+    const active = canonicalEstimateParameterChoiceLabelRu("p31_ep_side_piece_reference_method", "PHYSICAL_SIDE_PLATES_ONLY_NO_SALES_UNIT_OR_PAYMENT");
+    const pending = canonicalEstimateParameterChoiceLabelRu("p31_ep_side_piece_reference_method", "UNCONFIRMED_OR_OTHER_EP_SUPPLY");
+    expect(active).toContain("без заказа и оплаты");expect(pending).toContain("не подтверждён");expect(active).not.toEqual(pending);
+  });
+  it("preserves existing fallback, Russian text and unknown-code behavior", () => {
+    expect(canonicalEstimateParameterChoiceLabelRu("future", "STILL_UNKNOWN_CODE")).toBe("Вариант по проектной документации");
+    expect(canonicalEstimateParameterChoiceLabelRu("future", "STILL_UNKNOWN_CODE", "Условие по отдельному проекту")).toBe("Условие по отдельному проекту");
+    expect(canonicalEstimateParameterChoiceLabelRu("future", "Пригодное основание по проекту")).toBe("Пригодное основание по проекту");
   });
 });

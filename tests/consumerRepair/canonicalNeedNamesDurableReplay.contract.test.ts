@@ -7,13 +7,14 @@ import {canonicalEstimateRevisionRowFromStorage} from '../../src/lib/estimate/ba
 import {adaptCanonicalRevisionToStructuredEstimate} from '../../src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter';
 import {ESTIMATE_PLATFORM_API_VERSION,type CanonicalEstimateCatalogItem,type CanonicalEstimateRevisionView} from '../../src/lib/estimate/backendPlatform/contracts';
 import {buildStructuredEstimateRequestDraft} from '../../src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding';
-import {appendCanonicalBackendRevisionProjection,type CanonicalPreliminaryNamingEvidence} from '../../src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
+import {appendCanonicalBackendRevisionProjection,canonicalPreliminaryNamingEvidenceReadRevisionIds,
+  missingCanonicalPreliminaryNamingEvidenceRevisionIds,enrichCanonicalPreliminaryNamingEvidence,
+  type CanonicalPreliminaryNamingEvidence} from '../../src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import {compactConsumerRepairBundleForDurableStorage} from '../../src/lib/platform/compactConsumerRepairDurableState';
 import {buildRequestEstimateViewModel,requestEstimatePublicRevisionDiff} from '../../src/features/consumerRepair/requestEstimateViewModel';
 import {consumerRepairRowPublicResourcePresentation,consumerRepairRowCalculatedQuantity} from '../../src/features/consumerRepair/consumerRepairRowMetadata';
 import {compareEstimateDraftRevisions} from '../../src/lib/estimate/compareEstimateDraftRevisions';
 import type {ConsumerRepairRequestItem,ConsumerRepairDraftBundle} from '../../src/lib/consumerRequests/consumerRequestTypes';
-import {foundationDraftWithManualCatalogItem} from '../requestEstimate/requestEstimateBoqCatalogTestHelpers';
 import {ConsumerRepairRequestScreenController} from '../../src/features/consumerRepair/ConsumerRepairRequestScreen';
 import {loadConsumerRepairCanonicalNamingEvidence} from '../../src/features/consumerRepair/ConsumerRepairRequestScreenContainer';
 import * as requestRepository from '../../src/lib/consumerRequests/consumerRequestRepository';
@@ -25,6 +26,15 @@ const releaseId='aaaaaaaa-1111-4111-8111-111111111111';
 const rootId='aaaaaaaa-2222-4222-8222-222222222222',childId='aaaaaaaa-3333-4333-8333-333333333333';
 const complete={lantern_count:14,lantern_model:sourcePack.model,base_stock_units:0,base_reserve_units:0,dome_stock_units:0,dome_reserve_units:0};
 const baseRow='roof-cfp100100:base',baseName='Основание окна со стеклопакетом — проём 100 × 100 см';
+
+// This contract compiles the real window fixture below. Importing an unrelated
+// foundation calculator here needlessly loads the entire legacy 10000-work graph.
+function emptyDraft():ConsumerRepairDraftBundle {
+ const createdAt='2026-10-09T10:00:00Z',id='durable-name-fixture';
+ return {draft:{id,consumerUserId:'fixture-owner',repairType:'construction',status:'draft',missingData:[],createdAt},
+  items:[],media:[],pdfs:[],projectExecutionDrafts:[],events:[],
+  marketplaceLink:{id:'fixture-market-link',requestDraftId:id,status:'not_sent',createdAt}};
+}
 
 async function fixture(input:Record<string,unknown>, options:{
   previous?:ConsumerRepairDraftBundle;id?:string;overrides?:CanonicalEstimateCompileCoreInput['rowOverrides'];
@@ -50,7 +60,7 @@ async function fixture(input:Record<string,unknown>, options:{
     amendmentContract:{rowOverrides:{},customRows:[],releaseMigration:null,...transport.amendmentContract},preliminaryNeeds:transport.preliminaryNeeds};
   const payload=adaptCanonicalRevisionToStructuredEstimate({catalog,revision,
     rows:result.rows.map(row=>canonicalEstimateRevisionRowFromStorage(row,null))});
-  const draft=buildStructuredEstimateRequestDraft(payload),seed=foundationDraftWithManualCatalogItem();
+  const draft=buildStructuredEstimateRequestDraft(payload),seed=emptyDraft();
   const next:ConsumerRepairDraftBundle={...seed,draft:{...seed.draft,id:'durable-name-fixture',selectedWorkTitleRu:'Установка окон в крыше'},
     items:draft.items.map((item,index)=>({...item,id:'fixture-'+index,requestDraftId:'durable-name-fixture'})) as ConsumerRepairRequestItem[],
     structuredEstimatePayload:draft.structuredEstimatePayload};
@@ -330,4 +340,55 @@ test('a replacement descriptor is applied to its saved side only',async()=>{
   const after=await fixture(complete,{previous:before.bundle,id:childId,resources}),state=after.bundle.estimateDraftRevisionState!;
   const shown=requestEstimatePublicRevisionDiff(state,state.diffs[0]!)!.changedRows.find(row=>row.rowId===baseRow)!;
   expect(shown.beforeTitleRu).toBe(baseName);expect(shown.titleRu).toBe('Основание окна 120 × 120 см');
+});
+
+test('a cold comparison restores classification from each exact revision, with two bounded reads and no recalculation',async()=>{
+  const before=await fixture({lantern_count:14}),after=await fixture(complete,{previous:before.bundle,id:childId}),legacy=replay(after.bundle);
+  for(const revision of legacy.estimateDraftRevisionState!.revisions)for(const row of revision.preliminaryRows??[]){
+    if(row.canonicalNeedAdmissionV1){delete row.canonicalNeedAdmissionV1.category;delete row.canonicalNeedAdmissionV1.costTreatment;}
+  }
+  expect(canonicalPreliminaryNamingEvidenceReadRevisionIds(legacy)).toEqual([childId,rootId]);
+  expect(missingCanonicalPreliminaryNamingEvidenceRevisionIds(legacy)).toEqual([childId,rootId]);
+  const rawDiff=JSON.stringify(legacy.estimateDraftRevisionState!.diffs),items=legacy.items;
+  const load=jest.fn(async(id:string)=>id===childId?after.payload.canonicalBackend!:before.payload.canonicalBackend!);
+  const {controller,mutable}=namingController(legacy,load);await mutable.hydrateCurrentCanonicalNamingEvidence();
+  expect(load.mock.calls.map(args=>args[0])).toEqual([childId,rootId]);
+  expect(missingCanonicalPreliminaryNamingEvidenceRevisionIds(mutable.state.bundle)).toEqual([]);
+  expect(mutable.state.bundle!.items).toBe(items);expect(mutable.state.bundle!.estimateDraftRevisionState!.currentRevisionId).toBe(childId);
+  expect(JSON.stringify(mutable.state.bundle!.estimateDraftRevisionState!.diffs)).toBe(rawDiff);
+  expect(mutable.state.pendingCanonicalRowEditCount).toBe(5);expect(controller.props.onRecalculateCanonicalEstimate).not.toHaveBeenCalled();
+});
+
+test('classification enrichment rejects conflicting saved evidence and never uses another revision checksum',async()=>{
+  const {bundle,payload}=await fixture({lantern_count:14}),legacy=replay(bundle),row=legacy.estimateDraftRevisionState!.revisions[0]!.preliminaryRows![0]!;
+  delete row.canonicalNeedAdmissionV1!.costTreatment;row.canonicalNeedAdmissionV1!.category='foreign-category';
+  expect(enrichCanonicalPreliminaryNamingEvidence(legacy,payload.canonicalBackend!)).toBe(legacy);
+  delete row.canonicalNeedAdmissionV1!.category;
+  expect(enrichCanonicalPreliminaryNamingEvidence(legacy,{...payload.canonicalBackend!,checksumSha256:'f'.repeat(64)})).toBe(legacy);
+  const restored=enrichCanonicalPreliminaryNamingEvidence(legacy,payload.canonicalBackend!);
+  expect(restored).not.toBe(legacy);expect(missingCanonicalPreliminaryNamingEvidenceRevisionIds(restored)).toEqual([]);
+});
+
+test('repository refuses an unrelated saved revision without issuing GET',async()=>{
+  const {bundle}=await fixture(complete),read=jest.spyOn(requestRepository,'findConsumerRepairBundle').mockReturnValue(bundle);
+  const get=jest.spyOn(backendClient,'getCanonicalEstimateRevision');
+  try{
+    expect(await loadConsumerRepairCanonicalNamingEvidence({revisionId:childId,requestDraftId:bundle.draft.id,
+      consumerUserId:bundle.draft.consumerUserId!,workspaceGenerationRef:{current:1}})).toBeNull();expect(get).not.toHaveBeenCalled();
+  }finally{read.mockRestore();get.mockRestore();}
+});
+
+test('comparison hides verified unpriced counters, keeps physical materials, and preserves the raw history',async()=>{
+  const counter='roof-cfp100100:daylight';
+  const resources=resourceDefinitions.map(row=>row.row_id!==counter?row:{...row,resource_graph:{...row.resource_graph,
+    publicResourcePresentationV1:{...row.resource_graph.publicResourcePresentationV1,rowKind:'CALCULATION_DETAIL'}}});
+  const before=await fixture(complete,{resources}),after=await fixture({...complete,lantern_count:15},{previous:before.bundle,id:childId,resources});
+  const state=after.bundle.estimateDraftRevisionState!,raw=state.diffs[0]!,snapshot=JSON.stringify(state);
+  expect(raw.changedRows.some(row=>row.rowId===counter)).toBe(true);
+  const shown=requestEstimatePublicRevisionDiff(state,raw)!;
+  expect(shown.changedRows.some(row=>row.rowId===counter)).toBe(false);expect(shown.changedRows.some(row=>row.rowId===baseRow)).toBe(true);
+  expect(shown.changedRowsCount).toBe(shown.changedRows.length);expect(JSON.stringify(state)).toBe(snapshot);
+  // Even a saved zero price prevents hiding a financial change.
+  const protectedDiff={...raw,changedRows:raw.changedRows.map(row=>row.rowId===counter?{...row,afterUnitPrice:0}:row)};
+  expect(requestEstimatePublicRevisionDiff(state,protectedDiff)!.changedRows.some(row=>row.rowId===counter)).toBe(true);
 });
