@@ -434,7 +434,7 @@
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.ts": "f2966bee892f08237f0bd50c054845ee6ea7a6c59032f03f909d536c4bd5fff9",
     "scripts/estimate/r4a13/prepareElecor60x40SingleRouteMaterialsR1.ts": "93fb236d6c999d86a2d4f8a209177265613b1860d39ad5554efbbc8ecc367ab7",
     "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts": "bd620a6b01e43190c586d93752a0cd673015e2d6ff1fdf95b8209d6718d37771",
-    "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": "d12c847aef92e104288b4a429d20a95156d2d1de58a1e8bb76352b08ae0ae4e2",
+    "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": "4bc9378e0984d679d6646258c16a589d9b2c7650be6cceaf9637f4affce0759f",
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsCurrentPublicationR2.test.ts": "a995f50620b4860172b6b0b2958e05a4c97fed9e3dc0d9ce6cb413fc4cf2540f",
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsCurrentPublicationR2.ts": "d1182865b9a07dfc879ab7c5742aa0705113742428f4cfb23773649963347c30",
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsMasterSuccessorR3.test.ts": "425b270f6c0511dc6532d7cc8dba411bfb7c514bb60f04025b1099b8d4efdc5f",
@@ -3621,13 +3621,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "1ced6cdf1c5f5a03794be2ec2d2b81e8b107b3ca5dd3d0d05cd3ee21fb91bc14",
-  "canonicalSourceFreezeSha256": "278d392f32cf997ddd62f01d6b0d23be046524b83afd4d71a09c7e8ea70fec86",
+  "canonicalSourceFreezeSha256": "a97f00112b949057921dbca5b116a1607a9c642106675ac17a0db883e10be017",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100413718,
+    "sourceBytes": 100414480,
     "reviewedCandidateScope": "Unchanged accepted family source wave plus three actual-bound TypeScript leaves and two source-only SCS JSON inputs; runtime and publication unaccepted"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4174,7 +4174,7 @@
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": {
-        "sha256": "d12c847aef92e104288b4a429d20a95156d2d1de58a1e8bb76352b08ae0ae4e2",
+        "sha256": "4bc9378e0984d679d6646258c16a589d9b2c7650be6cceaf9637f4affce0759f",
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": {
@@ -4600,6 +4600,20 @@
       },
       "unchangedRootsDiagnosticsAndCaps": true,
       "sourceAuthorityGranted": false
+    },
+    "ordinaryElecorProjectionCorrectionR256": {
+      "sourceManifestSha256": "23335e5b9eaba3debc5f89fbc0ac24b6158323d052710a07062d4b51ac6b9472",
+      "inverseProofSha256": "61b35d029b8e0014dc2d1d71aaff70821e2995454f00c0f4131e40101d6b3e4e",
+      "actualPriorFailure": "STOP_ELECOR_ENDCAPS_EXISTING_OWNER_R239_RETAIN_APPEND_SUCCESSOR_SHAPE; ordinaryConfig built48/40/40, core0",
+      "correction": "Caller uses existing accepted pure retained representative provenance and lifecycle shape; strict shared append unchanged",
+      "realCapturedParentIdsAndHash": true,
+      "testOnlyFingerprintNotPublication": true,
+      "newCoreCalls": 0,
+      "sourceAuthorityGranted": false,
+      "changedSources": {
+        "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": "4bc9378e0984d679d6646258c16a589d9b2c7650be6cceaf9637f4affce0759f"
+      },
+      "sameFullTypesWorkerAndRootsAndCaps": true
     }
   }
 }

@@ -157,6 +157,10 @@ export function prepareElecorEndcapsCurrentMasterR239(context:ElecorEndcapCurren
     verifyCore:async()=>{
       // These UUIDs identify a TEST_ONLY registry projection, never a DB capture or future persisted ID.
       const sourceId='11111111-1111-5111-8111-111111111111',locatorId='22222222-2222-5222-8222-222222222222';
+      // Same owned pure-projection pattern as verifyFacadeVentilatedSteelRetainedR5, not a publication fingerprint.
+      const fingerprint=valueSha({purpose:'PURE_ELECOR_ENDCAP_CURRENT_CONFIG_STANDARD_RETAINED_REPRESENTATIVE_NOT_PUBLICATION',
+        capturedParentSha256:r.capturedParentSha256,currentFullReadSha256:context.currentFullRead.sha256,
+        sourceHashes:cfg.sourcePaths.map(path=>({path,sha256:createHash('sha256').update(readFileSync(own(path))).digest('hex')}))});
       const m=cfg.sourceMetadata,projection=prepareMasterRetainedBindingRepresentativeR1({config:cfg,newSource:{id:sourceId,
         source_key:cfg.sourceId,title_ru:m.source_title,authority:m.source_authority,official_url:m.official_url??null,
         artifact_sha256:m.artifact_sha256??null,effective_from:m.effective_from??null,effective_to:null,
@@ -167,7 +171,10 @@ export function prepareElecorEndcapsCurrentMasterR239(context:ElecorEndcapCurren
         {parameters:model.parameters,formulas:model.formulas.map(f=>c.formulas.some(old=>old.formula_id===f.formula_id)?f:{...f,ast_sha256:valueSha(f.ast)}),
           resources:buildMasterPublicationResourceRowsR1(model.resources),
           newBindings:bound.map(row_id=>({row_id,locator_id:locatorId,applicability:rowApplicability[row_id]})),
-          successorProvenance:{contract,currentFullReadSha256:context.currentFullRead.sha256},lifecycleMetadata:{contract}});
+          successorProvenance:{contract,sourceId:cfg.sourceId,normId:cfg.normId,
+            parentDefinitionId:c.definition.id,parentBaselineId:c.baseline.id,capturedParentSha256:r.capturedParentSha256,
+            sourceFingerprint:fingerprint,currentFullReadSha256:context.currentFullRead.sha256},
+          lifecycleMetadata:{contract,masterSha256:cfg.masterSha256,sourceFingerprint:fingerprint}});
       assert.equal(projection.expectedNormativeBindingCount,22);
       for(const[id,sources]of Object.entries(c.baseline.normative_source_ids))assert.deepEqual(projection.normativeSourceIds[id],sources);
       context.onOutcome?.('ordinary-retained-source-and-composition-guard',{status:'PASS_TEST_ONLY_PROJECTION_NOT_DB_PREFLIGHT',bindings:22});
