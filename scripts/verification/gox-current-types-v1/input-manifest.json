@@ -30,7 +30,7 @@
     "data/estimate-benchmarks/fixtures/ct54-ready-facade-first-entry-s27-63.json": "17d99c599d723d44656978fdea08a90ca6924697426d66fc805591a8c131739e",
     "data/estimate-benchmarks/fixtures/curb-base-curing-current-need-preimage-r1.json": "ebf2784455db93d897960bc1e6de1eba9e8e782d0039a9529b262d5a2e5d20ba",
     "data/estimate-benchmarks/fixtures/current-whole-hole-scope-r61.json": "061b1481ed270f66f0ddec25d874f4f39f24529d4867439c011883ed4a285ca0",
-    "data/estimate-benchmarks/fixtures/elecor-endcaps-whole-independent-r239.json": "7870ed65b77f20dc170e4900c996264df40132a9cee8ff589aedd932518f1b75",
+    "data/estimate-benchmarks/fixtures/elecor-endcaps-whole-independent-r239.json": "02aa965a3c4de00137c40f31ce1408e7e0dfad37683dfbaa69c18fa61755824b",
     "data/estimate-benchmarks/fixtures/elecor-mechanical-fixings-current-parent-r2.json": "3097e5f9497ccde7749f961f3b4a602cfb4d61c1e160c90439b30c3143e8b587",
     "data/estimate-benchmarks/fixtures/euroflex-current-delivery-v2-parent-r3.json": "34466c443e5d9948802b7c3dc203dc8dfb97c2647f7f23b477c300703f8512ad",
     "data/estimate-benchmarks/fixtures/facade-ceresit-ct190-kz-material-subworks-r1.json": "9beeed62679a56d06875dbb75c1e6846b68e2fc16f4762d15dbd75983d64510f",
@@ -356,8 +356,8 @@
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts": "c40cd5746bf94c66e95ca2e807cd31c0d1ae3ab15921a074bf407bfaa1808812",
     "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts": "6fcd3e61268b204bcce82701e98f6111375db99ff515c33c47a83986ef0cc33a",
     "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts": "4c33d590e163a1a57c987e6ae9093e647c6990c22e3da8b9493f962579880440",
-    "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": "6239c38c28cf0c14a879282fadafef0717aa400326f6d1c24f2b9b58e179e978",
-    "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": "4a21d510b7bc82346f257d7dd5f2621a0d5795df1b6bf722483b66682ba8c867",
+    "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": "0452699e7d46af32e5f0c68992833d3f94385395f3d5eee0dcb99b8dc9168a9a",
+    "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": "9bd3e64a03d5e98eb51e7265027545afe1b994188498bfd9a5ee287c75288298",
     "scripts/estimate/r4a13/floorCementScreed20mmColumn01AppendR1.test.ts": "049a00dc540cec4c10257d696a838a6200642c7a20d85649fcbb06210e133d2f",
     "scripts/estimate/r4a13/floorConcreteUnderlayerColumn09AppendR1.test.ts": "5743738f5082244d862cb9cb7e9b89ec2e23ebc0bca8ce8f7c943b744edb4213",
     "scripts/estimate/r4a13/floorSandStraightedgeRetainedMasterR3.test.ts": "d9f06c8626032d2ab2356f8dac8e20009d7110c18840bb91d7318e35f2d03527",
@@ -556,7 +556,7 @@
     "scripts/estimate/r4a13/s2775SharedPublisherGuards.test.ts": "27ae361ded698bab8d60240c81244461135053f2ad70b3e874821297d94101da",
     "scripts/estimate/r4a13/selectedMaterialDeliveryForwardR1.ts": "40a29b771a1769bf0925e2b115826924b359e3a5cb3e54d28ec7db29c2c8c87e",
     "scripts/estimate/r4a13/selectedMaterialDeliveryNormativeRegistryR1.ts": "9812ab8c69002e729bea6662a7cb5a8a9b515aedeb647e4486bf448afb006ea9",
-    "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "fb85523eef27cfc5d07b896cf1e3ea0a4ea77dec8953274474782b483a96de8e",
+    "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "6b42f92c42a7aaa73d4602735d883aed8130017a4db2288716f05abe6ea36170",
     "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts": "1ba146ed482a432e46dc97c9e337b9071a5bc4de77c9340e2d16712296cf8c73",
     "scripts/estimate/r4a8/prepareR4A8DrywallScopeSuccessor.ts": "d795eb35c6faf0c62d18b40ffa482d9793ab14fcbfe6ee6ad66c0945d48db8d5",
     "scripts/estimate/r5/batch001R56SharedCoreProjection.ts": "8f638c301db3af63a9fd639c8330fcedbff9a073e6de3ecbd3a841c343ecb74d",
@@ -3624,13 +3624,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "92809e686ad173fed642e4177ced2aa29913d54c52c73b62e27577796ea38144",
-  "canonicalSourceFreezeSha256": "311cbbd72c51c44142dafff01b2ca0e2685f6d53953454fa470ca406cf01e7f9",
+  "canonicalSourceFreezeSha256": "eca6e5c261c801e399462c8c00ed4f17f96a6c211c290d347302c97ad151323f",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100434413,
+    "sourceBytes": 100440911,
     "reviewedCandidateScope": "Unchanged accepted family source wave plus three actual-bound TypeScript leaves and two source-only SCS JSON inputs; runtime and publication unaccepted"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4165,7 +4165,7 @@
         "owner": "FINISHING_R240_REV05"
       },
       "data/estimate-benchmarks/fixtures/elecor-endcaps-whole-independent-r239.json": {
-        "sha256": "7870ed65b77f20dc170e4900c996264df40132a9cee8ff589aedd932518f1b75",
+        "sha256": "02aa965a3c4de00137c40f31ce1408e7e0dfad37683dfbaa69c18fa61755824b",
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "data/estimate-benchmarks/source-packs/elecor-project-endcaps-completion-r239.json": {
@@ -4173,7 +4173,7 @@
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": {
-        "sha256": "4a21d510b7bc82346f257d7dd5f2621a0d5795df1b6bf722483b66682ba8c867",
+        "sha256": "9bd3e64a03d5e98eb51e7265027545afe1b994188498bfd9a5ee287c75288298",
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": {
@@ -4181,7 +4181,7 @@
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": {
-        "sha256": "fb85523eef27cfc5d07b896cf1e3ea0a4ea77dec8953274474782b483a96de8e",
+        "sha256": "6b42f92c42a7aaa73d4602735d883aed8130017a4db2288716f05abe6ea36170",
         "owner": "EXISTING_SAVED_REVISION_WRITER_CORRECT_TEST_FIXTURE"
       },
       "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": {
@@ -4229,7 +4229,7 @@
         "owner": "ELECTRICAL_ACTUAL_BOUND_CONFIG_R248"
       },
       "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": {
-        "sha256": "6239c38c28cf0c14a879282fadafef0717aa400326f6d1c24f2b9b58e179e978",
+        "sha256": "0452699e7d46af32e5f0c68992833d3f94385395f3d5eee0dcb99b8dc9168a9a",
         "owner": "ELECTRICAL_ACTUAL_BOUND_CONFIG_R248"
       },
       "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts": {
@@ -4663,6 +4663,25 @@
         "data/estimate-benchmarks/source-packs/fire-alarm-rip24-06-whole-factory-delivery-r24.json": "5654b34ac6b3db6ebb6c66f14d5b74d42ff45d5ff69a3d00ecba9aaac3648f8a"
       },
       "psuQuantityProjectPriceAndInstallationHoldsPreserved": true
+    },
+    "manualAmendmentAndUnknownNeedContractCorrectionR267": {
+      "sourceManifestSha256": "320ee0240c0b8831690654bc09ee277a11021f8d9c341baa2be9627cf0c64753",
+      "exactSubjectProofSha256": "b3a9f8a4e5686d4bfa2413151a58141f8a871b3b54abdf9d241ecb3f499e6527",
+      "actualPriorProgress": "R264 nine core RESULT; saved-revision PDF08 passed, unknown need raw has no amount field; fourteen overall NOT_ACCEPTED",
+      "basis": "Existing core allows explicit manual amendment with provenance while unresolved application norm remains preliminary; raw need type has no monetary amount field",
+      "case14InputQuantityAndPriceUnchanged": "77 and77 with same manual provenance; no promotion into normal payable/procurement rows",
+      "same14Cases": true,
+      "correctedExpectedResults": 11,
+      "correctedExpectedRejects": 3,
+      "sharedGuardsAndCoreUnchanged": true,
+      "changedSources": {
+        "data/estimate-benchmarks/fixtures/elecor-endcaps-whole-independent-r239.json": "02aa965a3c4de00137c40f31ce1408e7e0dfad37683dfbaa69c18fa61755824b",
+        "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": "9bd3e64a03d5e98eb51e7265027545afe1b994188498bfd9a5ee287c75288298",
+        "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "6b42f92c42a7aaa73d4602735d883aed8130017a4db2288716f05abe6ea36170",
+        "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": "0452699e7d46af32e5f0c68992833d3f94385395f3d5eee0dcb99b8dc9168a9a"
+      },
+      "sameFullTypesWorkerRootsAndCaps": true,
+      "sourceAuthorityGranted": false
     }
   }
 }

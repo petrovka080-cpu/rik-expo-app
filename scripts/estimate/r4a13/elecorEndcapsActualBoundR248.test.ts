@@ -20,7 +20,7 @@ describe('actual ELECOR v2 ordinary whole end-node finite',()=>{
     save('ordinary-config-constructed-before-core',{catalogId:config.catalogId,shape:[config.parameterDefinitions.length,
       config.formulaDefinitions.length,config.resourceDefinitions.length],sourceId:config.sourceId,publisherExecuted:false,databaseWrites:0});
     const result=await config.verifyCore();save('final-actual-bound-finite-result',result);
-    expect(actualCalls).toBe(14);expect(result.results).toBe(10);expect(result.rejects).toBe(4);
+    expect(actualCalls).toBe(14);expect(result.results).toBe(11);expect(result.rejects).toBe(3);
     expect(outcomes.filter(x=>x.name.startsWith('actual-core-'))).toHaveLength(14);
     expect(result.full).toBe(false);expect(result.newCatalogs).toBe(0);expect(result.actualProjectAuthenticated).toBe(false);
   });

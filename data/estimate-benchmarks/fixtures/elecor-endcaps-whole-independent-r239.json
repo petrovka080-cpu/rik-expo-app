@@ -188,7 +188,12 @@
         "quantity": "77",
         "unitPrice": "77"
       },
-      "rejectCode": "ROW_AMENDMENT_INVALID"
+      "expected": {
+        "manualPreservedSourceUnresolved": true,
+        "legacyNeeds": 7,
+        "preliminaryQuantity": "77",
+        "preliminaryUnitPrice": "77"
+      }
     }
   ],
   "plannedCounters": {

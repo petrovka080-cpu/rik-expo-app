@@ -8,7 +8,7 @@ import {compileCanonicalEstimateCore,type CanonicalEstimateCompileCoreInput,type
 import {estimateDeterministicHash as hash} from '../../../src/lib/estimate/estimateDeterministicHash';
 import {canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import {buildCanonicalProfessionalPdfProjection,assertCanonicalProfessionalPdfMoneyCells} from '../../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf';
-import {canonicalArtifactPreliminaryNeeds} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import {canonicalArtifactPreliminaryNeeds,canonicalArtifactMoney,escapeCanonicalArtifactHtml} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
 import {buildCanonicalRevisionCommitPayload} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
 import {validateIndependentCompletenessMapReferences} from './prepareMasterSingleDefinitionSuccessorR1';
 
@@ -20,6 +20,19 @@ export type ElecorEndcapVerificationContextR239=Readonly<{model?:AutomaticOwnerD
   onOutcome?:(name:string,value:unknown)=>void}>;
 function record(value:unknown):value is Record<string,unknown>{return value!==null&&typeof value==='object'&&!Array.isArray(value);}
 function hasCode(error:unknown,expected:string){return record(error)&&error.code===expected;}
+function savedNeedRevision(result:CanonicalEstimateCompileCoreResult,input:Record<string,unknown>,
+  overrides:CanonicalEstimateCompileCoreInput['rowOverrides']){
+  const checksum=hash(result.revisionProjection);
+  const saved=buildCanonicalRevisionCommitPayload({rowCount:result.rows.length,currencyCode:'KGS',totals:result.totals,
+    checksumSha256:checksum,compilerVersion:pack.contract,parameters:result.parameters,
+    approvedTemplateBaselineId:null,baselineAssumptions:{},effectiveUserParameters:input,parentRevisionId:null,
+    identityContract:{fixture:'TEST_ONLY_NOT_SAVED'},derivedParameters:result.derivedParameters,
+    preliminaryNeeds:result.preliminaryNeeds,purchaseSupplyIndexV1:result.purchaseSupplyIndexV1,
+    compositionSelectionV1:result.compositionSelectionV1});
+  return {id:'TEST_ONLY_ELECOR_ENDCAP_NEEDS',release_id:'TEST_ONLY_NOT_SAVED',
+    catalog_id:pack.catalogId,checksum_sha256:checksum,row_count:result.rows.length,
+    amendment_contract:{...saved,rowOverrides:structuredClone(overrides??{})}};
+}
 const shared=['installation-labour','tools','access-protection','acceptance','delivery-handling','cleanup-disposal']
   .map(key=>'electrical:elecor-60x40-single-route:open-'+key);
 
@@ -98,13 +111,55 @@ export async function verifyElecorEndcapsWholeR239(context:ElecorEndcapVerificat
     if(entry.mode==='legacy'){
       assert.equal(result.rows.some(row=>row.row_id===owner),false);
       assert.equal(result.preliminaryNeeds.some(row=>row.row_id===pack.existingNeedRowId),true);
-      assert.equal(result.preliminaryNeeds.length,expected.legacyNeeds);continue;
+      assert.equal(result.preliminaryNeeds.length,expected.legacyNeeds);
+      if(expected.manualPreservedSourceUnresolved===true){
+        const manual=entry.legacyNeedManual;assert(manual);assert.equal(manual.quantity,'77');assert.equal(manual.unitPrice,'77');
+        const need=result.preliminaryNeeds.find(row=>row.row_id===pack.existingNeedRowId);assert(need);
+        assert.equal(need.quantity,manual.quantity);assert.equal(need.unit_price,manual.unitPrice);
+        assert.equal(need.quantity,expected.preliminaryQuantity);assert.equal(need.unit_price,expected.preliminaryUnitPrice);
+        assert.equal(Object.hasOwn(need,'amount'),false);assert.equal(need.need_state,'QUANTITY_REQUIRED');
+        assert.deepEqual(need.missing_parameter_ids,[pack.legacyQuantityParameterId]);
+        assert(record(need.calculation_trace));assert.deepEqual(need.calculation_trace.manualAmendment,provenance);
+        assert.equal(need.calculation_trace.manualQuantityOverride,true);
+        assert.deepEqual(need.calculation_trace.missingParameterIds,[pack.legacyQuantityParameterId]);
+        const source=model.parameters.find(p=>p.parameter_id===pack.legacyQuantityParameterId);assert(source);
+        assert.equal(source.truth_metadata.value_source_role,'UNRESOLVED_APPLICATION_NORM');
+        assert.equal(source.truth_metadata.source_confirmation_required,true);
+        assert.equal(Object.hasOwn(result.parameters,pack.legacyQuantityParameterId),false);
+        assert.equal(Object.hasOwn(result.derivedParameters,pack.legacyQuantityParameterId),false);
+        assert.equal(result.rows.some(row=>row.row_id===pack.existingNeedRowId),false);
+        assert.equal(result.rows.some(row=>row.row_id.startsWith(pack.prefix+':')),false);
+        assert.equal(result.rows.filter(row=>row.amount!==null).length,0);assert.equal(result.totals.amount,'0');
+        const before=JSON.stringify(result),revision=savedNeedRevision(result,input,overrides);
+        context.onOutcome?.('manual-preserved-source-still-unresolved-saved-revision-before-pdf',{revision});
+        const artifacts=canonicalArtifactPreliminaryNeeds(revision),artifact=artifacts.find(row=>row.row_id===need.row_id);assert(artifact);
+        assert.equal(artifact.quantity,'77');assert.equal(artifact.unit_price,'77');assert.equal(artifact.amount,null);
+        assert.equal(artifact.included_in_estimate,false);assert.equal(artifact.included_in_procurement,false);
+        assert.equal(artifact.procurement_eligible,false);assert.equal(artifact.ownership_status,'PRELIMINARY_NEED');
+        const projection=buildCanonicalProfessionalPdfProjection({revision,rows:result.rows,preliminaryNeeds:artifacts,
+          workTitleRu:'Материалы прямого участка кабель-канала 60×40 мм'});
+        assertCanonicalProfessionalPdfMoneyCells(projection.html);
+        assert.equal(projection.preliminaryNeedCount,7);assert.equal(projection.categoryTotals.material,0);
+        assert.equal(projection.grandTotalStatus,'PARTIAL_NEEDS_PRICE');
+        const priceCell='<td class="money">'+escapeCanonicalArtifactHtml(canonicalArtifactMoney('77',artifact.currency_code))+'</td>';
+        assert.equal(projection.html.split(priceCell).length-1,1,'ONE_SAVED_REFERENCE_PRICE');
+        assert(projection.html.split(priceCell)[1]?.split('</tr>')[0]?.includes('<td class="money"></td>'),'PRELIMINARY_REFERENCE_PRICE_HAS_BLANK_AMOUNT');
+        assert.equal(JSON.stringify(result),before);
+        context.onOutcome?.('manual-preserved-source-still-unresolved',{quantity:'77',unitPrice:'77',rawAmountAbsent:true,
+          paid:false,procurement:false,unresolvedNorm:pack.legacyQuantityParameterId,full:false,rawUnchanged:true});
+      }
+      continue;
     }
     for(const id of shared)assert(result.preliminaryNeeds.some(row=>row.row_id===id),'PROTECTED_SHARED_NEED:'+id);
     if(expected.newOwnerPreliminary===true){
       assert.equal(result.rows.some(row=>row.row_id===owner),false);
       const need=result.preliminaryNeeds.find(row=>row.row_id===owner);assert(need);
-      assert.equal(need.quantity,null);assert.equal(need.amount,null);continue;
+      assert.equal(need.quantity,null);assert.equal(Object.hasOwn(need,'amount'),false,'RAW_NEED_HAS_NO_MONEY_ROW_AMOUNT');
+      assert.equal(need.need_state,'QUANTITY_REQUIRED');
+      const artifact=canonicalArtifactPreliminaryNeeds(savedNeedRevision(result,input,overrides)).find(row=>row.row_id===need.row_id);assert(artifact);
+      assert.equal(artifact.quantity,null);assert.equal(artifact.amount,null);
+      assert.equal(artifact.included_in_estimate,false);assert.equal(artifact.included_in_procurement,false);
+      assert.equal(artifact.procurement_eligible,false);assert.equal(artifact.ownership_status,'PRELIMINARY_NEED');continue;
     }
     for(const [key,value]of Object.entries(expected)){
       if(['ownerAmount','totalAmount','procurement','procurementReadiness','knownBalanceAllowed'].includes(key))continue;
@@ -117,10 +172,20 @@ export async function verifyElecorEndcapsWholeR239(context:ElecorEndcapVerificat
     if(expected.knownBalanceAllowed===false){
       assert.equal(paid.amount,null);assert.equal(paid.included_in_procurement,false);
       assert.equal(paid.procurement_readiness,'SUPPLY_CONFIRMATION_REQUIRED');
+      const before=JSON.stringify(result),artifacts=canonicalArtifactPreliminaryNeeds(savedNeedRevision(result,input,overrides));
       for(const key of['remaining-sets','free-sets','consumption-shortage','reserve-deficit']){
         assert.equal(raw(result,key),undefined,'BLOCKED_EFFECTIVE_QUANTITY_IS_NOT_ZERO:'+key);
-        const need=result.preliminaryNeeds.find(row=>row.row_id===rid(key));assert(need);assert.equal(need.quantity,null);assert.equal(need.amount,null);
+        const need=result.preliminaryNeeds.find(row=>row.row_id===rid(key));assert(need);assert.equal(need.quantity,null);
+        assert.equal(Object.hasOwn(need,'amount'),false,'RAW_NEED_HAS_NO_MONEY_ROW_AMOUNT');
+        assert.equal(need.need_state,'SUPPLY_CONFIRMATION_REQUIRED');assert.equal(need.procurement_eligible,false);
+        const artifact=artifacts.find(row=>row.row_id===need.row_id);assert(artifact);
+        assert.equal(artifact.quantity,null);assert.equal(artifact.amount,null);
+        assert.equal(artifact.included_in_estimate,false);assert.equal(artifact.included_in_procurement,false);
+        assert.equal(artifact.procurement_eligible,false);assert.equal(artifact.ownership_status,'PRELIMINARY_NEED');
       }
+      for(const p of model.parameters.slice(parent.parameters.length).filter(p=>p.truth_metadata.value_source_role==='BACKEND_DERIVED'))
+        assert.equal(Object.hasOwn(result.derivedParameters,p.parameter_id),false,'BLOCKED_EFFECTIVE_OUTPUT_ABSENT');
+      assert.equal(JSON.stringify(result),before,'PRELIMINARY_ARTIFACT_ADAPTER_DOES_NOT_MUTATE_CORE');
       continue;
     }
     assert.equal(result.preliminaryNeeds.length,6);
@@ -149,7 +214,7 @@ export async function verifyElecorEndcapsWholeR239(context:ElecorEndcapVerificat
       context.onOutcome?.('shared-pdf-public-money-and-raw-immutability',{amount:'400',preliminaryNeeds:6,rawUnchanged:true});
     }
   }
-  assert.deepEqual({attempted,completed,results,rejects},{attempted:14,completed:14,results:10,rejects:4});
+  assert.deepEqual({attempted,completed,results,rejects},{attempted:14,completed:14,results:11,rejects:3});
   return{status:'PASS_SCOPED_ELECOR_COMPLETE_ENDCAP_SET_ONLY',entries:14,actualCoreCalls:attempted,completedCoreCalls:completed,
     results,rejects,shape:[48,40,40],mapEntries:20,newPaidOwners:1,newProcurementOwners:1,
     selectedLegacyNeeds:6,unselectedLegacyNeeds:7,actualProjectAuthenticated:false,full:false,newCatalogs:0};

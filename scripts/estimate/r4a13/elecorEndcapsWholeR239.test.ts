@@ -14,7 +14,7 @@ describe('existing ELECOR complete end-node material owner',()=>{
     const proof=await verifyElecorEndcapsWholeR239({onCoreCall:(count,name)=>{actualCalls=count;
       if(output)writeFileSync(resolve(output,'actual-core-entry-counter.json'),JSON.stringify({actualCalls,name})+'\n');},onOutcome:save});
     save('final-finite-result',proof);
-    expect(actualCalls).toBe(14);expect(proof.results).toBe(10);expect(proof.rejects).toBe(4);
+    expect(actualCalls).toBe(14);expect(proof.results).toBe(11);expect(proof.rejects).toBe(3);
     expect(events.filter(event=>typeof event==='object'&&event!==null&&'name'in event&&String(event.name).startsWith('actual-core-'))).toHaveLength(14);
     expect(proof.full).toBe(false);expect(proof.newCatalogs).toBe(0);expect(proof.actualProjectAuthenticated).toBe(false);
   });
