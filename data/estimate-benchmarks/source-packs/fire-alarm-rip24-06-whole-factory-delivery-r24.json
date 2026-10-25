@@ -1,0 +1,78 @@
+{
+  "contract": "fire-alarm-rip24-06-whole-factory-delivery/r24",
+  "catalogId": "canonical-work:expanded:fire_alarm_system",
+  "prefix": "fire-alarm:rip24-06:factory-delivery:r24",
+  "profileId": "fas_rip24_06_factory_delivery_profile_r24",
+  "notSelected": "Поставка этого исполнения не выбрана",
+  "selectedProfile": "Резервированный источник 24 В / 4 А, настенный металлический корпус IP30",
+  "internalProduct": "РИП-24 исп.06 (РИП-24-4/40М3-Р), АЦДР.436534.002-06",
+  "primary": {
+    "officialUrl": "https://bolid.ru/files/373/566/rip_24_06_rep_oct_26.pdf",
+    "sha256": "8522e00fbffd133af9fa8847dd789608df6734bbea06abd0e3bd15ac5ee804a0",
+    "revision": "АЦДР.436534.002-06 РЭп, Изм.10 от 25.09.2026",
+    "locator": "Physical PDF5 / printed6, table2 entire6-line delivery roster; table3 recommended tools; §1.6 factory package; physical PDF3 / printed4, §1.2.3 battery pair and §1.2.5 rating.",
+    "deliveryPagePngSha256": "8f2a7edc3163b7f6a90e7087c3d4300a890aeed3f6f9e7f73aef16589c4d27f8"
+  },
+  "officialProductPage": {
+    "url": "https://bolid.ru/production/rip-24_06.html",
+    "sha256": "6abbf145f06d13eb9168da3af7aaa6e9dfee8db294005b994cc538b7aaf56652",
+    "commercialPriceAdmitted": false
+  },
+  "sourceKind": "MANUFACTURER_FACTORY_DELIVERY_ROSTER_NO_INSTALLATION_RATE",
+  "existingOwner": {
+    "powerRowId": "f09:fire_alarm_system_power_supply",
+    "powerFormulaId": "fire_alarm_system_power_supply_v1",
+    "batteryRowId": "f09:fire_alarm_system_battery",
+    "batteryRatioParameterId": "battery_quantity_per_power_supply",
+    "panelRowId": "f09:fire_alarm_system_panel",
+    "deviceFastenerRowId": "f09:fire_alarm_system_device_fastener",
+    "powerSourceRowSha256": "45b06180f1f168af6d21ecd781120da2adec6f155e54fb34543c1def01fadaa3"
+  },
+  "nativeDeliveryDevice": {"countPerDevice": 1, "unit": "pcs", "alreadyExistingRow": "f09:fire_alarm_system_power_supply"},
+  "parts": [
+    {"key": "manual", "titleRu": "Руководство по эксплуатации источника питания", "countPerDevice": 1, "unitId": "document", "nativeUnit": "шт."},
+    {"key": "mounting-pair", "titleRu": "Крепёжный комплект источника питания: шуруп с дюбелем", "countPerDevice": 4, "unitId": "set", "nativeUnit": "шт.", "assemblyBoundary": "One counted item is the paired screw-with-dowel assembly. Four assemblies are not four arbitrary separate fasteners."},
+    {"key": "cable-gland", "titleRu": "Кабельный ввод источника питания", "countPerDevice": 4, "unitId": "pcs", "nativeUnit": "шт.", "internalSpecification": "Сальник ГР25/32"},
+    {"key": "cabinet-key", "titleRu": "Ключ корпуса источника питания", "countPerDevice": 2, "unitId": "pcs", "nativeUnit": "шт."},
+    {"key": "factory-package", "titleRu": "Упаковочная тара источника питания", "countPerDevice": 1, "unitId": "package", "nativeUnit": "шт."}
+  ],
+  "externalBatteryBoundary": {
+    "includedInFactoryDelivery": false,
+    "technicalBatteryCountPerUnit": 2,
+    "voltagePerBatteryV": 12,
+    "permittedCapacityAh": [26, 40],
+    "chemistry": "SEALED_LEAD_ACID",
+    "existingPaidOwner": "f09:fire_alarm_system_battery",
+    "rule": "No extra included battery row. Existing battery ratio/designation, capacity and autonomy calculations require actual project/manufacturer/supplier facts; no default2 or chosen capacity is injected by this package."
+  },
+  "electricalAndEnvironmentBoundary": {
+    "nominalOutputVoltageV": 24,
+    "nominalContinuousLoadA": 4,
+    "peakLoadA": 5,
+    "peakBoundary": "At most2minutes, interval at least1hour, with mains and batteries connected; not a continuous5A rating.",
+    "ingressProtection": "IP30",
+    "temperatureMinC": -10,
+    "temperatureMaxC": 40,
+    "sourceScope": "Protected indoor location, no atmospheric precipitation/mechanical damage or explosive/fire-hazardous rooms. Actual load, autonomy, earthing, circuit protection and QA remain separate."
+  },
+  "recommendedToolTypes": [
+    {"titleRu": "Цифровой мультиметр", "specification": "DC/AC voltage500V; current up to10A; resistance up to20Mohm", "quantityNorm": null},
+    {"titleRu": "Отвёртка плоская диэлектрическая", "specification": "SL2.5 ×75mm", "quantityNorm": null},
+    {"titleRu": "Отвёртка крестовая диэлектрическая", "specification": "PH1 ×75mm", "quantityNorm": null},
+    {"titleRu": "Бокорезы", "specification": "160mm", "quantityNorm": null},
+    {"titleRu": "Плоскогубцы", "specification": "160mm", "quantityNorm": null}
+  ],
+  "costBoundary": "Factory-delivered accessories share the existing exact PSU unit payment owner; they do not create separate purchases or labour. Actual vendor price must cover that exact complete delivery. No scraped retail price or zero is used. Mounting/connection/testing labour is not normed by this roster or transferred from panel labour.",
+  "scopeRu": "Сохранить целую заводскую поставку выбранного резервированного источника питания у прежнего владельца оборудования, не подменяя проектный расчёт питания, батареи и монтаж.",
+  "notCoveredRu": [
+    "Подтверждённое количество источников и действительная схема питания",
+    "Фактическая нагрузка, автономность, выбор ёмкости и поставка двух батарей",
+    "Фактические кабели, защитный проводник, внешняя защита и условия монтажа",
+    "Обеспечение инструментами и подтверждённые измерения, пуск и протокол",
+    "Норма труда монтажа именно источника питания и точный коммерческий объём цены"
+  ],
+  "sourceAdmission": false,
+  "projectApproval": false,
+  "newPaidOwners": 0,
+  "FULL": false
+}

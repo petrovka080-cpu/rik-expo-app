@@ -119,6 +119,7 @@
     "data/estimate-benchmarks/source-packs/euroflex-recycling50-materials-s27-75.json": "bb333e13bf396699998c93e410ce25fff6086115d6a9d136ab1c1c08ac79b531",
     "data/estimate-benchmarks/source-packs/facade-ceresit-ct190-kz-material-subworks-r1.json": "9a3471c8cf2203aedb4c6acf9bfa74cc210a6c426df37715be3b8b6e75ec88f8",
     "data/estimate-benchmarks/source-packs/facade-flashings-with-downpipes-krer12-008-01-quantity-r1.json": "4c746387b60189b6973c7fcb501c2676a153a46ea5adead69f461cbd5181fa56",
+    "data/estimate-benchmarks/source-packs/fire-alarm-rip24-06-whole-factory-delivery-r24.json": "5654b34ac6b3db6ebb6c66f14d5b74d42ff45d5ff69a3d00ecba9aaac3648f8a",
     "data/estimate-benchmarks/source-packs/flat-metal-oil-two-coats-krer15-030-02-quantity-r1.json": "9cf784f9848df164187529d8aeee2442ccd736e91ea04ae0f729e488f7ee42f7",
     "data/estimate-benchmarks/source-packs/flat-roof-scope-s27-65.json": "6da79a052b0e9c7d84173062a885bb4b09af49897f9e9f376d4c3e267cbed651",
     "data/estimate-benchmarks/source-packs/floor-cement-screed20mm-krer11-011-01-r1.json": "99989ee2e6e3cf553b59b03a23c09d2eefa598672c51820f342bdd7ef17818e5",
@@ -443,6 +444,7 @@
     "scripts/estimate/r4a13/prepareEuroflexFactoryHalfLayoutCurrentR3.ts": "7da56c7a8dd9a4a46068494d2c90a606220f83b1d65087b6b6f0781725fe8b14",
     "scripts/estimate/r4a13/prepareFireAlarmCommissioningClassifiedVariantSuccessor.ts": "596d412f2bcdf4e748af7668dd40a3ede96d82fd5faf757c1ea09bb4f0fcf482",
     "scripts/estimate/r4a13/prepareFireAlarmProjectPreparationVariantSuccessor.ts": "34b85822071678538d9cded029a90a806ff5796cbd61f807e5264b7fb58275ac",
+    "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": "55335496f30fb2eb260cf068d77f9e16c47557dad0fb86b5dda690854d93950b",
     "scripts/estimate/r4a13/prepareFireproofZoneInjectionRepairVariantSuccessor.ts": "71de5196cc4a6049343d4f2022e1deb0c74dc49d646a8182e88f7321bb31e4e5",
     "scripts/estimate/r4a13/prepareFlatMetalOil03002CreateAppendR1.test.ts": "807246a59f6289dfe7f79210bac71674bcf497973462cc00ff6cd63926a1e463",
     "scripts/estimate/r4a13/prepareFlatMetalOil03002CreateAppendR1.ts": "2c34bb081603ef2a859ce79714a59482ba143b63e9702971fa676e79e706e9a0",
@@ -554,7 +556,7 @@
     "scripts/estimate/r4a13/s2775SharedPublisherGuards.test.ts": "27ae361ded698bab8d60240c81244461135053f2ad70b3e874821297d94101da",
     "scripts/estimate/r4a13/selectedMaterialDeliveryForwardR1.ts": "40a29b771a1769bf0925e2b115826924b359e3a5cb3e54d28ec7db29c2c8c87e",
     "scripts/estimate/r4a13/selectedMaterialDeliveryNormativeRegistryR1.ts": "9812ab8c69002e729bea6662a7cb5a8a9b515aedeb647e4486bf448afb006ea9",
-    "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "da43c44f3c515816d8c1d5382f30f411015e5bff92498806a0ba0c522d81d48e",
+    "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "fb85523eef27cfc5d07b896cf1e3ea0a4ea77dec8953274474782b483a96de8e",
     "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts": "1ba146ed482a432e46dc97c9e337b9071a5bc4de77c9340e2d16712296cf8c73",
     "scripts/estimate/r4a8/prepareR4A8DrywallScopeSuccessor.ts": "d795eb35c6faf0c62d18b40ffa482d9793ab14fcbfe6ee6ad66c0945d48db8d5",
     "scripts/estimate/r5/batch001R56SharedCoreProjection.ts": "8f638c301db3af63a9fd639c8330fcedbff9a073e6de3ecbd3a841c343ecb74d",
@@ -569,7 +571,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "1ced6cdf1c5f5a03794be2ec2d2b81e8b107b3ca5dd3d0d05cd3ee21fb91bc14",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "92809e686ad173fed642e4177ced2aa29913d54c52c73b62e27577796ea38144",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1332,6 +1334,7 @@
     "src/lib/estimate/backendPlatform/contracts.ts": "ab0049dd14e4a54b931f0392b1f7e927f04947543ac239b376c3153caae6eca1",
     "src/lib/estimate/backendPlatform/estimateAdmissionR3.ts": "4f197b8f3bde877c4bc02883dd4f3985068d0d3f1154ff3a236edea7e2857293",
     "src/lib/estimate/backendPlatform/estimateContentPassportR3.ts": "f67380552a14e5bdc81eef7991572a162cf000cf3c10d1cdfc813acfee15e94d",
+    "src/lib/estimate/backendPlatform/fireAlarmReservedPowerWholeFactoryR24.ts": "d373d8a54c988c59231f580a64a3286909a5a253b66c23a737eaedc6cc5ee08d",
     "src/lib/estimate/backendPlatform/formulaGraph.ts": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c",
     "src/lib/estimate/backendPlatform/inclusionGraph.ts": "f6bcf6d8fcb5b30e2c7fe489b6b5b9aaed97366f35f9e6e0f818e51b23796c02",
     "src/lib/estimate/backendPlatform/lowCurrentCopperCertifierProStockR24.ts": "bb8703351740901d4863efb34c85b11d2dbcdbc2fa9e97b7d6803af40a1d0c3f",
@@ -3620,14 +3623,14 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "1ced6cdf1c5f5a03794be2ec2d2b81e8b107b3ca5dd3d0d05cd3ee21fb91bc14",
-  "canonicalSourceFreezeSha256": "d089a1fa760cddec106acd9316554f5dfad7ea861f4f8ef8564953dab9137385",
+  "originalSeedManifestSha256": "92809e686ad173fed642e4177ced2aa29913d54c52c73b62e27577796ea38144",
+  "canonicalSourceFreezeSha256": "311cbbd72c51c44142dafff01b2ca0e2685f6d53953454fa470ca406cf01e7f9",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100414503,
+    "sourceBytes": 100434413,
     "reviewedCandidateScope": "Unchanged accepted family source wave plus three actual-bound TypeScript leaves and two source-only SCS JSON inputs; runtime and publication unaccepted"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4178,8 +4181,8 @@
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": {
-        "sha256": "da43c44f3c515816d8c1d5382f30f411015e5bff92498806a0ba0c522d81d48e",
-        "owner": "ELECTRICAL_ELECOR_END_NODE"
+        "sha256": "fb85523eef27cfc5d07b896cf1e3ea0a4ea77dec8953274474782b483a96de8e",
+        "owner": "EXISTING_SAVED_REVISION_WRITER_CORRECT_TEST_FIXTURE"
       },
       "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": {
         "sha256": "6039848f0989253c223a8c6b7bc20574cdf444ccc54b5559b1c6f2a34d0108e3",
@@ -4240,6 +4243,18 @@
       "data/estimate-benchmarks/fixtures/low-current-scs-explicit-test-only-runtime-input-r246.json": {
         "sha256": "5409c5a8158f48e95379459a056c3aaea1da040742cd0b09e334e710cec0b699",
         "owner": "SCS_ACTUAL_CAPTURE_ADAPTER_SOURCE_ONLY_R249"
+      },
+      "src/lib/estimate/backendPlatform/fireAlarmReservedPowerWholeFactoryR24.ts": {
+        "sha256": "d373d8a54c988c59231f580a64a3286909a5a253b66c23a737eaedc6cc5ee08d",
+        "owner": "FIRE_PSU_WHOLE_FACTORY_DELIVERY_SOURCE_ONLY"
+      },
+      "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": {
+        "sha256": "55335496f30fb2eb260cf068d77f9e16c47557dad0fb86b5dda690854d93950b",
+        "owner": "FIRE_PSU_WHOLE_FACTORY_DELIVERY_SOURCE_ONLY"
+      },
+      "data/estimate-benchmarks/source-packs/fire-alarm-rip24-06-whole-factory-delivery-r24.json": {
+        "sha256": "5654b34ac6b3db6ebb6c66f14d5b74d42ff45d5ff69a3d00ecba9aaac3648f8a",
+        "owner": "FIRE_PSU_WHOLE_FACTORY_DELIVERY_SOURCE_ONLY"
       }
     },
     "extraRoots": [
@@ -4263,6 +4278,7 @@
       "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts",
       "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts",
       "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts",
+      "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts",
       "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts",
       "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.ts",
       "scripts/estimate/r4a13/prepareLowCurrentCopperCertifierProStockR24.ts",
@@ -4285,6 +4301,7 @@
       "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
       "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageWhole539R24.test.ts",
       "src/lib/estimate/backendPlatform/canonicalSourceProfileSelectionV1.ts",
+      "src/lib/estimate/backendPlatform/fireAlarmReservedPowerWholeFactoryR24.ts",
       "src/lib/estimate/backendPlatform/lowCurrentCopperCertifierProStockR24.ts",
       "src/lib/estimate/backendPlatform/lowCurrentIdcWholeManualPostR24.ts",
       "src/lib/estimate/v4/concreteWholeHoleFillingKrer46R61.ts",
@@ -4629,6 +4646,23 @@
       "sourceAuthorityGranted": false,
       "runtimeCasesNotYetAccepted": 14,
       "canonicalWrites": 0
+    },
+    "savedRevisionAndWholePsuSourceR263": {
+      "elecorManifestSha256": "b1662b5bc9cd1d2b6b4a9ab3fa4248ea9bcb5321949ab1e14f32bc47adc08107",
+      "exactFixtureInverseProofSha256": "30115b906289738ac8e214a0344da0d7132ce92ff7bc47ce6a67c21049cec6c8",
+      "psuManifestSha256": "f56f3ced626eda4a16e0bd81d8c81c6546c8e1945f8aab85550702243a750ce6",
+      "scope": "Correct existing saved-revision test fixture; whole factory inventory source-only subject. No shared ABI or core changes.",
+      "allPriorTypesRootsAnd603ExtraSeedsRetained": true,
+      "sameWorkerLimitsAndDiagnostics": true,
+      "privateRuntimeInputsTransferred": false,
+      "sourceAdmissionGranted": false,
+      "sourceFiles": {
+        "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "fb85523eef27cfc5d07b896cf1e3ea0a4ea77dec8953274474782b483a96de8e",
+        "src/lib/estimate/backendPlatform/fireAlarmReservedPowerWholeFactoryR24.ts": "d373d8a54c988c59231f580a64a3286909a5a253b66c23a737eaedc6cc5ee08d",
+        "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": "55335496f30fb2eb260cf068d77f9e16c47557dad0fb86b5dda690854d93950b",
+        "data/estimate-benchmarks/source-packs/fire-alarm-rip24-06-whole-factory-delivery-r24.json": "5654b34ac6b3db6ebb6c66f14d5b74d42ff45d5ff69a3d00ecba9aaac3648f8a"
+      },
+      "psuQuantityProjectPriceAndInstallationHoldsPreserved": true
     }
   }
 }

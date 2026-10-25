@@ -9,6 +9,7 @@ import {estimateDeterministicHash as hash} from '../../../src/lib/estimate/estim
 import {canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import {buildCanonicalProfessionalPdfProjection,assertCanonicalProfessionalPdfMoneyCells} from '../../../src/lib/estimate/backendPlatform/canonicalProfessionalPdf';
 import {canonicalArtifactPreliminaryNeeds} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import {buildCanonicalRevisionCommitPayload} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
 import {validateIndependentCompletenessMapReferences} from './prepareMasterSingleDefinitionSuccessorR1';
 
 type Entry=Readonly<{id:string;mode?:string;input?:Readonly<Record<string,unknown>>;remove?:readonly string[];
@@ -128,9 +129,18 @@ export async function verifyElecorEndcapsWholeR239(context:ElecorEndcapVerificat
     if(entry.id==='08-manual-whole-order-price'){
       assert.equal(paid.unit_price,'100');assert.equal(paid.title_ru,'Мой комплект заглушек');
       assert.equal(result.rows.filter(row=>row.amount!==null).length,1);
-      const before=JSON.stringify(result),revision={id:'TEST_ONLY_ELECOR_ENDCAPS',release_id:'TEST_ONLY_NOT_SAVED',
-        catalog_id:pack.catalogId,checksum_sha256:'0'.repeat(64),row_count:result.rows.length,currency_code:'KGS',input_parameters:result.parameters,
-        amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
+      const before=JSON.stringify(result);assert(overrides);
+      const checksum=hash(result.revisionProjection);
+      const saved=buildCanonicalRevisionCommitPayload({rowCount:result.rows.length,currencyCode:'KGS',totals:result.totals,
+        checksumSha256:checksum,compilerVersion:pack.contract,parameters:result.parameters,
+        approvedTemplateBaselineId:null,baselineAssumptions:{},effectiveUserParameters:input,parentRevisionId:null,
+        identityContract:{fixture:'TEST_ONLY_NOT_SAVED'},derivedParameters:result.derivedParameters,
+        preliminaryNeeds:result.preliminaryNeeds,purchaseSupplyIndexV1:result.purchaseSupplyIndexV1,
+        compositionSelectionV1:result.compositionSelectionV1});
+      const revision={id:'TEST_ONLY_ELECOR_ENDCAPS',release_id:'TEST_ONLY_NOT_SAVED',
+        catalog_id:pack.catalogId,checksum_sha256:checksum,row_count:result.rows.length,currency_code:'KGS',input_parameters:result.parameters,
+        amendment_contract:{...saved,rowOverrides:structuredClone(overrides)}};
+      context.onOutcome?.('shared-pdf-saved-revision-before-assert',{revision});
       const projection=buildCanonicalProfessionalPdfProjection({revision,rows:result.rows,
         preliminaryNeeds:canonicalArtifactPreliminaryNeeds(revision),workTitleRu:'Материалы прямого участка кабель-канала 60×40 мм'});
       assertCanonicalProfessionalPdfMoneyCells(projection.html);

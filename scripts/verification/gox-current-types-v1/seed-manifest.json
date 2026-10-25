@@ -111,5 +111,7 @@
   "src/lib/estimate/v4/roofRooflightCurbWhole018R24.ts": null,
   "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts": null,
   "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": null,
-  "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts": null
+  "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts": null,
+  "src/lib/estimate/backendPlatform/fireAlarmReservedPowerWholeFactoryR24.ts": null,
+  "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": null
 }
