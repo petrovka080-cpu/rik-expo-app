@@ -118,13 +118,19 @@ export function elecorProjectEndcapsDefinitionR239(
     profile:[],conditional:[...parentFacts,...conditional],rows,deferMissingProjectFactsToRows:true,
     excludedUnownedAssumptions:['Труд, инструмент, доступ, испытания, логистика и уборка не нормированы этим комплектом.',
       'Число заглушек не определяется длиной, числом секций, числом стыков или значением по умолчанию.']});
-  const parameters=[...parent.parameters,...extension.parameters.filter(p=>!parentIds.has(p.parameter_id)).map((p,i)=>({...p,ordinal:parent.parameters.length+i,
-    truth_metadata:{...p.truth_metadata,...(p.truth_metadata.visibility_role==='INTERNAL_ONLY'?{}:
-      {value_source_role:'PROJECT_SPECIFIC_INPUT',source_confirmation_required:false}),
-      fullTechnicalAcceptance:false,projectScheduleNotAuthenticatedBySource:true,
-      provenance:{...p.truth_metadata.provenance,consumer_input_role_v1:p.truth_metadata.visibility_role==='INTERNAL_ONLY'
-        ?'APPLICATION_TECHNICAL':[stock,reserve,quantum].includes(p.parameter_id)
-          ?'ADVANCED_OPTION':'OBJECT_FACT'}}}))];
+  const parameters=[...parent.parameters,...extension.parameters.filter(p=>!parentIds.has(p.parameter_id)).map((p,i)=>{
+    const provenance=p.truth_metadata.provenance;
+    if(provenance!==undefined&&(provenance===null||typeof provenance!=='object'||Array.isArray(provenance))){
+      throw new Error(`ELECOR_ENDCAP_PARAMETER_PROVENANCE_INVALID:${p.parameter_id}`);
+    }
+    return {...p,ordinal:parent.parameters.length+i,
+      truth_metadata:{...p.truth_metadata,...(p.truth_metadata.visibility_role==='INTERNAL_ONLY'?{}:
+        {value_source_role:'PROJECT_SPECIFIC_INPUT',source_confirmation_required:false}),
+        fullTechnicalAcceptance:false,projectScheduleNotAuthenticatedBySource:true,
+        provenance:{...(provenance??{}),consumer_input_role_v1:p.truth_metadata.visibility_role==='INTERNAL_ONLY'
+          ?'APPLICATION_TECHNICAL':[stock,reserve,quantum].includes(p.parameter_id)
+            ?'ADVANCED_OPTION':'OBJECT_FACT'}}};
+  })];
   const resources=extension.resources.map((r,i)=>{
     const {row_sha256:_hash,...body}=r;
     const value={...body,ordinal:parent.resources.length+i,

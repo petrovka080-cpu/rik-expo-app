@@ -54,8 +54,8 @@ export function prepareMasonryGlassM25OperationDisplayR152(key:MasonryGlassBlock
     calls++;local++;process.stdout.write('MASONRY_R152_ACTUAL_CORE_ENTRY='+calls+';case='+scenario.normId+'\n');
     let result:Awaited<ReturnType<typeof compileCanonicalEstimateCore>>;
     try{result=await compileCanonicalEstimateCore({operation:'compile',compilerVersion:source.contract,catalogId:config.catalogId,
-     primaryMeasureParameterId:scenario.primaryMeasureParameterId,parameterDefinitions:[...config.parameterDefinitions],formulaDefinitions:[...config.formulaDefinitions],
-     resourceDefinitions:[...config.resourceDefinitions],submittedParameters:masonryGlassBlockPhysicalInputR103(key,scenario.areaM2,scenario.heightM),
+     primaryMeasureParameterId:scenario.primaryMeasureParameterId,parameterDefinitions:[...model.parameters],formulaDefinitions:[...model.formulas],
+     resourceDefinitions:[...model.resources],submittedParameters:masonryGlassBlockPhysicalInputR103(key,scenario.areaM2,scenario.heightM),
      confirmedParameters:{},priceItems:[],currencyCode:'KGS',maximumResourceRows:config.resourceDefinitions.length,hashJson:v=>hash(v)});
      output('CORE_OUTCOME_'+String(calls).padStart(2,'0'),{card:key,normId:scenario.normId,result});
     }catch(error:unknown){output('CORE_OUTCOME_'+String(calls).padStart(2,'0'),{card:key,normId:scenario.normId,

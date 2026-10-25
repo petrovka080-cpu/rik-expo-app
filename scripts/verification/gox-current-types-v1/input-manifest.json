@@ -460,7 +460,7 @@
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.ts": "2549780f9af5d0e6ece5e40683db6ef364f9d263492e2e58c58e59e140017d97",
     "scripts/estimate/r4a13/prepareMasonryBrickColumnExistingOwnerR161.ts": "a1e89aa7fb80bbaf344484537d9e118ecc2e60935d27d7101e1d12e37b363e37",
     "scripts/estimate/r4a13/prepareMasonryGlassBlockNormalAppendR103.ts": "71594a58d027f663ac83557b2483e961e55a0b5553ed3792a88b4b2062a0e0eb",
-    "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529",
+    "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts": "49d413d0a35c7ecfb69a3a168e21500452ef55b7a298bc6082ecbe49778e9ef0",
     "scripts/estimate/r4a13/prepareMasonryGlassOpeningExistingOwnerR223.ts": "213efc975346f78c749e9168748eb3c0ec4ddbede21d9eb98b65b1e1a5335df1",
     "scripts/estimate/r4a13/prepareMasterAsphaltCompactionProfileSuccessor.ts": "1813926b2ec6897a3af1b00740160d0ffa642f6ca76eb1f229f74586123005ed",
     "scripts/estimate/r4a13/prepareMasterAsphaltInstallKrer27Successor.ts": "369e2e86944b95be758f96b4dfe2168079665fb0771d68b0595d26587d24eea7",
@@ -1690,7 +1690,7 @@
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsCompletionR1.test.ts": "de8fae26c7fbb40ca571ce101dcf8b207151731210ebce021de999120c176b86",
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsCompletionR1.ts": "04744fce8de898c9cd6507ca97e68c695d62582f3dc40b7b2112a6fc4b489f87",
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsPublicPresentationR1.test.ts": "e6c7afd5327ea8d77b0c191398b50c29402690ffdc38031e86f3551e8df65d50",
-    "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": "1f05e58272ea3973940bfb4e0540f09a2ccbc5031c85f463ba2a1be406eae389",
+    "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": "8e018e57ce0163afc20167131cc8130adbb2bfc4bdca22aab1e0704e92e59e63",
     "src/lib/estimate/v4/elecorSingleRouteMaterialR1.test.ts": "d1afac7a7be31fc6f8da18e1712dd9f99b50ccb33d8296e6efd9bf6829454661",
     "src/lib/estimate/v4/elecorSingleRouteMaterialR1.ts": "2006e830eb5c5b00b40091e2d68dfd8be89d3146980178a0b0fbd816ac7e12db",
     "src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft.ts": "894ec6ac948a8ce6457d07f82e5de3030d191a7fc290caef137ad58316af6496",
@@ -3615,13 +3615,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "8e5260d59291dfa4f4e1f9ed790cddf617ef94c1ee3773decc323da2db713f4d",
-  "canonicalSourceFreezeSha256": "a7fa603b49e9ac6e846eed431a7501b516c4e6279c1aa3c6dcf93548a87609ad",
+  "canonicalSourceFreezeSha256": "4da84cf12070a683c777a7c65f04d2b51e7940bdffaa7149ea8c710a1a3a685d",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100374514,
+    "sourceBytes": 100374751,
     "reviewedCandidateScope": "Previous accepted source candidate plus three new exact existing-owner family overlays; constructor/core/selected-parent and UI not accepted"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -3764,7 +3764,7 @@
         "owner": "MASONRY_TWO_EXISTING_OWNERS"
       },
       "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts": {
-        "sha256": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529",
+        "sha256": "49d413d0a35c7ecfb69a3a168e21500452ef55b7a298bc6082ecbe49778e9ef0",
         "owner": "MASONRY_TWO_EXISTING_OWNERS"
       },
       "scripts/estimate/r4a13/prepareMasonryGlassOpeningExistingOwnerR223.ts": {
@@ -4176,7 +4176,7 @@
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": {
-        "sha256": "1f05e58272ea3973940bfb4e0540f09a2ccbc5031c85f463ba2a1be406eae389",
+        "sha256": "8e018e57ce0163afc20167131cc8130adbb2bfc4bdca22aab1e0704e92e59e63",
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "src/lib/estimate/backendPlatform/lowCurrentIdcWholeManualPostR24.ts": {
@@ -4518,6 +4518,27 @@
       "allPrevious603ExtraRootsRetained": true,
       "sourceSecretScanFindings": [],
       "oldCaseGoldenTestsOrCoreReplayed": 0
+    },
+    "minimalTypeCorrectionsR246": {
+      "actualPreviousRun": "https://github.com/petrovka080-cpu/rik-expo-app/actions/runs/40220239657",
+      "previousProgramFileCount": 3534,
+      "previousSeedFileCount": 695,
+      "previousRealDiagnostics": 4,
+      "corrections": {
+        "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts": {
+          "previousSha256": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529",
+          "sha256": "49d413d0a35c7ecfb69a3a168e21500452ef55b7a298bc6082ecbe49778e9ef0"
+        },
+        "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": {
+          "previousSha256": "1f05e58272ea3973940bfb4e0540f09a2ccbc5031c85f463ba2a1be406eae389",
+          "sha256": "8e018e57ce0163afc20167131cc8130adbb2bfc4bdca22aab1e0704e92e59e63"
+        }
+      },
+      "sameFullProgramAndUnfilteredDiagnostics": true,
+      "sameTypecheckWorkerAndSeedManifest": true,
+      "sameResourceCaps": true,
+      "noCoreOrGoldenReplay": true,
+      "canonicalSourceWrites": 0
     }
   }
 }
