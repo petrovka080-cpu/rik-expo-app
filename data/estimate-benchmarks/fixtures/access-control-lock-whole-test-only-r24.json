@@ -1,0 +1,63 @@
+{
+  "contract": "acs-whole-factory-model-full-native-core-test-only/r24",
+  "factsAreTestOnly": true,
+  "actualProjectApproval": false,
+  "sourceAdmission": false,
+  "ordinaryConfigStatus": "UNRUN_ACTUAL_MANUFACTURER_REGISTRY_AND_SOURCE_ASSEMBLY_REQUIRED",
+  "sourceReferenceRole": "PROPOSED_MANUFACTURER_REFERENCE_NOT_REGISTRY_ID_OR_APPROVAL",
+  "proposedManufacturerSourceKey": "manufacturer_al300premium_complete_factory_delivery_20260521",
+  "proposedManufacturerNormId": "MANUFACTURER_AL300PREMIUM_WHOLE_FACTORY_DELIVERY_NOT_INSTALLATION_NORM",
+  "compilerVersion": "acs-whole-factory-full-native-rehearsal/r24",
+  "baseTestOnlyInputs": {
+    "acs_system_count": 1,
+    "acs_controlled_door_count": 1,
+    "acs_controller_count": 1,
+    "acs_controller_designation": "TEST_ONLY_CONTROLLER_NO_PROJECT_APPROVAL",
+    "acs_reader_count": 2,
+    "acs_reader_designation": "TEST_ONLY_READER_NO_PROJECT_APPROVAL",
+    "acs_lock_count": 1,
+    "acs_lock_designation": "TEST_ONLY_LOCK_12V_NO_PROJECT_APPROVAL",
+    "acs_exit_device_count": 1,
+    "acs_exit_device_designation": "TEST_ONLY_EXIT_NO_PROJECT_APPROVAL",
+    "acs_controller_retained_spare_piece": 0,
+    "acs_controller_supplier_pack_size_piece": 1
+  },
+  "twoLock24VOverrides": {
+    "acs_controlled_door_count": 2,
+    "acs_lock_count": 2,
+    "acs_lock_designation": "TEST_ONLY_LOCK_24V_NO_PROJECT_APPROVAL",
+    "acs_exit_device_count": 2
+  },
+  "expectedPartsOneLock": {
+    "armature": "1",
+    "case-screws-m5x20": "2",
+    "anchor-pin": "1",
+    "anchor-sleeve": "1",
+    "anchor-through-sleeve": "1",
+    "anchor-bolt-m6x35": "1",
+    "anchor-sealing-ring": "1",
+    "anchor-washer": "1",
+    "manual": "1",
+    "factory-package": "1"
+  },
+  "expectedPartsTwoLocks": {
+    "armature": "2",
+    "case-screws-m5x20": "4",
+    "anchor-pin": "2",
+    "anchor-sleeve": "2",
+    "anchor-through-sleeve": "2",
+    "anchor-bolt-m6x35": "2",
+    "anchor-sealing-ring": "2",
+    "anchor-washer": "2",
+    "manual": "2",
+    "factory-package": "2"
+  },
+  "missingNativeCountExpectedRoute": "RESULT_WITH_UNKNOWN_PRELIMINARY_NEEDS_NOT_REQUIRED_REJECTION",
+  "notProvided": [
+    "actual measured door schedule or actual selected product",
+    "actual 12V or 24V project power and release approval",
+    "actual PPR, cable routes, labour hours, physical tools or QA protocol",
+    "actual manufacturer registry/source assembly or price approval"
+  ],
+  "FULL": false
+}

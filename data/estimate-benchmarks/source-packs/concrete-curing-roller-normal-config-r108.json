@@ -1,0 +1,13 @@
+{
+  "contract": "concrete-curing-roller-whole-post/r108",
+  "masterPath": "C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+  "masterSha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40",
+  "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+  "sourceId": "gox_concrete_curing_exact_roller_case_method_r108",
+  "normId": "BOUNDED_PDS_MATERIAL_AND_LITERAL_CASE_STOCK_WITH_ACTUAL_PERIOD_NO_LIFETIME_RATE",
+  "unresolvedPostNeedCount": 8,
+  "newFullTechnologies": 0,
+  "actualProjectReadbackIntegration": "UNRUN_NOT_AN_APPROVED_PROJECT_RESOLVER",
+  "freshParentDbPreimageRequiredBeforePublication": true,
+  "consumerRoutePath": "data/estimate-benchmarks/source-packs/concrete-curing-five-consumers-route-r124.json"
+}

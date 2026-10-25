@@ -113,5 +113,16 @@
   "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": null,
   "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts": null,
   "src/lib/estimate/backendPlatform/fireAlarmReservedPowerWholeFactoryR24.ts": null,
-  "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": null
+  "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": null,
+  "src/lib/estimate/v4/concreteCuringRollerWholePostR108.ts": null,
+  "src/lib/estimate/v4/concreteCuringRollerWholePostR108.test.ts": null,
+  "scripts/estimate/r4a13/prepareConcreteCuringRollerWholePostR108.ts": null,
+  "scripts/estimate/r4a13/concreteCuringCurrentFourR273.test.ts": null,
+  "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": null,
+  "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": null,
+  "src/lib/estimate/v4/wallCeramicCementExistingOwnerF271.ts": null,
+  "src/lib/estimate/v4/wallCeramicCementNativeF266.ts": null,
+  "src/lib/estimate/backendPlatform/accessControlLockWholeFactoryR24.ts": null,
+  "scripts/estimate/r4a13/prepareAccessControlLockWholeFactoryR24.ts": null,
+  "scripts/estimate/r4a13/accessControlLockWholeActualRehearsalR24.test.ts": null
 }

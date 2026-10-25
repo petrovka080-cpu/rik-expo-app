@@ -1,0 +1,209 @@
+{
+  "contract": "existing-acs-electromagnetic-lock-whole-factory-delivery/r24",
+  "catalogId": "canonical-work:expanded:access_control_system",
+  "prefix": "access-control:electromagnetic-lock:factory-delivery:r24",
+  "profileId": "acs_electromagnetic_lock_factory_profile_r24",
+  "notSelected": "Это исполнение заводской поставки замка не выбрано",
+  "selected12V": "Накладной электромагнитный замок 300кгс,12В,IP20,с датчиками состояния",
+  "selected24V": "Накладной электромагнитный замок 300кгс,24В,IP20,с датчиками состояния",
+  "internalProduct": "AL-300PRemium,300PR.000РЭ,version21.05.2026;12V and24V are separate executions, not universal12/24V",
+  "sourceKind": "MANUFACTURER_WHOLE_FACTORY_DELIVERY_NOT_INSTALLATION_APPLICATION_NORM",
+  "primary": {
+    "officialUrl": "https://www.alekolock.ru/wp-content/uploads/2026/02/Pass_AL-300PR.pdf",
+    "sha256": "035248fcf882e33e7c14b21212240fd2ac5439ecd85285891f077c0042939ed3",
+    "revision": "300PR.000РЭ,21.05.2026",
+    "locator": "Physical/printedPDF2,section3.1 whole delivery+figure1;1.4 and4.4 narrow through-door geometry; electrical execution1.8,2.4,2.5,section5 sensor QA.",
+    "logicalPath": "data/estimate-benchmarks/sources/access-control/lock-factory-r24/Pass_AL-300PR-20260521.pdf",
+    "wholeDeliveryPagePngSha256": "3babb90b2d6bb0c2366130e76a3a751a8991abb2c994c4734b082ccf3ce0807c"
+  },
+  "officialProductPage": {
+    "url": "https://www.alekolock.ru/products/electromagnetic-locks/premium/al-300premium/",
+    "sha256": "6a60c408e5797fe1fc5de1c2a110e30f52d5e41d4f43f36c4cc1c58aaf79fa32",
+    "logicalPath": "data/estimate-benchmarks/sources/access-control/lock-factory-r24/AL300PREMIUM-official-product.html",
+    "commercialPriceAdmitted": false
+  },
+  "currentReadOnlyIdentity": {
+    "definitionId": "b6ba50d2-9a88-5173-888f-bb75f92d85b5",
+    "definitionVersion": 4,
+    "definitionSha256": "0472bffdf0dee8d0c603c93c1735c3c59518e5a639072a243d86058bb630fc57",
+    "baselineId": "f2aab897-30d8-5ea7-b662-c86daad9aea3",
+    "captureFileSha256": "d121027ed2d685287507f4859045259bc0e0d784a3f712052565f48dbec78c74",
+    "shape": [
+      53,
+      36,
+      36
+    ],
+    "oldBindings": 1,
+    "oldSourceArrays": 53
+  },
+  "existingOwner": {
+    "rowId": "rc09:acs_lock",
+    "formulaId": "acs_lock_quantity_v1",
+    "rowSha256": "d2757419b5de19f5d54a95cf9f102ad432cde2000fee5489fd7bb527fee3228f",
+    "exactQuantityExpression": "acs_lock_count",
+    "sourceKey": "project_access_control_door_device_power_method_qa_v1"
+  },
+  "nativeDevice": {
+    "countPerUnit": 1,
+    "unitId": "pcs",
+    "existingPaidOwner": "rc09:acs_lock"
+  },
+  "parts": [
+    {
+      "key": "armature",
+      "titleRu": "Якорь электромагнитного замка",
+      "countPerUnit": 1,
+      "unitId": "pcs",
+      "countEvidence": "3.1, figure1 position2",
+      "category": "equipment"
+    },
+    {
+      "key": "case-screws-m5x20",
+      "titleRu": "Винт крепления корпуса М5×20",
+      "countPerUnit": 2,
+      "unitId": "pcs",
+      "countEvidence": "3.1 explicit2pcs",
+      "category": "material"
+    },
+    {
+      "key": "anchor-pin",
+      "titleRu": "Штифт фиксации якоря замка",
+      "countPerUnit": 1,
+      "unitId": "pcs",
+      "countEvidence": "3.1+figure1 position3, one drawn item; may already be inserted",
+      "category": "material"
+    },
+    {
+      "key": "anchor-sleeve",
+      "titleRu": "Втулка крепления якоря замка",
+      "countPerUnit": 1,
+      "unitId": "pcs",
+      "countEvidence": "3.1+figure1 position4, one drawn item",
+      "category": "material"
+    },
+    {
+      "key": "anchor-through-sleeve",
+      "titleRu": "Втулка проходная крепления якоря замка",
+      "countPerUnit": 1,
+      "unitId": "pcs",
+      "countEvidence": "3.1+figure1 position5, one drawn item",
+      "category": "material"
+    },
+    {
+      "key": "anchor-bolt-m6x35",
+      "titleRu": "Винт крепления якоря М6×35, класс прочности8.8",
+      "countPerUnit": 1,
+      "unitId": "pcs",
+      "countEvidence": "3.1+figure1 position6; grade from1.4",
+      "category": "material"
+    },
+    {
+      "key": "anchor-sealing-ring",
+      "titleRu": "Кольцо уплотнительное крепления якоря",
+      "countPerUnit": 1,
+      "unitId": "pcs",
+      "countEvidence": "3.1+figure1 position7, one drawn item",
+      "category": "material"
+    },
+    {
+      "key": "anchor-washer",
+      "titleRu": "Шайба крепления якоря замка",
+      "countPerUnit": 1,
+      "unitId": "pcs",
+      "countEvidence": "3.1+figure1 position8, one drawn item",
+      "category": "material"
+    },
+    {
+      "key": "manual",
+      "titleRu": "Руководство по эксплуатации электромагнитного замка",
+      "countPerUnit": 1,
+      "unitId": "document",
+      "countEvidence": "3.1 explicit1pcs",
+      "category": "service"
+    },
+    {
+      "key": "factory-package",
+      "titleRu": "Упаковочная коробка электромагнитного замка",
+      "countPerUnit": 1,
+      "unitId": "package",
+      "countEvidence": "3.1 explicit1pcs",
+      "category": "material"
+    }
+  ],
+  "assemblyBoundaries": {
+    "pinMayBePreinstalled": "Count one supplied pin; assembly into the delivered armature does not add a second pin.",
+    "permanentlyAttachedCable": "The fixed8-core cable at least0.4m is part of delivered lock, not a second separately purchased cable route or length credit.",
+    "sensorIntegrated": "Reed, Hall and indicator are incorporated in selected unit. They do not automatically fulfil a separately specified external door-contact device or its QA circuit.",
+    "nativeLockCount": "Use exact original acs_lock_count. Do not derive lock/controller/reader count from one door, floor area, fixture defaults or product guide."
+  },
+  "compatibility": {
+    "executionVoltagesV": [
+      12,
+      24
+    ],
+    "universal12or24V": false,
+    "maxSupplyCurrentA": {
+      "12V": 0.39,
+      "24V": 0.2
+    },
+    "maxControlCurrentA": {
+      "12V": 0.012,
+      "24V": 0.006
+    },
+    "standardAnchorThroughMountDoorThicknessMm": [
+      35,
+      47
+    ],
+    "holeDiameterForSleeveMm": 10,
+    "holeDiameterForPinMm": 6,
+    "outwardSwingIndoor": true,
+    "ingressProtection": "IP20",
+    "operatingTemperatureC": [
+      -20,
+      40
+    ],
+    "actualEnvironmentPowerAndDoorFactsApproved": false
+  },
+  "optionalNotIncluded": [
+    "Планка300P",
+    "Уголок300-400P",
+    "МК150-300К",
+    "МК300",
+    "МК300-400-PS",
+    "МК300-400-IN",
+    "МК350-PD"
+  ],
+  "wholePostBoundary": {
+    "sourceOperations": [
+      "Match actual selected voltage and project release logic",
+      "Locate lock body and armature with matching edges; preserve full face contact",
+      "Use source anchor hardware only on the admitted physical method",
+      "Drill actual applicable10mm sleeve and6mm pin holes; no guessed depth or tool count",
+      "Secure screw against loosening; source recommends locking compound or nitro paint, quantity not normed",
+      "Connect source-specific8-core lock and sensor outputs per actual controller/project",
+      "Check locking/release,Hall/door sensor and indication under approved QA/emergency program"
+    ],
+    "toolTypesNotQuantities": [
+      "Разметочный и измерительный инструмент по фактическому узлу",
+      "Дрель и совместимые свёрла10мм/6мм для допущенного основания",
+      "Ручной инструмент затяжки крепежа без выдуманного момента",
+      "Инструмент окончания/изоляции и прибор проверки выбранной12В либо24В цепи"
+    ],
+    "labourHours": null,
+    "consumableQuantity": null,
+    "physicalToolCounts": null,
+    "actualQAResults": null
+  },
+  "scopeRu": "Целая заводская поставка выбранного накладного электромагнитного замка с якорным креплением, документацией и тарой у прежнего владельца оборудования.",
+  "notCoveredRu": [
+    "Фактическая ведомость дверей, количество замков, направление открывания и допустимость монтажа",
+    "Подтверждённое исполнение12В либо24В, питание, автономность, аварийное открытие и совместимость контроллера",
+    "Отдельные монтажные опции корпуса/якоря, внешние контакты двери и фактический крепёж проекта",
+    "Кабельные трассы, дополнительные кабели датчиков, окончания, герметик и средства проверки",
+    "Норма труда монтажа/окончания/ПНР, наличие инструмента, протоколы и полный коммерческий объём цены"
+  ],
+  "sourceAdmission": false,
+  "projectApproval": false,
+  "newPaidOwners": 0,
+  "FULL": false
+}
