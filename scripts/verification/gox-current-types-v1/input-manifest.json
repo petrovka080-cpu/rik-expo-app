@@ -586,7 +586,7 @@
     "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": "4dbc54a0a65c543fa6ce08058c11e04dede79c900c42fd48a3ab3a2ffbe5910d",
     "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": "32985ee7ab5d6220f11f983f2c0ccc556040693b16221b5ab42d23e5965e943c",
     "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": "1134fee0cac14fb18931a7e3c02e7d0b9e6fb228fd03f519d7d1c2f0d5094b6e",
-    "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": "0aa1b0f5ff8a83ae17b5af9e86ea3f3fb6707e27b931c8488b1128f7bf083741",
+    "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": "1e9fef927921c52154b580e98b74bb39851251066a09ada1a07e89825d009bc6",
     "scripts/estimate/r4a8/prepareR4A8DrywallScopeSuccessor.ts": "d795eb35c6faf0c62d18b40ffa482d9793ab14fcbfe6ee6ad66c0945d48db8d5",
     "scripts/estimate/r5/batch001R56SharedCoreProjection.ts": "8f638c301db3af63a9fd639c8330fcedbff9a073e6de3ecbd3a841c343ecb74d",
     "scripts/estimate/r5/batch003R56Fixtures.ts": "44874353066c3da6f0431aa64694733ce933647db1df277d8e1c621cc15014ed",
@@ -3658,13 +3658,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "53a79109528197939929cc838eb98f0edaca0c1e32724b08f9f5cb1adcb369b1",
-  "canonicalSourceFreezeSha256": "5fb79ccbe084b8c4d9390546f6b9e265248b3b6594e89c193e18bb78ae2663c0",
+  "canonicalSourceFreezeSha256": "5d91ef4a30c4d526b36a13fb210b3f510d5a2a813189c4113ad837180eb8d50f",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100904175,
+    "sourceBytes": 100904220,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4419,7 +4419,7 @@
         "owner": "FIRE_PSU_TWO_PHASE_HOST_SOURCE_ONLY_PENDING_ACTUAL_TYPES_AND_RUNTIME"
       },
       "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": {
-        "sha256": "0aa1b0f5ff8a83ae17b5af9e86ea3f3fb6707e27b931c8488b1128f7bf083741",
+        "sha256": "1e9fef927921c52154b580e98b74bb39851251066a09ada1a07e89825d009bc6",
         "owner": "WALL_FUTURE_OBJECT_FACT_SOURCE_ONLY_PENDING_ACTUAL_TYPES_AND_RUNTIME"
       },
       "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": {
@@ -5002,13 +5002,13 @@
     "twoPhaseHostAndWallObjectFactR280": {
       "manifests": {
         "FIRE_PSU_TWO_PHASE_HOST": "27dd3b71200c5a47c745d9f9f70c8aa274c71614588776c96a94127f17030bd2",
-        "WALL_FUTURE_OBJECT_FACT": "f9b67fa1464ef52c4f7fba42ba9aa43ccd67aaaf61c4c7a30cd7ef06048ce987"
+        "WALL_FUTURE_OBJECT_FACT": "eebbc7ef143eb0078eb2bf0bab3dce762bce1709abdde6e12ed8feef68988e0e"
       },
       "selectedSources": {
         "scripts/estimate/r4a13/prepareFireAlarmPsuCurrentMasterR24.ts": "b71d065846365330a4be8db0773e01842c6580cd4ec232dadce3e0ecc7d67ded",
         "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": "3e36f932e1141acb4bd1a6a4bcaf45d2a5b182c97d91455e996e5b02bdcdb73a",
         "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "9ec442c9540c51b55ae11b1edc2948470558c3884cb395bfb705e4e6af380f2e",
-        "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": "0aa1b0f5ff8a83ae17b5af9e86ea3f3fb6707e27b931c8488b1128f7bf083741",
+        "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": "1e9fef927921c52154b580e98b74bb39851251066a09ada1a07e89825d009bc6",
         "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": "1134fee0cac14fb18931a7e3c02e7d0b9e6fb228fd03f519d7d1c2f0d5094b6e"
       },
       "reviewedExactPublisherGeneratorExtraction": {
@@ -5025,6 +5025,21 @@
       "additionalTypeRoots": 3,
       "sourceAdmissionGranted": false,
       "newFULL": 0
+    },
+    "exactRequiredSourceArtifactMetadataR281": {
+      "manifestSha256": "eebbc7ef143eb0078eb2bf0bab3dce762bce1709abdde6e12ed8feef68988e0e",
+      "priorActualFailure": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\types-ci-r280\\ROOT_VERIFIED_ACTUAL_FIRST_FAILURE_R280.json",
+        "sha256": "3f7cc4a5b7c8787ebaebc3250198704da9a363853aa629a27cd64b0c2943a39d",
+        "bytes": 1839
+      },
+      "changedLogicalPath": "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts",
+      "beforeSha256": "0aa1b0f5ff8a83ae17b5af9e86ea3f3fb6707e27b931c8488b1128f7bf083741",
+      "afterSha256": "1e9fef927921c52154b580e98b74bb39851251066a09ada1a07e89825d009bc6",
+      "rawByteInverseVerified": true,
+      "addedOnlyAlreadyPinnedArtifactSha": true,
+      "sharedTypesGuardsNormQuantitiesInputOraclesOrOrdinalFixChanged": false,
+      "sameAllRootsAndUnfilteredDiagnosticsAndCaps": true
     }
   }
 }

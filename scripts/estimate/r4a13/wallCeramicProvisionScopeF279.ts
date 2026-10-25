@@ -42,7 +42,7 @@ export function withWallSubstrateScopeF279(model:AutomaticOwnerDefinition):Autom
  const fact=buildAutomaticConstructionOwnerR1({contract:'existing-wall-substrate-object-scope/f279',
   semanticOwner:'tile-wall:kg15-01901:existing-substrate-state',sourceId:source.sourceKey,normId:'OBJECT_STATE_NOT_NUMERIC_NORM',
   sourceMetadata:{source_title:'Готовность основания под цементную облицовку',source_document_version:'КРЕР15-2015,§1.9',
-   definition_hash:source.sourceArtifact.sha256,exact_locator:'Техническая часть§1.9;не норма подготовки в019-01'},applicabilityRu:source.scopeRu,
+   definition_hash:source.sourceArtifact.sha256,artifact_sha256:source.sourceArtifact.sha256,exact_locator:'Техническая часть§1.9;не норма подготовки в019-01'},applicabilityRu:source.scopeRu,
   ordinary:[{id:WALL_SUBSTRATE_FACT_F279,title:'Готовность основания под выбранную облицовку',kind:'ordinary',valueType:'enum',unitId:null,
    values:[WALL_SUBSTRATE_READY_F279,WALL_SUBSTRATE_REQUIRED_F279,WALL_SUBSTRATE_UNKNOWN_F279]}],
   profile:[],conditional:[],rows:[],excludedUnownedAssumptions:['Ответ не является нормой подготовки,ППР,заказом,остатком или подтверждением оплаты.']});
