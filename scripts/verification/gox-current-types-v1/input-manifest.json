@@ -36,6 +36,7 @@
     "data/estimate-benchmarks/fixtures/elecor-mechanical-fixings-current-parent-r2.json": "3097e5f9497ccde7749f961f3b4a602cfb4d61c1e160c90439b30c3143e8b587",
     "data/estimate-benchmarks/fixtures/euroflex-current-delivery-v2-parent-r3.json": "34466c443e5d9948802b7c3dc203dc8dfb97c2647f7f23b477c300703f8512ad",
     "data/estimate-benchmarks/fixtures/facade-ceresit-ct190-kz-material-subworks-r1.json": "9beeed62679a56d06875dbb75c1e6846b68e2fc16f4762d15dbd75983d64510f",
+    "data/estimate-benchmarks/fixtures/fire-alarm-psu-whole-test-only-r24.json": "b0e1573a78371e65d8f94b956280d491bf2a11752cfa52c9cc7753567dc4cd54",
     "data/estimate-benchmarks/fixtures/floor-sand-quality-control-open-need-r1.json": "816e80535a7cbba34e8976fc2feba2818bfef5d1b7551661ca6a7a40ad45fa65",
     "data/estimate-benchmarks/fixtures/floor-sand-thickness-full-current-capture-guard-r1.json": "7c5bad6b77ede90252630afd0751c5f8c2823a0dc67c046e6f4f82b16f1eeeed",
     "data/estimate-benchmarks/fixtures/floor-sand-thickness-full-current-capture-r1.json": "cc2401e3a8fcc72eef0e6fa0e4f294ed9723f3ceff90fa4d38a574c6134deb5a",
@@ -68,6 +69,7 @@
     "data/estimate-benchmarks/fixtures/road-upper-gravel02-append-absence-r1.json": "2cab708e1d7dc5a765425fc958b51343ea697999d531c38882328717aca51ae9",
     "data/estimate-benchmarks/fixtures/roof-legacy-source-choice-ui-s27-67.json": "70b632d47e8c8f268633efd16e604413ca3eec8f2cbc82fcc2463e4d695cc16b",
     "data/estimate-benchmarks/fixtures/roof-retained-history-v14-continuation-r11.json": "88d26ded8bc4d0686cdac35e69c97641eb1cbee973ba9e9103b77b22538217ea",
+    "data/estimate-benchmarks/fixtures/socket-complete-surface-whole-independent-r266.json": "64f1700d4f50d9368f850877323c4587e6af10c6539d85a448a8fac008adab17",
     "data/estimate-benchmarks/fixtures/stairs-doka-standard-current-parent-r1.json": "0c717d99514fca67553777ea976685f5075e65620dea0b7adcdbd818849bed2d",
     "data/estimate-benchmarks/fixtures/stairs-doka-standard-retention-current-v5-r1.json": "dd48ba1d52633e7d4bb23c93c3f99db04a9590ce05093c4d38717715ca114dbb",
     "data/estimate-benchmarks/fixtures/stairs-doka-standard-retention-declaration-r1.json": "5202df2cd313f9e74ba8100166fca2fc439fb828947763a75b0d199677ff89a1",
@@ -249,6 +251,7 @@
     "data/estimate-benchmarks/source-packs/sika-antisol250w-us-curing-series-s27-63.json": "419d08abe5715450fd7c675e79aca529ebbac5c75b6cef0b027e27a9ed5290cb",
     "data/estimate-benchmarks/source-packs/simple-cement-lime-stone-wall-krer15-016-01-quantity-r1.json": "5da14c09564eba3a6efdf6281c444221c57dfdf7720fab30cced3c49d8a23034",
     "data/estimate-benchmarks/source-packs/slab-foundation-local-repair-s27-16.json": "36ec6d235818e467678569e0b02fa67202faeebe62f520ff6eaf5990ec166578",
+    "data/estimate-benchmarks/source-packs/socket-complete-surface-2pe-project-r266.json": "cf105c4d6c3357fef4f3276753afc26ddec0bc7ff232c498ddfe15c32be72247",
     "data/estimate-benchmarks/source-packs/stairs-concrete-vibration-standard-s27-23.json": "248c48012ed587514fa90d6ca7ef4eae59604aed3b8fcc04a09e4a4cbdbf57ac",
     "data/estimate-benchmarks/source-packs/stairs-doka-standard-source-variant-dispositions-r1.json": "21ec8ccae61ae75d36dcd52835289424979e7a43bf16d55b52c8b783af9232c4",
     "data/estimate-benchmarks/source-packs/standard-asphalt-compaction-retained-parent-r567.json": "6ced5a91c591ca4916e8a75fbe483786d1abc2ee9753fabf4553ba718bd90fd1",
@@ -356,6 +359,7 @@
     "scripts/estimate/r4a13/accessControlLockWholeActualRehearsalR24.test.ts": "57593265f0e7988634bbb2d6ac846a1cec8dfab808a5e1b7284e98a807383ca1",
     "scripts/estimate/r4a13/auditS279MainEstimateSubjects.ts": "e3efaf004bda769d6a1096e13d62885936cd889c86f1b0810852c54a3d836b01",
     "scripts/estimate/r4a13/basinMixerReadySiteWorkScopeRegistryR3.ts": "a4826fe13edc04180db4499a7b07a0132db1ec0cd44d796a180bb7b50c867493",
+    "scripts/estimate/r4a13/bindAccessControlLockActualFormalRegistryR24.ts": "90dfb5e22d6396539326e597081b0bdb3cb0e94329e11f1795ee8d3cc1f9a565",
     "scripts/estimate/r4a13/brickPartition005ParentRebaseR1.test.ts": "fcb34797ec15c636a098e3f8db74747d0384d9a8f7a0e0376b560e3ba5b2b234",
     "scripts/estimate/r4a13/brickPartitionSelectedMaterialDeliveryR1.ts": "e4f3a7dac02dbc97df04da214b13e3e6d24554c5ac349a1ce4a7b328bc9d513a",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherConditionalSourceScopeR1.test.ts": "1a35b95ea8c04c9879a91e763209b847ecb3f6787f5d0dec096979a66e3c89a8",
@@ -365,11 +369,13 @@
     "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": "22e0c945a463230bed73e7efed680cf7bbd1547b82348737c620e72756bc6691",
     "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845",
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts": "c40cd5746bf94c66e95ca2e807cd31c0d1ae3ab15921a074bf407bfaa1808812",
+    "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": "e39c2aa3555518620e0d538cfcfe9cd858d48d9aac949976d23e5f9f9450c895",
     "scripts/estimate/r4a13/concreteCuringCurrentFourR273.test.ts": "815d1e5fc0c6f7792b3c2991ab54ba339909f7620a10aa5dd3d851756145b28c",
     "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts": "6fcd3e61268b204bcce82701e98f6111375db99ff515c33c47a83986ef0cc33a",
     "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts": "4c33d590e163a1a57c987e6ae9093e647c6990c22e3da8b9493f962579880440",
     "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": "0452699e7d46af32e5f0c68992833d3f94385395f3d5eee0dcb99b8dc9168a9a",
     "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": "9bd3e64a03d5e98eb51e7265027545afe1b994188498bfd9a5ee287c75288298",
+    "scripts/estimate/r4a13/fireAlarmPsuWholeActualRehearsalR24.test.ts": "8ed7c99755e52d7fc6197b2d1dc99447d1269b14186866cfe1d3c615a741d973",
     "scripts/estimate/r4a13/floorCementScreed20mmColumn01AppendR1.test.ts": "049a00dc540cec4c10257d696a838a6200642c7a20d85649fcbb06210e133d2f",
     "scripts/estimate/r4a13/floorConcreteUnderlayerColumn09AppendR1.test.ts": "5743738f5082244d862cb9cb7e9b89ec2e23ebc0bca8ce8f7c943b744edb4213",
     "scripts/estimate/r4a13/floorSandStraightedgeRetainedMasterR3.test.ts": "d9f06c8626032d2ab2356f8dac8e20009d7110c18840bb91d7318e35f2d03527",
@@ -412,6 +418,7 @@
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": "fe8f963ff2b7869949b5593c44517590c836ee32b35a3cf26f9a21e19026ee16",
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts": "8cf5fe6385481c3c9db87e5026f211ded1acd6daa6db30d2418406ed49ba0847",
     "scripts/estimate/r4a13/monolithicRepeatedRetainedContinuationR1.ts": "b4da165a3fcba3d3e227db7191296bb0b5fd48b8290728d79ac83a9c188eb2db",
+    "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts": "f47af04a3e700b761862fe3b899d7817bd91027f685a39d8ed39b0f640b148c3",
     "scripts/estimate/r4a13/prepareAccessControlLockWholeFactoryR24.ts": "383e6ae4424aa50517d99fe4d04377766a342de22912fa3810d538f55a0f8141",
     "scripts/estimate/r4a13/prepareAggressiveEnvironmentBrickFloorOnBituminousMasticOrAcidResistantMortarDemolitionKrer46Successor.ts": "566fdb87fea4177d5c2f15e05631c585e16b8b645c8295f0f7c2971946fa301f",
     "scripts/estimate/r4a13/prepareAggressiveEnvironmentCementOrConcreteFloor25mmDemolitionKrer46Successor.ts": "a96169586744032bf8968f43de3f979e755de1d9e8ad81c7789745336a6e8b3f",
@@ -514,6 +521,7 @@
     "scripts/estimate/r4a13/prepareS2769AggressiveFloorProtectionDustComplete.ts": "44edd0f48dd14449a5a2a68c97732ab1a4a60c7264efbffcaf78eed8b4504342",
     "scripts/estimate/r4a13/prepareS2769PvcFloorCompleteFour.ts": "9316b31733146528d3ef69b7d91eadb446d6a63976247f6cfb037293854c3863",
     "scripts/estimate/r4a13/prepareS2775EuroflexRecycling50Materials.ts": "43b922562af1a382b25b21b5652caaa808a90200b38231b9429d27992ba79214",
+    "scripts/estimate/r4a13/prepareSocketCompleteSurfaceCurrentMasterR266.ts": "6ee3cd578711cea431ce474b34ff7e53bb55b4764b7fd585602274dd54ee5187",
     "scripts/estimate/r4a13/prepareStairsDokaStandardFullRetainedMasterR2.test.ts": "d9b7947b9be0dd184baa4482ead1bf7020d477faafca98ec29342a0d12a46b42",
     "scripts/estimate/r4a13/prepareStairsDokaStandardFullRetainedMasterR2.ts": "c5ac1a330ed20352e89880cabef0c4bb17789c3451c77daf2df150b12943d522",
     "scripts/estimate/r4a13/prepareStairsDokaStandardFullRetainedMasterR3.test.ts": "fd50e69bf3bd77b4d05f8ef3265809222a1903c794d59861570f5ba583c9920f",
@@ -532,7 +540,7 @@
     "scripts/estimate/r4a13/prepareTemporaryTrussNodeStrengtheningDevicesKrer46Successor.ts": "153fa692eabfbabbd74a8482792aad06d37ecd27d2f8317e9258020c63594e9f",
     "scripts/estimate/r4a13/prepareTemporaryUpperBeamChordStrengtheningDevicesKrer46Successor.ts": "2471c27b815388db74cf0e6abb4370c7f199328d003186b06399cfba9df93c8c",
     "scripts/estimate/r4a13/prepareTemporaryVerticalProtectiveBarrierBoardFrameKrer46Successor.ts": "bc31b3ed2cb46c614dd18bb0eee69079c3adbbf4afe1b528635aec6fffaead22",
-    "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": "3295aac86f2744bb12f4397710d6023cf9d87a86eda9bfbc0ccc97b0d1477b8d",
+    "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": "8ee134f9f7c15b407119031fbe9fcd7c413adea3fc81052fc4ff380fe0257b41",
     "scripts/estimate/r4a13/prepareWoodFireproofingLayerStrengtheningVariantSuccessor.ts": "f572cde34be66a35f579a5361768dccf80ba547043cc4012044a62cb8d05b609",
     "scripts/estimate/r4a13/prepareWoodFireproofingLocalRepairVariantSuccessor.ts": "aefa740502d8cab2cff2bed8cfeb7e2a9673717f87aa56c8102eeadd769dbec6",
     "scripts/estimate/r4a13/prepareWoodFireproofingSealingVariantSuccessor.ts": "c8ffc0f3f670b8007151c4e60fb6a7c3b2b621892024c0f45fd84e80ba1bf938",
@@ -571,8 +579,10 @@
     "scripts/estimate/r4a13/s2775SharedPublisherGuards.test.ts": "27ae361ded698bab8d60240c81244461135053f2ad70b3e874821297d94101da",
     "scripts/estimate/r4a13/selectedMaterialDeliveryForwardR1.ts": "40a29b771a1769bf0925e2b115826924b359e3a5cb3e54d28ec7db29c2c8c87e",
     "scripts/estimate/r4a13/selectedMaterialDeliveryNormativeRegistryR1.ts": "9812ab8c69002e729bea6662a7cb5a8a9b515aedeb647e4486bf448afb006ea9",
+    "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts": "a85d118756cb999ec5eac5bd27a589fa79b80f2c34421e37fc3bf0083baf3aa8",
     "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "6b42f92c42a7aaa73d4602735d883aed8130017a4db2288716f05abe6ea36170",
     "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts": "1ba146ed482a432e46dc97c9e337b9071a5bc4de77c9340e2d16712296cf8c73",
+    "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": "4dbc54a0a65c543fa6ce08058c11e04dede79c900c42fd48a3ab3a2ffbe5910d",
     "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": "32985ee7ab5d6220f11f983f2c0ccc556040693b16221b5ab42d23e5965e943c",
     "scripts/estimate/r4a8/prepareR4A8DrywallScopeSuccessor.ts": "d795eb35c6faf0c62d18b40ffa482d9793ab14fcbfe6ee6ad66c0945d48db8d5",
     "scripts/estimate/r5/batch001R56SharedCoreProjection.ts": "8f638c301db3af63a9fd639c8330fcedbff9a073e6de3ecbd3a841c343ecb74d",
@@ -587,7 +597,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "6ea4eb322bfff4973c82b8c300817d792e21b453d3b4242f65da2eb130388e6e",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "4d93f76b3571baec200be59db48b2a7ff7492168e0ded9978b0a41fff6bf9211",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -3644,14 +3654,14 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "6ea4eb322bfff4973c82b8c300817d792e21b453d3b4242f65da2eb130388e6e",
-  "canonicalSourceFreezeSha256": "1476638b9227f7e54337111109deffa560ae9de5ea8b9a9bdc3dfcadf42f91e6",
+  "originalSeedManifestSha256": "4d93f76b3571baec200be59db48b2a7ff7492168e0ded9978b0a41fff6bf9211",
+  "canonicalSourceFreezeSha256": "b9269407f5ee4bdc38d9fc98d1faf4354ae5a53bd293b382163886aa9561e68d",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100659059,
+    "sourceBytes": 100859908,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4326,8 +4336,8 @@
         "owner": "WALL_CERAMIC_CEMENT_SOURCE_CANDIDATE_NOT_PUBLICATION"
       },
       "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": {
-        "sha256": "3295aac86f2744bb12f4397710d6023cf9d87a86eda9bfbc0ccc97b0d1477b8d",
-        "owner": "WALL_CERAMIC_CEMENT_SOURCE_CANDIDATE_NOT_PUBLICATION"
+        "sha256": "8ee134f9f7c15b407119031fbe9fcd7c413adea3fc81052fc4ff380fe0257b41",
+        "owner": "WALL_R06_EXISTING_PARAMETER_CONSUMER_PROJECTION"
       },
       "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": {
         "sha256": "32985ee7ab5d6220f11f983f2c0ccc556040693b16221b5ab42d23e5965e943c",
@@ -4360,15 +4370,58 @@
       "data/estimate-benchmarks/fixtures/access-control-lock-whole-test-only-r24.json": {
         "sha256": "2363b68c9d0afe352806529e7ff7677670653d3507f3d8212a9d6112ab6d4e15",
         "owner": "ACCESS_CONTROL_LOCK_SOURCE_CANDIDATE_NOT_PUBLICATION"
+      },
+      "scripts/estimate/r4a13/bindAccessControlLockActualFormalRegistryR24.ts": {
+        "sha256": "90dfb5e22d6396539326e597081b0bdb3cb0e94329e11f1795ee8d3cc1f9a565",
+        "owner": "LOW_CURRENT_BOUNDARY_AND_PSU_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "scripts/estimate/r4a13/fireAlarmPsuWholeActualRehearsalR24.test.ts": {
+        "sha256": "8ed7c99755e52d7fc6197b2d1dc99447d1269b14186866cfe1d3c615a741d973",
+        "owner": "LOW_CURRENT_BOUNDARY_AND_PSU_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "data/estimate-benchmarks/fixtures/fire-alarm-psu-whole-test-only-r24.json": {
+        "sha256": "b0e1573a78371e65d8f94b956280d491bf2a11752cfa52c9cc7753567dc4cd54",
+        "owner": "LOW_CURRENT_BOUNDARY_AND_PSU_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "data/estimate-benchmarks/fixtures/socket-complete-surface-whole-independent-r266.json": {
+        "sha256": "64f1700d4f50d9368f850877323c4587e6af10c6539d85a448a8fac008adab17",
+        "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "data/estimate-benchmarks/source-packs/socket-complete-surface-2pe-project-r266.json": {
+        "sha256": "cf105c4d6c3357fef4f3276753afc26ddec0bc7ff232c498ddfe15c32be72247",
+        "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts": {
+        "sha256": "f47af04a3e700b761862fe3b899d7817bd91027f685a39d8ed39b0f640b148c3",
+        "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "scripts/estimate/r4a13/prepareSocketCompleteSurfaceCurrentMasterR266.ts": {
+        "sha256": "6ee3cd578711cea431ce474b34ff7e53bb55b4764b7fd585602274dd54ee5187",
+        "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts": {
+        "sha256": "a85d118756cb999ec5eac5bd27a589fa79b80f2c34421e37fc3bf0083baf3aa8",
+        "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": {
+        "sha256": "4dbc54a0a65c543fa6ce08058c11e04dede79c900c42fd48a3ab3a2ffbe5910d",
+        "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": {
+        "sha256": "e39c2aa3555518620e0d538cfcfe9cd858d48d9aac949976d23e5f9f9450c895",
+        "owner": "CURING_FORMAL_NORMAL_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
       }
     },
     "extraRoots": [
       "scripts/estimate/r4a13/accessControlLockWholeActualRehearsalR24.test.ts",
+      "scripts/estimate/r4a13/bindAccessControlLockActualFormalRegistryR24.ts",
+      "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts",
       "scripts/estimate/r4a13/concreteCuringCurrentFourR273.test.ts",
       "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts",
       "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts",
       "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts",
       "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts",
+      "scripts/estimate/r4a13/fireAlarmPsuWholeActualRehearsalR24.test.ts",
       "scripts/estimate/r4a13/interiorWallFinishingPhysicalKitR240.test.ts",
       "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts",
       "scripts/estimate/r4a13/lowCurrentScsPostsFiniteRuntimeR24.ts",
@@ -4382,6 +4435,7 @@
       "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts",
       "scripts/estimate/r4a13/masterMonolithicRepairGeometryVisibilityOnlyR60.ts",
       "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+      "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts",
       "scripts/estimate/r4a13/prepareAccessControlLockWholeFactoryR24.ts",
       "scripts/estimate/r4a13/prepareConcreteCuringRollerWholePostR108.ts",
       "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts",
@@ -4401,13 +4455,16 @@
       "scripts/estimate/r4a13/prepareRoofFlat003006CommonR24.ts",
       "scripts/estimate/r4a13/prepareRoofMasticMeshExisting003R24.ts",
       "scripts/estimate/r4a13/prepareRoofSingle539WholeLayersR24.ts",
+      "scripts/estimate/r4a13/prepareSocketCompleteSurfaceCurrentMasterR266.ts",
       "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts",
       "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts",
       "scripts/estimate/r4a13/roofSingle539FiniteCasesR24.ts",
       "scripts/estimate/r4a13/roofSingle539RealR224InputsR24.ts",
       "scripts/estimate/r4a13/roofSingle539WholeConfigR224.test.ts",
+      "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts",
       "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts",
       "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts",
+      "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts",
       "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts",
       "src/lib/estimate/backendPlatform/accessControlLockWholeFactoryR24.ts",
       "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
@@ -4865,6 +4922,36 @@
       "sameAllEarlierSeeds603ExtraRootsWorkerAndResourceCaps": true,
       "newSubjectRoots": 0,
       "newSourceAdmission": false
+    },
+    "curingFormalWallSocketPsuSourceR275": {
+      "manifests": {
+        "WALL_R06": "9d3206ffc1fb45008db107594e8697d62b16cf965c12050c27879e0d24ec9a4c",
+        "LOW_CURRENT_BOUNDARY_AND_PSU": "36450b5324d8ff6ecc97b516bcbfc6505d58cb7b81546243af7dcecc5c249148",
+        "SOCKET_WHOLE": "fec3e79d421cf731fa572adfa4a4487fc36a54a45f425439c48c1ff32a530631",
+        "CURING_FORMAL_NORMAL": "7e9222f982dff3b864a5edc0f92349abc938280ba97a445a74a89994c1e722a4"
+      },
+      "selectedSources": {
+        "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": "8ee134f9f7c15b407119031fbe9fcd7c413adea3fc81052fc4ff380fe0257b41",
+        "scripts/estimate/r4a13/bindAccessControlLockActualFormalRegistryR24.ts": "90dfb5e22d6396539326e597081b0bdb3cb0e94329e11f1795ee8d3cc1f9a565",
+        "scripts/estimate/r4a13/fireAlarmPsuWholeActualRehearsalR24.test.ts": "8ed7c99755e52d7fc6197b2d1dc99447d1269b14186866cfe1d3c615a741d973",
+        "data/estimate-benchmarks/fixtures/fire-alarm-psu-whole-test-only-r24.json": "b0e1573a78371e65d8f94b956280d491bf2a11752cfa52c9cc7753567dc4cd54",
+        "data/estimate-benchmarks/fixtures/socket-complete-surface-whole-independent-r266.json": "64f1700d4f50d9368f850877323c4587e6af10c6539d85a448a8fac008adab17",
+        "data/estimate-benchmarks/source-packs/socket-complete-surface-2pe-project-r266.json": "cf105c4d6c3357fef4f3276753afc26ddec0bc7ff232c498ddfe15c32be72247",
+        "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts": "f47af04a3e700b761862fe3b899d7817bd91027f685a39d8ed39b0f640b148c3",
+        "scripts/estimate/r4a13/prepareSocketCompleteSurfaceCurrentMasterR266.ts": "6ee3cd578711cea431ce474b34ff7e53bb55b4764b7fd585602274dd54ee5187",
+        "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts": "a85d118756cb999ec5eac5bd27a589fa79b80f2c34421e37fc3bf0083baf3aa8",
+        "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": "4dbc54a0a65c543fa6ce08058c11e04dede79c900c42fd48a3ab3a2ffbe5910d",
+        "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": "e39c2aa3555518620e0d538cfcfe9cd858d48d9aac949976d23e5f9f9450c895"
+      },
+      "wallSchemaExactConsumerProjectionFix": true,
+      "allThirteenSocketScenariosAndSevenWallOraclesPreserved": true,
+      "sameAllEarlierSeeds603ExtraRootsWorkerAndResourceLimits": true,
+      "additionalTypeRoots": 7,
+      "newSourceAdmission": false,
+      "newFULL": 0,
+      "newCuringEntryNoCoreReplayAndNoDml": true,
+      "onlyExistingFormalRegistryCaptureArm": true,
+      "primaryPdfRetainedLocally": "2393d3d995a30c345481b546237f1383ec43e5e7ff9367f1729c867a5e5a7b43"
     }
   }
 }

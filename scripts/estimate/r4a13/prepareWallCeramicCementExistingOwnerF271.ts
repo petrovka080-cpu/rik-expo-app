@@ -13,6 +13,7 @@ import type {AutomaticOwnerDefinition} from '../../../src/lib/estimate/v4/automa
 import {compileCanonicalEstimateCore,type CanonicalEstimateCompileCoreResult,type CanonicalEstimatePriceItem}
  from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
 import {canonicalApprovedBaselineRuntimeParameters} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline';
+import {buildMasterParameterCalculationConsumers} from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1';
 import {assertCanonicalPrimaryMeasureSelectionV1,resolvePrimaryMeasureSelectionV1,type PrimaryMeasureSelectionParameterV1}
  from '../../../src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1';
 import {validateCanonicalEstimateParameterInputs} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation';
@@ -105,10 +106,13 @@ export function prepareWallCeramicCementExistingOwnerF271(context:WallContextF27
   verifyCore:()=>verifyWallCeramicCementExistingF271(config,context.sourceRoot)};
  assert.equal(config.catalogAppend,undefined);return config;
 }
-function schema(model:AutomaticOwnerDefinition):PrimaryMeasureSelectionParameterV1[]{return model.parameters.map(p=>({parameterId:p.parameter_id,
+function schema(model:AutomaticOwnerDefinition):PrimaryMeasureSelectionParameterV1[]{
+ const consumers=buildMasterParameterCalculationConsumers(model);
+ return model.parameters.map(p=>({parameterId:p.parameter_id,
  valueType:p.value_type,unitId:p.unit_id,visibilityRole:typeof p.truth_metadata.visibility_role==='string'?p.truth_metadata.visibility_role:undefined,
  valueSourceRole:typeof p.truth_metadata.value_source_role==='string'?p.truth_metadata.value_source_role:undefined,
- provenance:record(p.truth_metadata.provenance)?p.truth_metadata.provenance:undefined,constraints:p.constraints_json??{}}));}
+ provenance:record(p.truth_metadata.provenance)?p.truth_metadata.provenance:undefined,constraints:p.constraints_json??{},
+ formulaConsumers:consumers.formulaConsumers[p.parameter_id]}));}
 async function calculate(model:AutomaticOwnerDefinition,c:Capture,input:Json,prices:CanonicalEstimatePriceItem[]=[]):Promise<CanonicalEstimateCompileCoreResult>{
  const selected=assertCanonicalPrimaryMeasureSelectionV1({selectionMetadata:primary(),parameterSchema:schema(model),submittedParameters:input,confirmedParameters:{}});
  assert.equal(selected.kind,'RESOLVED');assert(selected.kind==='RESOLVED');

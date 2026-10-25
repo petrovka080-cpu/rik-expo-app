@@ -1,0 +1,67 @@
+{
+  "contract": "fire-psu-whole-factory-model-full-native-core-test-only/r24",
+  "factsAreTestOnly": true,
+  "actualProjectApproval": false,
+  "sourceAdmission": false,
+  "ordinaryConfigStatus": "UNRUN_ACTUAL_MANUFACTURER_REGISTRY_AND_SOURCE_ASSEMBLY_REQUIRED",
+  "sourceReferenceRole": "PROPOSED_MANUFACTURER_REFERENCE_NOT_REGISTRY_ID_OR_APPROVAL",
+  "proposedManufacturerSourceKey": "manufacturer_rip24_06_complete_factory_delivery_rev10_20260925",
+  "proposedManufacturerNormId": "MANUFACTURER_RIP24_06_FACTORY_DELIVERY_SIX_NATIVE_LINES_NOT_INSTALLATION_NORM",
+  "compilerVersion": "fire-psu-whole-factory-full-native-rehearsal/r24",
+  "currentReadOnlyIdentity": {
+    "definitionId": "7cdf8e37-0de7-5e16-98d1-d391bc1bd820",
+    "definitionVersion": 4,
+    "definitionSha256": "cfb646b9051e7799b88d67774baf6fd5afeec6ba21389565d9148f78c8c3098b",
+    "baselineId": "95c5ff16-6e73-5071-a90d-c3915161888f",
+    "captureFileSha256": "beef4f7ee42074092c85771868a29a0f8e03ff0e632c197fe49ead1aa89ce328"
+  },
+  "baseTestOnlyInputs": {
+    "protected_area_m2": 10,
+    "system_scope_statement": "TEST_ONLY_FACTORY_QUANTITY_REHEARSAL_NOT_ACTUAL_BUILDING",
+    "system_project_reference": "TEST_ONLY_NOT_APPROVED_PROJECT_OR_PPR",
+    "power_supply_designation": "TEST_ONLY_24V_4A_FACTORY_EXECUTION_NOT_ACTUAL_PROJECT_SELECTION",
+    "sounder_density_pcs_m2": 0.1,
+    "visual_alarm_density_pcs_m2": 0.1,
+    "device_reserve_factor": 1,
+    "power_supply_output_capacity_point": 2,
+    "visual_alarm_mode": "REQUIRED"
+  },
+  "threeSupplyOverrides": {
+    "protected_area_m2": 30
+  },
+  "expectedPartsOneSupply": {
+    "manual": "1",
+    "mounting-pair": "4",
+    "cable-gland": "4",
+    "cabinet-key": "2",
+    "factory-package": "1"
+  },
+  "expectedPartsThreeSupplies": {
+    "manual": "3",
+    "mounting-pair": "12",
+    "cable-gland": "12",
+    "cabinet-key": "6",
+    "factory-package": "3"
+  },
+  "externalBatteryFactsNotRuntimeInputs": {
+    "sourceTechnicalCount": 2,
+    "voltagePerBatteryV": 12,
+    "permittedCapacitiesAh": [
+      26,
+      40
+    ],
+    "batteryIncluded": false,
+    "battery_quantity_per_power_supply": "OMITTED_UNKNOWN",
+    "battery_designation": "OMITTED_UNKNOWN",
+    "noFactory2OrCapacity26Or40PromotedToActualProject": true
+  },
+  "missingNativeCapacityExpectedRoute": "RESULT_WITH_UNKNOWN_PRELIMINARY_NEEDS_NOT_REQUIRED_REJECTION",
+  "notProvided": [
+    "Actual building/project/PPR or approved manufacturer registry",
+    "Battery ratio/designation/capacity/supply/autonomy/load facts",
+    "Cable routes and native labour/equipment application rates",
+    "Actual stock/QA/installation norm/whole vendor price"
+  ],
+  "oldFinitePlanPredictionSupersededOnly": "The old source-only plan supplied TEST battery ratio2; this finite rehearsal deliberately omits ratio/designation so external battery remains UNKNOWN. Old sealed plan/source quantities are unchanged.",
+  "FULL": false
+}

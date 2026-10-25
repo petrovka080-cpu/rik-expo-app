@@ -124,5 +124,12 @@
   "src/lib/estimate/v4/wallCeramicCementNativeF266.ts": null,
   "src/lib/estimate/backendPlatform/accessControlLockWholeFactoryR24.ts": null,
   "scripts/estimate/r4a13/prepareAccessControlLockWholeFactoryR24.ts": null,
-  "scripts/estimate/r4a13/accessControlLockWholeActualRehearsalR24.test.ts": null
+  "scripts/estimate/r4a13/accessControlLockWholeActualRehearsalR24.test.ts": null,
+  "scripts/estimate/r4a13/bindAccessControlLockActualFormalRegistryR24.ts": null,
+  "scripts/estimate/r4a13/fireAlarmPsuWholeActualRehearsalR24.test.ts": null,
+  "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts": null,
+  "scripts/estimate/r4a13/prepareSocketCompleteSurfaceCurrentMasterR266.ts": null,
+  "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts": null,
+  "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": null,
+  "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": null
 }
