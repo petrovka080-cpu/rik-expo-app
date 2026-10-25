@@ -268,7 +268,7 @@
     "data/estimate-benchmarks/source-packs/sika-antisol250w-us-curing-series-s27-63.json": "419d08abe5715450fd7c675e79aca529ebbac5c75b6cef0b027e27a9ed5290cb",
     "data/estimate-benchmarks/source-packs/simple-cement-lime-stone-wall-krer15-016-01-quantity-r1.json": "5da14c09564eba3a6efdf6281c444221c57dfdf7720fab30cced3c49d8a23034",
     "data/estimate-benchmarks/source-packs/slab-foundation-local-repair-s27-16.json": "36ec6d235818e467678569e0b02fa67202faeebe62f520ff6eaf5990ec166578",
-    "data/estimate-benchmarks/source-packs/socket-complete-surface-2pe-project-r266.json": "cf105c4d6c3357fef4f3276753afc26ddec0bc7ff232c498ddfe15c32be72247",
+    "data/estimate-benchmarks/source-packs/socket-complete-surface-2pe-project-r266.json": "50d9150fd377b579fa40ff9c7d4a28759c92fc802d5e83a929641621affd4fd3",
     "data/estimate-benchmarks/source-packs/stairs-concrete-vibration-standard-s27-23.json": "248c48012ed587514fa90d6ca7ef4eae59604aed3b8fcc04a09e4a4cbdbf57ac",
     "data/estimate-benchmarks/source-packs/stairs-doka-standard-source-variant-dispositions-r1.json": "21ec8ccae61ae75d36dcd52835289424979e7a43bf16d55b52c8b783af9232c4",
     "data/estimate-benchmarks/source-packs/standard-asphalt-compaction-retained-parent-r567.json": "6ced5a91c591ca4916e8a75fbe483786d1abc2ee9753fabf4553ba718bd90fd1",
@@ -3693,13 +3693,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "4a8c94f9e4f9ba4ae90fa81e604b33a1599bf9b73d76e838a60d93bf21bc024c",
-  "canonicalSourceFreezeSha256": "ca6d2f4ca3d81566174cdcdb8385ef80a2c58e3b5454906fadc94f243e9f798a",
+  "canonicalSourceFreezeSha256": "06d54d0fe0337b2edb627bc751c7a0c9d3e924d6c6e5b1bf762242fc9bf80921",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 101904982,
+    "sourceBytes": 101904988,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4426,7 +4426,7 @@
         "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
       },
       "data/estimate-benchmarks/source-packs/socket-complete-surface-2pe-project-r266.json": {
-        "sha256": "cf105c4d6c3357fef4f3276753afc26ddec0bc7ff232c498ddfe15c32be72247",
+        "sha256": "50d9150fd377b579fa40ff9c7d4a28759c92fc802d5e83a929641621affd4fd3",
         "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
       },
       "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts": {
@@ -5294,6 +5294,18 @@
       "formalSourceOrObjectApprovalGranted": false,
       "oldCompatibility17OnlyValidOnOldCfb9Cut": true,
       "freshRuntimeCompatibility17": "UNRUN",
+      "newFULL": 0
+    },
+    "exactSocketRoleKeyFixR283": {
+      "manifestSha256": "1c50a8911af7311c8e983a036426df1f554871ff359870df75257468023d9c75",
+      "rootReviewSha256": "11b313eae8b8acb9dbf8e2c1562bfdb0fa7fa59aa7c177d0274f3bb96003a133",
+      "changedLogicalPath": "data/estimate-benchmarks/source-packs/socket-complete-surface-2pe-project-r266.json",
+      "beforeSha256": "cf105c4d6c3357fef4f3276753afc26ddec0bc7ff232c498ddfe15c32be72247",
+      "afterSha256": "50d9150fd377b579fa40ff9c7d4a28759c92fc802d5e83a929641621affd4fd3",
+      "oneKeyRawInverseVerified": true,
+      "sameAllSeedsAndUnfilteredDiagnosticsAndResourceCaps": true,
+      "priorActualFailureCore0Preserved": true,
+      "actualNewCore": 0,
       "newFULL": 0
     }
   }

@@ -112,7 +112,7 @@
     "supply": [
       "delivery"
     ],
-    "measured": [
+    "measured-nodes": [
       "housing-fix"
     ],
     "owned-tools": [
