@@ -60,8 +60,20 @@ function captured(sourceRoot:string):Capture{
 }
 const original=(c:Capture):AutomaticOwnerDefinition=>({parameters:c.parameters,formulas:c.formulas,resources:c.resources,
  runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['q']});
+/** Exact published legacy-choice presentation expected by the existing TS/SQL
+ * baseline scope contract. This adapter changes only q's visibility metadata;
+ * historical q100, its source/history and all formulas/owners remain intact. */
+export function buildPublishedWallF271(parent:AutomaticOwnerDefinition):AutomaticOwnerDefinition{
+ const model=build(parent),q=model.parameters.find(p=>p.parameter_id==='q');assert(q);
+ assert.equal(q.truth_metadata.value_source_role,'VISIBLE_BASELINE_ASSUMPTION');
+ const selector=model.parameters.find(p=>p.parameter_id===method);assert(selector);assert.equal(selector.value_type,'enum');
+ assert.equal(selector.truth_metadata.visibility_role,'USER_INPUT');assert.equal(selector.truth_metadata.value_source_role,'USER_INPUT');
+ same(q.truth_metadata.visible_when,{kind:'and',operands:[{kind:'equals',parameterId:method,value:legacy},{kind:'literal',value:true}]});
+ return{...model,parameters:model.parameters.map(p=>p.parameter_id!=='q'?p:{...p,truth_metadata:{...p.truth_metadata,
+  visible_when:{kind:'and',operands:[{kind:'selected',parameterId:method,value:legacy},{kind:'literal',value:true}]}}})};
+}
 export function prepareWallCeramicCementExistingOwnerF271(context:WallContextF271):Config{
- const c=captured(context.sourceRoot),next=build(original(c));assert.equal(context.capturedSourcePreimage.sourceKey,sourceId);
+ const c=captured(context.sourceRoot),next=buildPublishedWallF271(original(c));assert.equal(context.capturedSourcePreimage.sourceKey,sourceId);
  assert(record(c.definition.source_metadata)&&typeof c.definition.source_metadata.templateId==='string');
  const oldIds=new Set(c.parameters.map(p=>p.parameter_id));
  const retained:MasterRetainParentBindingsR1={capturedParent:c,capturedParentSha256:masterRetainedParentCaptureSha256R1(c),
@@ -124,8 +136,13 @@ async function calculate(model:AutomaticOwnerDefinition,c:Capture,input:Json,pri
 function save(stem:string,data:unknown){const root=process.env.WALL_F271_ACTUAL_OUTPUT;assert(root,'WALL_F271_ACTUAL_OUTPUT_REQUIRED');mkdirSync(root,{recursive:true});
  writeFileSync(resolve(root,stem+'.json'),JSON.stringify(data,null,2)+'\n',{flag:'wx'});}
 export function wallRetainedPureF271(config:Config,sourceRoot:string){
- const c=captured(sourceRoot),model=build(original(c));assert.equal(config.catalogAppend,undefined);assert.equal(config.catalogId,catalogId);
+ const c=captured(sourceRoot),model=buildPublishedWallF271(original(c));assert.equal(config.catalogAppend,undefined);assert.equal(config.catalogId,catalogId);
  assert.deepEqual(config.runtimeProfileInput,{});assert.deepEqual([model.parameters.length,model.formulas.length,model.resources.length],[10,81,81]);
+ const scopedBaseline=(inputParameters:Json)=>canonicalApprovedBaselineRuntimeParameters(c.baseline,{parameterDefinitions:model.parameters,inputParameters});
+ same(scopedBaseline({[method]:legacy}),{q:100});
+ same(scopedBaseline({[method]:cement,[area]:'12.5',[height]:'3'}),{});
+ same(scopedBaseline({[method]:cement,[height]:'3'}),{});
+ same(scopedBaseline({}),{});
  for(const f of c.formulas)same(model.formulas.find(v=>v.formula_id===f.formula_id),f);
  for(const old of c.resources){const r=model.resources.find(v=>v.row_id===old.row_id);assert(r);assert(record(r)&&record(old));
   same(legacyRowProjectionF271(r),legacyRowProjectionF271(old));
@@ -150,7 +167,7 @@ export function wallRetainedPureF271(config:Config,sourceRoot:string){
   nativeQuantityActualPASS:false,normalLocked:'UNRUN',retainedRepresentative:'UNRUN_EXISTING_PUBLISHER_OWNER_ONLY',FULL:false};
 }
 export async function verifyWallCeramicCementExistingF271(config:Config,sourceRoot:string):Promise<Json>{
- const pure=wallRetainedPureF271(config,sourceRoot);save('PURE_BEFORE_CORE',pure);const c=captured(sourceRoot),parent=original(c),model=build(parent);
+ const pure=wallRetainedPureF271(config,sourceRoot);save('PURE_BEFORE_CORE',pure);const c=captured(sourceRoot),parent=original(c),model=buildPublishedWallF271(parent);
  let entries=0,results=0,rejects=0;let originalLegacy:CanonicalEstimateCompileCoreResult|undefined;
  for(const scenario of fixture.scenarios){
   entries++;save('CORE_ENTRY_'+String(entries).padStart(2,'0'),{case:scenario.key});let outcome:CanonicalEstimateCompileCoreResult;
