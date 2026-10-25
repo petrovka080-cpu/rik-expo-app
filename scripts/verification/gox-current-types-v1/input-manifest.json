@@ -1696,7 +1696,7 @@
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsCompletionR1.test.ts": "de8fae26c7fbb40ca571ce101dcf8b207151731210ebce021de999120c176b86",
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsCompletionR1.ts": "04744fce8de898c9cd6507ca97e68c695d62582f3dc40b7b2112a6fc4b489f87",
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsPublicPresentationR1.test.ts": "e6c7afd5327ea8d77b0c191398b50c29402690ffdc38031e86f3551e8df65d50",
-    "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": "8e018e57ce0163afc20167131cc8130adbb2bfc4bdca22aab1e0704e92e59e63",
+    "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": "6039848f0989253c223a8c6b7bc20574cdf444ccc54b5559b1c6f2a34d0108e3",
     "src/lib/estimate/v4/elecorSingleRouteMaterialR1.test.ts": "d1afac7a7be31fc6f8da18e1712dd9f99b50ccb33d8296e6efd9bf6829454661",
     "src/lib/estimate/v4/elecorSingleRouteMaterialR1.ts": "2006e830eb5c5b00b40091e2d68dfd8be89d3146980178a0b0fbd816ac7e12db",
     "src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft.ts": "894ec6ac948a8ce6457d07f82e5de3030d191a7fc290caef137ad58316af6496",
@@ -3621,13 +3621,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "1ced6cdf1c5f5a03794be2ec2d2b81e8b107b3ca5dd3d0d05cd3ee21fb91bc14",
-  "canonicalSourceFreezeSha256": "a97f00112b949057921dbca5b116a1607a9c642106675ac17a0db883e10be017",
+  "canonicalSourceFreezeSha256": "d089a1fa760cddec106acd9316554f5dfad7ea861f4f8ef8564953dab9137385",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100414480,
+    "sourceBytes": 100414503,
     "reviewedCandidateScope": "Unchanged accepted family source wave plus three actual-bound TypeScript leaves and two source-only SCS JSON inputs; runtime and publication unaccepted"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4182,7 +4182,7 @@
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": {
-        "sha256": "8e018e57ce0163afc20167131cc8130adbb2bfc4bdca22aab1e0704e92e59e63",
+        "sha256": "6039848f0989253c223a8c6b7bc20574cdf444ccc54b5559b1c6f2a34d0108e3",
         "owner": "ELECTRICAL_ELECOR_END_NODE"
       },
       "src/lib/estimate/backendPlatform/lowCurrentIdcWholeManualPostR24.ts": {
@@ -4614,6 +4614,21 @@
         "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": "4bc9378e0984d679d6646258c16a589d9b2c7650be6cceaf9637f4affce0759f"
       },
       "sameFullTypesWorkerAndRootsAndCaps": true
+    },
+    "ordinaryElecorPolicyAbiCorrectionR259": {
+      "sourceManifestSha256": "0700e368fb6ef4602c72fc0cded8fbbf13f5f7fb2e5121fde121aa4e2d29b5ba",
+      "singleSpanInverseProofSha256": "b82ee1a8ef2fb2d16432936fd7aeb4e4e26701745eb7106d230f2913406671bc",
+      "actualPriorFailure": "R258 first actual ordinary core entry 01-legacy rejected missing PARAMETERS_ONLY derived quantity policy mode",
+      "correction": "Existing subject row provides the one missing required existing policy ABI field",
+      "sharedGuardAndCoreUnchanged": true,
+      "allOtherSourcesAndCaseAssertionsUnchanged": true,
+      "changedSources": {
+        "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": "6039848f0989253c223a8c6b7bc20574cdf444ccc54b5559b1c6f2a34d0108e3"
+      },
+      "sameFullTypesWorkerAndRootsAndCaps": true,
+      "sourceAuthorityGranted": false,
+      "runtimeCasesNotYetAccepted": 14,
+      "canonicalWrites": 0
     }
   }
 }

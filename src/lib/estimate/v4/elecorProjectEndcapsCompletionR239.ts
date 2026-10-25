@@ -151,7 +151,7 @@ export function elecorProjectEndcapsDefinitionR239(
   const {row_sha256:_oldHash,...oldBody}=old;
   const oldNeed={...oldBody,inclusion_ast:{kind:'and',operands:[old.inclusion_ast,
     {kind:'not',operand:active}]},
-    resource_graph:{...old.resource_graph,derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',
+    resource_graph:{...old.resource_graph,derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',
       unitId:'pcs',parameterIds:[pack.legacyQuantityParameterId],
       reasonRu:'Старое неизвестное количество концевых элементов не является ведомостью заглушек или новым заказом.'}},
     source_metadata:{...old.source_metadata,completionNeedTransitionV1:{featureContract:pack.contract,
