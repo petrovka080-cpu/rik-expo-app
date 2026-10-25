@@ -99,7 +99,7 @@ export function prepareElecorEndcapsBoundContextR248(options:Readonly<{
   const results=rows(accepted.results,record,'ACTUAL_SELECTED_RESULT_REQUIRED');assert.equal(results.length,1);
   assert.equal(results[0].catalogId,pack.catalogId);assert.equal(results[0].definitionId,capture.definition.id);
   const actualParentPin=requiredRecord(results[0].fullParent,'WHOLE_PARENT_RESULT_PIN_REQUIRED');assert.equal(actualParentPin.sha256,pins.parent.sha256);
-  assert.equal(typeof current.definitionReleaseId,'string');assert.equal(typeof current.searchReleaseId,'string');
+  assert(typeof current.definitionReleaseId==='string');assert(typeof current.searchReleaseId==='string');
   // Semantic capture hashing stays with the existing owner, including all original persisted fields.
   const capturedParentSha256=masterRetainedParentCaptureSha256R1(capture);
   const readset:ElecorCurrentEndcapReadsetR239={readOnly:true,databaseWrites:0,sameRawFullRowsReadTwice:true,
