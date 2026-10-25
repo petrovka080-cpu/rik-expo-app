@@ -608,7 +608,7 @@
     "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts": "a85d118756cb999ec5eac5bd27a589fa79b80f2c34421e37fc3bf0083baf3aa8",
     "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "6b42f92c42a7aaa73d4602735d883aed8130017a4db2288716f05abe6ea36170",
     "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts": "1ba146ed482a432e46dc97c9e337b9071a5bc4de77c9340e2d16712296cf8c73",
-    "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": "4dbc54a0a65c543fa6ce08058c11e04dede79c900c42fd48a3ab3a2ffbe5910d",
+    "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": "520fd7ebd61c69db9b7694c2a21dfd02fc7aa5e0cf56b859a3d06c88d68e267e",
     "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": "32985ee7ab5d6220f11f983f2c0ccc556040693b16221b5ab42d23e5965e943c",
     "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": "1134fee0cac14fb18931a7e3c02e7d0b9e6fb228fd03f519d7d1c2f0d5094b6e",
     "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": "1e9fef927921c52154b580e98b74bb39851251066a09ada1a07e89825d009bc6",
@@ -1949,7 +1949,7 @@
     "src/lib/estimate/v4/roofPrimerWithPreparationWhole01601R24.ts": "d552c3b092fc04bed5a1dfa11435cb9bf5f18826adf5e056d1bd052804390b77",
     "src/lib/estimate/v4/roofProtectedFlatRollMissing002R24.ts": "76e86ad82c82abfe048e11ca1492b1c30b62295de35a63cc093f70fb93a50396",
     "src/lib/estimate/v4/roofRooflightCurbWhole018R24.ts": "88c7b6bce1d614d324009e8d7ac5dd3ed529b0c93b72effef6358f19f4badfbd",
-    "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts": "7055e8d0d2490b53764dfa5730a085bd0b0242eaaeb724ec7369d0b4015ebba1",
+    "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts": "6e83d0ef502eefa4ddcc764d4643343816ea667e3f5c1a2dd1c6fb39b28833a9",
     "src/lib/estimate/v4/roofWindowOperationResourcesS2750.ts": "5bf5894953d769b2f62c08e3a83e1d384b059c5ca0a2a91777ffb000550c9d46",
     "src/lib/estimate/v4/selectedMaterialDeliveryReuseR1.ts": "4305d4f9d1a23ad191b8c2d2cc332f240c6bfe92bdad41e1ef363cc107554890",
     "src/lib/estimate/v4/simpleCementLimeStoneWall01601QuantityR1.test.ts": "733ab66deb054dda55ffe831148479fb933aa8670416391f997ffc8c1529fd44",
@@ -3693,13 +3693,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "4a8c94f9e4f9ba4ae90fa81e604b33a1599bf9b73d76e838a60d93bf21bc024c",
-  "canonicalSourceFreezeSha256": "06d54d0fe0337b2edb627bc751c7a0c9d3e924d6c6e5b1bf762242fc9bf80921",
+  "canonicalSourceFreezeSha256": "f4536dfe45d92f252fb78c348972a07134bac84e8dfef6eb92a866640d862ff1",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 101904988,
+    "sourceBytes": 101906580,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4118,8 +4118,8 @@
         "owner": "ROOF_REV09"
       },
       "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts": {
-        "sha256": "7055e8d0d2490b53764dfa5730a085bd0b0242eaaeb724ec7369d0b4015ebba1",
-        "owner": "ROOF_REV09"
+        "sha256": "6e83d0ef502eefa4ddcc764d4643343816ea667e3f5c1a2dd1c6fb39b28833a9",
+        "owner": "ROOF_EXACT_COLUMN_METADATA_ORDER_SOURCE_ONLY_PENDING_ACTUAL_FULL_TYPES"
       },
       "data/estimate-benchmarks/source-packs/roof-single539-cost-boundary-r24.json": {
         "sha256": "b2ee8cff062c8d59accd0a26b08cc1c81b0a11b9a2ffda8c96ba703e1a34366d",
@@ -4442,8 +4442,8 @@
         "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
       },
       "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": {
-        "sha256": "4dbc54a0a65c543fa6ce08058c11e04dede79c900c42fd48a3ab3a2ffbe5910d",
-        "owner": "SOCKET_WHOLE_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+        "sha256": "520fd7ebd61c69db9b7694c2a21dfd02fc7aa5e0cf56b859a3d06c88d68e267e",
+        "owner": "SOCKET_KNOWN_QUANTITY_WITH_CONDITION_HOLD_SOURCE_ONLY_PENDING_ACTUAL_FULL_TYPES"
       },
       "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": {
         "sha256": "e39c2aa3555518620e0d538cfcfe9cd858d48d9aac949976d23e5f9f9450c895",
@@ -5306,6 +5306,21 @@
       "sameAllSeedsAndUnfilteredDiagnosticsAndResourceCaps": true,
       "priorActualFailureCore0Preserved": true,
       "actualNewCore": 0,
+      "newFULL": 0
+    },
+    "roofMetadataAndSocketConditionR285": {
+      "manifests": {
+        "ROOF_EXACT_COLUMN_METADATA_ORDER": "e28bc24a7159483266901897f85d783ca69403e7b80f90001b622bd2d9cdcdf1",
+        "SOCKET_KNOWN_QUANTITY_WITH_CONDITION_HOLD": "7c0c53b9a6042a721ee288da5c468c010dd2936ee60c7a226e34356cef6248e0"
+      },
+      "rootRawInverseReviewSha256": "9f5aeefb2faa925f021d1781b66e416feb720fd8f91b6a4c323d79651238d41c",
+      "selectedSources": {
+        "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts": "6e83d0ef502eefa4ddcc764d4643343816ea667e3f5c1a2dd1c6fb39b28833a9",
+        "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": "520fd7ebd61c69db9b7694c2a21dfd02fc7aa5e0cf56b859a3d06c88d68e267e"
+      },
+      "additionalTypeRoots": 0,
+      "sameAll739Seeds603ExtraRootsAndUnfilteredCaps": true,
+      "coreFormulaOraclesUnchanged": true,
       "newFULL": 0
     }
   }

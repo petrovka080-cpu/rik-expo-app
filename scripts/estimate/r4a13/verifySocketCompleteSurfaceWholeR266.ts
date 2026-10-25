@@ -71,6 +71,15 @@ function saved(result:CanonicalEstimateCompileCoreResult,input:Record<string,unk
 const rowOf=(result:CanonicalEstimateCompileCoreResult,suffix:string)=>{const row=result.rows.find(r=>r.row_id===rid(suffix));assert(row,'KNOWN_ROW_REQUIRED:'+suffix);return row;};
 type Entry=Readonly<{id:string;mode?:string;input?:Readonly<Record<string,unknown>>;remove?:readonly string[];rejectCode?:string;
   expectedQuantities?:Readonly<Record<string,string>>;expectedTotal?:string;expectedNeedSuffix?:string;missingParameterId?:string;manualOwnerQuantity?:string}>;
+// Independent fixture: 3 nodes + 1 reserve - 1 stock, in multiples of 2, require 4 ordered pieces.
+// Missing conditions preserve that quantity; missing numerical inputs do not manufacture one.
+const missingNeedExpectationsR266:Readonly<Record<string,Readonly<{quantity:string|null;needState:'QUANTITY_REQUIRED'|'CONDITION_REQUIRED'}>>>= {
+  '03-missing-new-count-never-copy-legacy100':{quantity:null,needState:'QUANTITY_REQUIRED'},
+  '04-missing-real-project-reference':{quantity:'4',needState:'CONDITION_REQUIRED'},
+  '05-missing-actual-aggregate-labour':{quantity:null,needState:'QUANTITY_REQUIRED'},
+  '06-missing-price-scope-evidence':{quantity:'4',needState:'CONDITION_REQUIRED'},
+  '07-missing-stock-never-assume-zero':{quantity:null,needState:'QUANTITY_REQUIRED'},
+};
 export async function verifySocketCompleteSurfaceWholeR266(context:SocketVerificationContextR266){
   const parent=context.parent,model=context.model??definition(parent);verifySocketCompleteSurfacePureR266(parent,model);
   context.onOutcome?.('pure-whole-model-and-independent-map',{shape:fixture.expectedShape,legacyRowsPreserved:63,newRows:24,sourceNormHoursAccepted:false,full:false});
@@ -98,13 +107,21 @@ export async function verifySocketCompleteSurfaceWholeR266(context:SocketVerific
       if(!procurement.has(row.row_id))assert.equal(row.included_in_procurement,false);}
     if(entry.mode==='missing'||entry.mode==='missing-stock'){
       assert(entry.expectedNeedSuffix&&entry.missingParameterId);assert.equal(result.rows.some(r=>r.row_id===rid(entry.expectedNeedSuffix!)),false);
-      const need=result.preliminaryNeeds.find(n=>n.row_id===rid(entry.expectedNeedSuffix!));assert(need);assert.equal(need.quantity,null);
-      assert.equal(Object.hasOwn(need,'amount'),false);assert(need.missing_parameter_ids.includes(entry.missingParameterId));
+      const expected=missingNeedExpectationsR266[entry.id];assert(expected,'EXACT_MISSING_CASE_EXPECTATION_REQUIRED');
+      const need=result.preliminaryNeeds.find(n=>n.row_id===rid(entry.expectedNeedSuffix!));assert(need);assert.equal(need.quantity,expected.quantity);
+      assert.equal(need.need_state,expected.needState);assert.equal(need.unit_price,null);
+      assert.equal(Object.hasOwn(need,'amount'),false);assert.deepEqual(need.missing_parameter_ids,[entry.missingParameterId]);
       const artifact=canonicalArtifactPreliminaryNeeds(saved(result,input,overrides)).find(n=>n.row_id===need.row_id);assert(artifact);
-      assert.equal(artifact.quantity,null);assert.equal(artifact.amount,null);assert.equal(artifact.included_in_estimate,false);assert.equal(artifact.included_in_procurement,false);
-      if(entry.mode==='missing-stock')for(const suffix of['remaining','free','shortage','reserve-deficit']){
-        assert.equal(result.rows.some(r=>r.row_id===rid('assembly:'+suffix)),false,'MISSING_STOCK_NOT_ZERO_BALANCE');
-        const downstream=result.preliminaryNeeds.find(n=>n.row_id===rid('assembly:'+suffix));assert(downstream);assert.equal(downstream.quantity,null);
+      assert.equal(artifact.quantity,expected.quantity);assert.equal(artifact.amount,null);assert.equal(artifact.included_in_estimate,false);assert.equal(artifact.included_in_procurement,false);
+      if(entry.mode==='missing-stock'){
+        const consumed=[...result.rows,...result.preliminaryNeeds].filter(r=>r.row_id===rid('assembly:consumed'));
+        assert.equal(consumed.length,1,'EXACTLY_ONE_KNOWN_CONSUMPTION_OWNER');assert.equal(consumed[0]?.quantity,'3','MISSING_STOCK_PRESERVES_KNOWN_CONSUMPTION');
+        for(const suffix of['remaining','free','shortage','reserve-deficit']){
+          assert.equal(result.rows.some(r=>r.row_id===rid('assembly:'+suffix)),false,'MISSING_STOCK_NOT_ZERO_BALANCE');
+          const downstream=result.preliminaryNeeds.find(n=>n.row_id===rid('assembly:'+suffix));assert(downstream);assert.equal(downstream.quantity,null);
+          assert.equal(downstream.need_state,'QUANTITY_REQUIRED');assert.equal(downstream.procurement_eligible,false);assert.equal(Object.hasOwn(downstream,'amount'),false);
+          assert(downstream.missing_parameter_ids.includes(entry.missingParameterId));
+        }
       }
       continue;
     }

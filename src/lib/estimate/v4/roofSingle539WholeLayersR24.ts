@@ -128,7 +128,7 @@ export function buildRoofSingle539WholeLayersR24(base:Base,input:Roof539LayerInp
   buildRoofRooflightCurbWhole018R24(workSource(roofRooflight018NativeR24.rcOrganic)),
   buildRoofMasticPreparationWhole019R24(workSource(roofMasticPreparation019SourceR24))];
  assert.deepEqual(definitions.map(d=>d.resources.length),[104,22,34,4,6,10,46,8]);
- const exactNewColumns=[...all002,...n014,...n015,n016,...n018].map(p=>p.normId).concat(Object.values(roofMissing017NativeR24).map(packNorm),packNorm(roofMasticPreparation019SourceR24));
+ const exactNewColumns=[...all002,...n014,...n015,n016].map(p=>p.normId).concat(Object.values(roofMissing017NativeR24).map(packNorm),n018.map(p=>p.normId),packNorm(roofMasticPreparation019SourceR24));
  const retainedSourceColumns=['12-01-003-01','12-01-003-02','12-01-006-01','12-01-006-02'];
  const exactColumns=[...exactNewColumns,...retainedSourceColumns];
  assert.deepEqual([...input.exactBundleColumns].sort(),[...exactNewColumns].sort(),'EXACT_NEW_LAYER_COLUMNS_REQUIRED');
