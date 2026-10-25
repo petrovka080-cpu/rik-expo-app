@@ -28,10 +28,10 @@ it('R623 paint-only fixture pins the whole parent and has no protected snapshot 
 
 it('keeps170 parameters,116 formulas,116 old resources, old bindings and every payment/price-route identity unchanged apart from allowed gates',()=>{
  const f=fixture(),c=f.parent.capturedParent,d=draft(c);
- assert.deepEqual([d.parameters.length,d.formulas.length,d.resources.length],[185,151,151]);
- assert.deepEqual(d.parameters.map(parameter=>parameter.ordinal),Array.from({length:185},(_,index)=>index),
+ assert.deepEqual([d.parameters.length,d.formulas.length,d.resources.length],[200,168,168]);
+ assert.deepEqual(d.parameters.map(parameter=>parameter.ordinal),Array.from({length:200},(_,index)=>index),
   'The persisted publisher reads parameters by ordinal; an unordered parent capture must not reorder the plan');
- assert.equal(d.newParameters.length,15);assert.equal(d.newResources.length,35);
+ assert.equal(d.newParameters.length,30);assert.equal(d.newResources.length,52);
  assert.deepEqual(d.formulas.slice(0,116),c.formulas);
  for(const old of c.parameters){const next=d.parameters.find(v=>v.parameter_id===old.parameter_id)!;
   assert.equal(next.parameter_id,old.parameter_id);assert.equal(next.ordinal,old.ordinal);assert.equal(next.unit_id,old.unit_id);
@@ -86,16 +86,16 @@ it('one hidden structural technology exposes exactly4 actual editor-admitted fac
  assert.deepEqual(visible.map(v=>v.parameterId).sort(),d.ordinaryParameterIds.sort());assert.equal(visible.length,4);
 });
 
-it('four cost-owner bindings share one composite locator;35independent obligations and traces separate registered bundle identity from primary evidence keys',async()=>{
+it('four cost-owner bindings share one composite locator;52independent obligations and traces separate registered bundle identity from primary evidence keys',async()=>{
  const config=prepare(),d=draft(fixture().parent.capturedParent);
- assert.equal(d.completenessMap.entries.length,35);assert.equal(d.completenessMap.generatedFromCurrentRows,false);
+ assert.equal(d.completenessMap.entries.length,52);assert.equal(d.completenessMap.generatedFromCurrentRows,false);
  assert.deepEqual(validateIndependentCompletenessMapReferences({completenessMap:d.completenessMap,formulaDefinitions:d.formulas,resourceDefinitions:d.resources}),[]);
  const cardinalityOnly=['ONE_LOCATOR_CARDINALITY_NOT_A_DATABASE_UUID'];
  assert.deepEqual([...resolveMasterSingleDefinitionBindingRowIds({binding:config.binding},d.resources,cardinalityOnly)].sort(),bundle.paidOwnerKeys.map(key=>r(key)).sort());
  assert.equal(Object.keys(resolveMasterSingleDefinitionBindingApplicabilityByRowId({binding:config.binding},d.resources,cardinalityOnly)).length,4);
  for(const row of d.newResources){const trace=row.source_metadata.normativeTrace;assert.equal(trace.length,1);assert.equal(trace[0].sourceId,bundle.sourceKey);
   assert.equal(trace[0].sourceSnapshotHash,bundleSha);assert(bundle.primaryEvidence.some(e=>e.id===trace[0].primaryEvidenceKey&&e.sha256===trace[0].primaryArtifactSha256));}
- const sources=d.binding.retainParentBindings.newParameterSources;assert.equal(Object.keys(sources).length,15);
+ const sources=d.binding.retainParentBindings.newParameterSources;assert.equal(Object.keys(sources).length,30);
  assert.equal(Object.values(sources).filter(s=>s.kind==='DERIVED'&&s.sourceIds.length===0).length,3);
  assert(!config.catalogAppend);assert.equal(config.sourceMetadata.official_url,null);assert.equal(config.sourceMetadata.artifact_sha256,bundleSha);
 });
@@ -103,6 +103,6 @@ it('four cost-owner bindings share one composite locator;35independent obligatio
 it('source/capture tampering fails before publication; selected quantitative examples run through the existing core without old rows',async()=>{
  const c=clone(fixture().parent.capturedParent);c.baseline.input_values[Object.keys(c.baseline.input_values)[0]!] = 'FORGED';
  assert.throws(()=>draft(c),/EXACT_R623_PARENT_SHA/);
- const result=await prepare().verifyCore();assert.equal(result.status,'PASS_STAGED_EXISTING_PAINT_FINISH_SELECTED_CORE');
+ const result=await prepare().verifyCore();assert.equal(result.status,'PASS_STAGED_EXISTING_PAINT_PHYSICAL_REQUIREMENTS_R240');
  assert.equal(result.ordinaryObjectFacts,4);assert.equal(result.engineeringAcceptance,false);assert.equal(result.published,false);
 });

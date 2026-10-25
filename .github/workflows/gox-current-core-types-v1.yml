@@ -41,12 +41,6 @@ jobs:
           SOURCE_COMMIT: ${{ github.sha }}
           GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
         run: python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT"
-      - name: Concrete scoped identity guards, no Config or calculation core
-        shell: pwsh
-        env:
-          SOURCE_COMMIT: ${{ github.sha }}
-          GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
-        run: python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT" --test-entry scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:

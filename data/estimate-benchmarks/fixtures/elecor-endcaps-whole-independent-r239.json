@@ -1,0 +1,718 @@
+{
+  "contract": "elecor-endcaps-independent-physical-and-money-fixture/r239",
+  "basis": "Independently authored complete4-cap factory set arithmetic, actual project-end quantity and unchanged shared supply balance contract. Not generated from implementation or an actual project.",
+  "testOnly": true,
+  "sourceUnit": "one factory set of4 separate caps; supply quote per set",
+  "scope": "Exact existing mechanical ELECOR60x40 straight route; all actual ends are these cap nodes, no other node types.",
+  "sourceAndObjectUnknownNotZero": true,
+  "expectedShape": {
+    "parameters": 48,
+    "formulas": 40,
+    "resources": 40,
+    "legacyParameters": 39,
+    "legacyFormulas": 32,
+    "legacyResources": 32,
+    "newPaidOwners": 1,
+    "newProcurementOwners": 1,
+    "sharedExistingNeedOwners": 6,
+    "completenessEntries": 20
+  },
+  "entries": [
+    {
+      "id": "01-legacy",
+      "mode": "legacy",
+      "expected": {
+        "newOwnerPresent": false,
+        "legacyNeeds": 7
+      }
+    },
+    {
+      "id": "02-real-zero-ends",
+      "input": {
+        "elecor_endcap_project_piece_count": 0
+      },
+      "expected": {
+        "consumed-pieces": "0",
+        "opened-sets": "0",
+        "order": "0",
+        "remaining-sets": "0",
+        "free-sets": "0",
+        "remaining-pieces-in-opened": "0"
+      }
+    },
+    {
+      "id": "03-two-caps",
+      "input": {
+        "elecor_endcap_project_piece_count": 2
+      },
+      "expected": {
+        "consumed-pieces": "2",
+        "opened-sets": "1",
+        "order": "1",
+        "remaining-sets": "0",
+        "free-sets": "0",
+        "remaining-pieces-in-opened": "2"
+      }
+    },
+    {
+      "id": "04-five-caps",
+      "input": {},
+      "expected": {
+        "consumed-pieces": "5",
+        "opened-sets": "2",
+        "order": "2",
+        "remaining-sets": "0",
+        "free-sets": "0",
+        "remaining-pieces-in-opened": "3"
+      }
+    },
+    {
+      "id": "05-one-whole-stock-set",
+      "input": {
+        "elecor_endcap_stock_complete_sets": 1,
+        "elecor_endcap_stock_reference": "TEST_ONLY_VERIFIED_COMPLETE4_SET_STOCK"
+      },
+      "expected": {
+        "opened-sets": "2",
+        "order": "1",
+        "remaining-sets": "0",
+        "free-sets": "0",
+        "remaining-pieces-in-opened": "3"
+      }
+    },
+    {
+      "id": "06-stock-and-unopened-reserve",
+      "input": {
+        "elecor_endcap_stock_complete_sets": 2,
+        "elecor_endcap_reserve_complete_sets": 1,
+        "elecor_endcap_stock_reference": "TEST_ONLY_TWO_USABLE_COMPLETE4_SETS"
+      },
+      "expected": {
+        "opened-sets": "2",
+        "order": "1",
+        "remaining-sets": "1",
+        "free-sets": "0",
+        "remaining-pieces-in-opened": "3"
+      }
+    },
+    {
+      "id": "07-supplier-three-sets",
+      "input": {
+        "elecor_endcap_supplier_set_multiple": 3
+      },
+      "expected": {
+        "opened-sets": "2",
+        "order": "3",
+        "remaining-sets": "1",
+        "free-sets": "1",
+        "remaining-pieces-in-opened": "3"
+      }
+    },
+    {
+      "id": "08-manual-whole-order-price",
+      "input": {},
+      "manualOwner": {
+        "quantity": "4",
+        "unitPrice": "100",
+        "titleRu": "Мой комплект заглушек"
+      },
+      "expected": {
+        "consumed-pieces": "5",
+        "opened-sets": "2",
+        "order": "4",
+        "remaining-sets": "2",
+        "free-sets": "2",
+        "remaining-pieces-in-opened": "3",
+        "ownerAmount": "400",
+        "totalAmount": "400",
+        "consumption-shortage": "0",
+        "reserve-deficit": "0"
+      }
+    },
+    {
+      "id": "09-manual-quantum-hold",
+      "input": {
+        "elecor_endcap_supplier_set_multiple": 3
+      },
+      "manualOwner": {
+        "quantity": "1",
+        "unitPrice": "100"
+      },
+      "expected": {
+        "consumed-pieces": "5",
+        "opened-sets": "2",
+        "remaining-pieces-in-opened": "3",
+        "order": "1",
+        "ownerAmount": null,
+        "procurement": false,
+        "procurementReadiness": "SUPPLY_CONFIRMATION_REQUIRED",
+        "knownBalanceAllowed": false
+      }
+    },
+    {
+      "id": "10-missing-end-count",
+      "remove": [
+        "elecor_endcap_project_piece_count"
+      ],
+      "expected": {
+        "newOwnerKnown": false,
+        "newOwnerPreliminary": true,
+        "preliminaryQuantity": null
+      }
+    },
+    {
+      "id": "11-negative-end-count",
+      "input": {
+        "elecor_endcap_project_piece_count": -1
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "12-fractional-end-count",
+      "input": {
+        "elecor_endcap_project_piece_count": 1.5
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "13-zero-supplier-multiple",
+      "input": {
+        "elecor_endcap_supplier_set_multiple": 0
+      },
+      "rejectCode": "PARAMETER_VALIDATION_FAILED"
+    },
+    {
+      "id": "14-legacy-unknown-amendment",
+      "mode": "legacy",
+      "legacyNeedManual": {
+        "quantity": "77",
+        "unitPrice": "77"
+      },
+      "rejectCode": "ROW_AMENDMENT_INVALID"
+    }
+  ],
+  "plannedCounters": {
+    "entries": 14,
+    "coreCalls": 14,
+    "results": 10,
+    "rejects": 4
+  },
+  "currentDbAdmission": "UNRUN_REAL_V2_CAPTURE_REQUIRED",
+  "full": false,
+  "priorAcceptedCompleteness": {
+    "receipt": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\elecor-r3-governed-apply-v1\\elecor-r3-actual-apply-result-v1.json",
+    "receiptSha256": "a7476b936e6e2f70b83fcf5f5ea7538ad3dee10cc90e8c24a2b54596429e69fd",
+    "entryCount": 12,
+    "originalMap": {
+      "entries": [
+        {
+          "unitId": "item",
+          "category": "material",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "EXACT_CONFIRMED_SINGLE_STRAIGHT_NEW_ROUTE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:channel-order",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:channel-order"
+          },
+          "operationId": "material-plan",
+          "quantityRule": "PROJECT_SECTION_JOINT_GEOMETRY_PLUS_EXACT_FACTORY_PACK_BALANCE",
+          "specification": "CKK10-060-040-1-K01-018",
+          "expectedResourceId": "channel"
+        },
+        {
+          "unitId": "item",
+          "category": "material",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "EXACT_CONFIRMED_SINGLE_STRAIGHT_NEW_ROUTE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:kms-order",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:kms-order"
+          },
+          "operationId": "material-plan",
+          "quantityRule": "PROJECT_SECTION_JOINT_GEOMETRY_PLUS_EXACT_FACTORY_PACK_BALANCE",
+          "specification": "CKMP10D-S-060-040-K01",
+          "expectedResourceId": "kms"
+        },
+        {
+          "unitId": "man_hour",
+          "category": "labor",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:open-installation-labour",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:open-installation-labour"
+          },
+          "operationId": "completion",
+          "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+          "specification": "Труд монтажа кабель-канала по принятому основанию",
+          "expectedResourceId": "installation-labour"
+        },
+        {
+          "unitId": "pcs",
+          "category": "material",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "FIXING_METHOD_UNRESOLVED_SOURCE_NEED_REMAINS",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:open-fixings",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:open-fixings"
+          },
+          "operationId": "completion",
+          "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+          "specification": "Крепёж и узлы крепления к фактическому основанию",
+          "expectedResourceId": "fixings"
+        },
+        {
+          "unitId": "pcs",
+          "category": "material",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:open-end-node-components",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:open-end-node-components"
+          },
+          "operationId": "completion",
+          "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+          "specification": "Концевые, переходные и прочие узловые элементы",
+          "expectedResourceId": "end-node-components"
+        },
+        {
+          "unitId": "service",
+          "category": "equipment",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:open-tools",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:open-tools"
+          },
+          "operationId": "completion",
+          "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+          "specification": "Инструмент и оснастка для резки и монтажа",
+          "expectedResourceId": "tools"
+        },
+        {
+          "unitId": "service",
+          "category": "service",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:open-access-protection",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:open-access-protection"
+          },
+          "operationId": "completion",
+          "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+          "specification": "Доступ, защита зоны и средства безопасности",
+          "expectedResourceId": "access-protection"
+        },
+        {
+          "unitId": "service",
+          "category": "service",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:open-acceptance",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:open-acceptance"
+          },
+          "operationId": "completion",
+          "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+          "specification": "Проверка монтажа и приёмка электротехнического решения",
+          "expectedResourceId": "acceptance"
+        },
+        {
+          "unitId": "service",
+          "category": "logistics",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:open-delivery-handling",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:open-delivery-handling"
+          },
+          "operationId": "completion",
+          "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+          "specification": "Доставка, разгрузка и перемещение материалов",
+          "expectedResourceId": "delivery-handling"
+        },
+        {
+          "unitId": "service",
+          "category": "service",
+          "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+          "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:open-cleanup-disposal",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:open-cleanup-disposal"
+          },
+          "operationId": "completion",
+          "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+          "specification": "Уборка и обращение с отходами",
+          "expectedResourceId": "cleanup-disposal"
+        },
+        {
+          "unitId": "pcs",
+          "category": "material",
+          "sourceId": "iek_elecor_ckk10_001_1_edition8_project_mechanical_fixings",
+          "condition": "EXACT_PPR_CONCRETE_WALL_MECHANICAL535463_BRANCH",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:fixings-consumed",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:fixings-consumed"
+          },
+          "operationId": "project-mechanical-fixings",
+          "quantityRule": "EXACT_ACCEPTED_PPR_POINT_COUNT_ONE_COMPLETE_PRODUCT_PER_POINT",
+          "specification": "50 комплектов в заводской коробке: 50 дюбелей DuoPower 6×30 и 50 винтов Panhead 4,5×40. Строка измеряется в комплектных парах, цена за одну пару, не за коробку.",
+          "expectedResourceId": "mechanical-fixings-project-535463"
+        },
+        {
+          "unitId": "pcs",
+          "category": "material",
+          "sourceId": "iek_elecor_ckk10_001_1_edition8_project_mechanical_fixings",
+          "condition": "EXACT_PPR_CONCRETE_WALL_MECHANICAL535463_BRANCH",
+          "formulaId": "electrical:elecor-60x40-single-route:formula:fixings-535463-order",
+          "resolution": {
+            "kind": "ROW",
+            "rowId": "electrical:elecor-60x40-single-route:fixings-535463-order"
+          },
+          "operationId": "project-mechanical-fixings",
+          "quantityRule": "FIXED50_PAIR_FACTORY_QUANTUM_PLUS_ACTUAL_STOCK_RESERVE_AND_SUPPLIER_MULTIPLE",
+          "specification": "50 комплектов в заводской коробке: 50 дюбелей DuoPower 6×30 и 50 винтов Panhead 4,5×40. Строка измеряется в комплектных парах, цена за одну пару, не за коробку.",
+          "expectedResourceId": "mechanical-fixings-order-535463"
+        }
+      ],
+      "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+      "sourceKind": "PRODUCT_SYSTEM_TDS",
+      "evidenceSha256": "cd936577d94a7ab3a877a5548055bebd91dc7738a4476835e188ab1b2f5eb59a",
+      "evidenceReferences": [
+        ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_PLASTIC_CABLE_SYSTEMS.pdf PDF9/10/12",
+        ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_ELECOR_ACCESSORIES_40X25.html exact KMS60x40"
+      ],
+      "generatedFromCurrentRows": false
+    },
+    "onlyChangedPriorEntryCondition": {
+      "rowId": "electrical:elecor-60x40-single-route:open-end-node-components",
+      "before": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+      "after": "OTHER_OR_UNCONFIRMED_END_NODE_SCOPE; exact complete-cap branch separately supplies only all-accepted cap nodes"
+    },
+    "priorSourceAndResolutionFieldsUnchanged": true
+  },
+  "completenessMap": {
+    "entries": [
+      {
+        "unitId": "item",
+        "category": "material",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "EXACT_CONFIRMED_SINGLE_STRAIGHT_NEW_ROUTE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:channel-order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:channel-order"
+        },
+        "operationId": "material-plan",
+        "quantityRule": "PROJECT_SECTION_JOINT_GEOMETRY_PLUS_EXACT_FACTORY_PACK_BALANCE",
+        "specification": "CKK10-060-040-1-K01-018",
+        "expectedResourceId": "channel"
+      },
+      {
+        "unitId": "item",
+        "category": "material",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "EXACT_CONFIRMED_SINGLE_STRAIGHT_NEW_ROUTE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:kms-order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:kms-order"
+        },
+        "operationId": "material-plan",
+        "quantityRule": "PROJECT_SECTION_JOINT_GEOMETRY_PLUS_EXACT_FACTORY_PACK_BALANCE",
+        "specification": "CKMP10D-S-060-040-K01",
+        "expectedResourceId": "kms"
+      },
+      {
+        "unitId": "man_hour",
+        "category": "labor",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-installation-labour",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-installation-labour"
+        },
+        "operationId": "completion",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "specification": "Труд монтажа кабель-канала по принятому основанию",
+        "expectedResourceId": "installation-labour"
+      },
+      {
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "FIXING_METHOD_UNRESOLVED_SOURCE_NEED_REMAINS",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-fixings",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-fixings"
+        },
+        "operationId": "completion",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "specification": "Крепёж и узлы крепления к фактическому основанию",
+        "expectedResourceId": "fixings"
+      },
+      {
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "OTHER_OR_UNCONFIRMED_END_NODE_SCOPE; exact complete-cap branch separately supplies only all-accepted cap nodes",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-end-node-components",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-end-node-components"
+        },
+        "operationId": "completion",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "specification": "Концевые, переходные и прочие узловые элементы",
+        "expectedResourceId": "end-node-components"
+      },
+      {
+        "unitId": "service",
+        "category": "equipment",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-tools",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-tools"
+        },
+        "operationId": "completion",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "specification": "Инструмент и оснастка для резки и монтажа",
+        "expectedResourceId": "tools"
+      },
+      {
+        "unitId": "service",
+        "category": "service",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-access-protection",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-access-protection"
+        },
+        "operationId": "completion",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "specification": "Доступ, защита зоны и средства безопасности",
+        "expectedResourceId": "access-protection"
+      },
+      {
+        "unitId": "service",
+        "category": "service",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-acceptance",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-acceptance"
+        },
+        "operationId": "completion",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "specification": "Проверка монтажа и приёмка электротехнического решения",
+        "expectedResourceId": "acceptance"
+      },
+      {
+        "unitId": "service",
+        "category": "logistics",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-delivery-handling",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-delivery-handling"
+        },
+        "operationId": "completion",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "specification": "Доставка, разгрузка и перемещение материалов",
+        "expectedResourceId": "delivery-handling"
+      },
+      {
+        "unitId": "service",
+        "category": "service",
+        "sourceId": "iek_elecor_60x40_single_route_materials_r1",
+        "condition": "OPEN_APPLICABLE_SOURCE_OR_PROJECT_SCOPE",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:open-cleanup-disposal",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:open-cleanup-disposal"
+        },
+        "operationId": "completion",
+        "quantityRule": "OPEN_NO_ASSUMED_APPLICATION_NORM_QUANTITY",
+        "specification": "Уборка и обращение с отходами",
+        "expectedResourceId": "cleanup-disposal"
+      },
+      {
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "iek_elecor_ckk10_001_1_edition8_project_mechanical_fixings",
+        "condition": "EXACT_PPR_CONCRETE_WALL_MECHANICAL535463_BRANCH",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:fixings-consumed",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:fixings-consumed"
+        },
+        "operationId": "project-mechanical-fixings",
+        "quantityRule": "EXACT_ACCEPTED_PPR_POINT_COUNT_ONE_COMPLETE_PRODUCT_PER_POINT",
+        "specification": "50 комплектов в заводской коробке: 50 дюбелей DuoPower 6×30 и 50 винтов Panhead 4,5×40. Строка измеряется в комплектных парах, цена за одну пару, не за коробку.",
+        "expectedResourceId": "mechanical-fixings-project-535463"
+      },
+      {
+        "unitId": "pcs",
+        "category": "material",
+        "sourceId": "iek_elecor_ckk10_001_1_edition8_project_mechanical_fixings",
+        "condition": "EXACT_PPR_CONCRETE_WALL_MECHANICAL535463_BRANCH",
+        "formulaId": "electrical:elecor-60x40-single-route:formula:fixings-535463-order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:fixings-535463-order"
+        },
+        "operationId": "project-mechanical-fixings",
+        "quantityRule": "FIXED50_PAIR_FACTORY_QUANTUM_PLUS_ACTUAL_STOCK_RESERVE_AND_SUPPLIER_MULTIPLE",
+        "specification": "50 комплектов в заводской коробке: 50 дюбелей DuoPower 6×30 и 50 винтов Panhead 4,5×40. Строка измеряется в комплектных парах, цена за одну пару, не за коробку.",
+        "expectedResourceId": "mechanical-fixings-order-535463"
+      },
+      {
+        "expectedResourceId": "endcap-consumed-pieces",
+        "operationId": "accepted-end-cap-material",
+        "category": "material",
+        "specification": "Exact nominal60x40 white endcaps; factory set4 pieces; project-confirmed full end schedule only",
+        "condition": "EXACT_EXISTING_MECHANICAL_ROUTE_AND_ACCEPTED_END_NODE_SCHEDULE",
+        "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+        "unitId": "pcs",
+        "quantityRule": "PROJECT_END_SCHEDULE_CAP_PIECES_NOT_ROUTE_GEOMETRY",
+        "formulaId": "electrical:elecor-60x40-single-route:endcaps-r239:formula:consumed-pieces",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:endcaps-r239:consumed-pieces"
+        }
+      },
+      {
+        "expectedResourceId": "endcap-opened-sets",
+        "operationId": "accepted-end-cap-material",
+        "category": "material",
+        "specification": "Exact nominal60x40 white endcaps; factory set4 pieces; project-confirmed full end schedule only",
+        "condition": "EXACT_EXISTING_MECHANICAL_ROUTE_AND_ACCEPTED_END_NODE_SCHEDULE",
+        "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+        "unitId": "set",
+        "quantityRule": "CEIL_PROJECT_CAP_PIECES_OVER4",
+        "formulaId": "electrical:elecor-60x40-single-route:endcaps-r239:formula:opened-sets",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:endcaps-r239:opened-sets"
+        }
+      },
+      {
+        "expectedResourceId": "endcap-order",
+        "operationId": "accepted-end-cap-material",
+        "category": "material",
+        "specification": "Exact nominal60x40 white endcaps; factory set4 pieces; project-confirmed full end schedule only",
+        "condition": "EXACT_EXISTING_MECHANICAL_ROUTE_AND_ACCEPTED_END_NODE_SCHEDULE",
+        "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+        "unitId": "set",
+        "quantityRule": "WHOLE_FACTORY_SETS_AFTER_CONFIRMED_STOCK_RESERVE_AND_SUPPLIER_MULTIPLE",
+        "formulaId": "electrical:elecor-60x40-single-route:endcaps-r239:formula:order",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:endcaps-r239:order"
+        }
+      },
+      {
+        "expectedResourceId": "endcap-remaining-sets",
+        "operationId": "accepted-end-cap-material",
+        "category": "material",
+        "specification": "Exact nominal60x40 white endcaps; factory set4 pieces; project-confirmed full end schedule only",
+        "condition": "EXACT_EXISTING_MECHANICAL_ROUTE_AND_ACCEPTED_END_NODE_SCHEDULE",
+        "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+        "unitId": "set",
+        "quantityRule": "ACTUAL_EFFECTIVE_ORDER_AND_WHOLE_SET_STOCK_MINUS_OPENED_SETS",
+        "formulaId": "electrical:elecor-60x40-single-route:endcaps-r239:formula:remaining-sets",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:endcaps-r239:remaining-sets"
+        }
+      },
+      {
+        "expectedResourceId": "endcap-free-sets",
+        "operationId": "accepted-end-cap-material",
+        "category": "material",
+        "specification": "Exact nominal60x40 white endcaps; factory set4 pieces; project-confirmed full end schedule only",
+        "condition": "EXACT_EXISTING_MECHANICAL_ROUTE_AND_ACCEPTED_END_NODE_SCHEDULE",
+        "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+        "unitId": "set",
+        "quantityRule": "WHOLE_UNOPENED_REMAINDER_MINUS_PROTECTED_RESERVE",
+        "formulaId": "electrical:elecor-60x40-single-route:endcaps-r239:formula:free-sets",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:endcaps-r239:free-sets"
+        }
+      },
+      {
+        "expectedResourceId": "endcap-remaining-pieces-in-opened",
+        "operationId": "accepted-end-cap-material",
+        "category": "material",
+        "specification": "Exact nominal60x40 white endcaps; factory set4 pieces; project-confirmed full end schedule only",
+        "condition": "EXACT_EXISTING_MECHANICAL_ROUTE_AND_ACCEPTED_END_NODE_SCHEDULE",
+        "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+        "unitId": "pcs",
+        "quantityRule": "FOUR_PER_OPENED_SET_MINUS_PROJECT_CAP_PIECES_NOT_WASTE",
+        "formulaId": "electrical:elecor-60x40-single-route:endcaps-r239:formula:remaining-pieces-in-opened",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:endcaps-r239:remaining-pieces-in-opened"
+        }
+      },
+      {
+        "expectedResourceId": "endcap-consumption-shortage",
+        "operationId": "accepted-end-cap-material",
+        "category": "material",
+        "specification": "Exact nominal60x40 white endcaps; factory set4 pieces; project-confirmed full end schedule only",
+        "condition": "EXACT_EXISTING_MECHANICAL_ROUTE_AND_ACCEPTED_END_NODE_SCHEDULE",
+        "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+        "unitId": "set",
+        "quantityRule": "UNFILLED_WHOLE_SET_NEED_FROM_ACTUAL_CONFIRMED_ORDER",
+        "formulaId": "electrical:elecor-60x40-single-route:endcaps-r239:formula:consumption-shortage",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:endcaps-r239:consumption-shortage"
+        }
+      },
+      {
+        "expectedResourceId": "endcap-reserve-deficit",
+        "operationId": "accepted-end-cap-material",
+        "category": "material",
+        "specification": "Exact nominal60x40 white endcaps; factory set4 pieces; project-confirmed full end schedule only",
+        "condition": "EXACT_EXISTING_MECHANICAL_ROUTE_AND_ACCEPTED_END_NODE_SCHEDULE",
+        "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+        "unitId": "set",
+        "quantityRule": "UNFILLED_UNOPENED_FACTORY_SET_RESERVE",
+        "formulaId": "electrical:elecor-60x40-single-route:endcaps-r239:formula:reserve-deficit",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "electrical:elecor-60x40-single-route:endcaps-r239:reserve-deficit"
+        }
+      }
+    ],
+    "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+    "sourceKind": "PRODUCT_SYSTEM_TDS",
+    "evidenceSha256": "cd936577d94a7ab3a877a5548055bebd91dc7738a4476835e188ab1b2f5eb59a",
+    "evidenceReferences": [
+      ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_PLASTIC_CABLE_SYSTEMS.pdf PDF9/10/12",
+      ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_ELECOR_ACCESSORIES_40X25.html exact KMS60x40",
+      "data/estimate-benchmarks/source-artifacts/elecor-project-endcaps-r239/IEK_KMZ_60X40_COMPLETE4_OFFICIAL.html __NEXT_DATA__ apiProduct CKMP10D-Z-060-040-K01; title4шт/компл, ETIM4шт, individual1компл; SHA256 453347c7c6df31f4ae1472f7f0a8675c1c089e8d584999414960373c5c92de53"
+    ],
+    "generatedFromCurrentRows": false
+  }
+}

@@ -1,9 +1,9 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "REVIEWED_NEXT_WAVE_CANDIDATE_FULL_AFFECTED_TYPESCRIPT_PROGRAM_SOURCE_ONLY_NOT_APK",
+  "snapshotKind": "REVIEWED_NEXT_FINISH_ELECTRICAL_SCS_SOURCE_CANDIDATE_FULL_TYPES_ONLY_NOT_RUNTIME_OR_APK",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
-    ".github/workflows/gox-current-core-types-v1.yml": "1708191bc74608c0dccfb0aef7a82d19ddbbd5c3ac7c9218ea8ddf6f7837927c",
+    ".github/workflows/gox-current-core-types-v1.yml": "8d15752d6ecdbf06e95554d1a298e2d8fbe45dfe9589383591953cd6f3fb6049",
     "app/(tabs)/office/index.tsx": "4773281a7daac103265ce6a5d28828f22b7cc1f733cece454dbc4105634d3e8f",
     "app/_layout.tsx": "db6e356a662020d15c8e9dcbde423fefb8dd2bb861e3f240d4434ce69d5f7be8",
     "app/auth/login.tsx": "852516a258395686fc8b7e398224fcf09ac5556dfc5675f88d864c959bd72ea0",
@@ -30,6 +30,7 @@
     "data/estimate-benchmarks/fixtures/ct54-ready-facade-first-entry-s27-63.json": "17d99c599d723d44656978fdea08a90ca6924697426d66fc805591a8c131739e",
     "data/estimate-benchmarks/fixtures/curb-base-curing-current-need-preimage-r1.json": "ebf2784455db93d897960bc1e6de1eba9e8e782d0039a9529b262d5a2e5d20ba",
     "data/estimate-benchmarks/fixtures/current-whole-hole-scope-r61.json": "061b1481ed270f66f0ddec25d874f4f39f24529d4867439c011883ed4a285ca0",
+    "data/estimate-benchmarks/fixtures/elecor-endcaps-whole-independent-r239.json": "7870ed65b77f20dc170e4900c996264df40132a9cee8ff589aedd932518f1b75",
     "data/estimate-benchmarks/fixtures/elecor-mechanical-fixings-current-parent-r2.json": "3097e5f9497ccde7749f961f3b4a602cfb4d61c1e160c90439b30c3143e8b587",
     "data/estimate-benchmarks/fixtures/euroflex-current-delivery-v2-parent-r3.json": "34466c443e5d9948802b7c3dc203dc8dfb97c2647f7f23b477c300703f8512ad",
     "data/estimate-benchmarks/fixtures/facade-ceresit-ct190-kz-material-subworks-r1.json": "9beeed62679a56d06875dbb75c1e6846b68e2fc16f4762d15dbd75983d64510f",
@@ -39,6 +40,8 @@
     "data/estimate-benchmarks/fixtures/floor-sand-thickness-source-minimum-root-review-r1.json": "131a0084ff8e116cabd0eeea2f063248030842dd80a0d51368b79e41ec238665",
     "data/estimate-benchmarks/fixtures/floor-sand-underlayer11-append-absence-r1.json": "544b00176957d95c73a056004bfc06bf90d8e198608a39d0dfaa9e8952f0981e",
     "data/estimate-benchmarks/fixtures/four-work-resource-parents-r4.json": "00c07090ff8a5d31392f8274fb97bd1ce8a7105eafce762b2822c911270a5a77",
+    "data/estimate-benchmarks/fixtures/interior-wall-finishing-original35-proof-r240.json": "714eaa77983ee012d58a5e392df158459af4dcf0778ff9c2bbab8890e2c81dcc",
+    "data/estimate-benchmarks/fixtures/low-current-scs-eight-cases-r24.json": "c15dd4608cb96d1b6821015c6d6edc53ee5bcc451e45b19b9bc2d669f12582ef",
     "data/estimate-benchmarks/fixtures/manual-trench05701-accepted-anchors-r1.json": "f2501ccf80942d70b43e8a65f8caf9d581ab7b5409b1da494db0b3727dcd4caf",
     "data/estimate-benchmarks/fixtures/masonry-brick-column-existing-owner-finite-r161.json": "f581539f0c62a7846e828f3557b1ecffa4630597b2329201e637a6575a08a2fb",
     "data/estimate-benchmarks/fixtures/masonry-brick-column-known-native-priced-r166.json": "055d5fc2fee3abafe1b9dd2d61aa3665af48507b8bc0e556e43c2af2c15daa03",
@@ -108,6 +111,7 @@
     "data/estimate-benchmarks/source-packs/drywall-ceiling-p113-full-cycle-s27-23.json": "d52d5dc63a416b881804db3d90b63fcac7ec0820e84668076072ce099e62ac2f",
     "data/estimate-benchmarks/source-packs/drywall-ceiling-preparation-preliminary-profile-r2.json": "f8d5c542aba0e08f4e1494fca9c11854cf44230a54af4e33d65a50f68d4acfc0",
     "data/estimate-benchmarks/source-packs/elecor-60x40-single-route-materials-r1.json": "e3dc50af4ef1f47a6866587403e5ae2b13f6ab10e4f18968b6136687174f9657",
+    "data/estimate-benchmarks/source-packs/elecor-project-endcaps-completion-r239.json": "bcb968671c13ef493267f1fe80971a0b4f784d6e004d988dcd26e5c16393ad96",
     "data/estimate-benchmarks/source-packs/elecor-project-mechanical-fixings-completion-r1.json": "4ff75bc9f8374afc6cd268fbf91574b556625a0cb324ee048faa00a4f7388928",
     "data/estimate-benchmarks/source-packs/electrical-elecor-cable-channel-standard-s27-23.json": "758c2c4822923c9619c7c08e43d70ce77cf2cb94d04c0e188c81b367867841b2",
     "data/estimate-benchmarks/source-packs/euroflex-factory-half-current-r3.json": "5afc377b3e9816f1ef671ba40aae9dd55ef1cfa9839b41f66f8d5f2e1b64f7f2",
@@ -130,10 +134,12 @@
     "data/estimate-benchmarks/source-packs/galvanized-round-duct200-normal-krer20-001-01-quantity-r1.json": "157188ebb84bb77f324b5cea5050f54db6db3d07133bd9868b28f7c1dd801607",
     "data/estimate-benchmarks/source-packs/granite-kerb-1gp-cement-krer27-010-03-r1.json": "41b05fcb5f8b57f3563c76e0b33602dc39f068ef9898ba3b24e78d77e99c3b8d",
     "data/estimate-benchmarks/source-packs/hydrotest-internal-steel-dn50-krer16-005-01-r1.json": "fefa545bd90c18f8d9f5f593f13a39cfa8e05608bd29d68994cbe62e05b0d635",
-    "data/estimate-benchmarks/source-packs/interior-wall-finishing-existing-paint-composite-r502.json": "8439b37ecd177d26565b40e4be753e20c9fe0cc3bca93399b6652bf7b72e8035",
-    "data/estimate-benchmarks/source-packs/interior-wall-finishing-group-r502.json": "d8489f46fcd60e64748e4dd5666b50e475ce8d981a4798d2cc43ab0ff6d85e01",
+    "data/estimate-benchmarks/source-packs/interior-wall-finishing-existing-paint-composite-r502.json": "c17eb80a6e08528dec3524d330b263cfead54bd0bbdc8cf3dea65f9de9a03e4e",
+    "data/estimate-benchmarks/source-packs/interior-wall-finishing-group-r502.json": "cf0cc62c862124678f303632571ee113b38137d68b13345dde30720343a49aa3",
     "data/estimate-benchmarks/source-packs/knauf-interior-plaster-conditional-composition-five-s27-63.json": "53d2015f32d7743b5354ffe035525d0bb542d707662093b86d3105c04d7ff953",
     "data/estimate-benchmarks/source-packs/legrand-p31-blind-ep-joint-fasteners-r1.json": "48a88f5dab61309d95ad589ebd4964004884e6cb2d9c10a74314a7ddda8c8749",
+    "data/estimate-benchmarks/source-packs/low-current-copper-certifier-pro-stock-r24.json": "3dd2470d2f96eff775bb843d04d27e4ba096d1cd668ba312c401baafaeb577d4",
+    "data/estimate-benchmarks/source-packs/low-current-idc-whole-manual-post-r24.json": "87520b888ccdd47a75863e1b4b16a4035b1fb2c93b82d0667c761ecd995e9b31",
     "data/estimate-benchmarks/source-packs/manual-backfill-soil1-krer01-061-01-quantity-r1.json": "56fb26dcf23d0310e44eaa26e096d5cdbd56889627dcc1985fb7b2dc509af933",
     "data/estimate-benchmarks/source-packs/manual-sloped-trench-g1-krer01-057-01-quantity-r1.json": "208a948092c33be94f5e5762b9a8d243444d45e9aa28cd0ed6e65ef636dc366c",
     "data/estimate-benchmarks/source-packs/masonry-brick-column-existing-owner-map-r161.json": "e9ce762118ac63fe8774244aabadef6b0e579fc03a373a0ad2745ec1fab9dacd",
@@ -347,10 +353,13 @@
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts": "c40cd5746bf94c66e95ca2e807cd31c0d1ae3ab15921a074bf407bfaa1808812",
     "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts": "6fcd3e61268b204bcce82701e98f6111375db99ff515c33c47a83986ef0cc33a",
     "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts": "4c33d590e163a1a57c987e6ae9093e647c6990c22e3da8b9493f962579880440",
+    "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": "4a21d510b7bc82346f257d7dd5f2621a0d5795df1b6bf722483b66682ba8c867",
     "scripts/estimate/r4a13/floorCementScreed20mmColumn01AppendR1.test.ts": "049a00dc540cec4c10257d696a838a6200642c7a20d85649fcbb06210e133d2f",
     "scripts/estimate/r4a13/floorConcreteUnderlayerColumn09AppendR1.test.ts": "5743738f5082244d862cb9cb7e9b89ec2e23ebc0bca8ce8f7c943b744edb4213",
     "scripts/estimate/r4a13/floorSandStraightedgeRetainedMasterR3.test.ts": "d9f06c8626032d2ab2356f8dac8e20009d7110c18840bb91d7318e35f2d03527",
     "scripts/estimate/r4a13/formworkRemainingFamilyApplicabilityCorrection.ts": "71b1c56673fdf4daa82fe756468b8fbe02145ddfe07905fd322ddce0656eb6b0",
+    "scripts/estimate/r4a13/interiorWallFinishingPhysicalKitR240.test.ts": "6acb1924f35e83f88635818ded224f2d105b6752af42bd07fe4bf77b0ebe8b69",
+    "scripts/estimate/r4a13/lowCurrentScsPostsFiniteRuntimeR24.ts": "b4f55b73e73c78e45e68d95e08dea7bc13233148151d2a8b9ebb09b367c4c787",
     "scripts/estimate/r4a13/masonryBrickColumnExistingOwnerR161.test.ts": "02ba01db88d78f80ac3c27ffc74fa358f185737e75dee570f2df65a496ea1b9c",
     "scripts/estimate/r4a13/masonryGlassBlockNormalAppendR103.test.ts": "5eb437c66b6c5c452a0c32b2c21d55885f5a8965f708b2c136b40c31054908a6",
     "scripts/estimate/r4a13/masonryGlassM25OperationDisplayR152.test.ts": "1279a1690935cbb353386942ac7726ccbb9836976c489edc5cd40ed8df2ecfa6",
@@ -420,6 +429,7 @@
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.test.ts": "c2ba5f9367795a3889a2ea61e8b910a7420005ffd4440aafb9002f498acf66a2",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.ts": "f2966bee892f08237f0bd50c054845ee6ea7a6c59032f03f909d536c4bd5fff9",
     "scripts/estimate/r4a13/prepareElecor60x40SingleRouteMaterialsR1.ts": "93fb236d6c999d86a2d4f8a209177265613b1860d39ad5554efbbc8ecc367ab7",
+    "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": "d12c847aef92e104288b4a429d20a95156d2d1de58a1e8bb76352b08ae0ae4e2",
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsCurrentPublicationR2.test.ts": "a995f50620b4860172b6b0b2958e05a4c97fed9e3dc0d9ce6cb413fc4cf2540f",
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsCurrentPublicationR2.ts": "d1182865b9a07dfc879ab7c5742aa0705113742428f4cfb23773649963347c30",
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsMasterSuccessorR3.test.ts": "425b270f6c0511dc6532d7cc8dba411bfb7c514bb60f04025b1099b8d4efdc5f",
@@ -440,9 +450,12 @@
     "scripts/estimate/r4a13/prepareGraniteKerbCementColumn03AppendR1.ts": "bc6f4d292b14a7c72088d629ffb9cf496fbd04016f7ecb1eb6218112df3c5f1e",
     "scripts/estimate/r4a13/prepareHydrotestInternalSteelDn50Column01AppendR1.test.ts": "49953b5490d8333409cd91980bace77f968f8852d23afdf66830abb9fe21824b",
     "scripts/estimate/r4a13/prepareHydrotestInternalSteelDn50Column01AppendR1.ts": "cbbf7a350a9a190424e145ee134176880d53ced554596c1bea3378887640c9af",
-    "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts": "3560a0e54091ac0fa9edf885730464dce7ea4e5f3bc26f267fe30a72d83ff4ac",
-    "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.ts": "3fb471ad1e4af6f66221a8191dd8bbc049f45e02df7500a5e406d523b3362100",
+    "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts": "332ed7fa08aec3186d740a9c55b38b6c6ebbfc2d22b57538354093dc19206d1a",
+    "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.ts": "1594466f2b0714281ce5c2e770d488ebcb2972180cc085832fdb6b9c40aa26d5",
     "scripts/estimate/r4a13/prepareLegrandP31BlindEpJointFastenersR1.ts": "b3a584e7269b20cc945f93f1df71dd53b52ba386fedfb7fdc349973d45c05447",
+    "scripts/estimate/r4a13/prepareLowCurrentCopperCertifierProStockR24.ts": "828fe747121d8dac873c435a60ff6455d57ac708e2e8afcf42551f251e4b39d0",
+    "scripts/estimate/r4a13/prepareLowCurrentIdcWholeManualPostR24.ts": "f10158ce900ae442f0fdef7c2c10f586ebcdc50a50c0943cbd3c05b4be79e559",
+    "scripts/estimate/r4a13/prepareLowCurrentScsPostsSingleSuccessorR24.ts": "a76fc049f72a0f4db81c479c562f4d2ed9c8f54c5114f9fbef080b9826d41e8e",
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.test.ts": "16199dd97dad1ae3b541eae2784351143527fde6d1676df03dbcffd22358bd5d",
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.ts": "2549780f9af5d0e6ece5e40683db6ef364f9d263492e2e58c58e59e140017d97",
     "scripts/estimate/r4a13/prepareMasonryBrickColumnExistingOwnerR161.ts": "a1e89aa7fb80bbaf344484537d9e118ecc2e60935d27d7101e1d12e37b363e37",
@@ -536,6 +549,7 @@
     "scripts/estimate/r4a13/s2775SharedPublisherGuards.test.ts": "27ae361ded698bab8d60240c81244461135053f2ad70b3e874821297d94101da",
     "scripts/estimate/r4a13/selectedMaterialDeliveryForwardR1.ts": "40a29b771a1769bf0925e2b115826924b359e3a5cb3e54d28ec7db29c2c8c87e",
     "scripts/estimate/r4a13/selectedMaterialDeliveryNormativeRegistryR1.ts": "9812ab8c69002e729bea6662a7cb5a8a9b515aedeb647e4486bf448afb006ea9",
+    "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "da43c44f3c515816d8c1d5382f30f411015e5bff92498806a0ba0c522d81d48e",
     "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts": "1ba146ed482a432e46dc97c9e337b9071a5bc4de77c9340e2d16712296cf8c73",
     "scripts/estimate/r4a8/prepareR4A8DrywallScopeSuccessor.ts": "d795eb35c6faf0c62d18b40ffa482d9793ab14fcbfe6ee6ad66c0945d48db8d5",
     "scripts/estimate/r5/batch001R56SharedCoreProjection.ts": "8f638c301db3af63a9fd639c8330fcedbff9a073e6de3ecbd3a841c343ecb74d",
@@ -550,7 +564,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "7d9534405fba4c4082dcd3915fa62d5e519a13bb75f053a36d8be72b9e78936c",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "8e5260d59291dfa4f4e1f9ed790cddf617ef94c1ee3773decc323da2db713f4d",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1314,6 +1328,8 @@
     "src/lib/estimate/backendPlatform/estimateContentPassportR3.ts": "f67380552a14e5bdc81eef7991572a162cf000cf3c10d1cdfc813acfee15e94d",
     "src/lib/estimate/backendPlatform/formulaGraph.ts": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c",
     "src/lib/estimate/backendPlatform/inclusionGraph.ts": "f6bcf6d8fcb5b30e2c7fe489b6b5b9aaed97366f35f9e6e0f818e51b23796c02",
+    "src/lib/estimate/backendPlatform/lowCurrentCopperCertifierProStockR24.ts": "bb8703351740901d4863efb34c85b11d2dbcdbc2fa9e97b7d6803af40a1d0c3f",
+    "src/lib/estimate/backendPlatform/lowCurrentIdcWholeManualPostR24.ts": "7cfed1f11038b26787decdb025e6f582119b06c7563d3e745c53ad256e4f1c5e",
     "src/lib/estimate/backendPlatform/numericParameterRelations.ts": "588acad69721ebdbc9e97022f03b59bad96bff816d645dd3ff0e4ec452c0e21d",
     "src/lib/estimate/backendPlatform/parameterConstraints.ts": "5d7ceef5f6404d324f2266a7f67b09bd0936dcf5c281ce228990d6ac1d2b7561",
     "src/lib/estimate/backendPlatform/russianTechnologyTitleR542.ts": "c8044ed74b1d6e721e626f45d0597040679dbc3dea485a3ea9c494269fa5aa6a",
@@ -1674,6 +1690,7 @@
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsCompletionR1.test.ts": "de8fae26c7fbb40ca571ce101dcf8b207151731210ebce021de999120c176b86",
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsCompletionR1.ts": "04744fce8de898c9cd6507ca97e68c695d62582f3dc40b7b2112a6fc4b489f87",
     "src/lib/estimate/v4/elecorMechanicalProjectFixingsPublicPresentationR1.test.ts": "e6c7afd5327ea8d77b0c191398b50c29402690ffdc38031e86f3551e8df65d50",
+    "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": "1f05e58272ea3973940bfb4e0540f09a2ccbc5031c85f463ba2a1be406eae389",
     "src/lib/estimate/v4/elecorSingleRouteMaterialR1.test.ts": "d1afac7a7be31fc6f8da18e1712dd9f99b50ccb33d8296e6efd9bf6829454661",
     "src/lib/estimate/v4/elecorSingleRouteMaterialR1.ts": "2006e830eb5c5b00b40091e2d68dfd8be89d3146980178a0b0fbd816ac7e12db",
     "src/lib/estimate/v4/electrical/buildCanonicalElectricalConsumerRepairAiDraft.ts": "894ec6ac948a8ce6457d07f82e5de3030d191a7fc290caef137ad58316af6496",
@@ -1748,8 +1765,8 @@
     "src/lib/estimate/v4/hydrotestInternalSteelDn50Krer16R1.ts": "685c6add400850fec4653cdd0bdcfa846cfaaa7b8c6da733e38de35bb9622430",
     "src/lib/estimate/v4/industrialSteelPipeButtWeldR1.ts": "77daa01eb0244b11fca83fb13f9b553e1ee9743510551524e6b607747ec3a278",
     "src/lib/estimate/v4/industrialVacuumDedustingKrer13R1.ts": "f9bc7d270a2a0177fa0a1cb8c5e19c3df7da319b5eddc29de25b84f01681b966",
-    "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts": "18835e6551d477a37d5a6081094d3edc0d51098fec55b4d52601ef032a8aba1f",
-    "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts": "1aa5ba1f1f44e16201a8f30145db7e3cd5d32cf14de78dd3400db823a75dfc4c",
+    "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts": "b604ef74a4a56f68daeba863e962763161ae9262cf7a8ef585faf795d8fd0f70",
+    "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts": "f03377bd90ef595efb639c07fec3d22f03972021982e8fc74ce50e2b69ed4485",
     "src/lib/estimate/v4/jointReinforcementR1.ts": "027cb1706469c89475f96c543fd514187436110445894b41d75863091ade2b62",
     "src/lib/estimate/v4/ledLuminaireInstallationR1.ts": "8d35282e45dc3c2873428bb7ff2dda932df565a51da87f65619bc7cc73864351",
     "src/lib/estimate/v4/legrandP31BlindEpJointFastenersR1.test.ts": "b5f861cefa5ab6df59a40d7dc87bbf236962670195d3ed992e5f509be3790c7c",
@@ -3597,15 +3614,15 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "7d9534405fba4c4082dcd3915fa62d5e519a13bb75f053a36d8be72b9e78936c",
-  "canonicalSourceFreezeSha256": "71e7654b0d54f55bd561479186f9e5c66b0c2f338dde39fa2799ad16c015663f",
+  "originalSeedManifestSha256": "8e5260d59291dfa4f4e1f9ed790cddf617ef94c1ee3773decc323da2db713f4d",
+  "canonicalSourceFreezeSha256": "a7fa603b49e9ac6e846eed431a7501b516c4e6279c1aa3c6dcf93548a87609ad",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100162383,
-    "reviewedCandidateScope": "Current canonical R238 plus explicit masonry/roof/concrete source overlays; no declaration of canonical integration or UI acceptance"
+    "sourceBytes": 100374514,
+    "reviewedCandidateScope": "Previous accepted source candidate plus three new exact existing-owner family overlays; constructor/core/selected-parent and UI not accepted"
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": false,
@@ -4105,20 +4122,163 @@
       "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts": {
         "sha256": "4c33d590e163a1a57c987e6ae9093e647c6990c22e3da8b9493f962579880440",
         "owner": "MOVED_EXACT_ELEVEN_NEGATIVES_PLUS_ONE_POSITIVE_NO_CONFIG_OR_CORE"
+      },
+      "data/estimate-benchmarks/source-packs/interior-wall-finishing-group-r502.json": {
+        "sha256": "cf0cc62c862124678f303632571ee113b38137d68b13345dde30720343a49aa3",
+        "owner": "FINISHING_R240_REV05"
+      },
+      "data/estimate-benchmarks/source-packs/interior-wall-finishing-existing-paint-composite-r502.json": {
+        "sha256": "c17eb80a6e08528dec3524d330b263cfead54bd0bbdc8cf3dea65f9de9a03e4e",
+        "owner": "FINISHING_R240_REV05"
+      },
+      "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts": {
+        "sha256": "f03377bd90ef595efb639c07fec3d22f03972021982e8fc74ce50e2b69ed4485",
+        "owner": "FINISHING_R240_REV05"
+      },
+      "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.ts": {
+        "sha256": "1594466f2b0714281ce5c2e770d488ebcb2972180cc085832fdb6b9c40aa26d5",
+        "owner": "FINISHING_R240_REV05"
+      },
+      "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts": {
+        "sha256": "b604ef74a4a56f68daeba863e962763161ae9262cf7a8ef585faf795d8fd0f70",
+        "owner": "FINISHING_R240_REV05"
+      },
+      "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts": {
+        "sha256": "332ed7fa08aec3186d740a9c55b38b6c6ebbfc2d22b57538354093dc19206d1a",
+        "owner": "FINISHING_R240_REV05"
+      },
+      "scripts/estimate/r4a13/interiorWallFinishingPhysicalKitR240.test.ts": {
+        "sha256": "6acb1924f35e83f88635818ded224f2d105b6752af42bd07fe4bf77b0ebe8b69",
+        "owner": "FINISHING_R240_REV05"
+      },
+      "data/estimate-benchmarks/fixtures/interior-wall-finishing-original35-proof-r240.json": {
+        "sha256": "714eaa77983ee012d58a5e392df158459af4dcf0778ff9c2bbab8890e2c81dcc",
+        "owner": "FINISHING_R240_REV05"
+      },
+      "data/estimate-benchmarks/fixtures/elecor-endcaps-whole-independent-r239.json": {
+        "sha256": "7870ed65b77f20dc170e4900c996264df40132a9cee8ff589aedd932518f1b75",
+        "owner": "ELECTRICAL_ELECOR_END_NODE"
+      },
+      "data/estimate-benchmarks/source-packs/elecor-project-endcaps-completion-r239.json": {
+        "sha256": "bcb968671c13ef493267f1fe80971a0b4f784d6e004d988dcd26e5c16393ad96",
+        "owner": "ELECTRICAL_ELECOR_END_NODE"
+      },
+      "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": {
+        "sha256": "4a21d510b7bc82346f257d7dd5f2621a0d5795df1b6bf722483b66682ba8c867",
+        "owner": "ELECTRICAL_ELECOR_END_NODE"
+      },
+      "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": {
+        "sha256": "d12c847aef92e104288b4a429d20a95156d2d1de58a1e8bb76352b08ae0ae4e2",
+        "owner": "ELECTRICAL_ELECOR_END_NODE"
+      },
+      "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": {
+        "sha256": "da43c44f3c515816d8c1d5382f30f411015e5bff92498806a0ba0c522d81d48e",
+        "owner": "ELECTRICAL_ELECOR_END_NODE"
+      },
+      "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts": {
+        "sha256": "1f05e58272ea3973940bfb4e0540f09a2ccbc5031c85f463ba2a1be406eae389",
+        "owner": "ELECTRICAL_ELECOR_END_NODE"
+      },
+      "src/lib/estimate/backendPlatform/lowCurrentIdcWholeManualPostR24.ts": {
+        "sha256": "7cfed1f11038b26787decdb025e6f582119b06c7563d3e745c53ad256e4f1c5e",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "scripts/estimate/r4a13/prepareLowCurrentIdcWholeManualPostR24.ts": {
+        "sha256": "f10158ce900ae442f0fdef7c2c10f586ebcdc50a50c0943cbd3c05b4be79e559",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "src/lib/estimate/backendPlatform/lowCurrentCopperCertifierProStockR24.ts": {
+        "sha256": "bb8703351740901d4863efb34c85b11d2dbcdbc2fa9e97b7d6803af40a1d0c3f",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "scripts/estimate/r4a13/prepareLowCurrentCopperCertifierProStockR24.ts": {
+        "sha256": "828fe747121d8dac873c435a60ff6455d57ac708e2e8afcf42551f251e4b39d0",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "scripts/estimate/r4a13/prepareLowCurrentScsPostsSingleSuccessorR24.ts": {
+        "sha256": "a76fc049f72a0f4db81c479c562f4d2ed9c8f54c5114f9fbef080b9826d41e8e",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "scripts/estimate/r4a13/lowCurrentScsPostsFiniteRuntimeR24.ts": {
+        "sha256": "b4f55b73e73c78e45e68d95e08dea7bc13233148151d2a8b9ebb09b367c4c787",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "data/estimate-benchmarks/source-packs/low-current-idc-whole-manual-post-r24.json": {
+        "sha256": "87520b888ccdd47a75863e1b4b16a4035b1fb2c93b82d0667c761ecd995e9b31",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "data/estimate-benchmarks/source-packs/low-current-copper-certifier-pro-stock-r24.json": {
+        "sha256": "3dd2470d2f96eff775bb843d04d27e4ba096d1cd668ba312c401baafaeb577d4",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "data/estimate-benchmarks/fixtures/low-current-scs-eight-cases-r24.json": {
+        "sha256": "c15dd4608cb96d1b6821015c6d6edc53ee5bcc451e45b19b9bc2d669f12582ef",
+        "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
       }
     },
     "extraRoots": [
       "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts",
       "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts",
+      "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts",
+      "scripts/estimate/r4a13/interiorWallFinishingPhysicalKitR240.test.ts",
+      "scripts/estimate/r4a13/lowCurrentScsPostsFiniteRuntimeR24.ts",
+      "scripts/estimate/r4a13/masonryBrickColumnExistingOwnerR161.test.ts",
+      "scripts/estimate/r4a13/masonryGlassBlockNormalAppendR103.test.ts",
+      "scripts/estimate/r4a13/masonryGlassM25OperationDisplayR152.test.ts",
+      "scripts/estimate/r4a13/masonryGlassOpeningExistingOwnerR223.test.ts",
+      "scripts/estimate/r4a13/masonryGlassOpeningNativePriceHoldR223.test.ts",
+      "scripts/estimate/r4a13/masonryGlassOpeningNormalLockedR224.test.ts",
       "scripts/estimate/r4a13/masonryTwoOwnerRetainedPureR239.test.ts",
+      "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts",
+      "scripts/estimate/r4a13/masterMonolithicRepairGeometryVisibilityOnlyR60.ts",
+      "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
       "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts",
+      "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts",
+      "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts",
+      "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.ts",
+      "scripts/estimate/r4a13/prepareLowCurrentCopperCertifierProStockR24.ts",
+      "scripts/estimate/r4a13/prepareLowCurrentIdcWholeManualPostR24.ts",
+      "scripts/estimate/r4a13/prepareLowCurrentScsPostsSingleSuccessorR24.ts",
       "scripts/estimate/r4a13/prepareMasonryBrickColumnExistingOwnerR161.ts",
+      "scripts/estimate/r4a13/prepareMasonryGlassBlockNormalAppendR103.ts",
+      "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts",
       "scripts/estimate/r4a13/prepareMasonryGlassOpeningExistingOwnerR223.ts",
+      "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+      "scripts/estimate/r4a13/prepareRoofFlat003006CommonR24.ts",
+      "scripts/estimate/r4a13/prepareRoofMasticMeshExisting003R24.ts",
       "scripts/estimate/r4a13/prepareRoofSingle539WholeLayersR24.ts",
       "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts",
+      "scripts/estimate/r4a13/roofSingle539FiniteCasesR24.ts",
+      "scripts/estimate/r4a13/roofSingle539RealR224InputsR24.ts",
       "scripts/estimate/r4a13/roofSingle539WholeConfigR224.test.ts",
+      "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts",
+      "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts",
+      "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
       "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageWhole539R24.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalSourceProfileSelectionV1.ts",
+      "src/lib/estimate/backendPlatform/lowCurrentCopperCertifierProStockR24.ts",
+      "src/lib/estimate/backendPlatform/lowCurrentIdcWholeManualPostR24.ts",
       "src/lib/estimate/v4/concreteWholeHoleFillingKrer46R61.ts",
+      "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts",
+      "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts",
+      "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts",
+      "src/lib/estimate/v4/masonryBrickColumnExistingOwnerR161.ts",
+      "src/lib/estimate/v4/masonryBrickColumnSixProfileWholeNormalR117.ts",
+      "src/lib/estimate/v4/masonryBrickRectangularColumnWholeNormalR109.ts",
+      "src/lib/estimate/v4/masonryGlassBlockKrer08R97.ts",
+      "src/lib/estimate/v4/masonryGlassBlockNormalCardsR103.ts",
+      "src/lib/estimate/v4/masonryGlassM25OperationDisplayR152.ts",
+      "src/lib/estimate/v4/masonryGlassOpeningExistingOwnerR223.ts",
+      "src/lib/estimate/v4/roofFlat003006CommonR24.ts",
+      "src/lib/estimate/v4/roofMasticMeshExisting003R24.ts",
+      "src/lib/estimate/v4/roofMasticPreparationWhole019R24.ts",
+      "src/lib/estimate/v4/roofMissingFlatRollWhole002R24.ts",
+      "src/lib/estimate/v4/roofMissingInsulationProfilesWhole014R24.ts",
+      "src/lib/estimate/v4/roofMissingScreedProfilesWhole017R24.ts",
+      "src/lib/estimate/v4/roofMissingVaporProfilesWhole015R24.ts",
+      "src/lib/estimate/v4/roofPrimerWithPreparationWhole01601R24.ts",
+      "src/lib/estimate/v4/roofProtectedFlatRollMissing002R24.ts",
+      "src/lib/estimate/v4/roofRooflightCurbWhole018R24.ts",
       "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts"
     ],
     "oldRootsPreserved": true,
@@ -4265,6 +4425,99 @@
         "node_modules/resolve-pkg-maps/README.md"
       ],
       "primaryNodeRunnerReference": "https://nodejs.org/download/release/v20.19.6/docs/api/test.html"
+    },
+    "nextSourceFamilyWaveR245": {
+      "scope": "Existing finishing R502, existing ELECOR end-node, existing SCS two-post composer; types only, no current-parent/core/DB/source admission",
+      "threeAuthorManifestSha256": {
+        "FINISHING_R240_REV05": "9b30476edea702f6a67b7a122e4de5b7e78b905d182532952b281638622722de",
+        "ELECTRICAL_ELECOR_END_NODE": "660d42b36309d9c8de77f2eff1bb98f221a35f44048d921651f8707f336e5d69",
+        "LOW_VOLTAGE_SCS_TYPED_COMPOSER": "033b271ef9f7e2fb7f51445f0219dc445f98f04e05741ebee6bb0e09c24fc1a7"
+      },
+      "selectedSourceFiles": 23,
+      "allSelectedTsExplicitRoots": [
+        "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts",
+        "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts",
+        "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts",
+        "scripts/estimate/r4a13/interiorWallFinishingPhysicalKitR240.test.ts",
+        "scripts/estimate/r4a13/lowCurrentScsPostsFiniteRuntimeR24.ts",
+        "scripts/estimate/r4a13/masonryBrickColumnExistingOwnerR161.test.ts",
+        "scripts/estimate/r4a13/masonryGlassBlockNormalAppendR103.test.ts",
+        "scripts/estimate/r4a13/masonryGlassM25OperationDisplayR152.test.ts",
+        "scripts/estimate/r4a13/masonryGlassOpeningExistingOwnerR223.test.ts",
+        "scripts/estimate/r4a13/masonryGlassOpeningNativePriceHoldR223.test.ts",
+        "scripts/estimate/r4a13/masonryGlassOpeningNormalLockedR224.test.ts",
+        "scripts/estimate/r4a13/masonryTwoOwnerRetainedPureR239.test.ts",
+        "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts",
+        "scripts/estimate/r4a13/masterMonolithicRepairGeometryVisibilityOnlyR60.ts",
+        "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+        "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts",
+        "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts",
+        "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts",
+        "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.ts",
+        "scripts/estimate/r4a13/prepareLowCurrentCopperCertifierProStockR24.ts",
+        "scripts/estimate/r4a13/prepareLowCurrentIdcWholeManualPostR24.ts",
+        "scripts/estimate/r4a13/prepareLowCurrentScsPostsSingleSuccessorR24.ts",
+        "scripts/estimate/r4a13/prepareMasonryBrickColumnExistingOwnerR161.ts",
+        "scripts/estimate/r4a13/prepareMasonryGlassBlockNormalAppendR103.ts",
+        "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts",
+        "scripts/estimate/r4a13/prepareMasonryGlassOpeningExistingOwnerR223.ts",
+        "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+        "scripts/estimate/r4a13/prepareRoofFlat003006CommonR24.ts",
+        "scripts/estimate/r4a13/prepareRoofMasticMeshExisting003R24.ts",
+        "scripts/estimate/r4a13/prepareRoofSingle539WholeLayersR24.ts",
+        "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts",
+        "scripts/estimate/r4a13/roofSingle539FiniteCasesR24.ts",
+        "scripts/estimate/r4a13/roofSingle539RealR224InputsR24.ts",
+        "scripts/estimate/r4a13/roofSingle539WholeConfigR224.test.ts",
+        "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts",
+        "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts",
+        "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
+        "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageWhole539R24.test.ts",
+        "src/lib/estimate/backendPlatform/canonicalSourceProfileSelectionV1.ts",
+        "src/lib/estimate/backendPlatform/lowCurrentCopperCertifierProStockR24.ts",
+        "src/lib/estimate/backendPlatform/lowCurrentIdcWholeManualPostR24.ts",
+        "src/lib/estimate/v4/concreteWholeHoleFillingKrer46R61.ts",
+        "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts",
+        "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts",
+        "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts",
+        "src/lib/estimate/v4/masonryBrickColumnExistingOwnerR161.ts",
+        "src/lib/estimate/v4/masonryBrickColumnSixProfileWholeNormalR117.ts",
+        "src/lib/estimate/v4/masonryBrickRectangularColumnWholeNormalR109.ts",
+        "src/lib/estimate/v4/masonryGlassBlockKrer08R97.ts",
+        "src/lib/estimate/v4/masonryGlassBlockNormalCardsR103.ts",
+        "src/lib/estimate/v4/masonryGlassM25OperationDisplayR152.ts",
+        "src/lib/estimate/v4/masonryGlassOpeningExistingOwnerR223.ts",
+        "src/lib/estimate/v4/roofFlat003006CommonR24.ts",
+        "src/lib/estimate/v4/roofMasticMeshExisting003R24.ts",
+        "src/lib/estimate/v4/roofMasticPreparationWhole019R24.ts",
+        "src/lib/estimate/v4/roofMissingFlatRollWhole002R24.ts",
+        "src/lib/estimate/v4/roofMissingInsulationProfilesWhole014R24.ts",
+        "src/lib/estimate/v4/roofMissingScreedProfilesWhole017R24.ts",
+        "src/lib/estimate/v4/roofMissingVaporProfilesWhole015R24.ts",
+        "src/lib/estimate/v4/roofPrimerWithPreparationWhole01601R24.ts",
+        "src/lib/estimate/v4/roofProtectedFlatRollMissing002R24.ts",
+        "src/lib/estimate/v4/roofRooflightCurbWhole018R24.ts",
+        "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts"
+      ],
+      "localRawArtifactsNotTransferred": [
+        {
+          "logicalPath": "data/estimate-benchmarks/source-artifacts/elecor-project-endcaps-r239/IEK_KMZ_60X40_COMPLETE4_OFFICIAL.html",
+          "sha256": "453347c7c6df31f4ae1472f7f0a8675c1c089e8d584999414960373c5c92de53",
+          "reason": "Not a TypeScript/JSON import; primary witness retained locally for real Config, not needed by source-only types"
+        }
+      ],
+      "previousScopedPureTestsReused": {
+        "runUrl": "https://github.com/petrovka080-cpu/rik-expo-app/actions/runs/40217661138",
+        "tests": 12,
+        "oldConservativeStaticClosureCount": 234,
+        "closureSha256": "0abcc86c625506a15a692907e28c6ff97d0a7a198de18d38ea19a99a25077c3f",
+        "changedDependencies": [],
+        "runtimeVendorPinsAndLockUnchanged": true,
+        "noReplay": true
+      },
+      "allPrevious603ExtraRootsRetained": true,
+      "sourceSecretScanFindings": [],
+      "oldCaseGoldenTestsOrCoreReplayed": 0
     }
   }
 }

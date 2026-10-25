@@ -1,26 +1,30 @@
 {
-  "contract":"rik-expo-app.interior-wall-finish-existing-paint-r502.staged.v1",
-  "sourceKey":"rik-expo-app.interior-wall-finishing-cement-finish-r502.composite-operation-map.v1",
-  "normId":"interior-wall-cement-finish-r502:source-specific-composite-operation-map",
-  "locatorKey":"interior-wall-finish-r502:one-composite-locator:35-components",
-  "selectedTechnology":"CEMENT_PUTTY_ACRYLIC_TWO_COATS_ON_EXISTING_LEVEL_CEMENT_PLASTER_R502_V3",
-  "selectorId":"wall_finish_cement_r502_selected_technology",
-  "catalogId":"canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
-  "expectedParentShape":[170,116,116],
-  "subjectPackPath":"data/estimate-benchmarks/source-packs/interior-wall-finishing-group-r502.json",
-  "subjectPackSha256":"d8489f46fcd60e64748e4dd5666b50e475ce8d981a4798d2cc43ab0ff6d85e01",
-  "subjectFactoryPath":"src/lib/estimate/v4/interiorWallFinishingGroupR502.ts",
-  "subjectFactorySha256":"1aa5ba1f1f44e16201a8f30145db7e3cd5d32cf14de78dd3400db823a75dfc4c",
-  "primaryEvidenceIdentityRole":"PRIMARY_EVIDENCE_KEY_ONLY_NOT_A_REGISTERED_SOURCE_ID_OR_UUID",
-  "sourceKind":"PRIMARY_SOURCE_COMPOSITE_OPERATION_MAP",
-  "officialCompositeNormClaimed":false,
-  "engineeringAcceptance":false,
-  "selectedScopeQuantitiesComplete":true,
-  "ordinaryFactBudget":4,
-  "rawBranchParameters":14,
-  "rawBranchRows":35,
-  "additionalStructuralControls":1,
-  "primaryEvidence":[
+  "contract": "rik-expo-app.interior-wall-finish-existing-paint-r502.physical-kit-r240.staged.v1",
+  "sourceKey": "rik-expo-app.interior-wall-finishing-cement-finish-r502.composite-operation-map.v1",
+  "normId": "interior-wall-cement-finish-r502:source-specific-composite-operation-map",
+  "locatorKey": "interior-wall-finish-r502:one-composite-locator:52-components-r240",
+  "selectedTechnology": "CEMENT_PUTTY_ACRYLIC_TWO_COATS_ON_EXISTING_LEVEL_CEMENT_PLASTER_R502_V3",
+  "selectorId": "wall_finish_cement_r502_selected_technology",
+  "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+  "expectedParentShape": [
+    170,
+    116,
+    116
+  ],
+  "subjectPackPath": "data/estimate-benchmarks/source-packs/interior-wall-finishing-group-r502.json",
+  "subjectPackSha256": "cf0cc62c862124678f303632571ee113b38137d68b13345dde30720343a49aa3",
+  "subjectFactoryPath": "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts",
+  "subjectFactorySha256": "f03377bd90ef595efb639c07fec3d22f03972021982e8fc74ce50e2b69ed4485",
+  "primaryEvidenceIdentityRole": "PRIMARY_EVIDENCE_KEY_ONLY_NOT_A_REGISTERED_SOURCE_ID_OR_UUID",
+  "sourceKind": "PRIMARY_SOURCE_COMPOSITE_OPERATION_MAP",
+  "officialCompositeNormClaimed": false,
+  "engineeringAcceptance": false,
+  "selectedScopeQuantitiesComplete": false,
+  "ordinaryFactBudget": 4,
+  "rawBranchParameters": 29,
+  "rawBranchRows": 52,
+  "additionalStructuralControls": 1,
+  "primaryEvidence": [
     {
       "id": "henkel-ct225-ru-kz-r502",
       "title": "Ceresit CT225 ru_KZ",
@@ -28,7 +32,7 @@
       "url": "https://dm.henkel-dam.com/is/content/henkel/kz-ru-ceresit-ct225-fasadnaya-shpaklevka-dlya-vnutrennih-rabot-tds-kz-ru",
       "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/ct225-ru-KZ.pdf",
       "sha256": "a25e53b931b79edd69a86da8b1b3a107b6a0283d1f2ea9c08eafb0fa598df717",
-      "locatorRu": "p1: цементно-песчаные/цементно-известковые основания, прочное чистое сухое основание перед работой обильно увлажнить; один фактический слой≤3мм; шлифование после24ч, окраска после72ч. p2:≈1.8кг/м²/мм,25кг; не переносить1.2кг/м²/мм другой ru_RU версии."
+      "locatorRu": "p1: цементно-песчаные/цементно-известковые основания, прочное чистое сухое основание перед работой обильно увлажнить; один фактический слой≤3мм; шлифование после24ч, окраска после72ч. p2:≈1.8кг/м²/мм,25кг; не переносить1.2кг/м²/мм другой ru_RU версии. p1: вода+15…+20°C, миксер/дрель с насадкой400–800об/мин, пауза5мин и повторное перемешивание, использовать≤1ч; p2:0.38–0.42л/кг сухой смеси."
     },
     {
       "id": "henkel-ct42-en-gl-r502",
@@ -56,7 +60,7 @@
       "url": "https://www.knauf.ru/upload/iblock/215/ggu7x06mvv4w1pq8t5w2lw7b2ynkr25y/38-IL-KNAUF_Tifengrund-_23_06_2026_-v02-Preview.pdf",
       "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/tiefengrund-06-2026.pdf",
       "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9",
-      "locatorRu": "p1: цементные штукатурки/шпаклёвки перед тонкослойной цементной штукатуркой/краской; p2:≈0.1кг/м² одно нанесение, готовый состав без разбавления,5/10кг, высыхание≥3ч. В выбранном финишном комплексе применяется одно нанесение перед окраской по нормально впитывающей цементной шпаклёвке."
+      "locatorRu": "p1: цементные штукатурки/шпаклёвки перед тонкослойной цементной штукатуркой/краской; p2:≈0.1кг/м² одно нанесение, готовый состав без разбавления,5/10кг, высыхание≥3ч. В выбранном финишном комплексе применяется одно нанесение перед окраской по нормально впитывающей цементной шпаклёвке. Уточнение R240 p2: общее указание «не разбавляя» соседствует со специальной рекомендацией под покраску1:1. Выбранный исторический undiluted переход не объявляется автоматически подтверждённым; quantity rule сохраняется до точного решения."
     },
     {
       "id": "kg-krer15-wall-finishing-r502",
@@ -77,56 +81,489 @@
       "locatorRu": "PDFp1: утверждение и отмена СНиП3.04.01-87;§7.2.3–7.2.6,7.3.1–7.3.5,7.5.1–7.5.4: основание/впитываемость/слои/грунтование/выдержки. Annex сохраняет незаполненные editorial даты; используется с утверждённым титульным приказом."
     }
   ],
-  "quantitativeRules":{
-    "basis":"A is independently measured net flat wall field in m2; T is actual cement putty layer >0 and <=3mm. No old parent area, q, guessed thickness or template norm is used.",
-    "putty":{"evidenceKey":"henkel-ct225-ru-kz-r502","consumedKg":"A*T*1.8","orderKg":"ceil(consumedKg/25)*25","packageKg":25},
-    "primer":{"evidenceKey":"knauf-tiefengrund-062026-r502","consumedKg":"A*0.1","applicationCount":1,"orderKg":"ceil(consumedKg/5)*5","packageKg":5},
-    "paint":{"evidenceKey":"henkel-ct42-en-gl-r502","consumedL":"A*0.3","coatCountIncludedInRate":2,"orderL":"ceil(consumedL/15)*15","packageL":15},
-    "balance":"Use the existing effectivePurchaseBalance owner and reciprocal compiler-derived effective-order parameters. Order, packages, consumed, remaining and shortage are distinct. Selected new-order boundary; unknown warehouse inventory is not represented as a known zero.",
-    "labour":{"evidenceKey":"kg-krer15-wall-finishing-r502","normId":"15-04-007-01","measurementM2":100,"workersManH":43.56,"operatorsManH":0.02,"liftMachineH":0.02,"truckMachineH":0.15,"sandingM2":0.84,"ragsKg":0.3,"payment":"The whole norm and included operations are paid once through the whole-work m2 owner; no component receives a second payment from a price alone."},
-    "water":"CT225 requires base moistening; mixing/moistening/washing water is explicit whole-work provision without invented litres/order. No separate numerical water norm is asserted.",
-    "primerNecessity":"SP KR65-101:2025 section7.5.3 requires primer before paint; selected Tiefengrund06/2026 supports cement putty before paint at approximately0.1kg/m2 for one ready undiluted coat on normally uniformly absorbent base.",
-    "identitySeparation":"CT42 ru_KZ is qualitative compatibility evidence only. Its10l pack does not replace the selected CT42 en_GL0819 fifteen-litre supply or its total two-coat rate. Product planning rates are approximate manufacturer declarations, not project acceptance."
+  "quantitativeRules": {
+    "basis": "A is independently measured net flat wall field in m2; T is actual cement putty layer >0 and <=3mm. No old parent area, q, guessed thickness or template norm is used.",
+    "putty": {
+      "evidenceKey": "henkel-ct225-ru-kz-r502",
+      "consumedKg": "A*T*1.8",
+      "orderKg": "ceil(consumedKg/25)*25",
+      "packageKg": 25
+    },
+    "primer": {
+      "evidenceKey": "knauf-tiefengrund-062026-r502",
+      "consumedKg": "A*0.1",
+      "applicationCount": 1,
+      "orderKg": "ceil(consumedKg/5)*5",
+      "packageKg": 5
+    },
+    "paint": {
+      "evidenceKey": "henkel-ct42-en-gl-r502",
+      "consumedL": "A*0.3",
+      "coatCountIncludedInRate": 2,
+      "orderL": "ceil(consumedL/15)*15",
+      "packageL": 15
+    },
+    "balance": "Use the existing effectivePurchaseBalance owner and reciprocal compiler-derived effective-order parameters. Order, packages, consumed, remaining and shortage are distinct. Selected new-order boundary; unknown warehouse inventory is not represented as a known zero.",
+    "labour": {
+      "evidenceKey": "kg-krer15-wall-finishing-r502",
+      "normId": "15-04-007-01",
+      "measurementM2": 100,
+      "workersManH": 43.56,
+      "operatorsManH": 0.02,
+      "liftMachineH": 0.02,
+      "truckMachineH": 0.15,
+      "sandingM2": 0.84,
+      "ragsKg": 0.3,
+      "payment": "The whole norm and included operations are paid once through the whole-work m2 owner; no component receives a second payment from a price alone."
+    },
+    "water": "CT225 p2 gives0.38–0.42l/kg consumed dry mix. Preserve lower/upper calculation details; actual mixing water, wetting and washing remain distinct unknown requirements; no order-water/kit quantity.",
+    "primerNecessity": "SP KR65-101:2025 section7.5.3 requires primer before paint; selected Tiefengrund06/2026 supports cement putty before paint at approximately0.1kg/m2 for one ready undiluted coat on normally uniformly absorbent base. R240: exact preparation under paint unresolved due p2 specific1:1 recommendation; no silent product/rate change.",
+    "identitySeparation": "CT42 ru_KZ is qualitative compatibility evidence only. Its10l pack does not replace the selected CT42 en_GL0819 fifteen-litre supply or its total two-coat rate. Product planning rates are approximate manufacturer declarations, not project acceptance.",
+    "mixingWaterR240": {
+      "unit": "l",
+      "basisDryKg": "CONSUMED_CT225_NOT_ROUNDED_ORDER",
+      "minimumLPerKg": 0.38,
+      "maximumLPerKg": 0.42,
+      "waterTemperatureC": [
+        15,
+        20
+      ],
+      "mixingSpeedRpm": [
+        400,
+        800
+      ],
+      "maturationMinutes": 5,
+      "remixRequired": true,
+      "usableForHours": 1,
+      "actualQuantityNotSelectedByAlgorithm": true,
+      "lowerUpperNotAdditive": true
+    }
   },
-  "paidOwnerKeys":["ct225-order","primer-order","ct42-order","whole-work"],
-  "independentRowRules":[
-    ["ct225-consumed","putty","kg","MANUFACTURER_CONSUMPTION","henkel-ct225-ru-kz-r502","ROW"],
-    ["ct225-order","putty","kg","PACKAGE_ORDER","henkel-ct225-ru-kz-r502","ROW"],
-    ["ct225-packages","putty","item","PACKAGE_COUNT_FROM_EFFECTIVE_ORDER","henkel-ct225-ru-kz-r502","ROW"],
-    ["ct225-remaining","putty","kg","REMAINING_FROM_EFFECTIVE_ORDER","henkel-ct225-ru-kz-r502","ROW"],
-    ["ct225-shortage","putty","kg","SHORTAGE_FROM_EFFECTIVE_ORDER","henkel-ct225-ru-kz-r502","ROW"],
-    ["primer-consumed","before-paint","kg","MANUFACTURER_ONE_COAT_CONSUMPTION","knauf-tiefengrund-062026-r502","ROW"],
-    ["primer-order","before-paint","kg","PACKAGE_ORDER","knauf-tiefengrund-062026-r502","ROW"],
-    ["primer-packages","before-paint","item","PACKAGE_COUNT_FROM_EFFECTIVE_ORDER","knauf-tiefengrund-062026-r502","ROW"],
-    ["primer-remaining","before-paint","kg","REMAINING_FROM_EFFECTIVE_ORDER","knauf-tiefengrund-062026-r502","ROW"],
-    ["primer-shortage","before-paint","kg","SHORTAGE_FROM_EFFECTIVE_ORDER","knauf-tiefengrund-062026-r502","ROW"],
-    ["primer-contribution-before-paint","before-paint","kg","ONE_DECLARED_APPLICATION_CONTRIBUTION_NO_SECOND_ORDER","knauf-tiefengrund-062026-r502","ROW"],
-    ["ct42-consumed","paint","l","MANUFACTURER_TWO_COATS_TOTAL_CONSUMPTION","henkel-ct42-en-gl-r502","ROW"],
-    ["ct42-order","paint","l","PACKAGE_ORDER","henkel-ct42-en-gl-r502","ROW"],
-    ["ct42-packages","paint","item","PACKAGE_COUNT_FROM_EFFECTIVE_ORDER","henkel-ct42-en-gl-r502","ROW"],
-    ["ct42-remaining","paint","l","REMAINING_FROM_EFFECTIVE_ORDER","henkel-ct42-en-gl-r502","ROW"],
-    ["ct42-shortage","paint","l","SHORTAGE_FROM_EFFECTIVE_ORDER","henkel-ct42-en-gl-r502","ROW"],
-    ["whole-work","preparation","m2","ONE_COMPLETE_COMMERCIAL_WORK_WITH_EXPLICIT_SCOPE","kg-krer15-wall-finishing-r502","ROW"],
-    ["process-preparation","preparation","m2","INCLUDED_PROCESS_ON_MEASURED_WALL_FIELD","kg-sp65-101-2025-r502","INCLUDED_COMPONENT_ROW"],
-    ["process-putty","putty","m2","INCLUDED_PUTTY_MOISTENING_SANDING","henkel-ct225-ru-kz-r502","INCLUDED_COMPONENT_ROW"],
-    ["process-before-paint","before-paint","m2","INCLUDED_REQUIRED_PRIMER_AND_DRYING","knauf-tiefengrund-062026-r502","INCLUDED_COMPONENT_ROW"],
-    ["process-paint","paint","m2","INCLUDED_TWO_COATS_AND_DRYING","henkel-ct42-en-gl-r502","INCLUDED_COMPONENT_ROW"],
-    ["process-completion","completion","m2","INCLUDED_CLEANUP_AND_HANDOVER","kg-sp65-101-2025-r502","INCLUDED_COMPONENT_ROW"],
-    ["paint-putty-primer-workers","paint","man_hour","A_DIV_100_TIMES_43_56_WHOLE_NORM","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
-    ["paint-operators","paint","man_hour","A_DIV_100_TIMES_0_02_ALREADY_IN_MACHINE_SCOPE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
-    ["paint-lift","paint","machine_hour","A_DIV_100_TIMES_0_02_INCLUDED_MACHINE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
-    ["paint-truck","paint","machine_hour","A_DIV_100_TIMES_0_15_INCLUDED_MACHINE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
-    ["sanding-sheet","putty","m2","A_DIV_100_TIMES_0_84_INCLUDED_CONSUMABLE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
-    ["rags","completion","kg","A_DIV_100_TIMES_0_3_INCLUDED_CONSUMABLE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
-    ["included-water","putty","","EXPLICIT_INCLUDED_WATER_NO_INVENTED_LITRES_OR_ORDER","henkel-ct225-ru-kz-r502","ROW"],
-    ["included-tools","putty","","EXPLICIT_INCLUDED_ORDINARY_TOOLS_NO_INVENTED_COUNT_OR_ORDER","kg-sp65-101-2025-r502","ROW"],
-    ["included-protection","preparation","","EXPLICIT_INCLUDED_PROTECTION_NO_SECOND_PAYMENT","kg-sp65-101-2025-r502","ROW"],
-    ["included-ppe","preparation","","EXPLICIT_INCLUDED_PPE_NO_SECOND_PAYMENT","kg-sp65-101-2025-r502","ROW"],
-    ["included-local-supply-cleanup","completion","","EXPLICIT_INCLUDED_ONSITE_SUPPLY_CLEANUP","kg-sp65-101-2025-r502","ROW"],
-    ["check-base","preparation","","ACTUAL_BASE_OBJECT_SCOPE_NOT_A_NUMERICAL_NORM","kg-sp65-101-2025-r502","ROW"],
-    ["check-site","preparation","","ACTUAL_SITE_OBJECT_SCOPE_NOT_A_NUMERICAL_NORM","kg-sp65-101-2025-r502","ROW"]
+  "paidOwnerKeys": [
+    "ct225-order",
+    "primer-order",
+    "ct42-order",
+    "whole-work"
   ],
-  "independentExpected":[
+  "independentRowRules": [
+    [
+      "ct225-consumed",
+      "putty",
+      "kg",
+      "MANUFACTURER_CONSUMPTION",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "ct225-order",
+      "putty",
+      "kg",
+      "PACKAGE_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "ct225-packages",
+      "putty",
+      "item",
+      "PACKAGE_COUNT_FROM_EFFECTIVE_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "ct225-remaining",
+      "putty",
+      "kg",
+      "REMAINING_FROM_EFFECTIVE_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "ct225-shortage",
+      "putty",
+      "kg",
+      "SHORTAGE_FROM_EFFECTIVE_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "primer-consumed",
+      "before-paint",
+      "kg",
+      "MANUFACTURER_ONE_COAT_CONSUMPTION",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-order",
+      "before-paint",
+      "kg",
+      "PACKAGE_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-packages",
+      "before-paint",
+      "item",
+      "PACKAGE_COUNT_FROM_EFFECTIVE_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-remaining",
+      "before-paint",
+      "kg",
+      "REMAINING_FROM_EFFECTIVE_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-shortage",
+      "before-paint",
+      "kg",
+      "SHORTAGE_FROM_EFFECTIVE_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-contribution-before-paint",
+      "before-paint",
+      "kg",
+      "ONE_DECLARED_APPLICATION_CONTRIBUTION_NO_SECOND_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "ct42-consumed",
+      "paint",
+      "l",
+      "MANUFACTURER_TWO_COATS_TOTAL_CONSUMPTION",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "ct42-order",
+      "paint",
+      "l",
+      "PACKAGE_ORDER",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "ct42-packages",
+      "paint",
+      "item",
+      "PACKAGE_COUNT_FROM_EFFECTIVE_ORDER",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "ct42-remaining",
+      "paint",
+      "l",
+      "REMAINING_FROM_EFFECTIVE_ORDER",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "ct42-shortage",
+      "paint",
+      "l",
+      "SHORTAGE_FROM_EFFECTIVE_ORDER",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "whole-work",
+      "preparation",
+      "m2",
+      "ONE_COMPLETE_COMMERCIAL_WORK_WITH_EXPLICIT_SCOPE",
+      "kg-krer15-wall-finishing-r502",
+      "ROW"
+    ],
+    [
+      "process-preparation",
+      "preparation",
+      "m2",
+      "INCLUDED_PROCESS_ON_MEASURED_WALL_FIELD",
+      "kg-sp65-101-2025-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "process-putty",
+      "putty",
+      "m2",
+      "INCLUDED_PUTTY_MOISTENING_SANDING",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "process-before-paint",
+      "before-paint",
+      "m2",
+      "INCLUDED_REQUIRED_PRIMER_AND_DRYING",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "process-paint",
+      "paint",
+      "m2",
+      "INCLUDED_TWO_COATS_AND_DRYING",
+      "henkel-ct42-en-gl-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "process-completion",
+      "completion",
+      "m2",
+      "INCLUDED_CLEANUP_AND_HANDOVER",
+      "kg-sp65-101-2025-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "paint-putty-primer-workers",
+      "paint",
+      "man_hour",
+      "A_DIV_100_TIMES_43_56_WHOLE_NORM",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "paint-operators",
+      "paint",
+      "man_hour",
+      "A_DIV_100_TIMES_0_02_ALREADY_IN_MACHINE_SCOPE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "paint-lift",
+      "paint",
+      "machine_hour",
+      "A_DIV_100_TIMES_0_02_INCLUDED_MACHINE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "paint-truck",
+      "paint",
+      "machine_hour",
+      "A_DIV_100_TIMES_0_15_INCLUDED_MACHINE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "sanding-sheet",
+      "putty",
+      "m2",
+      "A_DIV_100_TIMES_0_84_INCLUDED_CONSUMABLE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "rags",
+      "completion",
+      "kg",
+      "A_DIV_100_TIMES_0_3_INCLUDED_CONSUMABLE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "included-water",
+      "putty",
+      "",
+      "EXPLICIT_INCLUDED_WATER_NO_INVENTED_LITRES_OR_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "included-tools",
+      "putty",
+      "",
+      "EXPLICIT_INCLUDED_ORDINARY_TOOLS_NO_INVENTED_COUNT_OR_ORDER",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "included-protection",
+      "preparation",
+      "",
+      "EXPLICIT_INCLUDED_PROTECTION_NO_SECOND_PAYMENT",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "included-ppe",
+      "preparation",
+      "",
+      "EXPLICIT_INCLUDED_PPE_NO_SECOND_PAYMENT",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "included-local-supply-cleanup",
+      "completion",
+      "",
+      "EXPLICIT_INCLUDED_ONSITE_SUPPLY_CLEANUP",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "check-base",
+      "preparation",
+      "",
+      "ACTUAL_BASE_OBJECT_SCOPE_NOT_A_NUMERICAL_NORM",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "check-site",
+      "preparation",
+      "",
+      "ACTUAL_SITE_OBJECT_SCOPE_NOT_A_NUMERICAL_NORM",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "mixing-water",
+      "putty",
+      "l",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "mixing-water-min",
+      "putty",
+      "l",
+      "NON_ADDITIVE_DRY_CONSUMPTION_TIMES_.38",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "mixing-water-max",
+      "putty",
+      "l",
+      "NON_ADDITIVE_DRY_CONSUMPTION_TIMES_.42",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "wetting-water",
+      "putty",
+      "l",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "washing-water",
+      "completion",
+      "l",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "henkel-ct42-en-gl-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "mixing-drive",
+      "putty",
+      "item",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "mixing-paddle",
+      "putty",
+      "item",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "mixing-vessel",
+      "putty",
+      "item",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "water-measure-vessel",
+      "putty",
+      "item",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "putty-applicator",
+      "putty",
+      "item",
+      "NO_ASSUMED_QUANTITY_SOURCE_GAP",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "finish-applicator",
+      "before-paint",
+      "item",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "protecting-film",
+      "preparation",
+      "m2",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "masking-tape",
+      "preparation",
+      "m",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "protective-gloves",
+      "preparation",
+      "pair",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "protective-glasses",
+      "preparation",
+      "item",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "respiratory-protection",
+      "preparation",
+      "item",
+      "NO_ASSUMED_QUANTITY_OBJECT_FACT",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "primer-paint-transition",
+      "before-paint",
+      "",
+      "NO_ASSUMED_QUANTITY_SOURCE_GAP",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ]
+  ],
+  "independentExpected": [
     {
       "area": 20.1,
       "puttyMm": 2,
@@ -155,7 +592,11 @@
         "paint-truck": 0.03015,
         "sanding-sheet": 0.16884,
         "rags": 0.0603
-      }
+      },
+      "mixingWaterRangeL": [
+        27.4968,
+        30.3912
+      ]
     },
     {
       "area": 50,
@@ -185,15 +626,394 @@
         "paint-truck": 0.075,
         "sanding-sheet": 0.42,
         "rags": 0.15
-      }
+      },
+      "mixingWaterRangeL": [
+        34.2,
+        37.8
+      ]
     }
   ],
-  "independence":"The35 semantic obligations were authored from the declared manufacturer/KRER/technical/commercial scope, not enumerated from emitted resource rows. The staged descriptor validates their references against the one canonical subject factory.",
-  "noPriceTransfer":true,
-  "noNewWorkIdentity":true,
-  "noDatabaseUuidClaimed":true,
-  "parentFixturePath":"data/estimate-benchmarks/fixtures/interior-wall-paint-retained-parent-r623.json",
-  "parentFixtureSha256":"024a7681089fb9164cd8ce89adeccc764707879b2e318d5f5697e566dde7e15e",
-  "capturedParentSha256":"a255a548b3c42fc9ee9cf4135b414e650d0c41c4e0130067e6f7d61d5ea39abe",
-  "producerCaptureSha256":"4bb8980f7fba6bf6d015388964787a4876b9fefb49617ac3fea5748c4e0d3124"
+  "independence": "The35 semantic obligations were authored from the declared manufacturer/KRER/technical/commercial scope, not enumerated from emitted resource rows. The staged descriptor validates their references against the one canonical subject factory.",
+  "noPriceTransfer": true,
+  "noNewWorkIdentity": true,
+  "noDatabaseUuidClaimed": true,
+  "parentFixturePath": "data/estimate-benchmarks/fixtures/interior-wall-paint-retained-parent-r623.json",
+  "parentFixtureSha256": "024a7681089fb9164cd8ce89adeccc764707879b2e318d5f5697e566dde7e15e",
+  "capturedParentSha256": "a255a548b3c42fc9ee9cf4135b414e650d0c41c4e0130067e6f7d61d5ea39abe",
+  "producerCaptureSha256": "4bb8980f7fba6bf6d015388964787a4876b9fefb49617ac3fea5748c4e0d3124",
+  "physicalResourceCoverageComplete": false,
+  "physicalKitR240": [
+    {
+      "id": "mixing-water",
+      "titleRu": "Вода для затворения цементной шпаклёвки",
+      "unitId": "l",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "p2: 0.38–0.42 l/kg dry mixture. Exact water within range is actual accepted batching data; no midpoint or ordered-bag mass is substituted. The protected actual method factor, if ever admitted by the existing authority route, has constraints0.38≤factor≤0.42; water volume=consumed dry kg×factor. Unknown factor remains null.",
+      "inputId": "mixing_water_l_per_kg",
+      "parameterTitleRu": "Принятая вода затворения, л/кг сухой смеси",
+      "parameterUnitId": null,
+      "inputMinimum": 0.38,
+      "inputMaximum": 0.42,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "mixing-water-min",
+      "titleRu": "Вода затворения: нижняя расчётная граница",
+      "unitId": "l",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "LOWER_BOUND",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "p2: dry consumed kg ×0.38; boundary only, not a second resource or actual water.",
+      "inputId": "mixing_water_min",
+      "parameterTitleRu": "Вода затворения: нижняя расчётная граница",
+      "parameterUnitId": "l",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "mixing-water-max",
+      "titleRu": "Вода затворения: верхняя расчётная граница",
+      "unitId": "l",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "UPPER_BOUND",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "p2: dry consumed kg ×0.42; boundary only, not a second resource or actual water.",
+      "inputId": "mixing_water_max",
+      "parameterTitleRu": "Вода затворения: верхняя расчётная граница",
+      "parameterUnitId": "l",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "wetting-water",
+      "titleRu": "Вода для увлажнения цементного основания",
+      "unitId": "l",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "p1 requires abundant moistening; no l/m² rate. Actual base absorption and wetting method are required.",
+      "inputId": "wetting_water",
+      "parameterTitleRu": "Вода для увлажнения цементного основания",
+      "parameterUnitId": "l",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "washing-water",
+      "titleRu": "Вода для промывки инструмента",
+      "unitId": "l",
+      "stage": "completion",
+      "sourceIndex": 1,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty",
+        "before-paint",
+        "paint",
+        "completion"
+      ],
+      "basisRu": "CT42 p2 and primer p2 require immediate water washing. Actual tool/wash cycle and measured water missing; no generic l/m².",
+      "inputId": "washing_water",
+      "parameterTitleRu": "Вода для промывки инструмента",
+      "parameterUnitId": "l",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "mixing-drive",
+      "titleRu": "Миксер для строительных смесей",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty",
+        "paint"
+      ],
+      "basisRu": "CT225 p1 mixer or drill, 400–800 rpm; CT42 p1 drill/mixer about2 min. Actual compatible drive/count/provision missing.",
+      "inputId": "mixing_drive",
+      "parameterTitleRu": "Миксер для строительных смесей",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "mixing-paddle",
+      "titleRu": "Насадка для перемешивания вязких смесей",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty",
+        "paint"
+      ],
+      "basisRu": "CT225 p1 viscous-mixture paddle; no universal tool count.",
+      "inputId": "mixing_paddle",
+      "parameterTitleRu": "Насадка для перемешивания вязких смесей",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "mixing-vessel",
+      "titleRu": "Ёмкость для приготовления смеси",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty",
+        "paint"
+      ],
+      "basisRu": "CT225 p1 gradually add dry mix to measured water; CT42 p2 non-rusty containers. Capacity and actual simultaneous batches missing.",
+      "inputId": "mixing_vessel",
+      "parameterTitleRu": "Ёмкость для приготовления смеси",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "water-measure-vessel",
+      "titleRu": "Мерная ёмкость для воды затворения",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "CT225 p1 precisely measured water; functional metering requirement, no prescribed vessel capacity/count.",
+      "inputId": "water_measure_vessel",
+      "parameterTitleRu": "Мерная ёмкость для воды затворения",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "putty-applicator",
+      "titleRu": "Инструмент нанесения цементной шпаклёвки",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "SOURCE_GAP",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "CT225 p1 says traditional tools/methods, one pass≤3mm. Exact compatible applicator type/specification and count are not declared.",
+      "inputId": "putty_applicator",
+      "parameterTitleRu": "Инструмент нанесения цементной шпаклёвки",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "finish-applicator",
+      "titleRu": "Инструмент нанесения грунта и краски",
+      "unitId": "item",
+      "stage": "before-paint",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "before-paint",
+        "paint"
+      ],
+      "basisRu": "Primer p2 roller/brush/spray; CT42 p1 brush/roller/spray. Actual selected compatible tool/method/count are absent; alternatives are not summed as3 tools.",
+      "inputId": "finish_applicator",
+      "parameterTitleRu": "Инструмент нанесения грунта и краски",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "protecting-film",
+      "titleRu": "Плёнка для защиты соседних поверхностей",
+      "unitId": "m2",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation"
+      ],
+      "basisRu": "Primer p2 and CT42 p2 require protection of uncoated surfaces. Actual protected geometry/overlaps/reuse missing.",
+      "inputId": "protecting_film",
+      "parameterTitleRu": "Плёнка для защиты соседних поверхностей",
+      "parameterUnitId": "m2",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "masking-tape",
+      "titleRu": "Малярная лента",
+      "unitId": "m",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation"
+      ],
+      "basisRu": "Primer p2 explicitly names masking tape. Actual boundary length/width/reuse missing.",
+      "inputId": "masking_tape",
+      "parameterTitleRu": "Малярная лента",
+      "parameterUnitId": "m",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "protective-gloves",
+      "titleRu": "Перчатки с защитой от химических факторов",
+      "unitId": "pair",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation",
+        "putty",
+        "before-paint",
+        "paint",
+        "completion"
+      ],
+      "basisRu": "Primer p2 requires chemical protection gloves; CT42 p2 gloves. Actual workers, service duration/replacement and compatible PPE missing.",
+      "inputId": "protective_gloves",
+      "parameterTitleRu": "Перчатки с защитой от химических факторов",
+      "parameterUnitId": "pair",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "protective-glasses",
+      "titleRu": "Защитные очки",
+      "unitId": "item",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation",
+        "putty",
+        "before-paint",
+        "paint",
+        "completion"
+      ],
+      "basisRu": "Primer p2 and CT42 p2 glasses; CT225 p1 eyes/skin protection. Actual workers and provision missing.",
+      "inputId": "protective_glasses",
+      "parameterTitleRu": "Защитные очки",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "respiratory-protection",
+      "titleRu": "Респиратор для отделочных работ",
+      "unitId": "item",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation",
+        "putty",
+        "before-paint",
+        "paint",
+        "completion"
+      ],
+      "basisRu": "Primer p2 respirator. Exact protection selection and crew/provision/replacement missing; no medical or arbitrary disposable count.",
+      "inputId": "respiratory_protection",
+      "parameterTitleRu": "Респиратор для отделочных работ",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "primer-paint-transition",
+      "titleRu": "Совместимость подготовки грунта под окраску",
+      "unitId": "",
+      "stage": "before-paint",
+      "sourceIndex": 3,
+      "kind": "SOURCE_GAP",
+      "requiredOperations": [
+        "before-paint"
+      ],
+      "basisRu": "Primer06/2026 p2 both says generally undiluted and specifically recommends1:1 under paint. Historical R502 fixes undiluted; exact accepted method/rate for this transition not established. Do not halve product or add equal water automatically.",
+      "inputId": "primer_paint_transition",
+      "parameterTitleRu": "Совместимость подготовки грунта под окраску",
+      "parameterUnitId": null,
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    }
+  ],
+  "physicalResidualR240": {
+    "sourceGapIds": [
+      "putty-applicator",
+      "primer-paint-transition"
+    ],
+    "actualObjectFactIds": [
+      "mixing-water",
+      "wetting-water",
+      "washing-water",
+      "mixing-drive",
+      "mixing-paddle",
+      "mixing-vessel",
+      "water-measure-vessel",
+      "finish-applicator",
+      "protecting-film",
+      "masking-tape",
+      "protective-gloves",
+      "protective-glasses",
+      "respiratory-protection"
+    ],
+    "actualApprovedProjectPackages": 0,
+    "freshSelectedParentRead": "HOLD_ROOT_REQUIRED",
+    "unknownFactsAreNotNewPublicInputs": true,
+    "noNewProducer": true,
+    "supplierStockReserveProvisionUnknown": true
+  },
+  "finitePriceFixtureR240": {
+    "nature": "TEST_ONLY synthetic KGS per stated row unit, no market/source tariff or real quotation",
+    "areaM2": 20.1,
+    "puttyMm": 2,
+    "pricesByResourceKey": {
+      "ct225-order": 40,
+      "primer-order": 200,
+      "ct42-order": 300,
+      "whole-work": 250
+    },
+    "expectedAmounts": {
+      "ct225-order": 3000,
+      "primer-order": 1000,
+      "ct42-order": 4500,
+      "whole-work": 5025
+    },
+    "expectedTotalKgs": 13525,
+    "physicalUnknownsRemain": 15,
+    "projectPackages": 0,
+    "procurementAdmissionNotExtended": true
+  }
 }

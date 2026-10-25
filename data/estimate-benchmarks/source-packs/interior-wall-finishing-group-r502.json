@@ -1,5 +1,5 @@
 {
-  "contract": "rik-expo-app.interior-wall-finishing-cement-finish-r502.v3",
+  "contract": "rik-expo-app.interior-wall-finishing-cement-finish-r502.physical-kit-r240.v1",
   "titleRu": "Финишная отделка стен: цементная шпаклёвка и акриловая окраска",
   "namespace": "wall_finish_cement_r502_",
   "areaId": "net_wall_area_m2",
@@ -42,7 +42,7 @@
   "managedCapturedParentGuardRequired": true,
   "catalogAppend": false,
   "physicalScopeRu": "Уже ровная прочная цементная штукатурка с обычной равномерной впитываемостью, плоские участки без проёмов и откосов. Увлажнение, цементное финишное шпаклевание фактическим слоем до3мм, шлифование, одно укрепляющее грунтование и акриловая окраска в два слоя. Повторного оштукатуривания нет; бетон, гипс, кладка и дефектные основания исключены.",
-  "wholeWorkScopeRu": "Одна цена за м² включает подготовку обычной рабочей зоны, обеспыливание, защиту соседних поверхностей, предусмотренное паспортом увлажнение, приготовление и нанесение цементной финишной шпаклёвки, шлифование, выдержки и контроль готовности, одно нанесение выбранного укрепляющего грунта перед окраской, две окраски с межслойной сушкой, подачу упакованных материалов в обычную рабочую зону, промывку инструмента и уборку пыли/упаковки. В цену входят обычный инструмент, нормативные машины/расходники, СИЗ и чистая вода для затворения, увлажнения и промывки без отдельного литрового заказа. Три основных продукта оплачиваются отдельно. Общая старая цена труда автоматически не наследуется: коммерческий состав другой.",
+  "wholeWorkScopeRu": "Одна цена за м² включает подготовку обычной рабочей зоны, обеспыливание, защиту соседних поверхностей, предусмотренное паспортом увлажнение, приготовление и нанесение цементной финишной шпаклёвки, шлифование, выдержки и контроль готовности, одно нанесение выбранного укрепляющего грунта перед окраской, две окраски с межслойной сушкой, подачу упакованных материалов в обычную рабочую зону, промывку инструмента и уборку пыли/упаковки. В цену входят обычный инструмент, нормативные машины/расходники, СИЗ и чистая вода для затворения, увлажнения и промывки без отдельного литрового заказа. Три основных продукта оплачиваются отдельно. Общая старая цена труда автоматически не наследуется: коммерческий состав другой. Коммерческое включение не подтверждает фактическое количество и обеспечение инструмента, воды, защиты и СИЗ. Поимённые потребности сохраняются открытыми; нижняя и верхняя границы воды затворения не являются двумя расходуемыми ресурсами.",
   "excludedRu": [
     "Демонтаж, ремонт трещин/пустот/сырости/плесени, замена непрочной штукатурки и усиление основания.",
     "Бетон/гипс/кладка, сильно или неравномерно впитывающие поверхности и смешанные основания.",
@@ -59,7 +59,7 @@
       "url": "https://dm.henkel-dam.com/is/content/henkel/kz-ru-ceresit-ct225-fasadnaya-shpaklevka-dlya-vnutrennih-rabot-tds-kz-ru",
       "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/ct225-ru-KZ.pdf",
       "sha256": "a25e53b931b79edd69a86da8b1b3a107b6a0283d1f2ea9c08eafb0fa598df717",
-      "locatorRu": "p1: цементно-песчаные/цементно-известковые основания, прочное чистое сухое основание перед работой обильно увлажнить; один фактический слой≤3мм; шлифование после24ч, окраска после72ч. p2:≈1.8кг/м²/мм,25кг; не переносить1.2кг/м²/мм другой ru_RU версии."
+      "locatorRu": "p1: цементно-песчаные/цементно-известковые основания, прочное чистое сухое основание перед работой обильно увлажнить; один фактический слой≤3мм; шлифование после24ч, окраска после72ч. p2:≈1.8кг/м²/мм,25кг; не переносить1.2кг/м²/мм другой ru_RU версии. p1: вода+15…+20°C, миксер/дрель с насадкой400–800об/мин, пауза5мин и повторное перемешивание, использовать≤1ч; p2:0.38–0.42л/кг сухой смеси."
     },
     {
       "id": "henkel-ct42-en-gl-r502",
@@ -87,7 +87,7 @@
       "url": "https://www.knauf.ru/upload/iblock/215/ggu7x06mvv4w1pq8t5w2lw7b2ynkr25y/38-IL-KNAUF_Tifengrund-_23_06_2026_-v02-Preview.pdf",
       "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/tiefengrund-06-2026.pdf",
       "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9",
-      "locatorRu": "p1: цементные штукатурки/шпаклёвки перед тонкослойной цементной штукатуркой/краской; p2:≈0.1кг/м² одно нанесение, готовый состав без разбавления,5/10кг, высыхание≥3ч. В выбранном финишном комплексе применяется одно нанесение перед окраской по нормально впитывающей цементной шпаклёвке."
+      "locatorRu": "p1: цементные штукатурки/шпаклёвки перед тонкослойной цементной штукатуркой/краской; p2:≈0.1кг/м² одно нанесение, готовый состав без разбавления,5/10кг, высыхание≥3ч. В выбранном финишном комплексе применяется одно нанесение перед окраской по нормально впитывающей цементной шпаклёвке. Уточнение R240 p2: общее указание «не разбавляя» соседствует со специальной рекомендацией под покраску1:1. Выбранный исторический undiluted переход не объявляется автоматически подтверждённым; quantity rule сохраняется до точного решения."
     },
     {
       "id": "kg-krer15-wall-finishing-r502",
@@ -235,8 +235,8 @@
   ],
   "compatibilityBasis": "SOURCE_SUPPORTED_CEMENT_PUTTY_SUBSTRATE_CLASSES_AND_EXPLICIT_CT225_REFERENCE; NOT_WRITTEN_CROSS_BRAND_SYSTEM_APPROVAL",
   "transitionBasisRu": "CT225 ru_KZ p1 допускает цементно-песчаные/цементно-известковые основания и предписывает увлажнение без CT17; КНАУФ-Тифенгрунд06/2026 p1–2 допускает цементные шпаклёвки перед краской,≈0.1кг/м² одно нанесение; СПКР65-101:2025 §7.5.3 требует грунт перед окраской; CT42 en_GL0819 p1–2 допускает прочные сухие минеральные основания и даёт≈0.3л/м² за2слоя. CT42 ru_KZ p1 дополнительно прямо указывает CT225; нормы/тара этого справочного варианта не смешиваются.",
-  "quantityScope": "SELECTED_FINISH_SCOPE_ALL_REQUIRED_QUANTITIES_CALCULATED",
-  "selectedScopeQuantitiesComplete": true,
+  "quantityScope": "KNOWN_PRODUCT_AND_KG_NORM_QUANTITIES_WITH_EXPLICIT_PHYSICAL_REQUIREMENTS_R240",
+  "selectedScopeQuantitiesComplete": false,
   "engineeringAcceptance": false,
   "publication": false,
   "fullMasterAcceptance": false,
@@ -302,5 +302,379 @@
       }
     }
   ],
-  "verifiedAt": "2026-10-20T00:00:00+06:00"
+  "verifiedAt": "2026-10-20T00:00:00+06:00",
+  "physicalKitR240": [
+    {
+      "id": "mixing-water",
+      "titleRu": "Вода для затворения цементной шпаклёвки",
+      "unitId": "l",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "p2: 0.38–0.42 l/kg dry mixture. Exact water within range is actual accepted batching data; no midpoint or ordered-bag mass is substituted. The protected actual method factor, if ever admitted by the existing authority route, has constraints0.38≤factor≤0.42; water volume=consumed dry kg×factor. Unknown factor remains null.",
+      "inputId": "mixing_water_l_per_kg",
+      "parameterTitleRu": "Принятая вода затворения, л/кг сухой смеси",
+      "parameterUnitId": null,
+      "inputMinimum": 0.38,
+      "inputMaximum": 0.42,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "mixing-water-min",
+      "titleRu": "Вода затворения: нижняя расчётная граница",
+      "unitId": "l",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "LOWER_BOUND",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "p2: dry consumed kg ×0.38; boundary only, not a second resource or actual water.",
+      "inputId": "mixing_water_min",
+      "parameterTitleRu": "Вода затворения: нижняя расчётная граница",
+      "parameterUnitId": "l",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "mixing-water-max",
+      "titleRu": "Вода затворения: верхняя расчётная граница",
+      "unitId": "l",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "UPPER_BOUND",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "p2: dry consumed kg ×0.42; boundary only, not a second resource or actual water.",
+      "inputId": "mixing_water_max",
+      "parameterTitleRu": "Вода затворения: верхняя расчётная граница",
+      "parameterUnitId": "l",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "wetting-water",
+      "titleRu": "Вода для увлажнения цементного основания",
+      "unitId": "l",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "p1 requires abundant moistening; no l/m² rate. Actual base absorption and wetting method are required.",
+      "inputId": "wetting_water",
+      "parameterTitleRu": "Вода для увлажнения цементного основания",
+      "parameterUnitId": "l",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "washing-water",
+      "titleRu": "Вода для промывки инструмента",
+      "unitId": "l",
+      "stage": "completion",
+      "sourceIndex": 1,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty",
+        "before-paint",
+        "paint",
+        "completion"
+      ],
+      "basisRu": "CT42 p2 and primer p2 require immediate water washing. Actual tool/wash cycle and measured water missing; no generic l/m².",
+      "inputId": "washing_water",
+      "parameterTitleRu": "Вода для промывки инструмента",
+      "parameterUnitId": "l",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "mixing-drive",
+      "titleRu": "Миксер для строительных смесей",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty",
+        "paint"
+      ],
+      "basisRu": "CT225 p1 mixer or drill, 400–800 rpm; CT42 p1 drill/mixer about2 min. Actual compatible drive/count/provision missing.",
+      "inputId": "mixing_drive",
+      "parameterTitleRu": "Миксер для строительных смесей",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "mixing-paddle",
+      "titleRu": "Насадка для перемешивания вязких смесей",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty",
+        "paint"
+      ],
+      "basisRu": "CT225 p1 viscous-mixture paddle; no universal tool count.",
+      "inputId": "mixing_paddle",
+      "parameterTitleRu": "Насадка для перемешивания вязких смесей",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "mixing-vessel",
+      "titleRu": "Ёмкость для приготовления смеси",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty",
+        "paint"
+      ],
+      "basisRu": "CT225 p1 gradually add dry mix to measured water; CT42 p2 non-rusty containers. Capacity and actual simultaneous batches missing.",
+      "inputId": "mixing_vessel",
+      "parameterTitleRu": "Ёмкость для приготовления смеси",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "water-measure-vessel",
+      "titleRu": "Мерная ёмкость для воды затворения",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "CT225 p1 precisely measured water; functional metering requirement, no prescribed vessel capacity/count.",
+      "inputId": "water_measure_vessel",
+      "parameterTitleRu": "Мерная ёмкость для воды затворения",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "putty-applicator",
+      "titleRu": "Инструмент нанесения цементной шпаклёвки",
+      "unitId": "item",
+      "stage": "putty",
+      "sourceIndex": 0,
+      "kind": "SOURCE_GAP",
+      "requiredOperations": [
+        "putty"
+      ],
+      "basisRu": "CT225 p1 says traditional tools/methods, one pass≤3mm. Exact compatible applicator type/specification and count are not declared.",
+      "inputId": "putty_applicator",
+      "parameterTitleRu": "Инструмент нанесения цементной шпаклёвки",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "finish-applicator",
+      "titleRu": "Инструмент нанесения грунта и краски",
+      "unitId": "item",
+      "stage": "before-paint",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "before-paint",
+        "paint"
+      ],
+      "basisRu": "Primer p2 roller/brush/spray; CT42 p1 brush/roller/spray. Actual selected compatible tool/method/count are absent; alternatives are not summed as3 tools.",
+      "inputId": "finish_applicator",
+      "parameterTitleRu": "Инструмент нанесения грунта и краски",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "protecting-film",
+      "titleRu": "Плёнка для защиты соседних поверхностей",
+      "unitId": "m2",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation"
+      ],
+      "basisRu": "Primer p2 and CT42 p2 require protection of uncoated surfaces. Actual protected geometry/overlaps/reuse missing.",
+      "inputId": "protecting_film",
+      "parameterTitleRu": "Плёнка для защиты соседних поверхностей",
+      "parameterUnitId": "m2",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "masking-tape",
+      "titleRu": "Малярная лента",
+      "unitId": "m",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation"
+      ],
+      "basisRu": "Primer p2 explicitly names masking tape. Actual boundary length/width/reuse missing.",
+      "inputId": "masking_tape",
+      "parameterTitleRu": "Малярная лента",
+      "parameterUnitId": "m",
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    },
+    {
+      "id": "protective-gloves",
+      "titleRu": "Перчатки с защитой от химических факторов",
+      "unitId": "pair",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation",
+        "putty",
+        "before-paint",
+        "paint",
+        "completion"
+      ],
+      "basisRu": "Primer p2 requires chemical protection gloves; CT42 p2 gloves. Actual workers, service duration/replacement and compatible PPE missing.",
+      "inputId": "protective_gloves",
+      "parameterTitleRu": "Перчатки с защитой от химических факторов",
+      "parameterUnitId": "pair",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "protective-glasses",
+      "titleRu": "Защитные очки",
+      "unitId": "item",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation",
+        "putty",
+        "before-paint",
+        "paint",
+        "completion"
+      ],
+      "basisRu": "Primer p2 and CT42 p2 glasses; CT225 p1 eyes/skin protection. Actual workers and provision missing.",
+      "inputId": "protective_glasses",
+      "parameterTitleRu": "Защитные очки",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "respiratory-protection",
+      "titleRu": "Респиратор для отделочных работ",
+      "unitId": "item",
+      "stage": "preparation",
+      "sourceIndex": 3,
+      "kind": "OBJECT_FACT",
+      "requiredOperations": [
+        "preparation",
+        "putty",
+        "before-paint",
+        "paint",
+        "completion"
+      ],
+      "basisRu": "Primer p2 respirator. Exact protection selection and crew/provision/replacement missing; no medical or arbitrary disposable count.",
+      "inputId": "respiratory_protection",
+      "parameterTitleRu": "Респиратор для отделочных работ",
+      "parameterUnitId": "item",
+      "inputMinimum": 1,
+      "inputMaximum": null,
+      "inputValueType": "integer"
+    },
+    {
+      "id": "primer-paint-transition",
+      "titleRu": "Совместимость подготовки грунта под окраску",
+      "unitId": "",
+      "stage": "before-paint",
+      "sourceIndex": 3,
+      "kind": "SOURCE_GAP",
+      "requiredOperations": [
+        "before-paint"
+      ],
+      "basisRu": "Primer06/2026 p2 both says generally undiluted and specifically recommends1:1 under paint. Historical R502 fixes undiluted; exact accepted method/rate for this transition not established. Do not halve product or add equal water automatically.",
+      "inputId": "primer_paint_transition",
+      "parameterTitleRu": "Совместимость подготовки грунта под окраску",
+      "parameterUnitId": null,
+      "inputMinimum": 0,
+      "inputMaximum": null,
+      "inputValueType": "decimal"
+    }
+  ],
+  "mixingWaterR240": {
+    "unit": "l",
+    "basisDryKg": "CONSUMED_CT225_NOT_ROUNDED_ORDER",
+    "minimumLPerKg": 0.38,
+    "maximumLPerKg": 0.42,
+    "waterTemperatureC": [
+      15,
+      20
+    ],
+    "mixingSpeedRpm": [
+      400,
+      800
+    ],
+    "maturationMinutes": 5,
+    "remixRequired": true,
+    "usableForHours": 1,
+    "actualQuantityNotSelectedByAlgorithm": true,
+    "lowerUpperNotAdditive": true
+  },
+  "physicalResourceCoverageComplete": false,
+  "predecessorContractR240": "rik-expo-app.interior-wall-finishing-cement-finish-r502.v3",
+  "physicalResidualR240": {
+    "sourceGapIds": [
+      "putty-applicator",
+      "primer-paint-transition"
+    ],
+    "actualObjectFactIds": [
+      "mixing-water",
+      "wetting-water",
+      "washing-water",
+      "mixing-drive",
+      "mixing-paddle",
+      "mixing-vessel",
+      "water-measure-vessel",
+      "finish-applicator",
+      "protecting-film",
+      "masking-tape",
+      "protective-gloves",
+      "protective-glasses",
+      "respiratory-protection"
+    ],
+    "actualApprovedProjectPackages": 0,
+    "freshSelectedParentRead": "HOLD_ROOT_REQUIRED",
+    "unknownFactsAreNotNewPublicInputs": true,
+    "noNewProducer": true,
+    "supplierStockReserveProvisionUnknown": true
+  }
 }

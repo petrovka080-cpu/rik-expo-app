@@ -1,0 +1,49 @@
+{
+  "contract": "gox-build.low-current.idc-whole-manual-post/r24",
+  "hostCatalogId": "canonical-work:expanded:low_voltage_system",
+  "publicWorkKind": "STRUCTURED_CABLING_EXISTING_OWNER",
+  "scopeRu": "Физическое обеспечение ручного поста разделки и IDC-оконцевания медных линий на совместимых колодках 110 или 66. Только весь указанный состав IS50/11292000; не монтажная норма, не сертификация линии, не наличие инструмента на конкретном объекте.",
+  "prefix": "low-current:idc-manual-post:r24",
+  "profileId": "lcs_idc_hand_post_profile_r24",
+  "frontCountId": "lcs_idc_simultaneous_manual_posts_r24",
+  "notSelected": "Пост этого состава не выбран",
+  "profiles": [
+    {"key": "IDC110_AWG24", "titleRu": "Колодки IDC 110, медные жилы 24 AWG", "interface": "110", "wireGauge": "24 AWG", "impact": "LOW"},
+    {"key": "IDC110_AWG26", "titleRu": "Колодки IDC 110, медные жилы 26 AWG", "interface": "110", "wireGauge": "26 AWG", "impact": "LOW"},
+    {"key": "IDC66_AWG24", "titleRu": "Колодки IDC 66, медные жилы 24 AWG", "interface": "66", "wireGauge": "24 AWG", "impact": "LOW"},
+    {"key": "IDC66_AWG26", "titleRu": "Колодки IDC 66, медные жилы 26 AWG", "interface": "66", "wireGauge": "26 AWG", "impact": "LOW"}
+  ],
+  "parts": [
+    {"key": "impact-tool", "titleRu": "Ударный инструмент IDC-оконцевания с низким усилием", "internalModel": "D914S", "countPerPost": 1, "unitId": "piece", "source": "kits+impact", "assemblyBoundary": "Встроенные крючок и толкатель входят в рукоятку; не отдельные закупочные позиции."},
+    {"key": "snips", "titleRu": "Ножницы для подготовки медного кабеля", "internalModel": "Electrician's D-Snips", "countPerPost": 1, "unitId": "piece", "source": "kits", "assemblyBoundary": "Один штатный инструмент изготовителя в поставке IS50."},
+    {"key": "cable-stripper", "titleRu": "Ручной инструмент снятия оболочки кабеля", "internalModel": "Cable Stripper supplied in IS50", "countPerPost": 1, "unitId": "piece", "source": "kits", "assemblyBoundary": "Применимость к фактической оболочке проверяется отдельно; не назначена глубина реза или универсальный диаметр."},
+    {"key": "66-110-blade", "titleRu": "Сменное рабочее лезвие для контактов IDC 66 и 110", "internalModel": "EverSharp 66/110 cut blade", "countPerPost": 1, "unitId": "piece", "source": "kits+impact", "assemblyBoundary": "Одна перечисленная сменная сборка 66/110; две отдельные дополнительные головки и запасные лезвия не добавлены."},
+    {"key": "pouch", "titleRu": "Поясной чехол ручного кабельного инструмента", "internalModel": "Dur-A-Grip PVC pouch, IS50", "countPerPost": 1, "unitId": "piece", "source": "kits", "assemblyBoundary": "Штатный чехол полного выбранного состава; пустой чехол отдельно не покупается."}
+  ],
+  "source": {
+    "kind": "MANUFACTURER_DECLARED_PACKAGE_CONTENTS_AND_TOOL_CAPABILITY",
+    "url": "https://www.flukenetworks.com/datacom-cabling/installation-tools/Pro-Tool-Kits",
+    "artifactPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\idc110-whole-manual-post-r1\\primary\\pro-tool-kits.html",
+    "sha256": "471414963f60b1abe041ab4afe6d1a4fc6d3c7579c01584819dad5e865c364c2",
+    "locator": "Features: IS50; Models11292000; all kits include pouch; accessories11292400 pouch-only is not a second item",
+    "supportingUrl": "https://www.flukenetworks.com/datacom-cabling/installation-tools/D914-Series-Impact-Tools",
+    "supportingArtifactPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\idc110-whole-manual-post-r1\\primary\\d914-series-impact-tools.html",
+    "supportingSha256": "ca065b050fd23897f6264e4ebd40b3f8b155a616697d4c2fdd78d35cf5b91474",
+    "supportingLocator": "Product Highlights: built-in hook/spudger, LOW for24/26AWG; Models10061810 with one66/110cutblade"
+  },
+  "quantityBasis": "EXPLICIT_NUMBER_OF_SIMULTANEOUSLY_EQUIPPED_PHYSICAL_POSTS_F; EACH_DECLARED_PART=F; NO_DEFAULT_F",
+  "quantityIsInstallationConsumptionNorm": false,
+  "priceScopeRu": "Один владелец договорной цены обеспечения всех пяти перечисленных первоначально исправных компонентов на F постах. Это не покупка пяти отдельных инструментов, не износ, не часы, не труд оконцевания и не цена сертификации.",
+  "requiresActualObjectFacts": ["Количество одновременно оборудуемых постов, не число розеток/портов/работников и не норматив часов", "Фактические колодки и кабель допускают именно выбранный интерфейс110/66 и жилы24/26AWG", "Индивидуальная совместимость инструмента снятия оболочки с реальным кабелем и регулировкой", "Первоначальная исправность и наличие всего списка; выбор профиля не подтверждает склад/договор/безопасное состояние цепи"],
+  "notCoveredRu": ["Установка розеток, панелей, кабельных трасс и поставка кабеля", "Пайка, обжим наконечников, модульных вилок RJ45, tool-less разъёмы, иные рабочие головки", "Сертификационный тестер, измерения permanent-link/channel, протоколы и приемка сети", "Проверка наличия/отсутствия напряжения, 24В шлейфы пожарной сигнализации, безопасная изоляция", "Запасные детали, износ/периодическое обслуживание, батареи, источники света и маркировочный принтер", "СИЗ, доступ, рабочее место, логистика, труд и материал оконцевания"],
+  "instructionsBoundary": {"manualUrl": "https://fnet-assets.s3.us-west-2.amazonaws.com/public/downloads/document/7002144/D914_instructions.pdf", "fetchStatus": "WEB_FETCH_403_NOT_CAPTURED", "manufacturerProductCapabilityPageCaptured": true, "safeUseInstructionReceiptNotClaimed": true},
+  "sourceIdentity": "ROOT_MUST_SELECT_AND_CAPTURE_EXISTING_REGISTRY_REUSE_OR_EXACT_NEW_SUBJECT;NO_KEY_OR_UUID_GENERATED_HERE",
+  "currentFullParent": "REQUIRED_ROOT_READ_NOT_PROVIDED_BY_S2724_HISTORICAL_READBACK",
+  "physicalInventorySourceRosterComplete": true,
+  "actualObjectProvisionConfirmed": false,
+  "wholeStructuredCablingInstallationComplete": false,
+  "serverApprovalClaimed": false,
+  "newPublicCards": 0,
+  "newApplicationConsumptionNorms": 0,
+  "FULL": false
+}

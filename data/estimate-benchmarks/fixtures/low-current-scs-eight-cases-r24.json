@@ -1,0 +1,146 @@
+{
+  "contract": "scs-posts-independent-eight-cases/r24",
+  "cases": [
+    {
+      "id": "IDC110_24_ONLY",
+      "idcProfileKey": "IDC110_AWG24",
+      "idcF": 1,
+      "proSelected": false,
+      "proF": null,
+      "mode": "QUANTITY",
+      "expectedIdc": {
+        "provision-owner": "1",
+        "impact-tool": "1",
+        "snips": "1",
+        "cable-stripper": "1",
+        "66-110-blade": "1",
+        "pouch": "1"
+      },
+      "expectedPro": {}
+    },
+    {
+      "id": "IDC110_26_ONLY",
+      "idcProfileKey": "IDC110_AWG26",
+      "idcF": 2,
+      "proSelected": false,
+      "proF": null,
+      "mode": "QUANTITY",
+      "expectedIdc": {
+        "provision-owner": "2",
+        "impact-tool": "2",
+        "snips": "2",
+        "cable-stripper": "2",
+        "66-110-blade": "2",
+        "pouch": "2"
+      },
+      "expectedPro": {}
+    },
+    {
+      "id": "IDC66_24_ONLY",
+      "idcProfileKey": "IDC66_AWG24",
+      "idcF": 1,
+      "proSelected": false,
+      "proF": null,
+      "mode": "QUANTITY",
+      "expectedIdc": {
+        "provision-owner": "1",
+        "impact-tool": "1",
+        "snips": "1",
+        "cable-stripper": "1",
+        "66-110-blade": "1",
+        "pouch": "1"
+      },
+      "expectedPro": {}
+    },
+    {
+      "id": "IDC66_26_ONLY",
+      "idcProfileKey": "IDC66_AWG26",
+      "idcF": 3,
+      "proSelected": false,
+      "proF": null,
+      "mode": "QUANTITY",
+      "expectedIdc": {
+        "provision-owner": "3",
+        "impact-tool": "3",
+        "snips": "3",
+        "cable-stripper": "3",
+        "66-110-blade": "3",
+        "pouch": "3"
+      },
+      "expectedPro": {}
+    },
+    {
+      "id": "PRO_ONLY",
+      "idcProfileKey": "NOT_SELECTED",
+      "idcF": null,
+      "proSelected": true,
+      "proF": 3,
+      "mode": "QUANTITY",
+      "expectedIdc": {},
+      "expectedPro": {
+        "main": "3",
+        "remote": "3",
+        "channel-adapters": "6",
+        "reference-patch-cord": "3",
+        "permanent-link-adapters": "6",
+        "case": "3",
+        "usb-cable": "3",
+        "ac-adapters": "6",
+        "getting-started-guide": "3"
+      }
+    },
+    {
+      "id": "BOTH_POSTS",
+      "idcProfileKey": "IDC110_AWG24",
+      "idcF": 2,
+      "proSelected": true,
+      "proF": 1,
+      "mode": "QUANTITY",
+      "expectedIdc": {
+        "provision-owner": "2",
+        "impact-tool": "2",
+        "snips": "2",
+        "cable-stripper": "2",
+        "66-110-blade": "2",
+        "pouch": "2"
+      },
+      "expectedPro": {
+        "main": "1",
+        "remote": "1",
+        "channel-adapters": "2",
+        "reference-patch-cord": "1",
+        "permanent-link-adapters": "2",
+        "case": "1",
+        "usb-cable": "1",
+        "ac-adapters": "2",
+        "getting-started-guide": "1"
+      }
+    },
+    {
+      "id": "EXPLICIT_BOTH_NOT_SELECTED_LEGACY",
+      "idcProfileKey": "NOT_SELECTED",
+      "idcF": null,
+      "proSelected": false,
+      "proF": null,
+      "mode": "LEGACY_EQUALITY",
+      "expectedIdc": {},
+      "expectedPro": {}
+    },
+    {
+      "id": "MISSING_PHYSICAL_COUNTS",
+      "idcProfileKey": "IDC110_AWG24",
+      "idcF": null,
+      "proSelected": true,
+      "proF": null,
+      "mode": "MISSING_COUNTS",
+      "expectedIdc": {},
+      "expectedPro": {}
+    }
+  ],
+  "plannedCases": 8,
+  "plannedCoreCallbacks": 9,
+  "legacyBeforeAfterCallbacks": 2,
+  "technicalFixtureOnlyNotActualObjectOrApproval": true,
+  "rawBeforeAssertRequired": true,
+  "actualCoreCallbacks": 0
+}

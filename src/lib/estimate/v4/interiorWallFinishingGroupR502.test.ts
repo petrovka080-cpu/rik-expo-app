@@ -30,7 +30,7 @@ export async function runInteriorWallCementFinishingGroupChecksR502(evidenceRoot
   assert.equal(c.materials.find(m=>m.id==='ct225')!.ratePerM2PerMm,1.8);assert.equal(c.materials.find(m=>m.id==='ct42')!.coatCount,2);
   assert.equal(c.materials.find(m=>m.id==='ct42')!.package,15);assert.equal(c.sources[2].compatibilityReferenceOnly,true);
   assert.equal(c.labour.workersManH,43.56);assert.equal(c.labour.normId,'15-04-007-01');
-  assert(c.selectedScopeQuantitiesComplete);assert(!subject.resources.some(r=>r.row_id===cr('plaster-workers')));
+  assert.equal(c.selectedScopeQuantitiesComplete,false);assert(!subject.resources.some(r=>r.row_id===cr('plaster-workers')));
  });
  await check('ordinary definition has exactly four admitted physical facts, null area/layer and no norm/profile questionnaire',()=>{
   assert.equal(subject.ordinaryParameterIds.length,4);assert.equal(subject.parameters.filter(p=>p.truth_metadata.visibility_role==='USER_INPUT').length,4);
@@ -58,7 +58,7 @@ export async function runInteriorWallCementFinishingGroupChecksR502(evidenceRoot
   for(const [key,quantity]of Object.entries(expected.normIncluded))assert.equal(Number(row(result,key)?.quantity),quantity);
   assert.equal(row(result,'plaster-workers-required'),undefined);
   const quantityNeeds=result.preliminaryNeeds.filter(n=>n.need_state==='QUANTITY_REQUIRED');
-  assert.deepEqual(quantityNeeds,[]);
+  assert.deepEqual(quantityNeeds.map(need=>need.row_id).sort(),c.physicalKitR240.filter(item=>!['LOWER_BOUND','UPPER_BOUND'].includes(item.kind)).map(item=>cr(item.id)).sort());
   assert.equal(result.rows.filter(r=>r.procurement_eligible).length,3);
   assert.equal(row(result,'whole-work')?.quantity,String(expected.area));
   for(const included of c.included)assert.equal(scope(result,'included-'+included.id)?.status,'INCLUDED');
@@ -110,7 +110,7 @@ export async function runInteriorWallCementFinishingGroupChecksR502(evidenceRoot
   for(const p of subject.parameters){walk(p.constraints_json);walk(p.truth_metadata);}assert.equal(planCanonicalEffectiveResourceQuantitiesV1(subject.parameters,subject.resources,subject.formulas).outputs.size,3);
  });
  return{status:'PASS_R502_SELECTED_CEMENT_FINISH_SCOPE',checkCount:completed.length,completed,ordinaryObjectFacts:4,resourceCount:subject.resources.length,
-  sampleFacts:facts(),selectedScopeQuantitiesComplete:true,fullGroupComplete:false,
+  sampleFacts:facts(),selectedScopeQuantitiesComplete:false,fullGroupComplete:false,
   engineeringAcceptance:false,published:false,databaseWrites:false};
 }
 if(typeof it==='function')it('ordinary wall group: cement layers, primer aggregation and one labour owner through the canonical core',async()=>{

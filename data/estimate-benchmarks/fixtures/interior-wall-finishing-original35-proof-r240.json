@@ -1,0 +1,359 @@
+{
+  "contract": "finishing-r240-original35-and-independent-synthetic-cost/v1",
+  "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+  "sourceKey": "rik-expo-app.interior-wall-finishing-cement-finish-r502.composite-operation-map.v1",
+  "canonicalBundleBeforeSha256": "8439b37ecd177d26565b40e4be753e20c9fe0cc3bca93399b6652bf7b72e8035",
+  "canonicalSubjectBeforeSha256": "d8489f46fcd60e64748e4dd5666b50e475ce8d981a4798d2cc43ab0ff6d85e01",
+  "independentRowRules": [
+    [
+      "ct225-consumed",
+      "putty",
+      "kg",
+      "MANUFACTURER_CONSUMPTION",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "ct225-order",
+      "putty",
+      "kg",
+      "PACKAGE_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "ct225-packages",
+      "putty",
+      "item",
+      "PACKAGE_COUNT_FROM_EFFECTIVE_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "ct225-remaining",
+      "putty",
+      "kg",
+      "REMAINING_FROM_EFFECTIVE_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "ct225-shortage",
+      "putty",
+      "kg",
+      "SHORTAGE_FROM_EFFECTIVE_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "primer-consumed",
+      "before-paint",
+      "kg",
+      "MANUFACTURER_ONE_COAT_CONSUMPTION",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-order",
+      "before-paint",
+      "kg",
+      "PACKAGE_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-packages",
+      "before-paint",
+      "item",
+      "PACKAGE_COUNT_FROM_EFFECTIVE_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-remaining",
+      "before-paint",
+      "kg",
+      "REMAINING_FROM_EFFECTIVE_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-shortage",
+      "before-paint",
+      "kg",
+      "SHORTAGE_FROM_EFFECTIVE_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "primer-contribution-before-paint",
+      "before-paint",
+      "kg",
+      "ONE_DECLARED_APPLICATION_CONTRIBUTION_NO_SECOND_ORDER",
+      "knauf-tiefengrund-062026-r502",
+      "ROW"
+    ],
+    [
+      "ct42-consumed",
+      "paint",
+      "l",
+      "MANUFACTURER_TWO_COATS_TOTAL_CONSUMPTION",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "ct42-order",
+      "paint",
+      "l",
+      "PACKAGE_ORDER",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "ct42-packages",
+      "paint",
+      "item",
+      "PACKAGE_COUNT_FROM_EFFECTIVE_ORDER",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "ct42-remaining",
+      "paint",
+      "l",
+      "REMAINING_FROM_EFFECTIVE_ORDER",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "ct42-shortage",
+      "paint",
+      "l",
+      "SHORTAGE_FROM_EFFECTIVE_ORDER",
+      "henkel-ct42-en-gl-r502",
+      "ROW"
+    ],
+    [
+      "whole-work",
+      "preparation",
+      "m2",
+      "ONE_COMPLETE_COMMERCIAL_WORK_WITH_EXPLICIT_SCOPE",
+      "kg-krer15-wall-finishing-r502",
+      "ROW"
+    ],
+    [
+      "process-preparation",
+      "preparation",
+      "m2",
+      "INCLUDED_PROCESS_ON_MEASURED_WALL_FIELD",
+      "kg-sp65-101-2025-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "process-putty",
+      "putty",
+      "m2",
+      "INCLUDED_PUTTY_MOISTENING_SANDING",
+      "henkel-ct225-ru-kz-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "process-before-paint",
+      "before-paint",
+      "m2",
+      "INCLUDED_REQUIRED_PRIMER_AND_DRYING",
+      "knauf-tiefengrund-062026-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "process-paint",
+      "paint",
+      "m2",
+      "INCLUDED_TWO_COATS_AND_DRYING",
+      "henkel-ct42-en-gl-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "process-completion",
+      "completion",
+      "m2",
+      "INCLUDED_CLEANUP_AND_HANDOVER",
+      "kg-sp65-101-2025-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "paint-putty-primer-workers",
+      "paint",
+      "man_hour",
+      "A_DIV_100_TIMES_43_56_WHOLE_NORM",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "paint-operators",
+      "paint",
+      "man_hour",
+      "A_DIV_100_TIMES_0_02_ALREADY_IN_MACHINE_SCOPE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "paint-lift",
+      "paint",
+      "machine_hour",
+      "A_DIV_100_TIMES_0_02_INCLUDED_MACHINE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "paint-truck",
+      "paint",
+      "machine_hour",
+      "A_DIV_100_TIMES_0_15_INCLUDED_MACHINE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "sanding-sheet",
+      "putty",
+      "m2",
+      "A_DIV_100_TIMES_0_84_INCLUDED_CONSUMABLE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "rags",
+      "completion",
+      "kg",
+      "A_DIV_100_TIMES_0_3_INCLUDED_CONSUMABLE",
+      "kg-krer15-wall-finishing-r502",
+      "INCLUDED_COMPONENT_ROW"
+    ],
+    [
+      "included-water",
+      "putty",
+      "",
+      "EXPLICIT_INCLUDED_WATER_NO_INVENTED_LITRES_OR_ORDER",
+      "henkel-ct225-ru-kz-r502",
+      "ROW"
+    ],
+    [
+      "included-tools",
+      "putty",
+      "",
+      "EXPLICIT_INCLUDED_ORDINARY_TOOLS_NO_INVENTED_COUNT_OR_ORDER",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "included-protection",
+      "preparation",
+      "",
+      "EXPLICIT_INCLUDED_PROTECTION_NO_SECOND_PAYMENT",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "included-ppe",
+      "preparation",
+      "",
+      "EXPLICIT_INCLUDED_PPE_NO_SECOND_PAYMENT",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "included-local-supply-cleanup",
+      "completion",
+      "",
+      "EXPLICIT_INCLUDED_ONSITE_SUPPLY_CLEANUP",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "check-base",
+      "preparation",
+      "",
+      "ACTUAL_BASE_OBJECT_SCOPE_NOT_A_NUMERICAL_NORM",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ],
+    [
+      "check-site",
+      "preparation",
+      "",
+      "ACTUAL_SITE_OBJECT_SCOPE_NOT_A_NUMERICAL_NORM",
+      "kg-sp65-101-2025-r502",
+      "ROW"
+    ]
+  ],
+  "paidOwnerKeys": [
+    "ct225-order",
+    "primer-order",
+    "ct42-order",
+    "whole-work"
+  ],
+  "materials": [
+    {
+      "id": "ct225",
+      "nameRu": "Шпаклёвка цементная финишная",
+      "unit": "kg",
+      "package": 25,
+      "sourceIndex": 0,
+      "ratePerM2PerMm": 1.8,
+      "stage": "putty"
+    },
+    {
+      "id": "primer",
+      "nameRu": "Грунтовка укрепляющая глубокого проникновения",
+      "unit": "kg",
+      "package": 5,
+      "sourceIndex": 3,
+      "ratePerApplication": 0.1,
+      "applications": [
+        "before-paint"
+      ],
+      "stage": "before-paint"
+    },
+    {
+      "id": "ct42",
+      "nameRu": "Краска акриловая матовая, два слоя",
+      "unit": "l",
+      "package": 15,
+      "sourceIndex": 1,
+      "rateForTwoCoats": 0.3,
+      "coatCount": 2,
+      "stage": "paint"
+    }
+  ],
+  "labour": {
+    "sourceIndex": 4,
+    "measurementBasisM2": 100,
+    "normId": "15-04-007-01",
+    "workersManH": 43.56,
+    "paintOperatorsManH": 0.02,
+    "liftMachineH": 0.02,
+    "truckMachineH": 0.15,
+    "sandingM2": 0.84,
+    "ragsKg": 0.3,
+    "policyRu": "КРЕР15-04-007-01 по оштукатуренным стенам: сплошное шпаклевание, шлифование, грунтование и две окраски одной цельной нормой43.56чел.-ч/100м². Часы не распределяются произвольно между этапами и не оплачиваются сверх одной цены цельной работы за м². Исходная ровная штукатурка уже выполнена и в эту смету не входит."
+  },
+  "finitePriceExpected": {
+    "nature": "TEST_ONLY_SYNTHETIC_NOT_MARKET_NOT_PROJECT_AUTHORITY",
+    "currencyCode": "KGS",
+    "areaM2": 20.1,
+    "puttyMm": 2,
+    "pricesByResourceKey": {
+      "ct225-order": 40,
+      "primer-order": 200,
+      "ct42-order": 300,
+      "whole-work": 250
+    },
+    "expectedAmounts": {
+      "ct225-order": 3000,
+      "primer-order": 1000,
+      "ct42-order": 4500,
+      "whole-work": 5025
+    },
+    "expectedTotalKgs": 13525
+  }
+}

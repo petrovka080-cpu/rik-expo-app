@@ -1,0 +1,65 @@
+{
+  "contract": "gox.electrical.elecor.project-endcaps/r239",
+  "catalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+  "sourceId": "iek_elecor_kmz_60x40_complete4_project_end_schedule_r239",
+  "normId": "MANUFACTURER_COMPLETE_SET_AND_PROJECT_END_SCHEDULE_NOT_INSTALLATION_LABOUR_NORM",
+  "prefix": "electrical:elecor-60x40-single-route:endcaps-r239",
+  "methodParameterId": "elecor_end_node_method",
+  "method": "По принятой ведомости: только торцевые заглушки 60×40, без иных концевых узлов",
+  "unresolvedMethod": "Концевые узлы не подтверждены — состав остаётся неизвестным",
+  "nodeAcceptance": "ППР подтверждает все концы этого прямого участка: только совместимые заглушки 60×40; иные примыкания, вводы и проходки отсутствуют",
+  "existingNeedRowId": "electrical:elecor-60x40-single-route:open-end-node-components",
+  "legacyQuantityParameterId": "elecor_open_qty_end_node_components",
+  "countId": "elecor_endcap_project_piece_count",
+  "ownerRowId": "electrical:elecor-60x40-single-route:endcaps-r239:order",
+  "source": {
+    "path": "data/estimate-benchmarks/source-artifacts/elecor-project-endcaps-r239/IEK_KMZ_60X40_COMPLETE4_OFFICIAL.html",
+    "sha256": "453347c7c6df31f4ae1472f7f0a8675c1c089e8d584999414960373c5c92de53",
+    "officialUrl": "https://www.iek.ru/products/catalog/sistemy_dlya_prokladki_kabelya/kabel_kanaly_plastikovye/kabel_kanaly_elecor/aksessuary_dlya_magistralnykh_kabel_kanalov_belye/zaglushki_kmz_belye/elecor_zaglushka_kmz_60kh40_belyy_4sht_kompl_iek",
+    "locator": "__NEXT_DATA__ $.props.pageProps.apiProduct: article+name; etim.IEK_F000480=4шт; logisticParams individual=1компл. Nominal60×40."
+  },
+  "heldCatalogue": {
+    "path": ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_PLASTIC_CABLE_SYSTEMS.pdf",
+    "sha256": "cd936577d94a7ab3a877a5548055bebd91dc7738a4476835e188ab1b2f5eb59a",
+    "locator": "PDF12/printed10, row60×40, ЗаглушкаКМЗ CKMP10D-Z-060-040-K01"
+  },
+  "exactProduct": {
+    "article": "CKMP10D-Z-060-040-K01",
+    "nominalWidthMm": 60,
+    "nominalHeightMm": 40,
+    "pieceCountPerFactorySet": 4,
+    "factoryOrderUnit": "set",
+    "individualPackageCount": 1,
+    "individualPackageUnitRu": "компл",
+    "material": "полистирол",
+    "colourRu": "белый",
+    "description": "Заглушка ELECOR. Предназначена для эстетичного оформления торцов кабель-каналов. Совместим с кабель-каналами серии ELECOR и ECOLINE. Материал: полистирол. Цвет: белый.",
+    "genericLogisticsField": {
+      "singlePackage": {
+        "multiplicity": 1,
+        "unit": "шт"
+      }
+    },
+    "genericLogisticsInterpretation": "NOT_USED_AS_CAP_COUNT_OR_SUPPLY_UNIT: generic singlePackage unitшт does not override exact title,ETIM4шт/компл and explicit individual1компл table. Requires ROOT source review; no fake unit alias."
+  },
+  "priceScope": "Цена за один полный заводской комплект из 4 заглушек; не за отдельную заглушку, канал, монтаж или крепёж",
+  "scopeRu": "Только материал торцевого закрытия в принятом механически закреплённом прямом участке ELECOR60×40. Число заглушек — из реальной ведомости концов; не2, не длина и не числоКМС. Комплект содержит4отдельные заглушки. Учитываются только подтверждённые полные заводские комплекты в наличии/резерве. Остаток отдельных заглушек в открытых комплектах показывается отдельно и не признаётся отходом.",
+  "forbiddenClaims": [
+    "installation labour hours or productivity",
+    "universal drill/cut tool station",
+    "automatic number of route ends",
+    "assembled system IP/fire/wet-zone approval from cap properties",
+    "using legacy unknown need quantity/price as new order",
+    "supplier case16sets or transport320sets as mandatory order default",
+    "closure of other6needs or whole electrical system"
+  ],
+  "fullTechnicalAcceptance": false,
+  "conditionalClosureOnly": true,
+  "projectFactsRequired": [
+    "actual complete end-node schedule and reference",
+    "actual cap piece count, not a normative count",
+    "accepted existing mechanical installation environment and exact channel/node",
+    "usable complete4-piece set inventory, unopened reserve and actual supplier multiple"
+  ],
+  "wholeProducerRoute": "Existing AutomaticConstructionOwner + effectivePurchaseBalance + same Master publisher/current owner only"
+}

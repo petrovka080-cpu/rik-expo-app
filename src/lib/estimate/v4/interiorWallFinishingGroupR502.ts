@@ -19,8 +19,8 @@ export function interiorWallFinishingGroupDefinitionR502():AutomaticOwnerDefinit
   const positive={kind:'greater_than' as const,parameterId:a,value:0};
   const base=eq(p(c.baseId),c.baseReadyRu),site=eq(p(c.siteId),c.siteReadyRu);
   const ready={kind:'and' as const,operands:[positive,base,site]};
-  const rows:AutomaticRowSpec[]=[],bindings=new Map<string,{sourceIndex:number;stage:string;materialId?:string;included?:boolean;check?:'base'|'site';normId?:string}>();
-  const add=(key:string,title:string,unitId:string,expression:string,binding:{sourceIndex:number;stage:string;materialId?:string;included?:boolean;check?:'base'|'site';normId?:string},extra:Partial<AutomaticRowSpec>={})=>{
+  const rows:AutomaticRowSpec[]=[],bindings=new Map<string,{sourceIndex:number;stage:string;materialId?:string;included?:boolean;check?:'base'|'site';normId?:string;physicalId?:string;boundOnly?:boolean}>();
+  const add=(key:string,title:string,unitId:string,expression:string,binding:{sourceIndex:number;stage:string;materialId?:string;included?:boolean;check?:'base'|'site';normId?:string;physicalId?:string;boundOnly?:boolean},extra:Partial<AutomaticRowSpec>={})=>{
     rows.push({rowId:r(key),formulaId:r('formula:'+key),title,unitId,expression,section:c.titleRu,category:'material',procurement:false,
       costTreatment:'INFORMATIONAL_SCOPE',inclusion:ready,...extra});bindings.set(r(key),binding);
   };
@@ -56,6 +56,16 @@ export function interiorWallFinishingGroupDefinitionR502():AutomaticOwnerDefinit
     {sourceIndex:included.id==='water'?0:5,stage:included.stage,included:true},{category:'service',inclusion:positive});
   for(const key of ['base','site']as const)add('check-'+key,key==='base'?'Проверить исходное основание выбранной отделки':'Проверить условия выбранной отделки','',p('check_'+key),
     {sourceIndex:5,stage:'preparation',check:key},{category:'service',inclusion:positive});
+  // Manufacturer range is retained as two non-additive calculation details.
+  // Actual water and equipment are neither bag-order mass nor a fictitious kit.
+  for(const item of c.physicalKitR240){
+    const bound=item.kind==='LOWER_BOUND'||item.kind==='UPPER_BOUND';
+    const expression=bound?`${a}*${tp}*${c.materials[0].ratePerM2PerMm}*${item.kind==='LOWER_BOUND'?c.mixingWaterR240.minimumLPerKg:c.mixingWaterR240.maximumLPerKg}`:item.id==='mixing-water'?`${a}*${tp}*${c.materials[0].ratePerM2PerMm}*${p('physical_'+item.inputId)}`:p('physical_'+item.inputId);
+    add(item.id,item.titleRu,item.unitId,expression,
+      {sourceIndex:item.sourceIndex,stage:item.stage,included:!bound,physicalId:item.id,boundOnly:bound},
+      {category:item.unitId===''?'service':['mixing-drive','mixing-paddle','mixing-vessel','water-measure-vessel','putty-applicator','finish-applicator'].includes(item.id)?'equipment':'material',
+       costTreatment:bound?'INFORMATIONAL_SCOPE':'INCLUDED_IN_RESOURCE_ROWS'});
+  }
   const source=c.sources[4],built=buildAutomaticConstructionOwnerR1({contract:c.contract,semanticOwner:'existing-interior-wall-cement-finishing-group',
     sourceId:source.id,normId:c.contract,operationCompositionGroupId:c.namespace,sourceMetadata:{source_title:c.titleRu,source_document_version:source.edition,
       definition_hash:source.sha256,artifact_sha256:source.sha256,exact_locator:source.locatorRu},applicabilityRu:c.physicalScopeRu,
@@ -63,16 +73,29 @@ export function interiorWallFinishingGroupDefinitionR502():AutomaticOwnerDefinit
       {id:p(c.baseId),title:'Какое исходное основание?',kind:'ordinary',valueType:'enum',unitId:null,values:[c.baseReadyRu,c.baseOtherRu],resourceBranchConsumers:[r('check-base')]},
       {id:p(c.siteId),title:'Каковы условия и подготовка участка?',kind:'ordinary',valueType:'enum',unitId:null,values:[c.siteReadyRu,c.siteOtherRu],resourceBranchConsumers:[r('check-site')]},
       {id:tp,title:'Измеренный слой финишной шпаклёвки, мм',kind:'ordinary',valueType:'decimal',unitId:'mm',min:.000001,max:3}],profile:[],
-    conditional:[...c.included.map(i=>({id:p('included_'+i.id.replaceAll('-','_')),title:i.titleRu,kind:'internal' as const,valueType:'decimal' as const,unitId:null,min:0})),
+    conditional:[...c.physicalKitR240.filter(item=>!['LOWER_BOUND','UPPER_BOUND'].includes(item.kind)).map(item=>({id:p('physical_'+item.inputId),title:item.parameterTitleRu,kind:'internal' as const,valueType:item.inputValueType==='integer'?'integer' as const:'decimal' as const,unitId:item.parameterUnitId,min:item.inputMinimum,...(item.inputMaximum==null?{}:{max:item.inputMaximum})})),...c.included.map(i=>({id:p('included_'+i.id.replaceAll('-','_')),title:i.titleRu,kind:'internal' as const,valueType:'decimal' as const,unitId:null,min:0})),
       ...['base','site'].map(key=>({id:p('check_'+key),title:'Проверка выбранной области',kind:'internal' as const,valueType:'decimal' as const,unitId:null,min:0}))],
     rows,deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:[c.wholeWorkScopeRu,...c.excludedRu]});
-  const parameters=built.parameters.map(param=>({...param,truth_metadata:{...param.truth_metadata,source_confirmation_required:false,
+  const parameters=built.parameters.map(param=>{const physical=c.physicalKitR240.find(item=>param.parameter_id===p('physical_'+item.inputId));
+    const sourceGap=physical?.kind==='SOURCE_GAP';
+    const parameter={...param,truth_metadata:{...param.truth_metadata,source_confirmation_required:false,
     guide:{...param.truth_metadata.guide as Record<string,unknown>,verified_at:pack.verifiedAt},
     formula_consumers:built.formulas.filter(f=>f.input_parameter_ids.includes(param.parameter_id)).map(f=>f.formula_id),
     ...(param.truth_metadata.visibility_role==='INTERNAL_ONLY'?{}:{value_source_role:param.parameter_id===a?'USER_MEASURED':'PROJECT_SPECIFIC_INPUT',
-      provenance:{consumer_input_role_v1:'OBJECT_FACT'},visible_when:{kind:'literal',value:true}})}}));
+      provenance:{consumer_input_role_v1:'OBJECT_FACT'},visible_when:{kind:'literal',value:true}})}};
+    if(!physical)return parameter;
+    return {...parameter,truth_metadata:{...parameter.truth_metadata,visibility_role:'INTERNAL_ONLY',
+      value_source_role:sourceGap?'UNRESOLVED_APPLICATION_NORM':'PROJECT_DOCUMENTATION',
+      source_confirmation_required:!sourceGap,preliminary_compilation_allowed:true,
+      provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL',requirementKind:physical.kind,approvedProjectReceiptPresent:false},
+      ...(sourceGap?{unresolved_norm_reason:physical.basisRu}:{}),
+      guide:{guide_kind:'PROJECT_DEFINED',guide_validation_policy:'MANDATORY_BLOCK',source_role:sourceGap?'APPLICATION_SOURCE_GAP':'PROJECT_DOCUMENTATION',
+        source_document:c.sources[physical.sourceIndex].id,source_snapshot_hash:c.sources[physical.sourceIndex].sha256,
+        source_locator:physical.basisRu,guide_version:c.contract,verified_at:c.verifiedAt,applicability:c.physicalScopeRu},
+      physicalRequirementR240:{unitId:physical.unitId,reasonRu:physical.basisRu,actualQuantityPresent:false,ordinaryQuestion:false}}};
+  });
   const resources=built.resources.map(row=>{const b=bindings.get(row.row_id)!,s=c.sources[b.sourceIndex],key=row.row_id.slice((c.namespace+'work:').length),
-    material=materials.find(m=>m.id===b.materialId),isScope=row.unit_id==='',isWhole=row.row_id===whole;
+    material=materials.find(m=>m.id===b.materialId),physical=c.physicalKitR240.find(item=>item.id===b.physicalId),isScope=row.unit_id===''&&!physical,isWhole=row.row_id===whole;
     const parent=pack.parents[b.stage==='paint'||b.stage==='before-paint'?1:0];
     const operation=(stage:string)=>{const op=operations.find(o=>o.id===stage)??operations[0];return{operationId:r('operation:'+op.id),operationTitleRu:op.titleRu,
       processOrdinal:operations.indexOf(op)+1,processRole:'PROCESS' as const,completionCriterionRu:'Подготовка и выдержки по паспорту; фактическое выполнение проверяется на объекте.'};};
@@ -88,18 +111,18 @@ export function interiorWallFinishingGroupDefinitionR502():AutomaticOwnerDefinit
           objectFactMode:'PROJECT_APPLICABILITY_ONLY',unknownObjectValues:[] }:{costExclusionBreaksScopeV1:true}),
         sourceEvidence:[{sha256:s.sha256,locator:s.locatorRu},{sha256:canonicalEstimateSha256HexText(c.wholeWorkScopeRu),locator:'Объявленный коммерческий состав одной㎡цены R502.'}]}}:{}),
       operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:c.namespace,groupTitleRu:c.titleRu,...operation(b.materialId==='primer'&&!key.startsWith('primer-contribution-')?primerStages[0]:b.stage),
-        ...(isWhole?{processRole:'COST_SUMMARY',processOrdinal:0,additionalOperations:operations.map(op=>operation(op.id))}:{} )},
+        ...(isWhole?{processRole:'COST_SUMMARY',processOrdinal:0,additionalOperations:operations.map(op=>operation(op.id))}:physical?{additionalOperations:physical.requiredOperations.filter(stage=>stage!==b.stage).map(operation)}:{} )},
       existingCatalogMemberReferenceV1:{catalogId:parent.catalogId,definitionId:parent.definitionId,
         role:'EXISTING_WORK_WITH_SOURCE_SPECIFIC_SELECTED_METHOD',automaticPriceInheritance:false},
       publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:row.title_ru,nameRu:row.title_ru,
-        brandAndModelRu:material?s.title:null,detailsRu:[c.physicalScopeRu,s.locatorRu,material?'Расчётная потребность конкретного продукта; расход изготовителя приблизительный.':c.wholeWorkScopeRu,
-          'Цены этого коммерческого состава и поставки задаются отдельно.',...(isWhole?c.transitions.map(t=>t.condition):[])],...(isScope||key.startsWith('process-')?{rowKind:'PROCESS_NOTE'}:!isWhole&&!key.endsWith('-order')?{rowKind:'CALCULATION_DETAIL'}:{})}},
-      source_metadata:{...row.source_metadata,sourceRole:material?'SOURCE_SPECIFIC_MANUFACTURER_PLANNING_QUANTITY':b.normId?'KG_KRER_WHOLE_NORM_INCLUDED_IN_ONE_WORK_OWNER':'DECLARED_GROUP_COMMERCIAL_SCOPE',
+        brandAndModelRu:material?s.title:null,specificationRu:null,detailsRu:[c.physicalScopeRu,s.locatorRu,material?'Расчётная потребность конкретного продукта; расход изготовителя приблизительный.':c.wholeWorkScopeRu,
+          'Цены этого коммерческого состава и поставки задаются отдельно.',...(isWhole?c.transitions.map(t=>t.condition):[])],...(physical&&!b.boundOnly?{}:isScope||key.startsWith('process-')?{rowKind:'PROCESS_NOTE'}:!isWhole&&!key.endsWith('-order')?{rowKind:'CALCULATION_DETAIL'}:{})}},
+      source_metadata:{...row.source_metadata,sourceRole:physical?(b.boundOnly?'NON_ADDITIVE_MANUFACTURER_WATER_BOUND':physical.kind==='SOURCE_GAP'?'UNRESOLVED_APPLICATION_SOURCE_REQUIREMENT':'UNSUPPLIED_ACTUAL_PHYSICAL_OBJECT_REQUIREMENT'):material?'SOURCE_SPECIFIC_MANUFACTURER_PLANNING_QUANTITY':b.normId?'KG_KRER_WHOLE_NORM_INCLUDED_IN_ONE_WORK_OWNER':'DECLARED_GROUP_COMMERCIAL_SCOPE',
         normativeTrace:[{sourceId:s.id,normId:b.normId??c.contract+':'+(material?.id??b.stage),sourceDocument:s.title,sourceLocator:s.locatorRu,sourceSnapshotHash:s.sha256}],
         source_title:s.title,source_document_version:s.edition,artifact_sha256:s.sha256,exact_locator:s.locatorRu,official_url:s.url,
         fixedPublicTechnology:c.titleRu,ordinaryObjectFactBudget:4,engineeringAcceptance:false,automaticGenericPriceInheritanceAllowed:false,
         selectedTechnologyTransitions:c.transitions,
-        labourDoublePaymentForbidden:true,existingPlasterAlreadyCompleted:true,repeatLevellingNotInSelectedScope:true,selectedScopeQuantitiesComplete:true}};
+        labourDoublePaymentForbidden:true,existingPlasterAlreadyCompleted:true,repeatLevellingNotInSelectedScope:true,selectedScopeQuantitiesComplete:false,physicalResourceCoverageComplete:false,...(physical?{physicalKitR240:{...physical,actualProjectPackages:0,boundaryOnly:b.boundOnly===true,notAdditive:b.boundOnly===true,noAutomaticProcurement:true,exactApprovedProjectReceiptAbsent:true}}:{})}};
     return{...changed,row_sha256:estimateDeterministicHash(changed)};
   });
   return{...built,parameters,resources};
