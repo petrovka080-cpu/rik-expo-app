@@ -43,7 +43,7 @@ describe("S26.4 detailed asphalt compaction preliminary profile", () => {
 
   test("publishes one connected detailed quantity model without scalar productivity fixtures", () => {
     expect(ASPHALT_COMPACTION_PROFILE_CATALOG_ID)
-      .toBe("canonical-work:base:paving_roads_landscape_interior_asphalt_compact_large_area");
+      .toBe("canonical-work:base:paving_roads_landscape_interior_asphalt_compact_standard");
     expect(ASPHALT_COMPACTION_PROFILE_PARAMETERS).toHaveLength(15);
     expect(ASPHALT_COMPACTION_PROFILE_FORMULAS).toHaveLength(11);
     expect(ASPHALT_COMPACTION_PROFILE_RESOURCES.length).toBeGreaterThan(11);
@@ -152,4 +152,12 @@ describe("S26.4 detailed asphalt compaction preliminary profile", () => {
       { catalogId: `${ASPHALT_COMPACTION_PROFILE_CATALOG_ID}:paving` },
     )).rejects.toThrow("ASPHALT_COMPACTION_PROFILE_CATALOG_UNSUPPORTED");
   });
+});
+
+
+test("the three-roller method rejects the retired area catalog", async () => {
+  await expect(compileAsphaltCompactionPreliminaryProfileR1(
+    { ...ASPHALT_COMPACTION_PROFILE_SHORT_INPUT },
+    { catalogId: "canonical-work:base:paving_roads_landscape_interior_asphalt_compact_large_area" },
+  )).rejects.toThrow("ASPHALT_COMPACTION_PROFILE_CATALOG_UNSUPPORTED");
 });

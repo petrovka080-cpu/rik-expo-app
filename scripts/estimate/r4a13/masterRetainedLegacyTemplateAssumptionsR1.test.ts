@@ -5,6 +5,8 @@ import {masterRetainParentBindingsOptInR1,masterRetainedParentCaptureSha256R1,as
  type MasterRetainedBindingGuardInputR1} from './masterSingleDefinitionRetainParentBindingsR1';
 import {compileFormulaGraph} from '../../../src/lib/estimate/backendPlatform/formulaGraph';
 import {canonicalPublisherRegisteredSourceKeysR1} from './canonicalDefinitionPublisherR1';
+import {createHash} from 'node:crypto';
+import {canonicalDefinitionPublicationStableValueR1 as stable} from '../../../src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1';
 
 const clone=<T>(x:T):T=>JSON.parse(JSON.stringify(x));
 const input=():MasterRetainedBindingGuardInputR1=>{
@@ -55,6 +57,51 @@ describe('explicit frozen legacy template input provenance',()=>{
   expect(d.legacyBaselineProfile.input.q).toBe(100);expect(d.legacyBaselineProfile.classification.q).toBe('ASSUMPTION');
   for(const parameter of d.next.parameters.filter(p=>p.truth_metadata.visibility_role!=='INTERNAL_ONLY'))
    expect(parameter.truth_metadata.guide).toMatchObject({applicability:expect.any(String)});
+ });
+});
+
+describe('original approved assumption through one exact retained continuation',()=>{
+ const hash=(v:unknown)=>createHash('sha256').update(JSON.stringify(stable(v))).digest('hex');
+ function continued(){
+  const i=input() as any,opt=i.config.binding.retainParentBindings,c=opt.capturedParent;
+  const original=clone(fixture.capturedParent),previous={contract:'TEST_PREVIOUS_ACCEPTED',parentDefinitionId:original.definition.id,
+   parentBaselineId:original.baseline.id,capturedParentSha256:fixture.capturedParentSha256};
+  c.definition.id='10000000-0000-5000-8000-000000000011';
+  c.baseline.id='10000000-0000-5000-8000-000000000012';c.baseline.definition_version_id=c.definition.id;
+  c.baseline.source_definition_version_id=original.definition.id;c.baseline.supersedes_baseline_id=original.baseline.id;
+  for(const rows of [c.parameters,c.formulas,c.resources,c.bindings])for(const row of rows)row.definition_version_id=c.definition.id;
+  c.definition.source_metadata.retainedParentBindingSuccessorV1=previous;
+  opt.legacyTemplateAssumptionSources.approvedTemplatePredecessor={capturedParent:original,capturedParentSha256:fixture.capturedParentSha256};
+  refresh(i);return i;
+ }
+ function refresh(i:any){const o=i.config.binding.retainParentBindings,m=o.capturedParent.definition.source_metadata;
+  o.capturedParentSha256=masterRetainedParentCaptureSha256R1(o.capturedParent);
+  o.successorProvenanceContinuation={contract:'master-retained-binding-continuation/r1',capturedSourceMetadata:clone(m),
+   capturedSourceMetadataSha256:hash(m),capturedPreviousSuccessorSha256:hash(m.retainedParentBindingSuccessorV1)};
+ }
+ it('keeps the exact original approval without pretending that it belongs to the newer baseline',()=>{
+  const i=continued(),before=clone(i);expect(()=>masterRetainParentBindingsOptInR1(i)).not.toThrow();expect(i).toEqual(before);
+ });
+ it('requires the original capture instead of accepting an old baseline identifier alone',()=>{
+  const i=continued();delete i.config.binding.retainParentBindings.legacyTemplateAssumptionSources.approvedTemplatePredecessor;
+  expect(()=>masterRetainParentBindingsOptInR1(i)).toThrow('LEGACY_TEMPLATE_ASSUMPTION_EXACT_APPROVED_INPUT');
+ });
+ it.each(['continuation','originalHash','oldAnchor','originalInput','currentInput','approval','sourceArray','unit'])('rejects a forged %s',kind=>{
+  const i=continued(),o=i.config.binding.retainParentBindings,c=o.capturedParent,p=o.legacyTemplateAssumptionSources.approvedTemplatePredecessor;
+  if(kind==='continuation')delete o.successorProvenanceContinuation;
+  if(kind==='originalHash')p.capturedParentSha256='0'.repeat(64);
+  if(kind==='oldAnchor')c.definition.source_metadata.retainedParentBindingSuccessorV1.capturedParentSha256='0'.repeat(64);
+  if(kind==='originalInput'){p.capturedParent.baseline.input_values.q=77;p.capturedParentSha256=masterRetainedParentCaptureSha256R1(p.capturedParent);}
+  if(kind==='currentInput')c.baseline.input_values.q=77;
+  if(kind==='approval')c.parameters[0].truth_metadata.provenance.approvedTemplateBinding.baselineId=c.baseline.id;
+  if(kind==='sourceArray')c.baseline.normative_source_ids.q=[i.newSource.source_key];
+  if(kind==='unit')c.parameters[0].unit_id='item';
+  if(kind!=='continuation')refresh(i);
+  expect(()=>masterRetainParentBindingsOptInR1(i)).toThrow('LEGACY_TEMPLATE_ASSUMPTION_');
+ });
+ it.each([null,undefined,{},false])('rejects malformed present predecessor %p',value=>{
+  const i=continued();i.config.binding.retainParentBindings.legacyTemplateAssumptionSources.approvedTemplatePredecessor=value;
+  expect(()=>masterRetainParentBindingsOptInR1(i)).toThrow('LEGACY_TEMPLATE_ASSUMPTION_PREDECESSOR_DECLARATION');
  });
 });
 

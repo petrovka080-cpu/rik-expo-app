@@ -38,7 +38,8 @@ describe("InlineParamEditor R3 parameter guide", () => {
     let renderer!:ReactTestRenderer;act(()=>{renderer=TestRenderer.create(<ParameterDisclosurePanel viewModel={viewModel} revision={null} latestDiff={null} paramEditorEnabled canonicalParameterSession={session}/>);});
     expect(renderer.root.findAllByType(Text).filter(node=>node.props.testID==='editable-param-source-review-roof_torch_system')).toHaveLength(1);
     expect(renderer.root.findAllByProps({testID:'editable-param-source-review-q'})).toHaveLength(0);
-    expect(JSON.stringify(renderer.toJSON())).toContain('Данные введены. Нормы выбранного состава ещё не подтверждены приложением.');
+    expect(JSON.stringify(renderer.toJSON())).toContain('Расчёт сохранён. Часть позиций пока не рассчитана.');
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('Нормы и технические значения приложения');
     expect(JSON.stringify(renderer.toJSON())).not.toContain('Все обязательные параметры заполнены');
     expect(String(session.parameters.find(p=>p.parameterId==='q')?.value)).toBe('100');act(()=>renderer.unmount());
   });

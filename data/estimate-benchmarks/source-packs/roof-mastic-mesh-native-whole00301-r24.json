@@ -1,0 +1,242 @@
+{
+  "contract": "gox-build.master216.roof-mastic-mesh-whole00301/r24",
+  "prefix": "roof:mastic-mesh:whole003:r24:bitumen",
+  "normId": "12-01-003-01",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "titleRu": "КРЕР, сборник12 «Кровли», 12-01-003-01",
+      "printedEdition": "КРЕР12-2015; приказ28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDF11 состав4операции/измеритель100м²/труд; PDF12 вся собственная колонка 12-01-003-01; техническая частьPDF4–6",
+      "reviewedAt": "2026-10-24"
+    }
+  ],
+  "scopeRu": "Трёхслойное мастичное покрытие с двумя слоями строительной стеклосетки и гравийной защитой, 12-01-003-01. Собственное приготовление грунтовки включено; конструкция, основание, другие слои и узлы крыши требуют самостоятельного применимого состава.",
+  "systemRu": "Битумная мастика с двумя слоями стеклосетки и гравийной защитой. Только точный исходный материал и метод; выбор человеком не подтверждает проектные условия.",
+  "conditionsRu": "Применимая нормативная база, основание, климатические условия и точная исходная система должны подтверждаться проектными данными. Битумно-резиновый вариант не перенимает котёл9,05ч от битумного.",
+  "measurementRu": "Фактическая площадь поверхности данного покрытия по обмеру; не площадь здания, соседнего слоя или упаковок.",
+  "remainingScopeRu": [
+    "Несущее основание, уклонообразование, пароизоляция, утепление и их совместимость не выводятся из площади поля.",
+    "Примыкания, ендовы, проходки, карнизы и водоотведение требуют собственных целых узлов и независимых обмеров.",
+    "Ручной инструмент, физический пост, безопасный доступ, ограждения, защита рабочих, контроль качества, уборка, отходы и внешняя логистика остаются явными применимыми потребностями.",
+    "Норма не является фактической заявкой на аренду, запасом, округлением упаковок, подтверждением цены либо разрешением оплаты/закупки."
+  ],
+  "groupTitleRu": "Армированное мастичное покрытие с гравийной защитой",
+  "operationTitleRu": "Устроить трёхслойное мастичное покрытие с двумя слоями стеклосетки",
+  "completionCriterionRu": "Все четыре операции выполнены по собственной колонке; незакрытое обеспечение остаётся видимым.",
+  "systemParameterId": "m212_roof_complete_system",
+  "conditionsParameterId": "roof_mastic_mesh003_conditions_r24",
+  "areaParameterId": "roof_mastic_mesh003_measurement_scope_r24",
+  "measurementParameterId": "m212_roof_covering_area_m2",
+  "measurementUnitId": "m2",
+  "measurementConditional": true,
+  "measurementTitleRu": "Площадь кровельного покрытия по обмеру, м²",
+  "measurementGuideRu": "Фактическая площадь своего армированного мастичного поля. Приложение получает все нормы из точного первичного столбца.",
+  "quantityEditReasonRu": "Ресурс рассчитан по собственной целой колонке 12-01-003-01 и измеренной площади; меняйте площадь объекта, исходные нормы сохраняются.",
+  "systemChoiceTitleRu": "Способ устройства кровельного покрытия",
+  "measurementChoiceTitleRu": "Область обмера мастичного поля",
+  "systemYesRu": "Армированная мастичная кровля по 12-01-003-01",
+  "conditionsYesRu": "Применимость точной исходной системы подтверждена проектом",
+  "areaYesRu": "Измерена поверхность выбранного мастичного поля",
+  "unknownChoiceRu": "Способ ещё не определён",
+  "legacyChoiceRu": "Сохранённый исходный состав кровли",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-4",
+      "titleRu": "Труд рабочих-строителей среднего разряда 3,4",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "32.26",
+      "sourceRatePer100m2": "32.26",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы."
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "0.49",
+      "sourceRatePer100m2": "0.49",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы.",
+        "0,49 чел.-ч — информационная сумма машинистов нормативного комплекса, не второй платный труд."
+      ]
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью 8 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.23",
+      "sourceRatePer100m2": "0.23",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR"
+    },
+    {
+      "role": "truck_crane_10t",
+      "resourceCode": "02-0075",
+      "titleRu": "Кран на автомобильном ходу грузоподъёмностью 10 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.13",
+      "sourceRatePer100m2": "0.13",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR"
+    },
+    {
+      "role": "forklift_5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчик грузоподъёмностью 5 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.13",
+      "sourceRatePer100m2": "0.13",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR"
+    },
+    {
+      "role": "mobile_bitumen_boiler_400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Котёл битумный передвижной вместимостью 400 л",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "9.05",
+      "sourceRatePer100m2": "9.05",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы.",
+        "Исходные нормативные часы котла не доказывают число физических постов и не разрешают второй начисленный котёл."
+      ],
+      "machinePriceCoverageRequired": "EQUIPMENT_OPERATION_NO_ADDITIONAL_OPERATOR_NORM_ADMITTED"
+    },
+    {
+      "role": "flatbed_truck_to_5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.29",
+      "sourceRatePer100m2": "0.29",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_VEHICLE_HOUR_DRIVER_INCLUDED_NOT_IN_INFO"
+    },
+    {
+      "role": "hot_roof_mastic",
+      "resourceCode": "01-0202-0003",
+      "titleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "1.056",
+      "sourceRatePer100m2": "1.056",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный ресурс 12-01-003-01, PDF12; не подмена мастикой00101/02 либо полимерной мастикой03301.",
+        "Мастика на ковёр и гравийную защиту уже в целом исходном расходе; отдельный процент запаса или второй материал не добавлен."
+      ]
+    },
+    {
+      "role": "roof_bitumen",
+      "resourceCode": "01-0305-0005",
+      "titleRu": "Битум нефтяной строительный кровельный",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.057",
+      "sourceRatePer100m2": "0.057",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы.",
+        "Исходные марки БНК-45/190 и БНК-45/180 сохранены как внутренняя спецификация. Битум относится к собственному приготовлению грунтовки, не готовой эмульсии01602."
+      ]
+    },
+    {
+      "role": "technical_kerosene",
+      "resourceCode": "01-1504-0001",
+      "titleRu": "Керосин для технических целей",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.13",
+      "sourceRatePer100m2": "0.13",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы.",
+        "Исходная единица т, расход0,13т, а не0,13кг. КТ-1/КТ-2 — внутренняя спецификация исходного ресурса."
+      ]
+    },
+    {
+      "role": "gravel_dr8_5_10",
+      "resourceCode": "01-1603-0001",
+      "titleRu": "Гравий для строительных работ марки Др.8 фракции 5(3)–10 мм",
+      "unitId": "m3",
+      "category": "material",
+      "per100m2": "1.05",
+      "sourceRatePer100m2": "1.05",
+      "sourceUnit": "м³",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы."
+      ]
+    },
+    {
+      "role": "construction_glass_mesh",
+      "resourceCode": "01-7805-0003",
+      "titleRu": "Сетка стеклянная строительная",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "230.0",
+      "sourceRatePer100m2": "230.0",
+      "sourceUnit": "м²",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Весь исходный столбец 12-01-003-01, PDF11–12; расход на 100 м². Исторические денежные расценки не импортированы.",
+        "Исходная спецификация СС-1. Норма230м²/100м² содержит два армирующих слоя; не удваивать повторно и не заменять стеклотканью/геотекстилем."
+      ]
+    }
+  ],
+  "sourceScopeFactsNotAutomaticProjectApproval": true,
+  "allSourceCellsNumeric": true,
+  "historicalPricesImported": false,
+  "fullTechnicalAcceptance": false
+}

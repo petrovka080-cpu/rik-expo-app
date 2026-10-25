@@ -1,3 +1,4 @@
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
 import {
   NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID,
 } from "../../src/lib/estimate/v4/domainFactory/professionalPhysicalNormApplicabilityV1";
@@ -244,10 +245,10 @@ describe("S27.15 full strip-foundation composition", () => {
 
   it("keeps separate concreting complete but free of earthworks, reinforcement and formwork", async () => {
     const target = STRIP_FOUNDATION_CONCRETE_PLACEMENT_TARGETS.find(
-      (candidate) => candidate.contextKey === "large_area",
+      (candidate) => candidate.contextKey === "standard",
     );
-    if (!target) throw new Error("S2715_LARGE_AREA_CONCRETING_TARGET_MISSING");
-    const input = stripFoundationConcretePlacementAcceptanceInputR1("large_area");
+    if (!target) throw new Error("S2715_STANDARD_CONCRETING_TARGET_MISSING");
+    const input = measuredConcreteProjectInputR533("stripFoundationConcretePlacementAcceptanceInputR1", "extended");
     const compiled = await compileStripFoundationConcretePlacementR1(
       { ...input },
       { catalogId: target.catalogId },

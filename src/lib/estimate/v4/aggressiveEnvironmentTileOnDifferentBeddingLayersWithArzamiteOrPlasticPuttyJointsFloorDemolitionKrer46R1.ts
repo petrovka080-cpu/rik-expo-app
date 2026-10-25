@@ -18,16 +18,6 @@ export const AGGRESSIVE_ENVIRONMENT_TILE_ON_DIFFERENT_BEDDING_LAYERS_WITH_ARZAMI
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
     canonicalNameRu: "Разборка плиточного покрытия на разных подстилающих слоях с расшивкой швов арзамит- или пласт-замазками в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:demolition_interior_flooring_open_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка плиточного покрытия на разных подстилающих слоях с расшивкой швов арзамит- или пласт-замазками в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:demolition_interior_flooring_open_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка плиточного покрытия на разных подстилающих слоях с расшивкой швов арзамит- или пласт-замазками в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: "canonical-work:base:demolition_interior_flooring_open_wet_zone",
     catalogVariant: "WET_ZONE_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",

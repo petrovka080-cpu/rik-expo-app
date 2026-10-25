@@ -1,0 +1,161 @@
+{
+  "contract": "roof-primer-with-preparation-native01601/r24",
+  "prefix": "roof:primer-preparation:whole01601:r24",
+  "normId": "12-01-016-01",
+  "sources": [
+    {
+      "id": "WORK_CANDIDATE_KRER12_01601_SUBJECT_BUNDLE_R24",
+      "kind": "roof",
+      "titleRu": "КРЕР12:огрунтовка с собственным приготовлением01601",
+      "printedEdition": "КРЕР12-2015;приказ28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDFphysical/printed27;всятаблица12-01-016;собственнаяколонка01 иполныйсостав",
+      "reviewedAt": "2026-10-25",
+      "quantityAdmitted": false,
+      "sourceIdentityStatus": "UNADMITTED_WORK_CANDIDATE_ROOT_EXACT_COMMON_SOURCE_OPEN"
+    }
+  ],
+  "scopeRu": "Огрунтовка бетонного/растворного основания битумной грунтовкой с её приготовлением. Не готовая эмульсия01602 и не приготовление мастики019.",
+  "systemRu": "Точная исходная грунтовка из0.025тбитума+0.058ткеросина на100м²;это не выход готовой эмульсии,не инструкцияпо смешиванию и не любой современныйprimer. Конкретная технология безопасного приготовления/нанесения и совместимость требуют точного документа/проекта.",
+  "conditionsRu": "Пригодное бетонное/растворное основание,совместимость следующего ковра иточные нормативные условия;таже огрунтовка не оплачена в01501/04/01301/03/другом целом способе.",
+  "measurementRu": "100м² кровли;проектный обмер именно огрунтовываемого основания с применимыми source правилами,не площадь рулона/пола/любого нижнего слоя.",
+  "remainingScopeRu": [
+    "Фактический комплект приготовления/нанесения иего технический допуск UNKNOWN;нет автоматического котла/heatfeed/машиниста019 или универсальногоmixingrecipe.",
+    "Ровность/прочность/влажность ипригодность основания,высыхание ифактическая приёмка отдельно.",
+    "Физическийинвентарь/доставка/ППР/вентиляция/защита/containment отдельно,не нули и не часы вштуках.",
+    "Существующий01602/source/IDs остаётся неизменным;конфликт одного оплачиваемого грунтования требует ROOT current-owner review доordinaryConfig."
+  ],
+  "groupTitleRu": "Огрунтовка основания с приготовлением грунтовки",
+  "operationTitleRu": "Огрунтовка иприготовление битумной грунтовки",
+  "completionCriterionRu": "Собственный способ выполнен;технический допуск иреальнаяприёмка отдельно.",
+  "systemParameterId": "roof_primer01601_method_r24",
+  "conditionsParameterId": "roof_primer01601_conditions_r24",
+  "areaParameterId": "roof_primer01601_measure_scope_r24",
+  "systemYesRu": "Битумная грунтовка с собственным приготовлением01601",
+  "conditionsYesRu": "Точные исходные технология иусловия01601 подтверждены",
+  "areaYesRu": "Самостоятельный обмер иединственный владелец этойогрунтовки подтверждены",
+  "unknownChoiceRu": "Технология илиобмер ещёнепроверены",
+  "legacyChoiceRu": "Историческийсостав безнового01601допуска",
+  "measurementParameterId": "roof_primer01601_area_m2_r24",
+  "measurementUnitId": "m2",
+  "measurementConditional": true,
+  "measurementTitleRu": "Площадь выполняемой огрунтовки,м²",
+  "measurementGuideRu": "Введите самостоятельную проектную площадь именно этойогрунтовки. Слои/узлы иужеоплаченная подготовка повторно не добавляются.",
+  "quantityEditReasonRu": "Буквальные нормы01601 умножаются на собственный обмер;готовая эмульсия/площадь чужого слоя его не заменяет.",
+  "printedOperationRoster": [
+    {
+      "key": "base_priming",
+      "printedOrdinal": 1,
+      "titleRu": "Огрунтовка оснований битумной грунтовкой"
+    },
+    {
+      "key": "primer_preparation",
+      "printedOrdinal": 2,
+      "titleRu": "Приготовление грунтовки"
+    }
+  ],
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-2",
+      "titleRu": "Рабочие-строители среднего разряда3,2",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,2",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда3,2",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "4.46",
+      "sourceRatePer100m2": "4.46",
+      "sourceCellLexeme": "4,46",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "base_priming",
+        "primer_preparation"
+      ],
+      "detailsRu": [
+        "Собственная норма01601 на100м² кровли;приготовление грунтовки уже включено.",
+        "Нормативная строка/историческая цена не подтверждает аренду,stock или полныйспособ."
+      ]
+    },
+    {
+      "role": "flatbed_to5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до5т",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностью до5т",
+      "sourceInternalTitleRu": "Автомобили бортовые грузоподъёмностью до5т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.04",
+      "sourceRatePer100m2": "0.04",
+      "sourceCellLexeme": "0,04",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "base_priming",
+        "primer_preparation"
+      ],
+      "detailsRu": [
+        "Собственная норма01601 на100м² кровли;приготовление грунтовки уже включено.",
+        "Нормативная строка/историческая цена не подтверждает аренду,stock или полныйспособ."
+      ],
+      "machinePriceCoverageRequired": "FULL_DRIVER"
+    },
+    {
+      "role": "roof_bitumen",
+      "resourceCode": "01-0305-0005",
+      "titleRu": "Битум нефтяной строительный кровельный",
+      "sourceTitleRu": "Битум нефтяной строительный кровельный марокБНК-45/190,БНК-45/180",
+      "sourceInternalTitleRu": "Битум нефтяной строительный кровельный марокБНК-45/190,БНК-45/180",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.025",
+      "sourceRatePer100m2": "0.025",
+      "sourceCellLexeme": "0,025",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "primer_preparation"
+      ],
+      "detailsRu": [
+        "Собственная норма01601 на100м² кровли;приготовление грунтовки уже включено.",
+        "Нормативная строка/историческая цена не подтверждает аренду,stock или полныйспособ."
+      ]
+    },
+    {
+      "role": "technical_kerosene",
+      "resourceCode": "01-1504-0001",
+      "titleRu": "Керосин технический",
+      "sourceTitleRu": "Керосин для технических целей марокКТ-1,КТ-2",
+      "sourceInternalTitleRu": "Керосин для технических целей марокКТ-1,КТ-2",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.058",
+      "sourceRatePer100m2": "0.058",
+      "sourceCellLexeme": "0,058",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "primer_preparation"
+      ],
+      "detailsRu": [
+        "Собственная норма01601 на100м² кровли;приготовление грунтовки уже включено.",
+        "Нормативная строка/историческая цена не подтверждает аренду,stock или полныйспособ."
+      ]
+    }
+  ],
+  "primaryVisualEvidence": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-27.png",
+    "sha256": "c9dc5677a449bc312257c4647bf9a3fac3d34d04117b2dd78483295a21417d11",
+    "bytes": 92620
+  },
+  "sourceDashAbsences": [
+    "01-0206-0021readyemulsion"
+  ],
+  "sourceBoilerOrOperatorLineAbsentNotZero": true,
+  "ordinaryConfig": false,
+  "FULL": false
+}

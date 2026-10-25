@@ -43,18 +43,6 @@ export const FIRE_ALARM_FUNCTIONAL_TEST_VARIANTS = Object.freeze({
       "Функциональная проверка пожарной сигнализации зоны высокой плотности устройств",
     aliasesRu: ["испытание АПС высокая нагрузка", "проверка пожарных извещателей высокой плотности"],
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_test_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Функциональная проверка пожарной сигнализации большой площади",
-    aliasesRu: ["испытание АПС большой площади", "проверка пожарной сигнализации большого объекта"],
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_test_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Функциональная проверка пожарной сигнализации малой площади",
-    aliasesRu: ["испытание АПС малой площади", "проверка пожарной сигнализации небольшого объекта"],
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:electrical_interior_fire_alarm_test_standard",
     catalogVariant: "STANDARD_ZONE_SEARCH_IDENTITY",

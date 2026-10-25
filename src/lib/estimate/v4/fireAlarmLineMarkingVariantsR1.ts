@@ -12,8 +12,6 @@ type Json = Record<string, unknown>;
 
 export const FIRE_ALARM_LINE_MARKING_VARIANTS = Object.freeze({
   high_load: Object.freeze({ catalogId: "canonical-work:base:electrical_interior_fire_alarm_mark_high_load", catalogVariant: "HIGH_LOAD_SEARCH_IDENTITY", canonicalNameRu: "Маркировка линий пожарной сигнализации — высокая нагрузка" }),
-  large_area: Object.freeze({ catalogId: "canonical-work:base:electrical_interior_fire_alarm_mark_large_area", catalogVariant: "LARGE_AREA_SEARCH_IDENTITY", canonicalNameRu: "Маркировка линий пожарной сигнализации — большая площадь" }),
-  small_area: Object.freeze({ catalogId: "canonical-work:base:electrical_interior_fire_alarm_mark_small_area", catalogVariant: "SMALL_AREA_SEARCH_IDENTITY", canonicalNameRu: "Маркировка линий пожарной сигнализации — небольшая площадь" }),
   standard: Object.freeze({ catalogId: "canonical-work:base:electrical_interior_fire_alarm_mark_standard", catalogVariant: "STANDARD_SEARCH_IDENTITY", canonicalNameRu: "Маркировка линий пожарной сигнализации" }),
   technical_room: Object.freeze({ catalogId: "canonical-work:base:electrical_interior_fire_alarm_mark_technical_room", catalogVariant: "TECHNICAL_ROOM_SEARCH_IDENTITY", canonicalNameRu: "Маркировка линий пожарной сигнализации — техническое помещение" }),
   wet_zone: Object.freeze({ catalogId: "canonical-work:base:electrical_interior_fire_alarm_mark_wet_zone", catalogVariant: "WET_ZONE_SEARCH_IDENTITY", canonicalNameRu: "Маркировка линий пожарной сигнализации — влажная зона" }),

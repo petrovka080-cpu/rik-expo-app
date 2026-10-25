@@ -1,0 +1,987 @@
+{
+  "contract": "roof539-exact-retained-native-reuse/r24-r209",
+  "evidence": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roof-r209-bounded-owner-metadata\\HELD_FULL539_SELECTORS_ROWS_INDEX_R209_PART01.json",
+      "sha256": "28d934e31595f25210a71e51d8f913ac18d3676b2e61e0397c1bd0484c0e1da7",
+      "bytes": 3373498
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roof-r209-bounded-owner-metadata\\HELD_FULL539_PARAMETERS_ONLY_R209_PART02.json",
+      "sha256": "083557faae9444c33dc132a05e1c2a54e47521f779ab18d1ae8bfccedeb58bda",
+      "bytes": 929215
+    }
+  ],
+  "heldFullParentFileSha256": "05a129ef0c7e2c3a402f93cbef09459a301ac9fcc05a33a1ebec542facca2e83",
+  "definitionIdentity": {
+    "id": "5392622f-64e6-5c92-85e9-6b1417bf4f29",
+    "catalog_id": "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+    "definition_version": 14,
+    "definition_sha256": "1242595dfb1ba3b54850e95bc5b28f65ef60471481b2451503beeaf4a2710b61"
+  },
+  "oldFieldSelectorId": "m212_roof_complete_system",
+  "oldFieldSelectorValue": "Два наплавляемых слоя по готовому минеральному основанию",
+  "oldFieldAreaParameterId": "m212_roof_covering_area_m2",
+  "profiles": [
+    {
+      "key": "00209",
+      "layer": "002",
+      "choice": "Два прежних наплавляемых слоя с отдельно выбранными нижними слоями",
+      "primaryMeasureId": "m212_roof_covering_area_m2",
+      "measureIds": [
+        "m212_roof_covering_area_m2"
+      ],
+      "measureMetadata": [
+        {
+          "parameterId": "m212_roof_covering_area_m2",
+          "capturedStableSha256": "c3b57b33af271c4b40621951b237b12e26c93f6a0495ae1b0e22b07873390dd3",
+          "unitId": "m2"
+        }
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+          "capturedRowSha256": "27403d9ff53ee3943be921556e16a42050186c879866f18b9d25eada41996b11",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:flatbed_truck_to_5t",
+          "formulaStableSha256": "c924ce777a9c11d8299226f3d8b7267d8781c119472b2108138153f2a9d1cfc6",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:gas_flame_burner",
+          "capturedRowSha256": "a2d5e519598cd26833ec1e3a1b40378ae17f4740433cf3236f92a80ad1ad0f34",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:gas_flame_burner",
+          "formulaStableSha256": "a715f9b47912b508e3365e346b1d423307e35b4a716f1e249c954736e48cad39",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:included_machine_operators",
+          "capturedRowSha256": "35f6aac5837806bde85cdfc240aefee1cec3f5c9877bd0a40356db6c3c8310e5",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:included_machine_operators",
+          "formulaStableSha256": "0e3d1132ba755bf9d371634bdd18acb55e31d5581d7233c982adec1c01a4437c",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+          "capturedRowSha256": "17659fa12e6ac16e7cea04369e318909fbcfba4b463775076bdc7b05aac098b7",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:lower_isoplast_epp_4",
+          "formulaStableSha256": "3b1b4950ef5c783261806545012508173b56684d6afa37a5e23f5ce264162b9f",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:propane_butane",
+          "capturedRowSha256": "f41cc60f2c0ab118f81f2c6318616637b8999766526f651810f0f86f31a2ee14",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:propane_butane",
+          "formulaStableSha256": "2eafb6f5587986975ceede3c8bd0006d22ff047b602b256eb3ce0c570ea5700b",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:tower_crane_8t",
+          "capturedRowSha256": "e1ff2956fe4f7cd43bf1ef2985d14dfbb1d4c3479c1078f9607b55237e7874a4",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:tower_crane_8t",
+          "formulaStableSha256": "dd1a6df4ee16160d618e30076782bd6c6cc908183f8866a59dc5e9640abfca70",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:truck_crane_10t",
+          "capturedRowSha256": "e6c877767cd6f8cca49f3685ed01452467788d86e6cb480360616da281bc4254",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:truck_crane_10t",
+          "formulaStableSha256": "5a672ba86af40ba2f2000e8943301a80de7ddae3ec0d497817f5121b300cc3fe",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+          "capturedRowSha256": "b595b98d687955ec8a610f0c58c88c244f635e71c7104d20471ba9523d254c4d",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:upper_isoplast_ekp_4_5",
+          "formulaStableSha256": "e8a42d4223222cc2a8e8a54b81d44182205f6f5019a082a4f1354fef0386c1d0",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:workers",
+          "capturedRowSha256": "97a43e1b02b9b38223b20d5c9cba94b386dcebf3dd035415ad686c04b9d21b4a",
+          "formulaId": "master212:roof:r1:reuse:torch_field:formula:roof:torch-two:krer12-002-09:formula:workers",
+          "formulaStableSha256": "f953403ca009bc2c2b19e34add0de003705b54ef2eb0b7271e88e4ee0421b9a5",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa",
+          "preservedLocalClausesSha256": "c705a55eb590696a5ccf4b1ff33e3e0fcc7391f5daef2cbf74d4e5d86a5d0631",
+          "inclusionSha256": "8ef716a4723023c673bf7f4e5082568c550f208865b3fdf8e6b577ab90ec66aa"
+        }
+      ],
+      "legacyRawSiblingIds": [],
+      "sourceProfileReferences": [
+        {
+          "locator": "КРЕР12-01-002-09; состав и измеритель PDF9, ресурсы PDF10, продолжение PDF11; §1.1,1.3–1.4,1.8,2.1–2.4 PDF4–6",
+          "sourceId": "rik-expo-app.s27-63.flat-roof-torch-two.v1:roof",
+          "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+          "capturedSourceUuid": "a2d57ecb-12f5-5c76-8a3f-b372aca685c2",
+          "capturedSourceStableSha256": "da6ce8ba735968d7fc72e2a2eb778f2b3730124057bc468b30b83abf5fec16ff",
+          "capturedLocatorUuid": "f3008e8c-b970-5318-84dc-017f38f8ad18",
+          "capturedLocatorStableSha256": "6acf414918af3b18f2ac25e2d1b228ba954c443286f56af2c7aea80abb68ef61",
+          "activationAllowedCapturedUnchanged": false
+        }
+      ]
+    },
+    {
+      "key": "01402",
+      "layer": "014",
+      "choice": "Керамзитовый гравий 10–20 мм марки 400 с трамбованием",
+      "primaryMeasureId": "m212_roof_reuse_clay_roof_clay_area_m2",
+      "measureIds": [
+        "m212_roof_reuse_clay_roof_clay_area_m2",
+        "m212_roof_reuse_clay_roof_clay_average_thickness_mm"
+      ],
+      "measureMetadata": [
+        {
+          "parameterId": "m212_roof_reuse_clay_roof_clay_area_m2",
+          "capturedStableSha256": "d7919a23c7d29c09cfaf59172d310de5d4ba9fd5980e37f2c5ee8486f0f84105",
+          "unitId": "m2"
+        },
+        {
+          "parameterId": "m212_roof_reuse_clay_roof_clay_average_thickness_mm",
+          "capturedStableSha256": "d773174598b624722e30ab57e4a4e42d894f5091a12f1f722d55982ff2b7e368",
+          "unitId": "mm"
+        }
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:workers",
+          "capturedRowSha256": "91eb4b8e472fb5b5a1f6e79c073d74fb9f7e85be47e709c451dc51b6ef731582",
+          "formulaId": "master212:roof:r1:reuse:clay:formula:roof:clay-insulation:krer12-014-02:formula:workers",
+          "formulaStableSha256": "0c9e07a81ba12382249234d8157efc548d7e9f1dbc63458b42c447f9b9d51379",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588",
+          "preservedLocalClausesSha256": "a524cba31b8bf2f3316ee9ed4f739081c09b1858eeabd981d24b4870876d0b9d",
+          "inclusionSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:included_machine_operators",
+          "capturedRowSha256": "c0dc5c5238d8fd36136a1f9a4503c42403a80cd129a044a1b12fa3cd30345e5d",
+          "formulaId": "master212:roof:r1:reuse:clay:formula:roof:clay-insulation:krer12-014-02:formula:included_machine_operators",
+          "formulaStableSha256": "014f25543f2d7132e18425ef76b17088bf6a2430c8e75ea15e13109b920ac001",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588",
+          "preservedLocalClausesSha256": "a524cba31b8bf2f3316ee9ed4f739081c09b1858eeabd981d24b4870876d0b9d",
+          "inclusionSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:tower_crane_8t",
+          "capturedRowSha256": "123bbf648929128558fcddb9bd43dd3244669c07d515a871cee5ff27f13e4225",
+          "formulaId": "master212:roof:r1:reuse:clay:formula:roof:clay-insulation:krer12-014-02:formula:tower_crane_8t",
+          "formulaStableSha256": "8a357e074cf8425693d887998d27906ecdd41a4099096b3e1fb386a142a97069",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588",
+          "preservedLocalClausesSha256": "a524cba31b8bf2f3316ee9ed4f739081c09b1858eeabd981d24b4870876d0b9d",
+          "inclusionSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:forklift_5t",
+          "capturedRowSha256": "83d7db8266110b6607cb48c42b83ff7d1fff1180f1c1618818b5969af2690374",
+          "formulaId": "master212:roof:r1:reuse:clay:formula:roof:clay-insulation:krer12-014-02:formula:forklift_5t",
+          "formulaStableSha256": "f49bd566b7c05a909a240193def12432bddb708e72810e3a80ff1db8727216ba",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588",
+          "preservedLocalClausesSha256": "a524cba31b8bf2f3316ee9ed4f739081c09b1858eeabd981d24b4870876d0b9d",
+          "inclusionSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:clay_gravel_10_20_m400",
+          "capturedRowSha256": "8f0839112aa6fddd50a3ae33f9fde004944c9d0c1a776c44ab99e3d24f38b600",
+          "formulaId": "master212:roof:r1:reuse:clay:formula:roof:clay-insulation:krer12-014-02:formula:clay_gravel_10_20_m400",
+          "formulaStableSha256": "d1da3a7e5a235f9ee5d2e20dadc6aa36e1ec6ad6af838be9ddf940c6303c54af",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588",
+          "preservedLocalClausesSha256": "a524cba31b8bf2f3316ee9ed4f739081c09b1858eeabd981d24b4870876d0b9d",
+          "inclusionSha256": "f5107239ccf536bba5ce608c29ca73693aedb2c767f90275b9fe31bffc1c6588"
+        }
+      ],
+      "legacyRawSiblingIds": [
+        "roof:clay-insulation:krer12-014-02:workers",
+        "roof:clay-insulation:krer12-014-02:included_machine_operators",
+        "roof:clay-insulation:krer12-014-02:tower_crane_8t",
+        "roof:clay-insulation:krer12-014-02:forklift_5t",
+        "roof:clay-insulation:krer12-014-02:clay_gravel_10_20_m400",
+        "roof:clay-insulation:krer12-014-02:project-scope"
+      ],
+      "sourceProfileReferences": [
+        {
+          "sourceId": "rik-expo-app.s27-67.roof-lower-layers-companion.v1:roof",
+          "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+          "locator": "rik-expo-app.s27-67.roof-lower-layers-companion.v1:roof",
+          "capturedSourceUuid": "7c44c56d-e5fd-56d3-837b-6344399abc17",
+          "capturedSourceStableSha256": "005453cf4de691831d0d3a50b36a558643dd25fcf78a9c97349c2ef8a3c89417",
+          "capturedLocatorUuid": "1fde4001-a972-561a-8793-787a24fc8359",
+          "capturedLocatorStableSha256": "47a0145beab5761d505d5b0154925ba1daff6a2b6fa32dc0833829c40c6a102a",
+          "activationAllowedCapturedUnchanged": false
+        }
+      ]
+    },
+    {
+      "key": "01503",
+      "layer": "015",
+      "choice": "Один прокладочный слой рулонного материала на готовой горячей мастике",
+      "primaryMeasureId": "m212_roof_reuse_vapor_roof_vapor_area_m2",
+      "measureIds": [
+        "m212_roof_reuse_vapor_roof_vapor_area_m2"
+      ],
+      "measureMetadata": [
+        {
+          "parameterId": "m212_roof_reuse_vapor_roof_vapor_area_m2",
+          "capturedStableSha256": "e660386504e4a12ab884aa0df90e074eb6092aa3141425bc5d8f528af54978ff",
+          "unitId": "m2"
+        }
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:workers",
+          "capturedRowSha256": "cf51d6444a4a2a2e66d98284e937f8ca08f58ce694154a0b1c3b153a4dd418e3",
+          "formulaId": "master212:roof:r1:reuse:vapor:formula:roof:vapor:krer12-015-03:formula:workers",
+          "formulaStableSha256": "7244105ff74b6560689053fabf55a3bff8b64229dcfb51f96d363e6e56a1343b",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200",
+          "preservedLocalClausesSha256": "7f2536477e6724171d611bcd81987a57953a1623701a37e75a4ae12d5c1f0a01",
+          "inclusionSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:included_machine_operators",
+          "capturedRowSha256": "974c3f46d1d1f864112079a3db425b864b6ffd4329a789eb11102f46d357305e",
+          "formulaId": "master212:roof:r1:reuse:vapor:formula:roof:vapor:krer12-015-03:formula:included_machine_operators",
+          "formulaStableSha256": "faf9b82fde11d8bcc09f4fbddf05fbb24d6127073aabbe7c220dc9238e57bbf6",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200",
+          "preservedLocalClausesSha256": "7f2536477e6724171d611bcd81987a57953a1623701a37e75a4ae12d5c1f0a01",
+          "inclusionSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:tower_crane_8t",
+          "capturedRowSha256": "8639049d1499e10e1d559250ebb23e11a8d0bfb2935eeaba1d4c61c8c892398a",
+          "formulaId": "master212:roof:r1:reuse:vapor:formula:roof:vapor:krer12-015-03:formula:tower_crane_8t",
+          "formulaStableSha256": "163a544a10c5fceae4ca517722fd1637bc7ca21c08cb82fbcf597eee39bd57ef",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200",
+          "preservedLocalClausesSha256": "7f2536477e6724171d611bcd81987a57953a1623701a37e75a4ae12d5c1f0a01",
+          "inclusionSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:truck_crane_10t",
+          "capturedRowSha256": "ba862ef19bce4889b839915babc07863657532cfccdac44c38575767d33868a5",
+          "formulaId": "master212:roof:r1:reuse:vapor:formula:roof:vapor:krer12-015-03:formula:truck_crane_10t",
+          "formulaStableSha256": "2969d95439e00d9955a8fd73a2527313b462b0875c797ff8798ff6beac9619db",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200",
+          "preservedLocalClausesSha256": "7f2536477e6724171d611bcd81987a57953a1623701a37e75a4ae12d5c1f0a01",
+          "inclusionSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:bitumen_kettle_400l",
+          "capturedRowSha256": "9faf63722932e4ace66c502f4af305d08786a74f5f40cb10edacf17123123261",
+          "formulaId": "master212:roof:r1:reuse:vapor:formula:roof:vapor:krer12-015-03:formula:bitumen_kettle_400l",
+          "formulaStableSha256": "bd8b24000255e73d2da24caaf804b83051bee261575a550cd708ecf5f977bb43",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200",
+          "preservedLocalClausesSha256": "7f2536477e6724171d611bcd81987a57953a1623701a37e75a4ae12d5c1f0a01",
+          "inclusionSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:flatbed_truck_to_5t",
+          "capturedRowSha256": "59fb98f46a4f8141d41f58e7e5c92b7e595d653006474be5f083bd8dcc56791d",
+          "formulaId": "master212:roof:r1:reuse:vapor:formula:roof:vapor:krer12-015-03:formula:flatbed_truck_to_5t",
+          "formulaStableSha256": "0b62ed361a2e68229ceea0e65b1e634c15f448aaf45bd205e65b6b49ceee5abb",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200",
+          "preservedLocalClausesSha256": "7f2536477e6724171d611bcd81987a57953a1623701a37e75a4ae12d5c1f0a01",
+          "inclusionSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:ready_hot_roof_mastic",
+          "capturedRowSha256": "f9edd959268b59566b5d312c0a077bfa09160bc82ec0bbf598456f54bc6a3cb1",
+          "formulaId": "master212:roof:r1:reuse:vapor:formula:roof:vapor:krer12-015-03:formula:ready_hot_roof_mastic",
+          "formulaStableSha256": "50b7e4f88ed47e2e4d7464ca962414f78b156fb86da25efb221efb37e587c5fb",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200",
+          "preservedLocalClausesSha256": "7f2536477e6724171d611bcd81987a57953a1623701a37e75a4ae12d5c1f0a01",
+          "inclusionSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:roofing_felt_rkp350b",
+          "capturedRowSha256": "2d6e4a25a95157d9837077595f70fbb731abbfa922baa2224f7c685ba7f2fc09",
+          "formulaId": "master212:roof:r1:reuse:vapor:formula:roof:vapor:krer12-015-03:formula:roofing_felt_rkp350b",
+          "formulaStableSha256": "a57cacb30bf0572924a35c64a23022c7732a65dd79af7623407978c3b24590e2",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200",
+          "preservedLocalClausesSha256": "7f2536477e6724171d611bcd81987a57953a1623701a37e75a4ae12d5c1f0a01",
+          "inclusionSha256": "072bfb3cec15d28a769591e2c17dfadace69368e7e2a101b20c6ada51b2f8200"
+        }
+      ],
+      "legacyRawSiblingIds": [
+        "roof:vapor:krer12-015-03:workers",
+        "roof:vapor:krer12-015-03:included_machine_operators",
+        "roof:vapor:krer12-015-03:tower_crane_8t",
+        "roof:vapor:krer12-015-03:truck_crane_10t",
+        "roof:vapor:krer12-015-03:bitumen_kettle_400l",
+        "roof:vapor:krer12-015-03:flatbed_truck_to_5t",
+        "roof:vapor:krer12-015-03:ready_hot_roof_mastic",
+        "roof:vapor:krer12-015-03:roofing_felt_rkp350b",
+        "roof:vapor:krer12-015-03:project-scope"
+      ],
+      "sourceProfileReferences": [
+        {
+          "sourceId": "rik-expo-app.s27-67.roof-lower-layers-companion.v1:roof",
+          "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+          "locator": "rik-expo-app.s27-67.roof-lower-layers-companion.v1:roof",
+          "capturedSourceUuid": "7c44c56d-e5fd-56d3-837b-6344399abc17",
+          "capturedSourceStableSha256": "005453cf4de691831d0d3a50b36a558643dd25fcf78a9c97349c2ef8a3c89417",
+          "capturedLocatorUuid": "1fde4001-a972-561a-8793-787a24fc8359",
+          "capturedLocatorStableSha256": "47a0145beab5761d505d5b0154925ba1daff6a2b6fa32dc0833829c40c6a102a",
+          "activationAllowedCapturedUnchanged": false
+        }
+      ]
+    },
+    {
+      "key": "01602",
+      "layer": "016",
+      "choice": "Грунтование готовой битумной эмульсией",
+      "primaryMeasureId": "m212_roof_reuse_torch_primer_q",
+      "measureIds": [
+        "m212_roof_reuse_torch_primer_q"
+      ],
+      "measureMetadata": [
+        {
+          "parameterId": "m212_roof_reuse_torch_primer_q",
+          "capturedStableSha256": "598213ee0ee868a2d0a6bc5b2e9a16e68a6e8cc99116e6f6499fb8ff5c90ead5",
+          "unitId": "m2"
+        }
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:reuse:torch_primer:roof:prime-ready-emulsion:krer12-016-02:workers",
+          "capturedRowSha256": "09b2936b03229f227bc155477daeb9dfcb9eff4508a25e1f395ec64305c30010",
+          "formulaId": "master212:roof:r1:reuse:torch_primer:formula:roof:prime-ready-emulsion:krer12-016-02:formula:workers",
+          "formulaStableSha256": "7de9da261e6f64a65eb559b02ae1553b5ab52cf44b92f137cd98952f6f55b421",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "1c11d3241a7ee72614300594cb587676d330559d4d7e06e5394de4124f3d4343",
+          "preservedLocalClausesSha256": "6baf74a8a9e0a2fac16c05503bbcb63fd13f62595948d8e370d336f5c970756b",
+          "inclusionSha256": "1c11d3241a7ee72614300594cb587676d330559d4d7e06e5394de4124f3d4343"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_primer:roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+          "capturedRowSha256": "eb628f2b6388dff0ad30d35b15538cec2bceb4bda632572516d80d7ed41d447f",
+          "formulaId": "master212:roof:r1:reuse:torch_primer:formula:roof:prime-ready-emulsion:krer12-016-02:formula:flatbed_truck",
+          "formulaStableSha256": "cad7573e593baee7c2a10599faf7d09c8cd823ddeb370b3cf6f832a050bf555b",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "1c11d3241a7ee72614300594cb587676d330559d4d7e06e5394de4124f3d4343",
+          "preservedLocalClausesSha256": "6baf74a8a9e0a2fac16c05503bbcb63fd13f62595948d8e370d336f5c970756b",
+          "inclusionSha256": "1c11d3241a7ee72614300594cb587676d330559d4d7e06e5394de4124f3d4343"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_primer:roof:prime-ready-emulsion:krer12-016-02:ready_bitumen_emulsion",
+          "capturedRowSha256": "164c7a6aa2b52c09a4ea666402198ff64c20fb5ef05063a78f78f96d313f5382",
+          "formulaId": "master212:roof:r1:reuse:torch_primer:formula:roof:prime-ready-emulsion:krer12-016-02:formula:ready_bitumen_emulsion",
+          "formulaStableSha256": "65c4f8d1410b837fe660b6c9f1442af66c420a16467439207a8626211acce8bc",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "1c11d3241a7ee72614300594cb587676d330559d4d7e06e5394de4124f3d4343",
+          "preservedLocalClausesSha256": "6baf74a8a9e0a2fac16c05503bbcb63fd13f62595948d8e370d336f5c970756b",
+          "inclusionSha256": "1c11d3241a7ee72614300594cb587676d330559d4d7e06e5394de4124f3d4343"
+        }
+      ],
+      "legacyRawSiblingIds": [
+        "roof:prime-ready-emulsion:krer12-016-02:workers",
+        "roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+        "roof:prime-ready-emulsion:krer12-016-02:ready_bitumen_emulsion"
+      ],
+      "sourceProfileReferences": [
+        {
+          "sourceId": "rik-expo-app.s27-67.integrated-planned-roof-priming.v1:roof",
+          "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+          "locator": "rik-expo-app.s27-67.integrated-planned-roof-priming.v1:roof",
+          "capturedSourceUuid": "a98f3a91-07db-58f9-8010-4306783a94d3",
+          "capturedSourceStableSha256": "6dace46035c27d5c2293c467d429c08e912c46e824047a6f9b9e9773e8191d3e",
+          "capturedLocatorUuid": "f6dd7e72-92b7-5047-8fd7-d7b312085c47",
+          "capturedLocatorStableSha256": "c8a0f5ef2768e1c03c2deb373f45491e8256d627877d84c12aed9a6d086697c4",
+          "activationAllowedCapturedUnchanged": false
+        }
+      ]
+    },
+    {
+      "key": "01715",
+      "layer": "017",
+      "choice": "Цементная стяжка толщиной 15 мм из готового раствора",
+      "primaryMeasureId": "m212_roof_reuse_screed_roof_screed_area_m2",
+      "measureIds": [
+        "m212_roof_reuse_screed_roof_screed_area_m2"
+      ],
+      "measureMetadata": [
+        {
+          "parameterId": "m212_roof_reuse_screed_roof_screed_area_m2",
+          "capturedStableSha256": "712a87dac21a23cd82b14eaa24fb5564029a17d6bfc86925d247a4c06ffd7c75",
+          "unitId": "m2"
+        }
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:workers",
+          "capturedRowSha256": "726e10a8dfb4cc07b1f4c0173235ed26b29e5240c1d4c3c30b225450c8536d09",
+          "formulaId": "master212:roof:r1:reuse:screed:formula:roof:cement-screed15:krer12-017-01:formula:workers",
+          "formulaStableSha256": "271b205ea1af6e3051a54ad67e91a81744e6e91dc0784a52f323d31cceb65a9c",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258",
+          "preservedLocalClausesSha256": "2ead102f135873141935918452c206bcb8cf1aed1185e9e2f6ad96a556787f56",
+          "inclusionSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:included_machine_operators",
+          "capturedRowSha256": "b3c8dae22678974c0ab47f59f3d2c8e3bcf7cf909609188758ab96c5df22fb17",
+          "formulaId": "master212:roof:r1:reuse:screed:formula:roof:cement-screed15:krer12-017-01:formula:included_machine_operators",
+          "formulaStableSha256": "3dfb81f956ddaa9e767d5a0a28dcbe1533bdad414443e5988757ca91d149b749",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258",
+          "preservedLocalClausesSha256": "2ead102f135873141935918452c206bcb8cf1aed1185e9e2f6ad96a556787f56",
+          "inclusionSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:tower_crane_8t",
+          "capturedRowSha256": "6e97b06fec61bd116357c9f0213f1faf325825fd1e802978c7c6fad1e8841c02",
+          "formulaId": "master212:roof:r1:reuse:screed:formula:roof:cement-screed15:krer12-017-01:formula:tower_crane_8t",
+          "formulaStableSha256": "4be412d5fcd8a0bcd47a80254187b8186f7f9cfee7ac02dd79f59d7635f496a0",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258",
+          "preservedLocalClausesSha256": "2ead102f135873141935918452c206bcb8cf1aed1185e9e2f6ad96a556787f56",
+          "inclusionSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:forklift_5t",
+          "capturedRowSha256": "fd1342f830676124dd626dc25bf462787318407dff69eb5d9b445de671438963",
+          "formulaId": "master212:roof:r1:reuse:screed:formula:roof:cement-screed15:krer12-017-01:formula:forklift_5t",
+          "formulaStableSha256": "5686aa6200448b94f6d5e12e11918e4a35077da99503cc244726e82ab2feed0d",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258",
+          "preservedLocalClausesSha256": "2ead102f135873141935918452c206bcb8cf1aed1185e9e2f6ad96a556787f56",
+          "inclusionSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:mortar_pump",
+          "capturedRowSha256": "f27d956cae693a76f63801efe9f8c7f8666f3922f587df95b950f9ae9dd5a636",
+          "formulaId": "master212:roof:r1:reuse:screed:formula:roof:cement-screed15:krer12-017-01:formula:mortar_pump",
+          "formulaStableSha256": "536927d9d4bb8d9b70929683d72a66f1b9c157f3215147d5bd747427a98c2076",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258",
+          "preservedLocalClausesSha256": "2ead102f135873141935918452c206bcb8cf1aed1185e9e2f6ad96a556787f56",
+          "inclusionSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:water",
+          "capturedRowSha256": "3eb883978892090c29430d5c7d49212322bad9ddd07b4ebd9426e73752379982",
+          "formulaId": "master212:roof:r1:reuse:screed:formula:roof:cement-screed15:krer12-017-01:formula:water",
+          "formulaStableSha256": "ee98129ad467ee59478edb1e19497b9a1a9e677481329f73b829e0902dc060e1",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258",
+          "preservedLocalClausesSha256": "2ead102f135873141935918452c206bcb8cf1aed1185e9e2f6ad96a556787f56",
+          "inclusionSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:roofing_felt",
+          "capturedRowSha256": "0fc942dee443fdf153bcea0abd02326c97ace9a3a13ce94a050ca07c69b3ee01",
+          "formulaId": "master212:roof:r1:reuse:screed:formula:roof:cement-screed15:krer12-017-01:formula:roofing_felt",
+          "formulaStableSha256": "0b6a06261e14cdb83ef3d17c76a197052e0fbc9507ae013747842bea7d0be831",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258",
+          "preservedLocalClausesSha256": "2ead102f135873141935918452c206bcb8cf1aed1185e9e2f6ad96a556787f56",
+          "inclusionSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258"
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:ready_cement_mortar_m100",
+          "capturedRowSha256": "80b4bdf72e5e3d28de95d1c4df7e329236745475e9fed63b3c0e82f0b0022c6b",
+          "formulaId": "master212:roof:r1:reuse:screed:formula:roof:cement-screed15:krer12-017-01:formula:ready_cement_mortar_m100",
+          "formulaStableSha256": "6d58207c097c3f710da33ecdce3f1b11d6e2e377a60481e6de8574ee702748dc",
+          "ownedBranchPath": [],
+          "ownedBranchSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258",
+          "preservedLocalClausesSha256": "2ead102f135873141935918452c206bcb8cf1aed1185e9e2f6ad96a556787f56",
+          "inclusionSha256": "9f89a9fc8ae02a450977b9b190442b53b8e49167b7298dca99f293c044d3e258"
+        }
+      ],
+      "legacyRawSiblingIds": [
+        "roof:cement-screed15:krer12-017-01:workers",
+        "roof:cement-screed15:krer12-017-01:included_machine_operators",
+        "roof:cement-screed15:krer12-017-01:tower_crane_8t",
+        "roof:cement-screed15:krer12-017-01:forklift_5t",
+        "roof:cement-screed15:krer12-017-01:mortar_pump",
+        "roof:cement-screed15:krer12-017-01:water",
+        "roof:cement-screed15:krer12-017-01:roofing_felt",
+        "roof:cement-screed15:krer12-017-01:ready_cement_mortar_m100",
+        "roof:cement-screed15:krer12-017-01:direct-base-check"
+      ],
+      "sourceProfileReferences": [
+        {
+          "sourceId": "rik-expo-app.s27-67.roof-screed15-companion.v1:roof",
+          "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+          "locator": "rik-expo-app.s27-67.roof-screed15-companion.v1:roof",
+          "capturedSourceUuid": "5278e2b8-cff2-502a-84b8-3dd95f495bc1",
+          "capturedSourceStableSha256": "85b239ce600f38c84f605c839db079bbda2109fe19b64884bc2666b3571e3543",
+          "capturedLocatorUuid": "1e559c05-3048-5580-8361-591d8bda7a78",
+          "capturedLocatorStableSha256": "00db4579a9d145306c6b5cb30c4e2a8e81672d6492d1507bbcba722ca0970a55",
+          "activationAllowedCapturedUnchanged": false
+        }
+      ]
+    },
+    {
+      "key": "01725",
+      "layer": "017",
+      "choice": "Цементная стяжка толщиной 25 мм из готового раствора",
+      "primaryMeasureId": "roof_planned_screed25_area_m2",
+      "measureIds": [
+        "roof_planned_screed25_area_m2"
+      ],
+      "measureMetadata": [
+        {
+          "parameterId": "roof_planned_screed25_area_m2",
+          "capturedStableSha256": "8689c3da72f4a4ba76abdf61cdc2ab078ab157241a50569b7d9a0e7d0298bd39",
+          "unitId": "m2"
+        }
+      ],
+      "rows": [
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:workers",
+          "capturedRowSha256": "f481f5d1a5a476c5b5edf6e323ed20b43ed3a87a8ca55f680b3c5c590d702376",
+          "formulaId": "roof:cement-screed25:krer12-017-01-plus-10x02:formula:workers",
+          "formulaStableSha256": "26cb971647e6d37ed4906a9f0156f256fa8defea9b023adf3b353128cf0b45f5",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "3d3d56b9ea2146414d7872c1e6e4ffe01cef60fb15422015fc765e0fc3f69765",
+          "preservedLocalClausesSha256": "ed0198f1ce5788522c87907ecf49ccb2e7ad6f35a8fdf13910404708e7d085f9",
+          "inclusionSha256": "6de4c73ff591428f891a426e748098134e86de6aa0a40ee81a4aebb5f105dc7a"
+        },
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:included_machine_operators",
+          "capturedRowSha256": "ac1728529f5627bcc7e351a77f746abc6ec3ec08b93ff1955091b02c6b174443",
+          "formulaId": "roof:cement-screed25:krer12-017-01-plus-10x02:formula:included_machine_operators",
+          "formulaStableSha256": "c4fe6eec244515fe04c53f143915761e8694e66ae760fccf64a8bb6aaa01e3f1",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "3d3d56b9ea2146414d7872c1e6e4ffe01cef60fb15422015fc765e0fc3f69765",
+          "preservedLocalClausesSha256": "ed0198f1ce5788522c87907ecf49ccb2e7ad6f35a8fdf13910404708e7d085f9",
+          "inclusionSha256": "6de4c73ff591428f891a426e748098134e86de6aa0a40ee81a4aebb5f105dc7a"
+        },
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:tower_crane_8t",
+          "capturedRowSha256": "3e6601019f270a38f4f1e2c7e498fab6cbba9cdf3a3696f73d21f15797c2a2e7",
+          "formulaId": "roof:cement-screed25:krer12-017-01-plus-10x02:formula:tower_crane_8t",
+          "formulaStableSha256": "4534dcdebf6f9d1aea486d212adc05908bb608fa456877addf880e4feb2c9c64",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "3d3d56b9ea2146414d7872c1e6e4ffe01cef60fb15422015fc765e0fc3f69765",
+          "preservedLocalClausesSha256": "ed0198f1ce5788522c87907ecf49ccb2e7ad6f35a8fdf13910404708e7d085f9",
+          "inclusionSha256": "6de4c73ff591428f891a426e748098134e86de6aa0a40ee81a4aebb5f105dc7a"
+        },
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:forklift_5t",
+          "capturedRowSha256": "e51bf2c0ebd30ea9be4797358ca51c6e8396fa2fdf347d4a3e887b773c2fc876",
+          "formulaId": "roof:cement-screed25:krer12-017-01-plus-10x02:formula:forklift_5t",
+          "formulaStableSha256": "384cdbfc478626d384a4011c264f843ee9cd5ebe374ce22ab28ac23fabee877f",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "3d3d56b9ea2146414d7872c1e6e4ffe01cef60fb15422015fc765e0fc3f69765",
+          "preservedLocalClausesSha256": "ed0198f1ce5788522c87907ecf49ccb2e7ad6f35a8fdf13910404708e7d085f9",
+          "inclusionSha256": "6de4c73ff591428f891a426e748098134e86de6aa0a40ee81a4aebb5f105dc7a"
+        },
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:mortar_pump",
+          "capturedRowSha256": "0a57f5ddb45b48e5289611af017fdaa2ab0a96f85c883331d0dbf367266ffe17",
+          "formulaId": "roof:cement-screed25:krer12-017-01-plus-10x02:formula:mortar_pump",
+          "formulaStableSha256": "ea0dda7e38c5b1621ae7bb0a66316fbdce092be27b0abd8fc7e4303afef64171",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "3d3d56b9ea2146414d7872c1e6e4ffe01cef60fb15422015fc765e0fc3f69765",
+          "preservedLocalClausesSha256": "ed0198f1ce5788522c87907ecf49ccb2e7ad6f35a8fdf13910404708e7d085f9",
+          "inclusionSha256": "6de4c73ff591428f891a426e748098134e86de6aa0a40ee81a4aebb5f105dc7a"
+        },
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:water",
+          "capturedRowSha256": "000ea00f5c643dba7ef54fc9fdb7b868ca63068921e0e58bf40e988342873d65",
+          "formulaId": "roof:cement-screed25:krer12-017-01-plus-10x02:formula:water",
+          "formulaStableSha256": "4a86522630bef38c7440c44cf0548da587b59677588df1d7d41e2e50164bca8e",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "3d3d56b9ea2146414d7872c1e6e4ffe01cef60fb15422015fc765e0fc3f69765",
+          "preservedLocalClausesSha256": "ed0198f1ce5788522c87907ecf49ccb2e7ad6f35a8fdf13910404708e7d085f9",
+          "inclusionSha256": "6de4c73ff591428f891a426e748098134e86de6aa0a40ee81a4aebb5f105dc7a"
+        },
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:roofing_felt",
+          "capturedRowSha256": "da5efde2e6d7aa014bcc81b6dbce43d6671db9eca8649ab48b32b14e525c6bd3",
+          "formulaId": "roof:cement-screed25:krer12-017-01-plus-10x02:formula:roofing_felt",
+          "formulaStableSha256": "faab3a0f314a3f81fbaedc4cc3370b09a71661f841bc6c43fc4298f133f70cf1",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "3d3d56b9ea2146414d7872c1e6e4ffe01cef60fb15422015fc765e0fc3f69765",
+          "preservedLocalClausesSha256": "ed0198f1ce5788522c87907ecf49ccb2e7ad6f35a8fdf13910404708e7d085f9",
+          "inclusionSha256": "6de4c73ff591428f891a426e748098134e86de6aa0a40ee81a4aebb5f105dc7a"
+        },
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:ready_cement_mortar_m100",
+          "capturedRowSha256": "9f7213e32f2f8a3a33b007361cff1e2e9552a4ef15a1aae487d0cb4bd119eefb",
+          "formulaId": "roof:cement-screed25:krer12-017-01-plus-10x02:formula:ready_cement_mortar_m100",
+          "formulaStableSha256": "0eedd2a203f29763e810d44a78f572e6b98f056198ea358b4217c23dac0553d8",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "3d3d56b9ea2146414d7872c1e6e4ffe01cef60fb15422015fc765e0fc3f69765",
+          "preservedLocalClausesSha256": "ed0198f1ce5788522c87907ecf49ccb2e7ad6f35a8fdf13910404708e7d085f9",
+          "inclusionSha256": "6de4c73ff591428f891a426e748098134e86de6aa0a40ee81a4aebb5f105dc7a"
+        },
+        {
+          "rowId": "roof:cement-screed25:krer12-017-01-plus-10x02:project-scope",
+          "capturedRowSha256": "dcc607f13a080c7a5695ba9f592ff229eb65685d4828ea03b43c1d9f33d16bc5",
+          "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:roof_assembly",
+          "formulaStableSha256": "71a349bfcb0b3e9f464d6a18b951fa0ab399216690b8b4fe51241f1fd3544150",
+          "ownedBranchPath": [
+            "operands",
+            1
+          ],
+          "ownedBranchSha256": "e46f152be869e2fe1531022b8de4a9bacd5d9cab8ffbd78654057de9e47441b2",
+          "preservedLocalClausesSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "inclusionSha256": "6450b833194622fc04e2069413a47488f9b3bd8c39244ac90e4af41f442a6a7e"
+        }
+      ],
+      "legacyRawSiblingIds": [],
+      "sourceProfileReferences": [
+        {
+          "sourceId": "rik-expo-app.s27-67.roof-screed25-companion.v1:roof",
+          "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+          "locator": "rik-expo-app.s27-67.roof-screed25-companion.v1:roof",
+          "capturedSourceUuid": "b0749f49-9c8e-5e2c-8554-02baebad179d",
+          "capturedSourceStableSha256": "3e089887a437d67baeb766f9d9955b5847217943c5fae9b0d689987a88bb90af",
+          "capturedLocatorUuid": "9f8ec3ec-7beb-50d0-81e4-56dece0b8819",
+          "capturedLocatorStableSha256": "bee2b2155ee5ac516c553923e97f2f84f7bac34c91dece7c8fd51da921c82bbe",
+          "activationAllowedCapturedUnchanged": false
+        }
+      ]
+    }
+  ],
+  "allCapturedResourceIds": [
+    "roofing_interior_flat_roof_install_technical_room_materials_01",
+    "roofing_interior_flat_roof_install_technical_room_materials_02",
+    "roofing_interior_flat_roof_install_technical_room_materials_03",
+    "roofing_interior_flat_roof_install_technical_room_materials_04",
+    "roofing_interior_flat_roof_install_technical_room_materials_05",
+    "roofing_interior_flat_roof_install_technical_room_materials_06",
+    "roofing_interior_flat_roof_install_technical_room_materials_37",
+    "roofing_interior_flat_roof_install_technical_room_materials_38",
+    "roofing_interior_flat_roof_install_technical_room_materials_39",
+    "roofing_interior_flat_roof_install_technical_room_components_07",
+    "roofing_interior_flat_roof_install_technical_room_components_08",
+    "roofing_interior_flat_roof_install_technical_room_components_09",
+    "roofing_interior_flat_roof_install_technical_room_components_10",
+    "roofing_interior_flat_roof_install_technical_room_components_40",
+    "roofing_interior_flat_roof_install_technical_room_components_41",
+    "roofing_interior_flat_roof_install_technical_room_components_42",
+    "roofing_interior_flat_roof_install_technical_room_consumables_11",
+    "roofing_interior_flat_roof_install_technical_room_consumables_12",
+    "roofing_interior_flat_roof_install_technical_room_consumables_13",
+    "roofing_interior_flat_roof_install_technical_room_consumables_43",
+    "roofing_interior_flat_roof_install_technical_room_consumables_44",
+    "roofing_interior_flat_roof_install_technical_room_preparation_14",
+    "roofing_interior_flat_roof_install_technical_room_preparation_15",
+    "roofing_interior_flat_roof_install_technical_room_preparation_16",
+    "roofing_interior_flat_roof_install_technical_room_preparation_17",
+    "roofing_interior_flat_roof_install_technical_room_preparation_45",
+    "roofing_interior_flat_roof_install_technical_room_preparation_46",
+    "roofing_interior_flat_roof_install_technical_room_preparation_47",
+    "roofing_interior_flat_roof_install_technical_room_labor_18",
+    "roofing_interior_flat_roof_install_technical_room_labor_19",
+    "roofing_interior_flat_roof_install_technical_room_labor_20",
+    "roofing_interior_flat_roof_install_technical_room_labor_21",
+    "roofing_interior_flat_roof_install_technical_room_labor_22",
+    "roofing_interior_flat_roof_install_technical_room_labor_23",
+    "roofing_interior_flat_roof_install_technical_room_labor_24",
+    "roofing_interior_flat_roof_install_technical_room_labor_48",
+    "roofing_interior_flat_roof_install_technical_room_labor_49",
+    "roofing_interior_flat_roof_install_technical_room_labor_50",
+    "roofing_interior_flat_roof_install_technical_room_equipment_25",
+    "roofing_interior_flat_roof_install_technical_room_equipment_26",
+    "roofing_interior_flat_roof_install_technical_room_equipment_27",
+    "roofing_interior_flat_roof_install_technical_room_equipment_51",
+    "roofing_interior_flat_roof_install_technical_room_equipment_52",
+    "roofing_interior_flat_roof_install_technical_room_logistics_28",
+    "roofing_interior_flat_roof_install_technical_room_logistics_29",
+    "roofing_interior_flat_roof_install_technical_room_logistics_53",
+    "roofing_interior_flat_roof_install_technical_room_logistics_54",
+    "roofing_interior_flat_roof_install_technical_room_waste_30",
+    "roofing_interior_flat_roof_install_technical_room_waste_31",
+    "roofing_interior_flat_roof_install_technical_room_waste_55",
+    "roofing_interior_flat_roof_install_technical_room_waste_56",
+    "roofing_interior_flat_roof_install_technical_room_quality_control_32",
+    "roofing_interior_flat_roof_install_technical_room_quality_control_33",
+    "roofing_interior_flat_roof_install_technical_room_quality_control_34",
+    "roofing_interior_flat_roof_install_technical_room_quality_control_57",
+    "roofing_interior_flat_roof_install_technical_room_quality_control_58",
+    "roofing_interior_flat_roof_install_technical_room_quality_control_59",
+    "roofing_interior_flat_roof_install_technical_room_overhead_35",
+    "roofing_interior_flat_roof_install_technical_room_tax_36",
+    "roof:torch-two:krer12-002-09:workers",
+    "roof:torch-two:krer12-002-09:included_machine_operators",
+    "roof:torch-two:krer12-002-09:tower_crane_8t",
+    "roof:torch-two:krer12-002-09:truck_crane_10t",
+    "roof:torch-two:krer12-002-09:gas_flame_burner",
+    "roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+    "roof:torch-two:krer12-002-09:propane_butane",
+    "roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+    "roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+    "roof:torch-two:krer12-002-09:remaining:materials_03",
+    "roof:metal-trim:krer12-010-01:workers",
+    "roof:metal-trim:krer12-010-01:included_machine_operators",
+    "roof:metal-trim:krer12-010-01:tower_crane_8t",
+    "roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+    "roof:metal-trim:krer12-010-01:roofing_nails_3x40",
+    "roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm",
+    "roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm",
+    "roof:torch-two:krer12-002-09:remaining:materials_04",
+    "roof:torch-two:krer12-002-09:remaining:materials_05",
+    "roof:hanging-gutters:krer12-009-02:workers",
+    "roof:hanging-gutters:krer12-009-02:included_machine_operators",
+    "roof:hanging-gutters:krer12-009-02:tower_crane_8t",
+    "roof:hanging-gutters:krer12-009-02:truck_crane_10t",
+    "roof:hanging-gutters:krer12-009-02:flatbed_truck_to_5t",
+    "roof:hanging-gutters:krer12-009-02:galvanized_nails_4_5x120",
+    "roof:hanging-gutters:krer12-009-02:galvanized_forgings_2_825kg",
+    "roof:hanging-gutters:krer12-009-02:galvanized_sheet_0_7mm",
+    "roof:hanging-gutters:krer12-009-02:project-scope",
+    "roof:torch-two:krer12-002-09:remaining:materials_06",
+    "roof:torch-two:krer12-002-09:remaining:materials_37",
+    "roof:torch-two:krer12-002-09:remaining:materials_38",
+    "roof:torch-two:krer12-002-09:remaining:materials_39",
+    "roof:torch-two:krer12-002-09:remaining:components_07",
+    "roof:valley-torch-two:krer12-005-03:workers",
+    "roof:valley-torch-two:krer12-005-03:tower_crane_8t",
+    "roof:valley-torch-two:krer12-005-03:truck_crane_10t",
+    "roof:valley-torch-two:krer12-005-03:gas_flame_burner",
+    "roof:valley-torch-two:krer12-005-03:flatbed_truck_to_5t",
+    "roof:valley-torch-two:krer12-005-03:propane_butane",
+    "roof:valley-torch-two:krer12-005-03:lower_isoplast_epp_4",
+    "roof:torch-two:krer12-002-09:remaining:components_08",
+    "roof:torch-two:krer12-002-09:remaining:components_09",
+    "roof:torch-two:krer12-002-09:remaining:components_10",
+    "roof:torch-two:krer12-002-09:remaining:components_40",
+    "roof:torch-two:krer12-002-09:remaining:components_41",
+    "roof:torch-two:krer12-002-09:remaining:components_42",
+    "roof:torch-two:krer12-002-09:remaining:consumables_11",
+    "roof:torch-two:krer12-002-09:remaining:consumables_12",
+    "roof:torch-two:krer12-002-09:remaining:consumables_13",
+    "roof:torch-two:krer12-002-09:remaining:consumables_43",
+    "roof:torch-two:krer12-002-09:remaining:consumables_44",
+    "roof:torch-two:krer12-002-09:remaining:preparation_14",
+    "roof:torch-two:krer12-002-09:remaining:preparation_15",
+    "roof:torch-two:krer12-002-09:remaining:preparation_16",
+    "roof:torch-two:krer12-002-09:remaining:preparation_17",
+    "roof:torch-two:krer12-002-09:remaining:preparation_45",
+    "roof:torch-two:krer12-002-09:remaining:preparation_46",
+    "roof:torch-two:krer12-002-09:remaining:preparation_47",
+    "roof:cement-screed15:krer12-017-01:workers",
+    "roof:cement-screed15:krer12-017-01:included_machine_operators",
+    "roof:cement-screed15:krer12-017-01:tower_crane_8t",
+    "roof:cement-screed15:krer12-017-01:forklift_5t",
+    "roof:cement-screed15:krer12-017-01:mortar_pump",
+    "roof:cement-screed15:krer12-017-01:water",
+    "roof:cement-screed15:krer12-017-01:roofing_felt",
+    "roof:cement-screed15:krer12-017-01:ready_cement_mortar_m100",
+    "roof:torch-two:krer12-002-09:remaining:labor_18",
+    "roof:torch-two:krer12-002-09:remaining:labor_20",
+    "roof:torch-two:krer12-002-09:remaining:labor_22",
+    "roof:torch-two:krer12-002-09:remaining:labor_23",
+    "roof:torch-two:krer12-002-09:remaining:labor_24",
+    "roof:torch-two:krer12-002-09:remaining:labor_48",
+    "roof:torch-two:krer12-002-09:remaining:labor_49",
+    "roof:torch-two:krer12-002-09:remaining:labor_50",
+    "roof:torch-two:krer12-002-09:remaining:equipment_25",
+    "roof:torch-two:krer12-002-09:remaining:equipment_26",
+    "roof:torch-two:krer12-002-09:remaining:equipment_27",
+    "roof:torch-two:krer12-002-09:remaining:equipment_51",
+    "roof:torch-two:krer12-002-09:remaining:equipment_52",
+    "roof:torch-two:krer12-002-09:remaining:logistics_28",
+    "roof:torch-two:krer12-002-09:remaining:logistics_29",
+    "roof:torch-two:krer12-002-09:remaining:logistics_53",
+    "roof:torch-two:krer12-002-09:remaining:logistics_54",
+    "roof:torch-two:krer12-002-09:remaining:waste_30",
+    "roof:torch-two:krer12-002-09:remaining:waste_31",
+    "roof:torch-two:krer12-002-09:remaining:waste_55",
+    "roof:torch-two:krer12-002-09:remaining:waste_56",
+    "roof:torch-two:krer12-002-09:remaining:quality_control_32",
+    "roof:torch-two:krer12-002-09:remaining:quality_control_33",
+    "roof:torch-two:krer12-002-09:remaining:quality_control_34",
+    "roof:torch-two:krer12-002-09:remaining:quality_control_57",
+    "roof:torch-two:krer12-002-09:remaining:quality_control_58",
+    "roof:torch-two:krer12-002-09:remaining:quality_control_59",
+    "roof:torch-two:krer12-002-09:remaining:overhead_35",
+    "roof:torch-two:krer12-002-09:remaining:tax_36",
+    "roof:prime-ready-emulsion:krer12-016-02:workers",
+    "roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+    "roof:prime-ready-emulsion:krer12-016-02:ready_bitumen_emulsion",
+    "roof:torch-two:krer12-002-09:source-gap:primer",
+    "roof:torch-two:krer12-002-09:source-gap:expansion_joints",
+    "roof:vapor:krer12-015-03:workers",
+    "roof:vapor:krer12-015-03:included_machine_operators",
+    "roof:vapor:krer12-015-03:tower_crane_8t",
+    "roof:vapor:krer12-015-03:truck_crane_10t",
+    "roof:vapor:krer12-015-03:bitumen_kettle_400l",
+    "roof:vapor:krer12-015-03:flatbed_truck_to_5t",
+    "roof:vapor:krer12-015-03:ready_hot_roof_mastic",
+    "roof:vapor:krer12-015-03:roofing_felt_rkp350b",
+    "roof:clay-insulation:krer12-014-02:workers",
+    "roof:clay-insulation:krer12-014-02:included_machine_operators",
+    "roof:clay-insulation:krer12-014-02:tower_crane_8t",
+    "roof:clay-insulation:krer12-014-02:forklift_5t",
+    "roof:clay-insulation:krer12-014-02:clay_gravel_10_20_m400",
+    "roof:vapor:krer12-015-03:project-scope",
+    "roof:clay-insulation:krer12-014-02:project-scope",
+    "roof:lower-layers:krer12-01503-01402:project-chain-check",
+    "roof:torch-two:krer12-002-09:source-gap:roof_assembly",
+    "roof:torch-two:krer12-002-09:source-gap:skylight_junctions",
+    "roof:torch-two:krer12-002-09:remaining:scope_pending",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:workers",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:included_machine_operators",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:tower_crane_8t",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:forklift_5t",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:mortar_pump",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:water",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:roofing_felt",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:ready_cement_mortar_m100",
+    "roof:cement-screed25:krer12-017-01-plus-10x02:project-scope",
+    "roof:cement-screed15:krer12-017-01:direct-base-check",
+    "master212:roof:r1:mastic_field:workers",
+    "master212:roof:r1:mastic_field:machinists",
+    "master212:roof:r1:mastic_field:forklift",
+    "master212:roof:r1:mastic_field:lift",
+    "master212:roof:r1:mastic_field:compressor",
+    "master212:roof:r1:mastic_field:airless",
+    "master212:roof:r1:mastic_field:kerosene",
+    "master212:roof:r1:mastic_field:mastic",
+    "master212:roof:r1:mastic_field:primer",
+    "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:workers",
+    "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:included_machine_operators",
+    "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:tower_crane_8t",
+    "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:truck_crane_10t",
+    "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:bitumen_kettle_400l",
+    "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:flatbed_truck_to_5t",
+    "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:ready_hot_roof_mastic",
+    "master212:roof:r1:reuse:vapor:roof:vapor:krer12-015-03:roofing_felt_rkp350b",
+    "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:workers",
+    "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:included_machine_operators",
+    "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:tower_crane_8t",
+    "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:forklift_5t",
+    "master212:roof:r1:reuse:clay:roof:clay-insulation:krer12-014-02:clay_gravel_10_20_m400",
+    "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:workers",
+    "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:included_machine_operators",
+    "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:tower_crane_8t",
+    "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:forklift_5t",
+    "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:mortar_pump",
+    "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:water",
+    "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:roofing_felt",
+    "master212:roof:r1:reuse:screed:roof:cement-screed15:krer12-017-01:ready_cement_mortar_m100",
+    "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:workers",
+    "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:included_machine_operators",
+    "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:tower_crane_8t",
+    "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+    "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:roofing_nails_3x40",
+    "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm",
+    "master212:roof:r1:reuse:trim:roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm",
+    "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:workers",
+    "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:included_machine_operators",
+    "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:tower_crane_8t",
+    "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:truck_crane_10t",
+    "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:flatbed_truck_to_5t",
+    "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:galvanized_nails_4_5x120",
+    "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:galvanized_forgings_2_825kg",
+    "master212:roof:r1:reuse:gutter:roof:hanging-gutters:krer12-009-02:galvanized_sheet_0_7mm",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:workers",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:included_machine_operators",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:tower_crane_8t",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:truck_crane_10t",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:gas_flame_burner",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:propane_butane",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+    "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+    "master212:roof:r1:reuse:torch_primer:roof:prime-ready-emulsion:krer12-016-02:workers",
+    "master212:roof:r1:reuse:torch_primer:roof:prime-ready-emulsion:krer12-016-02:flatbed_truck",
+    "master212:roof:r1:reuse:torch_primer:roof:prime-ready-emulsion:krer12-016-02:ready_bitumen_emulsion",
+    "master212:roof:r1:need:structural-design",
+    "master212:roof:r1:need:structural-materials",
+    "master212:roof:r1:need:base-repair",
+    "master212:roof:r1:need:base-control",
+    "master212:roof:r1:need:slope-design",
+    "master212:roof:r1:need:slope-work",
+    "master212:roof:r1:need:vapor-completeness",
+    "master212:roof:r1:need:insulation-completeness",
+    "master212:roof:r1:need:underlay",
+    "master212:roof:r1:need:hand-measuring",
+    "master212:roof:r1:need:hand-application",
+    "master212:roof:r1:need:airless-kit",
+    "master212:roof:r1:need:mixing-containers",
+    "master212:roof:r1:need:joint-special",
+    "master212:roof:r1:need:joint-tools",
+    "master212:roof:r1:need:penetration-kits",
+    "master212:roof:r1:need:penetration-fasteners",
+    "master212:roof:r1:need:edge-completeness",
+    "master212:roof:r1:need:drain-layout",
+    "master212:roof:r1:need:drain-outlets",
+    "master212:roof:r1:need:drain-tools",
+    "master212:roof:r1:need:rigging",
+    "master212:roof:r1:need:power",
+    "master212:roof:r1:need:access",
+    "master212:roof:r1:need:edge-protection",
+    "master212:roof:r1:need:ppe",
+    "master212:roof:r1:need:external-delivery",
+    "master212:roof:r1:need:quality-tools",
+    "master212:roof:r1:need:quality-service",
+    "master212:roof:r1:need:cleaning-tools",
+    "master212:roof:r1:need:wash-containment",
+    "master212:roof:r1:need:waste-mass",
+    "master212:roof:r1:need:waste-loading",
+    "master212:roof:r1:need:waste-transport",
+    "master212:roof:r1:need:mastic-junction-whole-scope",
+    "master212:roof:r1:need:mastic-valley-whole-scope",
+    "master212:roof:r1:need:torch-burner-line",
+    "master212:roof:r1:need:torch-gas-containers",
+    "master212:roof:r1:need:torch-fire-protection"
+  ],
+  "policy": "ONLY_REUSE_ROWS;CURRENT_FORMULAS_UNITS_COSTOWNERS_BINDINGS_AND_SOURCE_TUPLES_UNCHANGED;NO_RAW_INTERNAL_PROJECT_FACTS",
+  "sourceActivationFlagsChanged": false,
+  "runtimeOrNormativeAdmission": false,
+  "currentDatabaseFreshness": false
+}

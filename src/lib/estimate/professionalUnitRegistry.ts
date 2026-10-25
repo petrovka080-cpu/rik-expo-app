@@ -5,6 +5,7 @@ export type ProfessionalUnitDimension =
   | "area"
   | "volume"
   | "count"
+  | "headcount"
   | "package"
   | "mass"
   | "flow"
@@ -60,6 +61,7 @@ const DEFINITIONS = [
   unit({ code: "m3", aliases: ["cubic_m", "cbm", "m³", "м3", "м³"], dimension: "volume", canonicalSiUnit: "m3", conversionFactorToSi: 1, precision: 3, discrete: false, displayRu: "м³", displayNameRu: "кубический метр", displayEn: "m³", unitSystems: METRIC_MIXED, boqCanonical: true }),
   unit({ code: "cu_ft", aliases: ["ft3", "ft³", "cubic_foot", "cubic_feet"], dimension: "volume", canonicalSiUnit: "m3", conversionFactorToSi: 0.0283168466, precision: 3, discrete: false, displayRu: "куб. фут", displayNameRu: "кубический фут", displayEn: "cu ft", unitSystems: IMPERIAL_MIXED, boqCanonical: false }),
   unit({ code: "pcs", aliases: ["pc", "piece", "pieces", "шт", "шт."], dimension: "count", canonicalSiUnit: "pcs", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "шт.", displayNameRu: "штука", displayEn: "pcs", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
+  unit({ code: "person", aliases: ["people", "чел", "чел.", "человек"], dimension: "headcount", canonicalSiUnit: "person", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "чел.", displayNameRu: "человек", displayEn: "person", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "circuit", aliases: ["circuits", "контур", "контуры"], dimension: "count", canonicalSiUnit: "pcs", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "контур", displayNameRu: "контур", displayEn: "circuit", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "zone", aliases: ["zones", "зона", "зоны"], dimension: "count", canonicalSiUnit: "pcs", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "зона", displayNameRu: "зона", displayEn: "zone", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "point", aliases: ["точка"], dimension: "count", canonicalSiUnit: "pcs", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "точка", displayNameRu: "точка", displayEn: "point", unitSystems: ALL_SYSTEMS, boqCanonical: true }),

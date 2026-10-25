@@ -17,7 +17,7 @@ describe("KRER 46 wooden window opening-fill demolition", () => {
   test("binds the exact official rate and narrow window-fill boundary", () => {
     expect(WOODEN_WINDOW_FILL_DEMOLITION_KRER46_CATALOG_ID)
       .toBe("canonical-work:base:demolition_interior_window_block_dismantle_standard");
-    expect(WOODEN_WINDOW_FILL_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(4);
+    expect(WOODEN_WINDOW_FILL_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(2);
     expect(WOODEN_WINDOW_FILL_DEMOLITION_KRER46_ARTIFACT_SHA256)
       .toMatch(/^[0-9a-f]{64}$/u);
     expect(WOODEN_WINDOW_FILL_DEMOLITION_KRER46_PARAMETERS).toHaveLength(3);

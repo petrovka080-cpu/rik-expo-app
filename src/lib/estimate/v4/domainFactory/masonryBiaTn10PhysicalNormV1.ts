@@ -4,7 +4,8 @@ import type { ProfessionalParameterValueV4 } from "../professionalProjectAssembl
 import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./professionalPhysicalNormApplicabilityTypesV1";
 
 const APPLICABILITY_VERSION = "professional-physical-norm-applicability:v1" as const;
-export const BIA_TN10_MASONRY_PRODUCT_PROFILE_ID = "standard-profile:bia-tn10:selected-table-4-fired-clay-brick:v1" as const;
+import { BIA_TN10_MASONRY_PRODUCT_PROFILE_ID } from "../../contracts/masonryBiaTn10IdentityV1";
+export { BIA_TN10_MASONRY_PRODUCT_PROFILE_ID } from "../../contracts/masonryBiaTn10IdentityV1";
 export const BIA_TN10_MASONRY_NORM_ID = "masonry_bia_tn10_selected_brick_mortar_table_routing_v1" as const;
 export const BIA_TN10_MASONRY_SOURCE_ID = `src_professional_norm_pack_${BIA_TN10_MASONRY_NORM_ID}` as const;
 export const BIA_TN10_MASONRY_REQUIRED_IDS = Object.freeze([

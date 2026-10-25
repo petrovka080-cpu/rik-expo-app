@@ -39,12 +39,7 @@ export const BATCH001_DRYWALL_KNAUF_P11_SHA256_R1 =
 
 export type Batch001DrywallPassportOperationR1 = "FRAME" | "ALIGN" | "CLAD";
 export type Batch001DrywallPassportVariantR1 =
-  | "standard"
-  | "large_area"
-  | "small_area"
-  | "technical_room"
-  | "wet_zone"
-  | "high_load";
+  "standard" | "technical_room" | "wet_zone" | "high_load";
 
 type MaterialKeyR1 =
   | "ceiling_profile_pp_60_27"
@@ -691,24 +686,6 @@ const CLAD_CONDITIONAL = [
 /** Explicit per-work deltas. No delta is inferred from a runtime resource list. */
 export const BATCH001_DRYWALL_TECHNOLOGY_DELTAS_R1: readonly Batch001DrywallTechnologyDeltaR1[] = [
   {
-    catalogId: "drywall_ceiling_interior_bulkhead_frame_large_area", operation: "FRAME", variant: "large_area",
-    publicWorkTitleRu: "Монтаж каркаса потолочного короба большой площади",
-    applicabilityRu: ["Двухуровневый или проектный металлический каркас большой площади с явной картой деформационных швов."],
-    requiredMaterialKeys: FRAME_REQUIRED,
-    conditionalMaterialKeys: [...FRAME_CONDITIONAL, "control_joint_profile"],
-    operationKeys: ["install_frame", "form_control_joints"],
-    deltaReasonRu: "Большая площадь добавляет проектные деформационные швы; их длина не наследуется от стандартного варианта.",
-  },
-  {
-    catalogId: "drywall_ceiling_interior_bulkhead_frame_small_area", operation: "FRAME", variant: "small_area",
-    publicWorkTitleRu: "Монтаж каркаса малого потолочного короба",
-    applicabilityRu: ["Малый короб с явным выбором подвесной либо подтверждённой самонесущей схемы."],
-    requiredMaterialKeys: FRAME_REQUIRED,
-    conditionalMaterialKeys: [...FRAME_CONDITIONAL, "self_supporting_profile"],
-    operationKeys: ["install_frame"],
-    deltaReasonRu: "Самонесущий профиль допускается только как отдельная подтверждённая ветвь, без одновременного подвесного каркаса.",
-  },
-  {
     catalogId: "drywall_ceiling_interior_bulkhead_frame_standard", operation: "FRAME", variant: "standard",
     publicWorkTitleRu: "Монтаж стандартного каркаса потолочного короба",
     applicabilityRu: ["Стандартный потолочный короб по выбранной системе П112, П113 либо проектному эквиваленту."],
@@ -734,20 +711,6 @@ export const BATCH001_DRYWALL_TECHNOLOGY_DELTAS_R1: readonly Batch001DrywallTech
     conditionalMaterialKeys: [...FRAME_CONDITIONAL, "frame_corrosion_protection"],
     operationKeys: ["install_frame"],
     deltaReasonRu: "Антикоррозионный состав учитывается только для открытых резов и подтверждённого требования системы.",
-  },
-  {
-    catalogId: "drywall_ceiling_interior_bulkhead_align_large_area", operation: "ALIGN", variant: "large_area",
-    publicWorkTitleRu: "Выравнивание каркаса потолочного короба большой площади",
-    applicabilityRu: ["Отдельно измеряемая корректировка уже принятого каркаса по захваткам нивелирования."],
-    requiredMaterialKeys: [], conditionalMaterialKeys: [], operationKeys: ["align_frame"],
-    deltaReasonRu: "Выравнивание не наследует повторную закупку профилей и подвесов из FRAME.",
-  },
-  {
-    catalogId: "drywall_ceiling_interior_bulkhead_align_small_area", operation: "ALIGN", variant: "small_area",
-    publicWorkTitleRu: "Выравнивание каркаса малого потолочного короба",
-    applicabilityRu: ["Локальная измеряемая корректировка коротких граней и углов принятого каркаса."],
-    requiredMaterialKeys: [], conditionalMaterialKeys: [], operationKeys: ["align_frame"],
-    deltaReasonRu: "Малый вариант отличается числом локальных точек, но не создаёт универсальный комплект материалов.",
   },
   {
     catalogId: "drywall_ceiling_interior_bulkhead_align_standard", operation: "ALIGN", variant: "standard",
@@ -778,24 +741,6 @@ export const BATCH001_DRYWALL_TECHNOLOGY_DELTAS_R1: readonly Batch001DrywallTech
     conditionalMaterialKeys: [...CLAD_CONDITIONAL, "acoustic_fire_insulation"],
     operationKeys: ["install_boards", "finish_joints", "prepare_surface"],
     deltaReasonRu: "Класс нагрузки и выбранный лист задаются проектом; обычный лист не подставляется скрытым default.",
-  },
-  {
-    catalogId: "drywall_ceiling_interior_bulkhead_clad_large_area", operation: "CLAD", variant: "large_area",
-    publicWorkTitleRu: "Обшивка потолочного короба большой площади гипсовыми листами",
-    applicabilityRu: ["Листовая обшивка большой площади с явной картой деформационных швов."],
-    requiredMaterialKeys: CLAD_REQUIRED,
-    conditionalMaterialKeys: [...CLAD_CONDITIONAL, "control_joint_profile"],
-    operationKeys: ["install_boards", "finish_joints", "form_control_joints", "prepare_surface"],
-    deltaReasonRu: "Профиль шва и отдельная операция включаются только по проектной длине швов.",
-  },
-  {
-    catalogId: "drywall_ceiling_interior_bulkhead_clad_small_area", operation: "CLAD", variant: "small_area",
-    publicWorkTitleRu: "Обшивка малого потолочного короба гипсовыми листами",
-    applicabilityRu: ["Листовая обшивка малого короба с измеренной длиной подрезанных кромок."],
-    requiredMaterialKeys: CLAD_REQUIRED,
-    conditionalMaterialKeys: [...CLAD_CONDITIONAL, "cut_edge_primer"],
-    operationKeys: ["install_boards", "finish_joints", "prepare_surface"],
-    deltaReasonRu: "Обработка резаных кромок считается по их длине; универсальная строка расходников запрещена.",
   },
   {
     catalogId: "drywall_ceiling_interior_bulkhead_clad_standard", operation: "CLAD", variant: "standard",
@@ -833,7 +778,7 @@ export const BATCH001_DRYWALL_TECHNOLOGY_DELTAS_R1: readonly Batch001DrywallTech
   },
 ] as const;
 
-const EXPECTED_CATALOG_COUNT = 16;
+const EXPECTED_CATALOG_COUNT = 10;
 
 function unique<T>(items: readonly T[]): readonly T[] {
   return [...new Set(items)];

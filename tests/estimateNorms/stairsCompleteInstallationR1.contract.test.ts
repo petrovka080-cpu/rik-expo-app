@@ -1,3 +1,4 @@
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
 import {
   STAIRS_COMPLETE_INSTALLATION_FORMULAS,
   STAIRS_COMPLETE_INSTALLATION_PARAMETERS,
@@ -11,7 +12,7 @@ import {
 } from "../../src/lib/estimate/v4/domainFactory/formworkRicsNrm2PhysicalNormV1";
 
 describe("complete monolithic concrete stairs installation family", () => {
-  it("compiles seven complete project schedules through one shared core", async () => {
+  it("compiles five complete project schedules through one shared core", async () => {
     const fixtures = new Set<string>();
     for (const target of STAIRS_COMPLETE_INSTALLATION_TARGETS) {
       const input = stairsCompleteInstallationAcceptanceInputR1(target.contextKey);
@@ -34,7 +35,7 @@ describe("complete monolithic concrete stairs installation family", () => {
         .toBe(false);
       fixtures.add(JSON.stringify(input));
     }
-    expect(fixtures.size).toBe(7);
+    expect(fixtures.size).toBe(5);
   });
 
   it("recalculates concrete, reinforcement and formwork direct quantities", async () => {
@@ -63,9 +64,9 @@ describe("complete monolithic concrete stairs installation family", () => {
 
   it("removes inapplicable component cards and rows without inventing defaults", async () => {
     const target = STAIRS_COMPLETE_INSTALLATION_TARGETS.find(
-      (candidate) => candidate.contextKey === "small_area",
+      (candidate) => candidate.contextKey === "standard",
     )!;
-    const input = stairsCompleteInstallationAcceptanceInputR1(target.contextKey);
+    const input = measuredConcreteProjectInputR533("stairsCompleteInstallationAcceptanceInputR1", "compact");
     const placementOnly = Object.fromEntries(Object.entries(input).filter(([parameterId]) =>
       !parameterId.startsWith("reinforcement_")
       && !parameterId.startsWith("formwork_")
@@ -162,7 +163,7 @@ describe("complete monolithic concrete stairs installation family", () => {
     expect(plan.parameters).toEqual(fixture);
   });
 });
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   extractConcretePlacementCanonicalParametersR1,

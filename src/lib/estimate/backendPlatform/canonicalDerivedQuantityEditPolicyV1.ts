@@ -36,10 +36,10 @@ export function validateCanonicalDerivedQuantityEditPolicyV1(raw: unknown, rowId
 }
 
 export function assertCanonicalDerivedQuantityAmendmentV1(policy: CanonicalDerivedQuantityEditPolicyV1 | null,
-  manualQuantity: string | null) {
-  // Even an equal override would become stale after a parameter edit. A
-  // PARAMETERS_ONLY row accepts only clear, never a persisted quantity pin.
-  if (policy && manualQuantity != null) {
+  manualQuantity: string | null, explicitManualAmendment = false) {
+  // The policy describes the automatic basis. A deliberate user row amendment
+  // may override it; its provenance and original formula remain in the trace.
+  if (policy && manualQuantity != null && !explicitManualAmendment) {
     throw Object.assign(new Error(policy.reasonRu), { code: 'ROW_AMENDMENT_INVALID' });
   }
 }

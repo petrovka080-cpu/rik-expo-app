@@ -1,0 +1,199 @@
+{
+  "contract": "roof-screed-native01703/r24",
+  "normId": "12-01-017-03",
+  "prefix": "roof:screed:missing017:r24:03",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "WORK_CANDIDATE_KRER12_MISSING017_EXACT_COLUMNS_BUNDLE_R24",
+      "titleRu": "КРЕР12:собственные асфальтобетонные01703/04 и сборная01705",
+      "printedEdition": "КРЕР12-2015;приказ28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDFphysical/printed27–28;таблица12-01-017;полные операции,измеритель и собственные колонки03/04/05",
+      "reviewedAt": "2026-10-25",
+      "quantityAdmitted": false,
+      "sourceIdentityStatus": "UNADMITTED_WORK_CANDIDATE_ROOT_COMMON_SOURCE_OPEN"
+    }
+  ],
+  "scopeRu": "Асфальтобетонная стяжка15мм с собственной поправкой01704",
+  "groupTitleRu": "Собственная асфальтобетонная или сборная выравнивающая стяжка",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-4",
+      "titleRu": "Рабочие-строители среднего разряда3,4",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда3,4",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,4",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "16.24",
+      "sourceCellLexeme": "16,24",
+      "sourceUnit": "чел.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ready_base",
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01703;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "16.24",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "sourceInternalTitleRu": "Затраты труда машинистов",
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "1.26",
+      "sourceCellLexeme": "1,26",
+      "sourceUnit": "чел.-ч",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01703;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "1.26",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью8т",
+      "sourceInternalTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования)8т",
+      "sourceTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования)8т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.44",
+      "sourceCellLexeme": "0,44",
+      "sourceUnit": "маш.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01703;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.44",
+      "exactUnitConversionFactor": "1",
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "forklift_5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчик грузоподъёмностью5т",
+      "sourceInternalTitleRu": "Автопогрузчики5т",
+      "sourceTitleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.82",
+      "sourceCellLexeme": "0,82",
+      "sourceUnit": "маш.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01703;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.82",
+      "exactUnitConversionFactor": "1",
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "roofing_felt_rkp350b",
+      "resourceCode": "01-7410-0004",
+      "titleRu": "Рубероид кровельный",
+      "sourceInternalTitleRu": "Рубероид кровельный с крупнозернистой посыпкой с пылевидной посыпкойРКП-350б",
+      "sourceTitleRu": "Рубероид кровельный с крупнозернистой посыпкой с пылевидной посыпкойРКП-350б",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "6.9",
+      "sourceCellLexeme": "6,9",
+      "sourceUnit": "м²",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01703;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "6.9",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "hot_warm_porous_asphalt_grade1",
+      "resourceCode": "03-0502-0020",
+      "titleRu": "Смесь асфальтобетонная горячая или тёплая для пористого асфальтобетона,маркаI",
+      "sourceInternalTitleRu": "Смеси асфальтобетонные дорожные,аэродромные иасфальтобетон(горячие итёплые дляпористого асфальтобетона щебёночные игравийные),маркаI",
+      "sourceTitleRu": "Смеси асфальтобетонные дорожные,аэродромные иасфальтобетон(горячие итёплые дляпористого асфальтобетона щебёночные игравийные),маркаI",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "3.43",
+      "sourceCellLexeme": "3,43",
+      "sourceUnit": "т",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01703;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "3.43",
+      "exactUnitConversionFactor": "1"
+    }
+  ],
+  "remainingScopeRu": [
+    "Пригодное готовое основание и проектная площадь именно стяжки;не пол/кровельный ковёр поумолчанию и не второй готовый слой.",
+    "Материал и фактическая толщина/несущая способность/совместимость/температурный процесс/уход иприёмка отдельно,не выводятся из бюджета.",
+    "Кран/погрузчик/доставка/ручной и специальный инструмент/доступ/СИЗ иППР являются реальными UNKNOWN потребностями,не машино-часы вштуках.",
+    "Историческая цена не текущая котировка;INFOмашинисты не вторая оплата.",
+    "Существующие15/25мм01701/02 иихIDs остаются неизменными;одна физическая стяжка не оплачивается одновременно несколькими ветвями."
+  ],
+  "primaryVisualEvidence": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-27.png",
+      "sha256": "c9dc5677a449bc312257c4647bf9a3fac3d34d04117b2dd78483295a21417d11",
+      "bytes": 92620
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-28.png",
+      "sha256": "a15a42f9387275de3f20e40c06f4ebd5ca41b5e21d618e8d3edef37938dfc9f4",
+      "bytes": 92421
+    }
+  ],
+  "sourceMeasureQuantity": "100",
+  "sourceMeasureUnitId": "m2",
+  "FULL": false,
+  "printedOperationRoster": [
+    {
+      "key": "prepare_ready_base",
+      "printedOrdinal": 1,
+      "titleRu": "Подготовка готового основания"
+    },
+    {
+      "key": "asphalt_screed_placement",
+      "printedOrdinal": 2,
+      "titleRu": "Устройство выравнивающих стяжек"
+    }
+  ],
+  "controls": {
+    "method": "roof_asphalt017_method_r24",
+    "area": "roof_asphalt017_area_m2_r24",
+    "thickness": "roof_asphalt017_thickness_mm_r24",
+    "project": "roof_asphalt017_exact_project_r24"
+  },
+  "methodChoice": "Асфальтобетонная стяжка по01703 с собственной поправкой01704",
+  "projectChoice": "EXACT_HOT_WARM_POROUS_ASPHALT_SOURCE_PRODUCT_SUBSTRATE_AND_THICKNESS_SCOPE"
+}

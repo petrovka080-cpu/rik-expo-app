@@ -1,3 +1,4 @@
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
 import { buildEmbeddedInstallationCompletionS2733, EMBEDDED_INSTALLATION_COMPLETION_OWNERS_S2733 as owners } from "../../src/lib/estimate/v4/embeddedInstallationCompletionS2733";
 import { CONCRETE_SLAB_EMBEDDED_ITEMS_PARAMETERS as parameters, CONCRETE_SLAB_EMBEDDED_ITEMS_FORMULAS as formulas,
   CONCRETE_SLAB_EMBEDDED_ITEMS_RESOURCES as resources, concreteSlabEmbeddedItemsAcceptanceInputR1 } from "../../src/lib/estimate/v4/concreteSlabEmbeddedItemsR1";
@@ -38,7 +39,7 @@ describe("S27.33 actual embedded installation and lifting kits", () => {
     }
   });
   it("keeps an explicitly unselected lift inactive while completing the manual installation", async () => {
-    const input = { ...concreteSlabEmbeddedItemsAcceptanceInputR1("small_area"), embedded_installation_delivery_reference: facts.embedded_installation_delivery_reference,
+    const input = { ...measuredConcreteProjectInputR533("concreteSlabEmbeddedItemsAcceptanceInputR1", "compact"), embedded_installation_delivery_reference: facts.embedded_installation_delivery_reference,
       ...Object.fromEntries(Object.entries(facts).filter(([id]) => id.startsWith("embedded_installation_"))) };
     const result = await compile(input); expect(result.preliminaryNeeds).toEqual([]);
     expect(result.rows.some(row => row.row_id.includes("embedded-lifting-"))).toBe(false);

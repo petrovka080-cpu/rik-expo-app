@@ -7,15 +7,17 @@ import { pvc15FieldTransitionPublishConfigS2743 } from './prepareS2743Pvc15Field
 import { runMasterSingleDefinitionSuccessorR1, type MasterSingleDefinitionSuccessorConfig } from './prepareMasterSingleDefinitionSuccessorR1';
 import { PVC15_MINIMAL_INPUT_DEFINITION_S2744 as definition, PVC15_CUSTOMER_FACT_IDS_S2744, PVC15_MINIMAL_SOURCE_S2744 } from '../../../src/lib/estimate/v4/pvcRoofMinimalCustomerInputS2744';
 import { compileAutomaticConstructionOwnerR1 } from '../../../src/lib/estimate/v4/automaticConstructionOwnerR1';
-import { pvc15AreaVariantControlInputS2743 } from '../../../tests/fixtures/pvc15AreaVariantBindingsS2743';
+import { pvc15MeasuredControlInputS2743 } from '../../../tests/fixtures/pvc15AreaVariantBindingsS2743';
 
 const packPath = 'data/estimate-benchmarks/source-packs/pvc15-minimal-customer-input-s27-44.json';
 export function pvc15MinimalCustomerInputPublishConfigS2744(parent: { definition: string; search: string }, variant: string): MasterSingleDefinitionSuccessorConfig {
-  const member = pack.members.find(value => value.variant === variant);
+  assert(variant === 'standard', 'EXISTING_PVC15_MEMBER_REQUIRED');
+  const member = pack.members.find(value => value.variant === 'standard');
   assert(member, 'EXISTING_PVC15_MEMBER_REQUIRED');
   const prior = pvc15FieldTransitionPublishConfigS2743(parent);
+  assert(member.catalogId === prior.catalogId, 'PVC15_STANDARD_MEMBER_IDENTITY_REQUIRED');
   const knownIds = new Set(definition.parameters.filter(parameter => parameter.truth_metadata.catalogue_owned_lookup_v1 !== true).map(parameter => parameter.parameter_id));
-  const acceptanceInput = Object.fromEntries(Object.entries(pvc15AreaVariantControlInputS2743(variant === 'large_area' ? 'large_area' : 'small_area')).filter(([id]) => knownIds.has(id)));
+  const acceptanceInput = Object.fromEntries(Object.entries(pvc15MeasuredControlInputS2743(75)).filter(([id]) => knownIds.has(id)));
   const sourcePackHash = createHash('sha256').update(readFileSync(packPath)).digest('hex');
   const contract = `${pack.contract}:${variant}`;
   return { ...prior, contract, stopCode: 'S2744_PVC15_MINIMAL', applicationName: `s2744-pvc15-minimal-${variant}`,
@@ -28,7 +30,7 @@ export function pvc15MinimalCustomerInputPublishConfigS2744(parent: { definition
     runtimeProfileInput: definition.runtimeInput, runtimeProfileClassification: definition.runtimeClassification, runtimeProfileSourceIds: definition.runtimeSourceIds,
     sourcePaths: [...prior.sourcePaths, packPath, 'src/lib/estimate/v4/pvcRoofMinimalCustomerInputS2744.ts',
       'src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1.ts', 'src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1.test.ts',
-      'scripts/estimate/r4a13/prepareS2744Pvc15MinimalCustomerInput.ts', 'tests/estimateNorms/pvc15MinimalCustomerInputS2744.contract.test.ts',
+      'scripts/estimate/r4a13/prepareS2744Pvc15MinimalCustomerInput.ts', 'tests/fixtures/pvc15AreaVariantBindingsS2743.ts', 'tests/estimateNorms/pvc15MinimalCustomerInputS2744.contract.test.ts',
       'src/features/consumerRepair/consumerCanonicalParameterEditor.ts', 'src/features/consumerRepair/consumerCanonicalReleaseMigration.ts'],
     sourceMetadata: { ...prior.sourceMetadata, source_title: 'ПВХ1,5: минимальный ввод объекта и расчёт предварительной потребности по изготовителю',
       official_url: pack.primarySource.url, artifact_sha256: pack.primarySource.sha256, exact_locator: PVC15_MINIMAL_SOURCE_S2744.locator,

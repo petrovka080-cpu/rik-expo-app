@@ -18,20 +18,6 @@ export const AGGRESSIVE_ENVIRONMENT_TILE_ON_SILICATE_PUTTY_FLOOR_DEMOLITION_KRER
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
     canonicalNameRu: "Разборка плиточного покрытия на силикатной замазке в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_tile_strip_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка плиточного покрытия на силикатной замазке в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId:
-      "canonical-work:base:demolition_interior_tile_strip_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu:
-      "Разборка плиточного покрытия на силикатной замазке в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId:
       "canonical-work:base:demolition_interior_tile_strip_wet_zone",

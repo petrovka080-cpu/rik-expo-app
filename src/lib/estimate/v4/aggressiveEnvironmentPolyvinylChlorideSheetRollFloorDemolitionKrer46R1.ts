@@ -31,18 +31,6 @@ export const AGGRESSIVE_ENVIRONMENT_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_DEMOLITI
     catalogVariant: "STANDARD_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
     canonicalNameRu: "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId: `${CATALOG_PREFIX}_large_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
-    canonicalNameRu: "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: `${CATALOG_PREFIX}_small_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR",
-    canonicalNameRu: "Разборка покрытия пола из поливинилхлоридных листовых рулонных материалов в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: `${CATALOG_PREFIX}_wet_zone`,
     sourceIdentity: `master-work:${FAMILY_KEY}_wet_zone`,

@@ -19,7 +19,6 @@ const RELEASE_ID = String(process.env.S277_DEFINITION_RELEASE_ID
 const SEARCH_RELEASE_ID = String(process.env.S277_SEARCH_RELEASE_ID
   ?? "35529e04-8447-537c-9308-2a60efaa9a8e");
 const STANDARD_CATALOG_ID = WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANTS.standard.catalogId;
-const SMALL_AREA_CATALOG_ID = WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANTS.small_area.catalogId;
 const PROMPT = `${WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANTS.standard.canonicalNameRu}. Площадь 100 м2`;
 const OUTPUT_ROOT = resolve(process.env.S277_WEB_OUTPUT_ROOT
   ?? ".release-runtime/r568/s27-7/f09-fire-current-lineage/wood-fireproofing-surface-preparation-web-acceptance-v1");
@@ -213,12 +212,11 @@ async function main(): Promise<void> {
     invariant(search.searchIndexReleaseId === SEARCH_RELEASE_ID, "SEARCH_RELEASE_DRIFT");
     const items = Array.isArray(search.items) ? search.items as Json[] : [];
     const selectedIndex = items.findIndex((item) => item.catalogId === STANDARD_CATALOG_ID);
-    const smallAreaIndex = items.findIndex((item) => item.catalogId === SMALL_AREA_CATALOG_ID);
-    invariant(selectedIndex >= 0 && smallAreaIndex >= 0, "PREPARATION_IDENTITIES_NOT_SEARCHABLE");
-    invariant(items[selectedIndex].estimateReady === true && items[smallAreaIndex].estimateReady === true,
+    invariant(selectedIndex >= 0, "PREPARATION_IDENTITIES_NOT_SEARCHABLE");
+    invariant(items[selectedIndex].estimateReady === true,
       "PREPARATION_IDENTITIES_NOT_ESTIMATE_READY");
     await page.getByTestId(`consumer-repair-work-suggestion-${selectedIndex + 1}`).click();
-    progress("SEARCH_SELECTED", { selectedIndex, smallAreaIndex });
+    progress("SEARCH_SELECTED", { selectedIndex });
 
     const prepare = page.getByTestId("consumer-repair-prepare-draft");
     await prepare.waitFor({ state: "visible", timeout: 60_000 });
@@ -340,24 +338,24 @@ async function main(): Promise<void> {
     invariant(reopenedArea === "50" && reopenedLabor === "0.3",
       `COLD_REOPEN_RED:${reopenedArea}:${reopenedLabor}`);
 
-    const smallAccepted = await api(authorization, "jobs/compile", {
+    const ordinaryAccepted = await api(authorization, "jobs/compile", {
       method: "POST",
       body: JSON.stringify({
-        idempotencyKey: `s277-prepare-small-${randomUUID()}`,
-        catalogId: SMALL_AREA_CATALOG_ID,
+        idempotencyKey: `s277-prepare-standard-${randomUUID()}`,
+        catalogId: STANDARD_CATALOG_ID,
         parameters: WOOD_FIREPROOFING_SURFACE_PREPARATION_SHORT_INPUT,
         currencyCode: "KGS",
-        sourceRequestText: WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANTS.small_area.canonicalNameRu,
+        sourceRequestText: WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANTS.standard.canonicalNameRu,
         primaryMeasureParameterId: "preparation_area_m2",
       }),
     });
-    const smallRevision = await waitForRevision(authorization, smallAccepted);
-    const smallRows = await revisionRows(authorization, String(smallRevision.revisionId));
-    invariant(smallRevision.releaseId === RELEASE_ID
-      && smallRevision.catalogId === SMALL_AREA_CATALOG_ID
-      && smallRows.length === 11
-      && (smallRevision.preliminaryNeeds ?? []).length === 0,
-    "SMALL_AREA_ORDINARY_COMPILE_RED");
+    const ordinaryRevision = await waitForRevision(authorization, ordinaryAccepted);
+    const ordinaryRows = await revisionRows(authorization, String(ordinaryRevision.revisionId));
+    invariant(ordinaryRevision.releaseId === RELEASE_ID
+      && ordinaryRevision.catalogId === STANDARD_CATALOG_ID
+      && ordinaryRows.length === 11
+      && (ordinaryRevision.preliminaryNeeds ?? []).length === 0,
+    "STANDARD_ORDINARY_COMPILE_RED");
 
     const screenshot = resolve(OUTPUT_ROOT, "cold-reopen.png");
     await page.screenshot({ path: screenshot, fullPage: true });
@@ -381,8 +379,7 @@ async function main(): Promise<void> {
       search: {
         query: PROMPT,
         standardCatalogId: STANDARD_CATALOG_ID,
-        smallAreaCatalogId: SMALL_AREA_CATALOG_ID,
-        bothSearchableAndEstimateReady: true,
+        standardSearchableAndEstimateReady: true,
       },
       initial: {
         revisionId: initialRevision.revisionId,
@@ -402,9 +399,9 @@ async function main(): Promise<void> {
         coldReopen: true,
         quantities: { labor: 15, abrasive: 5, masking: 75, wasteContainers: 5 },
       },
-      smallArea: {
-        revisionId: smallRevision.revisionId,
-        rowCount: smallRows.length,
+      ordinaryStandardCompile: {
+        revisionId: ordinaryRevision.revisionId,
+        rowCount: ordinaryRows.length,
         preliminaryNeedCount: 0,
         ordinaryAuthenticatedBackendCompile: true,
       },
@@ -420,7 +417,7 @@ async function main(): Promise<void> {
       status: receipt.status,
       initialRevisionId: initialRevision.revisionId,
       editedRevisionId: editedRevision.revisionId,
-      smallAreaRevisionId: smallRevision.revisionId,
+      ordinaryStandardRevisionId: ordinaryRevision.revisionId,
       output: OUTPUT,
       outputSha256: sha256File(OUTPUT),
     })}\n`);

@@ -1,0 +1,65 @@
+{
+  "contract": "masonry-rectangular-unreinforced-brick-column-whole-normal-r109/v1",
+  "activeMaster": {
+    "path": "C:\\Users\\User\\Downloads\\GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+    "sha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40"
+  },
+  "card": {
+    "catalogId": "canonical-work:master:brick_rectangular_unreinforced_column_krer08_02_003",
+    "workKey": "brick_rectangular_unreinforced_column_krer08_02_003",
+    "groupId": "group:masonry:brick_rectangular_unreinforced_column_krer08_02_003",
+    "titleRu": "Кладка прямоугольных неармированных кирпичных столбов",
+    "physicalResultRu": "Самостоятельная кладка прямоугольного неармированного кирпичного столба по проекту",
+    "sourceKey": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+    "sourceIdentity": "kg-krer08-2015:08-02-003:rectangular-unreinforced-column",
+    "normIds": [
+      "08-02-003-03",
+      "08-02-003-04"
+    ]
+  },
+  "rootScopedLookup": {
+    "path": "data/estimate-benchmarks/fixtures/masonry-column-scoped-existing-parent-lookup-r109.json",
+    "sha256": "d5ca2e54589c35cee5a2c4bf7d5f44e9c316e3db51d4ee026d4a6078adf2b9cf",
+    "definitionReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+    "searchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+    "scope": "Stored brick-column name patterns and exact03 only;04not exact searched; no current globalabsence claim"
+  },
+  "sourcePack": {
+    "path": "data/estimate-benchmarks/source-packs/masonry-brick-rectangular-column-whole-r109.json",
+    "sha256": "3b4ee4fcfa1c7358344d07fd391b9537eacfc9fa93ca0bb59ff57c7cf65d04e0"
+  },
+  "independentMap": {
+    "path": "data/estimate-benchmarks/source-packs/masonry-brick-column-independent-full-map-r109.json",
+    "sha256": "5750b14edab1b69dc3e426d45de2936b3537e62236555e6715a9b60640fc936e"
+  },
+  "candidatePublicCards": 1,
+  "heightProfiles": 2,
+  "physicalSimpleFields": [
+    "actual_rectangular_unreinforced_brick_column_masonry_volume_m3",
+    "column00303_storey_height_m"
+  ],
+  "identityAdmitted": false,
+  "sourceUuid": null,
+  "locatorUuid": null,
+  "normalAndLockedAbsenceCollisionChecks": "MANDATORY_UNRUN",
+  "globalAbsenceProved": false,
+  "ordinaryTechnicalReadbackProducer": "UNRUN",
+  "remaining": [
+    "Готовность опоры, разбивка и отсечная гидроизоляция: Норма кладки столба не устанавливает объём подготовки опоры, разбивки, выравнивания или отсечной гидроизоляции.",
+    "Примыкания, связи, оголовок и конструктивные ограничения: Колонка не рассчитывает несущую способность, сейсмику, анкеры, связи, оголовок, закладные или необходимость армирования.",
+    "Подмости и безопасный доступ к столбу: §1.13 прямо описывает подмости для кладки стен до 4 м; самостоятельную норму и непересекающуюся оплату подмостей именно столба он не доказывает.",
+    "Инструмент, оснастка и СИЗ: Нет самостоятельного расхода инструмента, средств защиты и количества комплектов на м³ или столб.",
+    "Уход, выдержка и защита кладки: Колонка не задаёт расход материалов, режим и срок ухода за этой кирпичной кладкой на готовом цементно-известковом М50.",
+    "Контроль геометрии и приёмка столбов: Нет численного допуска, частоты контроля, количества испытаний или самостоятельной нормы приёмки.",
+    "Оплачиваемая работа крана и граница машиниста: 0,42 маш.-ч и 0,42 чел.-ч — разные исходные справочные величины. Не подтверждены отдельный платный владелец крана, охват его оператора и точный договорный состав.",
+    "Комплектация, поставка, склад и заказ материалов: Буквальные 0,404 тысячи кирпичей, 0,22 м³ готового М50 и 0,1 м³ воды не доказывают торговую фасовку, остатки, рецепт, заказ или отдельную цену.",
+    "Внешняя доставка, разгрузка и переноска сверх 5 м: §1.21 учитывает переноску кирпича на 5 м. Внешние маршруты, партии и разгрузка из нормы не следуют; автомобиль 40-0001 присутствует в соседних армированных колонках, но в 03 отсутствует.",
+    "Уборка, тара, бой и вывоз отходов: Норма не задаёт дополнительный процент боя, контейнер, массу отходов и маршрут вывоза.",
+    "Собственный реальный producer чтения11проектных фактов и applicability, обычнаяUIграница и текущий проектный/нормативный допуск не приняты.",
+    "Стр7 §1.13 даёт подмости стен; столбам ни до4м, ни свыше4м не назначается чужая готовая схема доступа.",
+    "Стр8 §2.5 сохраняет гнёзда/борозды для заделки концов балок в обмере новой кладки; KG46ремонт не добавляется автоматически второй оплатой.",
+    "ФактическиеDBabsence/collision/normal/locked, solepublisher, API/UI/Android/сохранение/PDF/закупка и FULL — UNRUN."
+  ],
+  "newFullTechnologies": 0,
+  "fullTechnicalAcceptance": false
+}

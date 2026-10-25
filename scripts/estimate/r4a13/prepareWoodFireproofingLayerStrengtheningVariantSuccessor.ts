@@ -28,7 +28,7 @@ const currentRelease = JSON.parse(readFileSync(currentReleasePath, "utf8")) as {
   definitionReleaseId?: unknown; searchReleaseId?: unknown;
 };
 const variantKey = String(
-  process.env.S277_F09_FIREPROOF_STRENGTHEN_VARIANT ?? "small_area",
+  process.env.S277_F09_FIREPROOF_STRENGTHEN_VARIANT ?? "standard",
 ) as WoodFireproofingLayerStrengtheningVariantKey;
 const variant = resolveWoodFireproofingLayerStrengtheningVariant(variantKey);
 const variantToken = variantKey.toUpperCase();

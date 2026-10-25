@@ -10,8 +10,7 @@ export function RequestEstimateStageRequirements({groups}: {groups: readonly Can
     if (!calculationIncomplete && !objectFactsMissing) return null;
     return <Text key={group.groupId} style={{color:'#9A3412',paddingVertical:8}}
       testID={`request-estimate-stage-requirement-${group.groupId}`}>
-      {objectFactsMissing ? 'Нужны исходные данные участка.'
-        : 'Расчёт этого этапа ещё не завершён приложением. Не включён в стоимость и закупку.'}
+      {objectFactsMissing ? 'Исходные данные не заполнены' : 'Не рассчитано'}
     </Text>;
   })}</>;
 }

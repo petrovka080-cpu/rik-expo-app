@@ -44,6 +44,25 @@ describe("schema-owned facts are independent of presentation", () => {
   it("uses the same bound project guide for passports predating the role tag", () => {
     expect(isCanonicalEstimateConsumerSuppliedParameter({ ...fact, provenance: undefined, titleRu: "Нормальные условия" } as never)).toBe(true);
   });
+  it.each(['Исходная система кладки и нормативная база','Выбор применимого способа работ'])(
+    'keeps an exact source-bound finite declared scope choice user-owned: %s', titleRu => {
+      const schema = {...fact,titleRu,guide:{...fact.guide,sourceRole:'DECLARED_WORK_SCOPE'}} as never;
+      expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(true);
+      expect(isCanonicalEstimateSourceManagedParameter(schema)).toBe(false);
+      expect(canonicalEstimateParameterChangesPreliminaryEstimate(schema)).toBe(true);
+    },
+  );
+  it.each([
+    {valueType:'decimal'}, {valueType:'text'}, {constraints:{values:[]}},
+    {provenance:undefined}, {provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'}},
+    {visibilityRole:'INTERNAL_ONLY'}, {valueSourceRole:'UNRESOLVED_APPLICATION_NORM'},
+    {semanticParameterKey:undefined}, {formulaConsumers:[],resourceBranchConsumers:[]},
+    {parameterId:'labor_productivity_m2_per_man_hour'},
+    {guide:{...fact.guide,sourceRole:'DECLARED_WORK_SCOPE',sourceSnapshotHash:'missing'}},
+  ])('declared scope metadata cannot reopen scalar norms or unbound choices: %p', patch => {
+    const schema = {...fact,titleRu:'Норма расхода',guide:{...fact.guide,sourceRole:'DECLARED_WORK_SCOPE'},...patch} as never;
+    expect(isCanonicalEstimateConsumerSuppliedParameter(schema)).toBe(false);
+  });
   it.each(["MANDATORY_NORM_VALUE", "UNRESOLVED_APPLICATION_NORM", "MANUFACTURER_CONFIRMED", "SELECTED_EQUIPMENT_PASSPORT", "BACKEND_DERIVED"])(
     "a conflicting OBJECT_FACT tag cannot expose %s", valueSourceRole => {
       const schema = { ...fact, valueSourceRole, titleRu: "Площадь объекта" } as never;
@@ -410,7 +429,7 @@ describe("canonical professional norm ownership", () => {
     ["NORMATIVE", "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE"],
     ["NORMATIVE", "VISIBLE_PRELIMINARY_SCENARIO"],
     ["NORMATIVE", "VISIBLE_BASELINE_ASSUMPTION"],
-  ])("exposes every central replaceable application-profile marker (%s/%s)", (
+  ])("keeps technical productivity hidden for every replaceable application-profile marker (%s/%s)", (
     runtimeProfileClassification,
     valueSourceRole,
   ) => {
@@ -426,7 +445,10 @@ describe("canonical professional norm ownership", () => {
       constraints: {},
     } as never;
 
-    expect(isCanonicalEstimateVisibleReplaceableProfile(schema)).toBe(true);
+    const before = JSON.stringify(schema);
+    expect(isCanonicalEstimateVisibleReplaceableProfile(schema)).toBe(false);
+    expect(isCanonicalEstimateUserEditableParameter(schema)).toBe(false);
+    expect(JSON.stringify(schema)).toBe(before);
   });
 
   it("keeps an ordinary protected norm hidden but exposes a required resource choice", () => {

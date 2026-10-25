@@ -1,3 +1,4 @@
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -200,8 +201,8 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     expect(rowById(revised.rows, "delivery:formwork:outbound-kit").quantity).toBe("70");
   });
 
-  test("reuses the same core and explicit schedule contract for all seven pile-cap contexts", async () => {
-    expect(FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS).toHaveLength(7);
+  test("reuses the same core and explicit schedule contract for all five pile-cap contexts", async () => {
+    expect(FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS).toHaveLength(5);
     const projectScheduleFingerprints = new Set<string>();
     for (const target of FORMWORK_FRAMI_XLIFE_PILE_CAP_TARGETS) {
       const input = formworkFramiXlifePileCapAcceptanceInputR1(target.contextKey);
@@ -224,15 +225,15 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
         stages: input.project_stage_count,
       }));
     }
-    expect(projectScheduleFingerprints.size).toBe(7);
+    expect(projectScheduleFingerprints.size).toBe(5);
     await expect(compileFormworkFramiXlifeProjectKitR1(
       { ...FORMWORK_FRAMI_XLIFE_EXACT_INPUT },
       { catalogId: "canonical-work:base:concrete_foundation_interior_slab_form_standard" },
     )).rejects.toThrow("FORMWORK_FRAMI_XLIFE_CATALOG_UNSUPPORTED");
   });
 
-  test("reuses the same core and explicit schedule contract for all seven strip-foundation contexts", async () => {
-    expect(FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS).toHaveLength(7);
+  test("reuses the same core and explicit schedule contract for all five strip-foundation contexts", async () => {
+    expect(FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS).toHaveLength(5);
     const projectScheduleFingerprints = new Set<string>();
     for (const target of FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS) {
       const input = formworkFramiXlifeStripFoundationAcceptanceInputR1(target.contextKey);
@@ -258,7 +259,7 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
         stages: input.project_stage_count,
       }));
     }
-    expect(projectScheduleFingerprints.size).toBe(7);
+    expect(projectScheduleFingerprints.size).toBe(5);
   });
 
   test("fails closed when strip-foundation crane applicability and project hours conflict", async () => {
@@ -275,14 +276,14 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     await expect(compileFormworkFramiXlifeProjectKitR1({
       ...technicalRoom,
       crane_supply_mode: "RENTAL_SEPARATE",
-    }, { catalogId: FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS[5].catalogId }))
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_STRIP_FOUNDATION_TARGETS.find((target) => target.contextKey === "technical_room")!.catalogId }))
       .rejects.toMatchObject({
         code: "FORMWORK_CRANE_SCOPE_APPLICABLE_QUANTITY_REQUIRED:crane_hours",
       });
   });
 
-  test("reuses the same core and explicit schedule contract for all seven slab-foundation contexts", async () => {
-    expect(FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS).toHaveLength(7);
+  test("reuses the same core and explicit schedule contract for all five slab-foundation contexts", async () => {
+    expect(FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS).toHaveLength(5);
     const projectScheduleFingerprints = new Set<string>();
     for (const target of FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS) {
       const input = formworkFramiXlifeSlabFoundationAcceptanceInputR1(target.contextKey);
@@ -309,7 +310,7 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
         stages: input.project_stage_count,
       }));
     }
-    expect(projectScheduleFingerprints.size).toBe(7);
+    expect(projectScheduleFingerprints.size).toBe(5);
   });
 
   test("fails closed when slab-foundation crane applicability and project hours conflict", async () => {
@@ -326,14 +327,14 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     await expect(compileFormworkFramiXlifeProjectKitR1({
       ...technicalRoom,
       crane_supply_mode: "RENTAL_SEPARATE",
-    }, { catalogId: FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS[5].catalogId }))
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_SLAB_FOUNDATION_TARGETS.find((target) => target.contextKey === "technical_room")!.catalogId }))
       .rejects.toMatchObject({
         code: "FORMWORK_CRANE_SCOPE_APPLICABLE_QUANTITY_REQUIRED:crane_hours",
       });
   });
 
-  test("reuses the same core and explicit schedule contract for all seven general foundation contexts", async () => {
-    expect(FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS).toHaveLength(7);
+  test("reuses the same core and explicit schedule contract for all five general foundation contexts", async () => {
+    expect(FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS).toHaveLength(5);
     const scheduleSignatures = new Set<string>();
     for (const target of FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS) {
       const input = formworkFramiXlifeGeneralFoundationAcceptanceInputR1(target.contextKey);
@@ -363,14 +364,16 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
         stages: input.project_stage_count,
       }));
     }
-    expect(scheduleSignatures.size).toBe(7);
+    expect(scheduleSignatures.size).toBe(5);
     expect(formworkFramiXlifeGeneralFoundationAcceptanceInputR1("standard"))
       .toMatchObject({ measured_formwork_contact_area_m2: 120, frami_xlife_panel_count: 36 });
-    expect(formworkFramiXlifeGeneralFoundationAcceptanceInputR1("large_area"))
+    expect(measuredConcreteProjectInputR533("formworkFramiXlifeGeneralFoundationAcceptanceInputR1", "extended"))
       .toMatchObject({ measured_formwork_contact_area_m2: 480, project_stage_count: 10 });
     expect(formworkFramiXlifeGeneralFoundationAcceptanceInputR1("wet_zone"))
       .toMatchObject({ joint_sealing_tape_length_m: 130, crane_supply_mode: "RENTAL_SEPARATE" });
-    for (const contextKey of ["repair", "small_area", "technical_room"] as const) {
+    expect(measuredConcreteProjectInputR533("formworkFramiXlifeGeneralFoundationAcceptanceInputR1", "compact"))
+      .toMatchObject({ crane_hours: 0, crane_supply_mode: "NOT_APPLICABLE_MANUAL_HANDLING" });
+    for (const contextKey of ["repair", "technical_room"] as const) {
       expect(formworkFramiXlifeGeneralFoundationAcceptanceInputR1(contextKey))
         .toMatchObject({ crane_hours: 0, crane_supply_mode: "NOT_APPLICABLE_MANUAL_HANDLING" });
     }
@@ -390,7 +393,7 @@ describe("complete Doka Frami Xlife project-scheduled formwork estimate", () => 
     await expect(compileFormworkFramiXlifeProjectKitR1({
       ...technicalRoom,
       crane_supply_mode: "RENTAL_SEPARATE",
-    }, { catalogId: FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS[5].catalogId }))
+    }, { catalogId: FORMWORK_FRAMI_XLIFE_GENERAL_FOUNDATION_TARGETS.find((target) => target.contextKey === "technical_room")!.catalogId }))
       .rejects.toMatchObject({
         code: "FORMWORK_CRANE_SCOPE_APPLICABLE_QUANTITY_REQUIRED:crane_hours",
       });

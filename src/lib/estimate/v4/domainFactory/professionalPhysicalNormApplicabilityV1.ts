@@ -1,3 +1,4 @@
+import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../contracts/nrmcaReadyMixProfileIdentityV1";
 import airConditioningNormPack from "../../../../../data/estimate-norms/professional/air_conditioning.json";
 import baseboardsNormPack from "../../../../../data/estimate-norms/professional/baseboards.json";
 import ceilingsNormPack from "../../../../../data/estimate-norms/professional/ceilings.json";
@@ -726,8 +727,7 @@ export const CERESIT_CT17_PAINT_PRIMER_NORM_ID =
 export const CERESIT_CT17_PAINT_PRIMER_SOURCE_ID =
   `src_professional_norm_pack_${CERESIT_CT17_PAINT_PRIMER_NORM_ID}` as const;
 
-export const NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID =
-  "method-profile:nrmca-cip31:ready-mix-order:v1" as const;
+export { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../contracts/nrmcaReadyMixProfileIdentityV1";
 
 export const NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID =
   "concrete_nrmca_cip31_selected_contingency_m3_m3_v1" as const;

@@ -139,3 +139,84 @@ describe("S27.23 canonical estimate profile input resolver", () => {
     });
   });
 });
+
+
+test("the standard P113 frame keeps an unknown perimeter unknown", () => {
+  expect(DRYWALL_CEILING_P113_FRAME_CATALOG_ID_S2723)
+    .toBe("canonical-work:base:drywall_ceiling_interior_drywall_ceiling_frame_standard");
+  const result = resolveCanonicalEstimateProfileInputsS2723({
+    catalogId: DRYWALL_CEILING_P113_FRAME_CATALOG_ID_S2723,
+    confirmedParameters: { room_length_m: 15.8, room_width_m: 10 },
+    effectiveUserParameters: { area_m2: 500 },
+  });
+  expect(result.applied).toBe(true);
+  expect(result.confirmedParameters).not.toHaveProperty("room_length_m");
+  expect(result.confirmedParameters).not.toHaveProperty("room_width_m");
+  expect(result.confirmedParameters).not.toHaveProperty("perimeter_m");
+  const confirmed = Object.freeze({ room_length_m: 15.8, room_width_m: 10 });
+  const retired = resolveCanonicalEstimateProfileInputsS2723({
+    catalogId: "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_frame_large_area",
+    confirmedParameters: confirmed,
+    effectiveUserParameters: { area_m2: 500 },
+  });
+  expect(retired).toEqual({ applied: false, profileId: null, confirmedParameters: confirmed });
+  expect(retired.confirmedParameters).toBe(confirmed);
+});
+
+
+describe("source-profile exact identity condition admission", () => {
+  function fixture(input: {
+    condition?: Readonly<Record<string, unknown>>;
+    parameterId?: string;
+    valueType?: "decimal" | "integer";
+    value?: string;
+  } = {}) {
+    const parameterId = input.parameterId ?? "height";
+    const when = {kind: "formula_greater_than", expression: parameterId, unitId: "m", value: 4, ...input.condition};
+    return {
+      catalogId: "TEST_ONLY_IDENTITY_SOURCE_CONDITION",
+      sourceProfileSelectionMetadata: {
+        contract: "canonical-source-profile-selection/v1",
+        selectorParameterId: "method", geometryParameterIds: [parameterId],
+        profiles: [
+          {selectorValue: "lower", sources: [{sourceId: "TEST_ONLY_LOWER", artifactSha256: "a".repeat(64), locator: "Lower fixture"}],
+            when: {kind: "not", operand: when}, geometryCopies: []},
+          {selectorValue: "upper", sources: [{sourceId: "TEST_ONLY_UPPER", artifactSha256: "b".repeat(64), locator: "Upper fixture"}],
+            when, geometryCopies: []},
+        ],
+      },
+      parameterSchema: [
+        {parameterId: "method", valueType: "enum", unitId: null, visibilityRole: "INTERNAL_ONLY",
+          valueSourceRole: "SOURCE_BACKED_PRELIMINARY_PROFILE", provenance: {consumer_input_role_v1: "APPLICATION_TECHNICAL"},
+          constraints: {values: ["lower", "upper"]}},
+        {parameterId, valueType: input.valueType ?? "decimal", unitId: "m", visibilityRole: "USER_INPUT",
+          valueSourceRole: "USER_MEASURED", provenance: {consumer_input_role_v1: "OBJECT_FACT"}},
+      ],
+      confirmedParameters: {}, effectiveUserParameters: {[parameterId]: input.value ?? "5"},
+    };
+  }
+  test("an exact condition cannot introduce arithmetic, functions or an undeclared geometry ID", () => {
+    for (const expression of ["height * 1", "height+1", "abs(height)", "other_height"]) {
+      expect(() => resolveCanonicalEstimateProfileInputsS2723(fixture({condition: {expression}})))
+        .toThrow("WHEN_IDENTITY_FORMULA");
+    }
+  });
+  test("identity conditions require the schema unit, finite number and exact four keys", () => {
+    for (const condition of [{unitId: "mm"}, {value: "4"}, {value: Infinity}, {value: NaN}, {value: 4.0000000001}, {factor: 1}]) {
+      expect(() => resolveCanonicalEstimateProfileInputsS2723(fixture({condition})))
+        .toThrow("WHEN_IDENTITY_FORMULA");
+    }
+  });
+  test("a declared ID containing a minus operator cannot masquerade as an identity AST", () => {
+    expect(() => resolveCanonicalEstimateProfileInputsS2723(fixture({parameterId: "height-length"})))
+      .toThrow("WHEN_IDENTITY_FORMULA");
+  });
+  test.each(["800.0000000000000001", "3.9999999999999999"])("source geometry refuses precision outside the existing fixed-decimal domain: %s", value => {
+    expect(() => resolveCanonicalEstimateProfileInputsS2723(fixture({value})))
+      .toThrow("ACTUAL_GEOMETRY_VALUE");
+  });
+  test.each(["4.0", "4.0000000000000001"])("integer geometry refuses the fractional lexeme %s before numeric rounding", value => {
+    expect(() => resolveCanonicalEstimateProfileInputsS2723(fixture({valueType: "integer", value})))
+      .toThrow("ACTUAL_GEOMETRY_VALUE");
+  });
+});

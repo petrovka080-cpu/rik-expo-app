@@ -15,7 +15,7 @@ import {
 } from "../../../src/lib/estimate/backendPlatform/estimateContentPassportR3";
 
 export const ASPHALT_SURFACE_DRAINAGE_CATALOG_ID =
-  "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area" as const;
+  "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard" as const;
 
 export type AsphaltSurfaceDrainageSystem = "linear_tray" | "subsurface_drain" | "storm_sewer";
 export type AsphaltSurfaceDrainageCategory = "material" | "construction_work" | "machine_equipment" | "delivery";
@@ -381,7 +381,7 @@ export const ASPHALT_SURFACE_DRAINAGE_PASSPORT = Object.freeze({
   domainId: "roadworks_drainage",
   canonicalRuName: "Устройство системы водоотвода асфальтированного покрытия",
   searchAliases: [
-    "водоотвод для асфальтового покрытия на большой площади",
+    "водоотвод для асфальтового покрытия",
     "линейный водоотвод асфальтированной площадки",
     "дренаж асфальтированной площадки",
     "дождевая канализация асфальтированной площадки",

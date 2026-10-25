@@ -31,7 +31,7 @@ type Token =
   | { kind: "comma" };
 
 const AXES: DimensionAxisV4[] = [
-  "length", "mass", "time", "temperature", "count", "labor_time", "machine_time", "package", "service", "test", "document", "currency",
+  "length", "mass", "time", "temperature", "count", "headcount", "labor_time", "machine_time", "package", "service", "test", "document", "currency",
 ];
 const DIMENSION_PRESERVING_FUNCTIONS = new Set(["round", "round_to", "ceil", "floor", "min", "max"]);
 

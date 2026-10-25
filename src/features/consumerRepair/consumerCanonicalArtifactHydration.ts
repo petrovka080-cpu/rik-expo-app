@@ -8,6 +8,9 @@ import {
   type CanonicalEstimateArtifactView,
   type CanonicalEstimateRevisionView,
 } from "../../lib/estimate/backendPlatform/contracts";
+import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests/consumerRequestTypes";
+import { bindConsumerRepairCanonicalArtifactReady } from "../../lib/consumerRequests/consumerRequestService";
+import { awaitConsumerRepairBundleDurableCommit } from "../../lib/consumerRequests/consumerRequestRepository";
 
 export async function loadConsumerCanonicalProcurementArtifact(input: {
   revision: CanonicalEstimateRevisionView;
@@ -117,4 +120,28 @@ export async function loadConsumerCanonicalReadyArtifacts(input: {
   return artifacts.filter(
     (artifact): artifact is ConsumerCanonicalReadyArtifactBinding => artifact != null,
   );
+}
+
+/** The authoritative revision has already passed its durable restore barrier.
+ * Artifact bindings are a cache of immutable backend documents. */
+export async function restoreConsumerCanonicalReadyArtifactBindings(input: {
+  bundle: ConsumerRepairDraftBundle;
+  binding: { revisionId: string; releaseId: string };
+  onPersistenceError: (error: unknown) => void;
+}): Promise<ConsumerRepairDraftBundle> {
+  const artifacts = await loadConsumerCanonicalReadyArtifacts(input.binding);
+  let restored = input.bundle;
+  for (const artifact of artifacts) {
+    restored = bindConsumerRepairCanonicalArtifactReady({ requestDraftId: restored.draft.id, artifact });
+  }
+  if (artifacts.length > 0) {
+    // Binding already enqueues the cache write. Its acknowledgement must not
+    // repeat the revision's restore barrier before the editor can open.
+    void awaitConsumerRepairBundleDurableCommit({
+      requestDraftId: restored.draft.id,
+      expectedStatus: restored.draft.status,
+      expectedRevisionId: input.binding.revisionId,
+    }).catch(input.onPersistenceError);
+  }
+  return restored;
 }

@@ -3,7 +3,7 @@ import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,
 } from "./consumerRequestTypes";
-import { canonicalScopeRequirementDecisionV1, groupCanonicalScopeRequirementsV1 } from '../estimate/backendPlatform/canonicalScopeRequirementV1';
+import { canonicalScopeRequirementDecisionV1, groupCanonicalScopeRequirementsV1, canonicalScopeRequirementStatusIsOpenV1, type CanonicalScopeRequirementStatusV1 } from '../estimate/backendPlatform/canonicalScopeRequirementV1';
 import {consumerMachineHourPriceNeedsConfirmation} from './consumerMachineHourPriceCoverage';
 
 const NON_PAYABLE_COST_TREATMENTS = new Set([
@@ -65,6 +65,17 @@ export function consumerEstimateUnresolvedQuantityItems(
   );
 }
 
+/** A saved manual number and an accepted calculation source are independent.
+ * This is display evidence, never permission to clear a source/supply gate. */
+export function consumerEstimateManualPreliminaryItems(
+  bundle: ConsumerRepairDraftBundle | null | undefined,
+): ConsumerRepairRequestItem[] {
+  return (bundle?.items ?? []).filter(item => item.sourceParameters?.canonicalPreliminaryNeed === true
+    && item.sourceParameters?.manualQuantityOverride === true
+    && item.quantity != null && Number.isFinite(item.quantity) && item.quantity >= 0
+    && consumerEstimateScopeDecision(item) == null);
+}
+
 /** Informational obligations have no quantity to be entered. Their saved
  * disposition, rather than the old null quantity, determines readiness. */
 export function consumerEstimateScopeDecision(item: ConsumerRepairRequestItem) {
@@ -72,12 +83,15 @@ export function consumerEstimateScopeDecision(item: ConsumerRepairRequestItem) {
   return decision?.rowId === String(item.sourceParameters?.rowCode ?? '') ? decision : null;
 }
 
+export function consumerEstimateScopeStatusIsOpen(status: CanonicalScopeRequirementStatusV1): boolean {
+  return canonicalScopeRequirementStatusIsOpenV1(status);
+}
+
 export function consumerEstimateOpenScopeGroups(bundle: ConsumerRepairDraftBundle | null | undefined) {
   return groupCanonicalScopeRequirementsV1((bundle?.items ?? []).flatMap(item => {
     const decision = consumerEstimateScopeDecision(item);
     return decision ? [decision] : [];
-  })).filter(group => group.statuses.some(status => ['PROJECT_SCOPE_OPEN', 'PARTLY_INCLUDED',
-    'OBJECT_FACT_REQUIRED', 'LEGACY_SOURCE_REQUIRED', 'SCOPE_UNVERIFIED','REQUIRED_RESOURCE_EXCLUDED'].includes(status)));
+  })).filter(group => group.statuses.some(consumerEstimateScopeStatusIsOpen));
 }
 
 export function consumerEstimateUnpricedPayableItems(

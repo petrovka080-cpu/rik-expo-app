@@ -1,0 +1,1295 @@
+{
+  "contract": "concrete-krer46-03-017-whole-hole-fill/r61",
+  "status": "SOURCE_ONLY_WHOLE_NATIVE_COLUMNS_NOT_CONFIG_OR_FULL_ADMISSION",
+  "source": {
+    "sourceId": "kg_krer_46_2015_reconstruction_official",
+    "path": "data/estimate-benchmarks/source-artifacts/krer46-2015-whole-holes-r61.pdf",
+    "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+    "existingCanonicalArtifactPath": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\.release-runtime\\r568\\s27-3\\f09-next-current-lineage\\official-snapshots\\krer_46_2015.pdf",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+    "edition": "КРЕР46-2015; с 2016-01-01",
+    "tablePages": [
+      49,
+      50
+    ],
+    "technicalPagesVisuallyRead": [
+      5,
+      6,
+      7,
+      8
+    ],
+    "pricesImported": false,
+    "registryReuseStatus": "EXISTING_ARTIFACT_AND_SOURCE_KEY_KNOWN; CURRENT_017_REGISTRY_SCOPE_UNREAD"
+  },
+  "operationTitles": {
+    "clear": "Расчистка отверстий, гнёзд и борозд",
+    "formwork": "Установка опалубки",
+    "reinforce": "Укладка арматуры",
+    "concrete": "Укладка бетона",
+    "fill": "Заделка отверстий, гнёзд и борозд"
+  },
+  "columns": [
+    {
+      "normId": "46-03-017-01",
+      "system": "rc-floor",
+      "titleRu": "Железобетонное перекрытие",
+      "maximumSingleOpeningAreaM2": "0.1",
+      "basisUnitId": "m3",
+      "basisLiteral": "1",
+      "operations": [
+        "clear",
+        "formwork",
+        "reinforce",
+        "concrete",
+        "fill"
+      ],
+      "nativeRows": [
+        {
+          "key": "labour24",
+          "sourceCode": "000-1002-4",
+          "titleRu": "Труд рабочих среднего разряда 2,4",
+          "printedUnit": "man_hour",
+          "unitId": "man_hour",
+          "exactConversionFactor": "1",
+          "category": "labor",
+          "literalRate": "55.16",
+          "nativeRowId": "krer46-hole-r61:01:labour24"
+        },
+        {
+          "key": "winch",
+          "sourceCode": "03-0158",
+          "titleRu": "Электрическая лебёдка с тяговым усилием до 5,79 кН",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.44",
+          "nativeRowId": "krer46-hole-r61:01:winch"
+        },
+        {
+          "key": "truck",
+          "sourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.24",
+          "nativeRowId": "krer46-hole-r61:01:truck"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода для нормативного цикла заделки",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.0032",
+          "nativeRowId": "krer46-hole-r61:01:water"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "titleRu": "Строительные гвозди",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.003",
+          "nativeRowId": "krer46-hole-r61:01:nails"
+        },
+        {
+          "key": "lime",
+          "sourceCode": "01-2309-0001",
+          "titleRu": "Негашёная комовая строительная известь, сорт 1",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0011",
+          "nativeRowId": "krer46-hole-r61:01:lime"
+        },
+        {
+          "key": "boards",
+          "sourceCode": "01-6305-0094",
+          "titleRu": "Обрезные хвойные доски 32–40×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.09",
+          "nativeRowId": "krer46-hole-r61:01:boards"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "titleRu": "Горячекатаная арматура классов A-I, A-II, A-III",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.07",
+          "nativeRowId": "krer46-hole-r61:01:rebar"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0043",
+          "titleRu": "Тяжёлый бетон B15, заполнитель 20 мм",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "1.04",
+          "nativeRowId": "krer46-hole-r61:01:concrete"
+        },
+        {
+          "key": "rod",
+          "sourceCode": "10-0105-0001",
+          "titleRu": "Горячекатаная катанка диаметром 6,3–6,5 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0095",
+          "nativeRowId": "krer46-hole-r61:01:rod"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "titleRu": "Светлая вязальная проволока диаметром 1,1 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0005",
+          "nativeRowId": "krer46-hole-r61:01:wire"
+        }
+      ],
+      "nativeRowCount": 11,
+      "admittedToConcreteCandidate": true
+    },
+    {
+      "normId": "46-03-017-02",
+      "system": "rc-floor",
+      "titleRu": "Железобетонное перекрытие",
+      "maximumSingleOpeningAreaM2": "0.2",
+      "basisUnitId": "m3",
+      "basisLiteral": "1",
+      "operations": [
+        "clear",
+        "formwork",
+        "reinforce",
+        "concrete",
+        "fill"
+      ],
+      "nativeRows": [
+        {
+          "key": "labour24",
+          "sourceCode": "000-1002-4",
+          "titleRu": "Труд рабочих среднего разряда 2,4",
+          "printedUnit": "man_hour",
+          "unitId": "man_hour",
+          "exactConversionFactor": "1",
+          "category": "labor",
+          "literalRate": "44.66",
+          "nativeRowId": "krer46-hole-r61:02:labour24"
+        },
+        {
+          "key": "winch",
+          "sourceCode": "03-0158",
+          "titleRu": "Электрическая лебёдка с тяговым усилием до 5,79 кН",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.49",
+          "nativeRowId": "krer46-hole-r61:02:winch"
+        },
+        {
+          "key": "truck",
+          "sourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.24",
+          "nativeRowId": "krer46-hole-r61:02:truck"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода для нормативного цикла заделки",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.0032",
+          "nativeRowId": "krer46-hole-r61:02:water"
+        },
+        {
+          "key": "lime",
+          "sourceCode": "01-2309-0001",
+          "titleRu": "Негашёная комовая строительная известь, сорт 1",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0011",
+          "nativeRowId": "krer46-hole-r61:02:lime"
+        },
+        {
+          "key": "boards",
+          "sourceCode": "01-6305-0094",
+          "titleRu": "Обрезные хвойные доски 32–40×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.09",
+          "nativeRowId": "krer46-hole-r61:02:boards"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "titleRu": "Горячекатаная арматура классов A-I, A-II, A-III",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.05",
+          "nativeRowId": "krer46-hole-r61:02:rebar"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0043",
+          "titleRu": "Тяжёлый бетон B15, заполнитель 20 мм",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "1.04",
+          "nativeRowId": "krer46-hole-r61:02:concrete"
+        },
+        {
+          "key": "rod",
+          "sourceCode": "10-0105-0001",
+          "titleRu": "Горячекатаная катанка диаметром 6,3–6,5 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0095",
+          "nativeRowId": "krer46-hole-r61:02:rod"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "titleRu": "Светлая вязальная проволока диаметром 1,1 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0005",
+          "nativeRowId": "krer46-hole-r61:02:wire"
+        }
+      ],
+      "nativeRowCount": 10,
+      "admittedToConcreteCandidate": true
+    },
+    {
+      "normId": "46-03-017-03",
+      "system": "rc-wall",
+      "titleRu": "Железобетонная стена или перегородка",
+      "maximumSingleOpeningAreaM2": "0.1",
+      "basisUnitId": "m3",
+      "basisLiteral": "1",
+      "operations": [
+        "clear",
+        "formwork",
+        "reinforce",
+        "concrete",
+        "fill"
+      ],
+      "nativeRows": [
+        {
+          "key": "labour24",
+          "sourceCode": "000-1002-4",
+          "titleRu": "Труд рабочих среднего разряда 2,4",
+          "printedUnit": "man_hour",
+          "unitId": "man_hour",
+          "exactConversionFactor": "1",
+          "category": "labor",
+          "literalRate": "75.58",
+          "nativeRowId": "krer46-hole-r61:03:labour24"
+        },
+        {
+          "key": "winch",
+          "sourceCode": "03-0158",
+          "titleRu": "Электрическая лебёдка с тяговым усилием до 5,79 кН",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.23",
+          "nativeRowId": "krer46-hole-r61:03:winch"
+        },
+        {
+          "key": "truck",
+          "sourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.43",
+          "nativeRowId": "krer46-hole-r61:03:truck"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода для нормативного цикла заделки",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.0137",
+          "nativeRowId": "krer46-hole-r61:03:water"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "titleRu": "Строительные гвозди",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0059",
+          "nativeRowId": "krer46-hole-r61:03:nails"
+        },
+        {
+          "key": "lime",
+          "sourceCode": "01-2309-0001",
+          "titleRu": "Негашёная комовая строительная известь, сорт 1",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0049",
+          "nativeRowId": "krer46-hole-r61:03:lime"
+        },
+        {
+          "key": "bars",
+          "sourceCode": "01-6302-0094",
+          "titleRu": "Обрезные хвойные брусья 40–75×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.21",
+          "nativeRowId": "krer46-hole-r61:03:bars"
+        },
+        {
+          "key": "boards",
+          "sourceCode": "01-6305-0094",
+          "titleRu": "Обрезные хвойные доски 32–40×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.18",
+          "nativeRowId": "krer46-hole-r61:03:boards"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "titleRu": "Горячекатаная арматура классов A-I, A-II, A-III",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.07",
+          "nativeRowId": "krer46-hole-r61:03:rebar"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0043",
+          "titleRu": "Тяжёлый бетон B15, заполнитель 20 мм",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "1.04",
+          "nativeRowId": "krer46-hole-r61:03:concrete"
+        },
+        {
+          "key": "rod",
+          "sourceCode": "10-0105-0001",
+          "titleRu": "Горячекатаная катанка диаметром 6,3–6,5 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0095",
+          "nativeRowId": "krer46-hole-r61:03:rod"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "titleRu": "Светлая вязальная проволока диаметром 1,1 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0005",
+          "nativeRowId": "krer46-hole-r61:03:wire"
+        }
+      ],
+      "nativeRowCount": 12,
+      "admittedToConcreteCandidate": true
+    },
+    {
+      "normId": "46-03-017-04",
+      "system": "rc-wall",
+      "titleRu": "Железобетонная стена или перегородка",
+      "maximumSingleOpeningAreaM2": "0.2",
+      "basisUnitId": "m3",
+      "basisLiteral": "1",
+      "operations": [
+        "clear",
+        "formwork",
+        "reinforce",
+        "concrete",
+        "fill"
+      ],
+      "nativeRows": [
+        {
+          "key": "labour24",
+          "sourceCode": "000-1002-4",
+          "titleRu": "Труд рабочих среднего разряда 2,4",
+          "printedUnit": "man_hour",
+          "unitId": "man_hour",
+          "exactConversionFactor": "1",
+          "category": "labor",
+          "literalRate": "61.11",
+          "nativeRowId": "krer46-hole-r61:04:labour24"
+        },
+        {
+          "key": "winch",
+          "sourceCode": "03-0158",
+          "titleRu": "Электрическая лебёдка с тяговым усилием до 5,79 кН",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.28",
+          "nativeRowId": "krer46-hole-r61:04:winch"
+        },
+        {
+          "key": "truck",
+          "sourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.43",
+          "nativeRowId": "krer46-hole-r61:04:truck"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода для нормативного цикла заделки",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.0137",
+          "nativeRowId": "krer46-hole-r61:04:water"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "titleRu": "Строительные гвозди",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0059",
+          "nativeRowId": "krer46-hole-r61:04:nails"
+        },
+        {
+          "key": "lime",
+          "sourceCode": "01-2309-0001",
+          "titleRu": "Негашёная комовая строительная известь, сорт 1",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0049",
+          "nativeRowId": "krer46-hole-r61:04:lime"
+        },
+        {
+          "key": "bars",
+          "sourceCode": "01-6302-0094",
+          "titleRu": "Обрезные хвойные брусья 40–75×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.21",
+          "nativeRowId": "krer46-hole-r61:04:bars"
+        },
+        {
+          "key": "boards",
+          "sourceCode": "01-6305-0094",
+          "titleRu": "Обрезные хвойные доски 32–40×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.18",
+          "nativeRowId": "krer46-hole-r61:04:boards"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "titleRu": "Горячекатаная арматура классов A-I, A-II, A-III",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.06",
+          "nativeRowId": "krer46-hole-r61:04:rebar"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0043",
+          "titleRu": "Тяжёлый бетон B15, заполнитель 20 мм",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "1.04",
+          "nativeRowId": "krer46-hole-r61:04:concrete"
+        },
+        {
+          "key": "rod",
+          "sourceCode": "10-0105-0001",
+          "titleRu": "Горячекатаная катанка диаметром 6,3–6,5 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0095",
+          "nativeRowId": "krer46-hole-r61:04:rod"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "titleRu": "Светлая вязальная проволока диаметром 1,1 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0005",
+          "nativeRowId": "krer46-hole-r61:04:wire"
+        }
+      ],
+      "nativeRowCount": 12,
+      "admittedToConcreteCandidate": true
+    },
+    {
+      "normId": "46-03-017-05",
+      "system": "concrete-wall",
+      "titleRu": "Бетонная стена или перегородка",
+      "maximumSingleOpeningAreaM2": "0.1",
+      "basisUnitId": "m3",
+      "basisLiteral": "1",
+      "operations": [
+        "clear",
+        "formwork",
+        "concrete",
+        "fill"
+      ],
+      "nativeRows": [
+        {
+          "key": "labour24",
+          "sourceCode": "000-1002-4",
+          "titleRu": "Труд рабочих среднего разряда 2,4",
+          "printedUnit": "man_hour",
+          "unitId": "man_hour",
+          "exactConversionFactor": "1",
+          "category": "labor",
+          "literalRate": "75.22",
+          "nativeRowId": "krer46-hole-r61:05:labour24"
+        },
+        {
+          "key": "winch",
+          "sourceCode": "03-0158",
+          "titleRu": "Электрическая лебёдка с тяговым усилием до 5,79 кН",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.21",
+          "nativeRowId": "krer46-hole-r61:05:winch"
+        },
+        {
+          "key": "truck",
+          "sourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.40",
+          "nativeRowId": "krer46-hole-r61:05:truck"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода для нормативного цикла заделки",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.0137",
+          "nativeRowId": "krer46-hole-r61:05:water"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "titleRu": "Строительные гвозди",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0059",
+          "nativeRowId": "krer46-hole-r61:05:nails"
+        },
+        {
+          "key": "lime",
+          "sourceCode": "01-2309-0001",
+          "titleRu": "Негашёная комовая строительная известь, сорт 1",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0049",
+          "nativeRowId": "krer46-hole-r61:05:lime"
+        },
+        {
+          "key": "bars",
+          "sourceCode": "01-6302-0094",
+          "titleRu": "Обрезные хвойные брусья 40–75×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.21",
+          "nativeRowId": "krer46-hole-r61:05:bars"
+        },
+        {
+          "key": "boards",
+          "sourceCode": "01-6305-0094",
+          "titleRu": "Обрезные хвойные доски 32–40×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.18",
+          "nativeRowId": "krer46-hole-r61:05:boards"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0043",
+          "titleRu": "Тяжёлый бетон B15, заполнитель 20 мм",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "1.04",
+          "nativeRowId": "krer46-hole-r61:05:concrete"
+        },
+        {
+          "key": "rod",
+          "sourceCode": "10-0105-0001",
+          "titleRu": "Горячекатаная катанка диаметром 6,3–6,5 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0095",
+          "nativeRowId": "krer46-hole-r61:05:rod"
+        }
+      ],
+      "nativeRowCount": 10,
+      "admittedToConcreteCandidate": true
+    },
+    {
+      "normId": "46-03-017-06",
+      "system": "concrete-wall",
+      "titleRu": "Бетонная стена или перегородка",
+      "maximumSingleOpeningAreaM2": "0.2",
+      "basisUnitId": "m3",
+      "basisLiteral": "1",
+      "operations": [
+        "clear",
+        "formwork",
+        "concrete",
+        "fill"
+      ],
+      "nativeRows": [
+        {
+          "key": "labour24",
+          "sourceCode": "000-1002-4",
+          "titleRu": "Труд рабочих среднего разряда 2,4",
+          "printedUnit": "man_hour",
+          "unitId": "man_hour",
+          "exactConversionFactor": "1",
+          "category": "labor",
+          "literalRate": "60.80",
+          "nativeRowId": "krer46-hole-r61:06:labour24"
+        },
+        {
+          "key": "winch",
+          "sourceCode": "03-0158",
+          "titleRu": "Электрическая лебёдка с тяговым усилием до 5,79 кН",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.23",
+          "nativeRowId": "krer46-hole-r61:06:winch"
+        },
+        {
+          "key": "truck",
+          "sourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.40",
+          "nativeRowId": "krer46-hole-r61:06:truck"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "titleRu": "Вода для нормативного цикла заделки",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.0137",
+          "nativeRowId": "krer46-hole-r61:06:water"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "titleRu": "Строительные гвозди",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0059",
+          "nativeRowId": "krer46-hole-r61:06:nails"
+        },
+        {
+          "key": "lime",
+          "sourceCode": "01-2309-0001",
+          "titleRu": "Негашёная комовая строительная известь, сорт 1",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0049",
+          "nativeRowId": "krer46-hole-r61:06:lime"
+        },
+        {
+          "key": "bars",
+          "sourceCode": "01-6302-0094",
+          "titleRu": "Обрезные хвойные брусья 40–75×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.21",
+          "nativeRowId": "krer46-hole-r61:06:bars"
+        },
+        {
+          "key": "boards",
+          "sourceCode": "01-6305-0094",
+          "titleRu": "Обрезные хвойные доски 32–40×75–150 мм, длина 4–6,5 м, сорт III",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.18",
+          "nativeRowId": "krer46-hole-r61:06:boards"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0043",
+          "titleRu": "Тяжёлый бетон B15, заполнитель 20 мм",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "1.04",
+          "nativeRowId": "krer46-hole-r61:06:concrete"
+        },
+        {
+          "key": "rod",
+          "sourceCode": "10-0105-0001",
+          "titleRu": "Горячекатаная катанка диаметром 6,3–6,5 мм",
+          "printedUnit": "tonne",
+          "unitId": "kg",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.0095",
+          "nativeRowId": "krer46-hole-r61:06:rod"
+        }
+      ],
+      "nativeRowCount": 10,
+      "admittedToConcreteCandidate": true
+    },
+    {
+      "normId": "46-03-017-07",
+      "system": "brick-filling",
+      "titleRu": "Кирпичная заделка гнёзд, борозд и концов балок",
+      "maximumSingleOpeningAreaM2": null,
+      "basisUnitId": "m3",
+      "basisLiteral": "1",
+      "operations": [
+        "clear",
+        "fill"
+      ],
+      "nativeRows": [
+        {
+          "key": "labour25",
+          "sourceCode": "000-1002-5",
+          "titleRu": "Труд рабочих среднего разряда 2,5",
+          "printedUnit": "man_hour",
+          "unitId": "man_hour",
+          "exactConversionFactor": "1",
+          "category": "labor",
+          "literalRate": "28.88",
+          "nativeRowId": "krer46-hole-r61:07:labour25"
+        },
+        {
+          "key": "winch",
+          "sourceCode": "03-0158",
+          "titleRu": "Электрическая лебёдка с тяговым усилием до 5,79 кН",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.37",
+          "nativeRowId": "krer46-hole-r61:07:winch"
+        },
+        {
+          "key": "truck",
+          "sourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "printedUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "exactConversionFactor": "1",
+          "category": "equipment",
+          "literalRate": "0.17",
+          "nativeRowId": "krer46-hole-r61:07:truck"
+        },
+        {
+          "key": "brick",
+          "sourceCode": "01-3306-0005",
+          "titleRu": "Керамический кирпич 250×120×65 мм, М100",
+          "printedUnit": "1000_piece",
+          "unitId": "piece",
+          "exactConversionFactor": "1000",
+          "category": "material",
+          "literalRate": "0.41",
+          "nativeRowId": "krer46-hole-r61:07:brick"
+        },
+        {
+          "key": "mortar",
+          "sourceCode": "03-0405-0002",
+          "titleRu": "Готовый цементно-известковый кладочный раствор М25",
+          "printedUnit": "m3",
+          "unitId": "m3",
+          "exactConversionFactor": "1",
+          "category": "material",
+          "literalRate": "0.24",
+          "nativeRowId": "krer46-hole-r61:07:mortar"
+        }
+      ],
+      "nativeRowCount": 5,
+      "admittedToConcreteCandidate": false
+    }
+  ],
+  "independentPhysicalNeeds": [
+    {
+      "key": "formwork-first-boards",
+      "titleRu": "Начальный объём досок опалубки по раскладке",
+      "unitId": "m3",
+      "category": "material",
+      "operation": "formwork",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "formwork-first-bars",
+      "titleRu": "Начальный объём брусьев по раскладке",
+      "unitId": "m3",
+      "category": "material",
+      "operation": "formwork",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "formwork-props",
+      "titleRu": "Опоры и подкосы опалубки по схеме",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "formwork",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "formwork-ties",
+      "titleRu": "Стяжки и соединения опалубки по схеме",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "formwork",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "formwork-release",
+      "titleRu": "Разделительный материал по принятому способу",
+      "unitId": "kg",
+      "category": "material",
+      "operation": "formwork",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "winch-inventory",
+      "titleRu": "Электрическая лебёдка по схеме развёртывания",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "concrete",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "winch-anchors",
+      "titleRu": "Крепления лебёдки по расчётной схеме",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "concrete",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "winch-rope",
+      "titleRu": "Канат лебёдки по паспорту и схеме",
+      "unitId": "meter",
+      "category": "equipment",
+      "operation": "concrete",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "winch-slings",
+      "titleRu": "Грузовые стропы по схеме подъёма",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "concrete",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "winch-shackles",
+      "titleRu": "Соединительные грузовые скобы по схеме",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "concrete",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "electrical-cable",
+      "titleRu": "Питающий кабель по схеме рабочего места",
+      "unitId": "meter",
+      "category": "equipment",
+      "operation": "concrete",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "electrical-protection",
+      "titleRu": "Устройства защитного отключения по схеме",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "concrete",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "access-platform",
+      "titleRu": "Площадка доступа по принятому ППР",
+      "unitId": "m2",
+      "category": "equipment",
+      "operation": "clear",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "preparation-hand-tools",
+      "titleRu": "Инструмент расчистки по принятому способу",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "clear",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "placing-hand-tools",
+      "titleRu": "Инструмент укладки и заделки по принятому способу",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "compaction-tools",
+      "titleRu": "Средства уплотнения по принятому способу",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "concrete",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "curing-material",
+      "titleRu": "Защитный материал ухода за заделкой",
+      "unitId": "m2",
+      "category": "material",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "curing-water",
+      "titleRu": "Вода для отдельно назначенного ухода",
+      "unitId": "m3",
+      "category": "material",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "curing-labour",
+      "titleRu": "Труд отдельно назначенного ухода",
+      "unitId": "man_hour",
+      "category": "labor",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "quality-labour",
+      "titleRu": "Труд контроля и оформления результатов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "cleanup-labour",
+      "titleRu": "Труд итоговой очистки рабочего места",
+      "unitId": "man_hour",
+      "category": "labor",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "cleanup-material",
+      "titleRu": "Расходный материал итоговой очистки",
+      "unitId": "kg",
+      "category": "material",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "waste-mass",
+      "titleRu": "Фактические отходы полного способа заделки",
+      "unitId": "kg",
+      "category": "material",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "offsite-haul",
+      "titleRu": "Внеобъектовый вывоз фактических отходов",
+      "unitId": "trip",
+      "category": "service",
+      "operation": "fill",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "ppe-gloves",
+      "titleRu": "Защитные перчатки по оценке условий",
+      "unitId": "pair",
+      "category": "equipment",
+      "operation": "clear",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "ppe-eyes",
+      "titleRu": "Средства защиты глаз по оценке условий",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "clear",
+      "appliesTo": "SELECTED_METHOD_IF_REQUIRED_BY_ACTUAL_PPR",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "rebar-bbs",
+      "titleRu": "Полная ведомость арматуры по классу, диаметру и длине",
+      "unitId": "kg",
+      "category": "material",
+      "operation": "reinforce",
+      "appliesTo": "REINFORCED_COLUMNS_ONLY",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "rebar-cutting",
+      "titleRu": "Средства резки арматуры по ППР",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "reinforce",
+      "appliesTo": "REINFORCED_COLUMNS_ONLY",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    },
+    {
+      "key": "rebar-tying",
+      "titleRu": "Инструмент вязки арматуры по ППР",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "reinforce",
+      "appliesTo": "REINFORCED_COLUMNS_ONLY",
+      "quantityStatus": "UNRESOLVED",
+      "noInventedDefault": true,
+      "completionAuthority": "Actual approved object design, whole compatible PPR, source method and supply/stock specification; no coefficient from source machine hours"
+    }
+  ],
+  "technicalRules": [
+    {
+      "clause": "1.0",
+      "rule": "Source scope is reconstruction and analogous expansion/technical upgrading; no automatic generic new-build approval."
+    },
+    {
+      "clause": "1.1",
+      "rule": "Demolition cleanup/within-site transport inclusion is NOT silently transferred to every hole-filling operation; source truck hours are not trips."
+    },
+    {
+      "clause": "1.14",
+      "rule": "No correction by existing concrete grade/brick type/mortar grade is admitted; this does not establish compatibility of a new substituted repair product."
+    },
+    {
+      "clause": "1.25",
+      "rule": "Printed upper bounds are inclusive."
+    },
+    {
+      "clause": "2.1",
+      "rule": "Measured net volume follows actual project; no volume from test count alone."
+    },
+    {
+      "clause": "2.7/2.8",
+      "rule": "Source explains infilling around actual mounted services/structures; no automatic enlargement of measured repair geometries."
+    }
+  ],
+  "notTransferred": [
+    "B15 aggregate20mm concrete/formwork/rebar whole cycle is not GB4200 hand patch with sound substrate/no primer.",
+    "Reinforced floor is not a foundation merely because both are horizontal.",
+    "Single-opening face area is not sum of cohort areas or surface repair area.",
+    "Normative wood consumption is not initial formwork inventory or another paid rental owner.",
+    "Aggregate rebar tonne rate is not complete BBS or a procurement specification.",
+    "Winch/truck hours do not determine equipment count, load plan, trips, cable length or a second operator wage.",
+    "Column07 belongs to actual brick filling, not concrete or glass blocks.",
+    "No existing concrete need is closed by this source-only candidate; actual project facts remain unknown."
+  ],
+  "currentCatalogScopedLookup": "UNRUN; bounded code search found no 017 factory, not proof of DB/global absence",
+  "normalConfig": "UNRUN",
+  "actualCore": "UNRUN",
+  "canonicalWrites": 0,
+  "databaseWrites": 0,
+  "newFullTechnologies": 0,
+  "closedExistingNeedIds": []
+}

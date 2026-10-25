@@ -1,0 +1,33 @@
+{
+  "contract": "roof539-actual-r224-typed-provenance-inputs/r24",
+  "actual": {
+    "outcome": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roof-capture-r224\\stage\\raw\\READONLY_PREIMAGE_OUTCOME_R221.json",
+      "sha256": "6468f068a0c68c1bfdd7b90d4f3bb44ff0480a5ae629e1a7fa47c3593487d50a",
+      "bytes": 5581
+    },
+    "capture": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roof-capture-r224\\stage\\raw\\SCOPED_REGISTRY_CAPTURE_FIRST_R221.json",
+      "sha256": "39f40bf9db56ded969b8749c6f55f1e613b08453a45a9432ac3a6ea8f24a8707",
+      "bytes": 80685
+    },
+    "candidate": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roof-capture-r224\\stage\\raw\\GENERATED_CANDIDATE_NOT_DB_ID.json",
+      "sha256": "1710a1f87e9ed7e436bf52ac754ac0d6021b6002bda6408e24d5ec2a12f8cf64",
+      "bytes": 53722
+    }
+  },
+  "subjectInput": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roof-registry-r221\\revision04-bundle31\\EXACT_SUBJECT_INPUT_R221.json",
+    "sha256": "b4b873908b72a4567b267fc52698885694a14439888bea8593552ea8680b4c99",
+    "bytes": 57101
+  },
+  "rowSourceMap234": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\single539-whole-family-config-r24\\revision01\\EXACT_NEW234_ROW_COLUMN_BASIS_INPUTS_R24.json",
+    "sha256": "700afed68daa5886c9931c6fe9517cecc00cfbc946380db44d925cf7b9b46444",
+    "bytes": 244276
+  },
+  "captureSha256": "c93621b37d32fb7f3fadd0b503d7fe4adf6b6e12e2fd20a14edadb56ece34ce6",
+  "note": "Raw provenance only;normal/LOCKED/REGISTERED areUNRUN;candidateUUIDs areNOT_DB_ID;noPPR/sourceactivation.",
+  "FULL": false
+}

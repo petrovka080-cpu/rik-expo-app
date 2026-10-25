@@ -20,8 +20,6 @@ type Json = Record<string, unknown>;
 export const COLUMN_BASE_EMBEDDED_ITEMS_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_anchor_standard", titleRu: "Монтаж закладных для столбчатого основания в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_anchor_high_load", titleRu: "Монтаж закладных для столбчатого основания в зоне высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_anchor_large_area", titleRu: "Монтаж закладных для столбчатого основания на большом участке", contextRu: "большой участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_anchor_small_area", titleRu: "Монтаж закладных для столбчатого основания на малом участке", contextRu: "малый участок" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_anchor_technical_room", titleRu: "Монтаж закладных для столбчатого основания в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_column_base_anchor_wet_zone", titleRu: "Монтаж закладных для столбчатого основания во влажной зоне", contextRu: "влажная зона" },
 ] as const);

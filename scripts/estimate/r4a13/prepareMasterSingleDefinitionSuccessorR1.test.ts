@@ -10,7 +10,36 @@ import {
   buildMasterScopeReadiness,
   resolveMasterSingleDefinitionNextCounts,
   validateIndependentCompletenessMapReferences,
+  readMasterSuccessorTargetPreimageR1,
 } from "./prepareMasterSingleDefinitionSuccessorR1";
+
+describe('whole successor target preimage on the existing writer connection',()=>{
+ const input={releaseId:'selected-release',catalogId:'selected-catalog',sourceId:'new-source'};
+ function client(bindings=['{"id":"b1"}','{"id":"b2"}']){
+  const calls:string[]=[];return{calls,query:jest.fn(async(sql:string)=>{calls.push(sql);
+   if(sql.includes("current_setting('TimeZone')"))return{rows:[{zone:'UTC'}]};
+   if(sql.includes('set_config')||sql.startsWith('lock table'))return{rows:[]};
+   if(sql.includes('select m.definition_version_id'))return{rows:[{definition_version_id:'d',approved_template_baseline_id:'b',definition_version:3,definition_sha256:'known'}]};
+   const table=/from public\.(\w+) t where/u.exec(sql)?.[1];
+   const raw=table==='estimate_work_normative_binding'?bindings:table==='estimate_normative_source'&&sql.includes('t.source_key')?[]:['{"id":"known"}'];
+   return{rows:raw.map(raw=>({raw}))};
+  })};
+ }
+ it('covers all ten row sets, ignores row order, detects changed or additional bindings and uses no data writes',async()=>{
+  const source=client(),before=await readMasterSuccessorTargetPreimageR1(source as never,input);
+  expect(Object.keys(before.sets)).toEqual(['definition','baseline','parameters','formulas','resources','bindings','locators','sources','newSource','identity']);
+  expect(before.sets.bindings.rowCount).toBe(2);
+  expect(await readMasterSuccessorTargetPreimageR1(client(['{"id":"b2"}','{"id":"b1"}']) as never,input)).toEqual(before);
+  for(const rows of [['{"id":"b1"}','{"id":"changed"}'],['{"id":"b1"}','{"id":"b2"}','{"id":"extra"}']])
+   expect(await readMasterSuccessorTargetPreimageR1(client(rows) as never,input)).not.toEqual(before);
+  expect(source.calls.some(sql=>/^(?:insert|update|delete|alter|commit|rollback)\b/iu.test(sql))).toBe(false);
+ });
+ it('takes the shared table locks before reading the selected target and restores the session timezone',async()=>{
+  const source=client();await readMasterSuccessorTargetPreimageR1(source as never,{...input,lock:true});
+  expect(source.calls[0]).toContain('lock table public.estimate_cumulative_manifest_entry');
+  expect(source.calls.at(-1)).toBe("select set_config('TimeZone',$1,$2)");
+ });
+});
 
 describe('preliminary publisher capability boundary', () => {
   it('persists named unresolved resources without declaring the applicable scope complete', () => {

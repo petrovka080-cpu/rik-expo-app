@@ -5,6 +5,8 @@ import { dirname, resolve } from "node:path";
 
 import { Client } from "pg";
 
+import { assertCanonicalNewWorkCatalogIdV1 } from "../../../src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1";
+
 import { asphaltRelatedAdmissionPolicyR6 } from "../../../src/lib/estimate/v4/asphalt/asphaltRelatedAdmissionR6";
 import { compileFormulaGraph } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import { buildRoadworksWaveAAdmissionLedgerR6 } from "../../../src/lib/estimate/v4/roadworks";
@@ -842,6 +844,9 @@ async function auditCandidate(client: Client, input: {
 }
 
 async function main(): Promise<void> {
+  // This fixed historical batch preserves retired area owners. Its selectors remain immutable,
+  // and it must stop before any database access rather than replay them into a new release.
+  assertCanonicalNewWorkCatalogIdV1(`canonical-work:base:${PRESERVED_DRAINAGE_TECHNOLOGY_ID}`);
   exactDatabaseGuard();
   invariant(existsSync(MASTER_PATH) && sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256, "STOP_R6_MASTER_SHA256_DRIFT");
   invariant(git("branch", "--show-current") === EXPECTED_BRANCH, "STOP_R6_BRANCH_DRIFT");

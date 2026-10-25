@@ -95,30 +95,6 @@
   ],
   "targets": [
     {
-      "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area",
-      "predecessorDefinitionId": "c97f5fbe-f3ef-5498-882b-71331e004788",
-      "parentSha256": "976ece36ea4d654a8a5fb94b97fabceedbd91dbf829e899c2f69dfd1ac0013ac",
-      "predecessorVersion": 1,
-      "parameterCount": 3,
-      "resourceCount": 2,
-      "scopeParameterIds": [
-        "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
-        "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
-      ]
-    },
-    {
-      "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area",
-      "predecessorDefinitionId": "755f3fdf-9545-55e7-ab33-3e6518e35484",
-      "parentSha256": "442f57760077dfb4cc124c14a992b02acd02e2a1666d2ae8972e33c59de06d26",
-      "predecessorVersion": 1,
-      "parameterCount": 3,
-      "resourceCount": 2,
-      "scopeParameterIds": [
-        "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
-        "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
-      ]
-    },
-    {
       "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard",
       "predecessorDefinitionId": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
       "parentSha256": "a9ee8aa15bf33bff1cf48a4d836da7e2155a6977fb755dc34b9da45cbc9780ba",

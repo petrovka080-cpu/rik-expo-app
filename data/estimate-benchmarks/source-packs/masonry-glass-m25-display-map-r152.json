@@ -1,0 +1,257 @@
+{
+  "contract": "masonry-glass-m25-operation-display-map/r152",
+  "scope": "EXACT_EXISTING_PARTITION_01_02_AND_OPENING_FILL_03_04_ONLY",
+  "independentOfFactoryOutput": true,
+  "oldMap": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\data\\estimate-benchmarks\\source-packs\\masonry-glass-block-independent-full-map-r103.json",
+    "sha256": "62515ac069c71ac6c4165adbfe94df48b177fe3c4e9ecb5318aa6c3b970b34dc",
+    "bytes": 109979
+  },
+  "exactSource": {
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "jurisdiction": "KG",
+    "edition": "КРЕР08, Бишкек2015; точная сохранённая редакция",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "wholeColumnVisualReadPages": [
+      55,
+      56
+    ],
+    "sourcePrices2015Imported": false,
+    "currentLegalAdmissionClaimed": false
+  },
+  "entries": [
+    {
+      "card": "partition",
+      "normId": "08-04-002-01",
+      "prefix": "masonry:glass-block:krer:08-04-002-01",
+      "expectedResourceId": "08-04-002-01:ready-cement-lime-m25",
+      "rowId": "masonry:glass-block:krer:08-04-002-01:ready-cement-lime-m25",
+      "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:ready-cement-lime-m25",
+      "sourceId": "source:masonry:glass-block:r103:partition",
+      "nativeMaterialCode": "03-0405-0002",
+      "unitId": "m3",
+      "ownNativeRatePer100M2": "0.74",
+      "primaryOwnerOperationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-01:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+        "masonry:glass-block:krer:08-04-002-01:operation:pointing"
+      ],
+      "addedReferences": [
+        {
+          "operationId": "masonry:glass-block:krer:08-04-002-01:operation:base-alignment",
+          "whenResourcePresent": [
+            "masonry:glass-block:krer:08-04-002-01:operation:base-alignment"
+          ]
+        },
+        {
+          "operationId": "masonry:glass-block:krer:08-04-002-01:operation:pointing",
+          "whenResourcePresent": [
+            "masonry:glass-block:krer:08-04-002-01:operation:pointing"
+          ]
+        }
+      ],
+      "quantityAllocation": null,
+      "newPhysicalRows": 0,
+      "newPaidOwners": 0,
+      "newProcurementOwners": 0,
+      "unknownNeedsClosed": 0
+    },
+    {
+      "card": "partition",
+      "normId": "08-04-002-02",
+      "prefix": "masonry:glass-block:krer:08-04-002-02",
+      "expectedResourceId": "08-04-002-02:ready-cement-lime-m25",
+      "rowId": "masonry:glass-block:krer:08-04-002-02:ready-cement-lime-m25",
+      "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:ready-cement-lime-m25",
+      "sourceId": "source:masonry:glass-block:r103:partition",
+      "nativeMaterialCode": "03-0405-0002",
+      "unitId": "m3",
+      "ownNativeRatePer100M2": "0.74",
+      "primaryOwnerOperationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-02:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+        "masonry:glass-block:krer:08-04-002-02:operation:pointing"
+      ],
+      "addedReferences": [
+        {
+          "operationId": "masonry:glass-block:krer:08-04-002-02:operation:base-alignment",
+          "whenResourcePresent": [
+            "masonry:glass-block:krer:08-04-002-02:operation:base-alignment"
+          ]
+        },
+        {
+          "operationId": "masonry:glass-block:krer:08-04-002-02:operation:pointing",
+          "whenResourcePresent": [
+            "masonry:glass-block:krer:08-04-002-02:operation:pointing"
+          ]
+        }
+      ],
+      "quantityAllocation": null,
+      "newPhysicalRows": 0,
+      "newPaidOwners": 0,
+      "newProcurementOwners": 0,
+      "unknownNeedsClosed": 0
+    },
+    {
+      "card": "opening-fill",
+      "normId": "08-04-002-03",
+      "prefix": "masonry:glass-block:krer:08-04-002-03",
+      "expectedResourceId": "08-04-002-03:ready-cement-lime-m25",
+      "rowId": "masonry:glass-block:krer:08-04-002-03:ready-cement-lime-m25",
+      "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:ready-cement-lime-m25",
+      "sourceId": "source:masonry:glass-block:r103:opening-fill",
+      "nativeMaterialCode": "03-0405-0002",
+      "unitId": "m3",
+      "ownNativeRatePer100M2": "0.74",
+      "primaryOwnerOperationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-03:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+      ],
+      "addedReferences": [
+        {
+          "operationId": "masonry:glass-block:krer:08-04-002-03:operation:base-alignment",
+          "whenResourcePresent": [
+            "masonry:glass-block:krer:08-04-002-03:operation:base-alignment"
+          ]
+        }
+      ],
+      "quantityAllocation": null,
+      "newPhysicalRows": 0,
+      "newPaidOwners": 0,
+      "newProcurementOwners": 0,
+      "unknownNeedsClosed": 0
+    },
+    {
+      "card": "opening-fill",
+      "normId": "08-04-002-04",
+      "prefix": "masonry:glass-block:krer:08-04-002-04",
+      "expectedResourceId": "08-04-002-04:ready-cement-lime-m25",
+      "rowId": "masonry:glass-block:krer:08-04-002-04:ready-cement-lime-m25",
+      "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:ready-cement-lime-m25",
+      "sourceId": "source:masonry:glass-block:r103:opening-fill",
+      "nativeMaterialCode": "03-0405-0002",
+      "unitId": "m3",
+      "ownNativeRatePer100M2": "0.74",
+      "primaryOwnerOperationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-04:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+      ],
+      "addedReferences": [
+        {
+          "operationId": "masonry:glass-block:krer:08-04-002-04:operation:base-alignment",
+          "whenResourcePresent": [
+            "masonry:glass-block:krer:08-04-002-04:operation:base-alignment"
+          ]
+        }
+      ],
+      "quantityAllocation": null,
+      "newPhysicalRows": 0,
+      "newPaidOwners": 0,
+      "newProcurementOwners": 0,
+      "unknownNeedsClosed": 0
+    }
+  ],
+  "changedResourceRows": 4,
+  "additionalOperationReferences": 6,
+  "newNorms": 0,
+  "newRows": 0,
+  "newPaidOwners": 0,
+  "newProcurementOwners": 0,
+  "openSourceNeedOccurrencesPreserved": 40,
+  "closedNeeds": 0,
+  "full": false,
+  "labourEntries": [
+    {
+      "card": "partition",
+      "normId": "08-04-002-01",
+      "prefix": "masonry:glass-block:krer:08-04-002-01",
+      "expectedResourceId": "08-04-002-01:whole-labour",
+      "rowId": "masonry:glass-block:krer:08-04-002-01:whole-labour",
+      "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:whole-labour",
+      "unitId": "man_hour",
+      "primaryOwnerOperationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-01:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+        "masonry:glass-block:krer:08-04-002-01:operation:pointing"
+      ],
+      "existingAdditionalOperationIds": [
+        "masonry:glass-block:krer:08-04-002-01:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-01:operation:pointing"
+      ],
+      "repairOnly": "completionCriterionRu from same original included marker. Existing row/owner/IDs/order/quantities unchanged.",
+      "newLabourRows": 0,
+      "newPaidOwners": 0
+    },
+    {
+      "card": "partition",
+      "normId": "08-04-002-02",
+      "prefix": "masonry:glass-block:krer:08-04-002-02",
+      "expectedResourceId": "08-04-002-02:whole-labour",
+      "rowId": "masonry:glass-block:krer:08-04-002-02:whole-labour",
+      "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:whole-labour",
+      "unitId": "man_hour",
+      "primaryOwnerOperationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-02:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+        "masonry:glass-block:krer:08-04-002-02:operation:pointing"
+      ],
+      "existingAdditionalOperationIds": [
+        "masonry:glass-block:krer:08-04-002-02:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-02:operation:pointing"
+      ],
+      "repairOnly": "completionCriterionRu from same original included marker. Existing row/owner/IDs/order/quantities unchanged.",
+      "newLabourRows": 0,
+      "newPaidOwners": 0
+    },
+    {
+      "card": "opening-fill",
+      "normId": "08-04-002-03",
+      "prefix": "masonry:glass-block:krer:08-04-002-03",
+      "expectedResourceId": "08-04-002-03:whole-labour",
+      "rowId": "masonry:glass-block:krer:08-04-002-03:whole-labour",
+      "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:whole-labour",
+      "unitId": "man_hour",
+      "primaryOwnerOperationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-03:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+      ],
+      "existingAdditionalOperationIds": [
+        "masonry:glass-block:krer:08-04-002-03:operation:base-alignment"
+      ],
+      "repairOnly": "completionCriterionRu from same original included marker. Existing row/owner/IDs/order/quantities unchanged.",
+      "newLabourRows": 0,
+      "newPaidOwners": 0
+    },
+    {
+      "card": "opening-fill",
+      "normId": "08-04-002-04",
+      "prefix": "masonry:glass-block:krer:08-04-002-04",
+      "expectedResourceId": "08-04-002-04:whole-labour",
+      "rowId": "masonry:glass-block:krer:08-04-002-04:whole-labour",
+      "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:whole-labour",
+      "unitId": "man_hour",
+      "primaryOwnerOperationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-04:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+      ],
+      "existingAdditionalOperationIds": [
+        "masonry:glass-block:krer:08-04-002-04:operation:base-alignment"
+      ],
+      "repairOnly": "completionCriterionRu from same original included marker. Existing row/owner/IDs/order/quantities unchanged.",
+      "newLabourRows": 0,
+      "newPaidOwners": 0
+    }
+  ],
+  "existingLabourRowsRepaired": 4,
+  "existingRelatedLabourReferencesCompleted": 6,
+  "r154Delta": "Complete the required existing strict-reader field only, using original markers. No new operation IDs, norm, labour quantities, payment, procurement or physical card."
+}

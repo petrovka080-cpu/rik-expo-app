@@ -1,0 +1,231 @@
+{
+  "contract": "gox-build.asphalt-install-existing-standard/r564",
+  "catalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_install_standard",
+  "titleRu": "Устройство асфальтобетонного покрытия 50 мм",
+  "prefix": "asphalt_install_r564_",
+  "selectorId": "asphalt_install_method_r564",
+  "legacyValueRu": "Сохранить прежний состав сметы",
+  "selectedValueRu": "Асфальтобетонное покрытие 50 мм",
+  "areaId": "asphalt_install_r564_area_m2",
+  "haulId": "asphalt_install_r564_haul_distance_km",
+  "siteId": "asphalt_install_site_r564",
+  "siteReadyRu": "Основание принято; выбран горячий плотный мелкозернистый асфальтобетон 50 мм",
+  "siteUnknownRu": "Проект и готовность основания ещё не подтверждены",
+  "parent": {
+    "definitionId": "dd8cad76-af6e-56f2-976c-a777de1fa844",
+    "baselineId": "9a19d1be-2d10-5609-a7fa-6eeeaef1c39a",
+    "version": 9,
+    "sha256": "8219a46940adc5916cfe5d55f7e4c061e0cfa7487f108cee3d55ad76a2ac73a8",
+    "shape": [
+      20,
+      26,
+      26
+    ]
+  },
+  "historicalRecipe": {
+    "definitionId": "9748f519-2bac-5fc5-80d8-2a87ca53347a",
+    "baselineId": "67e8a302-0ff2-52d3-8e9d-203a990bdc50",
+    "version": 15,
+    "sha256": "6c0c338ea960b79f1a794f35f1b07bba431a895e641ef758b8ef68dad29c39bb",
+    "shape": [
+      34,
+      22,
+      56
+    ],
+    "retiredIdentityIsNotAnActiveTarget": true
+  },
+  "fixture": {
+    "path": "data/estimate-benchmarks/fixtures/asphalt-install-existing-standard-capture-r564.json",
+    "sha256": "f72efcb65c5a7989d084e77a47acdaed71ca691d8c7196cd1c572ffd95066358"
+  },
+  "source": {
+    "id": "b674a005-2d8c-58c8-a15e-fa663bfc5a50",
+    "key": "kg_krer_27_06_020_01_021_01_2015",
+    "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+    "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+    "locatorId": "712fae47-0f6b-5db8-b08d-c267ee43734e",
+    "locatorKey": "asphalt-install-large-area-krer-27-06-020-01-021-01-r4-short-public-name",
+    "locatorExcerptSha256": "426fc11d3d748da3a5e4e6d07cdbdf532f090df1d010931375421178fedfebcb",
+    "locatorRu": "КРЕР 27-06-020-01, печатные страницы 92-93: 1000 м² горячего плотного мелкозернистого покрытия типа А/Б/В толщиной 4 см; 27-06-021-01, страницы 96-97: поправка на каждые 0,5 см.",
+    "localArtifactPath": ".release-runtime/r568/s27-54/landscape-primary/KRER-27.pdf",
+    "localArtifactSha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161"
+  },
+  "profile": {
+    "id": "s27_19_selected_hot_asphalt_profile_r2",
+    "version": "v2",
+    "sourcePackPath": "data/estimate-benchmarks/source-packs/asphalt-install-large-area-krer27-profile-r1.json",
+    "sourcePackSha256": "4d861329b43bb096533f97d9d75d3a745acc161b009a92dee31ee046d3fdbcd0",
+    "values": {
+      "truck_capacity_t": {
+        "value": 20,
+        "classification": "ASSUMPTION",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "acceptance_lot_m2": {
+        "value": 1000,
+        "classification": "ASSUMPTION",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "layer_thickness_mm": {
+        "value": 50,
+        "classification": "ASSUMPTION",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "truck_turnaround_h": {
+        "value": 0.5,
+        "classification": "ASSUMPTION",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "work_journal_count": {
+        "value": 1,
+        "classification": "DERIVED",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "krer_base_thickness_mm": {
+        "value": 40,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "truck_average_speed_km_h": {
+        "value": 40,
+        "classification": "ASSUMPTION",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "crane_machine_h_per_1000m2": {
+        "value": 0.03,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "paver_machine_h_per_1000m2": {
+        "value": 3.19,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "hardwood_bars_m3_per_1000m2": {
+        "value": 0.15,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "krer_increment_thickness_mm": {
+        "value": 5,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "labor_base_man_h_per_1000m2": {
+        "value": 38.3,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "roller_machine_h_per_1000m2": {
+        "value": 3.96,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "traffic_control_setup_count": {
+        "value": 1,
+        "classification": "ASSUMPTION",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "asphalt_mix_base_t_per_1000m2": {
+        "value": 96.6,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "execution_documentation_count": {
+        "value": 1,
+        "classification": "DERIVED",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "watering_machine_h_per_1000m2": {
+        "value": 0.79,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "road_bitumen_base_t_per_1000m2": {
+        "value": 0.0108,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "roller_13t_machine_h_per_1000m2": {
+        "value": 11.51,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "technical_kerosene_t_per_1000m2": {
+        "value": 0.0052,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "labor_increment_man_h_per_1000m2": {
+        "value": 0.09,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "material_passport_register_count": {
+        "value": 1,
+        "classification": "DERIVED",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "tar_sprayer_machine_h_per_1000m2": {
+        "value": 1.4,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "asphalt_mix_increment_t_per_1000m2": {
+        "value": 12.1,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "road_bitumen_increment_t_per_1000m2": {
+        "value": 0.0014,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "onboard_vehicle_machine_h_per_1000m2": {
+        "value": 0.04,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      },
+      "mobilization_count_per_unique_machine": {
+        "value": 1,
+        "classification": "ASSUMPTION",
+        "sourceId": "s27_19_selected_hot_asphalt_profile_r2"
+      },
+      "tar_sprayer_increment_machine_h_per_1000m2": {
+        "value": 0.18,
+        "classification": "NORMATIVE",
+        "sourceId": "kg_krer_27_06_020_01_021_01_2015"
+      }
+    },
+    "titleRu": "Предварительный состав механизированного устройства покрытия 50 мм",
+    "detailsRu": "Нормы КРЕР отделены от предварительных параметров организации, грузоподъёмности, скорости, ожидания и контроля. Фактическая площадь и дальность доставки вводятся по объекту; 5000 м² и 20 км из старого QA-сценария не переносятся. Подтверждённый проект, смесь, схема движения и план качества проверяются отдельно. Предварительный профиль не означает инженерную приёмку."
+  },
+  "gaps": [
+    {
+      "id": "project",
+      "titleRu": "Проверить проект покрытия, смесь и готовность основания",
+      "reasonRu": "Требуются подтверждённые проектом тип и марка смеси, основание, толщины, сопряжения, доступ и совместимость нормативной технологии."
+    },
+    {
+      "id": "organization",
+      "titleRu": "Уточнить организацию, доставку и контроль качества",
+      "reasonRu": "Грузоподъёмность, скорость, ожидание, организация движения, мобилизация, частота испытаний и документы пока взяты из явно выбранного предварительного профиля; фактическое обеспечение и программа контроля не подтверждены."
+    }
+  ],
+  "exclusionsRu": [
+    "Устройство основания, подстилающих слоёв, бордюров, водоотвода и разметки — отдельные работы.",
+    "Прежние цены и проектные допущения не становятся ценами или нормами нового метода.",
+    "Плановый профиль не доказывает выполненные наблюдения, поставку или инженерную приёмку."
+  ],
+  "ordinaryObjectFactBudget": 3,
+  "freshFlow": {
+    "methodSelectionOwner": "PUBLIC_WORK_FIXED_PHYSICAL_TECHNOLOGY",
+    "runtimeMethodClassification": "RUNTIME_STRUCTURAL_DEFAULT",
+    "runtimeMethodVisibility": "INTERNAL_ONLY",
+    "legacyOracleIsPublicOption": false,
+    "ordinaryObjectFacts": ["measured_area_m2", "base_and_mix_readiness", "actual_haul_distance_km"],
+    "oldProjectFixtureDefaultsAreRuntime": false,
+    "preliminaryProfileDisclosure": "PROFILE_DETAILS_AND_RESOURCE_PROVENANCE"
+  },
+  "fullTechnicalAcceptance": false
+}

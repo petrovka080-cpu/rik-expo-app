@@ -1,0 +1,42 @@
+{
+  "contract": "masonry-glass-opening-existing-owner/r223",
+  "status": "SOURCE_ONLY_EXISTING_OPENING_CANDIDATE_NOT_PHYSICAL_ADMISSION_OR_READY",
+  "activeMaster": {
+    "path": "C:\\Users\\User\\Downloads\\GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+    "sha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40"
+  },
+  "primaryArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+  "catalogId": "canonical-work:base:masonry_interior_opening_lay_standard",
+  "sourceId": "source:masonry:glass-block:r103:opening",
+  "parent": {
+    "definitionId": "0907686f-95b4-55a7-838d-afc0743b151d",
+    "definitionSha256": "c5c03174f6befa275abff23195c1e33d7909af471b4d9ceae3a903ac942a4f08",
+    "baselineId": "616e7885-0ad2-56a7-807c-88b973cd84eb",
+    "fullFileSha256": "7249185dad385b2881e19066ce1f6f42bc7a66fd6ce3076ccb4efd34d900e8a8"
+  },
+  "sourceBoundary": "Exact opening-fill03/04 only. No partition01/02, pointing, arch009, vault004 or wall mortar substitution.",
+  "priorR154": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r154\\SOURCE_ONLY_SAME_GLASS_CONFIG_LABOUR_DISPLAY_REVISION_R154.json",
+    "sha256": "94b863da55a1102a4cab2dfcc2a5b7303cceab47160769f7992e2ae5399deb66",
+    "bytes": 18667
+  },
+  "actual": {
+    "syntax": "UNRUN",
+    "semantic": "UNRUN",
+    "normalConfigPure": "UNRUN",
+    "actualCore": 0,
+    "sql": 0,
+    "canonicalWrites": 0,
+    "FULL": false
+  },
+  "canonicalMetadata": {
+    "activeKey": "currentCanonicalRootDeltaR222",
+    "ledger": 175,
+    "positive": 161,
+    "absence": 14,
+    "checkpointSha256": "d7451ec8aa19faf2bd0053cb0b14b848a9ee974409673a33a051857e2d708e5b",
+    "owner": "ROOT",
+    "beforeActualGate": "ROOT must pin current equivalent dependencies and an independent immutable source freeze; this is source-only metadata, not an execution seal."
+  },
+  "physicalAdmission": "HOLD: existing public owner retained as a candidate only; ROOT normal+LOCKED current collision/scope gate required."
+}

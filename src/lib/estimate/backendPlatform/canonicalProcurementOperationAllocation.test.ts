@@ -22,6 +22,22 @@ const row = (id: string, ref: unknown, included = true) => ({
 const revision = { id: "owned", release_id: "prepared", catalog_id: "pour", checksum_sha256: "checksum", row_count: 5 };
 
 describe("procurement operation allocation and renderer recovery", () => {
+  it("projects authored functional operation names for owners and related operations without changing saved identity or money", () => {
+    const ref = { ...operation("wall", "prime"), groupTitleRu: "Грунтование оштукатуренных стен VGT 0301",
+      operationTitleRu: "Загрунтовать VGT0301 перед шпаклёвкой и высушить", additionalOperations: [{
+        operationId: "mix", operationTitleRu: "Затворение CT126 целыми последовательными замесами",
+        completionCriterionRu: "Исходное требование источника", processOrdinal: 2,
+      }] };
+    const source = row("shared-supply", ref), before = JSON.stringify(source);
+    const result = buildCanonicalProcurementProjection({ revision, procurementRows: [source] });
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]).toMatchObject({ rowId: source.row_id, quantity: "3.200", unitId: "m3", unitPrice: "10.00", amount: "32.00",
+      operation: { groupId: "wall", operationId: "prime", groupTitleRu: "Грунтование оштукатуренных стен", operationTitleRu: "Грунтование перед шпаклеванием" } });
+    expect(result.operationGroups.map(group => group.operation.operationTitleRu)).toEqual(["Грунтование перед шпаклеванием", "Приготовление гипсовой шпаклёвки"]);
+    expect(result.operationGroups[1].sharedResources).toEqual([{ rowId: source.row_id, titleRu: "Вода", ownerOperationTitleRu: "Грунтование перед шпаклеванием", separatelyPayable: false }]);
+    expect(JSON.stringify(source)).toBe(before);
+  });
+
   it("exports the saved physical need and manual purchase balance without another rounding", () => {
     const water = { ...row("water", operation("concrete", "curing")), quantity: "5.100000000", calculation_trace: {
       purchaseBalance: { ownerRowId: "water", unitId: "m3", consumed: "3.2", stock: "0", reserve: "0", quantum: null,
@@ -113,7 +129,9 @@ describe("procurement operation allocation and renderer recovery", () => {
   it("binds renderer-marked jobs and rejects malformed or stale payloads", () => {
     expect(() => assertCanonicalProcurementJobRendererVersion({})).not.toThrow();
     expect(() => assertCanonicalProcurementJobRendererVersion({ rendererVersion: CANONICAL_PROCUREMENT_GENERATOR_VERSION })).not.toThrow();
-    for (const value of [null, [], "payload", { rendererVersion: null }, { rendererVersion: "canonical-procurement.r2" }]) {
+    for (const value of [null, [], "payload", { rendererVersion: null }, { rendererVersion: "canonical-procurement.r2" },
+      { rendererVersion: 'canonical-procurement.r17-simple-grohe-details' },
+      { rendererVersion: 'canonical-procurement.r18-shared-operation-references' }]) {
       expect(() => assertCanonicalProcurementJobRendererVersion(value)).toThrow();
     }
   });

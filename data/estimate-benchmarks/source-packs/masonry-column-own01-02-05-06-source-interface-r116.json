@@ -1,0 +1,1135 @@
+{
+  "contract": "masonry-r116-four-whole-own-column-source-interface/v1",
+  "status": "SOURCE_ROSTER_AND_INDEPENDENT_WHOLE_GAPS_READY_NO_OWNER_CONFIG_OR_IDENTITY_ADMISSION",
+  "activeMaster": {
+    "path": "C:\\Users\\User\\Downloads\\GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+    "sha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40"
+  },
+  "primary": {
+    "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\.release-runtime\\r568\\next-wave\\masonry-krer08\\primary\\KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "edition": "KG08-2015",
+    "ownNewPagesVisuallyRead": [
+      21,
+      22
+    ],
+    "existingTechnicalPagesRead": [
+      5,
+      7,
+      8
+    ],
+    "downloads": 0,
+    "pdfCopies": 0,
+    "sourcePricesImported": false
+  },
+  "profiles": [
+    {
+      "normId": "08-02-003-01",
+      "physicalSourceKind": "RECTANGULAR_REINFORCED",
+      "heightBand": "LTE4",
+      "sourcePages": [
+        5,
+        7,
+        8,
+        21
+      ],
+      "denominator": "1",
+      "measurementUnit": "m3",
+      "measurement": "Independent project net masonry volume for the exact selectedcolumn; not wallarea/numberofcolumns",
+      "workerGrade": "3.8",
+      "workerGradeIsNotMultiplier": true,
+      "rows": [
+        {
+          "sourceResourceRole": "whole-labour",
+          "sourceCode": "000-1003-8",
+          "functionalTitleRu": "Труд цельной кладки и армирования столба",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerMasonryM3": "8.80",
+          "printedRate": "8.80",
+          "printedUnit": "man_hour",
+          "costTreatment": "OWN_COST",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "operator-reference",
+          "sourceCode": null,
+          "functionalTitleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerMasonryM3": "0.42",
+          "printedRate": "0.42",
+          "printedUnit": "man_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "functionalTitleRu": "Башенный кран грузоподъёмностью8т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerMasonryM3": "0.42",
+          "printedRate": "0.42",
+          "printedUnit": "machine_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "flatbed-truck5t",
+          "sourceCode": "40-0001",
+          "functionalTitleRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerMasonryM3": "0.05",
+          "printedRate": "0.05",
+          "printedUnit": "machine_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "water",
+          "sourceCode": "01-0601-0001",
+          "functionalTitleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerMasonryM3": "0.1",
+          "printedRate": "0.1",
+          "printedUnit": "m3",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "ceramic-brick65-m100",
+          "sourceCode": "01-3306-0005",
+          "functionalTitleRu": "Кирпич керамический одинарный250×120×65ммМ100",
+          "category": "material",
+          "unitId": "piece",
+          "ratePerMasonryM3": "404",
+          "printedRate": "0.404",
+          "printedUnit": "1000шт.",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "reinforcement-mesh-a1-12-14mm",
+          "sourceCode": "03-0104-0001",
+          "functionalTitleRu": "Арматура-сетка из сталиА-I диаметром12–14мм",
+          "category": "material",
+          "unitId": "t",
+          "ratePerMasonryM3": "0.01",
+          "printedRate": "0.01",
+          "printedUnit": "t",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "ready-cement-lime-m50",
+          "sourceCode": "03-0405-0003",
+          "functionalTitleRu": "Раствор готовый кладочный цементно-известковыйМ50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerMasonryM3": "0.22",
+          "printedRate": "0.22",
+          "printedUnit": "m3",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        }
+      ],
+      "wholeSourceComposition": [
+        "Кладка конструкций из кирпича",
+        "Армирование конструкций"
+      ],
+      "includedGeneralSourceFacts": [
+        "§1.21: переноска кирпича5м входит в источник; сверх5м отдельно поПОС",
+        "§1.2: установка деревянных пробок входит, количество/материал не выведены"
+      ],
+      "reinforcementIncludedInWholeLabour": true,
+      "addTable08_02_007ForSameIncludedReinforcement": false
+    },
+    {
+      "normId": "08-02-003-02",
+      "physicalSourceKind": "RECTANGULAR_REINFORCED",
+      "heightBand": "GT4",
+      "sourcePages": [
+        5,
+        7,
+        8,
+        21
+      ],
+      "denominator": "1",
+      "measurementUnit": "m3",
+      "measurement": "Independent project net masonry volume for the exact selectedcolumn; not wallarea/numberofcolumns",
+      "workerGrade": "3.8",
+      "workerGradeIsNotMultiplier": true,
+      "rows": [
+        {
+          "sourceResourceRole": "whole-labour",
+          "sourceCode": "000-1003-8",
+          "functionalTitleRu": "Труд цельной кладки и армирования столба",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerMasonryM3": "8.58",
+          "printedRate": "8.58",
+          "printedUnit": "man_hour",
+          "costTreatment": "OWN_COST",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "operator-reference",
+          "sourceCode": null,
+          "functionalTitleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerMasonryM3": "0.33",
+          "printedRate": "0.33",
+          "printedUnit": "man_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "functionalTitleRu": "Башенный кран грузоподъёмностью8т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerMasonryM3": "0.33",
+          "printedRate": "0.33",
+          "printedUnit": "machine_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "flatbed-truck5t",
+          "sourceCode": "40-0001",
+          "functionalTitleRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerMasonryM3": "0.05",
+          "printedRate": "0.05",
+          "printedUnit": "machine_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "water",
+          "sourceCode": "01-0601-0001",
+          "functionalTitleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerMasonryM3": "0.1",
+          "printedRate": "0.1",
+          "printedUnit": "m3",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "ceramic-brick65-m100",
+          "sourceCode": "01-3306-0005",
+          "functionalTitleRu": "Кирпич керамический одинарный250×120×65ммМ100",
+          "category": "material",
+          "unitId": "piece",
+          "ratePerMasonryM3": "404",
+          "printedRate": "0.404",
+          "printedUnit": "1000шт.",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "reinforcement-mesh-a1-12-14mm",
+          "sourceCode": "03-0104-0001",
+          "functionalTitleRu": "Арматура-сетка из сталиА-I диаметром12–14мм",
+          "category": "material",
+          "unitId": "t",
+          "ratePerMasonryM3": "0.01",
+          "printedRate": "0.01",
+          "printedUnit": "t",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "ready-cement-lime-m50",
+          "sourceCode": "03-0405-0003",
+          "functionalTitleRu": "Раствор готовый кладочный цементно-известковыйМ50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerMasonryM3": "0.22",
+          "printedRate": "0.22",
+          "printedUnit": "m3",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        }
+      ],
+      "wholeSourceComposition": [
+        "Кладка конструкций из кирпича",
+        "Армирование конструкций"
+      ],
+      "includedGeneralSourceFacts": [
+        "§1.21: переноска кирпича5м входит в источник; сверх5м отдельно поПОС",
+        "§1.2: установка деревянных пробок входит, количество/материал не выведены"
+      ],
+      "reinforcementIncludedInWholeLabour": true,
+      "addTable08_02_007ForSameIncludedReinforcement": false
+    },
+    {
+      "normId": "08-02-003-05",
+      "physicalSourceKind": "ROUND_WITH_SOURCE_INCLUDED_REINFORCEMENT",
+      "heightBand": "LTE4",
+      "sourcePages": [
+        5,
+        7,
+        8,
+        22
+      ],
+      "denominator": "1",
+      "measurementUnit": "m3",
+      "measurement": "Independent project net masonry volume for the exact selectedcolumn; not wallarea/numberofcolumns",
+      "workerGrade": "4.4",
+      "workerGradeIsNotMultiplier": true,
+      "rows": [
+        {
+          "sourceResourceRole": "whole-labour",
+          "sourceCode": "000-1004-4",
+          "functionalTitleRu": "Труд цельной кладки и армирования столба",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerMasonryM3": "12.27",
+          "printedRate": "12.27",
+          "printedUnit": "man_hour",
+          "costTreatment": "OWN_COST",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "operator-reference",
+          "sourceCode": null,
+          "functionalTitleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerMasonryM3": "0.42",
+          "printedRate": "0.42",
+          "printedUnit": "man_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "functionalTitleRu": "Башенный кран грузоподъёмностью8т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerMasonryM3": "0.42",
+          "printedRate": "0.42",
+          "printedUnit": "machine_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "flatbed-truck5t",
+          "sourceCode": "40-0001",
+          "functionalTitleRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerMasonryM3": "0.05",
+          "printedRate": "0.05",
+          "printedUnit": "machine_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "water",
+          "sourceCode": "01-0601-0001",
+          "functionalTitleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerMasonryM3": "0.1",
+          "printedRate": "0.1",
+          "printedUnit": "m3",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "ceramic-brick65-m100",
+          "sourceCode": "01-3306-0005",
+          "functionalTitleRu": "Кирпич керамический одинарный250×120×65ммМ100",
+          "category": "material",
+          "unitId": "piece",
+          "ratePerMasonryM3": "450",
+          "printedRate": "0.45",
+          "printedUnit": "1000шт.",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "reinforcement-mesh-a1-12-14mm",
+          "sourceCode": "03-0104-0001",
+          "functionalTitleRu": "Арматура-сетка из сталиА-I диаметром12–14мм",
+          "category": "material",
+          "unitId": "t",
+          "ratePerMasonryM3": "0.01",
+          "printedRate": "0.01",
+          "printedUnit": "t",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "ready-cement-lime-m50",
+          "sourceCode": "03-0405-0003",
+          "functionalTitleRu": "Раствор готовый кладочный цементно-известковыйМ50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerMasonryM3": "0.24",
+          "printedRate": "0.24",
+          "printedUnit": "m3",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        }
+      ],
+      "wholeSourceComposition": [
+        "Кладка конструкций из кирпича",
+        "Армирование конструкций"
+      ],
+      "includedGeneralSourceFacts": [
+        "§1.21: переноска кирпича5м входит в источник; сверх5м отдельно поПОС",
+        "§1.2: установка деревянных пробок входит, количество/материал не выведены"
+      ],
+      "reinforcementIncludedInWholeLabour": true,
+      "addTable08_02_007ForSameIncludedReinforcement": false
+    },
+    {
+      "normId": "08-02-003-06",
+      "physicalSourceKind": "ROUND_WITH_SOURCE_INCLUDED_REINFORCEMENT",
+      "heightBand": "GT4",
+      "sourcePages": [
+        5,
+        7,
+        8,
+        22
+      ],
+      "denominator": "1",
+      "measurementUnit": "m3",
+      "measurement": "Independent project net masonry volume for the exact selectedcolumn; not wallarea/numberofcolumns",
+      "workerGrade": "4.4",
+      "workerGradeIsNotMultiplier": true,
+      "rows": [
+        {
+          "sourceResourceRole": "whole-labour",
+          "sourceCode": "000-1004-4",
+          "functionalTitleRu": "Труд цельной кладки и армирования столба",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerMasonryM3": "12.05",
+          "printedRate": "12.05",
+          "printedUnit": "man_hour",
+          "costTreatment": "OWN_COST",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "operator-reference",
+          "sourceCode": null,
+          "functionalTitleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerMasonryM3": "0.33",
+          "printedRate": "0.33",
+          "printedUnit": "man_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "functionalTitleRu": "Башенный кран грузоподъёмностью8т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerMasonryM3": "0.33",
+          "printedRate": "0.33",
+          "printedUnit": "machine_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "flatbed-truck5t",
+          "sourceCode": "40-0001",
+          "functionalTitleRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerMasonryM3": "0.05",
+          "printedRate": "0.05",
+          "printedUnit": "machine_hour",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "water",
+          "sourceCode": "01-0601-0001",
+          "functionalTitleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerMasonryM3": "0.1",
+          "printedRate": "0.1",
+          "printedUnit": "m3",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "ceramic-brick65-m100",
+          "sourceCode": "01-3306-0005",
+          "functionalTitleRu": "Кирпич керамический одинарный250×120×65ммМ100",
+          "category": "material",
+          "unitId": "piece",
+          "ratePerMasonryM3": "450",
+          "printedRate": "0.45",
+          "printedUnit": "1000шт.",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "reinforcement-mesh-a1-12-14mm",
+          "sourceCode": "03-0104-0001",
+          "functionalTitleRu": "Арматура-сетка из сталиА-I диаметром12–14мм",
+          "category": "material",
+          "unitId": "t",
+          "ratePerMasonryM3": "0.01",
+          "printedRate": "0.01",
+          "printedUnit": "t",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        },
+        {
+          "sourceResourceRole": "ready-cement-lime-m50",
+          "sourceCode": "03-0405-0003",
+          "functionalTitleRu": "Раствор готовый кладочный цементно-известковыйМ50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerMasonryM3": "0.24",
+          "printedRate": "0.24",
+          "printedUnit": "m3",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurementEligible": false
+        }
+      ],
+      "wholeSourceComposition": [
+        "Кладка конструкций из кирпича",
+        "Армирование конструкций"
+      ],
+      "includedGeneralSourceFacts": [
+        "§1.21: переноска кирпича5м входит в источник; сверх5м отдельно поПОС",
+        "§1.2: установка деревянных пробок входит, количество/материал не выведены"
+      ],
+      "reinforcementIncludedInWholeLabour": true,
+      "addTable08_02_007ForSameIncludedReinforcement": false
+    }
+  ],
+  "nativeWholeSourceResourceOccurrences": 32,
+  "independentPhysicalMap": {
+    "generatedFromCurrentRows": false,
+    "entries": [
+      {
+        "expectedPhysicalResource": "08-02-003-01:whole-labour",
+        "sourceCode": "000-1003-8",
+        "unitId": "man_hour",
+        "literalRatePer1M3": "8.80",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-01:operator-reference",
+        "sourceCode": null,
+        "unitId": "man_hour",
+        "literalRatePer1M3": "0.42",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-01:tower-crane8t",
+        "sourceCode": "02-0005",
+        "unitId": "machine_hour",
+        "literalRatePer1M3": "0.42",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-01:flatbed-truck5t",
+        "sourceCode": "40-0001",
+        "unitId": "machine_hour",
+        "literalRatePer1M3": "0.05",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-01:water",
+        "sourceCode": "01-0601-0001",
+        "unitId": "m3",
+        "literalRatePer1M3": "0.1",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-01:ceramic-brick65-m100",
+        "sourceCode": "01-3306-0005",
+        "unitId": "piece",
+        "literalRatePer1M3": "404",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-01:reinforcement-mesh-a1-12-14mm",
+        "sourceCode": "03-0104-0001",
+        "unitId": "t",
+        "literalRatePer1M3": "0.01",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "REINFORCEMENT"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-01:ready-cement-lime-m50",
+        "sourceCode": "03-0405-0003",
+        "unitId": "m3",
+        "literalRatePer1M3": "0.22",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-02:whole-labour",
+        "sourceCode": "000-1003-8",
+        "unitId": "man_hour",
+        "literalRatePer1M3": "8.58",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-02:operator-reference",
+        "sourceCode": null,
+        "unitId": "man_hour",
+        "literalRatePer1M3": "0.33",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-02:tower-crane8t",
+        "sourceCode": "02-0005",
+        "unitId": "machine_hour",
+        "literalRatePer1M3": "0.33",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-02:flatbed-truck5t",
+        "sourceCode": "40-0001",
+        "unitId": "machine_hour",
+        "literalRatePer1M3": "0.05",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-02:water",
+        "sourceCode": "01-0601-0001",
+        "unitId": "m3",
+        "literalRatePer1M3": "0.1",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-02:ceramic-brick65-m100",
+        "sourceCode": "01-3306-0005",
+        "unitId": "piece",
+        "literalRatePer1M3": "404",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-02:reinforcement-mesh-a1-12-14mm",
+        "sourceCode": "03-0104-0001",
+        "unitId": "t",
+        "literalRatePer1M3": "0.01",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "REINFORCEMENT"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-02:ready-cement-lime-m50",
+        "sourceCode": "03-0405-0003",
+        "unitId": "m3",
+        "literalRatePer1M3": "0.22",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-05:whole-labour",
+        "sourceCode": "000-1004-4",
+        "unitId": "man_hour",
+        "literalRatePer1M3": "12.27",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-05:operator-reference",
+        "sourceCode": null,
+        "unitId": "man_hour",
+        "literalRatePer1M3": "0.42",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-05:tower-crane8t",
+        "sourceCode": "02-0005",
+        "unitId": "machine_hour",
+        "literalRatePer1M3": "0.42",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-05:flatbed-truck5t",
+        "sourceCode": "40-0001",
+        "unitId": "machine_hour",
+        "literalRatePer1M3": "0.05",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-05:water",
+        "sourceCode": "01-0601-0001",
+        "unitId": "m3",
+        "literalRatePer1M3": "0.1",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-05:ceramic-brick65-m100",
+        "sourceCode": "01-3306-0005",
+        "unitId": "piece",
+        "literalRatePer1M3": "450",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-05:reinforcement-mesh-a1-12-14mm",
+        "sourceCode": "03-0104-0001",
+        "unitId": "t",
+        "literalRatePer1M3": "0.01",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "REINFORCEMENT"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-05:ready-cement-lime-m50",
+        "sourceCode": "03-0405-0003",
+        "unitId": "m3",
+        "literalRatePer1M3": "0.24",
+        "heightBand": "LTE4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-06:whole-labour",
+        "sourceCode": "000-1004-4",
+        "unitId": "man_hour",
+        "literalRatePer1M3": "12.05",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-06:operator-reference",
+        "sourceCode": null,
+        "unitId": "man_hour",
+        "literalRatePer1M3": "0.33",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-06:tower-crane8t",
+        "sourceCode": "02-0005",
+        "unitId": "machine_hour",
+        "literalRatePer1M3": "0.33",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-06:flatbed-truck5t",
+        "sourceCode": "40-0001",
+        "unitId": "machine_hour",
+        "literalRatePer1M3": "0.05",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-06:water",
+        "sourceCode": "01-0601-0001",
+        "unitId": "m3",
+        "literalRatePer1M3": "0.1",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-06:ceramic-brick65-m100",
+        "sourceCode": "01-3306-0005",
+        "unitId": "piece",
+        "literalRatePer1M3": "450",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-06:reinforcement-mesh-a1-12-14mm",
+        "sourceCode": "03-0104-0001",
+        "unitId": "t",
+        "literalRatePer1M3": "0.01",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "REINFORCEMENT"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      },
+      {
+        "expectedPhysicalResource": "08-02-003-06:ready-cement-lime-m50",
+        "sourceCode": "03-0405-0003",
+        "unitId": "m3",
+        "literalRatePer1M3": "0.24",
+        "heightBand": "GT4",
+        "physicalOperations": [
+          "WHOLE_MASONRY"
+        ],
+        "productionRowId": null,
+        "productionFormulaId": null,
+        "binding": "UNRUN_REQUIRES_EXISTING_OWNER_PROFILE_CLASSIFICATION"
+      }
+    ],
+    "entriesCount": 32,
+    "operationBindingFutureRequired": true
+  },
+  "wholeStagesAndUnresolvedGaps": [
+    {
+      "stage": "structural-design",
+      "missingEvidence": "Actual approved shape/reinforcement/seismic scope, reinforcement grade/diameter/spacing/overlaps/connections and physical net volume; source10kg is not a designed cage",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "base-and-dpc",
+      "missingEvidence": "Actual support, settingout, levelling, DPC and ties/head node; wall DPC7 not assigned to a column automatically",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "receiving-storage",
+      "missingEvidence": "Own actual brick/readycementlimeM50/reinforcement delivery and quality, pallets/containers/retainedstock vs consumed quantities",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "mortar-whole-process",
+      "missingEvidence": "Own fresh readyM50 full receiving/transfer/apply/clean chain; native informationalvolume is not an accepted effective output for whole15",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "handling-crane",
+      "missingEvidence": "Complete actual crane8t/load/attachment/rigging/route/base and supplier/operator payment boundary",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "truck-transport",
+      "missingEvidence": "Own truck5t scope/actual loads/driver/contract;0.05machineh is not numberoftrips or supplierdeliverydistance",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "access",
+      "missingEvidence": "§1.13 refers to wallaccess; whole compatible column platform/guard/stair/anchors/base/assembly-return not inferred for either heightband",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "reinforcement-process",
+      "missingEvidence": "Whole cutting/bending/assembly/tools/ties/loss/stock and sourcepaymentboundary; no second8-02-007samework",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "masonry-tools-ppe",
+      "missingEvidence": "Own full brick fitting/bond/laying tools, PPE/consumables and wear, not one set per column/m3",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "curing-protection",
+      "missingEvidence": "Own readyM50 curing/weather/protection method and physical materials/quantities; no concretecuring/sourcewaitaspaidtime",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "quality",
+      "missingEvidence": "Actual geometry/verticality/reinforcement/material quality/acceptance means/quantities; normcost is not acceptanceact",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    },
+    {
+      "stage": "cleanup-waste",
+      "missingEvidence": "Fresh/hardened cleanup, complete water/container chain, own debris receiver/destination and distincthaul applicability",
+      "quantity": null,
+      "unit": null,
+      "resolved": false,
+      "sourceIdsForUnknownNorm": []
+    }
+  ],
+  "independentLightControls": {
+    "status": "PASS_32_DECIMAL_PRODUCTS_NOT_SHAREDCORE",
+    "volumeM3": "1.25",
+    "literalExpectedByColumn": [
+      [
+        "11",
+        "0.525",
+        "0.525",
+        "0.0625",
+        "0.125",
+        "505",
+        "0.0125",
+        "0.275"
+      ],
+      [
+        "10.725",
+        "0.4125",
+        "0.4125",
+        "0.0625",
+        "0.125",
+        "505",
+        "0.0125",
+        "0.275"
+      ],
+      [
+        "15.3375",
+        "0.525",
+        "0.525",
+        "0.0625",
+        "0.125",
+        "562.5",
+        "0.0125",
+        "0.3"
+      ],
+      [
+        "15.0625",
+        "0.4125",
+        "0.4125",
+        "0.0625",
+        "0.125",
+        "562.5",
+        "0.0125",
+        "0.3"
+      ]
+    ]
+  },
+  "normalOwnerInterface": {
+    "acceptedR11303_04Preserved": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r113\\FROZEN_PASS_HANDOFF_R113\\MASONRY_R113_IMMUTABLE_BRICK_COLUMN_NORMAL_FINITE_PASS_HANDOFF_MASTER216.json",
+      "sha256": "f4d4f1537a40ce14b5bee84ada6d4b3b7984676ecc6ba5b4f9df425218e8d765",
+      "reruns": 0
+    },
+    "decisionNeededBeforeConfig": "ROOT classify one brick-column kind and actual compatible profiles; do not create new publiccard for each shape/height or silently expand existingunreinforcedidentity",
+    "candidateCatalogId": null,
+    "candidateWorkKey": null,
+    "candidateGroupId": null,
+    "sourceRegistryUuid": null,
+    "locatorUuid": null,
+    "ordinaryGeometryProposal": [
+      "Independent owncolumnmasonrym3",
+      "Storeyheight",
+      "Actualshape/reinforcement if one card requires physicalchoice"
+    ],
+    "technicalConditions": "Existing source-owned project-documentation guards, confirmedactual producer UNRUN; no public normativequestions/defaults",
+    "normalCatalogOrParentPath": "Existing solepublisher/normal guards only after actualcurrentclassification; boundedcolumn lookup is notglobalabsence",
+    "source008whole15Reuse": "Do not run or borrow old whole15/core; only future exact accepted native consumedmortar producer+compatiblewholecontext can attach unchanged owncomponent"
+  },
+  "exclusions": [
+    "Unreinforcedroundcolumn not established by05/06",
+    "Decorative07/08",
+    "Arches/vaults09",
+    "Sourceclasses/types/dimensions/mortar not selected",
+    "Columncount as m3",
+    "Mesh tonnes as retailpacks or steel-design quantities",
+    "KG46existingrepair appended to newmasonry measurement"
+  ],
+  "newPublicCards": 0,
+  "newNormsAdmitted": 0,
+  "newFullTechnologies": 0,
+  "fullTechnicalAcceptance": false,
+  "normalConfig": "UNRUN_OWNER_PROFILE_IDENTITY_CLASSIFICATION_FIRST",
+  "typeSemantic": "UNRUN",
+  "actualCore": "UNRUN",
+  "nodeStarts": 0,
+  "databaseReads": 0,
+  "databaseWrites": 0,
+  "canonicalWrites": 0,
+  "publisherRuns": 0,
+  "oldAcceptedTestsRepeated": 0
+}

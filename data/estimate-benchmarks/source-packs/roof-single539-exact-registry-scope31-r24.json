@@ -1,0 +1,95 @@
+{
+  "contract": "roof-single539-exact-subject-registry-scope/r24",
+  "sourceKey": "gox_roof_single539_whole_002_014019_r24",
+  "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+  "exactRegistryColumns": [
+    "12-01-002-01",
+    "12-01-002-02",
+    "12-01-002-03",
+    "12-01-002-04",
+    "12-01-002-05",
+    "12-01-002-06",
+    "12-01-002-07",
+    "12-01-002-08",
+    "12-01-002-10",
+    "12-01-002-11",
+    "12-01-014-01",
+    "12-01-014-03",
+    "12-01-014-04",
+    "12-01-014-05",
+    "12-01-015-01",
+    "12-01-015-02",
+    "12-01-015-04",
+    "12-01-015-05",
+    "12-01-016-01",
+    "12-01-017-03",
+    "12-01-017-04",
+    "12-01-017-05",
+    "12-01-018-01",
+    "12-01-018-02",
+    "12-01-018-03",
+    "12-01-018-04",
+    "12-01-019-01",
+    "12-01-003-01",
+    "12-01-003-02",
+    "12-01-006-01",
+    "12-01-006-02"
+  ],
+  "newColumns": [
+    "12-01-002-01",
+    "12-01-002-02",
+    "12-01-002-03",
+    "12-01-002-04",
+    "12-01-002-05",
+    "12-01-002-06",
+    "12-01-002-07",
+    "12-01-002-08",
+    "12-01-002-10",
+    "12-01-002-11",
+    "12-01-014-01",
+    "12-01-014-03",
+    "12-01-014-04",
+    "12-01-014-05",
+    "12-01-015-01",
+    "12-01-015-02",
+    "12-01-015-04",
+    "12-01-015-05",
+    "12-01-016-01",
+    "12-01-017-03",
+    "12-01-017-04",
+    "12-01-017-05",
+    "12-01-018-01",
+    "12-01-018-02",
+    "12-01-018-03",
+    "12-01-018-04",
+    "12-01-019-01"
+  ],
+  "acceptedBaseFourColumns": [
+    "12-01-003-01",
+    "12-01-003-02",
+    "12-01-006-01",
+    "12-01-006-02"
+  ],
+  "base48SourceInputs": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-native-whole00301-r24.json",
+      "sha256": "6d5b37a1b228643278755500264599558673980a498e022bc7798041ba9e6531"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-native-whole00302-r24.json",
+      "sha256": "ef203a763efbed094f059f55bc07ba0fc62d38a21e355cada5b6f33bed517ba5"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\deformation-joint-whole006-source-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-expansion-joint-native-whole01-mastic-r24.json",
+      "sha256": "d7581d24cc9774839423e6995576eca4db44f868db96ebb524f90e7f9848f719"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\deformation-joint-whole006-source-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-expansion-joint-native-whole02-torch-r24.json",
+      "sha256": "63f4f878adc1453c14c8dca3a05e7c279edbe84059953a6d9d701edbd3bbe503"
+    }
+  ],
+  "nativeNewBindingRows": 282,
+  "sourceIdentityAdmission": false,
+  "activationAllowed": false,
+  "approvedPpr": false
+}

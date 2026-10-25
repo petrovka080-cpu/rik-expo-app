@@ -1,0 +1,198 @@
+{
+  "contract": "gox-build.master216.roof-mastic-preparation-whole01901/r24",
+  "prefix": "roof:mastic-preparation:whole01901:r24",
+  "normId": "12-01-019-01",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "titleRu": "КРЕР12:приготовление кровельных битумных мастик",
+      "printedEdition": "КРЕР12-2015;утверждено28.03.2016№2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDF/печатная30,полныйсостав3операции/измеритель1тприготовленноймастики/всяколонка01901;техническаячастьPDF4–6",
+      "reviewedAt": "2026-10-25"
+    }
+  ],
+  "sourceMeasureQuantity": "1",
+  "sourceMeasureUnitId": "t",
+  "sourceMeasureMeaning": "MASS_OF_PREPARED_MASTIC_NOT_PURCHASED_READY_PRODUCT_NOT_ROOF_AREA",
+  "controls": {
+    "method": "roof_mastic019_method_r24",
+    "mass": "roof_mastic019_prepared_mass_t_r24",
+    "sourceApplicability": "roof_mastic019_exact_source_recipe_applicability_r24",
+    "project": "roof_mastic019_actual_production_scope_r24"
+  },
+  "methodChoice": "Отдельное приготовление точной исходной битумной мастики01901",
+  "printedOperationRoster": [
+    {
+      "key": "prepare_ingredients",
+      "printedOrdinal": 1,
+      "titleRu": "Подготовка составляющих"
+    },
+    {
+      "key": "dose_load_ingredients",
+      "printedOrdinal": 2,
+      "titleRu": "Дозировка и загрузка составляющих"
+    },
+    {
+      "key": "prepare_mastic",
+      "printedOrdinal": 3,
+      "titleRu": "Приготовление мастики"
+    }
+  ],
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1002-5",
+      "titleRu": "Рабочие-строители среднего разряда 2,5",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда 2,5",
+      "unitId": "man_hour",
+      "sourceUnit": "чел.-ч",
+      "category": "labor",
+      "sourceRatePerPreparedTonne": "22.56",
+      "ratePerPreparedTonne": "22.56",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ingredients",
+        "dose_load_ingredients",
+        "prepare_mastic"
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "sourceInternalTitleRu": "Труд машинистов нормативного комплекса",
+      "unitId": "man_hour",
+      "sourceUnit": "чел.-ч",
+      "category": "labor",
+      "sourceRatePerPreparedTonne": "0.17",
+      "ratePerPreparedTonne": "0.17",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "prepare_ingredients",
+        "dose_load_ingredients",
+        "prepare_mastic"
+      ]
+    },
+    {
+      "role": "truck_crane10t",
+      "resourceCode": "02-0075",
+      "titleRu": "Кран автомобильный грузоподъёмностью 10 т",
+      "sourceInternalTitleRu": "Кран автомобильный грузоподъёмностью 10 т",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePerPreparedTonne": "0.17",
+      "ratePerPreparedTonne": "0.17",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ingredients",
+        "dose_load_ingredients",
+        "prepare_mastic"
+      ]
+    },
+    {
+      "role": "boiler400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Котёл битумный передвижной вместимостью 400 л",
+      "sourceInternalTitleRu": "Котёл битумный передвижной вместимостью 400 л",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePerPreparedTonne": "5.80",
+      "ratePerPreparedTonne": "5.80",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_mastic"
+      ]
+    },
+    {
+      "role": "flatbed5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "sourceInternalTitleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePerPreparedTonne": "0.26",
+      "ratePerPreparedTonne": "0.26",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ingredients",
+        "dose_load_ingredients",
+        "prepare_mastic"
+      ]
+    },
+    {
+      "role": "roof_bitumen",
+      "resourceCode": "01-0305-0005",
+      "titleRu": "Битум нефтяной кровельный",
+      "sourceInternalTitleRu": "БНК45/190,БНК45/180",
+      "unitId": "t",
+      "sourceUnit": "т",
+      "category": "material",
+      "sourceRatePerPreparedTonne": "0.82",
+      "ratePerPreparedTonne": "0.82",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ingredients",
+        "dose_load_ingredients",
+        "prepare_mastic"
+      ]
+    },
+    {
+      "role": "asbestos_filler",
+      "resourceCode": "01-4801-0020",
+      "titleRu": "Асбест-наполнитель",
+      "sourceInternalTitleRu": "Асбест-наполнитель",
+      "unitId": "t",
+      "sourceUnit": "т",
+      "category": "material",
+      "sourceRatePerPreparedTonne": "0.1",
+      "ratePerPreparedTonne": "0.1",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ingredients",
+        "dose_load_ingredients",
+        "prepare_mastic"
+      ]
+    },
+    {
+      "role": "ground_talc_grade1",
+      "resourceCode": "01-7237-0001",
+      "titleRu": "Тальк молотый первого сорта",
+      "sourceInternalTitleRu": "Тальк молотый первого сорта",
+      "unitId": "t",
+      "sourceUnit": "т",
+      "category": "material",
+      "sourceRatePerPreparedTonne": "0.1",
+      "ratePerPreparedTonne": "0.1",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ingredients",
+        "dose_load_ingredients",
+        "prepare_mastic"
+      ]
+    }
+  ],
+  "sourceInputMaterialMassT": "1.02",
+  "preparedSourceOutputBasisT": "1",
+  "differenceNotExplainedAsLossOrReserve": true,
+  "sourceRecipeRestriction": "Exactbitumen0.82t+ASBESTOSFILLER0.1t+groundtalcgrade1 0.1t per1tprepared. Do notreplacefiller/normalize1.02to1/universalizeasanyreadyhotmastic.",
+  "SOURCE_PRODUCT_APPLICABILITY_HOLD": true,
+  "sourceApplicabilityCannotBePPRCheckbox": true,
+  "paymentBoundary": "Separateonsiteproductionmustnotpurchaseidenticalready-masticonceagain. Existingconsumerready-productnorms/boilerheatinghoursretained;noautomaticrecipe/cost-ownerrewrite. Jointmaterial/productioncostbridge ROOTreviewrequired.",
+  "actualProductionMassNotDefaultedFromBasisOne": true,
+  "unitTNotM3OrM2": true,
+  "sourcePricesImported": false,
+  "FULL": false
+}

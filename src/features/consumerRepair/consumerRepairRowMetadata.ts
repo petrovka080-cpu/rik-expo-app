@@ -1,6 +1,7 @@
+import {resolveProfessionalUnitDefinition} from '../../lib/estimate/professionalUnitRegistry';
 import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
 import type { CanonicalPublicResourcePresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
-import {canonicalPublicResourceRowKindV1} from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
+import {canonicalPublicResourceDisplayPresentationV1,canonicalPublicResourceRowKindV1} from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { canonicalDerivedQuantityEditPolicyV1 } from '../../lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1';
 import { canonicalPublicEstimateParameterTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import {canonicalPublicHiddenResourceAlternativeIdsV1} from '../../lib/estimate/backendPlatform/canonicalPublicResourceAlternativesV1';
@@ -209,16 +210,27 @@ export function consumerRepairRowIsNonPayable(
     || VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(source.canonicalCostTreatment));
 }
 
+/** Every visible estimate row accepts a saved manual price. Payment and cost
+ * coverage remain independent, so included resources are never charged twice. */
+export function consumerRepairRowPriceIsEditable(
+  item: ConsumerRepairRowMetadataCarrier | null | undefined,
+): boolean {
+  return item != null;
+}
+
 /** An unresolved physical need is visible even though it cannot yet be paid. */
 export function consumerRepairRowIsTechnicalDetail(
   item: ConsumerRepairRowMetadataCarrier | null | undefined,
 ): boolean {
   const source=metadata(item);
-  if(source.includedInEstimate===true||source.includedInProcurement===true||item?.unitPrice!=null
+  if(source.includedInEstimate===true||source.includedInProcurement===true
     ||source.canonicalManualTitleOverride===true)return false;
   const kind=consumerRepairRowPublicKind(item);
+  if(item?.unitPrice!=null && kind!=='CALCULATION_DETAIL')return false;
   if(kind==='PROCESS_NOTE')return false;
-  const physicalCategory=['material','tool','equipment','service','transport','delivery'].includes(item?.category??item?.itemType??'');
+  const physicalHeadcount=text(source.canonicalCostTreatment)==='INFORMATIONAL_SCOPE'
+    &&resolveProfessionalUnitDefinition(item?.unit)?.dimension==='headcount';
+  const physicalCategory=physicalHeadcount||['material','materials','tool','equipment','service','transport','delivery'].includes(item?.category??item?.itemType??'');
   return kind==='CALCULATION_DETAIL' || (!physicalCategory&&!consumerRepairRowPublicResourcePresentation(item??{})&&!consumerRepairRowIsCanonicalPreliminaryNeed(item)
     && VISIBLE_NON_PAYABLE_COST_TREATMENTS.has(text(metadata(item).canonicalCostTreatment)));
 }
@@ -234,8 +246,13 @@ function consumerRepairRowPublicKind(item:ConsumerRepairRowMetadataCarrier|null|
 
 export function consumerRepairRowProcessNote(item:ConsumerRepairRowMetadataCarrier):string|null {
   if(consumerRepairRowPublicKind(item)!=='PROCESS_NOTE')return null;
-  const presentation=consumerRepairRowPublicResourcePresentation(item)!;
-  return presentation.detailsRu.join(' ')||presentation.nameRu;
+  const registered=consumerRepairRowPublicResourcePresentation(item);
+  // Reopened objects have no transient registration. Resolve the same exact
+  // authored row binding used by the role classifier before reading its note.
+  const presentation=canonicalPublicResourceDisplayPresentationV1({
+    titleRu:registered?.sourceTitleRu??item.titleRu??'',descriptor:registered,rowId:consumerRepairRowCode(item),
+    manualTitleOverride:metadata(item).canonicalManualTitleOverride===true});
+  return presentation ? presentation.detailsRu.join(' ')||presentation.nameRu : null;
 }
 
 export function consumerRepairRowSourceManagedQuantityReason(

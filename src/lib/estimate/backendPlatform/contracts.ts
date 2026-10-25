@@ -214,6 +214,8 @@ export type CanonicalEstimateJobView = {
   attempt: number;
   resultRevisionId: string | null;
   errorCode: string | null;
+  /** Authored validation explanation only; absent on older/code-only jobs. */
+  errorUserMessageRu?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -622,7 +624,33 @@ export type CanonicalEstimateSearchMatchType =
   | "T5_NORMALIZED_SUBSTRING"
   | "T6_TYPO_TRANSLITERATION_SUGGESTION";
 
-export type CanonicalEstimateSearchItem = {
+/** Public grouping never changes the exact calculation/history identity. */
+export type CanonicalEstimateConditionProfileV1 = {
+  catalogId: string;
+  definitionVersionId: string;
+  definitionReleaseId: string;
+  conditionId: string;
+  /** Full exact work name; conditionTitleRu is only the condition label. */
+  titleRu: string;
+  conditionTitleRu?: string;
+  technologyVariant: string | null;
+  primaryUom: string;
+  operationKind: string;
+  publicationState: CanonicalEstimateSearchPublicationState;
+  estimateReady: boolean;
+  contentAdmission?: AdmissionDecision | null;
+  selectableMode: "PROFESSIONAL" | "PRELIMINARY" | "NONE";
+  nonselectableReasonRu: string | null;
+};
+
+export type CanonicalEstimateConditionProfileGroupingV1 = {
+  publicWorkKey?: string;
+  publicCatalogId?: string;
+  matchedConditionCatalogId?: string | null;
+  conditionProfiles?: readonly CanonicalEstimateConditionProfileV1[];
+};
+
+export type CanonicalEstimateSearchItem = CanonicalEstimateConditionProfileGroupingV1 & {
   catalogId: string;
   definitionVersionId: string | null;
   definitionReleaseId: string | null;
@@ -660,6 +688,7 @@ export type CanonicalEstimateSearchItem = {
 };
 
 export type CanonicalEstimateSearchPage = {
+  catalogVisibilityVersion?: string;
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   searchIndexReleaseId: string;
   searchIndexSnapshotSha256: string;
@@ -720,6 +749,7 @@ export type CanonicalEstimateResourceSearchPage = {
 };
 
 export type CanonicalEstimateSearchGroupPage = {
+  catalogVisibilityVersion?: string;
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   searchIndexReleaseId: string;
   searchIndexSnapshotSha256: string;
@@ -731,7 +761,8 @@ export type CanonicalEstimateSearchGroupPage = {
   shownCount: number;
   items: Array<Pick<CanonicalEstimateSearchItem,
     "catalogId" | "canonicalNameRu" | "publicationState" | "catalogOrigin" | "operationKind" | "technologyVariant"
-    | "estimateReady" | "contentAdmission">>;
+    | "estimateReady" | "contentAdmission" | "publicWorkKey" | "publicCatalogId"
+    | "matchedConditionCatalogId" | "conditionProfiles">>;
   nextCursor: string | null;
 };
 
@@ -790,12 +821,14 @@ export type CanonicalEstimateCatalogItem = {
   manualPriceMigrationBindings?: Record<string,string>;
   /** Exact resource/application evidence for retaining stored manual exclusions. */
   manualExclusionMigrationBindings?: Record<string,string>;
+  /** Source/application evidence for retaining already saved quantities. */
+  manualQuantityMigrationBindings?: Record<string,string>;
   /** Complete operation membership and resource/application evidence. */
   compositionOperationMigrationBindingsV1?: Record<string,string>;
   /** Server-admitted equivalence for one exact predecessor, never a general bypass. */
-  manualMigrationPredecessorV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true};
+  manualMigrationPredecessorV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;quantityBindings?:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true};
   /** At most two exact server-proven predecessors for the admitted 5→6→7 chain. */
-  manualMigrationPredecessorsV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true}[];
+  manualMigrationPredecessorsV1?: {definitionId:string;priceBindings:Record<string,string>;exclusionBindings:Record<string,string>;quantityBindings?:Record<string,string>;operationBindings?:Record<string,string>;compositionSelectionIdsPreservedV1?:true}[];
   /** Exact specification questions belonging to opted-in manual order rows. */
   orderedSpecificationBindings?: CanonicalOrderedSpecificationBinding[];
   contentAdmission?: AdmissionDecision;
@@ -832,6 +865,29 @@ export type CanonicalEstimateCatalogItem = {
     provenance?: Record<string, unknown>;
   }>;
 };
+
+/** Prompt extraction is not calculation/admission evidence. Its identity is
+ * tied to the same catalog response and exact request text. */
+export type CanonicalCatalogPromptExtractionV1 = Readonly<{
+  contract: "canonical-catalog-prompt-extraction/v1";
+  catalogId: string;
+  releaseId: string;
+  definitionVersion: number;
+  prompt: string;
+  immutableCalculationIdentityV1?: CanonicalImmutableCalculationIdentityV1;
+  schema: ReadonlyArray<Pick<CanonicalEstimateCatalogItem["parameterSchema"][number],
+    "parameterId" | "ordinal" | "valueType" | "unitId" | "titleRu">>;
+  /** Empty object preserves a matched parser whose keys are outside this schema. */
+  concretePlacement: Readonly<Record<string, string | number | boolean>> | null;
+}>;
+
+/** Exact parser/guard input projection. The full catalog response, admission
+ * and its additional schema metadata remain owned by the existing API. */
+export type CanonicalCatalogPromptInputV1 = Readonly<
+  Pick<CanonicalCatalogPromptExtractionV1,
+    "catalogId" | "releaseId" | "definitionVersion" | "immutableCalculationIdentityV1">
+  & {parameterSchema: CanonicalCatalogPromptExtractionV1["schema"]}
+>;
 
 export class CanonicalEstimateApiError extends Error {
   readonly code: string;

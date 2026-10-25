@@ -1,5 +1,6 @@
+import publicSubworkBindings from '../../../../data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json';
 import { canonicalPublicResourcePresentationV1 as display, bindCanonicalPublicResourceSavedTitleV1, parseCanonicalPublicResourcePresentationV1,
-  canonicalPublicResourcePresentationMatchesV1 } from './canonicalPublicResourcePresentationV1';
+  canonicalPublicResourcePresentationMatchesV1, canonicalPublicResourceRowKindV1 } from './canonicalPublicResourcePresentationV1';
 import { G6_PVC_COMMERCIAL_LABOR_SERIES_S2741 as series } from '../v4/g6PvcCommercialLaborProfilesS2741';
 import { withG6PvcResourcePresentationS2741 } from '../v4/g6PvcResourcePresentationS2741';
 import { canonicalEstimateRevisionRowFromStorage } from './canonicalEstimateRevisionReadMapper';
@@ -23,6 +24,28 @@ const source = { contractVersion: 'canonical-public-resource-presentation/v1' as
   sourceTitleRu: 'Мембрана кровельная ПВХ, армированная, 1,2 мм — LOGICROOF V-RP, исходная спецификация',
   nameRu: 'Мембрана кровельная ПВХ, армированная, 1,2 мм', brandAndModelRu: 'LOGICROOF V-RP', specificationRu: null,
   detailsRu: ['Площадь требует проверки раскладки.'] };
+
+test.each(['material','materials'])('a real %s supply covered by work cost is still a resource, never a calculation counter',category=>{
+  const input={titleRu:'Средство очистки, картридж 1 л',descriptor:null,category,rowId:'cartridge',
+    costTreatment:'INCLUDED_IN_RESOURCE_ROWS',includedInEstimate:false,includedInProcurement:false,
+    graph:{includedInResourceOwnerRowId:'whole-work',operationCompositionV1:{operationId:'preparation'}}};
+  expect(canonicalPublicResourceRowKindV1(input)).toBe('RESOURCE');
+  expect(canonicalPublicResourceRowKindV1({...input,rowId:'consumption',costTreatment:'INFORMATIONAL_SCOPE',
+    graph:{...input.graph,purchaseBalanceOwnerRowId:'cartridge'}})).toBe('CALCULATION_DETAIL');
+});
+
+test('a priced consumption detail remains a linked calculation detail, with ordinary paid, purchased, stale and unlinked resources visible', () => {
+  const input = { titleRu: source.sourceTitleRu, descriptor: { ...source, rowKind: 'CALCULATION_DETAIL' as const },
+    costTreatment: 'INFORMATIONAL_SCOPE', includedInEstimate: false, includedInProcurement: false,
+    unitPrice: '50', amount: '2.1', rowId: 'consumption', graph: { purchaseBalanceOwnerRowId: 'whole-cartridge' }, category: 'material' };
+  expect(canonicalPublicResourceRowKindV1(input)).toBe('CALCULATION_DETAIL');
+  for (const patch of [{ includedInEstimate: true }, { includedInProcurement: true }, { manualTitleOverride: true },
+    { graph: {} }, { graph: { purchaseBalanceOwnerRowId: 'consumption' } }, { titleRu: 'Другое средство' },
+    { costTreatment: 'OWN_COST' }, { descriptor: { ...source, rowKind: 'PROCESS_NOTE' } }]) {
+    expect(canonicalPublicResourceRowKindV1({ ...input, ...patch })).toBe('RESOURCE');
+  }
+  expect(input.unitPrice).toBe('50'); expect(input.amount).toBe('2.1');
+});
 
 test('a source-bound Russian label keeps brand and all details without changing the original title', () => {
   expect(display({ titleRu: source.sourceTitleRu, descriptor: source })).toEqual(source);
@@ -131,4 +154,34 @@ test('existing dynamic material policy remains saved when a row has no public na
     wastePercent: 3, procurementPackageSize: 500,
     formulaInputs: expect.objectContaining({ brick_breakage_percent: result.parameters.brick_breakage_percent,
       brick_supplier_package_pieces: result.parameters.brick_supplier_package_pieces }) } } });
+});
+
+
+test('all24 authored CT126 batch counters are calculation details, with physical supplies retained', () => {
+  const ids=new Set(['putty:ct126-dry-wall','putty:ct126-prepared:wall-cement','putty:ct126-prepared:wall-smooth-concrete']
+    .flatMap(prefix=>[5,20].flatMap(size=>['minimum-batches','planned-batches','plan-coverage','plan-excess'].map(suffix=>`${prefix}:${size}kg-${suffix}`))));
+  const bindings=publicSubworkBindings.bindings.filter(binding=>ids.has(binding.rowId));
+  expect(bindings).toHaveLength(24);
+  for(const binding of bindings){
+    const input={titleRu:binding.sourceTitleRu,rowId:binding.rowId,descriptor:null,category:'material',graph:{},
+      costTreatment:'INFORMATIONAL_SCOPE',includedInEstimate:false,includedInProcurement:false};
+    expect(canonicalPublicResourceRowKindV1(input)).toBe('CALCULATION_DETAIL');
+    for(const patch of [{includedInEstimate:true},{includedInProcurement:true},{manualTitleOverride:true},{unitPrice:'50'},
+      {rowId:'unrelated-physical-need'},{titleRu:'Иной реальный ресурс'},{costTreatment:'OWN_COST'}]){
+      expect(canonicalPublicResourceRowKindV1({...input,...patch})).toBe('RESOURCE');
+    }
+  }
+});
+
+test('the actual PDF omits an authored batch counter while retaining its real physical supply and immutable rows',()=>{
+  const binding=publicSubworkBindings.bindings.find(binding=>binding.rowId==='putty:ct126-prepared:wall-cement:20kg-planned-batches')!;
+  const sourceRows=Array.from({length:2},(_,index)=>({...rowsForCounterRoleTest(index)}));
+  function rowsForCounterRoleTest(index:number):CanonicalArtifactRow{return {row_id:index===0?binding.rowId:'physical-mixer',ordinal:index,
+    title_ru:index===0?binding.sourceTitleRu:'Дрель с насадкой для перемешивания',category:index===0?'material':'equipment',
+    unit_id:index===0?'pcs':'item',quantity:index===0?'11':'1',unit_price:null,amount:null,currency_code:'KGS',included_in_estimate:false,included_in_procurement:false,procurement_eligible:false,ownership_status:'OWNED_EXCLUDED',
+    calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE'}}} as CanonicalArtifactRow;}
+  const saved={id:'00000000-0000-4000-8000-000000000001',release_id:'00000000-0000-4000-8000-000000000002',catalog_id:'counter-role-fixture',checksum_sha256:'a'.repeat(64),row_count:2,revision_number:1,currency_code:'KGS',created_at:'2026-10-21T00:00:00Z',input_parameters:{},primary_measure_value:'35.5',primary_measure_unit_id:'m2'};
+  const before=JSON.stringify({saved,sourceRows});const pdf=buildCanonicalProfessionalPdfProjection({revision:saved,rows:sourceRows,workTitleRu:'Выравнивание стен'});
+  expect(pdf.html).not.toContain(binding.nameRu);expect(pdf.html).toContain('Дрель с насадкой для перемешивания');expect(pdf.rowCount).toBe(2);
+  expect(JSON.stringify({saved,sourceRows})).toBe(before);
 });

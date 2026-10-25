@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import { extractStripFoundationReinforcementCanonicalParametersR1, stripFoundationReinforcementPromptDetailsR1 } from "../../src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1";
 import { REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID } from "../../src/lib/estimate/v4/domainFactory";
@@ -9,7 +9,7 @@ function catalog(target: (typeof ANCHOR_GROUP_REINFORCEMENT_TARGETS)[number]): C
 }
 
 describe("anchor-group reinforcement family", () => {
-  test("compiles all seven exact identities from distinct approved BBS schedules", async () => {
+  test("compiles all five exact identities from distinct approved BBS schedules", async () => {
     const results = [];
     for (const target of ANCHOR_GROUP_REINFORCEMENT_TARGETS) {
       const fixture = anchorGroupReinforcementAcceptanceInputR1(target.contextKey);
@@ -24,9 +24,7 @@ describe("anchor-group reinforcement family", () => {
     expect(results).toEqual([
       { contextKey: "standard", steelKg: 700, rows: 9, procurementRows: 6 },
       { contextKey: "high_load", steelKg: 2_500, rows: 16, procurementRows: 10 },
-      { contextKey: "large_area", steelKg: 5_600, rows: 15, procurementRows: 9 },
       { contextKey: "repair", steelKg: 280, rows: 15, procurementRows: 9 },
-      { contextKey: "small_area", steelKg: 180, rows: 9, procurementRows: 6 },
       { contextKey: "technical_room", steelKg: 620, rows: 15, procurementRows: 9 },
       { contextKey: "wet_zone", steelKg: 1_200, rows: 10, procurementRows: 7 },
     ]);

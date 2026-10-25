@@ -45,7 +45,8 @@ const LEGACY_ROUTE_SQL = `insert into public.estimate_resource_price_route_bindi
     on conflict(resource_spec_id,route_id) do nothing
     returning resource_spec_id`;
 
-function makePlan(metadata: readonly CanonicalPublisherJson[] = [{}, {}, {}]) {
+function makePlan(metadata: readonly CanonicalPublisherJson[] = [{}, {}, {}],
+  parameterDefinitions?: CanonicalPublisherJson[]) {
   const resources = metadata.map((source_metadata, ordinal) => ({
     row_id: `test:row:${ordinal}`, ordinal, section: 'test', category: 'material',
     title_ru: 'Одинаковое синтетическое название', row_type: 'material', unit_id: 'm',
@@ -53,7 +54,7 @@ function makePlan(metadata: readonly CanonicalPublisherJson[] = [{}, {}, {}]) {
     resource_graph: { costTreatment: 'OWN_COST' }, cost_owner_id: `test:owner:${ordinal}`,
     procurement_eligible: true, source_metadata,
   }));
-  const parameters = [{ parameter_id: 'quantity', ordinal: 0, value_type: 'decimal',
+  const parameters = parameterDefinitions ?? [{ parameter_id: 'quantity', ordinal: 0, value_type: 'decimal',
     unit_id: 'm', title_ru: 'Синтетическое количество', required: true,
     constraints_json: {}, truth_metadata: { contract: CONTRACT } }];
   const formulas = [{ formula_id: 'test:quantity', output_unit_id: 'm',
@@ -96,7 +97,8 @@ const isRouteInsert = (sql: string) => sql.startsWith('insert into public.estima
 /** Transport stub only: it records real publisher statements and supplies the
  * declared synthetic payload to the existing self-audit. It does not implement
  * SQL selection, copy any price, or claim schema/preflight/transaction proof. */
-function recordingClient(plan: CanonicalDefinitionPublishPlan, routeFailure?: Error) {
+function recordingClient(plan: CanonicalDefinitionPublishPlan, routeFailure?: Error,
+  parameterReadback?: (rows: CanonicalPublisherJson[]) => CanonicalPublisherJson[]) {
   const calls: Call[] = [];
   const query = jest.fn(async (sql: string, values: unknown[] = []) => {
     calls.push({ sql, values: structuredClone(values) });
@@ -111,7 +113,10 @@ function recordingClient(plan: CanonicalDefinitionPublishPlan, routeFailure?: Er
     if (sql.startsWith('select id,release_id,catalog_id,definition_version,passport,')) {
       return rowsResult([{ ...plan.definition, content_status: 'CANDIDATE_READY', content_gate_status: 'GREEN' }]);
     }
-    if (sql.startsWith('select definition_version_id,parameter_id,')) return rowsResult(plan.parameters);
+    if (sql.startsWith('select definition_version_id,parameter_id,')) {
+      const rows = structuredClone(plan.parameters).sort((left, right) => left.ordinal - right.ordinal);
+      return rowsResult(parameterReadback ? parameterReadback(rows) : rows);
+    }
     if (sql.startsWith('select definition_version_id,formula_id,')) return rowsResult(plan.formulas);
     if (sql.startsWith('select id,definition_version_id,row_id,')) return rowsResult(plan.resources);
     if (sql.startsWith('select id,baseline_key,catalog_id,')) return rowsResult([plan.baseline]);
@@ -277,4 +282,40 @@ describe('real canonical publisher target-only automatic price inheritance opt-o
       || call.sql.startsWith('update public.estimate_definition_version definition')
       || /^\s*(?:begin|commit|rollback)\b/iu.test(call.sql))).toBe(false);
   });
+});
+
+describe('canonical publisher parameter readback order', () => {
+  function unorderedParameters() {
+    const base = makePlan().parameters[0]!;
+    return [
+      { ...structuredClone(base), parameter_id: 'later', ordinal: 95, title_ru: 'Поздний параметр',
+        constraints_json: { min: 2 }, truth_metadata: { provenance: 'later-source' } },
+      { ...structuredClone(base), parameter_id: 'earlier', ordinal: 12, title_ru: 'Ранний параметр',
+        constraints_json: { min: 1 }, truth_metadata: { provenance: 'earlier-source' } },
+    ];
+  }
+
+  test('publishes unordered sparse parent parameters in persisted order without changing their values or the parent', async () => {
+    const parameters = unorderedParameters(), before = structuredClone(parameters);
+    const plan = makePlan(undefined, parameters);
+    expect(plan.parameters).toEqual([before[1], before[0]]);
+    expect(parameters).toEqual(before);
+    const recorder = recordingClient(plan);
+    await expect(publishCanonicalDefinitionDraft(recorder.client, plan)).resolves.toMatchObject({
+      status: 'GREEN_CANONICAL_PUBLISHER_PERSISTED_SELF_AUDIT', parameterCount: 2,
+    });
+    expect(parameters).toEqual(before);
+  });
+
+  test.each(['default_value', 'truth_metadata', 'ordinal'])(
+    'retains strict self-audit rejection when persisted %s differs', async field => {
+      const plan = makePlan(undefined, unorderedParameters());
+      const recorder = recordingClient(plan, undefined, rows => {
+        rows[0]![field] = field === 'default_value' ? '99'
+          : field === 'ordinal' ? 13 : { provenance: 'wrong-source' };
+        return rows;
+      });
+      await expect(publishCanonicalDefinitionDraft(recorder.client, plan))
+        .rejects.toThrow('STOP_CANONICAL_PUBLISHER_SELF_AUDIT_PAYLOAD:test:catalog:parameters:');
+    });
 });

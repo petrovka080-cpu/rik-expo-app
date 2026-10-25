@@ -1,0 +1,429 @@
+{
+  "status": "INDEPENDENT_LITERAL_EXPECTATIONS_NOT_ACTUAL_CORE",
+  "method": "Exact source decimal rate x explicit finite measured basis; no production formula evaluator or object facts.01703 sample uses actual16mm and own signed01704 delta1mm.",
+  "cases": {
+    "whole00208-three-layer-field": [
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:workers",
+        "unitId": "man_hour",
+        "quantity": "25.3625"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "0.3875"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:tower_crane_8t",
+        "unitId": "machine_hour",
+        "quantity": "0.2875"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:truck_crane_10t",
+        "unitId": "machine_hour",
+        "quantity": "0.1"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:gas_burners",
+        "unitId": "machine_hour",
+        "quantity": "8.625"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:flatbed_to5t",
+        "unitId": "machine_hour",
+        "quantity": "0.15"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:technical_propane_butane",
+        "unitId": "kg",
+        "quantity": "14.75"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:upper_fused_roll",
+        "unitId": "m2",
+        "quantity": "143.75"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:08:lower_fused_roll",
+        "unitId": "m2",
+        "quantity": "287.5"
+      }
+    ],
+    "whole00211-own-gravel-protection": [
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:workers",
+        "unitId": "man_hour",
+        "quantity": "3.525"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "0.42"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:tower_crane_8t",
+        "unitId": "machine_hour",
+        "quantity": "0.3375"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:truck_crane_10t",
+        "unitId": "machine_hour",
+        "quantity": "0.03375"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:forklift_5t",
+        "unitId": "machine_hour",
+        "quantity": "0.04875"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:boiler400l",
+        "unitId": "machine_hour",
+        "quantity": "0.91875"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:flatbed_to5t",
+        "unitId": "machine_hour",
+        "quantity": "0.06375"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:ready_hot_roof_mastic",
+        "unitId": "t",
+        "quantity": "0.113625"
+      },
+      {
+        "rowId": "roof:flat-roll:missing002:r24:11:gravel_dr8_fraction5_3_10",
+        "unitId": "m3",
+        "quantity": "0.39375"
+      }
+    ],
+    "whole01403-own-cubic-measure": [
+      {
+        "rowId": "roof:insulation:missing014:r24:03:workers",
+        "unitId": "man_hour",
+        "quantity": "11.4"
+      },
+      {
+        "rowId": "roof:insulation:missing014:r24:03:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "1.275"
+      },
+      {
+        "rowId": "roof:insulation:missing014:r24:03:tower_crane_8t",
+        "unitId": "machine_hour",
+        "quantity": "0.45"
+      },
+      {
+        "rowId": "roof:insulation:missing014:r24:03:forklift_5t",
+        "unitId": "machine_hour",
+        "quantity": "0.825"
+      },
+      {
+        "rowId": "roof:insulation:missing014:r24:03:shungizite_gravel_5_10_m300",
+        "unitId": "m3",
+        "quantity": "3.8625"
+      }
+    ],
+    "whole01501-plus-own01502": [
+      {
+        "rowId": "roof:vapor:missing015:r24:01:workers",
+        "unitId": "man_hour",
+        "quantity": "21.8875"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "0.225"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:tower_crane_8t",
+        "unitId": "machine_hour",
+        "quantity": "0.1375"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:truck_crane_10t",
+        "unitId": "machine_hour",
+        "quantity": "0.0875"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:boiler400l",
+        "unitId": "machine_hour",
+        "quantity": "2.2625"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:flatbed_truck_5t",
+        "unitId": "machine_hour",
+        "quantity": "0.125"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:ready_hot_roof_mastic",
+        "unitId": "t",
+        "quantity": "0.245"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:roof_bitumen",
+        "unitId": "t",
+        "quantity": "0.03125"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:technical_kerosene",
+        "unitId": "t",
+        "quantity": "0.075"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:01:roofing_felt_rkp350b",
+        "unitId": "m2",
+        "quantity": "137.5"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:02:workers",
+        "unitId": "man_hour",
+        "quantity": "4.27875"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:02:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "0.05625"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:02:tower_crane_8t",
+        "unitId": "machine_hour",
+        "quantity": "0.0375"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:02:truck_crane_10t",
+        "unitId": "machine_hour",
+        "quantity": "0.01875"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:02:boiler400l",
+        "unitId": "machine_hour",
+        "quantity": "0.6"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:02:flatbed_truck_5t",
+        "unitId": "machine_hour",
+        "quantity": "0.03375"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:02:ready_hot_roof_mastic",
+        "unitId": "t",
+        "quantity": "0.0735"
+      },
+      {
+        "rowId": "roof:vapor:missing015:r24:02:roofing_felt_rkp350b",
+        "unitId": "m2",
+        "quantity": "41.25"
+      }
+    ],
+    "whole01601-own-primer": [
+      {
+        "rowId": "roof:primer-preparation:whole01601:r24:workers",
+        "unitId": "man_hour",
+        "quantity": "5.575"
+      },
+      {
+        "rowId": "roof:primer-preparation:whole01601:r24:flatbed_to5t",
+        "unitId": "machine_hour",
+        "quantity": "0.05"
+      },
+      {
+        "rowId": "roof:primer-preparation:whole01601:r24:roof_bitumen",
+        "unitId": "t",
+        "quantity": "0.03125"
+      },
+      {
+        "rowId": "roof:primer-preparation:whole01601:r24:technical_kerosene",
+        "unitId": "t",
+        "quantity": "0.0725"
+      }
+    ],
+    "whole01703-with-signed-one-mm": [
+      {
+        "rowId": "roof:screed:missing017:r24:03:workers",
+        "unitId": "man_hour",
+        "quantity": "6.4875"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:03:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "0.525"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:03:tower_crane_8t",
+        "unitId": "machine_hour",
+        "quantity": "0.1875"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:03:forklift_5t",
+        "unitId": "machine_hour",
+        "quantity": "0.3375"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:03:roofing_felt_rkp350b",
+        "unitId": "m2",
+        "quantity": "2.5875"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:03:hot_warm_porous_asphalt_grade1",
+        "unitId": "t",
+        "quantity": "1.3725"
+      }
+    ],
+    "whole01705-source-conflict-stays-unresolved": [
+      {
+        "rowId": "roof:screed:missing017:r24:05:workers",
+        "unitId": "man_hour",
+        "quantity": "30.8"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "0.3"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:tower_crane_8t",
+        "unitId": "machine_hour",
+        "quantity": "0.1"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:forklift_5t",
+        "unitId": "machine_hour",
+        "quantity": "0.2"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:boiler400l",
+        "unitId": "machine_hour",
+        "quantity": "0.4875"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:goudron_semigoudron",
+        "unitId": "t",
+        "quantity": "0.1725"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:ready_hot_roof_mastic",
+        "unitId": "t",
+        "quantity": "0.06"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:pressed_flat_asbestos_cement10mm",
+        "unitId": "m2",
+        "quantity": "127.5"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:insulating_glasscloth02mm",
+        "unitId": "m2",
+        "quantity": "25"
+      },
+      {
+        "rowId": "roof:screed:missing017:r24:05:galvanized_sheet_07mm",
+        "unitId": "t",
+        "quantity": "0.01225"
+      }
+    ],
+    "whole01803-own-curb-perimeter": [
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:workers",
+        "unitId": "man_hour",
+        "quantity": "19.2375"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "0.285"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:tower_crane8t",
+        "unitId": "machine_hour",
+        "quantity": "0.21375"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:truck_crane10t",
+        "unitId": "machine_hour",
+        "quantity": "0.07125"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:boiler400l",
+        "unitId": "machine_hour",
+        "quantity": "1.92375"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:flatbed5t",
+        "unitId": "machine_hour",
+        "quantity": "0.0975"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:hot_roof_mastic",
+        "unitId": "t",
+        "quantity": "0.2355"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:mineral_wool_slabs_m125",
+        "unitId": "m3",
+        "quantity": "0.5775"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:loose_mineral_wool",
+        "unitId": "m3",
+        "quantity": "0.6375"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:roof_felt_coarse_rkk350b",
+        "unitId": "m2",
+        "quantity": "25.875"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:underlay_felt_rpp300b",
+        "unitId": "m2",
+        "quantity": "72.375"
+      },
+      {
+        "rowId": "roof:rooflight-curb:whole018:r24:03:cement_mortar100",
+        "unitId": "m3",
+        "quantity": "0.19125"
+      }
+    ],
+    "whole01901-own-prepared-tonne-source-hold": [
+      {
+        "rowId": "roof:mastic-preparation:whole01901:r24:workers",
+        "unitId": "man_hour",
+        "quantity": "22.56"
+      },
+      {
+        "rowId": "roof:mastic-preparation:whole01901:r24:included_machine_operators",
+        "unitId": "man_hour",
+        "quantity": "0.17"
+      },
+      {
+        "rowId": "roof:mastic-preparation:whole01901:r24:truck_crane10t",
+        "unitId": "machine_hour",
+        "quantity": "0.17"
+      },
+      {
+        "rowId": "roof:mastic-preparation:whole01901:r24:boiler400l",
+        "unitId": "machine_hour",
+        "quantity": "5.8"
+      },
+      {
+        "rowId": "roof:mastic-preparation:whole01901:r24:flatbed5t",
+        "unitId": "machine_hour",
+        "quantity": "0.26"
+      },
+      {
+        "rowId": "roof:mastic-preparation:whole01901:r24:roof_bitumen",
+        "unitId": "t",
+        "quantity": "0.82"
+      },
+      {
+        "rowId": "roof:mastic-preparation:whole01901:r24:asbestos_filler",
+        "unitId": "t",
+        "quantity": "0.1"
+      },
+      {
+        "rowId": "roof:mastic-preparation:whole01901:r24:ground_talc_grade1",
+        "unitId": "t",
+        "quantity": "0.1"
+      }
+    ]
+  }
+}

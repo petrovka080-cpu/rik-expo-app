@@ -126,8 +126,8 @@ void runMasterSingleDefinitionSuccessorR1({
   benchmarkOrdinal: 0,
   validationScenario: "S26_4_ASPHALT_COMPACTION_5000_M2_COMPLETE_FIRST_ESTIMATE",
   passport: {
-    canonicalRuName: "Уплотнение асфальтового покрытия на большой площади",
-    workKey: "paving_roads_landscape_interior_asphalt_compact_large_area",
+    canonicalRuName: "Уплотнение асфальтового покрытия",
+    workKey: "paving_roads_landscape_interior_asphalt_compact_standard",
     physicalResultRu: "Уже уложенное асфальтовое покрытие указанной площади уплотнено звеном катков по трёхфазной схеме с контролем температуры, проходов и плотности",
     includedScopeRu: [
       "предварительное, основное и финишное уплотнение уже уложенной асфальтобетонной смеси",
@@ -150,7 +150,7 @@ void runMasterSingleDefinitionSuccessorR1({
   applicability: {
     country: "KG",
     operationClass: "ASPHALT_COMPACTION_ONLY",
-    scopeClass: "LARGE_AREA",
+    scopeClass: "THREE_PHASE_ROLLER_TRAIN",
     constructionState: "ASPHALT_MAT_ALREADY_PLACED",
     primaryMeasureParameterId: "area_m2",
     geometryParameters: ["area_m2"],
@@ -166,7 +166,7 @@ void runMasterSingleDefinitionSuccessorR1({
     applicability: {
       technology_class: "ASPHALT_COMPACTION_THREE_PHASE",
       operation_class: "ASPHALT_COMPACTION_ONLY",
-      scope_class: "LARGE_AREA",
+      scope_class: "THREE_PHASE_ROLLER_TRAIN",
       source_id: ASPHALT_COMPACTION_PROFILE_SOURCE_ID,
       norm_id: ASPHALT_COMPACTION_PROFILE_NORM_ID,
       exact_locator: ASPHALT_COMPACTION_PROFILE_SOURCE_METADATA.exact_locator,
@@ -176,7 +176,7 @@ void runMasterSingleDefinitionSuccessorR1({
     },
   },
   locator: {
-    key: "asphalt-compaction-large-area-preliminary-profile-r1",
+    key: "asphalt-compaction-three-roller-preliminary-profile-r1",
     payload: {
       kind: "COMPOSITE_TECHNOLOGY_PROFILE",
       sourcePackSha256: ASPHALT_COMPACTION_SOURCE_PACK_SHA256,
@@ -200,14 +200,14 @@ void runMasterSingleDefinitionSuccessorR1({
   },
   search: {
     primaryUom: "м²",
-    canonicalNameRu: "уплотнение асфальтового покрытия на большой площади",
+    canonicalNameRu: "уплотнение асфальтового покрытия",
     aliases: [
       "уплотнение асфальта 5000 м²",
       "укатка асфальта катками",
       "предварительное основное и финишное уплотнение асфальта",
-      "asphalt compaction large area",
+      "asphalt compaction three roller train",
     ],
-    shortScopeRu: "Самостоятельное трёхфазное уплотнение уже уложенного асфальта на большой площади; первая смета формируется сразу по видимому предварительному профилю катков.",
+    shortScopeRu: "Самостоятельное трёхфазное уплотнение уже уложенного асфальта; первая смета формируется сразу по видимому предварительному профилю катков.",
     keyDistinguishingParameters: ["area_m2"],
     clarificationFields: [],
     includedBoundaries: [
@@ -218,7 +218,7 @@ void runMasterSingleDefinitionSuccessorR1({
       "укладка смеси, доставка, основание и остальные слои дорожной одежды",
       "скрытая универсальная производительность или неподтверждённая цена",
     ],
-    extraSearchTermsRu: "уплотнение укатка каток тандемный пневмоколёсный проход покрытие плотность температура пробная захватка большая площадь",
+    extraSearchTermsRu: "уплотнение укатка каток тандемный пневмоколёсный проход покрытие плотность температура пробная захватка",
     sourceProvenance: {
       sourcePackSha256: ASPHALT_COMPACTION_SOURCE_PACK_SHA256,
       firstEstimateFromAreaAndVisibleProfile: true,

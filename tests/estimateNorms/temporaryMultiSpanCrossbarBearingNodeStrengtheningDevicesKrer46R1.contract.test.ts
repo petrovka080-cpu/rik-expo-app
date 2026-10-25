@@ -19,9 +19,9 @@ describe("KRER 46-05-006-01 multi-span-crossbar-bearing-node strengthening devic
   const expectedShort = ["1", "75.32", "0.33", "0.33", "6.96", "0.44", "0.00001", "0.00004", "0.09", "0.00014", "4.16"];
   const expectedAcceptance = ["3", "225.96", "0.99", "0.99", "20.88", "1.32", "0.00003", "0.00012", "0.27", "0.00042", "12.48"];
 
-  test("owns four distinct appended identities", () => {
-    expect(TEMPORARY_MULTI_SPAN_CROSSBAR_BEARING_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).toHaveLength(4);
-    expect(new Set(TEMPORARY_MULTI_SPAN_CROSSBAR_BEARING_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).size).toBe(4);
+  test("preserves the surviving exact identities and source boundary", () => {
+    expect(TEMPORARY_MULTI_SPAN_CROSSBAR_BEARING_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).toHaveLength(2);
+    expect(new Set(TEMPORARY_MULTI_SPAN_CROSSBAR_BEARING_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).size).toBe(2);
     expect(TEMPORARY_MULTI_SPAN_CROSSBAR_BEARING_NODE_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS)
       .toEqual(Object.values(TEMPORARY_MULTI_SPAN_CROSSBAR_BEARING_NODE_STRENGTHENING_DEVICES_KRER46_VARIANTS).map((variant) => variant.catalogId));
   });
@@ -100,7 +100,7 @@ describe("KRER 46-05-006-01 multi-span-crossbar-bearing-node strengthening devic
       ]));
   });
   test("resolves all variants and rejects an unsupported key", () => {
-    for (const key of ["standard", "large_area", "small_area", "wet_zone"] as const)
+    for (const key of ["standard", "wet_zone"] as const)
       expect(resolveTemporaryMultiSpanCrossbarBearingNodeStrengtheningDevicesKrer46Variant(key).catalogId).toContain(`_${key}`);
     expect(() => resolveTemporaryMultiSpanCrossbarBearingNodeStrengtheningDevicesKrer46Variant("bad" as never)).toThrow("VARIANT_UNSUPPORTED");
   });

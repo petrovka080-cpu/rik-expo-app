@@ -1,0 +1,1572 @@
+{
+  "contract": "roof002-complete-owncolumns-native-map/r24",
+  "status": "SOURCE_ONLY_NOT_ORDINARY_CONFIG",
+  "ROOTPrimary10_11": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary002-pages10-11-r203\\SOURCE_PAGES10_11_RENDER_R203.json",
+    "sha256": "1667aa92e3e180876e0af37aba88bbdf27d5f9fac37853553a90e1c9ee0c0998",
+    "bytes": 1098
+  },
+  "newSevenSourcePacks": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat-roll-native00204-r24.json",
+      "sha256": "f21efbe43cc399d33f5942c0259f02172eef646db0ac885be13ef2ba48a60bef",
+      "bytes": 19834
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat-roll-native00205-r24.json",
+      "sha256": "28b36fd5c54b1cb2ff0671f90dcbdc664531b09232489bf1801731f1dadb3237",
+      "bytes": 21435
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat-roll-native00206-r24.json",
+      "sha256": "0914f69c2f9b065bc32f740556bba314df3de31360207332355f8a9c4a3607d9",
+      "bytes": 21173
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat-roll-native00207-r24.json",
+      "sha256": "4b4ad59fbd8d4c5587237ac8640cc7d9182f190d9a1ea768689bc5473ab160ec",
+      "bytes": 17277
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat-roll-native00208-r24.json",
+      "sha256": "3cffe71b4a86e4c4fdeb92b128fa64b82c7c99c5658c79f69dab8f0f5db12517",
+      "bytes": 16991
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat-roll-native00210-r24.json",
+      "sha256": "455f3d18d74ac88ae7bc5ec3b1a9c26e53e397836bb5c6dff026b5fd1dfa9fcb",
+      "bytes": 15885
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat-roll-native00211-r24.json",
+      "sha256": "4a54c5584e8bf1edc1b90f008719709b75066ccdea10dbe757a6e08e9f511786",
+      "bytes": 17332
+    }
+  ],
+  "priorThreeUnchanged": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\protected-flat-roll-whole002010203-source-r24\\revision02\\SOURCE_ONLY_WHOLE002010203_WITH_EXISTING00209_SCOPE_HANDOFF_R24_REV02.json",
+    "sha256": "d894dae6b5d3dc15988a118674d320347548c63f35220346380e5376b09ffc04",
+    "bytes": 5908
+  },
+  "priorThreeVerbatimLinks": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-protected-flat-roll-native00201-r24.json",
+      "sha256": "9c56089773cf74c9c0320ed617ef384c69d83dde1021198ee1f0498dbe4c5df7",
+      "bytes": 19867
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-protected-flat-roll-native00202-r24.json",
+      "sha256": "5a3589f3f57c74e573d679a9523b268436d5de7075c4d2ead388e5ea9d6d1a87",
+      "bytes": 19787
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-protected-flat-roll-native00203-r24.json",
+      "sha256": "404de9b3a53bc429e5fd0e2bb6ec36b11df4331a60b753939e16c80e957106d1",
+      "bytes": 21992
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\src\\lib\\estimate\\v4\\roofProtectedFlatRollMissing002R24.ts",
+      "sha256": "76e86ad82c82abfe048e11ca1492b1c30b62295de35a63cc093f70fb93a50396",
+      "bytes": 7804
+    }
+  ],
+  "remainingNativeEntries": [
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:workers",
+      "sourceResourceCode": "000-1003-8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "49.61",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "49.61",
+        "37.5": "18.60375",
+        "125": "62.0125"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:included_machine_operators",
+      "sourceResourceCode": null,
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "2.48",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "2.48",
+        "37.5": "0.93000",
+        "125": "3.1000"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:tower_crane_8t",
+      "sourceResourceCode": "02-0005",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "1.58",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.58",
+        "37.5": "0.59250",
+        "125": "1.9750"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:truck_crane_10t",
+      "sourceResourceCode": "02-0075",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.90",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.90",
+        "37.5": "0.33750",
+        "125": "1.1250"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:boiler400l",
+      "sourceResourceCode": "12-0340",
+      "sourceTitleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "9.80",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "9.80",
+        "37.5": "3.67500",
+        "125": "12.2500"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:flatbed_to5t",
+      "sourceResourceCode": "40-0001",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "1.26",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.26",
+        "37.5": "0.47250",
+        "125": "1.5750"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:ready_hot_roof_mastic",
+      "sourceResourceCode": "01-0202-0003",
+      "sourceTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "rateExactPer100m2": "1.2",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.2",
+        "37.5": "0.4500",
+        "125": "1.500"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:fine_dressed_felt_rm350",
+      "sourceResourceCode": "01-7410-0006",
+      "sourceTitleRu": "Рубероид кровельный смелкойпосыпкойРМ-350",
+      "unitId": "m2",
+      "rateExactPer100m2": "460",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "460",
+        "37.5": "172.500",
+        "125": "575.00"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:hot_warm_porous_asphalt_grade1",
+      "sourceResourceCode": "03-0502-0020",
+      "sourceTitleRu": "Смеси асфальтобетонные дорожные,аэродромные иасфальтобетон(горячие итёплые дляпористогоасфальтобетона щебёночные игравийные),маркаI",
+      "unitId": "t",
+      "rateExactPer100m2": "6.5",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "6.5",
+        "37.5": "2.4375",
+        "125": "8.125"
+      }
+    },
+    {
+      "normId": "12-01-002-04",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:04:simazine50_wettable_powder",
+      "sourceResourceCode": "04-0704-0080",
+      "sourceTitleRu": "Симазин50%-ный порошок смачивающийся",
+      "unitId": "t",
+      "rateExactPer100m2": "0.001",
+      "ownLocator": "PDF10/table002/column04",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:04:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.001",
+        "37.5": "0.000375",
+        "125": "0.00125"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:workers",
+      "sourceResourceCode": "000-1003-8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "81.47",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "81.47",
+        "37.5": "30.55125",
+        "125": "101.8375"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:included_machine_operators",
+      "sourceResourceCode": null,
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "4.07",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "4.07",
+        "37.5": "1.52625",
+        "125": "5.0875"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:tower_crane_8t",
+      "sourceResourceCode": "02-0005",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "2.31",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "2.31",
+        "37.5": "0.86625",
+        "125": "2.8875"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:truck_crane_10t",
+      "sourceResourceCode": "02-0075",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "1.32",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.32",
+        "37.5": "0.49500",
+        "125": "1.6500"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:forklift_5t",
+      "sourceResourceCode": "03-0020",
+      "sourceTitleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.44",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.44",
+        "37.5": "0.16500",
+        "125": "0.5500"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:boiler400l",
+      "sourceResourceCode": "12-0340",
+      "sourceTitleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "9.80",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "9.80",
+        "37.5": "3.67500",
+        "125": "12.2500"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:flatbed_to5t",
+      "sourceResourceCode": "40-0001",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "1.47",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.47",
+        "37.5": "0.55125",
+        "125": "1.8375"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:ready_hot_roof_mastic",
+      "sourceResourceCode": "01-0202-0003",
+      "sourceTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "rateExactPer100m2": "1.2",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.2",
+        "37.5": "0.4500",
+        "125": "1.500"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:quartz_sand_0_063mm",
+      "sourceResourceCode": "01-6205-0005",
+      "sourceTitleRu": "Песок кварцевый фракции0-0,63мм",
+      "unitId": "t",
+      "rateExactPer100m2": "4.6",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "4.6",
+        "37.5": "1.7250",
+        "125": "5.750"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:fine_dressed_felt_rm350",
+      "sourceResourceCode": "01-7410-0006",
+      "sourceTitleRu": "Рубероид кровельный смелкойпосыпкойРМ-350",
+      "unitId": "m2",
+      "rateExactPer100m2": "460",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "460",
+        "37.5": "172.500",
+        "125": "575.00"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:simazine50_wettable_powder",
+      "sourceResourceCode": "04-0704-0080",
+      "sourceTitleRu": "Симазин50%-ный порошок смачивающийся",
+      "unitId": "t",
+      "rateExactPer100m2": "0.001",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.001",
+        "37.5": "0.000375",
+        "125": "0.00125"
+      }
+    },
+    {
+      "normId": "12-01-002-05",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:05:concrete_cement_sand_slabs_m300_35mm",
+      "sourceResourceCode": "05-0106-0005",
+      "sourceTitleRu": "Плиты бетонные ицементно-песчаные длятротуаров,полов иоблицовки,марки300,толщина35мм",
+      "unitId": "m2",
+      "rateExactPer100m2": "102",
+      "ownLocator": "PDF10/table002/column05",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:05:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "102",
+        "37.5": "38.250",
+        "125": "127.50"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:workers",
+      "sourceResourceCode": "000-1003-8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "81.47",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "81.47",
+        "37.5": "30.55125",
+        "125": "101.8375"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:included_machine_operators",
+      "sourceResourceCode": null,
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "4.07",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "4.07",
+        "37.5": "1.52625",
+        "125": "5.0875"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:tower_crane_8t",
+      "sourceResourceCode": "02-0005",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "2.31",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "2.31",
+        "37.5": "0.86625",
+        "125": "2.8875"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:truck_crane_10t",
+      "sourceResourceCode": "02-0075",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "1.32",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.32",
+        "37.5": "0.49500",
+        "125": "1.6500"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:forklift_5t",
+      "sourceResourceCode": "03-0020",
+      "sourceTitleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.44",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.44",
+        "37.5": "0.16500",
+        "125": "0.5500"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:boiler400l",
+      "sourceResourceCode": "12-0340",
+      "sourceTitleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "9.80",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "9.80",
+        "37.5": "3.67500",
+        "125": "12.2500"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:flatbed_to5t",
+      "sourceResourceCode": "40-0001",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "1.47",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.47",
+        "37.5": "0.55125",
+        "125": "1.8375"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:ready_hot_roof_mastic",
+      "sourceResourceCode": "01-0202-0003",
+      "sourceTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "rateExactPer100m2": "1.2",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding",
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.2",
+        "37.5": "0.4500",
+        "125": "1.500"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:quartz_sand_0_063mm",
+      "sourceResourceCode": "01-6205-0005",
+      "sourceTitleRu": "Песок кварцевый фракции0-0,63мм",
+      "unitId": "t",
+      "rateExactPer100m2": "4.6",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "4.6",
+        "37.5": "1.7250",
+        "125": "5.750"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:reinforced_cement_slabs",
+      "sourceResourceCode": "01-6703-0002",
+      "sourceTitleRu": "Плита армоцементная",
+      "unitId": "m2",
+      "rateExactPer100m2": "102",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "102",
+        "37.5": "38.250",
+        "125": "127.50"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:fine_dressed_felt_rm350",
+      "sourceResourceCode": "01-7410-0006",
+      "sourceTitleRu": "Рубероид кровельный смелкойпосыпкойРМ-350",
+      "unitId": "m2",
+      "rateExactPer100m2": "460",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "460",
+        "37.5": "172.500",
+        "125": "575.00"
+      }
+    },
+    {
+      "normId": "12-01-002-06",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:06:simazine50_wettable_powder",
+      "sourceResourceCode": "04-0704-0080",
+      "sourceTitleRu": "Симазин50%-ный порошок смачивающийся",
+      "unitId": "t",
+      "rateExactPer100m2": "0.001",
+      "ownLocator": "PDF10/table002/column06",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:06:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.001",
+        "37.5": "0.000375",
+        "125": "0.00125"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:workers",
+      "sourceResourceCode": "000-1003-8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "26.22",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "26.22",
+        "37.5": "9.83250",
+        "125": "32.7750"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:included_machine_operators",
+      "sourceResourceCode": null,
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "0.33",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.33",
+        "37.5": "0.12375",
+        "125": "0.4125"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:tower_crane_8t",
+      "sourceResourceCode": "02-0005",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.24",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.24",
+        "37.5": "0.09000",
+        "125": "0.3000"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:truck_crane_10t",
+      "sourceResourceCode": "02-0075",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.09",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.09",
+        "37.5": "0.03375",
+        "125": "0.1125"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:boiler400l",
+      "sourceResourceCode": "12-0340",
+      "sourceTitleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "6.38",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "6.38",
+        "37.5": "2.39250",
+        "125": "7.9750"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:flatbed_to5t",
+      "sourceResourceCode": "40-0001",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.14",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.14",
+        "37.5": "0.05250",
+        "125": "0.1750"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:bitumen_polymer_mastic",
+      "sourceResourceCode": "01-0202-0010",
+      "sourceTitleRu": "Мастика битумно-полимерная",
+      "unitId": "t",
+      "rateExactPer100m2": "0.77",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.77",
+        "37.5": "0.28875",
+        "125": "0.9625"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:coarse_dressed_felt_rkk350b",
+      "sourceResourceCode": "01-7410-0001",
+      "sourceTitleRu": "Рубероид кровельный скрупнозернистойпосыпкойРКК-350б",
+      "unitId": "m2",
+      "rateExactPer100m2": "126",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "126",
+        "37.5": "47.250",
+        "125": "157.50"
+      }
+    },
+    {
+      "normId": "12-01-002-07",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:07:underlay_felt_rpp300b",
+      "sourceResourceCode": "01-7410-0012",
+      "sourceTitleRu": "Рубероид подкладочный спылевиднойпосыпкойРПП-300б",
+      "unitId": "m2",
+      "rateExactPer100m2": "250",
+      "ownLocator": "PDF10–11/table002/column07",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:07:operation:roll_mastic_bonding"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "250",
+        "37.5": "93.750",
+        "125": "312.50"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:workers",
+      "sourceResourceCode": "000-1003-8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "20.29",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "20.29",
+        "37.5": "7.60875",
+        "125": "25.3625"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:included_machine_operators",
+      "sourceResourceCode": null,
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "0.31",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.31",
+        "37.5": "0.11625",
+        "125": "0.3875"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:tower_crane_8t",
+      "sourceResourceCode": "02-0005",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.23",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.23",
+        "37.5": "0.08625",
+        "125": "0.2875"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:truck_crane_10t",
+      "sourceResourceCode": "02-0075",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.08",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.08",
+        "37.5": "0.03000",
+        "125": "0.1000"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:gas_burners",
+      "sourceResourceCode": "15-0060",
+      "sourceTitleRu": "Горелки газопламенные",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "6.90",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "6.90",
+        "37.5": "2.58750",
+        "125": "8.6250"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:flatbed_to5t",
+      "sourceResourceCode": "40-0001",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.12",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.12",
+        "37.5": "0.04500",
+        "125": "0.1500"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:technical_propane_butane",
+      "sourceResourceCode": "01-0910-0002",
+      "sourceTitleRu": "Пропан-бутан,смесьтехническая",
+      "unitId": "kg",
+      "rateExactPer100m2": "11.8",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "11.8",
+        "37.5": "4.4250",
+        "125": "14.750"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:upper_fused_roll",
+      "sourceResourceCode": "01-7406-0061",
+      "sourceTitleRu": "Материал рулонный кровельный дляверхнегослоя,изопластЭКП-4.5",
+      "unitId": "m2",
+      "rateExactPer100m2": "115",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "115",
+        "37.5": "43.125",
+        "125": "143.75"
+      }
+    },
+    {
+      "normId": "12-01-002-08",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:08:lower_fused_roll",
+      "sourceResourceCode": "01-7406-0062",
+      "sourceTitleRu": "Материал рулонный кровельный длянижнихслоёв,изопластЭПП-4",
+      "unitId": "m2",
+      "rateExactPer100m2": "230",
+      "ownLocator": "PDF10–11/table002/column08",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:08:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "230",
+        "37.5": "86.250",
+        "125": "287.50"
+      }
+    },
+    {
+      "normId": "12-01-002-10",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:10:workers",
+      "sourceResourceCode": "000-1003-8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "8.44",
+      "ownLocator": "PDF11/table002/column10",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:10:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "8.44",
+        "37.5": "3.16500",
+        "125": "10.5500"
+      }
+    },
+    {
+      "normId": "12-01-002-10",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:10:included_machine_operators",
+      "sourceResourceCode": null,
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "0.11",
+      "ownLocator": "PDF11/table002/column10",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:10:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.11",
+        "37.5": "0.04125",
+        "125": "0.1375"
+      }
+    },
+    {
+      "normId": "12-01-002-10",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:10:tower_crane_8t",
+      "sourceResourceCode": "02-0005",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.08",
+      "ownLocator": "PDF11/table002/column10",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:10:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.08",
+        "37.5": "0.03000",
+        "125": "0.1000"
+      }
+    },
+    {
+      "normId": "12-01-002-10",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:10:truck_crane_10t",
+      "sourceResourceCode": "02-0075",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.03",
+      "ownLocator": "PDF11/table002/column10",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:10:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.03",
+        "37.5": "0.01125",
+        "125": "0.0375"
+      }
+    },
+    {
+      "normId": "12-01-002-10",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:10:gas_burners",
+      "sourceResourceCode": "15-0060",
+      "sourceTitleRu": "Горелки газопламенные",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "2.40",
+      "ownLocator": "PDF11/table002/column10",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:10:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "2.40",
+        "37.5": "0.90000",
+        "125": "3.0000"
+      }
+    },
+    {
+      "normId": "12-01-002-10",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:10:flatbed_to5t",
+      "sourceResourceCode": "40-0001",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.05",
+      "ownLocator": "PDF11/table002/column10",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:10:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.05",
+        "37.5": "0.01875",
+        "125": "0.0625"
+      }
+    },
+    {
+      "normId": "12-01-002-10",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:10:technical_propane_butane",
+      "sourceResourceCode": "01-0910-0002",
+      "sourceTitleRu": "Пропан-бутан,смесьтехническая",
+      "unitId": "kg",
+      "rateExactPer100m2": "3.4",
+      "ownLocator": "PDF11/table002/column10",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:10:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "3.4",
+        "37.5": "1.2750",
+        "125": "4.250"
+      }
+    },
+    {
+      "normId": "12-01-002-10",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:10:upper_fused_roll",
+      "sourceResourceCode": "01-7406-0061",
+      "sourceTitleRu": "Материал рулонный кровельный дляверхнегослоя,изопластЭКП-4.5",
+      "unitId": "m2",
+      "rateExactPer100m2": "116",
+      "ownLocator": "PDF11/table002/column10",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:10:operation:torch_roll_fusing"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "116",
+        "37.5": "43.500",
+        "125": "145.00"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:workers",
+      "sourceResourceCode": "000-1003-8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "9.40",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "9.40",
+        "37.5": "3.52500",
+        "125": "11.7500"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:included_machine_operators",
+      "sourceResourceCode": null,
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "1.12",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.12",
+        "37.5": "0.42000",
+        "125": "1.4000"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:tower_crane_8t",
+      "sourceResourceCode": "02-0005",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.90",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.90",
+        "37.5": "0.33750",
+        "125": "1.1250"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:truck_crane_10t",
+      "sourceResourceCode": "02-0075",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.09",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.09",
+        "37.5": "0.03375",
+        "125": "0.1125"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:forklift_5t",
+      "sourceResourceCode": "03-0020",
+      "sourceTitleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.13",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.13",
+        "37.5": "0.04875",
+        "125": "0.1625"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:boiler400l",
+      "sourceResourceCode": "12-0340",
+      "sourceTitleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "2.45",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "2.45",
+        "37.5": "0.91875",
+        "125": "3.0625"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:flatbed_to5t",
+      "sourceResourceCode": "40-0001",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.17",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.17",
+        "37.5": "0.06375",
+        "125": "0.2125"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:ready_hot_roof_mastic",
+      "sourceResourceCode": "01-0202-0003",
+      "sourceTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "rateExactPer100m2": "0.303",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "0.303",
+        "37.5": "0.113625",
+        "125": "0.37875"
+      }
+    },
+    {
+      "normId": "12-01-002-11",
+      "expectedResourceId": "roof:flat-roll:missing002:r24:11:gravel_dr8_fraction5_3_10",
+      "sourceResourceCode": "01-1603-0001",
+      "sourceTitleRu": "Гравий длястроительныхработ маркаДр.8,фракция5(3)-10мм",
+      "unitId": "m3",
+      "rateExactPer100m2": "1.05",
+      "ownLocator": "PDF11/table002/column11",
+      "requiredOperationIds": [
+        "roof:flat-roll:missing002:r24:11:operation:roof_carpet_protection"
+      ],
+      "DecimalOraclesOwnArea": {
+        "100": "1.05",
+        "37.5": "0.39375",
+        "125": "1.3125"
+      }
+    }
+  ],
+  "remainingNativeCounts": [
+    10,
+    12,
+    12,
+    9,
+    9,
+    8,
+    9
+  ],
+  "remainingNativeTotal": 69,
+  "priorNative35NotRecreated": true,
+  "existing00209NineSourceCellsCompareOnlyNotExecution": {
+    "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\data\\estimate-benchmarks\\source-packs\\flat-roof-torch-two-s27-63.json",
+    "sha256": "dd905e5b6bdd376081420782dfd94da582c68810ee6ab242dcbf3ddc871515c9",
+    "bytes": 121119
+  },
+  "wholeTableDeclaredSourceCells": 113,
+  "tenMissingLocalNativeRows": 104,
+  "countMeaning": "source roster only;notactualpresent rows/paidworks/FULL",
+  "literalUnitAndProductChecks": [
+    "Quartzsand00205/06exact4.6t;nodensity/m3conversion.",
+    "Concrete/cementsandslabs00205M300/35mm/102m2;no piecesfromarea.",
+    "00206armocement102m2,notsource01705asbestoscement/nothicknessinvented.",
+    "00204title sandyasphalt versusnative porouscrushedstone/gravelasphalt keptasexactsourcecompatibilityHOLD.",
+    "00207bitumen-polymercode01-0202-0010/0.77t,notgeneric01-0202-0003/019recipe.",
+    "Torch00208upper115/lower230;00209upper114/lower116old;00210upper116only. No proportionalreuse00209.",
+    "Standalone00211mastic0.303t,notpitched00107/0.3t."
+  ],
+  "sharedCandidateNeedsOnce": [
+    {
+      "costOwnerId": "master212:roof:r1:need:base-control",
+      "formulaId": "master212:roof:r1:need:base-control:formula",
+      "category": "service",
+      "unitId": "service_hour",
+      "specification": "Приёмка ровности, прочности и сухости основания",
+      "capturedRowSha256": "b6f1796fa30510e87ff32fada6c4a4e1a7eae8af10d7c36c26fc4148fb8ee4a2",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:hand-measuring",
+      "formulaId": "master212:roof:r1:need:hand-measuring:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Рулетки, разметочный и измерительный инструмент",
+      "capturedRowSha256": "ed7e4f497855ad3d27dd27ef75e678fa50035571eed061cf22903c04facdeb6e",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:hand-application",
+      "formulaId": "master212:roof:r1:need:hand-application:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Ручной инструмент подготовки и нанесения",
+      "capturedRowSha256": "a73d84e70da1c598f1d4277b6f2f4e4fd9ade7e4edc10a7a2f924882ed9ea480",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:mixing-containers",
+      "formulaId": "master212:roof:r1:need:mixing-containers:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Ёмкости и инструмент подготовки материалов",
+      "capturedRowSha256": "99832704a26ea96f78ff3c94fd1b0361fc024bc8cf82c95ec720a409bb708c85",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:rigging",
+      "formulaId": "master212:roof:r1:need:rigging:formula",
+      "category": "equipment",
+      "unitId": "piece",
+      "specification": "Стропы, захваты и тара подъёма материалов",
+      "capturedRowSha256": "07822ecd95ee1f3a30b976866ec427d6bd66d32be91e18973e203d919e178d1d",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:access",
+      "formulaId": "master212:roof:r1:need:access:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Настилы, лестницы и безопасные проходы",
+      "capturedRowSha256": "72b266da9404f782ceef957ebb635cb709faf8d94ba6152ec01d98f29122622f",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:edge-protection",
+      "formulaId": "master212:roof:r1:need:edge-protection:formula",
+      "category": "equipment",
+      "unitId": "m",
+      "specification": "Ограждения и системы защиты от падения",
+      "capturedRowSha256": "ad15e8af5bcd74e7e10d0f4dd2da5dbc60da110d72e3c4fe51c65015e0773f3e",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:ppe",
+      "formulaId": "master212:roof:r1:need:ppe:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Средства индивидуальной защиты рабочих",
+      "capturedRowSha256": "f3e057e83794a961625e75de7cfdec43edb34a257c9f4d9184ba65d220f05a59",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:external-delivery",
+      "formulaId": "master212:roof:r1:need:external-delivery:formula",
+      "category": "delivery",
+      "unitId": "trip",
+      "specification": "Внешняя доставка материалов и техники",
+      "capturedRowSha256": "272a8d0a09df6da328d3936a6b6cb0a8f170b83d9f93f1b20e5d71896a2b656c",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:quality-tools",
+      "formulaId": "master212:roof:r1:need:quality-tools:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Приборы проверки толщины и качества покрытия",
+      "capturedRowSha256": "acbc37d9d8917cf551836aefb5abc46dcd2448b0cc5bad4a6d33d0a570d3e2cb",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:quality-service",
+      "formulaId": "master212:roof:r1:need:quality-service:formula",
+      "category": "service",
+      "unitId": "service_hour",
+      "specification": "Проверки, испытания и приёмочная услуга",
+      "capturedRowSha256": "92f3022a6973ed7682f17520de3f45ea4295af1d73c84ec92d4cb6ad120b48ce",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:cleaning-tools",
+      "formulaId": "master212:roof:r1:need:cleaning-tools:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Инструмент очистки и сбора остатков",
+      "capturedRowSha256": "539e9cf1da1bade2ded59cee8c37d5a859417c5e14151797b31dd4fd87561aba",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:wash-containment",
+      "formulaId": "master212:roof:r1:need:wash-containment:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Сбор промывочных жидкостей и загрязнений",
+      "capturedRowSha256": "43ca7807182b84bc98fc13c146674c61d6feea4aeb12fb7b0c35496e3d1188f4",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:waste-mass",
+      "formulaId": "master212:roof:r1:need:waste-mass:formula",
+      "category": "service",
+      "unitId": "kg",
+      "specification": "Остатки материалов, тара и упаковка",
+      "capturedRowSha256": "88c03f6dea653728cfc131d76b3967b9c79d749d86ddd495486977399a559015",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:waste-loading",
+      "formulaId": "master212:roof:r1:need:waste-loading:formula",
+      "category": "labor",
+      "unitId": "man_hour",
+      "specification": "Сбор и погрузка кровельных отходов",
+      "capturedRowSha256": "7c90a3de3d2cc29e23537bd244f0dea704ae3584d18c0a0a76939716bb822296",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:waste-transport",
+      "formulaId": "master212:roof:r1:need:waste-transport:formula",
+      "category": "service",
+      "unitId": "trip",
+      "specification": "Вывоз и приём кровельных отходов",
+      "capturedRowSha256": "694b973c1c7730653d85eca8f2cd57f22afd4184ad6a0c0f4dc734befb6ae8da",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:torch-fire-protection",
+      "formulaId": "master212:roof:r1:need:torch-fire-protection:formula",
+      "category": "equipment",
+      "unitId": "piece",
+      "specification": "Средства защиты и организация огневых работ",
+      "capturedRowSha256": "2b7ddbba6e89831034a116763a6b8c79bcc5a8727d4f65fa4fffc61e7cfca86c",
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "ANY_THERMAL002_OWN_METHOD"
+    },
+    {
+      "costOwnerId": "roof:flat003006:r24:stock:boiler-400l",
+      "formulaId": "roof:flat003006:r24:stock:boiler-400l:formula",
+      "category": "equipment",
+      "unitId": "pcs",
+      "specification": "Передвижной битумный котёл вместимостью 400 л",
+      "capturedRowSha256": null,
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "EXACT_MASTIC00204_05_06_07_11_ONLY"
+    },
+    {
+      "costOwnerId": "roof:mastic-mesh:whole003:r24:hot-feed-post",
+      "formulaId": "roof:mastic-mesh:whole003:r24:hot-feed-post:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Жаростойкая тара и приспособления приёма и подачи мастики",
+      "capturedRowSha256": null,
+      "createsSecondOwner": false,
+      "quantity": null,
+      "condition": "EXACT_MASTIC00204_05_06_07_11_ONLY"
+    }
+  ],
+  "sharedProvenance": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\slab-insulation-whole013-source-r24\\revision06\\after\\data\\estimate-benchmarks\\source-packs\\roof-slab013-independent-whole-map-r24.json",
+    "sha256": "e2016e3f1a4a907e1a420631eeaec0e2aa01ea35794bde69f7749bd883201f14",
+    "bytes": 251087
+  },
+  "unresolvedStockRoleGroups": [
+    {
+      "role": "tower-crane8t",
+      "rowId": null,
+      "quantity": null,
+      "unitId": "piece",
+      "status": "CURRENT_COMPATIBLE_INVENTORY_BINDING_AND_PPR_REQUIRED_NOT_GLOBAL_ABSENCE"
+    },
+    {
+      "role": "truck-crane10t",
+      "rowId": null,
+      "quantity": null,
+      "unitId": "piece",
+      "status": "CURRENT_COMPATIBLE_INVENTORY_BINDING_AND_PPR_REQUIRED_NOT_GLOBAL_ABSENCE"
+    },
+    {
+      "role": "forklift5t",
+      "rowId": null,
+      "quantity": null,
+      "unitId": "piece",
+      "status": "CURRENT_COMPATIBLE_INVENTORY_BINDING_AND_PPR_REQUIRED_NOT_GLOBAL_ABSENCE"
+    },
+    {
+      "role": "flatbed-to5t",
+      "rowId": null,
+      "quantity": null,
+      "unitId": "piece",
+      "status": "CURRENT_COMPATIBLE_INVENTORY_BINDING_AND_PPR_REQUIRED_NOT_GLOBAL_ABSENCE"
+    },
+    {
+      "role": "gas-torch-and-supply-post",
+      "rowId": null,
+      "quantity": null,
+      "unitId": "set",
+      "status": "CURRENT_COMPATIBLE_INVENTORY_BINDING_AND_PPR_REQUIRED_NOT_GLOBAL_ABSENCE"
+    }
+  ],
+  "sourceApplicationNeeds": [
+    "Exactsimazine/antisepticsystem004–06 unresolvednorm gates;notPPR.",
+    "Exactallotherproduct/project andprotection/placementpost remainunknown."
+  ],
+  "unknownCounts": "19sharedcandidateIDsNULL;unboundrolesandsourceconditionslinked,not assertedassameinventoryIDbyname. Do notsum25priorneedgroupswithremaininggroups orcallthemanactualcorecount.",
+  "compatibility": [
+    "Single proposedmethod for10newprofiles;currentold00209selector/source unchangeduntilROOTreview.",
+    "Protection00211cannotdoubleincluded00201/02orownprotectedfield. Noarbitrarysubtractionofmastic/baserooflabor.",
+    "00204asphalt/05slabs/06armocementprotectionincluded;separate017onlyforadifferentprojectsurfaceandstage.",
+    "00207source3layersdoesnotgrantanybitumenpolymerproduct orgravelbydefault.",
+    "Onlymasticmethodshaveboiler/heatfeed;torch08/10do notactivateboiler. Firepostsharedbutnativephasehoursretained."
+  ],
+  "execution": {
+    "Node": 0,
+    "SQL": 0,
+    "factory": "UNRUN",
+    "core": "UNRUN",
+    "READY": false,
+    "FULL": false
+  }
+}

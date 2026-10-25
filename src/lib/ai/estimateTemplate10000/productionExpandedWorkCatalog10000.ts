@@ -197,7 +197,7 @@ export type ProductionCompiledExpandedEstimate = {
   compiledHash: string;
 };
 
-type Term = { key: string; ru: string; alias?: string };
+type Term = { key: string; ru: string; alias?: string; catalogOrdinal?: number };
 
 type CategoryPack = {
   category: ProductionTemplate10000Category;
@@ -221,17 +221,18 @@ type CategoryPack = {
   qualityTerms: string[];
 };
 
+// Stable ordinal span preserves every surviving work identity. Removed slots
+// emit no templates and are never refilled to satisfy a catalogue count.
+const COMMON_MODIFIER_SLOT_COUNT = 10;
 const COMMON_MODIFIERS: Term[] = [
-  { key: "standard", ru: "в стандартной зоне", alias: "стандартный объем" },
-  { key: "small_area", ru: "на малой площади", alias: "малый объем" },
-  { key: "large_area", ru: "на большой площади", alias: "крупный объем" },
-  { key: "wet_zone", ru: "во влажной зоне", alias: "влажная зона" },
-  { key: "technical_room", ru: "в техническом помещении", alias: "техническое помещение" },
-  { key: "high_load", ru: "для высокой нагрузки", alias: "усиленное исполнение" },
-  { key: "repair", ru: "с локальным ремонтом основания", alias: "с ремонтом основания" },
-  { key: "access_limited", ru: "при ограниченном доступе", alias: "сложный доступ" },
-  { key: "finish_ready", ru: "под чистовую сдачу", alias: "чистовая сдача" },
-  { key: "commercial", ru: "для коммерческого объекта", alias: "коммерческий объект" },
+  { catalogOrdinal: 0, key: "standard", ru: "в стандартной зоне", alias: "стандартный объем" },
+  { catalogOrdinal: 3, key: "wet_zone", ru: "во влажной зоне", alias: "влажная зона" },
+  { catalogOrdinal: 4, key: "technical_room", ru: "в техническом помещении", alias: "техническое помещение" },
+  { catalogOrdinal: 5, key: "high_load", ru: "для высокой нагрузки", alias: "усиленное исполнение" },
+  { catalogOrdinal: 6, key: "repair", ru: "с локальным ремонтом основания", alias: "с ремонтом основания" },
+  { catalogOrdinal: 7, key: "access_limited", ru: "при ограниченном доступе", alias: "сложный доступ" },
+  { catalogOrdinal: 8, key: "finish_ready", ru: "под чистовую сдачу", alias: "чистовая сдача" },
+  { catalogOrdinal: 9, key: "commercial", ru: "для коммерческого объекта", alias: "коммерческий объект" },
 ];
 
 const SYSTEMS: Term[] = [
@@ -828,14 +829,14 @@ function defaultUnitForDefinition(packItem: CategoryPack, element: Term, operati
   return packItem.defaultUnit;
 }
 
-function makeDefinition(packItem: CategoryPack, index: number): ProductionWorkDefinition {
+function makeDefinition(packItem: CategoryPack, index: number): ProductionWorkDefinition | null {
   const element = packItem.elements[index % packItem.elements.length];
   const operation = packItem.operations[Math.floor(index / packItem.elements.length) % packItem.operations.length];
-  const modifier = packItem.modifiers[
-    Math.floor(index / (packItem.elements.length * packItem.operations.length)) % packItem.modifiers.length
-  ];
+  const modifierOrdinal = Math.floor(index / (packItem.elements.length * packItem.operations.length)) % COMMON_MODIFIER_SLOT_COUNT;
+  const modifier = packItem.modifiers.find((item, ordinal) => (item.catalogOrdinal ?? ordinal) === modifierOrdinal);
+  if (!modifier) return null;
   const system = packItem.systems[
-    Math.floor(index / (packItem.elements.length * packItem.operations.length * packItem.modifiers.length)) % packItem.systems.length
+    Math.floor(index / (packItem.elements.length * packItem.operations.length * COMMON_MODIFIER_SLOT_COUNT)) % packItem.systems.length
   ];
   const workKey = makeWorkKey(packItem, system, element, operation, modifier);
   const scopeBase = workKey.toUpperCase();
@@ -874,7 +875,7 @@ function buildDefinitions(): ProductionWorkDefinition[] {
   return CATEGORY_PACK_ARRAY.flatMap((packItem) =>
     Array.from({ length: REQUIRED_CATEGORY_DISTRIBUTION_10000[packItem.category] }, (_, index) =>
       makeDefinition(packItem, index),
-    ),
+    ).filter((definition): definition is ProductionWorkDefinition => definition !== null),
   );
 }
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { consumerEstimateHasConfirmedManualQuantities, consumerEstimateManualApprovalStatusRu } from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type {
@@ -213,7 +214,7 @@ export function ConsumerRepairDraftPanel({
         <Text style={styles.title}>Черновик</Text>
         <Text style={styles.status}>
           {bundle
-            ? statusLabel(bundle.draft.status)
+            ? consumerEstimateHasConfirmedManualQuantities(bundle) ? consumerEstimateManualApprovalStatusRu(bundle) : statusLabel(bundle.draft.status)
             : hasSelectedApprovedHistory
               ? "Утвержденная смета ниже"
               : "Позиции пока пустые"}

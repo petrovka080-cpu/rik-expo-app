@@ -1,0 +1,116 @@
+{
+  "contract": "masonry-glass-opening-known-native-price-hold-fixture/r223-rev03",
+  "fixtureNature": "TEST_ONLY_SYNTHETIC_TARIFFS_NOT_MARKET_NORM_SOURCE_OR_DATABASE_PRICE_SNAPSHOT",
+  "catalogId": "canonical-work:base:masonry_interior_opening_lay_standard",
+  "normId": "08-04-002-03",
+  "areaM2": "12.5",
+  "storeyHeightM": "4",
+  "selector": {
+    "parameterId": "masonry_opening_physical_result_r223",
+    "value": "Заполнение проёма пустотелыми стеклоблоками 194×194×98 мм",
+    "meaning": "Physical request only, not approved project/payment/stock authority"
+  },
+  "sourceArtifactSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+  "sourcePack": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\data\\estimate-benchmarks\\source-packs\\masonry-glass-block-krer08-04-002-r97.json",
+    "bytes": 25621,
+    "sha256": "6fabb08cc53a84f515d5060ccfea1a027d513994c6bb335b0e0ba16260745636"
+  },
+  "currencyCode": "KGS",
+  "snapshotId": "00000000-0000-4000-8000-000000000033",
+  "snapshotIdIsSyntheticNotDatabaseIdentity": true,
+  "prices": [
+    {
+      "rowKey": "whole-labour",
+      "rowId": "masonry:glass-block:krer:08-04-002-03:whole-labour",
+      "unitId": "man_hour",
+      "expectedQuantity": "19.55",
+      "syntheticUnitPrice": "100",
+      "expectedAmount": "1955",
+      "resourceCode": "000-1003-3",
+      "sourceRatePer100M2": "156.40"
+    },
+    {
+      "rowKey": "tower-crane8t",
+      "rowId": "masonry:glass-block:krer:08-04-002-03:tower-crane8t",
+      "unitId": "machine_hour",
+      "expectedQuantity": "0.245",
+      "syntheticUnitPrice": "1000",
+      "expectedAmount": "245",
+      "resourceCode": "02-0005",
+      "sourceRatePer100M2": "1.96"
+    },
+    {
+      "rowKey": "flatbed-truck5t",
+      "rowId": "masonry:glass-block:krer:08-04-002-03:flatbed-truck5t",
+      "unitId": "machine_hour",
+      "expectedQuantity": "0.12375",
+      "syntheticUnitPrice": "800",
+      "expectedAmount": "99",
+      "resourceCode": "40-0001",
+      "sourceRatePer100M2": "0.99"
+    },
+    {
+      "rowKey": "glass-block",
+      "rowId": "masonry:glass-block:krer:08-04-002-03:glass-block",
+      "unitId": "piece",
+      "expectedQuantity": "325",
+      "syntheticUnitPrice": "10",
+      "expectedAmount": "3250",
+      "resourceCode": "01-7801-0003",
+      "sourceRatePer100M2": "2600"
+    },
+    {
+      "rowKey": "reinforcement",
+      "rowId": "masonry:glass-block:krer:08-04-002-03:reinforcement",
+      "unitId": "kg",
+      "expectedQuantity": "14",
+      "syntheticUnitPrice": "50",
+      "expectedAmount": "700",
+      "resourceCode": "03-0102-0001",
+      "sourceRatePer100M2": "112"
+    },
+    {
+      "rowKey": "ready-cement-lime-m25",
+      "rowId": "masonry:glass-block:krer:08-04-002-03:ready-cement-lime-m25",
+      "unitId": "m3",
+      "expectedQuantity": "0.0925",
+      "syntheticUnitPrice": "2000",
+      "expectedAmount": "185",
+      "resourceCode": "03-0405-0002",
+      "sourceRatePer100M2": "0.74"
+    }
+  ],
+  "expectedPricedRows": 1,
+  "expectedNativeRows": 7,
+  "expectedIncludedOperationRows": 2,
+  "operatorUnit": "man_hour",
+  "operatorQuantity": "0.245",
+  "operatorPrice": null,
+  "operatorAmount": null,
+  "includedOperations": [
+    "base-alignment",
+    "assemble"
+  ],
+  "includedOperationsPaidSeparately": false,
+  "allRowsProcurement": false,
+  "sourceNeedOccurrencesUnion": 20,
+  "expectedActiveUnresolvedNeeds": 10,
+  "actualProjectDocuments": 0,
+  "actualStock": null,
+  "reserve": null,
+  "orderQuantum": null,
+  "machineProvisionMode": null,
+  "actualCoreEntries": 0,
+  "FULL": false,
+  "referenceOnlyTotalNotAdmitted": "6434",
+  "expectedCurrentLabourOnlyTotal": "1955",
+  "blockedKnownNativeReferenceAmount": "4479",
+  "providedSyntheticTariffs": 6,
+  "costScopeAdmission": "HOLD_NOT_GRANTED_BY_SOURCE_QUANTITIES_OR_SYNTHETIC_PRICE",
+  "modelChanged": false,
+  "materialPaymentAdmitted": false,
+  "machinePaymentAdmitted": false,
+  "rawInfoAmountsMayRetainReferenceValues": true,
+  "chargeAssertion": "Assert included_in_estimate false and exclusion from totals; raw arithmetic reference amount is not payable amount."
+}

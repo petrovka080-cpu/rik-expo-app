@@ -1,4 +1,5 @@
 import pack from '../../../../data/estimate-benchmarks/source-packs/aggressive-floor-actual-thickness-four-s27-69.json';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
 import {buildAutomaticConstructionOwnerR1,compileAutomaticConstructionOwnerR1,unresolvedApplicationNormTruthR1,type AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
 import {estimateDeterministicHash,stringifyCanonicalEstimateJson} from '../estimateDeterministicHash';
 import {canonicalEstimateSha256HexText} from '../backendPlatform/canonicalEstimateSha256';
@@ -33,8 +34,22 @@ function mapped<T>(value:T):T{
 
 /** Bind observed millimetres in the existing decimal FormulaGraph. No local
  * preprocessor supplies hidden inputs: published models run the same compiler. */
-export function buildAggressiveFloorActualThicknessSuccessorS2769(parent:PurchaseGroupRepresentative):PurchaseGroupRepresentative{
- const target=pack.targets.find(t=>t.catalogId===parent.definition.catalog_id);
+
+export const aggressiveFloorActualThicknessHistoricalBindingSha256S2769='058b951aa0bd1f9d471d132b5bf5517efbb5cee262a0ee528a0c85147a6f4456';
+export type aggressiveFloorActualThicknessScopeS2769HistoricalBindingContext=Readonly<{binding:typeof pack;sourcePackSha256:string}>;
+/** Read-only proof reconstruction can use only the exact pinned old binding.
+ * Every non-target byte-semantic field must still equal this versioned recipe;
+ * no historical caller can inject a different norm or arithmetic. */
+function historicalTargets(context?:aggressiveFloorActualThicknessScopeS2769HistoricalBindingContext){
+ if(!context)return pack.targets;
+ if(context.sourcePackSha256!==aggressiveFloorActualThicknessHistoricalBindingSha256S2769
+  ||canonicalEstimateSha256HexText(canonicalEstimateStableJson(context.binding))!==aggressiveFloorActualThicknessHistoricalBindingSha256S2769)throw Error('PINNED_HISTORICAL_BINDING_REQUIRED');
+ const {targets:_active,...active}=pack,{targets:_historical,...historical}=context.binding;
+ if(canonicalEstimateStableJson(active)!==canonicalEstimateStableJson(historical))throw Error('HISTORICAL_RECIPE_SEMANTICS_DRIFT');
+ return context.binding.targets;
+}
+export function buildAggressiveFloorActualThicknessSuccessorS2769(parent:PurchaseGroupRepresentative,historical?:aggressiveFloorActualThicknessScopeS2769HistoricalBindingContext):PurchaseGroupRepresentative{
+ const target=historicalTargets(historical).find(t=>t.catalogId===parent.definition.catalog_id);
  if(!target||parent.definition.id!==target.predecessorDefinitionId||parent.definition.definition_sha256!==target.parentSha256
   ||parent.definition.definition_version!==3||parent.parameters.length!==4||parent.resources.length!==5||parent.formulas.length!==5)
   throw Error('AGGRESSIVE_FLOOR_EXACT_FOUR_V3_PARENTS_REQUIRED');

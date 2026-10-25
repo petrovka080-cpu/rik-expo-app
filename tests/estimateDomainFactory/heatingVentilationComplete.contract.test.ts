@@ -150,19 +150,41 @@ function compile(catalogId: string, scope: Scope) {
 }
 
 describe("Heating / Ventilation complete professional domain", () => {
-  test("freezes exact R920/M920/A0 with reviewed E200 and no fan-in", () => {
-    expect(HVAC_COMPLETE_RECORD_COUNT).toBe(920);
-    expect(HVAC_COMPLETE_TECHNOLOGY_COUNT).toBe(920);
+  test("freezes exact R472/M472/A0 with reviewed E200 and no fan-in", () => {
+    // 920 − 448 base area identities = 472; all 200 expanded reviewed exclusions remain.
+    expect(HVAC_COMPLETE_RECORD_COUNT).toBe(472);
+    expect(HVAC_COMPLETE_TECHNOLOGY_COUNT).toBe(472);
     expect(HVAC_COMPLETE_ALIAS_COUNT).toBe(0);
-    expect(HVAC_DOMAIN_INVENTORY).toHaveLength(920);
+    expect(HVAC_DOMAIN_INVENTORY).toHaveLength(472);
     expect(HVAC_REVIEWED_EXCLUSIONS).toHaveLength(200);
-    expect(hvacDomainFactory.binding_by_catalog_id.size).toBe(920);
-    expect(hvacDomainFactory.technology_by_id.size).toBe(920);
-    expect(new Set(HVAC_DOMAIN_INVENTORY.map((row) => row.catalog_id)).size).toBe(920);
-    expect(new Set(HVAC_DOMAIN_INVENTORY.map((row) => row.canonical_technology_id)).size).toBe(920);
+    expect(hvacDomainFactory.binding_by_catalog_id.size).toBe(472);
+    expect(hvacDomainFactory.technology_by_id.size).toBe(472);
+    expect(new Set(HVAC_DOMAIN_INVENTORY.map((row) => row.catalog_id)).size).toBe(472);
+    expect(new Set(HVAC_DOMAIN_INVENTORY.map((row) => row.canonical_technology_id)).size).toBe(472);
   });
 
-  test("compiles all 920 exact records in both scopes with traceable professional resources", () => {
+  test("retired area identities cannot enter the domain compiler", () => {
+    const standard = HVAC_DOMAIN_INVENTORY.find((row) => row.work_key.endsWith("_standard"))!;
+    expect(standard).toBeDefined();
+    expect(HVAC_DOMAIN_INVENTORY.filter((row) => /_(?:small|medium|large)_area$/u.test(row.work_key))).toEqual([]);
+    for (const size of ["small", "medium", "large"]) {
+      const retired = standard.work_key.replace(/_standard$/u, `_${size}_area`);
+      expect(hvacDomainFactory.binding_by_catalog_id.has(retired)).toBe(false);
+      expect(() => compileProfessionalEstimateDomainV1(hvacDomainFactory, constructionNormativeRegistryV1, {
+        catalog_id: retired,
+        work_key: retired,
+        scope_mode: "MINIMAL_EXPLICIT_SCOPE",
+        parent_revision_id: null,
+        parameter_values: {},
+        normative_request: { country: "KG", region: "Bishkek", funding_source: "PRIVATE_RECOMMENDED",
+          operation_class: hvacDomainFactory.technology_by_id.get(standard.canonical_technology_id)!.operation_class,
+          material_system: hvacDomainFactory.technology_by_id.get(standard.canonical_technology_id)!.material_system,
+          project_type: "RESIDENTIAL_INTERIOR", construction_state: "NEW", contract_basis: [], effective_date: "2026-08-11" },
+      })).toThrow(`DOMAIN_EXACT_BINDING_NOT_FOUND:${retired}`);
+    }
+  });
+
+  test("compiles all 472 exact records in both scopes with traceable professional resources", () => {
     for (const inventory of HVAC_DOMAIN_INVENTORY) {
       for (const scope of ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"] as const) {
         const result = compile(inventory.catalog_id, scope);

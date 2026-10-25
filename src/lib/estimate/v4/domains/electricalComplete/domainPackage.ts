@@ -500,7 +500,7 @@ export const electricalCompleteDomainPackage: ProfessionalEstimateDomainPackageV
 
 export const ELECTRICAL_COMPLETE_DOMAIN_PACKAGE_BUILD_TIME_HASH_V1 = Object.freeze({
   hash_contract: "canonical-domain-package-content:v1" as const,
-  content_hash: "eh_58ff6f5b1ebbfbe4",
+  content_hash: "eh_734606360cef2658",
   domain_id: ELECTRICAL_COMPLETE_DOMAIN_ID,
   domain_version: ELECTRICAL_COMPLETE_DOMAIN_VERSION,
   catalog_record_count: ELECTRICAL_COMPLETE_RECORD_COUNT,

@@ -49,8 +49,9 @@ export function canonicalEstimateOperationReferences(value: unknown): CanonicalE
       contractVersion: primary.contractVersion, groupId: primary.groupId, groupTitleRu: primary.groupTitleRu,
       operationId: related.operationId, operationTitleRu: related.operationTitleRu,
       completionCriterionRu: related.completionCriterionRu,
-      processOrdinal: related.processOrdinal, processRole: related.processRole,
-      whenResourcePresent: related.whenResourcePresent,
+      ...(related.processOrdinal !== undefined ? { processOrdinal: related.processOrdinal } : {}),
+      ...(related.processRole !== undefined ? { processRole: related.processRole } : {}),
+      ...(related.whenResourcePresent !== undefined ? { whenResourcePresent: related.whenResourcePresent } : {}),
     });
     if (!reference || seen.has(reference.operationId)) continue;
     references.push(reference); seen.add(reference.operationId);

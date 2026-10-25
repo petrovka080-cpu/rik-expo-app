@@ -28,8 +28,9 @@ import type { ConsumerRepairRequestScreenState } from "./requestEstimateScreenAc
 import { consumerRepairEstimateApprovalParameterErrors, consumerRepairExactAsphaltApprovalErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
 import { consumerRepairCanonicalBackendBinding } from "./consumerRepairBackendOwnership";
 import { canonicalEstimateRevisionIdFromRoute } from "../../lib/navigation/canonicalEstimateRevisionDeepLink";
-import {consumerEstimateOpenScopeGroups} from '../../lib/consumerRequests/consumerEstimateReadiness';
+import {consumerEstimateOpenScopeGroups,consumerEstimateManualPreliminaryItems} from '../../lib/consumerRequests/consumerEstimateReadiness';
 import {buildRequestEstimateSourceGates} from './requestEstimateViewModel';
+import { consumerEstimateManualQuantityApprovalCandidate } from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
 import {
   consumerRepairCanonicalEstimateBlocksApproval,
   consumerRepairCanonicalMissingObjectParameterCount,
@@ -132,6 +133,7 @@ type ConsumerRepairRequestScreenViewProps = {
   onCreateNew: () => void;
   onDeleteDraft: () => void;
   onApproveDraft: () => void;
+  onApproveManualQuantities?: () => void;
   onApplyAndApproveDraft: () => void;
   onPrepareDraft: () => void;
   onSelectRoadScope: (scopePresetId: string) => void;
@@ -193,6 +195,7 @@ export function ConsumerRepairRequestScreenView({
   onCreateNew,
   onDeleteDraft,
   onApproveDraft,
+  onApproveManualQuantities,
   onApplyAndApproveDraft,
   onPrepareDraft,
   onSelectRoadScope,
@@ -216,11 +219,12 @@ export function ConsumerRepairRequestScreenView({
     consumerRepairCanonicalBackendBinding(renderModel.bundle) &&
     !renderModel.bundle?.canonicalParameterSession,
   );
+  const manualQuantityApproval = consumerEstimateManualQuantityApprovalCandidate(renderModel.bundle);
   const approvalBlockedByParameters = Boolean(
     consumerRepairCanonicalEstimateBlocksApproval(
       renderModel.bundle?.canonicalParameterSession,
-    ) || canonicalParameterReadinessMissing
-    || consumerRepairEstimateApprovalParameterErrors(renderModel.bundle).length > 0
+    ) || (canonicalParameterReadinessMissing && !manualQuantityApproval)
+    || consumerRepairEstimateApprovalParameterErrors(renderModel.bundle, manualQuantityApproval).length > 0
   );
   const approvalUnresolvedRowCount = consumerRepairCanonicalUnresolvedRowCount(
     renderModel.bundle,
@@ -234,7 +238,7 @@ export function ConsumerRepairRequestScreenView({
   );
   const approvalBlockedBeyondPendingEdits = Boolean(
     approvalBlockedByParameters ||
-    approvalUnresolvedRowCount > 0 ||
+    (approvalUnresolvedRowCount > 0 && !manualQuantityApproval) ||
     state.approvalCommitBusy ||
     state.deleteCommitBusy ||
     state.canonicalEstimateMutationBusy ||
@@ -375,10 +379,14 @@ export function ConsumerRepairRequestScreenView({
           approvalBlockedByEstimate={approvalBlockedByEstimate}
           approvalBlockedBeyondPendingEdits={approvalBlockedBeyondPendingEdits}
           approvalBlockedByParameters={approvalBlockedByParameters}
+          manualQuantityApprovalAvailable={manualQuantityApproval != null}
+          approvalManualUnresolvedRowCount={manualQuantityApproval?.unresolvedQuantityRowIds?.length ?? 0}
+          onApproveManualQuantities={onApproveManualQuantities}
           approvalMissingObjectParameterCount={approvalMissingObjectParameterCount}
           contentWithdrawalReasonRu={renderModel.bundle?.canonicalParameterSession?.contentWithdrawalReasonRu
             || renderModel.bundle?.structuredEstimatePayload?.canonicalBackend?.contentWithdrawalReasonRu}
           approvalUnresolvedRowCount={approvalUnresolvedRowCount}
+          approvalManualQuantityCount={consumerEstimateManualPreliminaryItems(renderModel.bundle).length}
           approvalIncompleteStages={consumerEstimateOpenScopeGroups(renderModel.bundle)}
           approvalMissingPriceCount={approvalMissingPriceCount}
           approvalPendingRowEditCount={state.pendingCanonicalRowEditCount ?? 0}

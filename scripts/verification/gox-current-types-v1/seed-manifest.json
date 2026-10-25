@@ -45,5 +45,16 @@
   "tests/requestEstimate/selectedMaterialDeliveryTestContextR1.ts": null,
   "app/_layout.tsx": null,
   "tests/entry/rootLayoutOfficeWarmup.contract.test.ts": null,
-  "src/lib/estimate/backendPlatform/canonicalGrohePublicResourcePresentation.test.ts": null
+  "src/lib/estimate/backendPlatform/canonicalGrohePublicResourcePresentation.test.ts": null,
+  "scripts/estimate/r4a13/masonryTwoOwnerRetainedPureR239.test.ts": null,
+  "scripts/estimate/r4a13/prepareMasonryBrickColumnExistingOwnerR161.ts": null,
+  "scripts/estimate/r4a13/prepareMasonryGlassOpeningExistingOwnerR223.ts": null,
+  "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts": null,
+  "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts": null,
+  "src/lib/estimate/v4/concreteWholeHoleFillingKrer46R61.ts": null,
+  "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts": null,
+  "scripts/estimate/r4a13/prepareRoofSingle539WholeLayersR24.ts": null,
+  "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts": null,
+  "scripts/estimate/r4a13/roofSingle539WholeConfigR224.test.ts": null,
+  "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageWhole539R24.test.ts": null
 }

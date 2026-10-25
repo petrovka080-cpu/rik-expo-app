@@ -322,17 +322,6 @@ const REPAIR: readonly DrywallMaximumScopeLineV5[] = Object.freeze([
 
 const VARIANT: Readonly<Record<DrywallArchitecturalElementVariantV4, readonly DrywallMaximumScopeLineV5[]>> = Object.freeze({
   standard: [],
-  large_area: [
-    line("variant_large_control_zones", "Вариант большой площади", "testing", "Дополнительные контрольные зоны и реперы", "test", "test"),
-    line("variant_large_deformation_joint_decision", "Вариант большой площади", "subcontract_service", "Проектная проверка деформационных и контрольных швов", "service", "service"),
-    line("variant_large_internal_logistics", "Вариант большой площади", "transport", "Внутренняя логистика между захватками", "t_m", "logistics"),
-    line("variant_large_batch_storage", "Вариант большой площади", "temporary_work", "Раздельное хранение партий по захваткам", "service", "logistics"),
-  ],
-  small_area: [
-    line("variant_small_manual_delivery", "Вариант малой площади", "labor", "Ручная подача материалов в стесненной зоне", "t", "logistics"),
-    line("variant_small_confined_cutting", "Вариант малой площади", "labor", "Локальный раскрой в стесненной зоне", "service", "operation"),
-    line("variant_small_dust_enclosure", "Вариант малой площади", "temporary_work", "Компактная пылезащитная зона", "service", "waste_hse_document"),
-  ],
   technical_room: [
     line("variant_technical_loto_permit", "Техническое помещение", "documentation", "Permit/LOTO решение владельца оборудования", "document", "waste_hse_document"),
     line("variant_technical_equipment_protection", "Техническое помещение", "material", "Защита действующего оборудования", "m2", "material"),

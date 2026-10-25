@@ -1,0 +1,32 @@
+{
+  "contract": "masonry-column-known-native-priced-fixture/r166",
+  "scope": "TEST_ONLY synthetic prices and confirmed source facts; not actual PPR, pricebook or DB snapshot identity.",
+  "normId": "08-02-003-01",
+  "volume": "1.25",
+  "height": "3",
+  "snapshotId": "00000000-0000-4000-8000-000000000033",
+  "snapshotOrigin": "Existing synthetic test literal in canonicalMachineHourPriceCoverageConstructionV1.test.ts; never claimed as DB ID.",
+  "unitPrices": {
+    "whole-masonry-labour": "100",
+    "tower-crane8t-reference": "1000",
+    "flatbed-truck5t-reference": "800",
+    "water-reference": "20",
+    "ceramic-brick-reference": "10",
+    "reinforcement-mesh-a1-reference": "40000",
+    "ready-m50-mortar-reference": "2000"
+  },
+  "expectedAmounts": {
+    "whole-masonry-labour": "1100",
+    "tower-crane8t-reference": "525",
+    "flatbed-truck5t-reference": "50",
+    "water-reference": "2.5",
+    "ceramic-brick-reference": "5050",
+    "reinforcement-mesh-a1-reference": "500",
+    "ready-m50-mortar-reference": "550"
+  },
+  "expectedTotal": "7777.5",
+  "expectedPricedRows": 7,
+  "expectedUnresolvedNeeds": 12,
+  "actualDocuments": 0,
+  "FULL": false
+}

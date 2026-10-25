@@ -20,8 +20,8 @@ const variants = Object.keys(WOOD_FIREPROOFING_SEALING_VARIANTS) as WoodFireproo
 
 describe("S27.7 F09 wood fireproofing sealing variants", () => {
   it("keeps two identities without a hidden classification factor", () => {
-    expect(variants).toEqual(["small_area", "standard"]);
-    expect(new Set(variants.map((key) => WOOD_FIREPROOFING_SEALING_VARIANTS[key].catalogId)).size).toBe(2);
+    expect(variants).toEqual([ "standard"]);
+    expect(new Set(variants.map((key) => WOOD_FIREPROOFING_SEALING_VARIANTS[key].catalogId)).size).toBe(1);
     for (const key of variants) expect(woodFireproofingSealingCompletenessMap(key).catalogVariant)
       .toContain("NO_HIDDEN_QUANTITY_FACTOR");
   });

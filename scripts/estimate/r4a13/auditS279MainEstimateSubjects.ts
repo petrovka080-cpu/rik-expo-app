@@ -22,7 +22,7 @@ import {
   compileBridgeAsphaltCompletePreliminaryProfileR1,
 } from "../../../src/lib/estimate/v4/bridgeAsphaltCompletePreliminaryProfileR1";
 import { ASPHALT_INSTALL_KRER27_CATALOG_ID } from
-  "../../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+  "../../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1";
 import { ASPHALT_COMPACTION_PROFILE_CATALOG_ID } from
   "../../../src/lib/estimate/v4/asphaltCompactionPreliminaryProfileR1";
 

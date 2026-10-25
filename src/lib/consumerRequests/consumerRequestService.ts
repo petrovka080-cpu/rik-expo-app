@@ -1635,6 +1635,7 @@ export function approveConsumerRepairRequestDraft(input: {
   requestDraftId: string;
   userId?: string;
   generatedAt?: string;
+  manualQuantityApproval?: import('./consumerEstimateManualQuantityApproval').ConsumerEstimateManualQuantityApproval;
   canonicalArtifact?: {
     artifactId: string;
     revisionId: string;
@@ -1645,7 +1646,7 @@ export function approveConsumerRepairRequestDraft(input: {
 }): ConsumerRepairDraftBundle {
   let bundle = getConsumerRepairBundle(input.requestDraftId);
   const userId = input.userId ?? bundle.draft.consumerUserId;
-  const validation = validateConsumerRepairRequestForApprove(input.requestDraftId, userId);
+  const validation = validateConsumerRepairRequestForApprove(input.requestDraftId, userId, input.manualQuantityApproval);
   if (!validation.ok) {
     bundle = saveConsumerRepairBundle(withEvent(
       {
@@ -1708,6 +1709,7 @@ export function approveConsumerRepairRequestDraft(input: {
         revisionId: canonicalBinding.revisionId,
         releaseId: canonicalBinding.releaseId,
         sha256: artifact.sha256,
+        ...(input.manualQuantityApproval ? { manualQuantityApproval: input.manualQuantityApproval } : {}),
       },
     })));
   }

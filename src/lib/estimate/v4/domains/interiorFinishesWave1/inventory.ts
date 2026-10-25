@@ -19,8 +19,6 @@ export const INTERIOR_FINISHES_WAVE_1_DOMAIN_ID = "interior_finishes_wave_1" as 
 
 export const INTERIOR_FINISHES_WAVE_1_SCOPE_CAPABILITIES = [
   "standard",
-  "small_area",
-  "large_area",
   "wet_zone",
   "technical_room",
   "high_load",
@@ -66,7 +64,7 @@ export const INTERIOR_FINISHES_WAVE_1_INVENTORY: readonly InteriorFinishesWave1I
   })),
 );
 
-if (INTERIOR_FINISHES_WAVE_1_INVENTORY.length !== 84) {
+if (INTERIOR_FINISHES_WAVE_1_INVENTORY.length !== 60) {
   throw new Error(`INTERIOR_WAVE1_DENOMINATOR_MISMATCH:${INTERIOR_FINISHES_WAVE_1_INVENTORY.length}`);
 }
 
@@ -74,7 +72,7 @@ export const INTERIOR_FINISHES_WAVE_1_CANONICAL_TECHNOLOGY_IDS: readonly string[
   [...new Set(INTERIOR_FINISHES_WAVE_1_INVENTORY.map((row) => row.canonical_technology_id))].sort(),
 );
 
-if (INTERIOR_FINISHES_WAVE_1_CANONICAL_TECHNOLOGY_IDS.length !== 84) {
+if (INTERIOR_FINISHES_WAVE_1_CANONICAL_TECHNOLOGY_IDS.length !== 60) {
   throw new Error(`INTERIOR_WAVE1_TECHNOLOGY_DENOMINATOR_MISMATCH:${INTERIOR_FINISHES_WAVE_1_CANONICAL_TECHNOLOGY_IDS.length}`);
 }
 

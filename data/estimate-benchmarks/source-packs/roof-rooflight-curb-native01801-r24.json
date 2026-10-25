@@ -1,0 +1,300 @@
+{
+  "contract": "gox-build.master216.roof-rooflight-curb-whole01801/r24",
+  "prefix": "roof:rooflight-curb:whole018:r24:01",
+  "normId": "12-01-018-01",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "titleRu": "КРЕР12:изоляция стаканов зенитных фонарей с обделкой примыканий кровель",
+      "printedEdition": "КРЕР12-2015;утверждено28.03.2016№2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDF/печатная29–30:полныйсостав/измеритель100м наружногообвода/собственнаяколонка018-01;техническаячастьPDF4–6",
+      "reviewedAt": "2026-10-25"
+    }
+  ],
+  "scopeRu": "Целый исходный способ изоляции стаканов с обделкой примыканий: Железобетонное покрытие,органическое стекло01801. Стеклопакеты/остекление/сам стакан не превращаются в известную покупку по одному заголовку профиля.",
+  "systemRu": "Точный проект покрытия/остекления/стакана и исходныхМ125/РКК350б/РПП300б подтверждается отдельно. Это не универсальный узел любогофонаря/PVC/новыхрулонныхматериалов.",
+  "conditionsRu": "Применимая нормативная база/собственный узел/готовое основание и обычные условия; выбор профиля не подтверждает проект/готовность/stock/PPR.",
+  "measurementRu": "100м наружного периметра стаканов. Независимый проектный обмер наружного обвода,не числофонарей и не площадькровли/теплоизоляции.",
+  "remainingScopeRu": [
+    "Полный фактический стакан/остекление/соединения/крепления/опорнаяконструкция",
+    "Точная совместимостьисточников/узлов/слоёв,безподменыМ125наМ250 илиминватынастекловату",
+    "Фактическиеstock/подъём/котёл/оснастка/теплоподача/доступ/СИЗ",
+    "Контроль/примыканиякпрочимслоям/отходы/фактическаяприёмка"
+  ],
+  "groupTitleRu": "Изоляция стаканов фонарей и обделка примыканий",
+  "operationTitleRu": "Полный собственный профиль018-01",
+  "completionCriterionRu": "Сохранён весь исходный способ;фактический проект/обеспечение/выполнение/приёмка отдельно.",
+  "systemParameterId": "roof_rooflight018_profile_r24",
+  "systemYesRu": "Железобетонное покрытие,органическое стекло01801",
+  "conditionsParameterId": "roof_rooflight018_conditions_r24",
+  "areaParameterId": "roof_rooflight018_measurement_scope_r24",
+  "measurementParameterId": "roof_rooflight018_outer_perimeter_m_r24",
+  "measurementUnitId": "linear_m",
+  "measurementConditional": true,
+  "measurementTitleRu": "Измеренный наружный периметр стаканов,м",
+  "measurementGuideRu": "Самостоятельный обмер наружного обвода выбранного профиля стаканов по проекту;неплощадьполя/непериметрздания/нечислоокон.",
+  "conditionsYesRu": "Точные нормативныеусловия и исходный project-system018 подтверждены источником",
+  "areaYesRu": "Наружный обвод стаканов подтверждён самостоятельным проектным обмером",
+  "unknownChoiceRu": "Профиль и геометриястаканов ещёнеподтверждены",
+  "legacyChoiceRu": "Исторический состав без нового018допуска",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-8",
+      "titleRu": "Рабочие-строители среднего разряда 3,8",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда 3,8",
+      "unitId": "man_hour",
+      "sourceUnit": "чел.-ч",
+      "category": "labor",
+      "sourceRatePer100Measure": "56.12",
+      "per100Measure": "56.12",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding",
+        "cement_fillet",
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Рабочие-строители среднего разряда 3,8"
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "sourceInternalTitleRu": "Труд машинистов нормативного комплекса",
+      "unitId": "man_hour",
+      "sourceUnit": "чел.-ч",
+      "category": "labor",
+      "sourceRatePer100Measure": "0.71",
+      "per100Measure": "0.71",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding",
+        "cement_fillet",
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Труд машинистов нормативного комплекса"
+      ]
+    },
+    {
+      "role": "tower_crane8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью 8 т",
+      "sourceInternalTitleRu": "Кран башенный грузоподъёмностью 8 т",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePer100Measure": "0.57",
+      "per100Measure": "0.57",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding",
+        "cement_fillet",
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Кран башенный грузоподъёмностью 8 т"
+      ]
+    },
+    {
+      "role": "truck_crane10t",
+      "resourceCode": "02-0075",
+      "titleRu": "Кран автомобильный грузоподъёмностью 10 т",
+      "sourceInternalTitleRu": "Кран автомобильный грузоподъёмностью 10 т",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePer100Measure": "0.14",
+      "per100Measure": "0.14",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding",
+        "cement_fillet",
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Кран автомобильный грузоподъёмностью 10 т"
+      ]
+    },
+    {
+      "role": "boiler400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Котёл битумный передвижной вместимостью 400 л",
+      "sourceInternalTitleRu": "Котёл битумный передвижной вместимостью 400 л",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePer100Measure": "6.07",
+      "per100Measure": "6.07",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding",
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Котёл битумный передвижной вместимостью 400 л"
+      ]
+    },
+    {
+      "role": "flatbed5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "sourceInternalTitleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePer100Measure": "0.28",
+      "per100Measure": "0.28",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding",
+        "cement_fillet",
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Автомобиль бортовой грузоподъёмностью до 5 т"
+      ]
+    },
+    {
+      "role": "hot_roof_mastic",
+      "resourceCode": "01-0202-0003",
+      "titleRu": "Мастика битумная кровельная горячая",
+      "sourceInternalTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "sourceUnit": "т",
+      "category": "material",
+      "sourceRatePer100Measure": "0.743",
+      "per100Measure": "0.743",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding",
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Мастика битумная кровельная горячая"
+      ]
+    },
+    {
+      "role": "mineral_wool_slabs_m125",
+      "resourceCode": "01-3620-0005",
+      "titleRu": "Плиты минераловатные теплоизоляционные на синтетическом связующем марки 125",
+      "sourceInternalTitleRu": "Плиты минераловатные теплоизоляционные на синтетическом связующемМ-125",
+      "unitId": "m3",
+      "sourceUnit": "м³",
+      "category": "material",
+      "sourceRatePer100Measure": "1.85",
+      "per100Measure": "1.85",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Плиты минераловатные теплоизоляционные на синтетическом связующемМ-125"
+      ]
+    },
+    {
+      "role": "roof_felt_coarse_rkk350b",
+      "resourceCode": "01-7410-0001",
+      "titleRu": "Рубероид кровельный с крупнозернистой посыпкой",
+      "sourceInternalTitleRu": "Рубероид кровельный с крупнозернистой посыпкойРКК-350б",
+      "unitId": "m2",
+      "sourceUnit": "м²",
+      "category": "material",
+      "sourceRatePer100Measure": "80.0",
+      "per100Measure": "80.0",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Рубероид кровельный с крупнозернистой посыпкойРКК-350б"
+      ]
+    },
+    {
+      "role": "underlay_felt_rpp300b",
+      "resourceCode": "01-7410-0012",
+      "titleRu": "Рубероид подкладочный с пылевидной посыпкой",
+      "sourceInternalTitleRu": "Рубероид подкладочный с пылевидной посыпкойРПП-300б",
+      "unitId": "m2",
+      "sourceUnit": "м²",
+      "category": "material",
+      "sourceRatePer100Measure": "227",
+      "per100Measure": "227",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "slab_vapor_bonding",
+        "additional_roll_layers"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Рубероид подкладочный с пылевидной посыпкойРПП-300б"
+      ]
+    },
+    {
+      "role": "cement_mortar100",
+      "resourceCode": "03-0406-0004",
+      "titleRu": "Раствор готовый кладочный цементный марки 100",
+      "sourceInternalTitleRu": "Раствор готовый кладочный цементный марки 100",
+      "unitId": "m3",
+      "sourceUnit": "м³",
+      "category": "material",
+      "sourceRatePer100Measure": "0.51",
+      "per100Measure": "0.51",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "cement_fillet"
+      ],
+      "detailsRu": [
+        "Вся собственная колонка12-01-018-01 на100м наружного периметра стаканов,не площадь кровли/нечислофонарей.",
+        "Точное исходное изделие: Раствор готовый кладочный цементный марки 100"
+      ]
+    }
+  ],
+  "printedOperationRoster": [
+    {
+      "key": "slab_vapor_bonding",
+      "printedOrdinal": 1,
+      "titleRu": "Наклейка рулонной пароизоляции и плитного утеплителя на стенки стаканов фонарей"
+    },
+    {
+      "key": "cement_fillet",
+      "printedOrdinal": 2,
+      "titleRu": "Устройство цементных бортиков вокруг стаканов фонарей"
+    },
+    {
+      "key": "additional_roll_layers",
+      "printedOrdinal": 3,
+      "titleRu": "Наклейка дополнительных слоёв рулонных кровельных материалов в местах примыканий кровли к стаканам фонарей"
+    }
+  ],
+  "sourcePricesImported": false,
+  "sourceAbsenceNotZero": true,
+  "glassPurchaseNotIncludedFromProfileTitle": true,
+  "headerGlassWoolNotNumericMaterialSubstitution": true,
+  "sourceKeyNotAdmission": true,
+  "FULL": false
+}

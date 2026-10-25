@@ -321,6 +321,37 @@ test('a saved manual preliminary amount retains its original known baseline befo
   }
 });
 
+test.each([complete, {lantern_count:14}])('clearing a saved manual amount retains names only at its original formula baseline: %p',async input=>{
+  const saved=await fixture(input,{overrides:{[baseRow]:{quantity:'15',provenance:{kind:'manual',reason:'VALIDATION_FIXTURE'}}}});
+  const pending=replay(saved.bundle),base=pending.items.find(row=>row.sourceParameters?.rowCode===baseRow)!;
+  const baseline=consumerRepairRowCalculatedQuantity(base);expect(baseline).toBe('lantern_model' in input ? 14 : null);
+  base.quantity=baseline;base.quantityEditedByConsumer=false;
+  base.sourceParameters={...base.sourceParameters,manualQuantityOverride:false,calculatedQuantityBeforeOverride:baseline};
+  const snapshot=JSON.stringify(pending);
+  expect(publicRow(pending).titleRu).toBe(baseName);
+  expect(publicRow(pending).quantity).toBe(baseline);expect(JSON.stringify(pending)).toBe(snapshot);
+  base.quantity=999;
+  expect(consumerRepairRowPublicResourcePresentation(publicRow(pending))).toBeNull();
+});
+
+test('clearing a saved manual source gap retains the verified name without accepting a quantity',async()=>{
+  const original=await fixture({lantern_count:14});
+  const unknown=original.bundle.items.find(row=>row.sourceParameters?.canonicalPreliminaryNeed===true
+    && row.quantity==null && consumerRepairRowPublicResourcePresentation(publicRow(original.bundle,String(row.sourceParameters.rowCode)))!=null)!;
+  expect(unknown).toBeDefined();
+  const rowId=String(unknown.sourceParameters!.rowCode),name=publicRow(original.bundle,rowId).titleRu;
+  const saved=await fixture({lantern_count:14},{overrides:{[rowId]:{quantity:'4',unitPrice:'1291.35',provenance:{kind:'manual',reason:'VALIDATION_FIXTURE'}}}});
+  const pending=replay(saved.bundle),item=pending.items.find(row=>row.sourceParameters?.rowCode===rowId)!;
+  expect(item.quantity).toBe(4);expect(consumerRepairRowCalculatedQuantity(item)).toBeNull();
+  item.quantity=null;item.quantityEditedByConsumer=false;
+  item.sourceParameters={...item.sourceParameters,manualQuantityOverride:false,calculatedQuantityBeforeOverride:null};
+  const snapshot=JSON.stringify(pending),shown=publicRow(pending,rowId);
+  expect(shown.titleRu).toBe(name);expect(shown.quantity).toBeNull();expect(shown.unitPrice).toBe(1291.35);
+  expect(JSON.stringify(pending)).toBe(snapshot);
+  item.sourceParameters.rowSha256='f'.repeat(64);
+  expect(consumerRepairRowPublicResourcePresentation(publicRow(pending,rowId))).toBeNull();
+});
+
 test('manual names survive replay and both title/price comparisons without renaming the previous side',async()=>{
   const before=await fixture(complete),name='Моё окно VELUX по ведомости заказчика';
   const after=await fixture(complete,{previous:before.bundle,id:childId,

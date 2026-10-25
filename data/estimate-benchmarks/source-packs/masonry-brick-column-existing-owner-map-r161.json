@@ -1,0 +1,2164 @@
+{
+  "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+  "sourceKind": "NORMATIVE_OPERATION_MAP",
+  "generatedFromCurrentRows": false,
+  "evidenceSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+  "evidenceReferences": [
+    "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "PDF/печатная стр.21, таблица 08-02-003 «Кладка из кирпича конструкций», только колонка 03; состав для норм 03/04 и измеритель м³ кладки. Техническая часть: §1.2 стр.5, §1.12/1.13/1.18/1.21 стр.7, §2.5 стр.8.",
+    "PDF21: exact complete03+04columns",
+    "R116 source-only whole01/02/05/06; printedPDF21/22+5/7/8; independent32native+48wholegaps. No model-generated completeness."
+  ],
+  "wholeSourceProfiles": [
+    "08-02-003-01",
+    "08-02-003-02",
+    "08-02-003-03",
+    "08-02-003-04",
+    "08-02-003-05",
+    "08-02-003-06"
+  ],
+  "fullTechnicalAcceptance": false,
+  "entries": [
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:whole-masonry-labour",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Рабочие-строители среднего разряда 3,8:7.93 чел.-ч",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:whole-masonry-labour",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:operator-information",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Затраты труда машинистов:0.42 чел.-ч",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:operator-information",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:operator-information"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:tower-crane8t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т:0.42 маш.-ч",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:tower-crane8t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:tower-crane8t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:water-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Вода:0.1 м³",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:water-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:water-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:ceramic-brick-reference",
+      "category": "material",
+      "unitId": "item",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Кирпич керамический одинарный, размером 250×120×65 мм, марка 100:0.404 1000 шт.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:ceramic-brick-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:ceramic-brick-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:ready-m50-mortar-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Раствор готовый кладочный цементно-известковый, марка 50:0.22 м³",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:ready-m50-mortar-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:ready-m50-mortar-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:included-source-masonry-operation",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:included-source-masonry-operation",
+      "category": "work",
+      "unitId": "m3",
+      "quantityRule": "INCLUDED_WHOLE_SCOPE_ONLY_NOT_NEW_PHYSICAL_QUANTITY",
+      "specification": "м³ — только маркер включённого состава общего труда на тот же объём кладки; это не отдельный объём подмостей, пробок, переноски или дополнительная оплата.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:included-source-masonry-operation",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:included-source-masonry-operation",
+        "parentRowId": "masonry:brick-rectangular-column:krer08-02-003-03:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:included-source-masonry-operation"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:base-and-setting-out",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:base-and-setting-out",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Предоставить узел опирания, отметки и акт готовности основания; определить необходимость и источник каждой дополнительной операции, её единицу, объём и непересекающегося владельца оплаты.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:base-and-setting-out",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:base-and-setting-out"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:base-and-setting-out"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:structural-junctions",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:structural-junctions",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Подтвердить утверждённый конструктивный проект прямоугольного неармированного столба и отдельную ведомость примыканий/связей; если требуется армирование или иной профиль, отказаться от этой колонки, а не добавлять скрытую норму.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:structural-junctions",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:structural-junctions"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:structural-junctions"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:access-scaffolding",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:access-scaffolding",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Определить фактический доступ и применимый источник для столба; письменно согласовать границу включённого труда и отдельной оснастки. Не переносить стеновые леса или нормы колонки для высоты свыше 4 м.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:access-scaffolding",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:access-scaffolding"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:access-scaffolding"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:tools-ppe",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:tools-ppe",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Дать ППР, принадлежность и оборот инструмента, расходники и договорную границу обеспечения; отдельные количество и оплату принимать только по источнику, а не по единице объёма кладки.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:tools-ppe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:tools-ppe"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:tools-ppe"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:curing-protection",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:curing-protection",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Получить применимую технологическую карту или паспорт раствора с условиями ухода и защиты; установить реальный объём/срок и границу оплаты без переноса норм ухода за бетоном или стяжкой.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:curing-protection",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:curing-protection"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:curing-protection"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:quality-acceptance",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:quality-acceptance",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Назначить применимые проектные допуски, метод и документы приёмки; отдельно подтвердить дополнительный измеримый контроль и оплату. Исходная норма не является актом готовности или расчётом несущей способности.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:quality-acceptance",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:quality-acceptance"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:quality-acceptance"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:machine-payment-scope",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:machine-payment-scope",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Сверить реальный башенный кран 8 т с источником и получить полный договорный состав; до подтверждения единственного владельца оплаты и полного состава работы крана вместе с машинистом не оплачивать ни машиниста, ни отдельную машинную строку. Не утверждать, что 0,42 чел.-ч включены в 7,93 чел.-ч рабочих.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:machine-payment-scope",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:machine-payment-scope"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:machine-payment-scope"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:material-supply-order",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:material-supply-order",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Составить отдельные позиции кирпича, готового М50 и воды с паспортами, фактическими единицами поставки, остатками/возвратом и ценой; не округлять кирпич на каждый м³ или столб и не добавлять произвольный запас.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:material-supply-order",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:material-supply-order"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:material-supply-order"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:external-logistics",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:external-logistics",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Получить фактические партии, маршрут, массу, разгрузку и перемещение сверх 5 м по ПОС; исключить перекрытие общего труда, учтённой переноски и крана. Не выводить рейсы из м³ или часов.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:external-logistics",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:external-logistics"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:external-logistics"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-03:open:cleanup-waste",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=LTE4",
+      "expectedResourceId": "08-02-003-03:open:cleanup-waste",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Составить фактическую ведомость тары, остатков и отходов, применимый источник сбора/погрузки/вывоза и отдельную единицу/цену с проверкой включения; нормативный расход кирпича не превращать в дополнительный запас.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-03:formula:open:cleanup-waste",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-03:open:cleanup-waste"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-03:open:cleanup-waste"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:whole-masonry-labour",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Рабочие-строители среднего разряда 3,8:7.78 чел.-ч",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:whole-masonry-labour",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:operator-information",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Затраты труда машинистов:0.33 чел.-ч",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:operator-information",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:operator-information"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:tower-crane8t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т:0.33 маш.-ч",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:tower-crane8t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:tower-crane8t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:water-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Вода:0.1 м³",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:water-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:water-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:ceramic-brick-reference",
+      "category": "material",
+      "unitId": "item",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Кирпич керамический одинарный, размером 250×120×65 мм, марка 100:0.404 1000 шт.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:ceramic-brick-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:ceramic-brick-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:ready-m50-mortar-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "Раствор готовый кладочный цементно-известковый, марка 50:0.22 м³",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:ready-m50-mortar-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:ready-m50-mortar-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:included-source-masonry-operation",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:included-source-masonry-operation",
+      "category": "work",
+      "unitId": "m3",
+      "quantityRule": "INCLUDED_WHOLE_SCOPE_ONLY_NOT_NEW_PHYSICAL_QUANTITY",
+      "specification": "м³ — только маркер включённого состава общего труда на тот же объём кладки; это не отдельный объём подмостей, пробок, переноски или дополнительная оплата.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:included-source-masonry-operation",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:included-source-masonry-operation",
+        "parentRowId": "masonry:brick-rectangular-column:krer08-02-003-04:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:included-source-masonry-operation"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:base-and-setting-out",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:base-and-setting-out",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Предоставить узел опирания, отметки и акт готовности основания; определить необходимость и источник каждой дополнительной операции, её единицу, объём и непересекающегося владельца оплаты.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:base-and-setting-out",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:base-and-setting-out"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:base-and-setting-out"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:structural-junctions",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:structural-junctions",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Подтвердить утверждённый конструктивный проект прямоугольного неармированного столба и отдельную ведомость примыканий/связей; если требуется армирование или иной профиль, отказаться от этой колонки, а не добавлять скрытую норму.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:structural-junctions",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:structural-junctions"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:structural-junctions"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:access-scaffolding",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:access-scaffolding",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Определить фактический доступ и применимый источник для столба; письменно согласовать границу включённого труда и отдельной оснастки. Не переносить стеновые леса или нормы колонки для высоты свыше 4 м.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:access-scaffolding",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:access-scaffolding"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:access-scaffolding"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:tools-ppe",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:tools-ppe",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Дать ППР, принадлежность и оборот инструмента, расходники и договорную границу обеспечения; отдельные количество и оплату принимать только по источнику, а не по единице объёма кладки.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:tools-ppe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:tools-ppe"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:tools-ppe"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:curing-protection",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:curing-protection",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Получить применимую технологическую карту или паспорт раствора с условиями ухода и защиты; установить реальный объём/срок и границу оплаты без переноса норм ухода за бетоном или стяжкой.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:curing-protection",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:curing-protection"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:curing-protection"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:quality-acceptance",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:quality-acceptance",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Назначить применимые проектные допуски, метод и документы приёмки; отдельно подтвердить дополнительный измеримый контроль и оплату. Исходная норма не является актом готовности или расчётом несущей способности.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:quality-acceptance",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:quality-acceptance"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:quality-acceptance"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:machine-payment-scope",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:machine-payment-scope",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Сверить реальный башенный кран 8 т с источником и получить полный договорный состав; до подтверждения единственного владельца оплаты и полного состава работы крана вместе с машинистом не оплачивать ни машиниста, ни отдельную машинную строку. Не утверждать, что 0,42 чел.-ч включены в 7,93 чел.-ч рабочих.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:machine-payment-scope",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:machine-payment-scope"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:machine-payment-scope"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:material-supply-order",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:material-supply-order",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Составить отдельные позиции кирпича, готового М50 и воды с паспортами, фактическими единицами поставки, остатками/возвратом и ценой; не округлять кирпич на каждый м³ или столб и не добавлять произвольный запас.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:material-supply-order",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:material-supply-order"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:material-supply-order"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:external-logistics",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:external-logistics",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Получить фактические партии, маршрут, массу, разгрузку и перемещение сверх 5 м по ПОС; исключить перекрытие общего труда, учтённой переноски и крана. Не выводить рейсы из м³ или часов.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:external-logistics",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:external-logistics"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:external-logistics"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-rectangular-column:krer08-02-003-04:open:cleanup-waste",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Own rectangular unreinforced ceramic65/M100/M50 column; height=GT4",
+      "expectedResourceId": "08-02-003-04:open:cleanup-waste",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Составить фактическую ведомость тары, остатков и отходов, применимый источник сбора/погрузки/вывоза и отдельную единицу/цену с проверкой включения; нормативный расход кирпича не превращать в дополнительный запас.",
+      "formulaId": "masonry:brick-rectangular-column:krer08-02-003-04:formula:open:cleanup-waste",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-rectangular-column:krer08-02-003-04:open:cleanup-waste"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-rectangular-column:krer08-02-003-04:open:cleanup-waste"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:whole-masonry-labour",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "whole-labour:8.80 man_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:whole-masonry-labour",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:operator-information",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "operator-reference:0.42 man_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:operator-information",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:operator-information"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:tower-crane8t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "tower-crane8t:0.42 machine_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:tower-crane8t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:tower-crane8t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:flatbed-truck5t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "flatbed-truck5t:0.05 machine_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:flatbed-truck5t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:flatbed-truck5t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:water-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "water:0.1 m3",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:water-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:water-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:ceramic-brick-reference",
+      "category": "material",
+      "unitId": "item",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "ceramic-brick65-m100:404 item",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:ceramic-brick-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:ceramic-brick-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:reinforcement-mesh-a1-reference",
+      "category": "material",
+      "unitId": "t",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "reinforcement-mesh-a1-12-14mm:0.01 t",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:reinforcement-mesh-a1-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:reinforcement-mesh-a1-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:ready-m50-mortar-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "ready-cement-lime-m50:0.22 m3",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:ready-m50-mortar-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:ready-m50-mortar-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:included-source-masonry-operation",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:included-source-masonry-operation",
+      "category": "work",
+      "unitId": "m3",
+      "quantityRule": "INCLUDED_WHOLE_SCOPE_ONLY_NOT_NEW_PHYSICAL_QUANTITY",
+      "specification": "Кладка и армирование включены в один цельный труд; маркер не создаёт второй оплаты.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:included-source-masonry-operation",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:included-source-masonry-operation",
+        "parentRowId": "masonry:brick-column:krer08-02-003-01:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:included-source-masonry-operation"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:structural-design",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:structural-design",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:structural-design",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:structural-design"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:structural-design"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:base-and-dpc",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:base-and-dpc",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:base-and-dpc",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:base-and-dpc"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:base-and-dpc"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:receiving-storage",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:receiving-storage",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:receiving-storage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:receiving-storage"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:receiving-storage"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:mortar-whole-process",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:mortar-whole-process",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:mortar-whole-process",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:mortar-whole-process"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:mortar-whole-process"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:handling-crane",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:handling-crane",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:handling-crane",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:handling-crane"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:handling-crane"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:truck-transport",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:truck-transport",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:truck-transport",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:truck-transport"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:truck-transport"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:access",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:access",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:access",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:access"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:access"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:reinforcement-process",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:reinforcement-process",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:reinforcement-process",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:reinforcement-process"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:reinforcement-process"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:masonry-tools-ppe",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:masonry-tools-ppe",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:masonry-tools-ppe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:masonry-tools-ppe"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:masonry-tools-ppe"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:curing-protection",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:curing-protection",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:curing-protection",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:curing-protection"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:curing-protection"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:quality",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:quality",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:quality",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:quality"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:quality"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-01:open:cleanup-waste",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-01:open:cleanup-waste",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости.",
+      "formulaId": "masonry:brick-column:krer08-02-003-01:formula:open:cleanup-waste",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-01:open:cleanup-waste"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-01:open:cleanup-waste"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:whole-masonry-labour",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "whole-labour:8.58 man_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:whole-masonry-labour",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:operator-information",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "operator-reference:0.33 man_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:operator-information",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:operator-information"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:tower-crane8t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "tower-crane8t:0.33 machine_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:tower-crane8t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:tower-crane8t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:flatbed-truck5t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "flatbed-truck5t:0.05 machine_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:flatbed-truck5t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:flatbed-truck5t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:water-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "water:0.1 m3",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:water-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:water-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:ceramic-brick-reference",
+      "category": "material",
+      "unitId": "item",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "ceramic-brick65-m100:404 item",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:ceramic-brick-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:ceramic-brick-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:reinforcement-mesh-a1-reference",
+      "category": "material",
+      "unitId": "t",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "reinforcement-mesh-a1-12-14mm:0.01 t",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:reinforcement-mesh-a1-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:reinforcement-mesh-a1-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:ready-m50-mortar-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "ready-cement-lime-m50:0.22 m3",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:ready-m50-mortar-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:ready-m50-mortar-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:included-source-masonry-operation",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:included-source-masonry-operation",
+      "category": "work",
+      "unitId": "m3",
+      "quantityRule": "INCLUDED_WHOLE_SCOPE_ONLY_NOT_NEW_PHYSICAL_QUANTITY",
+      "specification": "Кладка и армирование включены в один цельный труд; маркер не создаёт второй оплаты.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:included-source-masonry-operation",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:included-source-masonry-operation",
+        "parentRowId": "masonry:brick-column:krer08-02-003-02:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:included-source-masonry-operation"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:structural-design",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:structural-design",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:structural-design",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:structural-design"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:structural-design"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:base-and-dpc",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:base-and-dpc",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:base-and-dpc",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:base-and-dpc"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:base-and-dpc"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:receiving-storage",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:receiving-storage",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:receiving-storage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:receiving-storage"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:receiving-storage"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:mortar-whole-process",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:mortar-whole-process",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:mortar-whole-process",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:mortar-whole-process"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:mortar-whole-process"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:handling-crane",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:handling-crane",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:handling-crane",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:handling-crane"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:handling-crane"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:truck-transport",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:truck-transport",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:truck-transport",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:truck-transport"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:truck-transport"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:access",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:access",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:access",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:access"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:access"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:reinforcement-process",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:reinforcement-process",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:reinforcement-process",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:reinforcement-process"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:reinforcement-process"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:masonry-tools-ppe",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:masonry-tools-ppe",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:masonry-tools-ppe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:masonry-tools-ppe"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:masonry-tools-ppe"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:curing-protection",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:curing-protection",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:curing-protection",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:curing-protection"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:curing-protection"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:quality",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:quality",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:quality",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:quality"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:quality"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-02:open:cleanup-waste",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Прямоугольный столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-02:open:cleanup-waste",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости.",
+      "formulaId": "masonry:brick-column:krer08-02-003-02:formula:open:cleanup-waste",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-02:open:cleanup-waste"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-02:open:cleanup-waste"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:whole-masonry-labour",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "whole-labour:12.27 man_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:whole-masonry-labour",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:operator-information",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "operator-reference:0.42 man_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:operator-information",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:operator-information"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:tower-crane8t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "tower-crane8t:0.42 machine_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:tower-crane8t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:tower-crane8t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:flatbed-truck5t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "flatbed-truck5t:0.05 machine_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:flatbed-truck5t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:flatbed-truck5t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:water-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "water:0.1 m3",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:water-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:water-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:ceramic-brick-reference",
+      "category": "material",
+      "unitId": "item",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "ceramic-brick65-m100:450 item",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:ceramic-brick-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:ceramic-brick-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:reinforcement-mesh-a1-reference",
+      "category": "material",
+      "unitId": "t",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "reinforcement-mesh-a1-12-14mm:0.01 t",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:reinforcement-mesh-a1-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:reinforcement-mesh-a1-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:ready-m50-mortar-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "ready-cement-lime-m50:0.24 m3",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:ready-m50-mortar-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:ready-m50-mortar-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:included-source-masonry-operation",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:included-source-masonry-operation",
+      "category": "work",
+      "unitId": "m3",
+      "quantityRule": "INCLUDED_WHOLE_SCOPE_ONLY_NOT_NEW_PHYSICAL_QUANTITY",
+      "specification": "Кладка и армирование включены в один цельный труд; маркер не создаёт второй оплаты.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:included-source-masonry-operation",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:included-source-masonry-operation",
+        "parentRowId": "masonry:brick-column:krer08-02-003-05:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:included-source-masonry-operation"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:structural-design",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:structural-design",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:structural-design",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:structural-design"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:structural-design"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:base-and-dpc",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:base-and-dpc",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:base-and-dpc",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:base-and-dpc"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:base-and-dpc"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:receiving-storage",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:receiving-storage",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:receiving-storage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:receiving-storage"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:receiving-storage"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:mortar-whole-process",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:mortar-whole-process",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:mortar-whole-process",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:mortar-whole-process"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:mortar-whole-process"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:handling-crane",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:handling-crane",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:handling-crane",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:handling-crane"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:handling-crane"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:truck-transport",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:truck-transport",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:truck-transport",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:truck-transport"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:truck-transport"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:access",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:access",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:access",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:access"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:access"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:reinforcement-process",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:reinforcement-process",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:reinforcement-process",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:reinforcement-process"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:reinforcement-process"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:masonry-tools-ppe",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:masonry-tools-ppe",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:masonry-tools-ppe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:masonry-tools-ppe"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:masonry-tools-ppe"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:curing-protection",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:curing-protection",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:curing-protection",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:curing-protection"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:curing-protection"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:quality",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:quality",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:quality",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:quality"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:quality"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-05:open:cleanup-waste",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=LTE4",
+      "expectedResourceId": "08-02-003-05:open:cleanup-waste",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости.",
+      "formulaId": "masonry:brick-column:krer08-02-003-05:formula:open:cleanup-waste",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-05:open:cleanup-waste"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-05:open:cleanup-waste"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:whole-masonry-labour",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "whole-labour:12.05 man_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:whole-masonry-labour",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:operator-information",
+      "category": "work",
+      "unitId": "man_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "operator-reference:0.33 man_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:operator-information",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:operator-information"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:tower-crane8t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "tower-crane8t:0.33 machine_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:tower-crane8t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:tower-crane8t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:flatbed-truck5t-reference",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "flatbed-truck5t:0.05 machine_hour",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:flatbed-truck5t-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:flatbed-truck5t-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:water-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "water:0.1 m3",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:water-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:water-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:ceramic-brick-reference",
+      "category": "material",
+      "unitId": "item",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "ceramic-brick65-m100:450 item",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:ceramic-brick-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:ceramic-brick-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:reinforcement-mesh-a1-reference",
+      "category": "material",
+      "unitId": "t",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "reinforcement-mesh-a1-12-14mm:0.01 t",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:reinforcement-mesh-a1-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:reinforcement-mesh-a1-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:execution",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:ready-m50-mortar-reference",
+      "category": "material",
+      "unitId": "m3",
+      "quantityRule": "LITERAL_OWN_COLUMN_RATE_PER1_INDEPENDENT_M3",
+      "specification": "ready-cement-lime-m50:0.24 m3",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:ready-m50-mortar-reference",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:ready-m50-mortar-reference"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:execution"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:included-source-masonry-operation",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:included-source-masonry-operation",
+      "category": "work",
+      "unitId": "m3",
+      "quantityRule": "INCLUDED_WHOLE_SCOPE_ONLY_NOT_NEW_PHYSICAL_QUANTITY",
+      "specification": "Кладка и армирование включены в один цельный труд; маркер не создаёт второй оплаты.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:included-source-masonry-operation",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:included-source-masonry-operation",
+        "parentRowId": "masonry:brick-column:krer08-02-003-06:whole-masonry-labour"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:included-source-masonry-operation"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:structural-design",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:structural-design",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:structural-design",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:structural-design"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:structural-design"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:base-and-dpc",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:base-and-dpc",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:base-and-dpc",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:base-and-dpc"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:base-and-dpc"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:receiving-storage",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:receiving-storage",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:receiving-storage",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:receiving-storage"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:receiving-storage"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:mortar-whole-process",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:mortar-whole-process",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:mortar-whole-process",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:mortar-whole-process"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:mortar-whole-process"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:handling-crane",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:handling-crane",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:handling-crane",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:handling-crane"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:handling-crane"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:truck-transport",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:truck-transport",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:truck-transport",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:truck-transport"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:truck-transport"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:access",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:access",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:access",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:access"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:access"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:reinforcement-process",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:reinforcement-process",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:reinforcement-process",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:reinforcement-process"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:reinforcement-process"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:masonry-tools-ppe",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:masonry-tools-ppe",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:masonry-tools-ppe",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:masonry-tools-ppe"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:masonry-tools-ppe"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:curing-protection",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:curing-protection",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:curing-protection",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:curing-protection"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:curing-protection"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:quality",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:quality",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:quality",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:quality"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:quality"
+      ]
+    },
+    {
+      "operationId": "masonry:brick-column:krer08-02-003-06:open:cleanup-waste",
+      "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+      "condition": "Круглый столб с армированием; собственная высота=GT4",
+      "expectedResourceId": "08-02-003-06:open:cleanup-waste",
+      "category": "service",
+      "unitId": null,
+      "quantityRule": "UNRESOLVED_SOURCE_NORM_NOT_USER_DEFAULT",
+      "specification": "Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости.",
+      "formulaId": "masonry:brick-column:krer08-02-003-06:formula:open:cleanup-waste",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "masonry:brick-column:krer08-02-003-06:open:cleanup-waste"
+      },
+      "requiredOperationIds": [
+        "masonry:brick-column:krer08-02-003-06:open:cleanup-waste"
+      ]
+    }
+  ],
+  "operationResourceBindingRequired": true,
+  "independentR116RosterSha256": "2aa58090dce9720053f936862d300c69261c814f530ba763291ad8b7df187d3e",
+  "independentR116StageMapSha256": "640621620e52046557d88b402a415e9ffe5760daab3418a66cbcc5ffdcf2c780",
+  "acceptedR113First34EntriesUnchanged": true,
+  "existingPhysicalOwnerCatalogId": "canonical-work:base:masonry_interior_column_lay_standard",
+  "retainedLegacyNotNormativelyCovered": {
+    "resources": 59,
+    "oldPrimary": "q",
+    "oldUnit": "m2",
+    "scope": "Legacy-only; independent m3 source branch and NEW_ROOT_REQUIRED; no conversion or double payment."
+  }
+}

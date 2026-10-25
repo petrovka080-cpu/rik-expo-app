@@ -245,6 +245,37 @@ describe("existing publisher normal/locked read and lock-only lifecycle",()=>{
   expect(actual.capture.bindings).toHaveLength(18);expect(actual.capture.formulas).toHaveLength(26);
   expect(f.seen.some(sql=>sql.includes("select * from public.estimate_formula_graph"))).toBe(true);
  });
+ function existingRegistryReader(s:ReturnType<typeof setup>,mode="normal") {
+  const fallback=readerFake(s),target=copy(s.input.newLocators[0]),sibling={...copy(target),id:"33333333-3333-5333-8333-333333333333",locator_key:"other-untouched-operation"};
+  const source={...copy(s.input.newSource),created_at:"2026-10-20T00:00:00.123456+00:00"};
+  const declaration={contract:"master-existing-normative-registry-reuse/r1",locatorExcerptHashKind:"SOURCE_LOCATOR_TEXT_SHA256",source,locators:[copy(target)]};
+  (s.input.config.binding as any).reuseExistingNormativeRegistry=declaration;
+  const all=mode==="key-collision"?[{...target,id:sibling.id}]:mode==="wrong-source"?[{...target,source_id:sibling.id}]
+    :mode==="payload"?[{...target,locator:{changed:true}}]:[target,sibling];
+  const reads:Array<{sql:string;values:any[]}>=[];
+  return {reads,client:{query:async(sql:string,values:any[])=>{
+   if(sql.includes("select * from public.estimate_normative_source")&&typeof values[0]==="string")return{rows:[{raw:JSON.stringify(source)}]};
+   if(sql.includes("select * from public.estimate_normative_locator")&&values[0][0]===target.id){
+    reads.push({sql,values});const rows=all.filter(locator=>values[0].includes(locator.id)
+      ||locator.source_id===values[1]&&(!sql.includes("locator_key=any($3::text[])")||values[2].includes(locator.locator_key)));
+    return{rows:rows.map(row=>({raw:JSON.stringify(row)}))};
+   }
+   return fallback.client.query(sql,values);
+  }}};
+ }
+ test.each(["BEFORE","REGISTERED"] as const)("existing-source %s reuse permits another operation without reading or rebinding it",async phase=>{
+  const s=setup(),f=existingRegistryReader(s),snapshot=await readMasterRetainedBindingPreconditionsR1(f.client as any,s.input,phase);
+  expect(snapshot.newLocators).toEqual(s.input.newLocators);expect(snapshot.newSources[0].created_at).toBe("2026-10-20T00:00:00.123456+00:00");
+  expect(f.reads).toHaveLength(1);expect(f.reads[0].values[2]).toEqual(s.input.newLocators.map((locator:Json)=>locator.locator_key));
+  expect(f.reads[0].sql).toContain("id=any($1::uuid[]) or (source_id=$2 and locator_key=any($3::text[]))");
+ });
+ test.each(["key-collision","wrong-source","payload"])("existing-source scope rejects %s instead of accepting a partial locator match",async mode=>{
+  const s=setup(),f=existingRegistryReader(s,mode);await expect(readMasterRetainedBindingPreconditionsR1(f.client as any,s.input)).rejects.toThrow("RETAIN_NEW_LOCATOR_NOT_EXACT");
+ });
+ test("omitted reuse still rejects a second locator on a newly managed source",async()=>{
+  const s=setup(),f=existingRegistryReader(s);delete (s.input.config.binding as any).reuseExistingNormativeRegistry;
+  await expect(readMasterRetainedBindingPreconditionsR1(f.client as any,s.input)).rejects.toThrow("RETAIN_READ_CAP");
+ });
  test("reader26+1 formula cap refuses phantom instead of truncating to26",async()=>{const s=setup(),f=readerFake(s,false,true);
   await expect(readMasterRetainedBindingPreconditionsR1(f.client as any,s.input)).rejects.toThrow("RETAIN_READ_CAP");
  });

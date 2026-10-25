@@ -16,7 +16,7 @@ import type {
   EstimateDraftRevisionState,
   ProfessionalBoqRow,
 } from "../estimate/estimateDraftRevisionContract";
-import { DecodeUTF8, strFromU8, strToU8, unzlibSync, zlibSync } from "fflate";
+import { strFromU8, strToU8, unzlibSync, zlibSync } from "fflate";
 import {
   createEstimateDraftSession,
   hydrateExactDraft,
@@ -27,6 +27,7 @@ import {
   isConsumerRepairApprovedHistoryStatus,
 } from "./consumerRepairDurableSavePolicy";
 import { safeJsonParseValue } from "../format";
+import { consumerEstimateManualQuantityApprovalRecord } from '../consumerRequests/consumerEstimateManualQuantityApproval';
 import {
   ESTIMATE_REVISION_DURABLE_ADAPTER_CAPACITY_BYTES,
   estimateRevisionUtf8ByteLength,
@@ -214,24 +215,50 @@ function flatDurableStringChunk(chunk: string): string {
 }
 
 export function durableUtf8BytesToString(bytes: Uint8Array): string {
+  // Hermes has no native TextDecoder in older supported binaries. Decode into
+  // bounded flat UTF-16 buffers in one pass instead of building character
+  // ropes, flattening them and encoding all text back to UTF-8. Validate every
+  // sequence here: malformed bytes must never become replacement characters.
   const chunks: string[] = [];
-  let decodedByteOffset = 0;
-  const decoder = new DecodeUTF8(chunk => {
-    const flattened = flatDurableStringChunk(chunk);
-    // Both native non-fatal TextDecoder and the library fallback can replace
-    // malformed UTF-8. Accept only a byte-exact round trip of emitted text.
-    const reencoded = strToU8(flattened);
-    for (let index = 0; index < reencoded.length; index += 1) {
-      if (reencoded[index] !== bytes[decodedByteOffset + index]) throw new Error("CONSUMER_REPAIR_DURABLE_INVALID_UTF8");
+  const units = new Uint16Array(16 * 1024);
+  let used = 0;
+  const emit = (unit: number) => {
+    units[used++] = unit;
+    if (used === units.length) {
+      chunks.push(String.fromCharCode(...units));
+      used = 0;
     }
-    decodedByteOffset += reencoded.length;
-    chunks.push(flattened);
-  });
-  const chunkSize = 16 * 1024;
-  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    decoder.push(bytes.subarray(offset, offset + chunkSize), offset + chunkSize >= bytes.length);
+  };
+  const invalid = (): never => { throw new Error("CONSUMER_REPAIR_DURABLE_INVALID_UTF8"); };
+  const continuation = (offset: number): number => {
+    const byte = bytes[offset];
+    if (offset >= bytes.length || byte < 0x80 || byte > 0xbf) return invalid();
+    return byte;
+  };
+  for (let index = 0; index < bytes.length;) {
+    const first = bytes[index++];
+    if (first < 0x80) { emit(first); continue; }
+    if (first >= 0xc2 && first <= 0xdf) {
+      emit(((first & 0x1f) << 6) | (continuation(index++) & 0x3f));
+      continue;
+    }
+    if (first >= 0xe0 && first <= 0xef) {
+      const second = continuation(index++), third = continuation(index++);
+      if ((first === 0xe0 && second < 0xa0) || (first === 0xed && second >= 0xa0)) invalid();
+      emit(((first & 0x0f) << 12) | ((second & 0x3f) << 6) | (third & 0x3f));
+      continue;
+    }
+    if (first >= 0xf0 && first <= 0xf4) {
+      const second = continuation(index++), third = continuation(index++), fourth = continuation(index++);
+      if ((first === 0xf0 && second < 0x90) || (first === 0xf4 && second >= 0x90)) invalid();
+      const point = (((first & 7) << 18) | ((second & 0x3f) << 12) | ((third & 0x3f) << 6) | (fourth & 0x3f)) - 0x10000;
+      emit(0xd800 | (point >> 10));
+      emit(0xdc00 | (point & 0x3ff));
+      continue;
+    }
+    invalid();
   }
-  if (decodedByteOffset !== bytes.length) throw new Error("CONSUMER_REPAIR_DURABLE_INVALID_UTF8");
+  if (used) chunks.push(String.fromCharCode(...units.subarray(0, used)));
   return chunks.join("");
 }
 
@@ -585,15 +612,11 @@ export function buildConsumerRepairDurableHistorySummary(
       ?? null,
     compactedAt: input.compactedAt ?? bundle.durableHistorySummary?.compactedAt ?? new Date().toISOString(),
     fullSnapshotAvailable: input.fullSnapshotAvailable ?? bundle.items.length > 0,
-  };
-}
-
-function compactEditableEstimateRowForDurableStorage(row: EditableEstimateRow): EditableEstimateRow {
-  return {
-    ...row,
-    calculationTrace: stringLimit(row.calculationTrace, 720),
-    sourceParameters: compactConsumerRepairSourceParameters(row.sourceParameters),
-    catalogCandidates: [],
+    canonicalRevisionChecksumSha256: bundle.structuredEstimatePayload?.canonicalBackend?.checksumSha256
+      ?? bundle.estimateDraftRevisionState?.revisions.find(row => row.revisionId === canonicalRevisionId)
+        ?.resolvedIdentity?.sourceBindingVersions.find(source => source.sourceId === canonicalReleaseId)?.version
+      ?? bundle.durableHistorySummary?.canonicalRevisionChecksumSha256 ?? null,
+    manualQuantityApproval: consumerEstimateManualQuantityApprovalRecord(bundle),
   };
 }
 
@@ -606,28 +629,6 @@ function compactEditableEstimateRowForEmergencyStorage(row: EditableEstimateRow)
   };
 }
 
-function compactEditableEstimateSnapshotForDurableStorage(
-  snapshot: EditableEstimateSnapshot | null | undefined,
-): EditableEstimateSnapshot | null {
-  if (!snapshot) return null;
-  return {
-    ...snapshot,
-    rows: snapshot.rows.map(compactEditableEstimateRowForDurableStorage),
-  };
-}
-
-function compactEstimateRevisionSnapshotForDurableStorage(
-  revision: EstimateRevisionSnapshot,
-): EstimateRevisionSnapshot {
-  return {
-    ...revision,
-    editable_estimate_snapshot: {
-      ...revision.editable_estimate_snapshot,
-      rows: revision.editable_estimate_snapshot.rows.map(compactEditableEstimateRowForDurableStorage),
-    },
-  };
-}
-
 function compactEstimateRevisionSnapshotForEmergencyStorage(
   revision: EstimateRevisionSnapshot,
 ): EstimateRevisionSnapshot {
@@ -637,33 +638,6 @@ function compactEstimateRevisionSnapshotForEmergencyStorage(
       ...revision.editable_estimate_snapshot,
       rows: revision.editable_estimate_snapshot.rows.map(compactEditableEstimateRowForEmergencyStorage),
     },
-  };
-}
-
-function compactEstimateRevisionStateForDurableStorage(
-  state: EstimateRevisionState | null | undefined,
-): EstimateRevisionState | null {
-  if (!state) return null;
-  return {
-    ...state,
-    revisions: state.revisions.map(compactEstimateRevisionSnapshotForDurableStorage),
-    events: state.events.slice(-32),
-    diffs: state.diffs.slice(-32),
-  };
-}
-
-function compactCurrentEstimateRevisionStateForDurableStorage(
-  state: EstimateRevisionState | null | undefined,
-): EstimateRevisionState | null {
-  if (!state) return null;
-  const current = state.revisions.find((revision) => revision.revision_id === state.current_revision_id)
-    ?? state.revisions.at(-1)
-    ?? null;
-  return {
-    ...state,
-    revisions: current ? [compactEstimateRevisionSnapshotForDurableStorage(current)] : [],
-    events: state.events.slice(-32),
-    diffs: state.diffs.slice(-32),
   };
 }
 
@@ -688,15 +662,6 @@ function compactBoqRowForEmergencyStorage(row: ProfessionalBoqRow): Professional
   };
 }
 
-function compactBoqRowForDurableStorage(row: ProfessionalBoqRow): ProfessionalBoqRow {
-  return {
-    ...row,
-    calculationTrace: stringLimit(row.calculationTrace, 720),
-    sourceParameters: compactConsumerRepairSourceParameters(row.sourceParameters),
-    materialQuantity: null,
-  };
-}
-
 function compactEstimateDraftRevisionForEmergencyStorage(
   revision: EstimateDraftRevision,
 ): EstimateDraftRevision {
@@ -713,22 +678,6 @@ function compactEstimateDraftRevisionForEmergencyStorage(
   };
 }
 
-function compactEstimateDraftRevisionForDurableStorage(
-  revision: EstimateDraftRevision,
-): EstimateDraftRevision {
-  return {
-    ...revision,
-    boq: {
-      sections: revision.boq.sections,
-      rows: revision.boq.rows.map(compactBoqRowForDurableStorage),
-    },
-    trace: {
-      ...revision.trace,
-      rows: [],
-    },
-  };
-}
-
 function compactEstimateDraftRevisionStateForEmergencyStorage(
   state: EstimateDraftRevisionState | null | undefined,
 ): EstimateDraftRevisionState | null {
@@ -737,17 +686,6 @@ function compactEstimateDraftRevisionStateForEmergencyStorage(
     ...state,
     revisions: state.revisions.map(compactEstimateDraftRevisionForEmergencyStorage),
     diffs: state.diffs.slice(-32),
-  };
-}
-
-function compactEstimateDraftRevisionStateForDurableStorage(
-  state: EstimateDraftRevisionState | null | undefined,
-): EstimateDraftRevisionState | null {
-  if (!state) return null;
-  return {
-    ...state,
-    revisions: state.revisions.map(compactEstimateDraftRevisionForDurableStorage),
-    diffs: state.diffs,
   };
 }
 
@@ -774,6 +712,7 @@ export function compactConsumerRepairBundleForDurableStorage(
     estimateRevisionState: bundle.estimateRevisionState ?? null,
     estimateDraftRevisionState: bundle.estimateDraftRevisionState ?? null,
     structuredEstimatePayload: null,
+    ...(Object.hasOwn(bundle, "canonicalBackendApprovalEvidence") ? { canonicalBackendApprovalEvidence: null } : {}),
     projectExecutionDrafts: [],
     events: bundle.events.slice(-24).map((event) => ({
       ...event,

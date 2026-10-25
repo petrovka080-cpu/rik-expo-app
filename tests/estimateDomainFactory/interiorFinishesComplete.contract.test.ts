@@ -172,14 +172,15 @@ function compile(
 }
 
 describe("Interior Finishes complete professional domain", () => {
-  test("freezes the complete 2250-record denominator without silent exclusions or fan-in", () => {
-    expect(INTERIOR_FINISHES_COMPLETE_RECORD_COUNT).toBe(2_250);
-    expect(INTERIOR_FINISHES_DOMAIN_INVENTORY).toHaveLength(2_250);
-    expect(INTERIOR_FINISHES_NEW_INVENTORY).toHaveLength(2_166);
-    expect(interiorFinishesDomainFactory.binding_by_catalog_id.size).toBe(2_250);
-    expect(interiorFinishesDomainFactory.technology_by_id.size).toBe(2_250);
-    expect(new Set(INTERIOR_FINISHES_DOMAIN_INVENTORY.map((row) => row.catalog_id)).size).toBe(2_250);
-    expect(new Set(INTERIOR_FINISHES_DOMAIN_INVENTORY.map((row) => row.canonical_technology_id)).size).toBe(2_250);
+  test("freezes the complete 1482-record denominator without silent exclusions or fan-in", () => {
+    // 2250 − 768 area identities = 1482; 2166 − 744 non-Wave-1 area identities = 1422.
+    expect(INTERIOR_FINISHES_COMPLETE_RECORD_COUNT).toBe(1_482);
+    expect(INTERIOR_FINISHES_DOMAIN_INVENTORY).toHaveLength(1_482);
+    expect(INTERIOR_FINISHES_NEW_INVENTORY).toHaveLength(1_422);
+    expect(interiorFinishesDomainFactory.binding_by_catalog_id.size).toBe(1_482);
+    expect(interiorFinishesDomainFactory.technology_by_id.size).toBe(1_482);
+    expect(new Set(INTERIOR_FINISHES_DOMAIN_INVENTORY.map((row) => row.catalog_id)).size).toBe(1_482);
+    expect(new Set(INTERIOR_FINISHES_DOMAIN_INVENTORY.map((row) => row.canonical_technology_id)).size).toBe(1_482);
     for (const inventory of INTERIOR_FINISHES_DOMAIN_INVENTORY) {
       const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);
       const schema = interiorFinishesDomainFactory.schema_by_id.get(technology?.parameter_schema_id ?? "");
@@ -188,6 +189,27 @@ describe("Interior Finishes complete professional domain", () => {
       expect(schema.quantity_alternatives.every((alternative) =>
         alternative.every((parameterId) => parameterIds.has(parameterId))
       )).toBe(true);
+    }
+  });
+
+  test("retired area identities cannot enter the domain compiler", () => {
+    const standard = INTERIOR_FINISHES_DOMAIN_INVENTORY.find((row) => row.work_key.endsWith("_standard"))!;
+    expect(standard).toBeDefined();
+    expect(INTERIOR_FINISHES_DOMAIN_INVENTORY.filter((row) => /_(?:small|medium|large)_area$/u.test(row.work_key))).toEqual([]);
+    for (const size of ["small", "medium", "large"]) {
+      const retired = standard.work_key.replace(/_standard$/u, `_${size}_area`);
+      expect(interiorFinishesDomainFactory.binding_by_catalog_id.has(retired)).toBe(false);
+      expect(() => compileProfessionalEstimateDomainV1(interiorFinishesDomainFactory, constructionNormativeRegistryV1, {
+        catalog_id: retired,
+        work_key: retired,
+        scope_mode: "MINIMAL_EXPLICIT_SCOPE",
+        parent_revision_id: null,
+        parameter_values: {},
+        normative_request: { country: "KG", region: "Bishkek", funding_source: "PRIVATE_RECOMMENDED",
+          operation_class: interiorFinishesDomainFactory.technology_by_id.get(standard.canonical_technology_id)!.operation_class,
+          material_system: interiorFinishesDomainFactory.technology_by_id.get(standard.canonical_technology_id)!.material_system,
+          project_type: "RESIDENTIAL_INTERIOR", construction_state: "NEW", contract_basis: [], effective_date: "2026-08-11" },
+      })).toThrow(`DOMAIN_EXACT_BINDING_NOT_FOUND:${retired}`);
     }
   });
 

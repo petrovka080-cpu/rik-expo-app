@@ -77,7 +77,7 @@
       "rowId": "facade:ct190-kz:materials:r1:attachment-consumed",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "CT 190 для приклеивания плит: предварительный расход",
-      "nameRu": "CT 190 для приклеивания плит: предварительный расход",
+      "nameRu": "Расход клеевой смеси на приклеивание плит",
       "brandAndModelRu": null,
       "specificationRu": null,
       "detailsRu": [],
@@ -87,7 +87,7 @@
       "rowId": "facade:ct190-kz:materials:r1:base-layer-consumed",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "CT 190 для защитного слоя: предварительный расход",
-      "nameRu": "CT 190 для защитного слоя: предварительный расход",
+      "nameRu": "Расход клеевой и армирующей смеси на защитный слой",
       "brandAndModelRu": null,
       "specificationRu": null,
       "detailsRu": [],
@@ -97,7 +97,7 @@
       "rowId": "facade:ct190-kz:materials:r1:dry-mix-consumed",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "Общий предварительный расход CT 190",
-      "nameRu": "Общий предварительный расход CT 190",
+      "nameRu": "Общий расход клеевой и армирующей смеси",
       "brandAndModelRu": null,
       "specificationRu": null,
       "detailsRu": [],
@@ -107,7 +107,7 @@
       "rowId": "facade:ct190-kz:materials:r1:dry-mix-order",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "CT 190 исполнения KZ, мешки 25 кг",
-      "nameRu": "Клей Ceresit CT 190 для утеплителя, мешок 25 кг",
+      "nameRu": "Клеевая и армирующая смесь для фасадного утеплителя, мешок 25 кг",
       "brandAndModelRu": null,
       "specificationRu": "Ceresit CT 190, исполнение KZ, мешок 25 кг. Цена указывается за кг.",
       "detailsRu": []
@@ -116,7 +116,7 @@
       "rowId": "facade:ct190-kz:materials:r1:dry-mix-bags",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "Мешки CT 190 к заказу",
-      "nameRu": "Мешки CT 190 к заказу",
+      "nameRu": "Мешки клеевой и армирующей смеси к заказу",
       "brandAndModelRu": null,
       "specificationRu": null,
       "detailsRu": [],
@@ -126,7 +126,7 @@
       "rowId": "facade:ct190-kz:materials:r1:dry-mix-remaining",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "Остаток CT 190 после работы",
-      "nameRu": "Остаток CT 190 после работы",
+      "nameRu": "Остаток клеевой и армирующей смеси после работы",
       "brandAndModelRu": null,
       "specificationRu": null,
       "detailsRu": [],
@@ -136,7 +136,7 @@
       "rowId": "facade:ct190-kz:materials:r1:dry-mix-free",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "Свободный остаток CT 190 сверх резерва",
-      "nameRu": "Свободный остаток CT 190 сверх резерва",
+      "nameRu": "Свободный остаток клеевой и армирующей смеси сверх резерва",
       "brandAndModelRu": null,
       "specificationRu": null,
       "detailsRu": [],
@@ -146,7 +146,7 @@
       "rowId": "facade:ct190-kz:materials:r1:dry-mix-shortage",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "Недостающее количество CT 190 для расхода",
-      "nameRu": "Недостающее количество CT 190 для расхода",
+      "nameRu": "Недостающее количество клеевой и армирующей смеси",
       "brandAndModelRu": null,
       "specificationRu": null,
       "detailsRu": [],
@@ -156,7 +156,7 @@
       "rowId": "facade:ct190-kz:materials:r1:dry-mix-reserve-deficit",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "Непокрытый резерв CT 190",
-      "nameRu": "Непокрытый резерв CT 190",
+      "nameRu": "Непокрытый резерв клеевой и армирующей смеси",
       "brandAndModelRu": null,
       "specificationRu": null,
       "detailsRu": [],
@@ -1828,7 +1828,7 @@
       "rowId": "material:concrete:membrane-curing-compound:antisol250w-us",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "Состав для ухода за свежим бетоном Sika Antisol-250 W, готовый к применению, канистра 19 л",
-      "nameRu": "Состав для ухода за бетоном Sika Antisol-250 W, 19 л",
+      "nameRu": "Состав для ухода за бетоном, 19 л",
       "specificationRu": "Состав для ухода за свежим бетоном Sika Antisol-250 W, готовый к применению, канистра 19 л",
       "detailsRu": [],
       "brandAndModelRu": null
@@ -2866,7 +2866,7 @@
       "rowId": "plumbing:basin-mixer:grohe33265002:r1:mounting-set-reference",
       "contractVersion": "canonical-public-resource-presentation/v1",
       "sourceTitleRu": "FastFixation в составе смесителя",
-      "nameRu": "Крепление смесителя FastFixation",
+      "nameRu": "Комплект крепления смесителя",
       "brandAndModelRu": null,
       "specificationRu": "Комплект GROHE Eurosmart 33265002.",
       "detailsRu": [
@@ -2993,6 +2993,2801 @@
         "Спецоборудование и дополнительная уборка — при необходимости."
       ],
       "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:net-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "CT29 en_GL: приблизительная потребность1.8 кг/м²/мм",
+      "nameRu": "Сухая смесь CT29 для нанесения",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-minimum-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "План последовательных целых замесов25 кг — расчётный минимум",
+      "nameRu": "Мешки CT29 для приготовления смеси",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-prepared-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "CT29: сухая масса плана целых замесов по 25 кг",
+      "nameRu": "Сухая смесь CT29 к приготовлению",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-plan-excess",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Превышение плана замесов над net — не норма отходов",
+      "nameRu": "Остаток смеси после приготовления целых мешков",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ceresit CT29 en_GL,25 кг: закупаемая сухая масса после выделенного остатка",
+      "nameRu": "Сухая смесь CT29 к покупке, мешок 25 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-ordered-bags",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Целые25 кгмешки CT29 в заказе — без второй цены",
+      "nameRu": "Мешки CT29 к покупке",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-min",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нижняя граница рецепта воды5.7 л/25 кг — справочно",
+      "nameRu": "Вода для приготовления смеси: минимум",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-max",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Верхняя граница рецепта воды6.2 л/25 кг — справочно",
+      "nameRu": "Вода для приготовления смеси: максимум",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:25kg-mix-water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая холодная: план целых замесов CT29, верхний рецепт6.2 л/25 кг",
+      "nameRu": "Вода для приготовления смеси CT29",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный труд ручной однослойной штукатурки, разряд 3.6; с предоставлением обычного инвентаря",
+      "nameRu": "Работа штукатура с обычным инвентарём",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный растворосмеситель 65 л; фактически допустима малая механизация по§4.2",
+      "nameRu": "Растворосмеситель 65 л",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:loader",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный автопогрузчик 5 т: внутриобъектная подача",
+      "nameRu": "Автопогрузчик 5 т для подачи материалов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:hoist",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Нормативный одномачтовый подъёмник 500 кг, 45 м: внутриобъектная подача",
+      "nameRu": "Мачтовый подъёмник 500 кг для подачи материалов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:machine-operators",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд машинистов уже в стоимости нормативных машин — без второй цены",
+      "nameRu": "Работа машинистов, включённая в стоимость техники",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:stage-mixing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Приготовление и последовательное затворение целых мешков 25 кг",
+      "nameRu": "Приготовление смеси CT29",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Приготовление смеси входит в общий труд штукатурных работ. Оснащение и незакрытые потребности показаны в ресурсах этой операции. Число замесов не является отдельным материалом или повторно оплачиваемым трудом."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:stage-application",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ручное нанесение, разглаживание и затирка CT29 до 20 мм за проход",
+      "nameRu": "Нанесение и выравнивание штукатурки CT29",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Нанесение и выравнивание входит в общий труд штукатурных работ. Материалы, инструмент и незакрытые потребности показаны в ресурсах этой операции. Площадь подработы не является дополнительным количеством труда."
+      ],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:curing-water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода лёгкого распыления при уходе CT29: применимая норма ещё не подтверждена",
+      "nameRu": "Вода для увлажнения штукатурки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CT29, разгрузка, уборка и передача фактической упаковки и остатков",
+      "nameRu": "Доставка CT29, разгрузка и уборка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "plaster:ct29-existing:cement-lime-indoor:scope-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Обычный ручной инвентарь, доступ до 3.5 м и СИЗ в накладном составе трудового владельца",
+      "nameRu": "Ручной инвентарь, подмости и средства защиты",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "PROCESS_NOTE"
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:whole-work",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Улучшенная отделка готовыми составами: единый владелец труда и обычного обеспечения",
+      "nameRu": "Работы по отделке стен",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-putty-spatula",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шпатель STAYER HERCULES10041-12,120мм: один действующий предмет на последовательный пост",
+      "nameRu": "Шпатель из нержавеющей стали, 120 мм",
+      "brandAndModelRu": null,
+      "specificationRu": "Нержавеющее полотно 120 мм; цельная рукоять.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-waterborne-brush",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кисть ЗУБР МАСТЕР АКВА4-01013-100,100мм: один последовательный ручной пост",
+      "nameRu": "Кисть для водных составов, 100 мм",
+      "brandAndModelRu": null,
+      "specificationRu": "Искусственная щетина; номинальная ширина 100 мм; цельная рукоять; воднодисперсионные и акриловые составы.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-application-pail",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ручная рабочая ёмкость Wooster Pelican8619,1USquart",
+      "nameRu": "Малярная рабочая ёмкость, 1 US quart",
+      "brandAndModelRu": null,
+      "specificationRu": "Пользовательская ёмкость 1 US quart; ручка, держатель кисти; рабочая область до 4½ дюймов.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-application-pail-lid",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Крышка Wooster Pelican8659 для рабочего сосуда8619",
+      "nameRu": "Крышка малярной рабочей ёмкости",
+      "brandAndModelRu": null,
+      "specificationRu": "Отдельная совместимая крышка выбранной рабочей ёмкости.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-sanding-holder",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Держатель STAYER3566-212,105×212мм",
+      "nameRu": "Держатель шлифовальной бумаги, 105 × 212 мм",
+      "brandAndModelRu": null,
+      "specificationRu": "Рабочая площадка 105 × 212 мм; металлические зажимы бумаги.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-paper-shears",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ножницы для шлифовальной бумаги",
+      "nameRu": "Ножницы для шлифовальной бумаги",
+      "brandAndModelRu": null,
+      "specificationRu": "Цельные ручные ножницы с двумя режущими лезвиями и рукоятями для листовой бумаги.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-paper-rule",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Линейка металлическая300мм",
+      "nameRu": "Линейка металлическая, 300 мм",
+      "brandAndModelRu": null,
+      "specificationRu": "Металлическая линейка со шкалой 0–300 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-paper-mark",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Карандаш разметочный",
+      "nameRu": "Карандаш разметочный",
+      "brandAndModelRu": null,
+      "specificationRu": "Карандаш для разметки шлифовальных листов.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-abrasive-storage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Футляр для рабочих листов шкурки",
+      "nameRu": "Футляр для шлифовальных листов, от 230 × 280 мм",
+      "brandAndModelRu": null,
+      "specificationRu": "Полезный внутренний просвет не меньше 230 × 280 мм; жёсткий закрываемый футляр.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-dedust-brush",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Щётка ручная для обеспыливания",
+      "nameRu": "Щётка для обеспыливания",
+      "brandAndModelRu": null,
+      "specificationRu": "Сухая ручная щётка с мягким неметаллическим ворсом и цельной рукоятью.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-floor-brush",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Щётка для уборки пола",
+      "nameRu": "Щётка для уборки пола",
+      "brandAndModelRu": null,
+      "specificationRu": "Ручная щётка с неметаллическим ворсом и цельной рукоятью.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-dustpan",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Совок для уборки",
+      "nameRu": "Совок для уборки",
+      "brandAndModelRu": null,
+      "specificationRu": "Цельный совок с рукоятью, прилегающей кромкой и бортами.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-waste-bin",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ведро Wooster8616,4USgal",
+      "nameRu": "Ведро для сухих отходов, 4 US gal",
+      "brandAndModelRu": null,
+      "specificationRu": "Пользовательская ёмкость 4 US gal; отдельная многоразовая тара для локальных сухих отходов.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-waste-bin-lid",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Крышка Wooster8626 для8616",
+      "nameRu": "Крышка ведра для сухих отходов",
+      "brandAndModelRu": null,
+      "specificationRu": "Отдельная совместимая крышка выбранного ведра.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-work-clothing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Рабочая одежда маляра",
+      "nameRu": "Рабочая одежда маляра",
+      "brandAndModelRu": null,
+      "specificationRu": "Многоразовая рабочая одежда по размеру исполнителя, закрывающая туловище, руки и ноги.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-waterproof-gloves",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Перчатки защитные многоразовые, пара",
+      "nameRu": "Непроницаемые защитные перчатки, пара",
+      "brandAndModelRu": null,
+      "specificationRu": "Одна целая пара непроницаемых перчаток по размеру исполнителя; защитный материал должен соответствовать выбранным составам.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:abrasive-sheet-provision",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовальная бумага БАЗ KT10CW P60,230×280мм",
+      "nameRu": "Шлифовальная бумага P60, 230 × 280 мм",
+      "brandAndModelRu": null,
+      "specificationRu": "Бумажный лист P60, 230 × 280 мм; два рабочих листа 115 × 280 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:preputty-primer-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК0301 глубокого проникновения, готовый грунт перед шпаклёвкой, тара1кг: полный плановый расход",
+      "nameRu": "Грунтовка глубокого проникновения, готовая, 1 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:preputty-primer-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК0301 глубокого проникновения, готовый грунт перед шпаклёвкой, тара1кг: заказ целыми упаковками после выделенного остатка",
+      "nameRu": "Грунтовка глубокого проникновения, готовая, 1 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:preputty-primer-packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК0301 глубокого проникновения, готовый грунт перед шпаклёвкой, тара1кг: упаковки в заказе",
+      "nameRu": "Грунтовка глубокого проникновения, готовая, 1 кг — упаковки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:preputty-primer-stock-credit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК0301 глубокого проникновения, готовый грунт перед шпаклёвкой, тара1кг: выделенное пригодное наличие",
+      "nameRu": "Грунтовка глубокого проникновения, готовая, 1 кг — наличие",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:preputty-primer-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК0301 глубокого проникновения, готовый грунт перед шпаклёвкой, тара1кг: превышение принятой заявки над расходом",
+      "nameRu": "Грунтовка глубокого проникновения, готовая, 1 кг — остаток",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:preputty-primer-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК0301 глубокого проникновения, готовый грунт перед шпаклёвкой, тара1кг: дефицит принятой заявки",
+      "nameRu": "Грунтовка глубокого проникновения, готовая, 1 кг — дефицит",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:primer-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT грунтовка для внутренних работ укрывающая, ведро3кг: полный плановый расход",
+      "nameRu": "Грунтовка укрывающая для внутренних работ, 3 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:primer-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT грунтовка для внутренних работ укрывающая, ведро3кг: заказ целыми упаковками после выделенного остатка",
+      "nameRu": "Грунтовка укрывающая для внутренних работ, 3 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:primer-packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT грунтовка для внутренних работ укрывающая, ведро3кг: упаковки в заказе",
+      "nameRu": "Грунтовка укрывающая для внутренних работ, 3 кг — упаковки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:primer-stock-credit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT грунтовка для внутренних работ укрывающая, ведро3кг: выделенное пригодное наличие",
+      "nameRu": "Грунтовка укрывающая для внутренних работ, 3 кг — наличие",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:primer-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT грунтовка для внутренних работ укрывающая, ведро3кг: превышение принятой заявки над расходом",
+      "nameRu": "Грунтовка укрывающая для внутренних работ, 3 кг — остаток",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:primer-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT грунтовка для внутренних работ укрывающая, ведро3кг: дефицит принятой заявки",
+      "nameRu": "Грунтовка укрывающая для внутренних работ, 3 кг — дефицит",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:paint-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК2180 Супербелая, для стен, ведро1,5кг: полный плановый расход",
+      "nameRu": "Краска водно-дисперсионная акриловая для стен, белая, 1,5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:paint-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК2180 Супербелая, для стен, ведро1,5кг: заказ целыми упаковками после выделенного остатка",
+      "nameRu": "Краска водно-дисперсионная акриловая для стен, белая, 1,5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:paint-packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК2180 Супербелая, для стен, ведро1,5кг: упаковки в заказе",
+      "nameRu": "Краска водно-дисперсионная акриловая для стен, белая, 1,5 кг — упаковки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:paint-stock-credit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК2180 Супербелая, для стен, ведро1,5кг: выделенное пригодное наличие",
+      "nameRu": "Краска водно-дисперсионная акриловая для стен, белая, 1,5 кг — наличие",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:paint-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК2180 Супербелая, для стен, ведро1,5кг: превышение принятой заявки над расходом",
+      "nameRu": "Краска водно-дисперсионная акриловая для стен, белая, 1,5 кг — остаток",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:paint-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT ВД-АК2180 Супербелая, для стен, ведро1,5кг: дефицит принятой заявки",
+      "nameRu": "Краска водно-дисперсионная акриловая для стен, белая, 1,5 кг — дефицит",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:abrasive-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шкурка шлифовальная двухслойная с зернистостью40/25: обеспечение в единой работе",
+      "nameRu": "Шлифовальная шкурка, зернистость 40/25",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:rags-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ветошь для отделочных работ: обеспечение в единой работе",
+      "nameRu": "Ветошь для отделочных работ",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:ready-putty-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT шпатлёвка универсальная готовая, тара1кг: полный плановый расход",
+      "nameRu": "Шпаклёвка универсальная готовая, 1 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:ready-putty-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT шпатлёвка универсальная готовая, тара1кг: заказ целыми упаковками после выделенного остатка",
+      "nameRu": "Шпаклёвка универсальная готовая, 1 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:ready-putty-packages",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT шпатлёвка универсальная готовая, тара1кг: упаковки в заказе",
+      "nameRu": "Шпаклёвка универсальная готовая, 1 кг — упаковки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:ready-putty-stock-credit",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT шпатлёвка универсальная готовая, тара1кг: выделенное пригодное наличие",
+      "nameRu": "Шпаклёвка универсальная готовая, 1 кг — наличие",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:ready-putty-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT шпатлёвка универсальная готовая, тара1кг: превышение принятой заявки над расходом",
+      "nameRu": "Шпаклёвка универсальная готовая, 1 кг — остаток",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:ready-putty-shortage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "VGT шпатлёвка универсальная готовая, тара1кг: дефицит принятой заявки",
+      "nameRu": "Шпаклёвка универсальная готовая, 1 кг — дефицит",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:workers",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Рабочие-строители, средний разряд3,2: цельная норма, без деления часов",
+      "nameRu": "Рабочие-строители, разряд 3,2",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:workers-preputty",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Первичное однократное глубокое грунтование: рабочие разряда4,0, отдельная исходная норма6,55ч/100м²",
+      "nameRu": "Рабочие по грунтованию, разряд 4,0",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:workers-total",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Всего труда: исходная отделка и необходимое первичное грунтование",
+      "nameRu": "Труд по отделке стен, всего",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:operators",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Машинисты обоих нормативных процессов: уже учтены эксплуатацией, без второй оплаты",
+      "nameRu": "Машинисты",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:rags-contribution-preputty",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вклад первичного грунтования в общую ветошь",
+      "nameRu": "Ветошь для первичного грунтования",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:rags-contribution-finish",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вклад отделки в общую ветошь",
+      "nameRu": "Ветошь для шпаклевания и окраски",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:truck-contribution-preputty",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вклад первичного грунтования в общие часы автомобиля",
+      "nameRu": "Автомобиль для первичного грунтования",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:truck-contribution-finish",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вклад отделки в общие часы автомобиля",
+      "nameRu": "Автомобиль для шпаклевания и окраски",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:lift",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подъёмник одномачтовый грузоподъёмностью до500кг, высота подъёма25м",
+      "nameRu": "Подъёмник одномачтовый, до 500 кг, высота 25 м",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:lift-preputty",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подъёмник одномачтовый до500кг, высота45м: первичный грунт",
+      "nameRu": "Подъёмник одномачтовый, до 500 кг, высота 45 м",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:truck",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Автомобиль бортовой грузоподъёмностью до5т: эксплуатация внутри исходной нормы",
+      "nameRu": "Автомобиль бортовой, до 5 т",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:process-preparation",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Проверить и обеспылить уже ровную прочную штукатурку",
+      "nameRu": "Проверка и обеспыливание штукатурки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:process-preputty-prime",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Загрунтовать VGT0301 перед шпаклёвкой и высушить",
+      "nameRu": "Грунтование перед шпаклеванием",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:process-full-putty",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сплошь зашпаклевать принятую штукатурку",
+      "nameRu": "Сплошное шпаклевание стен",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:process-full-sand",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовать зашпаклёванную поверхность",
+      "nameRu": "Шлифование шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:process-prime",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Загрунтовать готовым акриловым грунтом",
+      "nameRu": "Грунтование перед окраской",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:process-primer-sand",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовать прогрунтованную поверхность",
+      "nameRu": "Шлифование прогрунтованной поверхности",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:process-two-coat-paint",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Окрасить стену акриловой краской за два раза",
+      "nameRu": "Окраска стен акриловой краской в два слоя",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:process-ordinary-completion",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Выполнить обычные сопутствующие операции и убрать рабочее место",
+      "nameRu": "Завершение работ и уборка рабочего места",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:ordinary-access",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Обычный инвентарь, СИЗ и доступ при высоте помещения до3,5м",
+      "nameRu": "Обычный инвентарь, СИЗ и доступ до 3,5 м",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:ordinary-accompanying",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Мелкие сопутствующие операции и обычная уборка рабочего места в исходной норме",
+      "nameRu": "Сопутствующие работы и уборка рабочего места",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:open-washing-water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для промывки инструмента и мытья рук",
+      "nameRu": "Вода для промывки инструмента и мытья рук",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:open-access",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Конкретный безопасный доступ к стене в пределах высоты3,5м",
+      "nameRu": "Безопасный доступ к стене до 3,5 м",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:open-ppe",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "СИЗ маляра: конкретное обеспечение и совместимость с операциями",
+      "nameRu": "Средства индивидуальной защиты маляра",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:open-handling-profile",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подтвердить исполнение подачи, соответствующее нормативным машинам",
+      "nameRu": "Средства подачи материалов и удаления отходов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-manual-putty-pan",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Тара ручного перемешивания",
+      "nameRu": "Тара для шпаклёвки, просвет от 150 × 150 мм",
+      "brandAndModelRu": null,
+      "specificationRu": "Полезный внутренний просвет не меньше 150 × 150 мм, глубина 100 мм; рабочая отметка 50 мм, вместимость 1,125 л.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-manual-putty-pan-lid",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Крышка рабочей тары",
+      "nameRu": "Крышка рабочей тары для шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": "Отдельная совместимая крышка рабочей тары с просветом 150 × 150 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-locking-pins",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Фиксаторы KRAUSE 704405",
+      "nameRu": "Фиксирующие штифты складной площадки",
+      "brandAndModelRu": null,
+      "specificationRu": "Фиксирующие штифты выбранной складной площадки.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-caster-set",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ролики KRAUSE 714169",
+      "nameRu": "Ролики площадки, набор из 4 шт.",
+      "brandAndModelRu": null,
+      "specificationRu": "Полный совместимый набор из четырёх роликов.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-platform",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Платформа KRAUSE 911001",
+      "nameRu": "Платформа с люком, 2,00 × 0,60 м",
+      "brandAndModelRu": null,
+      "specificationRu": "Платформа с люком, 2,00 × 0,60 м.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-guardrail-braces",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ограждения KRAUSE 912855",
+      "nameRu": "Горизонтальные связи ограждения площадки",
+      "brandAndModelRu": null,
+      "specificationRu": "Горизонтальные связи ограждения выбранной складной площадки.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-long-toeboards",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Продольные борта KRAUSE 913517",
+      "nameRu": "Продольные бортовые ограждения площадки",
+      "brandAndModelRu": null,
+      "specificationRu": "Продольные бортовые элементы выбранной складной площадки.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-end-toeboards",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Поперечные борта KRAUSE 913555",
+      "nameRu": "Торцевые бортовые ограждения площадки",
+      "brandAndModelRu": null,
+      "specificationRu": "Торцевые бортовые элементы выбранной складной площадки.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-base-plates",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Опоры KRAUSE 914026",
+      "nameRu": "Опоры складной площадки",
+      "brandAndModelRu": null,
+      "specificationRu": "Опорные элементы выбранной складной площадки.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-folding-base",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Основание KRAUSE 915009",
+      "nameRu": "Складное основание площадки",
+      "brandAndModelRu": null,
+      "specificationRu": "Складное основание выбранной площадки.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-frames",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Рамы KRAUSE 915023",
+      "nameRu": "Вертикальные рамы площадки, 1 м",
+      "brandAndModelRu": null,
+      "specificationRu": "Совместимые вертикальные рамы высотой 1 м.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-spanners",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ключи 13 мм",
+      "nameRu": "Ключи гаечные, 13 мм",
+      "brandAndModelRu": null,
+      "specificationRu": "Два отдельных гаечных ключа 13 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-spirit-level",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Уровень пузырьковый",
+      "nameRu": "Уровень пузырьковый, точность 0,5 мм/м",
+      "brandAndModelRu": null,
+      "specificationRu": "Два направления измерения; точность не хуже 0,5 мм/м.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-identification-board",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Щит допуска площадки",
+      "nameRu": "Щит допуска рабочей площадки",
+      "brandAndModelRu": null,
+      "specificationRu": "Закрепляемый щит: ответственное лицо и контакт, готовность, класс и нагрузка, применение внутри, дата сборки.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:access-board-marker",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Маркер щита допуска",
+      "nameRu": "Маркер для щита допуска",
+      "brandAndModelRu": null,
+      "specificationRu": "Маркер для повторно заполняемого щита допуска.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-eye-protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Очки 3M 2890S",
+      "nameRu": "Очки защитные закрытые, классы 3/4/5, BT",
+      "brandAndModelRu": null,
+      "specificationRu": "Закрытая вентиляция; защита от брызг, крупной и мелкой пыли, классы 3/4/5; механическая защита BT.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:skin-protection-foam",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Защитная пена MARLY SKIN,100мл",
+      "nameRu": "Защитная пена для рук, 100 мл",
+      "brandAndModelRu": null,
+      "specificationRu": "Защитная пена для рук, баллон 100 мл.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:open-hand-cleanser",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расход средства для подготовки рук перед защитой кожи",
+      "nameRu": "Средство для очищения рук",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:hand-cleanser-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Средство SCJP CLEAR FOAM PURE, картридж1л",
+      "nameRu": "Средство для очищения рук, картридж 1 л",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:tool-hand-cleanser-dispenser",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Дозатор SCJP TPW1LDS в сборе с креплением",
+      "nameRu": "Дозатор средства для рук с креплением, 1 л",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:open-hand-drying-towels",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расход одноразовых полотенец для подготовки рук",
+      "nameRu": "Одноразовые полотенца для рук",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:hand-drying-towels-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Полотенца Medline DYNJPE2220A,37×69см",
+      "nameRu": "Одноразовые полотенца для рук, 37 × 69 см",
+      "brandAndModelRu": null,
+      "specificationRu": "Размер 37 × 69 см; поставка парами по 2 шт.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "wall_finish_ready_krer150400701_r3_work:whole-work",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Высококачественная отделка готовыми составами VGT",
+      "nameRu": "Высококачественная отделка стен",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:net-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Приблизительная потребность Ceresit CT126 по площади и толщине",
+      "nameRu": "Сухая гипсовая шпаклёвка по площади и толщине",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-minimum-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 5 кг — не факт приготовления",
+      "nameRu": "Минимальный план замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-planned-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 5 кг",
+      "nameRu": "План целых замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "nameRu": "Достаточность плана замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-prepared-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CT126 для подтверждённого плана замесов 5 кг",
+      "nameRu": "Сухая гипсовая шпаклёвка для плана замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-plan-excess",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "nameRu": "Расчётный избыток шпаклёвки по плану замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Гипсовая шпаклёвка Ceresit CT126 SUPER START, мешок 5 кг",
+      "nameRu": "Шпаклёвка гипсовая сухая для внутренних работ, мешок 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": "Гипсовая шпаклёвка для сухих внутренних стен; один слой 2–10 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-ordered-bags",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Целые мешки CT126 5 кг в заказе — без второй цены",
+      "nameRu": "Мешки гипсовой шпаклёвки, 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-mix-water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для подтверждённого плана целых замесов CT126 5 кг",
+      "nameRu": "Вода для замесов гипсовой шпаклёвки, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:5kg-mix-water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для затворения выбранной CT126 5 кг",
+      "nameRu": "Вода для затворения гипсовой шпаклёвки, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-minimum-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 20 кг — не факт приготовления",
+      "nameRu": "Минимальный план замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-planned-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 20 кг",
+      "nameRu": "План целых замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "nameRu": "Достаточность плана замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-prepared-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CT126 для подтверждённого плана замесов 20 кг",
+      "nameRu": "Сухая гипсовая шпаклёвка для плана замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-plan-excess",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "nameRu": "Расчётный избыток шпаклёвки по плану замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Гипсовая шпаклёвка Ceresit CT126 SUPER START, мешок 20 кг",
+      "nameRu": "Шпаклёвка гипсовая сухая для внутренних работ, мешок 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": "Гипсовая шпаклёвка для сухих внутренних стен; один слой 2–10 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-ordered-bags",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Целые мешки CT126 20 кг в заказе — без второй цены",
+      "nameRu": "Мешки гипсовой шпаклёвки, 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-mix-water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для подтверждённого плана целых замесов CT126 20 кг",
+      "nameRu": "Вода для замесов гипсовой шпаклёвки, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:20kg-mix-water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для затворения выбранной CT126 20 кг",
+      "nameRu": "Вода для затворения гипсовой шпаклёвки, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по затворению, нанесению, разглаживанию, шлифованию и заключительному грунтованию CT126",
+      "nameRu": "Труд по приготовлению, нанесению, шлифованию и грунтованию шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Электрическая дрель с насадкой-миксером для CT126",
+      "nameRu": "Электрическая дрель с насадкой-миксером",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:stainless-float",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Широкий полутерок из нержавеющей стали для CT126",
+      "nameRu": "Широкий полутерок из нержавеющей стали",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:sandpaper-mesh",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовальная бумага или сетка для высохшей CT126 — одно выбранное исполнение",
+      "nameRu": "Шлифовальная бумага или сетка для гипсовой шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:sanding-tool",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовальная машина типа «жираф» для высохшей CT126",
+      "nameRu": "Шлифовальная машина с удлинённой рукоятью",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:post-primer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Грунтовка всей высохшей и обеспыленной CT126 — изделие и расход требуют совместимой системы",
+      "nameRu": "Грунтовка после шлифования шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:post-primer-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Инструмент нанесения выбранной грунтовки поверх CT126",
+      "nameRu": "Инструмент для нанесения грунтовки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:water-cleaning",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода очистки инструмента после CT126",
+      "nameRu": "Вода для очистки инструмента",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:acceptance",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль толщины, высыхания и качества поверхности CT126",
+      "nameRu": "Контроль толщины и качества шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:access-protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доступ к высоте стены, защита глаз, кожи и зоны шлифования CT126",
+      "nameRu": "Доступ к стене и защита при шпаклевании",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CT126, разгрузка, обеспыливание, уборка и передача упаковки/остатков",
+      "nameRu": "Доставка шпаклёвки, разгрузка и уборка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:net-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Приблизительная потребность Ceresit CT126 по площади и толщине",
+      "nameRu": "Сухая гипсовая шпаклёвка по площади и толщине",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-minimum-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 5 кг — не факт приготовления",
+      "nameRu": "Минимальный план замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-planned-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 5 кг",
+      "nameRu": "План целых замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "nameRu": "Достаточность плана замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-prepared-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CT126 для подтверждённого плана замесов 5 кг",
+      "nameRu": "Сухая гипсовая шпаклёвка для плана замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-plan-excess",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "nameRu": "Расчётный избыток шпаклёвки по плану замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Гипсовая шпаклёвка Ceresit CT126 SUPER START, мешок 5 кг",
+      "nameRu": "Шпаклёвка гипсовая сухая для внутренних работ, мешок 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": "Гипсовая шпаклёвка для сухих внутренних стен; один слой 2–10 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-ordered-bags",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Целые мешки CT126 5 кг в заказе — без второй цены",
+      "nameRu": "Мешки гипсовой шпаклёвки, 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-mix-water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для подтверждённого плана целых замесов CT126 5 кг",
+      "nameRu": "Вода для замесов гипсовой шпаклёвки, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:5kg-mix-water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для затворения выбранной CT126 5 кг",
+      "nameRu": "Вода для затворения гипсовой шпаклёвки, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-minimum-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 20 кг — не факт приготовления",
+      "nameRu": "Минимальный план замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-planned-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 20 кг",
+      "nameRu": "План целых замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "nameRu": "Достаточность плана замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-prepared-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CT126 для подтверждённого плана замесов 20 кг",
+      "nameRu": "Сухая гипсовая шпаклёвка для плана замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-plan-excess",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "nameRu": "Расчётный избыток шпаклёвки по плану замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Гипсовая шпаклёвка Ceresit CT126 SUPER START, мешок 20 кг",
+      "nameRu": "Шпаклёвка гипсовая сухая для внутренних работ, мешок 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": "Гипсовая шпаклёвка для сухих внутренних стен; один слой 2–10 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-ordered-bags",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Целые мешки CT126 20 кг в заказе — без второй цены",
+      "nameRu": "Мешки гипсовой шпаклёвки, 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-mix-water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для подтверждённого плана целых замесов CT126 20 кг",
+      "nameRu": "Вода для замесов гипсовой шпаклёвки, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:20kg-mix-water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для затворения выбранной CT126 20 кг",
+      "nameRu": "Вода для затворения гипсовой шпаклёвки, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по затворению, нанесению, разглаживанию, шлифованию и заключительному грунтованию CT126",
+      "nameRu": "Труд по приготовлению, нанесению, шлифованию и грунтованию шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Электрическая дрель с насадкой-миксером для CT126",
+      "nameRu": "Электрическая дрель с насадкой-миксером",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:stainless-float",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Широкий полутерок из нержавеющей стали для CT126",
+      "nameRu": "Широкий полутерок из нержавеющей стали",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:sandpaper-mesh",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовальная бумага или сетка для высохшей CT126 — одно выбранное исполнение",
+      "nameRu": "Шлифовальная бумага или сетка для гипсовой шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:sanding-tool",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовальная машина типа «жираф» для высохшей CT126",
+      "nameRu": "Шлифовальная машина с удлинённой рукоятью",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:post-primer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Грунтовка всей высохшей и обеспыленной CT126 — изделие и расход требуют совместимой системы",
+      "nameRu": "Грунтовка после шлифования шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:post-primer-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Инструмент нанесения выбранной грунтовки поверх CT126",
+      "nameRu": "Инструмент для нанесения грунтовки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:water-cleaning",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода очистки инструмента после CT126",
+      "nameRu": "Вода для очистки инструмента",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:acceptance",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль толщины, высыхания и качества поверхности CT126",
+      "nameRu": "Контроль толщины и качества шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:access-protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доступ к фактической высоте стены, защита глаз, кожи и зоны шлифования CT126",
+      "nameRu": "Доступ к стене и защита при шпаклевании",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-cement:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CT126, разгрузка, обеспыливание, уборка и передача упаковки/остатков",
+      "nameRu": "Доставка шпаклёвки, разгрузка и уборка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:net-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Приблизительная потребность Ceresit CT126 по площади и толщине",
+      "nameRu": "Сухая гипсовая шпаклёвка по площади и толщине",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-minimum-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 5 кг — не факт приготовления",
+      "nameRu": "Минимальный план замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-planned-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 5 кг",
+      "nameRu": "План целых замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "nameRu": "Достаточность плана замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-prepared-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CT126 для подтверждённого плана замесов 5 кг",
+      "nameRu": "Сухая гипсовая шпаклёвка для плана замесов, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-plan-excess",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "nameRu": "Расчётный избыток шпаклёвки по плану замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Гипсовая шпаклёвка Ceresit CT126 SUPER START, мешок 5 кг",
+      "nameRu": "Шпаклёвка гипсовая сухая для внутренних работ, мешок 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": "Гипсовая шпаклёвка для сухих внутренних стен; один слой 2–10 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-ordered-bags",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Целые мешки CT126 5 кг в заказе — без второй цены",
+      "nameRu": "Мешки гипсовой шпаклёвки, 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-mix-water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для подтверждённого плана целых замесов CT126 5 кг",
+      "nameRu": "Вода для замесов гипсовой шпаклёвки, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:5kg-mix-water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для затворения выбранной CT126 5 кг",
+      "nameRu": "Вода для затворения гипсовой шпаклёвки, мешки 5 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-minimum-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Минимальный расчётный план целых замесов CT126 20 кг — не факт приготовления",
+      "nameRu": "Минимальный план замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-planned-batches",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Подтверждённый последовательный план замесов CT126 20 кг",
+      "nameRu": "План целых замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль достаточности плана CT126 — без отдельной цены",
+      "nameRu": "Достаточность плана замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-prepared-mixture",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CT126 для подтверждённого плана замесов 20 кг",
+      "nameRu": "Сухая гипсовая шпаклёвка для плана замесов, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-plan-excess",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расчётное превышение плана CT126 над приблизительной потребностью — не норматив отходов",
+      "nameRu": "Расчётный избыток шпаклёвки по плану замесов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Гипсовая шпаклёвка Ceresit CT126 SUPER START, мешок 20 кг",
+      "nameRu": "Шпаклёвка гипсовая сухая для внутренних работ, мешок 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": "Гипсовая шпаклёвка для сухих внутренних стен; один слой 2–10 мм.",
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-ordered-bags",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Целые мешки CT126 20 кг в заказе — без второй цены",
+      "nameRu": "Мешки гипсовой шпаклёвки, 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-mix-water-consumed",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для подтверждённого плана целых замесов CT126 20 кг",
+      "nameRu": "Вода для замесов гипсовой шпаклёвки, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:20kg-mix-water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая прохладная для затворения выбранной CT126 20 кг",
+      "nameRu": "Вода для затворения гипсовой шпаклёвки, мешки 20 кг",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по затворению, нанесению, разглаживанию, шлифованию и заключительному грунтованию CT126",
+      "nameRu": "Труд по приготовлению, нанесению, шлифованию и грунтованию шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Электрическая дрель с насадкой-миксером для CT126",
+      "nameRu": "Электрическая дрель с насадкой-миксером",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:stainless-float",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Широкий полутерок из нержавеющей стали для CT126",
+      "nameRu": "Широкий полутерок из нержавеющей стали",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:sandpaper-mesh",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовальная бумага или сетка для высохшей CT126 — одно выбранное исполнение",
+      "nameRu": "Шлифовальная бумага или сетка для гипсовой шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:sanding-tool",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Шлифовальная машина типа «жираф» для высохшей CT126",
+      "nameRu": "Шлифовальная машина с удлинённой рукоятью",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:post-primer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Грунтовка всей высохшей и обеспыленной CT126 — изделие и расход требуют совместимой системы",
+      "nameRu": "Грунтовка после шлифования шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:post-primer-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Инструмент нанесения выбранной грунтовки поверх CT126",
+      "nameRu": "Инструмент для нанесения грунтовки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:water-cleaning",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода очистки инструмента после CT126",
+      "nameRu": "Вода для очистки инструмента",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:acceptance",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Контроль толщины, высыхания и качества поверхности CT126",
+      "nameRu": "Контроль толщины и качества шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:access-protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доступ к фактической высоте стены, защита глаз, кожи и зоны шлифования CT126",
+      "nameRu": "Доступ к стене и защита при шпаклевании",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-prepared:wall-smooth-concrete:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CT126, разгрузка, обеспыливание, уборка и передача упаковки/остатков",
+      "nameRu": "Доставка шпаклёвки, разгрузка и уборка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:post-primer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Грунтовка Ceresit CT17 Profi 03.24 поверх CT126 перед внутренней окраской CT54 — кандидат, система и расход не приняты",
+      "nameRu": "Грунтовка после шлифования шпаклёвки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "putty:ct126-dry-wall:post-primer-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Кисть или валик для грунтовки CT17 поверх CT126 — кандидаты, одно исполнение по принятой системе",
+      "nameRu": "Инструмент для нанесения грунтовки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:skin-nominal-use",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Плановый расход защитного средства для кожи",
+      "nameRu": "Расход защитного средства для кожи",
+      "brandAndModelRu": "Marly Skin",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:paste-fire-access",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Защитное средство для кожи, баллон 100 мл",
+      "nameRu": "Защитное средство для кожи, баллон 100 мл",
+      "brandAndModelRu": "Marly Skin",
+      "specificationRu": "Баллон 100 мл",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-cleanser",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Мыло-пена SCJP CLEAR FOAM PURE для подготовки рук",
+      "nameRu": "Расход мыла-пены для подготовки рук",
+      "brandAndModelRu": "SCJP CLEAR FOAM PURE",
+      "specificationRu": null,
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:hand-cleanser-supply",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Мыло-пена SCJP CLEAR FOAM PURE, картридж CLR1L 1 л",
+      "nameRu": "Мыло-пена для рук, картридж 1 л",
+      "brandAndModelRu": "SCJP CLEAR FOAM PURE",
+      "specificationRu": "Картридж 1 л",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r4:hand-cleanser-dispenser",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Дозатор мыла-пены SCJP TPW1LDS",
+      "nameRu": "Дозатор мыла-пены, 1 л",
+      "brandAndModelRu": "SCJP TPW1LDS",
+      "specificationRu": "Для картриджа 1 л",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Расход одноразовых полотенец для сушки рук",
+      "nameRu": "Расход одноразовых полотенец для сушки рук",
+      "brandAndModelRu": "Medline DYNJPE2220A",
+      "specificationRu": "37 × 69 см, армированная целлюлоза",
+      "detailsRu": [],
+      "rowKind": "CALCULATION_DETAIL"
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r5:hand-drying-supply",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Полотенца для сушки рук Medline DYNJPE2220A, 37 × 69 см",
+      "nameRu": "Одноразовые полотенца для сушки рук, 37 × 69 см",
+      "brandAndModelRu": "Medline DYNJPE2220A",
+      "specificationRu": "Армированная целлюлоза, 2 шт. в упаковке",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:ce40-table-quantity",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ориентировочная потребность CE 40 по выбранной строке таблицы — не гарантия расхода",
+      "nameRu": "Ориентировочный расход затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:ce40-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Превышение плана смешивания CE 40 над ориентировочной таблицей — не сухой остаток",
+      "nameRu": "Превышение плана замесов над ориентировочным расходом",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:ce40-mixed-plan",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CE 40 для принятого плана замесов — без второй цены",
+      "nameRu": "Расход сухой затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:ce40-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Затирка Ceresit CE 40 Aquastatic, цвет 1 Белый, пластиковое ведро 2 кг",
+      "nameRu": "Цементная затирка для швов, белая, ведро 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": "Эластичная водоотталкивающая смесь, ведро 2 кг",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:ce40-buckets",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ведра CE 40 по 2 кг в заказе — справочно, без второй цены",
+      "nameRu": "Вёдра затирочной смеси, 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:ce40-dry-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный сухой остаток CE 40 после принятого плана смешивания — не мокрый излишек",
+      "nameRu": "Пригодный сухой остаток затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:water-mixing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода +15…+20 °C для затворения принятой сухой массы CE 40",
+      "nameRu": "Расход воды для затворения, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая для затворения Ceresit CE 40 Aquastatic",
+      "nameRu": "Вода для затворения затирочной смеси, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:water-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный остаток воды затворения — без второй цены",
+      "nameRu": "Пригодный остаток воды затворения",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по проверке готовых швов, замешиванию CE 40, заполнению и первичной очистке облицовки",
+      "nameRu": "Работа по подготовке, затирке и очистке швов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Миксер либо дрель с насадкой для CE 40, рабочая скорость 400–800 об/мин",
+      "nameRu": "Миксер с насадкой, 400–800 об/мин",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:hand-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Резиновый шпатель, губка для затирки и сухая мягкая ткань для CE 40",
+      "nameRu": "Резиновый шпатель, губка и мягкая ткань",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:cleaning-water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для увлажнения впитывающих кромок и промывки губки при затирке CE 40",
+      "nameRu": "Вода для увлажнения кромок и промывки губки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Организация защиты свежих швов CE 40 от пересыхания и контакта с водой",
+      "nameRu": "Защита свежих швов при твердении",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-2mm:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CE 40 и воды, уборка тары и передача пригодного сухого остатка",
+      "nameRu": "Доставка смеси и воды, уборка тары и сухого остатка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:ce40-table-quantity",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ориентировочная потребность CE 40 по выбранной строке таблицы — не гарантия расхода",
+      "nameRu": "Ориентировочный расход затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:ce40-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Превышение плана смешивания CE 40 над ориентировочной таблицей — не сухой остаток",
+      "nameRu": "Превышение плана замесов над ориентировочным расходом",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:ce40-mixed-plan",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CE 40 для принятого плана замесов — без второй цены",
+      "nameRu": "Расход сухой затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:ce40-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Затирка Ceresit CE 40 Aquastatic, цвет 1 Белый, пластиковое ведро 2 кг",
+      "nameRu": "Цементная затирка для швов, белая, ведро 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": "Эластичная водоотталкивающая смесь, ведро 2 кг",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:ce40-buckets",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ведра CE 40 по 2 кг в заказе — справочно, без второй цены",
+      "nameRu": "Вёдра затирочной смеси, 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:ce40-dry-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный сухой остаток CE 40 после принятого плана смешивания — не мокрый излишек",
+      "nameRu": "Пригодный сухой остаток затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:water-mixing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода +15…+20 °C для затворения принятой сухой массы CE 40",
+      "nameRu": "Расход воды для затворения, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая для затворения Ceresit CE 40 Aquastatic",
+      "nameRu": "Вода для затворения затирочной смеси, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:water-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный остаток воды затворения — без второй цены",
+      "nameRu": "Пригодный остаток воды затворения",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по проверке готовых швов, замешиванию CE 40, заполнению и первичной очистке облицовки",
+      "nameRu": "Работа по подготовке, затирке и очистке швов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Миксер либо дрель с насадкой для CE 40, рабочая скорость 400–800 об/мин",
+      "nameRu": "Миксер с насадкой, 400–800 об/мин",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:hand-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Резиновый шпатель, губка для затирки и сухая мягкая ткань для CE 40",
+      "nameRu": "Резиновый шпатель, губка и мягкая ткань",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:cleaning-water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для увлажнения впитывающих кромок и промывки губки при затирке CE 40",
+      "nameRu": "Вода для увлажнения кромок и промывки губки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Организация защиты свежих швов CE 40 от пересыхания и контакта с водой",
+      "nameRu": "Защита свежих швов при твердении",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:5x5-3mm:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CE 40 и воды, уборка тары и передача пригодного сухого остатка",
+      "nameRu": "Доставка смеси и воды, уборка тары и сухого остатка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-table-quantity",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ориентировочная потребность CE 40 по выбранной строке таблицы — не гарантия расхода",
+      "nameRu": "Ориентировочный расход затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Превышение плана смешивания CE 40 над ориентировочной таблицей — не сухой остаток",
+      "nameRu": "Превышение плана замесов над ориентировочным расходом",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-mixed-plan",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CE 40 для принятого плана замесов — без второй цены",
+      "nameRu": "Расход сухой затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Затирка Ceresit CE 40 Aquastatic, цвет 1 Белый, пластиковое ведро 2 кг",
+      "nameRu": "Цементная затирка для швов, белая, ведро 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": "Эластичная водоотталкивающая смесь, ведро 2 кг",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-buckets",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ведра CE 40 по 2 кг в заказе — справочно, без второй цены",
+      "nameRu": "Вёдра затирочной смеси, 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-dry-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный сухой остаток CE 40 после принятого плана смешивания — не мокрый излишек",
+      "nameRu": "Пригодный сухой остаток затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:water-mixing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода +15…+20 °C для затворения принятой сухой массы CE 40",
+      "nameRu": "Расход воды для затворения, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая для затворения Ceresit CE 40 Aquastatic",
+      "nameRu": "Вода для затворения затирочной смеси, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:water-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный остаток воды затворения — без второй цены",
+      "nameRu": "Пригодный остаток воды затворения",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по проверке готовых швов, замешиванию CE 40, заполнению и первичной очистке облицовки",
+      "nameRu": "Работа по подготовке, затирке и очистке швов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Миксер либо дрель с насадкой для CE 40, рабочая скорость 400–800 об/мин",
+      "nameRu": "Миксер с насадкой, 400–800 об/мин",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:hand-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Резиновый шпатель, губка для затирки и сухая мягкая ткань для CE 40",
+      "nameRu": "Резиновый шпатель, губка и мягкая ткань",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:cleaning-water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для увлажнения впитывающих кромок и промывки губки при затирке CE 40",
+      "nameRu": "Вода для увлажнения кромок и промывки губки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Организация защиты свежих швов CE 40 от пересыхания и контакта с водой",
+      "nameRu": "Защита свежих швов при твердении",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x10-2mm:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CE 40 и воды, уборка тары и передача пригодного сухого остатка",
+      "nameRu": "Доставка смеси и воды, уборка тары и сухого остатка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:ce40-table-quantity",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ориентировочная потребность CE 40 по выбранной строке таблицы — не гарантия расхода",
+      "nameRu": "Ориентировочный расход затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:ce40-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Превышение плана смешивания CE 40 над ориентировочной таблицей — не сухой остаток",
+      "nameRu": "Превышение плана замесов над ориентировочным расходом",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:ce40-mixed-plan",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CE 40 для принятого плана замесов — без второй цены",
+      "nameRu": "Расход сухой затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:ce40-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Затирка Ceresit CE 40 Aquastatic, цвет 1 Белый, пластиковое ведро 2 кг",
+      "nameRu": "Цементная затирка для швов, белая, ведро 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": "Эластичная водоотталкивающая смесь, ведро 2 кг",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:ce40-buckets",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ведра CE 40 по 2 кг в заказе — справочно, без второй цены",
+      "nameRu": "Вёдра затирочной смеси, 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:ce40-dry-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный сухой остаток CE 40 после принятого плана смешивания — не мокрый излишек",
+      "nameRu": "Пригодный сухой остаток затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:water-mixing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода +15…+20 °C для затворения принятой сухой массы CE 40",
+      "nameRu": "Расход воды для затворения, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая для затворения Ceresit CE 40 Aquastatic",
+      "nameRu": "Вода для затворения затирочной смеси, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:water-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный остаток воды затворения — без второй цены",
+      "nameRu": "Пригодный остаток воды затворения",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по проверке готовых швов, замешиванию CE 40, заполнению и первичной очистке облицовки",
+      "nameRu": "Работа по подготовке, затирке и очистке швов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Миксер либо дрель с насадкой для CE 40, рабочая скорость 400–800 об/мин",
+      "nameRu": "Миксер с насадкой, 400–800 об/мин",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:hand-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Резиновый шпатель, губка для затирки и сухая мягкая ткань для CE 40",
+      "nameRu": "Резиновый шпатель, губка и мягкая ткань",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:cleaning-water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для увлажнения впитывающих кромок и промывки губки при затирке CE 40",
+      "nameRu": "Вода для увлажнения кромок и промывки губки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Организация защиты свежих швов CE 40 от пересыхания и контакта с водой",
+      "nameRu": "Защита свежих швов при твердении",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:10x20-3mm:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CE 40 и воды, уборка тары и передача пригодного сухого остатка",
+      "nameRu": "Доставка смеси и воды, уборка тары и сухого остатка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:ce40-table-quantity",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ориентировочная потребность CE 40 по выбранной строке таблицы — не гарантия расхода",
+      "nameRu": "Ориентировочный расход затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:ce40-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Превышение плана смешивания CE 40 над ориентировочной таблицей — не сухой остаток",
+      "nameRu": "Превышение плана замесов над ориентировочным расходом",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:ce40-mixed-plan",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CE 40 для принятого плана замесов — без второй цены",
+      "nameRu": "Расход сухой затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:ce40-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Затирка Ceresit CE 40 Aquastatic, цвет 1 Белый, пластиковое ведро 2 кг",
+      "nameRu": "Цементная затирка для швов, белая, ведро 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": "Эластичная водоотталкивающая смесь, ведро 2 кг",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:ce40-buckets",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ведра CE 40 по 2 кг в заказе — справочно, без второй цены",
+      "nameRu": "Вёдра затирочной смеси, 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:ce40-dry-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный сухой остаток CE 40 после принятого плана смешивания — не мокрый излишек",
+      "nameRu": "Пригодный сухой остаток затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:water-mixing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода +15…+20 °C для затворения принятой сухой массы CE 40",
+      "nameRu": "Расход воды для затворения, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая для затворения Ceresit CE 40 Aquastatic",
+      "nameRu": "Вода для затворения затирочной смеси, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:water-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный остаток воды затворения — без второй цены",
+      "nameRu": "Пригодный остаток воды затворения",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по проверке готовых швов, замешиванию CE 40, заполнению и первичной очистке облицовки",
+      "nameRu": "Работа по подготовке, затирке и очистке швов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Миксер либо дрель с насадкой для CE 40, рабочая скорость 400–800 об/мин",
+      "nameRu": "Миксер с насадкой, 400–800 об/мин",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:hand-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Резиновый шпатель, губка для затирки и сухая мягкая ткань для CE 40",
+      "nameRu": "Резиновый шпатель, губка и мягкая ткань",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:cleaning-water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для увлажнения впитывающих кромок и промывки губки при затирке CE 40",
+      "nameRu": "Вода для увлажнения кромок и промывки губки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Организация защиты свежих швов CE 40 от пересыхания и контакта с водой",
+      "nameRu": "Защита свежих швов при твердении",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:15x15-3mm:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CE 40 и воды, уборка тары и передача пригодного сухого остатка",
+      "nameRu": "Доставка смеси и воды, уборка тары и сухого остатка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:ce40-table-quantity",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ориентировочная потребность CE 40 по выбранной строке таблицы — не гарантия расхода",
+      "nameRu": "Ориентировочный расход затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:ce40-plan-coverage",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Превышение плана смешивания CE 40 над ориентировочной таблицей — не сухой остаток",
+      "nameRu": "Превышение плана замесов над ориентировочным расходом",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:ce40-mixed-plan",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Сухая масса CE 40 для принятого плана замесов — без второй цены",
+      "nameRu": "Расход сухой затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:ce40-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Затирка Ceresit CE 40 Aquastatic, цвет 1 Белый, пластиковое ведро 2 кг",
+      "nameRu": "Цементная затирка для швов, белая, ведро 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": "Эластичная водоотталкивающая смесь, ведро 2 кг",
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:ce40-buckets",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Ведра CE 40 по 2 кг в заказе — справочно, без второй цены",
+      "nameRu": "Вёдра затирочной смеси, 2 кг",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:ce40-dry-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный сухой остаток CE 40 после принятого плана смешивания — не мокрый излишек",
+      "nameRu": "Пригодный сухой остаток затирочной смеси",
+      "brandAndModelRu": "Ceresit CE 40 Aquastatic, цвет 1 Белый",
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:water-mixing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Чистая вода +15…+20 °C для затворения принятой сухой массы CE 40",
+      "nameRu": "Расход воды для затворения, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:water-order",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода чистая для затворения Ceresit CE 40 Aquastatic",
+      "nameRu": "Вода для затворения затирочной смеси, +15…+20 °C",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:water-remaining",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Пригодный остаток воды затворения — без второй цены",
+      "nameRu": "Пригодный остаток воды затворения",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:labor",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Труд по проверке готовых швов, замешиванию CE 40, заполнению и первичной очистке облицовки",
+      "nameRu": "Работа по подготовке, затирке и очистке швов",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:mixer",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Миксер либо дрель с насадкой для CE 40, рабочая скорость 400–800 об/мин",
+      "nameRu": "Миксер с насадкой, 400–800 об/мин",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:hand-tools",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Резиновый шпатель, губка для затирки и сухая мягкая ткань для CE 40",
+      "nameRu": "Резиновый шпатель, губка и мягкая ткань",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:cleaning-water",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Вода для увлажнения впитывающих кромок и промывки губки при затирке CE 40",
+      "nameRu": "Вода для увлажнения кромок и промывки губки",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:protection",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Организация защиты свежих швов CE 40 от пересыхания и контакта с водой",
+      "nameRu": "Защита свежих швов при твердении",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "ceramic:ce40-ready:20x20-5mm:logistics-cleanup",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Доставка CE 40 и воды, уборка тары и передача пригодного сухого остатка",
+      "nameRu": "Доставка смеси и воды, уборка тары и сухого остатка",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": []
+    },
+    {
+      "rowId": "roof:bitumen-tile:krer12-007-07:flat_bitumen_shingles",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Черепица битумная плоская Katepal размером 1000×317 мм",
+      "nameRu": "Черепица битумная плоская, 1000×317 мм",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Устройство кровель из черепицы: плоской битумной на скатной кровле по сплошной обшивке без ее устройства. КРЕР 12-01-007-07, только подтверждённая таблица физических расходов. Расход раствора для упомянутой заделки не установлен.",
+        "Источник: КРЕР 12-01-007-07, печатная и физическая страница 18, только столбец 07.",
+        "Расход на 100 м2 кровли; это физическая норма, не заказ или фактическая аренда.",
+        "104 м2/100 м2 - источник нормы; не добавлять автоматически еще 4% или прежний generic-запас. Размер 1000 x 317 мм не дает подтвержденного перевода нормативных м2 в штуки/упаковки.",
+        "Табличный физический расход не равен заказу целых упаковок. Дополнительный запас без проекта не прибавляется.",
+        "Склад, упаковка и цена не изменяют известную физическую норму. Заказ и фактическая аренда проверяются отдельно; неизвестные данные не подменяются нулём."
+      ]
+    },
+    {
+      "rowId": "roof:bitumen-tile:krer12-007-07:included_machine_operators",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Машинисты, включенные в эксплуатацию машин",
+      "nameRu": "Машинисты строительных машин",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "Устройство кровель из черепицы: плоской битумной на скатной кровле по сплошной обшивке без ее устройства. КРЕР 12-01-007-07, только подтверждённая таблица физических расходов. Расход раствора для упомянутой заделки не установлен.",
+        "Источник: КРЕР 12-01-007-07, печатная и физическая страница 18, только столбец 07.",
+        "Расход на 100 м2 кровли; это физическая норма, не заказ или фактическая аренда.",
+        "Не оплачивать отдельно и не прибавлять к рабочим. Печатные 0,33 часа не переопределяют фактический состав персонала поставщика.",
+        "0,33 чел.-ч машинистов входят в полную стоимость эксплуатации кранов. Водитель входит в цену автомобиля отдельно от этой INFO строки.",
+        "Склад, упаковка и цена не изменяют известную физическую норму. Заказ и фактическая аренда проверяются отдельно; неизвестные данные не подменяются нулём."
+      ]
+    },
+    {
+      "rowId": "roof:bitumen-tile:krer12-007-07:source-gap:mortar_sealing",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Раствор для заделки зазоров — расход не подтверждён источником",
+      "nameRu": "Раствор для заделки зазоров",
+      "brandAndModelRu": null,
+      "specificationRu": null,
+      "detailsRu": [
+        "В составе работ КРЕР 12-01-007-07 на PDF 16 указана заделка зазоров раствором, но в столбце 07 таблицы PDF 18 для раствора стоит прочерк. Его расход, состав и марка не установлены. 0,27 м³ из соседних норм не переносится; прочерк не принимается за нулевую потребность. Требуется уточнение источника или конкретного проектного узла. Подтверждение условий пользователем само это расхождение не закрывает.",
+        "Неустановленная потребность не является дополнительной автоматической оплатой."
+      ]
+    },
+    {
+      "rowId": "roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Материал рулонный кровельный для верхнего слоя, изопласт ЭКП-4.5",
+      "nameRu": "Рулонный наплавляемый материал для верхнего слоя кровли",
+      "brandAndModelRu": "Изопласт ЭКП-4.5",
+      "specificationRu": null,
+      "detailsRu": [
+        "Основное поле наружной плоской кровли: два наплавляемых слоя Изопласт ЭПП-4 и ЭКП-4.5 по готовому минеральному основанию, КРЕР12-01-002-09. Полный кровельный комплекс ещё не подтверждён.",
+        "Строка источника: Материал рулонный кровельный для верхнего слоя, изопласт ЭКП-4.5; расход 114 м² на 100 м² кровли.",
+        "Верхний слой Изопласт ЭКП-4.5: 114 м² на 100 м² покрытия. Дополнительный общий запас и второй множитель на два слоя не применяются. Размеры и количество рулонов для заказа требуют данных конкретного товара.",
+        "Склад, упаковка и цена не изменяют известную физическую норму. Заказ и фактическая аренда проверяются отдельно; неизвестные данные не подменяются нулём."
+      ]
+    },
+    {
+      "rowId": "roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Материал рулонный кровельный для нижних слоев, изопласт ЭПП-4",
+      "nameRu": "Рулонный наплавляемый материал для нижнего слоя кровли",
+      "brandAndModelRu": "Изопласт ЭПП-4",
+      "specificationRu": null,
+      "detailsRu": [
+        "Основное поле наружной плоской кровли: два наплавляемых слоя Изопласт ЭПП-4 и ЭКП-4.5 по готовому минеральному основанию, КРЕР12-01-002-09. Полный кровельный комплекс ещё не подтверждён.",
+        "Строка источника: Материал рулонный кровельный для нижних слоев, изопласт ЭПП-4; расход 116 м² на 100 м² кровли.",
+        "Нижний слой Изопласт ЭПП-4: 116 м² на 100 м² покрытия. Отдельные пароизоляция и утеплитель этим материалом не подтверждены. Дополнительный общий запас и второй множитель на два слоя не применяются. Размеры рулонов для заказа ещё не подтверждены.",
+        "Склад, упаковка и цена не изменяют известную физическую норму. Заказ и фактическая аренда проверяются отдельно; неизвестные данные не подменяются нулём."
+      ]
+    },
+    {
+      "rowId": "roof:valley-torch-two:krer12-005-03:lower_isoplast_epp_4",
+      "contractVersion": "canonical-public-resource-presentation/v1",
+      "sourceTitleRu": "Материал рулонный кровельный для нижних слоев, изопласт ЭПП-4",
+      "nameRu": "Рулонный наплавляемый материал для усиления ендов",
+      "brandAndModelRu": "Изопласт ЭПП-4",
+      "specificationRu": null,
+      "detailsRu": [
+        "Два дополнительных наплавляемых слоя Изопласт ЭПП-4 в ендовах; измеренная самостоятельная длина, совместимое наружное поле по002-09",
+        "КРЕР12-01-005-03: 345 м² на 100 м ендов; два дополнительных слоя уже включены в норму.",
+        "Изопласт ЭПП-4 для двух дополнительных слоёв усиления. Норму 345 м² на 100 м не умножают повторно на число слоёв.",
+        "Склад, упаковка и цена не изменяют известную физическую норму. Заказ и фактическая аренда проверяются отдельно; неизвестные данные не подменяются нулём."
+      ]
     }
   ]
 }

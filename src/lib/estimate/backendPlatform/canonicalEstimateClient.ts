@@ -1,7 +1,12 @@
+import {assertCanonicalCatalogPromptExtractionV1,assertCanonicalCatalogPromptBytesV1,
+  MAX_CANONICAL_CATALOG_PROMPT_REQUEST_BYTES_V1,readCanonicalCatalogPromptJsonV1} from "./canonicalCatalogPromptExtractionV1";
+import type {CanonicalCatalogPromptExtractionV1} from "./contracts";
 import type { CanonicalEstimateParameterSessionSnapshot } from "./canonicalEstimateParameterSessionSnapshot";
+import {canonicalFormulaOutputBoundsPublicReasonRu} from './canonicalFormulaOutputBounds';
 import { fetchWithRequestTimeout } from "../../requestTimeoutPolicy";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../supabaseClient";
 import type { ConsumerEstimateHydrationTrace, ConsumerEstimateTransportPhase } from "../../consumerRequests/consumerEstimateHydrationTrace";
+import {withCanonicalSourceProfileCalculationConsumersV1} from './canonicalDefinitionParameterConsumersR1';
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateArtifactView,
@@ -194,6 +199,7 @@ async function invoke<T>(path: string, options: {
   signal?: AbortSignal | null;
   requestClass?: "lightweight_lookup" | "ui_scope_load" | "mutation_request";
   hydrationTrace?: ConsumerEstimateHydrationTrace;
+  boundedCatalogPromptResponse?: boolean;
 } = {}): Promise<T> {
   const method = options.method ?? "GET";
   // Optional fixed-phase diagnostics for snapshot hydration only. No token,
@@ -233,7 +239,11 @@ async function invoke<T>(path: string, options: {
     response = await execute(token);
   }
   let payload: unknown = null;
-  try { payload = await measureTransport("PARAMETER_TRANSPORT_DECODE", () => response.json()); } catch { /* normalized below */ }
+  if(options.boundedCatalogPromptResponse){
+    payload=await measureTransport("PARAMETER_TRANSPORT_DECODE",()=>readCanonicalCatalogPromptJsonV1(response,"response"));
+  }else{
+    try { payload = await measureTransport("PARAMETER_TRANSPORT_DECODE", () => response.json()); } catch { /* normalized below */ }
+  }
   if (!response.ok) {
     const envelope = (payload ?? {}) as ApiErrorEnvelope;
     throw new CanonicalEstimateApiError(
@@ -391,15 +401,38 @@ export async function getCanonicalEstimateCatalogItem(
     `catalog/${encodeURIComponent(catalogId)}${releaseQuery}`,
     { signal, requestClass: "ui_scope_load" },
   );
-  if (result.item.contentAdmission?.allowed !== true
-    || result.item.contentAdmission.contractVersion !== "estimate-admission-r3") {
+  return admittedCanonicalCatalogItem(result.item);
+}
+
+function admittedCanonicalCatalogItem(item:CanonicalEstimateCatalogItem){
+  if (item.contentAdmission?.allowed !== true
+    || item.contentAdmission.contractVersion !== "estimate-admission-r3") {
     throw new CanonicalEstimateApiError(
       "Эта смета проходит обновление состава и временно недоступна для нового расчёта.",
       { code: "ESTIMATE_ADMISSION_DENIED", httpStatus: 409 },
     );
   }
-  return result.item;
+  const parameterSchema=withCanonicalSourceProfileCalculationConsumersV1(
+    item.parameterSchema,item.applicability.sourceProfileSelectionV1);
+  return parameterSchema===item.parameterSchema?item:{...item,parameterSchema};
 }
+
+export async function getCanonicalEstimateCatalogItemForPrompt(catalogId:string,prompt:string,
+  signal?:AbortSignal|null,releaseId?:string|null){
+  const body={prompt,...(releaseId?.trim()?{releaseId:releaseId.trim()}:{})};
+  assertCanonicalCatalogPromptBytesV1(JSON.stringify(body),MAX_CANONICAL_CATALOG_PROMPT_REQUEST_BYTES_V1,"request");
+  const result=await invoke<{item:CanonicalEstimateCatalogItem;promptExtraction:CanonicalCatalogPromptExtractionV1}>(
+    `catalog/${encodeURIComponent(catalogId)}`,{method:"POST",body,
+      signal,requestClass:"ui_scope_load",boundedCatalogPromptResponse:true});
+  const item=admittedCanonicalCatalogItem(result.item);
+  if(item.catalogId!==catalogId||(releaseId?.trim()&&item.releaseId!==releaseId.trim())){
+    throw new CanonicalEstimateApiError("Ответ не соответствует выбранной версии работы.",
+      {code:"CATALOG_PROMPT_BINDING_INVALID",httpStatus:409});
+  }
+  assertCanonicalCatalogPromptExtractionV1(result.promptExtraction,item,prompt);
+  return{item,promptExtraction:result.promptExtraction};
+}
+
 
 export function createCanonicalEstimate(request: CanonicalEstimateCreateRequest, signal?: AbortSignal | null) {
   return invoke<CanonicalEstimateJobAccepted>("jobs/compile", {
@@ -452,7 +485,13 @@ export async function waitForCanonicalEstimateJob(input: {
     input.onProgress?.(job);
     if (TERMINAL_JOB_STATES.has(job.status)) {
       if (job.status !== "succeeded" || (input.requireRevisionResult !== false && !job.resultRevisionId)) {
-        const message = job.errorCode === 'PROJECT_GEOMETRY_PARAMETER_CONFLICT'
+        const boundsReason=canonicalFormulaOutputBoundsPublicReasonRu(job.errorCode,job.errorUserMessageRu);
+        const message = job.errorCode === 'EMPTY_ESTIMATE_COMPOSITION'
+          ? 'В смете нет позиций. Укажите объём работ больше нуля и проверьте выбранный состав. Введённые данные сохранены.'
+          : job.errorCode === 'FORMULA_OUTPUT_BOUNDS_FAILED'
+          ? boundsReason ? `Расчёт не выполнен: ${boundsReason} Введённые данные сохранены.`
+            : 'Расчёт не выполнен. Проверьте согласованность введённых количеств. Введённые данные сохранены.'
+          : job.errorCode === 'PROJECT_GEOMETRY_PARAMETER_CONFLICT'
           ? 'Выбранная схема трассы противоречит введённым количествам. Выберите проектную раскладку или уточните количества фитингов. Ввод сохранён.'
           : job.errorCode === 'COMPOSITION_SELECTION_INVALID'
             ? 'Изменение состава не выполнено. Для выбранной подработы нужно проверить общие ресурсы и применимость состава. Исходная смета и ручные данные сохранены.'

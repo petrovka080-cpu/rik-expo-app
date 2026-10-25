@@ -1,6 +1,0 @@
-{
- "extends":"./tsconfig.json",
- "compilerOptions":{"incremental":true,"tsBuildInfoFile":".cache/typecheck/tests-g-p.tsbuildinfo"},
- "include":["tests/g*/**/*.ts","tests/g*/**/*.tsx","tests/h*/**/*.ts","tests/h*/**/*.tsx","tests/i*/**/*.ts","tests/i*/**/*.tsx","tests/j*/**/*.ts","tests/j*/**/*.tsx","tests/k*/**/*.ts","tests/k*/**/*.tsx","tests/l*/**/*.ts","tests/l*/**/*.tsx","tests/m*/**/*.ts","tests/m*/**/*.tsx","tests/n*/**/*.ts","tests/n*/**/*.tsx","tests/o*/**/*.ts","tests/o*/**/*.tsx","tests/p*/**/*.ts","tests/p*/**/*.tsx"],
- "exclude":[".release-runtime/**/*",".tmp/**/*","artifacts/**/*","diagnostics/**/*","diagnostics/archive/migrated/**/*","migrated/**/*","scripts/diagnostics/root-legacy/**/*","tmp/**/*","tests/ai/**/*","tests/api/**/*","tests/architecture/**/*","tests/e2e/**/*","tests/estimate*/**/*","tests/aiEstimateV4/**/*","tests/requestEstimate/**/*","tests/consumerRepair/**/*"]
-}

@@ -1,4 +1,5 @@
 import pack from '../../../../data/estimate-benchmarks/source-packs/pvc-floor-complete-four-s27-69.json';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
 import {buildAutomaticConstructionOwnerR1,compileAutomaticConstructionOwnerR1,unresolvedApplicationNormTruthR1,type AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
 import {industrialVacuumDedustingKrer13R1} from './industrialVacuumDedustingKrer13R1';
 import {floorDemolitionDefinitionS2752,FLOOR_DEMOLITION_SERIES_S2752 as waste} from './floorDemolitionSeriesS2752';
@@ -40,8 +41,22 @@ function replace<T>(v:T,replacements:Record<string,string>):T{
 /** A new whole-project boundary for four exact historical PVC consumers.
  * Source column14 and its two old physical owners are retained. No mass,
  * hazard condition or previously completed operation follows from absence. */
-export function buildPvcFloorCompleteFourS2769(parent:Model):Model{
- const t=pack.targets.find(t=>t.catalogId===parent.definition.catalog_id);
+
+export const pvcFloorCompleteHistoricalBindingSha256S2769='704e8ce809a733d400891ed6d28e5d48ed0436dce68c46647474f3e55763aea0';
+export type pvcFloorCompleteFourS2769HistoricalBindingContext=Readonly<{binding:typeof pack;sourcePackSha256:string}>;
+/** Read-only proof reconstruction can use only the exact pinned old binding.
+ * Every non-target byte-semantic field must still equal this versioned recipe;
+ * no historical caller can inject a different norm or arithmetic. */
+function historicalTargets(context?:pvcFloorCompleteFourS2769HistoricalBindingContext){
+ if(!context)return pack.targets;
+ if(context.sourcePackSha256!==pvcFloorCompleteHistoricalBindingSha256S2769
+  ||canonicalEstimateSha256HexText(canonicalEstimateStableJson(context.binding))!==pvcFloorCompleteHistoricalBindingSha256S2769)throw Error('PINNED_HISTORICAL_BINDING_REQUIRED');
+ const {targets:_active,...active}=pack,{targets:_historical,...historical}=context.binding;
+ if(canonicalEstimateStableJson(active)!==canonicalEstimateStableJson(historical))throw Error('HISTORICAL_RECIPE_SEMANTICS_DRIFT');
+ return context.binding.targets;
+}
+export function buildPvcFloorCompleteFourS2769(parent:Model,historical?:pvcFloorCompleteFourS2769HistoricalBindingContext):Model{
+ const t=historicalTargets(historical).find(t=>t.catalogId===parent.definition.catalog_id);
  if(!t||parent.definition.id!==t.predecessorDefinitionId||parent.definition.definition_sha256!==t.parentSha256
   ||parent.definition.definition_version!==t.predecessorVersion||parent.parameters.length!==3||parent.resources.length!==2)
   throw Error('PVC_FLOOR_EXACT_FOUR_V1_PARENTS_REQUIRED');

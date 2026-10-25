@@ -1,0 +1,1476 @@
+{
+  "contract": "gox-build.masonry-glass-block-independent-full-map/r103",
+  "activeMaster": {
+    "path": "C:\\Users\\User\\Downloads\\GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+    "sha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40"
+  },
+  "authorship": "EXISTING_R97_PRIMARY_SOURCE_ROSTERS_NOT_NEW_GENERATED_DEFINITIONS",
+  "immutableComponentPackSha256": "6fabb08cc53a84f515d5060ccfea1a027d513994c6bb335b0e0ba16260745636",
+  "nativeRows": 28,
+  "includedOperationRows": 10,
+  "unresolvedNeedRows": 40,
+  "generatedFromCurrentRows": false,
+  "cards": [
+    {
+      "card": "partition",
+      "completenessMap": {
+        "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+        "sourceKind": "NORMATIVE_OPERATION_MAP",
+        "generatedFromCurrentRows": false,
+        "operationResourceBindingRequired": true,
+        "evidenceSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+        "evidenceReferences": [
+          "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+          "КРЕР 08-04-002-01",
+          "КРЕР 08-04-002-02"
+        ],
+        "fullTechnicalAcceptance": false,
+        "entries": [
+          {
+            "expectedResourceId": "08-04-002-01:whole-labour",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:assemble"
+            ],
+            "category": "labor",
+            "unitId": "man_hour",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Труд каменщиков",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:whole-labour",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:operator-information",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:assemble"
+            ],
+            "category": "labor",
+            "unitId": "man_hour",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Труд машинистов",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:operator-information",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:operator-information"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:tower-crane8t",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:assemble"
+            ],
+            "category": "equipment",
+            "unitId": "machine_hour",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Башенный кран грузоподъёмностью 8 т",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:tower-crane8t",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:tower-crane8t"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:flatbed-truck5t",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:assemble"
+            ],
+            "category": "equipment",
+            "unitId": "machine_hour",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Бортовой автомобиль грузоподъёмностью до 5 т",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:flatbed-truck5t",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:flatbed-truck5t"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:glass-block",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "piece",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Бесцветный пустотелый стеклоблок 194×194×98 мм",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:glass-block",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:glass-block"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:reinforcement",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "kg",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Горячекатаная арматура класса А-I, А-II или А-III по проектной спецификации",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:reinforcement",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:reinforcement"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:ready-cement-lime-m25",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "m3",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Готовый цементно-известковый кладочный раствор марки 25",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:ready-cement-lime-m25",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:ready-cement-lime-m25"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:operation:base-alignment",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:base-alignment",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:base-alignment"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Выровнять готовое основание раствором",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:operation:base-alignment",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:operation:base-alignment",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-01:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:operation:assemble",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:assemble"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Установить стеклоблоки с армированием кладки",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:operation:assemble",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-01:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:operation:pointing",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:pointing",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:pointing"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Расшить швы стеклоблочной перегородки",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:operation:pointing",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:operation:pointing",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-01:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:source-system-admission",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:source-system-admission",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:source-system-admission"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Принятая редакция KG и точный пустотелый стеклоблок 194×194×98 мм; другая геометрия, цвет или система на клее не наследует эту норму.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:source-system-admission",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:source-system-admission"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:support-and-junctions",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:support-and-junctions",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:support-and-junctions"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Источник включает выравнивание готового основания, но не создаёт его несущую конструкцию. Требуются собственные проектные опора/швы/примыкания, их материалы и измеримая геометрия.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:support-and-junctions",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:support-and-junctions"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:reinforcement-and-fixings",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:reinforcement-and-fixings",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:reinforcement-and-fixings"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "112 кг/100м² — собственный исходный расход, не проект диаметра/шага/анкеров. Требуются выбранный класс, совместимость, полный способ резки/соединения/крепления и единый владелец оплаты; не арматура кирпичной перегородки.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:reinforcement-and-fixings",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:reinforcement-and-fixings"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:m25-whole-supply",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:m25-whole-supply",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:m25-whole-supply"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Тот же физический тип готового цементно-известкового М25, но собственный расход0.74/100м². Целый сохранённый пост whole15 применим только после доказанной привязки к своему accepted effective output и реальным условиям без перемешивания; все шесть его неизвестных норм остаются.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:m25-whole-supply",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:m25-whole-supply"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:glass-setting-and-pointing-kit",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:glass-setting-and-pointing-kit",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:glass-setting-and-pointing-kit"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Совместимые ручной инструмент, шаблоны/дистанционные элементы и способы защиты стекла/свежего шва, расход/износ, контроль и очистка. Не выводить 6мм шов из разницы194/200 и не подменять метод AAC пилой.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:glass-setting-and-pointing-kit",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:glass-setting-and-pointing-kit"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:handling-and-machines",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:handling-and-machines",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:handling-and-machines"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Поставка/тара/захваты для хрупких блоков и раствора, масса брутто/вылет/грузовая диаграмма, маршрут/защита, полная эксплуатация крана и автомобиля; часы не являются рейсами или числом комплектов.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:handling-and-machines",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:handling-and-machines"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:access-and-protection",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:access-and-protection",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:access-and-protection"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Полные настилы/ограждения/лестницы/анкеры/основания, защита от падения и осколков. До4м включённый труд подмостей по§1.13 не определяет количество изделий; свыше4м отдельная норма лесов/логистика.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:access-and-protection",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:access-and-protection"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:quality-and-curing",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:quality-and-curing",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:quality-and-curing"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Реальные допуски, контроль армирования и швов, совместимые средства, выдерживание/погода и документы. Количество стеклоблоков не означает выполненную приёмку.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:quality-and-curing",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:quality-and-curing"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:cleaning-and-waste",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:cleaning-and-waste",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:cleaning-and-waste"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Совместимый способ очистки стекла и тары, вода/средства/инструмент, сбор осколков и раствора, ёмкость/получатель/вывоз. Отсутствие отдельной воды в норме не равно нулевой физической потребности.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:cleaning-and-waste",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:cleaning-and-waste"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-01:need:external-logistics",
+            "operationId": "masonry:glass-block:krer:08-04-002-01:operation:need:external-logistics",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-01:operation:need:external-logistics"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Своя фактическая партия, грузовой маршрут, разгрузка и коммерческая граница. Табличные0.99маш.-ч автомобиля не заменяют рейсы и договор перевозки.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-01:formula:need:external-logistics",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-01:need:external-logistics"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:whole-labour",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:assemble"
+            ],
+            "category": "labor",
+            "unitId": "man_hour",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Труд каменщиков",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:whole-labour",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:operator-information",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:assemble"
+            ],
+            "category": "labor",
+            "unitId": "man_hour",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Труд машинистов",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:operator-information",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:operator-information"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:tower-crane8t",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:assemble"
+            ],
+            "category": "equipment",
+            "unitId": "machine_hour",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Башенный кран грузоподъёмностью 8 т",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:tower-crane8t",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:tower-crane8t"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:flatbed-truck5t",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:assemble"
+            ],
+            "category": "equipment",
+            "unitId": "machine_hour",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Бортовой автомобиль грузоподъёмностью до 5 т",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:flatbed-truck5t",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:flatbed-truck5t"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:glass-block",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "piece",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Бесцветный пустотелый стеклоблок 194×194×98 мм",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:glass-block",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:glass-block"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:reinforcement",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "kg",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Горячекатаная арматура класса А-I, А-II или А-III по проектной спецификации",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:reinforcement",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:reinforcement"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:ready-cement-lime-m25",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "m3",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Готовый цементно-известковый кладочный раствор марки 25",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:ready-cement-lime-m25",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:ready-cement-lime-m25"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:operation:base-alignment",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:base-alignment",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:base-alignment"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Выровнять готовое основание раствором",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:operation:base-alignment",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:operation:base-alignment",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-02:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:operation:assemble",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:assemble"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Установить стеклоблоки с армированием кладки",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:operation:assemble",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-02:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:operation:pointing",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:pointing",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:pointing"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Расшить швы стеклоблочной перегородки",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:operation:pointing",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:operation:pointing",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-02:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:source-system-admission",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:source-system-admission",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:source-system-admission"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Принятая редакция KG и точный пустотелый стеклоблок 194×194×98 мм; другая геометрия, цвет или система на клее не наследует эту норму.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:source-system-admission",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:source-system-admission"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:support-and-junctions",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:support-and-junctions",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:support-and-junctions"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Источник включает выравнивание готового основания, но не создаёт его несущую конструкцию. Требуются собственные проектные опора/швы/примыкания, их материалы и измеримая геометрия.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:support-and-junctions",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:support-and-junctions"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:reinforcement-and-fixings",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:reinforcement-and-fixings",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:reinforcement-and-fixings"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "112 кг/100м² — собственный исходный расход, не проект диаметра/шага/анкеров. Требуются выбранный класс, совместимость, полный способ резки/соединения/крепления и единый владелец оплаты; не арматура кирпичной перегородки.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:reinforcement-and-fixings",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:reinforcement-and-fixings"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:m25-whole-supply",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:m25-whole-supply",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:m25-whole-supply"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Тот же физический тип готового цементно-известкового М25, но собственный расход0.74/100м². Целый сохранённый пост whole15 применим только после доказанной привязки к своему accepted effective output и реальным условиям без перемешивания; все шесть его неизвестных норм остаются.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:m25-whole-supply",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:m25-whole-supply"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:glass-setting-and-pointing-kit",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:glass-setting-and-pointing-kit",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:glass-setting-and-pointing-kit"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Совместимые ручной инструмент, шаблоны/дистанционные элементы и способы защиты стекла/свежего шва, расход/износ, контроль и очистка. Не выводить 6мм шов из разницы194/200 и не подменять метод AAC пилой.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:glass-setting-and-pointing-kit",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:glass-setting-and-pointing-kit"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:handling-and-machines",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:handling-and-machines",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:handling-and-machines"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Поставка/тара/захваты для хрупких блоков и раствора, масса брутто/вылет/грузовая диаграмма, маршрут/защита, полная эксплуатация крана и автомобиля; часы не являются рейсами или числом комплектов.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:handling-and-machines",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:handling-and-machines"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:access-and-protection",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:access-and-protection",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:access-and-protection"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Полные настилы/ограждения/лестницы/анкеры/основания, защита от падения и осколков. До4м включённый труд подмостей по§1.13 не определяет количество изделий; свыше4м отдельная норма лесов/логистика.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:access-and-protection",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:access-and-protection"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:quality-and-curing",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:quality-and-curing",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:quality-and-curing"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Реальные допуски, контроль армирования и швов, совместимые средства, выдерживание/погода и документы. Количество стеклоблоков не означает выполненную приёмку.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:quality-and-curing",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:quality-and-curing"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:cleaning-and-waste",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:cleaning-and-waste",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:cleaning-and-waste"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Совместимый способ очистки стекла и тары, вода/средства/инструмент, сбор осколков и раствора, ёмкость/получатель/вывоз. Отсутствие отдельной воды в норме не равно нулевой физической потребности.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:cleaning-and-waste",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:cleaning-and-waste"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-02:need:external-logistics",
+            "operationId": "masonry:glass-block:krer:08-04-002-02:operation:need:external-logistics",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-02:operation:need:external-logistics"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:partition",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_net_partition_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Своя фактическая партия, грузовой маршрут, разгрузка и коммерческая граница. Табличные0.99маш.-ч автомобиля не заменяют рейсы и договор перевозки.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-02:formula:need:external-logistics",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-02:need:external-logistics"
+            }
+          }
+        ],
+        "wholeSourceProfiles": [
+          "08-04-002-01",
+          "08-04-002-02"
+        ],
+        "normalPublicCardR103": "partition"
+      }
+    },
+    {
+      "card": "opening-fill",
+      "completenessMap": {
+        "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+        "sourceKind": "NORMATIVE_OPERATION_MAP",
+        "generatedFromCurrentRows": false,
+        "operationResourceBindingRequired": true,
+        "evidenceSha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+        "evidenceReferences": [
+          "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+          "КРЕР 08-04-002-03",
+          "КРЕР 08-04-002-04"
+        ],
+        "fullTechnicalAcceptance": false,
+        "entries": [
+          {
+            "expectedResourceId": "08-04-002-03:whole-labour",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+            ],
+            "category": "labor",
+            "unitId": "man_hour",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Труд каменщиков",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:whole-labour",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:operator-information",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+            ],
+            "category": "labor",
+            "unitId": "man_hour",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Труд машинистов",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:operator-information",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:operator-information"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:tower-crane8t",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+            ],
+            "category": "equipment",
+            "unitId": "machine_hour",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Башенный кран грузоподъёмностью 8 т",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:tower-crane8t",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:tower-crane8t"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:flatbed-truck5t",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+            ],
+            "category": "equipment",
+            "unitId": "machine_hour",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Бортовой автомобиль грузоподъёмностью до 5 т",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:flatbed-truck5t",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:flatbed-truck5t"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:glass-block",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "piece",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Бесцветный пустотелый стеклоблок 194×194×98 мм",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:glass-block",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:glass-block"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:reinforcement",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "kg",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Горячекатаная арматура класса А-I, А-II или А-III по проектной спецификации",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:reinforcement",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:reinforcement"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:ready-cement-lime-m25",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "m3",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Готовый цементно-известковый кладочный раствор марки 25",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:ready-cement-lime-m25",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:ready-cement-lime-m25"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:operation:base-alignment",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:base-alignment",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:base-alignment"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Выровнять готовое основание раствором",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:operation:base-alignment",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:operation:base-alignment",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-03:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:operation:assemble",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Установить стеклоблоки с армированием кладки",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:operation:assemble",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:operation:assemble",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-03:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:source-system-admission",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:source-system-admission",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:source-system-admission"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Принятая редакция KG и точный пустотелый стеклоблок 194×194×98 мм; другая геометрия, цвет или система на клее не наследует эту норму.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:source-system-admission",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:source-system-admission"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:support-and-junctions",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:support-and-junctions",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:support-and-junctions"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Источник включает выравнивание готового основания, но не создаёт его несущую конструкцию. Требуются собственные проектные опора/швы/примыкания, их материалы и измеримая геометрия.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:support-and-junctions",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:support-and-junctions"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:reinforcement-and-fixings",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:reinforcement-and-fixings",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:reinforcement-and-fixings"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "112 кг/100м² — собственный исходный расход, не проект диаметра/шага/анкеров. Требуются выбранный класс, совместимость, полный способ резки/соединения/крепления и единый владелец оплаты; не арматура кирпичной перегородки.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:reinforcement-and-fixings",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:reinforcement-and-fixings"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:m25-whole-supply",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:m25-whole-supply",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:m25-whole-supply"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Тот же физический тип готового цементно-известкового М25, но собственный расход0.74/100м². Целый сохранённый пост whole15 применим только после доказанной привязки к своему accepted effective output и реальным условиям без перемешивания; все шесть его неизвестных норм остаются.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:m25-whole-supply",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:m25-whole-supply"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:glass-setting-and-pointing-kit",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:glass-setting-and-pointing-kit",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:glass-setting-and-pointing-kit"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Совместимые ручной инструмент, шаблоны/дистанционные элементы и способы защиты стекла/свежего шва, расход/износ, контроль и очистка. Не выводить 6мм шов из разницы194/200 и не подменять метод AAC пилой.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:glass-setting-and-pointing-kit",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:glass-setting-and-pointing-kit"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:handling-and-machines",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:handling-and-machines",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:handling-and-machines"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Поставка/тара/захваты для хрупких блоков и раствора, масса брутто/вылет/грузовая диаграмма, маршрут/защита, полная эксплуатация крана и автомобиля; часы не являются рейсами или числом комплектов.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:handling-and-machines",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:handling-and-machines"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:access-and-protection",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:access-and-protection",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:access-and-protection"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Полные настилы/ограждения/лестницы/анкеры/основания, защита от падения и осколков. До4м включённый труд подмостей по§1.13 не определяет количество изделий; свыше4м отдельная норма лесов/логистика.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:access-and-protection",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:access-and-protection"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:quality-and-curing",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:quality-and-curing",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:quality-and-curing"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Реальные допуски, контроль армирования и швов, совместимые средства, выдерживание/погода и документы. Количество стеклоблоков не означает выполненную приёмку.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:quality-and-curing",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:quality-and-curing"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:cleaning-and-waste",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:cleaning-and-waste",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:cleaning-and-waste"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Совместимый способ очистки стекла и тары, вода/средства/инструмент, сбор осколков и раствора, ёмкость/получатель/вывоз. Отсутствие отдельной воды в норме не равно нулевой физической потребности.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:cleaning-and-waste",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:cleaning-and-waste"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-03:need:external-logistics",
+            "operationId": "masonry:glass-block:krer:08-04-002-03:operation:need:external-logistics",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-03:operation:need:external-logistics"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"less_than_or_equal\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Своя фактическая партия, грузовой маршрут, разгрузка и коммерческая граница. Табличные0.99маш.-ч автомобиля не заменяют рейсы и договор перевозки.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-03:formula:need:external-logistics",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-03:need:external-logistics"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:whole-labour",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+            ],
+            "category": "labor",
+            "unitId": "man_hour",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Труд каменщиков",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:whole-labour",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:operator-information",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+            ],
+            "category": "labor",
+            "unitId": "man_hour",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Труд машинистов",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:operator-information",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:operator-information"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:tower-crane8t",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+            ],
+            "category": "equipment",
+            "unitId": "machine_hour",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Башенный кран грузоподъёмностью 8 т",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:tower-crane8t",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:tower-crane8t"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:flatbed-truck5t",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+            ],
+            "category": "equipment",
+            "unitId": "machine_hour",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Бортовой автомобиль грузоподъёмностью до 5 т",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:flatbed-truck5t",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:flatbed-truck5t"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:glass-block",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "piece",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Бесцветный пустотелый стеклоблок 194×194×98 мм",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:glass-block",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:glass-block"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:reinforcement",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "kg",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Горячекатаная арматура класса А-I, А-II или А-III по проектной спецификации",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:reinforcement",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:reinforcement"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:ready-cement-lime-m25",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+            ],
+            "category": "material",
+            "unitId": "m3",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Готовый цементно-известковый кладочный раствор марки 25",
+            "quantityRule": "OWN_WHOLE_COLUMN_PER100_OWN_NET_M2_NORMALIZATION_ONCE",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:ready-cement-lime-m25",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:ready-cement-lime-m25"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:operation:base-alignment",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:base-alignment",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:base-alignment"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Выровнять готовое основание раствором",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:operation:base-alignment",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:operation:base-alignment",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-04:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:operation:assemble",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+            ],
+            "category": "work",
+            "unitId": "m2",
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Установить стеклоблоки с армированием кладки",
+            "quantityRule": "INCLUDED_WHOLE_LABOUR_NO_SPLIT",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:operation:assemble",
+            "resolution": {
+              "kind": "INCLUDED_COMPONENT_ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:operation:assemble",
+              "parentRowId": "masonry:glass-block:krer:08-04-002-04:whole-labour"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:source-system-admission",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:source-system-admission",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:source-system-admission"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Принятая редакция KG и точный пустотелый стеклоблок 194×194×98 мм; другая геометрия, цвет или система на клее не наследует эту норму.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:source-system-admission",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:source-system-admission"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:support-and-junctions",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:support-and-junctions",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:support-and-junctions"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Источник включает выравнивание готового основания, но не создаёт его несущую конструкцию. Требуются собственные проектные опора/швы/примыкания, их материалы и измеримая геометрия.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:support-and-junctions",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:support-and-junctions"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:reinforcement-and-fixings",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:reinforcement-and-fixings",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:reinforcement-and-fixings"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "112 кг/100м² — собственный исходный расход, не проект диаметра/шага/анкеров. Требуются выбранный класс, совместимость, полный способ резки/соединения/крепления и единый владелец оплаты; не арматура кирпичной перегородки.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:reinforcement-and-fixings",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:reinforcement-and-fixings"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:m25-whole-supply",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:m25-whole-supply",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:m25-whole-supply"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Тот же физический тип готового цементно-известкового М25, но собственный расход0.74/100м². Целый сохранённый пост whole15 применим только после доказанной привязки к своему accepted effective output и реальным условиям без перемешивания; все шесть его неизвестных норм остаются.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:m25-whole-supply",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:m25-whole-supply"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:glass-setting-and-pointing-kit",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:glass-setting-and-pointing-kit",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:glass-setting-and-pointing-kit"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Совместимые ручной инструмент, шаблоны/дистанционные элементы и способы защиты стекла/свежего шва, расход/износ, контроль и очистка. Не выводить 6мм шов из разницы194/200 и не подменять метод AAC пилой.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:glass-setting-and-pointing-kit",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:glass-setting-and-pointing-kit"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:handling-and-machines",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:handling-and-machines",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:handling-and-machines"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Поставка/тара/захваты для хрупких блоков и раствора, масса брутто/вылет/грузовая диаграмма, маршрут/защита, полная эксплуатация крана и автомобиля; часы не являются рейсами или числом комплектов.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:handling-and-machines",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:handling-and-machines"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:access-and-protection",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:access-and-protection",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:access-and-protection"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Полные настилы/ограждения/лестницы/анкеры/основания, защита от падения и осколков. До4м включённый труд подмостей по§1.13 не определяет количество изделий; свыше4м отдельная норма лесов/логистика.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:access-and-protection",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:access-and-protection"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:quality-and-curing",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:quality-and-curing",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:quality-and-curing"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Реальные допуски, контроль армирования и швов, совместимые средства, выдерживание/погода и документы. Количество стеклоблоков не означает выполненную приёмку.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:quality-and-curing",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:quality-and-curing"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:cleaning-and-waste",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:cleaning-and-waste",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:cleaning-and-waste"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Совместимый способ очистки стекла и тары, вода/средства/инструмент, сбор осколков и раствора, ёмкость/получатель/вывоз. Отсутствие отдельной воды в норме не равно нулевой физической потребности.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:cleaning-and-waste",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:cleaning-and-waste"
+            }
+          },
+          {
+            "expectedResourceId": "08-04-002-04:need:external-logistics",
+            "operationId": "masonry:glass-block:krer:08-04-002-04:operation:need:external-logistics",
+            "requiredOperationIds": [
+              "masonry:glass-block:krer:08-04-002-04:operation:need:external-logistics"
+            ],
+            "category": "service",
+            "unitId": null,
+            "sourceId": "source:masonry:glass-block:r103:opening-fill",
+            "condition": "{\"kind\":\"and\",\"operands\":[{\"kind\":\"greater_than\",\"parameterId\":\"glass97_filled_opening_area_m2\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":0},{\"kind\":\"greater_than\",\"parameterId\":\"glass97_storey_height_m\",\"value\":4}]}",
+            "specification": "Своя фактическая партия, грузовой маршрут, разгрузка и коммерческая граница. Табличные0.99маш.-ч автомобиля не заменяют рейсы и договор перевозки.",
+            "quantityRule": "UNRESOLVED_OWN_APPLICATION_NORM_OR_OBJECT_BOUNDARY",
+            "formulaId": "masonry:glass-block:krer:08-04-002-04:formula:need:external-logistics",
+            "resolution": {
+              "kind": "ROW",
+              "rowId": "masonry:glass-block:krer:08-04-002-04:need:external-logistics"
+            }
+          }
+        ],
+        "wholeSourceProfiles": [
+          "08-04-002-03",
+          "08-04-002-04"
+        ],
+        "normalPublicCardR103": "opening-fill"
+      }
+    }
+  ],
+  "fullTechnicalAcceptance": false
+}

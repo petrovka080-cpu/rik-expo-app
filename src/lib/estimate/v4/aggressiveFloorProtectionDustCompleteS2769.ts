@@ -1,4 +1,5 @@
 import pack from '../../../../data/estimate-benchmarks/source-packs/aggressive-floor-complete-protection-dust-four-s27-69.json';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
 import {aggressiveFloorActualThicknessBindingS2769 as old,aggressiveFloorProtectionScopeIdS2769 as protection,
  aggressiveFloorDustScopeIdS2769 as dust,aggressiveFloorWasteModeIdS2769 as waste,aggressiveFloorWasteScopeValuesS2769 as wasteScope,
  aggressiveFloorWorkScopeIdS2769 as work} from './aggressiveFloorActualThicknessScopeS2769';
@@ -31,8 +32,22 @@ function mapped<T>(value:T):T{
 
 /** Add admitted subworks to exact published v4 parents. Existing ten owners
  * stay stable. Unsupported methods still expose their original source needs. */
-export function buildAggressiveFloorProtectionDustCompleteS2769(parent:PurchaseGroupRepresentative):PurchaseGroupRepresentative{
- const target=pack.targets.find(t=>t.catalogId===parent.definition.catalog_id),b=frozen.barrier;
+
+export const aggressiveFloorProtectionDustHistoricalBindingSha256S2769='ce583f84e6e888982c780a334d11f464b00cbbe52d3642834f798aee89108fe7';
+export type aggressiveFloorProtectionDustCompleteS2769HistoricalBindingContext=Readonly<{binding:typeof pack;sourcePackSha256:string}>;
+/** Read-only proof reconstruction can use only the exact pinned old binding.
+ * Every non-target byte-semantic field must still equal this versioned recipe;
+ * no historical caller can inject a different norm or arithmetic. */
+function historicalTargets(context?:aggressiveFloorProtectionDustCompleteS2769HistoricalBindingContext){
+ if(!context)return pack.targets;
+ if(context.sourcePackSha256!==aggressiveFloorProtectionDustHistoricalBindingSha256S2769
+  ||canonicalEstimateSha256HexText(canonicalEstimateStableJson(context.binding))!==aggressiveFloorProtectionDustHistoricalBindingSha256S2769)throw Error('PINNED_HISTORICAL_BINDING_REQUIRED');
+ const {targets:_active,...active}=pack,{targets:_historical,...historical}=context.binding;
+ if(canonicalEstimateStableJson(active)!==canonicalEstimateStableJson(historical))throw Error('HISTORICAL_RECIPE_SEMANTICS_DRIFT');
+ return context.binding.targets;
+}
+export function buildAggressiveFloorProtectionDustCompleteS2769(parent:PurchaseGroupRepresentative,historical?:aggressiveFloorProtectionDustCompleteS2769HistoricalBindingContext):PurchaseGroupRepresentative{
+ const target=historicalTargets(historical).find(t=>t.catalogId===parent.definition.catalog_id),b=frozen.barrier;
  if(!target||parent.definition.id!==target.predecessorDefinitionId||parent.definition.definition_sha256!==target.parentSha256
   ||parent.definition.definition_version!==4||parent.resources.length!==10||parent.parameters.length!==19)
   throw Error('AGGRESSIVE_FLOOR_EXACT_FOUR_V4_PARENTS_REQUIRED');

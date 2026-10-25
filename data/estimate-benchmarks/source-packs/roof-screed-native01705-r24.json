@@ -1,0 +1,340 @@
+{
+  "contract": "roof-screed-native01705/r24",
+  "normId": "12-01-017-05",
+  "prefix": "roof:screed:missing017:r24:05",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "WORK_CANDIDATE_KRER12_MISSING017_EXACT_COLUMNS_BUNDLE_R24",
+      "titleRu": "КРЕР12:собственные асфальтобетонные01703/04 и сборная01705",
+      "printedEdition": "КРЕР12-2015;приказ28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDFphysical/printed27–28;таблица12-01-017;полные операции,измеритель и собственные колонки03/04/05",
+      "reviewedAt": "2026-10-25",
+      "quantityAdmitted": false,
+      "sourceIdentityStatus": "UNADMITTED_WORK_CANDIDATE_ROOT_COMMON_SOURCE_OPEN"
+    }
+  ],
+  "scopeRu": "Сборная стяжка из плоских асбестоцементных листов;SOURCEsteel thickness conflict HOLD.",
+  "groupTitleRu": "Собственная асфальтобетонная или сборная выравнивающая стяжка",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-4",
+      "titleRu": "Рабочие-строители среднего разряда3,4",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда3,4",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,4",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "24.64",
+      "sourceCellLexeme": "24,64",
+      "sourceUnit": "чел.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ready_base",
+        "fabricate_steel_gaskets",
+        "prime_both_sides_of_ac_sheets",
+        "prefab_screed_placement",
+        "glasscloth_joint_bonding",
+        "primer_preparation"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "24.64",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "sourceInternalTitleRu": "Затраты труда машинистов",
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "0.24",
+      "sourceCellLexeme": "0,24",
+      "sourceUnit": "чел.-ч",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "prefab_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.24",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью8т",
+      "sourceInternalTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования)8т",
+      "sourceTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования)8т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.08",
+      "sourceCellLexeme": "0,08",
+      "sourceUnit": "маш.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prefab_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.08",
+      "exactUnitConversionFactor": "1",
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "forklift_5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчик грузоподъёмностью5т",
+      "sourceInternalTitleRu": "Автопогрузчики5т",
+      "sourceTitleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.16",
+      "sourceCellLexeme": "0,16",
+      "sourceUnit": "маш.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prefab_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.16",
+      "exactUnitConversionFactor": "1",
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "boiler400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Котёл битумный передвижной вместимостью400л",
+      "sourceInternalTitleRu": "Котлы битумные передвижные400л",
+      "sourceTitleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.39",
+      "sourceCellLexeme": "0,39",
+      "sourceUnit": "маш.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prime_both_sides_of_ac_sheets",
+        "glasscloth_joint_bonding",
+        "primer_preparation"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.39",
+      "exactUnitConversionFactor": "1",
+      "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST"
+    },
+    {
+      "role": "goudron_semigoudron",
+      "resourceCode": "01-0201-0020",
+      "titleRu": "Гудрон",
+      "sourceInternalTitleRu": "Гудрон(полугудрон)",
+      "sourceTitleRu": "Гудрон(полугудрон)",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.138",
+      "sourceCellLexeme": "0,138",
+      "sourceUnit": "т",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prime_both_sides_of_ac_sheets",
+        "primer_preparation"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.138",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "ready_hot_roof_mastic",
+      "resourceCode": "01-0202-0003",
+      "titleRu": "Мастика битумная кровельная горячая,готовая",
+      "sourceInternalTitleRu": "Мастика битумная кровельная горячая",
+      "sourceTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.048",
+      "sourceCellLexeme": "0,048",
+      "sourceUnit": "т",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "glasscloth_joint_bonding"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.048",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "pressed_flat_asbestos_cement10mm",
+      "resourceCode": "01-2405-0020",
+      "titleRu": "Листы асбестоцементные плоские прессованные толщиной10мм",
+      "sourceInternalTitleRu": "Листы асбестоцементные плоские с гладкой поверхностью прессованные толщиной10мм",
+      "sourceTitleRu": "Листы асбестоцементные плоские с гладкой поверхностью прессованные толщиной10мм",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "102",
+      "sourceCellLexeme": "102",
+      "sourceUnit": "м²",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prime_both_sides_of_ac_sheets",
+        "prefab_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "102",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "insulating_glasscloth02mm",
+      "resourceCode": "01-5512-0021",
+      "titleRu": "Ткань стеклянная изоляционная толщиной0,2мм",
+      "sourceInternalTitleRu": "Ткань стеклянная изоляционнаяИ-200,толщиной0,2мм",
+      "sourceTitleRu": "Ткань стеклянная изоляционнаяИ-200,толщиной0,2мм",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "20",
+      "sourceCellLexeme": "20",
+      "sourceUnit": "м²",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "glasscloth_joint_bonding"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "20",
+      "exactUnitConversionFactor": "1"
+    },
+    {
+      "role": "galvanized_sheet_07mm",
+      "resourceCode": "10-0208-0004",
+      "titleRu": "Сталь листовая оцинкованная толщиной0,7мм",
+      "sourceInternalTitleRu": "Сталь листовая оцинкованная толщиной0,7мм",
+      "sourceTitleRu": "Сталь листовая оцинкованная толщиной0,7мм",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.0098",
+      "sourceCellLexeme": "0,0098",
+      "sourceUnit": "т",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "fabricate_steel_gaskets"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01705;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "sourceRatePer100m2": "0.0098",
+      "exactUnitConversionFactor": "1"
+    }
+  ],
+  "remainingScopeRu": [
+    "Пригодное готовое основание и проектная площадь именно стяжки;не пол/кровельный ковёр поумолчанию и не второй готовый слой.",
+    "Материал и фактическая толщина/несущая способность/совместимость/температурный процесс/уход иприёмка отдельно,не выводятся из бюджета.",
+    "Кран/погрузчик/доставка/ручной и специальный инструмент/доступ/СИЗ иППР являются реальными UNKNOWN потребностями,не машино-часы вштуках.",
+    "Историческая цена не текущая котировка;INFOмашинисты не вторая оплата.",
+    "Существующие15/25мм01701/02 иихIDs остаются неизменными;одна физическая стяжка не оплачивается одновременно несколькими ветвями."
+  ],
+  "primaryVisualEvidence": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-27.png",
+      "sha256": "c9dc5677a449bc312257c4647bf9a3fac3d34d04117b2dd78483295a21417d11",
+      "bytes": 92620
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-28.png",
+      "sha256": "a15a42f9387275de3f20e40c06f4ebd5ca41b5e21d618e8d3edef37938dfc9f4",
+      "bytes": 92421
+    }
+  ],
+  "sourceMeasureQuantity": "100",
+  "sourceMeasureUnitId": "m2",
+  "FULL": false,
+  "systemRu": "Только исходные плоские прессованные асбестоцементные листы10мм/материалы/шесть операций;точныйproduct-source допуск и конфликт стали ещёнеразрешены.",
+  "conditionsRu": "Готовое основание иточнаяпроектная система;source противоречие1мм/0.7мм не являетсяданнымиобъекта ине разрешается ППР.",
+  "measurementRu": "100м² стяжек,не100листов;102м² материала нештучныйраскрой ине универсальный запас.",
+  "operationTitleRu": "Сборная стяжка с изготовлением прокладок,двусторонней грунтовкой листов иоклейкойстыков",
+  "completionCriterionRu": "Все6 собственных операций выполнены;SOURCEconflict ифактическаяприёмка отдельно.",
+  "systemParameterId": "roof_prefab01705_method_r24",
+  "conditionsParameterId": "roof_prefab01705_conditions_r24",
+  "areaParameterId": "roof_prefab01705_measure_scope_r24",
+  "systemYesRu": "Сборная асбестоцементная стяжка по собственной01705",
+  "conditionsYesRu": "Точные исходные материалы иусловия01705 подтверждены",
+  "areaYesRu": "Самостоятельная площадь выполняемой стяжки подтверждена",
+  "unknownChoiceRu": "Технология илиобмер ещёнепроверены",
+  "legacyChoiceRu": "Историческийсостав безнового01705допуска",
+  "measurementParameterId": "roof_prefab01705_area_m2_r24",
+  "measurementUnitId": "m2",
+  "measurementConditional": true,
+  "measurementTitleRu": "Площадь выполняемой сборной стяжки,м²",
+  "measurementGuideRu": "Введите проектную площадь выполняемой стяжки;не100листов,не площадьматериала102 и не площадьчужогослоя.",
+  "quantityEditReasonRu": "Собственный обмер ибуквальная норма01705;размеры/штуки/толщина стали не выводятся измассы.",
+  "printedOperationRoster": [
+    {
+      "key": "prepare_ready_base",
+      "printedOrdinal": 1,
+      "titleRu": "Подготовка готового основания"
+    },
+    {
+      "key": "fabricate_steel_gaskets",
+      "printedOrdinal": 2,
+      "titleRu": "Изготовление прокладок из листовой оцинкованной стали толщиной1мм"
+    },
+    {
+      "key": "prime_both_sides_of_ac_sheets",
+      "printedOrdinal": 3,
+      "titleRu": "Огрунтовка асбестоцементных листов стяжки с двух сторон"
+    },
+    {
+      "key": "prefab_screed_placement",
+      "printedOrdinal": 4,
+      "titleRu": "Устройство выравнивающих стяжек"
+    },
+    {
+      "key": "glasscloth_joint_bonding",
+      "printedOrdinal": 5,
+      "titleRu": "Оклейка стыков между листами стяжки стеклотканью на битумной мастике"
+    },
+    {
+      "key": "primer_preparation",
+      "printedOrdinal": 6,
+      "titleRu": "Приготовление грунтовки"
+    }
+  ],
+  "sourceConflictReason": "PRIMARY_SOURCE_CONFLICT_01705:PDF27 operation02 requires galvanizedsteel1mm;PDF28 native10-0208-0004 is galvanizedsteel0.7mm at0.0098t/100m². Bothkept;requires primary correction/exact applicable source,notprojectfact/user/PPR/default.",
+  "sourceConflictGate": {
+    "parameterId": "roof_prefab01705_steel_source_resolution_r24",
+    "value": "EXACT_PRIMARY_SOURCE_01705_STEEL_CONTRADICTION_RESOLVED",
+    "truthRole": "UNRESOLVED_APPLICATION_NORM"
+  },
+  "sourceThicknessFacts": {
+    "operationGasketSteelMm": "1",
+    "resourceSteelMm": "0.7",
+    "resourceCode": "10-0208-0004",
+    "resourceRateTPer100m2": "0.0098",
+    "sourceResolution": null
+  }
+}

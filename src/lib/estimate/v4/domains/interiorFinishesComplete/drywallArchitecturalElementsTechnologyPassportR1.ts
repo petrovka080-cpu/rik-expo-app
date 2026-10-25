@@ -29,7 +29,7 @@ import {
  * This module intentionally imports no BATCH-002 runtime definition, resource
  * blueprint, predecessor oracle, formula graph or compiled row. Family rules
  * below were authored from frozen manufacturer documents and the frozen master
- * requirement. The explicit 55-entry delta ledger is the identity boundary.
+ * requirement. The explicit 33-entry delta ledger is the identity boundary.
  */
 export const BATCH002_DRYWALL_TECHNOLOGY_PASSPORT_R1_CONTRACT =
   "real-useful-estimates.batch002-drywall-technology-passport-r1.v1" as const;
@@ -57,11 +57,7 @@ export type Batch002PassportOperationR1 =
   | "PREPARE"
   | "REPAIR";
 export type Batch002PassportVariantR1 =
-  | "standard"
-  | "large_area"
-  | "small_area"
-  | "technical_room"
-  | "wet_zone";
+  "standard" | "technical_room" | "wet_zone";
 
 type MaterialKeyR1 =
   | "joint_base_compound"
@@ -286,8 +282,6 @@ const ACTION_LABEL: Readonly<Record<Batch002PassportOperationR1, string>> = {
 
 const VARIANT_LABEL: Readonly<Record<Batch002PassportVariantR1, string>> = {
   standard: "стандартного исполнения",
-  large_area: "большой площади",
-  small_area: "малой площади",
   technical_room: "в техническом помещении",
   wet_zone: "во влажной зоне",
 };
@@ -302,9 +296,7 @@ function variantAdditions(
       ? ["wet_zone_membrane"]
       : ["penetration_sealant"];
   }
-  if (variant === "large_area" && ["FRAME", "CLAD", "FINISH_JOINT"].includes(operationId)) {
-    return ["deformation_joint_profile"];
-  }
+  
   return [];
 }
 
@@ -327,8 +319,6 @@ function delta(
   const objectRu = system === "BULKHEAD" ? "потолочного короба" : "криволинейного потолочного элемента";
   const deltaReason: Readonly<Record<Batch002PassportVariantR1, string>> = {
     standard: "Стандартный вариант не наследует специальные материалы большой площади, технического помещения или влажной зоны.",
-    large_area: "Вариант большой площади отдельно проверяет проектные деформационные швы и не добавляет их без измеренной длины.",
-    small_area: "Вариант малой площади использует фактическую раскладку и закупочное округление без искусственного коэффициента «малого объёма».",
     technical_room: "Вариант технического помещения отдельно учитывает только подтверждённые проходки и защиту действующего оборудования.",
     wet_zone: "Вариант влажной зоны требует совместимой влагостойкой системы и запрещает неподтверждённую замену обычным листом.",
   };
@@ -354,58 +344,36 @@ function delta(
 }
 
 export const BATCH002_DRYWALL_TECHNOLOGY_DELTAS_R1: readonly Batch002DrywallTechnologyDeltaR1[] = [
-  delta("drywall_ceiling_interior_bulkhead_finish_joint_large_area", "BULKHEAD", "FINISH_JOINT", "large_area"),
-  delta("drywall_ceiling_interior_bulkhead_finish_joint_small_area", "BULKHEAD", "FINISH_JOINT", "small_area"),
   delta("drywall_ceiling_interior_bulkhead_finish_joint_standard", "BULKHEAD", "FINISH_JOINT", "standard"),
   delta("drywall_ceiling_interior_bulkhead_finish_joint_technical_room", "BULKHEAD", "FINISH_JOINT", "technical_room"),
   delta("drywall_ceiling_interior_bulkhead_finish_joint_wet_zone", "BULKHEAD", "FINISH_JOINT", "wet_zone"),
-  delta("drywall_ceiling_interior_bulkhead_insulate_large_area", "BULKHEAD", "INSULATE", "large_area"),
-  delta("drywall_ceiling_interior_bulkhead_insulate_small_area", "BULKHEAD", "INSULATE", "small_area"),
   delta("drywall_ceiling_interior_bulkhead_insulate_standard", "BULKHEAD", "INSULATE", "standard"),
   delta("drywall_ceiling_interior_bulkhead_insulate_technical_room", "BULKHEAD", "INSULATE", "technical_room"),
   delta("drywall_ceiling_interior_bulkhead_insulate_wet_zone", "BULKHEAD", "INSULATE", "wet_zone"),
-  delta("drywall_ceiling_interior_bulkhead_prepare_large_area", "BULKHEAD", "PREPARE", "large_area"),
-  delta("drywall_ceiling_interior_bulkhead_prepare_small_area", "BULKHEAD", "PREPARE", "small_area"),
   delta("drywall_ceiling_interior_bulkhead_prepare_standard", "BULKHEAD", "PREPARE", "standard"),
   delta("drywall_ceiling_interior_bulkhead_prepare_technical_room", "BULKHEAD", "PREPARE", "technical_room"),
   delta("drywall_ceiling_interior_bulkhead_prepare_wet_zone", "BULKHEAD", "PREPARE", "wet_zone"),
-  delta("drywall_ceiling_interior_bulkhead_repair_large_area", "BULKHEAD", "REPAIR", "large_area"),
-  delta("drywall_ceiling_interior_bulkhead_repair_small_area", "BULKHEAD", "REPAIR", "small_area"),
   delta("drywall_ceiling_interior_bulkhead_repair_standard", "BULKHEAD", "REPAIR", "standard"),
   delta("drywall_ceiling_interior_bulkhead_repair_technical_room", "BULKHEAD", "REPAIR", "technical_room"),
   delta("drywall_ceiling_interior_bulkhead_repair_wet_zone", "BULKHEAD", "REPAIR", "wet_zone"),
-  delta("drywall_ceiling_interior_curve_align_large_area", "CURVE", "ALIGN", "large_area"),
-  delta("drywall_ceiling_interior_curve_align_small_area", "CURVE", "ALIGN", "small_area"),
   delta("drywall_ceiling_interior_curve_align_standard", "CURVE", "ALIGN", "standard"),
   delta("drywall_ceiling_interior_curve_align_technical_room", "CURVE", "ALIGN", "technical_room"),
   delta("drywall_ceiling_interior_curve_align_wet_zone", "CURVE", "ALIGN", "wet_zone"),
-  delta("drywall_ceiling_interior_curve_clad_large_area", "CURVE", "CLAD", "large_area"),
-  delta("drywall_ceiling_interior_curve_clad_small_area", "CURVE", "CLAD", "small_area"),
   delta("drywall_ceiling_interior_curve_clad_standard", "CURVE", "CLAD", "standard"),
   delta("drywall_ceiling_interior_curve_clad_technical_room", "CURVE", "CLAD", "technical_room"),
   delta("drywall_ceiling_interior_curve_clad_wet_zone", "CURVE", "CLAD", "wet_zone"),
-  delta("drywall_ceiling_interior_curve_finish_joint_large_area", "CURVE", "FINISH_JOINT", "large_area"),
-  delta("drywall_ceiling_interior_curve_finish_joint_small_area", "CURVE", "FINISH_JOINT", "small_area"),
   delta("drywall_ceiling_interior_curve_finish_joint_standard", "CURVE", "FINISH_JOINT", "standard"),
   delta("drywall_ceiling_interior_curve_finish_joint_technical_room", "CURVE", "FINISH_JOINT", "technical_room"),
   delta("drywall_ceiling_interior_curve_finish_joint_wet_zone", "CURVE", "FINISH_JOINT", "wet_zone"),
-  delta("drywall_ceiling_interior_curve_frame_large_area", "CURVE", "FRAME", "large_area"),
-  delta("drywall_ceiling_interior_curve_frame_small_area", "CURVE", "FRAME", "small_area"),
   delta("drywall_ceiling_interior_curve_frame_standard", "CURVE", "FRAME", "standard"),
   delta("drywall_ceiling_interior_curve_frame_technical_room", "CURVE", "FRAME", "technical_room"),
   delta("drywall_ceiling_interior_curve_frame_wet_zone", "CURVE", "FRAME", "wet_zone"),
-  delta("drywall_ceiling_interior_curve_insulate_large_area", "CURVE", "INSULATE", "large_area"),
-  delta("drywall_ceiling_interior_curve_insulate_small_area", "CURVE", "INSULATE", "small_area"),
   delta("drywall_ceiling_interior_curve_insulate_standard", "CURVE", "INSULATE", "standard"),
   delta("drywall_ceiling_interior_curve_insulate_technical_room", "CURVE", "INSULATE", "technical_room"),
   delta("drywall_ceiling_interior_curve_insulate_wet_zone", "CURVE", "INSULATE", "wet_zone"),
-  delta("drywall_ceiling_interior_curve_prepare_large_area", "CURVE", "PREPARE", "large_area"),
-  delta("drywall_ceiling_interior_curve_prepare_small_area", "CURVE", "PREPARE", "small_area"),
   delta("drywall_ceiling_interior_curve_prepare_standard", "CURVE", "PREPARE", "standard"),
   delta("drywall_ceiling_interior_curve_prepare_technical_room", "CURVE", "PREPARE", "technical_room"),
   delta("drywall_ceiling_interior_curve_prepare_wet_zone", "CURVE", "PREPARE", "wet_zone"),
-  delta("drywall_ceiling_interior_curve_repair_large_area", "CURVE", "REPAIR", "large_area"),
-  delta("drywall_ceiling_interior_curve_repair_small_area", "CURVE", "REPAIR", "small_area"),
   delta("drywall_ceiling_interior_curve_repair_standard", "CURVE", "REPAIR", "standard"),
   delta("drywall_ceiling_interior_curve_repair_technical_room", "CURVE", "REPAIR", "technical_room"),
   delta("drywall_ceiling_interior_curve_repair_wet_zone", "CURVE", "REPAIR", "wet_zone"),
@@ -687,7 +655,7 @@ export function buildBatch002DrywallTechnologyPassportDraftR1(catalogId: string)
 
 export function buildAllBatch002DrywallTechnologyPassportDraftsR1(): readonly TechnologyPassportR1[] {
   const ids = BATCH002_DRYWALL_TECHNOLOGY_DELTAS_R1.map((item) => item.catalogId);
-  if (ids.length !== 55 || new Set(ids).size !== 55) {
+  if (ids.length !== 33 || new Set(ids).size !== 33) {
     throw new Error(`BATCH002_R1_DELTA_IDENTITY_DRIFT:${ids.length}:${new Set(ids).size}`);
   }
   return ids.map(buildBatch002DrywallTechnologyPassportDraftR1);

@@ -1,0 +1,54 @@
+{
+  "contract": "masonry-brick-column-existing-owner/r161",
+  "status": "SOURCE_ONLY_NOT_READY_NO_DB_NO_FULL",
+  "parent": {
+    "catalogId": "canonical-work:base:masonry_interior_column_lay_standard",
+    "definitionId": "45b489da-b79a-5164-a04a-35fd1beee905",
+    "definitionSha256": "ce476f4586b4d7bd0676987fc668e4208ce271233684c16b6140aff6046891f0",
+    "baselineId": "ca07a7ca-38a1-514e-911c-e5df5d8a3a08",
+    "fullFile": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-six-selected-current-r183\\full-parents-r184\\stage\\results\\CURRENT_FULL_PARENT_3_R59.json",
+      "sha256": "09f8f077e92adde1cb9a2aeabcb65d12925859b34ec0452fe814b4a87767cb91",
+      "bytes": 348587
+    }
+  },
+  "wholeReuse": {
+    "sourcePack": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r117\\FROZEN_PASS_HANDOFF_R117_REV05\\after\\data\\estimate-benchmarks\\source-packs\\masonry-brick-column-six-profile-whole-r117.json",
+      "sha256": "f2407e25fb1b56301212765c8310c59f54d2c3b4b766be40f4824d8813dfd0a4",
+      "bytes": 148086
+    },
+    "independentMap": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r117\\FROZEN_PASS_HANDOFF_R117_REV05\\after\\data\\estimate-benchmarks\\source-packs\\masonry-brick-column-six-profile-independent-full-map-r117.json",
+      "sha256": "a37081863b69e66c7e598339e9261c79198cdb13bd90aee75562e61c10923983",
+      "bytes": 128950
+    },
+    "nativeRows": 44,
+    "includedMarkers": 6,
+    "sourceUnknownUnion": 68,
+    "technicalProjectFields": 33,
+    "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109"
+  },
+  "sourceArtifact": {
+    "path": ".release-runtime/r568/next-wave/masonry-krer08/primary/KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "bytes": 2521223,
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "edition": "КРЕР-2015, сборник 08 «Конструкции из кирпича и блоков», официальное издание, Бишкек 2015",
+    "pages": [
+      5,
+      7,
+      8,
+      21,
+      22
+    ],
+    "locatorRu": "PDF/печатные стр.21–22: таблица08-02-003, собственные01–06; м³ кладки. Стр5§1.2; стр7§1.12/1.13/1.18/1.21; стр8§2.5.",
+    "layoutEvidence": "Скан, текстового слоя нет; колонка и техническая часть прочитаны визуально. Цены базисного уровня 2015 не используются."
+  },
+  "newPublicIdentities": 0,
+  "catalogAppend": false,
+  "projectProducer": "ROOT_R144_APPROVED_PROJECT_RESOLVER_STILL_MISSING",
+  "realProjectObjects": 0,
+  "closedNeeds": 0,
+  "FULL": false
+}

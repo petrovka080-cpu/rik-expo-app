@@ -2,7 +2,8 @@ import {buildAggressiveFloorActualThicknessSuccessorS2769,compileAggressiveFloor
  aggressiveFloorActualThicknessBindingS2769 as pack,aggressiveFloorWorkScopeIdS2769 as work,aggressiveFloorProtectionScopeIdS2769 as protection,
  aggressiveFloorDustScopeIdS2769 as dust,aggressiveFloorWasteModeIdS2769 as waste,aggressiveFloorWasteScopeValuesS2769 as wasteScope} from './aggressiveFloorActualThicknessScopeS2769';
 import type {PurchaseGroupRepresentative} from '../../../../scripts/estimate/r4a13/s2732PurchaseGroupOverlay';
-const snapshot=require('../../../../data/estimate-benchmarks/fixtures/aggressive-floor-four-v3-parents-s27-69.json') as {models:PurchaseGroupRepresentative[]};
+const snapshotAll=require('../../../../data/estimate-benchmarks/fixtures/aggressive-floor-four-v3-parents-s27-69.json') as {models:PurchaseGroupRepresentative[]};
+const snapshot={...snapshotAll,models:snapshotAll.models.filter(model=>pack.targets.some(target=>target.catalogId===model.definition.catalog_id))};
 const facts=(mm:number)=>({floor_covering_area_m2:35.5,[pack.actualThicknessParameterId]:mm,[work]:pack.workScopeValue,
  [protection]:pack.adjacentProtectionNotRequiredValue,[dust]:pack.dustControlProvidedValue,[waste]:wasteScope.retainModeValue});
 

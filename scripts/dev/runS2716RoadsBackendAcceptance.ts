@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 import { ASPHALT_COMPACTION_PROFILE_CATALOG_ID } from "../../src/lib/estimate/v4/asphaltCompactionPreliminaryProfileR1";
-import { ASPHALT_INSTALL_KRER27_CATALOG_ID } from "../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+import { ASPHALT_INSTALL_KRER27_CATALOG_ID } from "../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1";
 
 type Json = Record<string, any>;
 

@@ -15,12 +15,7 @@ export type DrywallArchitecturalElementOperationV4 =
   | "REPAIR";
 
 export type DrywallArchitecturalElementVariantV4 =
-  | "standard"
-  | "large_area"
-  | "small_area"
-  | "technical_room"
-  | "wet_zone"
-  | "high_load";
+  "standard" | "technical_room" | "wet_zone" | "high_load";
 
 export type DrywallArchitecturalElementWorkContractV4 = {
   schema_version: "DrywallArchitecturalElementWorkContractV4" | "DrywallFlatCeilingWorkContractV6";

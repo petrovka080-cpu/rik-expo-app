@@ -19,9 +19,9 @@ describe("KRER 46-05-005-02 lower-beam-chord strengthening devices", () => {
   const expectedShort = ["1", "13.52", "0.07", "0.07", "1.36", "0.1", "0.00002", "0.00001", "0.01", "0.00004", "0.6"];
   const expectedAcceptance = ["35.5", "479.96", "2.485", "2.485", "48.28", "3.55", "0.00071", "0.000355", "0.355", "0.00142", "21.3"];
 
-  test("owns four distinct appended identities", () => {
-    expect(TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).toHaveLength(4);
-    expect(new Set(TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).size).toBe(4);
+  test("preserves the surviving exact identities and source boundary", () => {
+    expect(TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).toHaveLength(2);
+    expect(new Set(TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).size).toBe(2);
     expect(TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS)
       .toEqual(Object.values(TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_VARIANTS).map((variant) => variant.catalogId));
   });
@@ -100,7 +100,7 @@ describe("KRER 46-05-005-02 lower-beam-chord strengthening devices", () => {
       ]));
   });
   test("resolves all variants and rejects an unsupported key", () => {
-    for (const key of ["standard", "large_area", "small_area", "wet_zone"] as const)
+    for (const key of ["standard", "wet_zone"] as const)
       expect(resolveTemporaryLowerBeamChordStrengtheningDevicesKrer46Variant(key).catalogId).toContain(`_${key}`);
     expect(() => resolveTemporaryLowerBeamChordStrengtheningDevicesKrer46Variant("bad" as never)).toThrow("VARIANT_UNSUPPORTED");
   });

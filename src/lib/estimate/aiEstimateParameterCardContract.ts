@@ -43,6 +43,9 @@ export type AiEstimateParameterCard = {
   guideKind?: "PROJECT_DEFINED" | "MEASUREMENT_RULE" | "ENUM_DECISION_RULE" | "DERIVED_VALUE_RULE" | "NO_NUMERIC_NORM" | "NORMATIVE_RANGE" |
     "PROJECT_REQUIRED" | "VALIDATION_RANGE" | "MANUFACTURER_GUIDANCE" | "REFERENCE_GUIDANCE" | "USER_PROVIDED" | "DERIVED";
   guideDetailsRu?: string[];
+  /** Human source/value evidence for the ordinary screen, with no source-key fallback. */
+  sourceSummaryRu?: string;
+  inputOwnership?: "USER_INPUT" | "APPLICATION";
   structuredGroup?: {
     itemLabelRu: string;
     minimumItems: number;

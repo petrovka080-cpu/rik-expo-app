@@ -17,7 +17,7 @@ describe("KRER 46 wooden door opening-fill demolition", () => {
   test("binds the exact official rate and narrow door-fill boundary", () => {
     expect(WOODEN_DOOR_FILL_DEMOLITION_KRER46_CATALOG_ID)
       .toBe("canonical-work:base:demolition_interior_door_block_dismantle_standard");
-    expect(WOODEN_DOOR_FILL_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(4);
+    expect(WOODEN_DOOR_FILL_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(2);
     expect(WOODEN_DOOR_FILL_DEMOLITION_KRER46_ARTIFACT_SHA256)
       .toMatch(/^[0-9a-f]{64}$/u);
     expect(WOODEN_DOOR_FILL_DEMOLITION_KRER46_PARAMETERS).toHaveLength(3);

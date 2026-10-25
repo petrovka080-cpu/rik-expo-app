@@ -1,0 +1,247 @@
+{
+  "contract": "roof-insulation-missing-native01401/r24",
+  "prefix": "roof:insulation:missing014:r24:01",
+  "normId": "12-01-014-01",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "WORK_CANDIDATE_KRER12_MISSING014_EXACT_COLUMNS_BUNDLE_R24",
+      "titleRu": "КРЕР12:собственные недостающие колонки01401/03/04/05",
+      "printedEdition": "КРЕР12-2015; утверждён приказом28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDFphysical/printed25; таблица12-01-014; отдельные точные столбцы01/03/04/05; состав и измеритель целиком",
+      "reviewedAt": "2026-10-25",
+      "quantityAdmitted": false,
+      "sourceIdentityStatus": "WORK_CANDIDATE_NOT_EXISTING_SOURCE_OWNER_NOT_ADMISSION"
+    }
+  ],
+  "scopeRu": "Лёгкий бетон по точной колонке01401;только собственный исходный способ, не весь кровельный пирог.",
+  "systemRu": "Заголовок01401:лёгким(ячеистым)бетоном; буквальная ресурсная строка03-0203-0008:лёгкий бетон на пористых заполнителях800кг/м³,заполнитель>10мм,В7.5(М100). Не подставлять пенобетон/газобетон/сухую смесь.",
+  "conditionsRu": "Точные нормативные условия, пригодное основание и самостоятельный проектный слой подтверждаются по действующему source/owner контракту; площадь и название зоны допуск не создают.",
+  "measurementRu": "1м³ утеплителя; самостоятельный проектный объём именно выбранного устроенного слоя. Не площадь всей крыши и не произвольная толщина из1.03/1.04.",
+  "remainingScopeRu": [
+    "Готовое пригодное основание, несущая способность, полная система утепления и точная проектная толщина/объём отдельно.",
+    "Устройство нижней пароизоляции, верхней стяжки, огрунтовки и окончательного ковра не добавляется автоматически.",
+    "Физический stock/погрузчик/кран/ручные средства укладки и трамбования/доступ/СИЗ/приёмка остаются UNKNOWN, не выводятся из машино-часов.",
+    "Материалы каждой колонки не взаимозаменяемы;1.03 не является универсальным уплотнением/плотностью/запасом.",
+    "Существующая01402 сохраняет прежние IDs/source; mutual-exclusion одного слоя с новыми014-профилями требует отдельного ROOT existing-owner review доordinaryConfig.",
+    "Факт объекта/ППР не создаёт нормативный допуск на замену исходного материала или нового источника."
+  ],
+  "groupTitleRu": "Утепление покрытия собственным монолитным или засыпным способом",
+  "operationTitleRu": "Укладка монолитных утеплителей из лёгких бетонов",
+  "completionCriterionRu": "Выполнена собственная операция выбранной014-колонки;проект,stock и фактическая приёмка отдельно.",
+  "systemParameterId": "roof_missing014_profile_r24",
+  "conditionsParameterId": "roof_missing014_conditions_r24",
+  "areaParameterId": "roof_missing014_volume_scope_r24",
+  "systemYesRu": "Лёгкий бетон по точной колонке01401",
+  "conditionsYesRu": "Точные исходные материал и нормативные условия014 подтверждены",
+  "areaYesRu": "Самостоятельный проектный объём именно выбранного слоя подтверждён",
+  "unknownChoiceRu": "Материал и объём слоя ещёнеподтверждены",
+  "legacyChoiceRu": "Исторический состав без нового014допуска",
+  "measurementParameterId": "roof_missing014_installed_volume_m3_r24",
+  "measurementUnitId": "m3",
+  "measurementTitleRu": "Проектный объём выбранного устроенного слоя, м³",
+  "measurementGuideRu": "Введите самостоятельный проектный объём именно выбранного слоя в м³. Не подставляйте площадь всей крыши, толщину из расхода материала или машино-часы.",
+  "sourceBasisQuantity": "1",
+  "measurementConditional": true,
+  "quantityEditReasonRu": "Объём выбранного слоя умножается на собственные буквальные нормы014 без вывода толщины,плотности или stock израсхода.",
+  "printedOperationRoster": [
+    {
+      "key": "monolithic_light_concrete_placement",
+      "printedOrdinal": 1,
+      "titleRu": "Укладка монолитных утеплителей из лёгких бетонов"
+    }
+  ],
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1002-0",
+      "titleRu": "Рабочие-строители среднего разряда 2,0",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда 2,0",
+      "sourceTitleRu": "Рабочие-строители среднего разряда 2,0",
+      "unitId": "man_hour",
+      "category": "labor",
+      "perMeasure": "4.07",
+      "sourceRatePerMeasure": "4.07",
+      "sourceCellLexeme": "4,07",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "monolithic_light_concrete_placement"
+      ],
+      "detailsRu": [
+        "Буквальная собственная норма на1м³ утеплителя. Историческая базовая цена не является текущей котировкой.",
+        "Не выводить физическое количество/плотность/толщину из расхода."
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Затраты труда машинистов",
+      "sourceInternalTitleRu": "Затраты труда машинистов",
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "perMeasure": "0.29",
+      "sourceRatePerMeasure": "0.29",
+      "sourceCellLexeme": "0,29",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "monolithic_light_concrete_placement"
+      ],
+      "detailsRu": [
+        "Буквальная собственная норма на1м³ утеплителя. Историческая базовая цена не является текущей котировкой.",
+        "Исходные часы машинистов толькоINFO, без второй оплаты."
+      ]
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью 8 т",
+      "sourceInternalTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+      "sourceTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "machinePriceCoverageRequired": "FULL_OPERATED",
+      "perMeasure": "0.10",
+      "sourceRatePerMeasure": "0.10",
+      "sourceCellLexeme": "0,10",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "monolithic_light_concrete_placement"
+      ],
+      "detailsRu": [
+        "Буквальная собственная норма на1м³ утеплителя. Историческая базовая цена не является текущей котировкой.",
+        "Не выводить физическое количество/плотность/толщину из расхода."
+      ]
+    },
+    {
+      "role": "forklift_5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчик грузоподъёмностью 5 т",
+      "sourceInternalTitleRu": "Автопогрузчики 5 т",
+      "sourceTitleRu": "Автопогрузчики 5 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "machinePriceCoverageRequired": "FULL_OPERATED",
+      "perMeasure": "0.19",
+      "sourceRatePerMeasure": "0.19",
+      "sourceCellLexeme": "0,19",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "monolithic_light_concrete_placement"
+      ],
+      "detailsRu": [
+        "Буквальная собственная норма на1м³ утеплителя. Историческая базовая цена не является текущей котировкой.",
+        "Не выводить физическое количество/плотность/толщину из расхода."
+      ]
+    },
+    {
+      "role": "water",
+      "resourceCode": "01-0601-0001",
+      "titleRu": "Вода",
+      "sourceInternalTitleRu": "Вода",
+      "sourceTitleRu": "Вода",
+      "unitId": "m3",
+      "category": "material",
+      "perMeasure": "0.385",
+      "sourceRatePerMeasure": "0.385",
+      "sourceCellLexeme": "0,385",
+      "sourceUnit": "м³",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "monolithic_light_concrete_placement"
+      ],
+      "detailsRu": [
+        "Буквальная собственная норма на1м³ утеплителя. Историческая базовая цена не является текущей котировкой.",
+        "Не выводить физическое количество/плотность/толщину из расхода."
+      ]
+    },
+    {
+      "role": "natural_medium_sand",
+      "resourceCode": "01-6208-0005",
+      "titleRu": "Песок природный средний для строительных работ",
+      "sourceInternalTitleRu": "Песок природный для строительных работ средний",
+      "sourceTitleRu": "Песок природный для строительных работ средний",
+      "unitId": "m3",
+      "category": "material",
+      "perMeasure": "0.31",
+      "sourceRatePerMeasure": "0.31",
+      "sourceCellLexeme": "0,31",
+      "sourceUnit": "м³",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "monolithic_light_concrete_placement"
+      ],
+      "detailsRu": [
+        "Буквальная собственная норма на1м³ утеплителя. Историческая базовая цена не является текущей котировкой.",
+        "Не выводить физическое количество/плотность/толщину из расхода."
+      ]
+    },
+    {
+      "role": "light_concrete_b75_m100_800",
+      "resourceCode": "03-0203-0008",
+      "titleRu": "Бетон лёгкий на пористых заполнителях класса В7,5, объёмная масса 800 кг/м³",
+      "sourceInternalTitleRu": "Бетон легкий на пористых заполнителях объемная масса 800 кг/м3, крупность заполнителя более 10 мм, класс В 7,5 (М100)",
+      "sourceTitleRu": "Бетон легкий на пористых заполнителях объемная масса 800 кг/м3, крупность заполнителя более 10 мм, класс В 7,5 (М100)",
+      "unitId": "m3",
+      "category": "material",
+      "perMeasure": "1.04",
+      "sourceRatePerMeasure": "1.04",
+      "sourceCellLexeme": "1,04",
+      "sourceUnit": "м³",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "monolithic_light_concrete_placement"
+      ],
+      "detailsRu": [
+        "Буквальная собственная норма на1м³ утеплителя. Историческая базовая цена не является текущей котировкой.",
+        "Не выводить физическое количество/плотность/толщину из расхода."
+      ]
+    }
+  ],
+  "sourceDashAbsences": [
+    {
+      "resourceCode": "01-1604-0014",
+      "sourceTitleRu": "Гравий керамзитовый, фракция 10-20 мм, марка 400",
+      "cell": "-",
+      "quantity": null
+    },
+    {
+      "resourceCode": "01-1606-0001",
+      "sourceTitleRu": "Гравий шунгизитовый, фракция 5-10 мм, марка 300",
+      "cell": "-",
+      "quantity": null
+    },
+    {
+      "resourceCode": "01-5201-0001",
+      "sourceTitleRu": "Вермикулит вспученный",
+      "cell": "-",
+      "quantity": null
+    },
+    {
+      "resourceCode": "02-4806-0001",
+      "sourceTitleRu": "Щебень перлитовый вспученный фракции 5-10 мм",
+      "cell": "-",
+      "quantity": null
+    }
+  ],
+  "primaryVisualEvidence": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-25.png",
+    "sha256": "03738778f22fbe99defd036efcccab95c88327313dd388af1c27a3c6c1ac35eb",
+    "bytes": 85481
+  },
+  "sourceIdentityRootOpen": true,
+  "ordinaryConfig": false,
+  "FULL": false
+}

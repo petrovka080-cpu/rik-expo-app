@@ -1,0 +1,111 @@
+{
+  "contract": "rik-expo-app.s27-69.aggressive-floor-protection-dust-complete-four.v1",
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/aggressive-floor-four-v4-parents-and-barrier-s27-69.json",
+  "parentSnapshotSha256": "1b5a4225c9cbf96f78aee950e4eb4e595a97b20ae61b49f5861c0d9e00146890",
+  "predecessorReleaseId": "22a17dda-0f62-5a8f-8a0d-b8c39d1c547a",
+  "predecessorSearchReleaseId": "31b470f3-582f-5619-82c0-00868bb0cbda",
+  "targets": [
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_standard",
+      "predecessorDefinitionId": "3ba1bc6b-2b70-5ae9-8039-9b164fd44bea",
+      "parentSha256": "519adaa1576a79201741ee0444cf27f07f512ce283c167e9049010676dd4b808",
+      "parentVersion": 4,
+      "publicTitleRu": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
+      "predecessorDefinitionId": "6681c3ed-8cca-57b3-875c-f85b7c8b7a4a",
+      "parentSha256": "1e27af023a5bd3c0b50363d1e4870bdc161bbb2cfa9d26cd0b2f7c4d76c897fa",
+      "parentVersion": 4,
+      "publicTitleRu": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — большая площадь"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
+      "predecessorDefinitionId": "966506ea-7a47-5000-89cd-8409e0807ac0",
+      "parentSha256": "a4fa0273002adc04fa3cba7134f49a849f222bfc816a9916f1ace6783bd5c21a",
+      "parentVersion": 4,
+      "publicTitleRu": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — малая площадь"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
+      "predecessorDefinitionId": "03455595-b281-503b-865a-446be4b7ae90",
+      "parentSha256": "060b7656acce4356bdf5563ebd4e8545ad16fe69e01fdfc6442ef2205cb2a745",
+      "parentVersion": 4,
+      "publicTitleRu": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — влажная зона"
+    }
+  ],
+  "barrierReference": {
+    "catalogId": "canonical-work:master:temporary_vertical_protective_barrier_board_frame_standard",
+    "definitionId": "58440645-124d-5cc1-a360-eb87a7979525",
+    "definitionSha256": "f4935b4df78e6ffd0d284e330bb9e46a4a59374795f5feba4fad4de42708d64f",
+    "source": {
+      "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+      "localArtifact": ".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf",
+      "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+      "edition": "КРЕР46-2015, введён с01.01.2016",
+      "printedAndPdfPages": [
+        5,
+        62,
+        63
+      ],
+      "table": "46-05-001",
+      "columns": [
+        "46-05-001-03"
+      ],
+      "basisM2": 100
+    },
+    "norm": "46-05-001-03",
+    "basisM2": 100,
+    "locatorRu": "КРЕР46, стр62 состав и измеритель, стр63 колонка03; устройство и разборка вертикального деревянного ограждения с одним слоем толя"
+  },
+  "dustSource": {
+    "sourceId": "kg_krer_13_2015_corrosion_official",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/429/show",
+    "downloadUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no13zasitastroitelnyhkonstrukcijioborudovaniaotkorrozii_compressed-1366908360a6e7f78.57138504.pdf",
+    "localArtifact": ".release-runtime/r568/s27-69/aggressive-floor-full-sources/krer13-official-2015.pdf",
+    "sha256": "1b817ee6c8103d57132d40db40427ba4cafb937704e778b0708028b1e11a7a36",
+    "edition": "КРЕР13-2015",
+    "norm": "13-06-004-01",
+    "basisM2": 1,
+    "locatorRu": "Печатная/PDFстр61: измеритель м², труд000-1003-0=0,1чел.-ч/м²; пылесос33-0620=0,10маш.-ч/м². КРЕР46 п1.27 стр7 отсылает к сборнику13.",
+    "workers": {
+      "resourceCode": "000-1003-0",
+      "grade": "3,0",
+      "hoursPerM2": 0.1
+    },
+    "vacuum": {
+      "resourceCode": "33-0620",
+      "titleRu": "Пылесос промышленный",
+      "hoursPerM2": 0.1
+    },
+    "inspectedPages": [
+      5,
+      6,
+      7,
+      61
+    ],
+    "oldBasePricesNotUsed": true,
+    "filtersOrWaterNotInvented": true,
+    "qualityControlIncluded": true
+  },
+  "barrierMethodParameterId": "aggressive_floor_protection_construction",
+  "barrierAreaParameterId": "aggressive_floor_protection_area_m2",
+  "barrierValue": "Вертикальное ограждение: деревянный каркас, доски и один слой толя; устройство и последующая разборка",
+  "otherBarrierValue": "Другая конструкция защиты: нужен отдельный расчёт приложения",
+  "dustMethodParameterId": "aggressive_floor_dust_control_method",
+  "dustValue": "Обеспыливание всей площади после демонтажа промышленным пылесосом",
+  "otherDustValue": "Другой способ обеспыливания: нужен отдельный расчёт приложения",
+  "scopeRu": "Принятая разборка цементного/бетонного покрытия по фактической толщине; дополнительная защита по фактической площади точной вертикальной конструкции46-05-001-03 и обеспыливание всей площади промышленным пылесосом13-06-004-01. Обычные условия при обеспеченных электропитании, освещении и вентиляции. Другая конструкция или метод не получают нормы этой ветви. Общая площадь пола не заменяет площадь ограждения. Вывоз по отдельной подтверждённой полной услуге. Цены не назначены.",
+  "controls": {
+    "legacyTenRowsAndManualOwnersRetained": true,
+    "actualBarrierAreaIndependent": true,
+    "dustAreaExplicitlyBoundToSameEntireFloorScope": true,
+    "normativeDustBasisNever100M2": true,
+    "machinistNotPaidTwice": true,
+    "acceptedBranchesQuantityComplete": true,
+    "unknownBranchesRetainSourceNeeds": true,
+    "sourceSearchAndPdfTitlesRemove25mmClaim": true,
+    "historicalRevisionsAndPdfsImmutable": true,
+    "productionAccepted": false
+  }
+}

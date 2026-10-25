@@ -1,0 +1,594 @@
+{
+  "contract": "masonry-own-glass-block-partition-and-opening-norms/r97",
+  "sourceId": "source:masonry:glass-block:krer08-04-002:r97",
+  "status": "SOURCE_ONLY_FOUR_COMPLETE_COLUMNS_NOT_NORMAL_ADMISSION",
+  "catalogId": null,
+  "workKey": null,
+  "activeMaster": {
+    "path": "C:\\Users\\User\\Downloads\\GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+    "sha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40"
+  },
+  "source": {
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "jurisdiction": "KG",
+    "edition": "КРЕР08, Бишкек2015; точная сохранённая редакция",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "wholeColumnVisualReadPages": [
+      55,
+      56
+    ],
+    "sourcePrices2015Imported": false,
+    "currentLegalAdmissionClaimed": false
+  },
+  "profiles": [
+    {
+      "key": "partition-upto4",
+      "physicalResult": "partition",
+      "normId": "08-04-002-01",
+      "storeyHeightBand": "LTE4",
+      "prefix": "masonry:glass-block:krer:08-04-002-01",
+      "titleRu": "Перегородка из стеклоблоков, до 4 м включительно",
+      "primaryId": "glass97_net_partition_area_m2",
+      "workerGrade": "3.0",
+      "rows": [
+        {
+          "key": "whole-labour",
+          "resourceCode": "000-1003-0",
+          "titleRu": "Труд каменщиков",
+          "category": "labor",
+          "unitId": "man_hour",
+          "ratePer100M2": "135.70",
+          "printedUnitRu": "man_hour",
+          "printedRatePer100M2": "135.70",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "operator-information",
+          "resourceCode": null,
+          "titleRu": "Труд машинистов",
+          "category": "labor",
+          "unitId": "man_hour",
+          "ratePer100M2": "1.96",
+          "printedUnitRu": "man_hour",
+          "printedRatePer100M2": "1.96",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "tower-crane8t",
+          "resourceCode": "02-0005",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePer100M2": "1.96",
+          "printedUnitRu": "machine_hour",
+          "printedRatePer100M2": "1.96",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "flatbed-truck5t",
+          "resourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.99",
+          "printedUnitRu": "machine_hour",
+          "printedRatePer100M2": "0.99",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "glass-block",
+          "resourceCode": "01-7801-0003",
+          "titleRu": "Бесцветный пустотелый стеклоблок 194×194×98 мм",
+          "category": "material",
+          "unitId": "piece",
+          "ratePer100M2": "2600",
+          "printedUnitRu": "1000 шт.",
+          "printedRatePer100M2": "2.6",
+          "normalizationFactor": "1000",
+          "operation": "assemble"
+        },
+        {
+          "key": "reinforcement",
+          "resourceCode": "03-0102-0001",
+          "titleRu": "Горячекатаная арматура класса А-I, А-II или А-III по проектной спецификации",
+          "category": "material",
+          "unitId": "kg",
+          "ratePer100M2": "112",
+          "printedUnitRu": "т",
+          "printedRatePer100M2": "0.112",
+          "normalizationFactor": "1000",
+          "operation": "assemble"
+        },
+        {
+          "key": "ready-cement-lime-m25",
+          "resourceCode": "03-0405-0002",
+          "titleRu": "Готовый цементно-известковый кладочный раствор марки 25",
+          "category": "material",
+          "unitId": "m3",
+          "ratePer100M2": "0.74",
+          "printedUnitRu": "m3",
+          "printedRatePer100M2": "0.74",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        }
+      ],
+      "operations": [
+        {
+          "key": "base-alignment",
+          "titleRu": "Выровнять готовое основание раствором"
+        },
+        {
+          "key": "assemble",
+          "titleRu": "Установить стеклоблоки с армированием кладки"
+        },
+        {
+          "key": "pointing",
+          "titleRu": "Расшить швы стеклоблочной перегородки"
+        }
+      ],
+      "sourcePages": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        55
+      ]
+    },
+    {
+      "key": "partition-above4",
+      "physicalResult": "partition",
+      "normId": "08-04-002-02",
+      "storeyHeightBand": "GT4",
+      "prefix": "masonry:glass-block:krer:08-04-002-02",
+      "titleRu": "Перегородка из стеклоблоков, свыше 4 м",
+      "primaryId": "glass97_net_partition_area_m2",
+      "workerGrade": "3.0",
+      "rows": [
+        {
+          "key": "whole-labour",
+          "resourceCode": "000-1003-0",
+          "titleRu": "Труд каменщиков",
+          "category": "labor",
+          "unitId": "man_hour",
+          "ratePer100M2": "133.40",
+          "printedUnitRu": "man_hour",
+          "printedRatePer100M2": "133.40",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "operator-information",
+          "resourceCode": null,
+          "titleRu": "Труд машинистов",
+          "category": "labor",
+          "unitId": "man_hour",
+          "ratePer100M2": "1.96",
+          "printedUnitRu": "man_hour",
+          "printedRatePer100M2": "1.96",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "tower-crane8t",
+          "resourceCode": "02-0005",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePer100M2": "1.96",
+          "printedUnitRu": "machine_hour",
+          "printedRatePer100M2": "1.96",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "flatbed-truck5t",
+          "resourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.99",
+          "printedUnitRu": "machine_hour",
+          "printedRatePer100M2": "0.99",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "glass-block",
+          "resourceCode": "01-7801-0003",
+          "titleRu": "Бесцветный пустотелый стеклоблок 194×194×98 мм",
+          "category": "material",
+          "unitId": "piece",
+          "ratePer100M2": "2600",
+          "printedUnitRu": "1000 шт.",
+          "printedRatePer100M2": "2.6",
+          "normalizationFactor": "1000",
+          "operation": "assemble"
+        },
+        {
+          "key": "reinforcement",
+          "resourceCode": "03-0102-0001",
+          "titleRu": "Горячекатаная арматура класса А-I, А-II или А-III по проектной спецификации",
+          "category": "material",
+          "unitId": "kg",
+          "ratePer100M2": "112",
+          "printedUnitRu": "т",
+          "printedRatePer100M2": "0.112",
+          "normalizationFactor": "1000",
+          "operation": "assemble"
+        },
+        {
+          "key": "ready-cement-lime-m25",
+          "resourceCode": "03-0405-0002",
+          "titleRu": "Готовый цементно-известковый кладочный раствор марки 25",
+          "category": "material",
+          "unitId": "m3",
+          "ratePer100M2": "0.74",
+          "printedUnitRu": "m3",
+          "printedRatePer100M2": "0.74",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        }
+      ],
+      "operations": [
+        {
+          "key": "base-alignment",
+          "titleRu": "Выровнять готовое основание раствором"
+        },
+        {
+          "key": "assemble",
+          "titleRu": "Установить стеклоблоки с армированием кладки"
+        },
+        {
+          "key": "pointing",
+          "titleRu": "Расшить швы стеклоблочной перегородки"
+        }
+      ],
+      "sourcePages": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        55
+      ]
+    },
+    {
+      "key": "opening-fill-upto4",
+      "physicalResult": "opening-fill",
+      "normId": "08-04-002-03",
+      "storeyHeightBand": "LTE4",
+      "prefix": "masonry:glass-block:krer:08-04-002-03",
+      "titleRu": "Заполнение проёмов стеклоблоками, до 4 м включительно",
+      "primaryId": "glass97_filled_opening_area_m2",
+      "workerGrade": "3.3",
+      "rows": [
+        {
+          "key": "whole-labour",
+          "resourceCode": "000-1003-3",
+          "titleRu": "Труд каменщиков",
+          "category": "labor",
+          "unitId": "man_hour",
+          "ratePer100M2": "156.40",
+          "printedUnitRu": "man_hour",
+          "printedRatePer100M2": "156.40",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "operator-information",
+          "resourceCode": null,
+          "titleRu": "Труд машинистов",
+          "category": "labor",
+          "unitId": "man_hour",
+          "ratePer100M2": "1.96",
+          "printedUnitRu": "man_hour",
+          "printedRatePer100M2": "1.96",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "tower-crane8t",
+          "resourceCode": "02-0005",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePer100M2": "1.96",
+          "printedUnitRu": "machine_hour",
+          "printedRatePer100M2": "1.96",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "flatbed-truck5t",
+          "resourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.99",
+          "printedUnitRu": "machine_hour",
+          "printedRatePer100M2": "0.99",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "glass-block",
+          "resourceCode": "01-7801-0003",
+          "titleRu": "Бесцветный пустотелый стеклоблок 194×194×98 мм",
+          "category": "material",
+          "unitId": "piece",
+          "ratePer100M2": "2600",
+          "printedUnitRu": "1000 шт.",
+          "printedRatePer100M2": "2.6",
+          "normalizationFactor": "1000",
+          "operation": "assemble"
+        },
+        {
+          "key": "reinforcement",
+          "resourceCode": "03-0102-0001",
+          "titleRu": "Горячекатаная арматура класса А-I, А-II или А-III по проектной спецификации",
+          "category": "material",
+          "unitId": "kg",
+          "ratePer100M2": "112",
+          "printedUnitRu": "т",
+          "printedRatePer100M2": "0.112",
+          "normalizationFactor": "1000",
+          "operation": "assemble"
+        },
+        {
+          "key": "ready-cement-lime-m25",
+          "resourceCode": "03-0405-0002",
+          "titleRu": "Готовый цементно-известковый кладочный раствор марки 25",
+          "category": "material",
+          "unitId": "m3",
+          "ratePer100M2": "0.74",
+          "printedUnitRu": "m3",
+          "printedRatePer100M2": "0.74",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        }
+      ],
+      "operations": [
+        {
+          "key": "base-alignment",
+          "titleRu": "Выровнять готовое основание раствором"
+        },
+        {
+          "key": "assemble",
+          "titleRu": "Установить стеклоблоки с армированием кладки"
+        }
+      ],
+      "sourcePages": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        55,
+        56
+      ]
+    },
+    {
+      "key": "opening-fill-above4",
+      "physicalResult": "opening-fill",
+      "normId": "08-04-002-04",
+      "storeyHeightBand": "GT4",
+      "prefix": "masonry:glass-block:krer:08-04-002-04",
+      "titleRu": "Заполнение проёмов стеклоблоками, свыше 4 м",
+      "primaryId": "glass97_filled_opening_area_m2",
+      "workerGrade": "3.3",
+      "rows": [
+        {
+          "key": "whole-labour",
+          "resourceCode": "000-1003-3",
+          "titleRu": "Труд каменщиков",
+          "category": "labor",
+          "unitId": "man_hour",
+          "ratePer100M2": "152.95",
+          "printedUnitRu": "man_hour",
+          "printedRatePer100M2": "152.95",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "operator-information",
+          "resourceCode": null,
+          "titleRu": "Труд машинистов",
+          "category": "labor",
+          "unitId": "man_hour",
+          "ratePer100M2": "1.96",
+          "printedUnitRu": "man_hour",
+          "printedRatePer100M2": "1.96",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "tower-crane8t",
+          "resourceCode": "02-0005",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePer100M2": "1.96",
+          "printedUnitRu": "machine_hour",
+          "printedRatePer100M2": "1.96",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "flatbed-truck5t",
+          "resourceCode": "40-0001",
+          "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.99",
+          "printedUnitRu": "machine_hour",
+          "printedRatePer100M2": "0.99",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        },
+        {
+          "key": "glass-block",
+          "resourceCode": "01-7801-0003",
+          "titleRu": "Бесцветный пустотелый стеклоблок 194×194×98 мм",
+          "category": "material",
+          "unitId": "piece",
+          "ratePer100M2": "2600",
+          "printedUnitRu": "1000 шт.",
+          "printedRatePer100M2": "2.6",
+          "normalizationFactor": "1000",
+          "operation": "assemble"
+        },
+        {
+          "key": "reinforcement",
+          "resourceCode": "03-0102-0001",
+          "titleRu": "Горячекатаная арматура класса А-I, А-II или А-III по проектной спецификации",
+          "category": "material",
+          "unitId": "kg",
+          "ratePer100M2": "112",
+          "printedUnitRu": "т",
+          "printedRatePer100M2": "0.112",
+          "normalizationFactor": "1000",
+          "operation": "assemble"
+        },
+        {
+          "key": "ready-cement-lime-m25",
+          "resourceCode": "03-0405-0002",
+          "titleRu": "Готовый цементно-известковый кладочный раствор марки 25",
+          "category": "material",
+          "unitId": "m3",
+          "ratePer100M2": "0.74",
+          "printedUnitRu": "m3",
+          "printedRatePer100M2": "0.74",
+          "normalizationFactor": "1",
+          "operation": "assemble"
+        }
+      ],
+      "operations": [
+        {
+          "key": "base-alignment",
+          "titleRu": "Выровнять готовое основание раствором"
+        },
+        {
+          "key": "assemble",
+          "titleRu": "Установить стеклоблоки с армированием кладки"
+        }
+      ],
+      "sourcePages": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        55,
+        56
+      ]
+    }
+  ],
+  "heightId": "glass97_storey_height_m",
+  "measurementDenominator": "100",
+  "measurementRulesRu": [
+    "Самостоятельная чистая площадь стеклоблочной перегородки; проёмы вычитаются по наружному обводу коробок,§2.10.",
+    "Для заполнения проёма — самостоятельная площадь самого заполняемого участка; площадь всей стены/оконного стекла не переносится.",
+    "Высота этажа>0; до4м включает ровно4м по§1.18. Профили разных результатов и диапазонов не взаимозаменяются.",
+    "Исходные2.6тыс.шт превращаются в2600шт и0.112т в112кг строго один раз. Это расход, не торговый заказ, упаковка или придуманный процент боя.",
+    "Криволинейная кладка и прочие дополнительные условия требуют своих предусмотренных источником поправок; здесь не включены."
+  ],
+  "needs": [
+    {
+      "key": "source-system-admission",
+      "titleRu": "Подтвердить собственную систему и нормативную применимость",
+      "missingRu": "Принятая редакция KG и точный пустотелый стеклоблок 194×194×98 мм; другая геометрия, цвет или система на клее не наследует эту норму.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "support-and-junctions",
+      "titleRu": "Обеспечить основание, примыкания и деформационные узлы",
+      "missingRu": "Источник включает выравнивание готового основания, но не создаёт его несущую конструкцию. Требуются собственные проектные опора/швы/примыкания, их материалы и измеримая геометрия.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "reinforcement-and-fixings",
+      "titleRu": "Обеспечить армирование и крепления",
+      "missingRu": "112 кг/100м² — собственный исходный расход, не проект диаметра/шага/анкеров. Требуются выбранный класс, совместимость, полный способ резки/соединения/крепления и единый владелец оплаты; не арматура кирпичной перегородки.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "m25-whole-supply",
+      "titleRu": "Обеспечить полный цикл готового М25",
+      "missingRu": "Тот же физический тип готового цементно-известкового М25, но собственный расход0.74/100м². Целый сохранённый пост whole15 применим только после доказанной привязки к своему accepted effective output и реальным условиям без перемешивания; все шесть его неизвестных норм остаются.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "glass-setting-and-pointing-kit",
+      "titleRu": "Обеспечить полный пост установки стеклоблоков",
+      "missingRu": "Совместимые ручной инструмент, шаблоны/дистанционные элементы и способы защиты стекла/свежего шва, расход/износ, контроль и очистка. Не выводить 6мм шов из разницы194/200 и не подменять метод AAC пилой.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "handling-and-machines",
+      "titleRu": "Обеспечить полную подачу и работу машин",
+      "missingRu": "Поставка/тара/захваты для хрупких блоков и раствора, масса брутто/вылет/грузовая диаграмма, маршрут/защита, полная эксплуатация крана и автомобиля; часы не являются рейсами или числом комплектов.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "access-and-protection",
+      "titleRu": "Обеспечить доступ и защиту фронта",
+      "missingRu": "Полные настилы/ограждения/лестницы/анкеры/основания, защита от падения и осколков. До4м включённый труд подмостей по§1.13 не определяет количество изделий; свыше4м отдельная норма лесов/логистика.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "quality-and-curing",
+      "titleRu": "Обеспечить контроль и сохранение результата",
+      "missingRu": "Реальные допуски, контроль армирования и швов, совместимые средства, выдерживание/погода и документы. Количество стеклоблоков не означает выполненную приёмку.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "cleaning-and-waste",
+      "titleRu": "Обеспечить очистку и отходы стекла/раствора",
+      "missingRu": "Совместимый способ очистки стекла и тары, вода/средства/инструмент, сбор осколков и раствора, ёмкость/получатель/вывоз. Отсутствие отдельной воды в норме не равно нулевой физической потребности.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    },
+    {
+      "key": "external-logistics",
+      "titleRu": "Обеспечить внешнюю доставку и вывоз",
+      "missingRu": "Своя фактическая партия, грузовой маршрут, разгрузка и коммерческая граница. Табличные0.99маш.-ч автомобиля не заменяют рейсы и договор перевозки.",
+      "owner": "Masonry",
+      "quantityAccepted": false
+    }
+  ],
+  "physicalResults": 2,
+  "normativeProfiles": 4,
+  "identityAdmitted": false,
+  "publicationAllowed": false,
+  "fullyProvidedProfiles": 0,
+  "platformAcceptedNewProfiles": 0,
+  "newPublicCards": 0,
+  "full": false,
+  "reuse": {
+    "readyM25Post15": "CANDIDATE_REUSE_WITH_PROVEN_ADAPTATION_OWN_EFFECTIVE_BINDING_PENDING",
+    "aacCuttingOrGlue": "INCOMPATIBLE",
+    "genericGlassFacade": "INCOMPATIBLE_AS_A_NORM_OR_IDENTITY_SUBSTITUTE"
+  },
+  "sourceSha": "PASS",
+  "wholeColumnVisualRead": "PASS",
+  "syntax": "UNRUN_HOLD",
+  "semantic": "UNRUN_HOLD",
+  "actualCore": "UNRUN_HOLD",
+  "normalConfig": "UNRUN_ROOT_SCOPE_ADMISSION_PENDING",
+  "canonicalWrites": 0,
+  "databaseWrites": 0
+}

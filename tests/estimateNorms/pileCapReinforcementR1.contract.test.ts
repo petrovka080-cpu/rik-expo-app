@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   extractStripFoundationReinforcementCanonicalParametersR1,
@@ -40,7 +40,7 @@ CanonicalEstimateCatalogItem {
 }
 
 describe("pile-cap reinforcement family", () => {
-  test("compiles all seven exact identities from distinct approved BBS schedules", async () => {
+  test("compiles all five exact identities from distinct approved BBS schedules", async () => {
     const results = [];
     for (const target of PILE_CAP_REINFORCEMENT_TARGETS) {
       const fixture = pileCapReinforcementAcceptanceInputR1(target.contextKey);
@@ -65,9 +65,7 @@ describe("pile-cap reinforcement family", () => {
     expect(results).toEqual([
       { contextKey: "standard", steelKg: 1_800, rows: 9, procurementRows: 6 },
       { contextKey: "high_load", steelKg: 6_500, rows: 16, procurementRows: 10 },
-      { contextKey: "large_area", steelKg: 14_500, rows: 15, procurementRows: 9 },
       { contextKey: "repair", steelKg: 620, rows: 15, procurementRows: 9 },
-      { contextKey: "small_area", steelKg: 380, rows: 9, procurementRows: 6 },
       { contextKey: "technical_room", steelKg: 1_600, rows: 15, procurementRows: 9 },
       { contextKey: "wet_zone", steelKg: 3_200, rows: 10, procurementRows: 7 },
     ]);

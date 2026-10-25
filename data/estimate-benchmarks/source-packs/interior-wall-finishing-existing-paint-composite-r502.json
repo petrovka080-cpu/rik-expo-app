@@ -1,0 +1,199 @@
+{
+  "contract":"rik-expo-app.interior-wall-finish-existing-paint-r502.staged.v1",
+  "sourceKey":"rik-expo-app.interior-wall-finishing-cement-finish-r502.composite-operation-map.v1",
+  "normId":"interior-wall-cement-finish-r502:source-specific-composite-operation-map",
+  "locatorKey":"interior-wall-finish-r502:one-composite-locator:35-components",
+  "selectedTechnology":"CEMENT_PUTTY_ACRYLIC_TWO_COATS_ON_EXISTING_LEVEL_CEMENT_PLASTER_R502_V3",
+  "selectorId":"wall_finish_cement_r502_selected_technology",
+  "catalogId":"canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+  "expectedParentShape":[170,116,116],
+  "subjectPackPath":"data/estimate-benchmarks/source-packs/interior-wall-finishing-group-r502.json",
+  "subjectPackSha256":"d8489f46fcd60e64748e4dd5666b50e475ce8d981a4798d2cc43ab0ff6d85e01",
+  "subjectFactoryPath":"src/lib/estimate/v4/interiorWallFinishingGroupR502.ts",
+  "subjectFactorySha256":"1aa5ba1f1f44e16201a8f30145db7e3cd5d32cf14de78dd3400db823a75dfc4c",
+  "primaryEvidenceIdentityRole":"PRIMARY_EVIDENCE_KEY_ONLY_NOT_A_REGISTERED_SOURCE_ID_OR_UUID",
+  "sourceKind":"PRIMARY_SOURCE_COMPOSITE_OPERATION_MAP",
+  "officialCompositeNormClaimed":false,
+  "engineeringAcceptance":false,
+  "selectedScopeQuantitiesComplete":true,
+  "ordinaryFactBudget":4,
+  "rawBranchParameters":14,
+  "rawBranchRows":35,
+  "additionalStructuralControls":1,
+  "primaryEvidence":[
+    {
+      "id": "henkel-ct225-ru-kz-r502",
+      "title": "Ceresit CT225 ru_KZ",
+      "edition": "Catalog_CB_MARCH_2018; official manufacturer artifact",
+      "url": "https://dm.henkel-dam.com/is/content/henkel/kz-ru-ceresit-ct225-fasadnaya-shpaklevka-dlya-vnutrennih-rabot-tds-kz-ru",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/ct225-ru-KZ.pdf",
+      "sha256": "a25e53b931b79edd69a86da8b1b3a107b6a0283d1f2ea9c08eafb0fa598df717",
+      "locatorRu": "p1: цементно-песчаные/цементно-известковые основания, прочное чистое сухое основание перед работой обильно увлажнить; один фактический слой≤3мм; шлифование после24ч, окраска после72ч. p2:≈1.8кг/м²/мм,25кг; не переносить1.2кг/м²/мм другой ru_RU версии."
+    },
+    {
+      "id": "henkel-ct42-en-gl-r502",
+      "title": "Ceresit CT42 ACRYLIC ELASTIC en_GL",
+      "edition": "C_CT42_TDS_1_0819",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-42-en_GL.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/ct42-en-GL.pdf",
+      "sha256": "41468353793b9e9aadc283e2e2ab4693a9e28cd8fe08705f6926e2a0e2c9658b",
+      "locatorRu": "p1: сухие прочные минеральные основания, тонкослойные минерально-полимерные покрытия≥7суток; p2:≈0.3л/м² за2слоя, тара15л."
+    },
+    {
+      "id": "henkel-ct42-ru-kz-compatibility-r502",
+      "title": "Ceresit CT42 ru_KZ: compatibility reference",
+      "edition": "ru_KZ; signed2025-11-27",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-42-ru_KZ.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/ct42-ru-KZ.pdf",
+      "sha256": "a81350f7c90998139f9cac139b19a0f26ae5262cd283b1bf910f507d7f9b99c9",
+      "locatorRu": "p1 прямо допускает CT225 с выдержкой≥3суток. Только справочное подтверждение класса перехода: нормы и фасовка10л не переносятся в выбранный en_GL15л.",
+      "compatibilityReferenceOnly": true
+    },
+    {
+      "id": "knauf-tiefengrund-062026-r502",
+      "title": "КНАУФ-Тифенгрунд",
+      "edition": "06/2026",
+      "url": "https://www.knauf.ru/upload/iblock/215/ggu7x06mvv4w1pq8t5w2lw7b2ynkr25y/38-IL-KNAUF_Tifengrund-_23_06_2026_-v02-Preview.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/tiefengrund-06-2026.pdf",
+      "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9",
+      "locatorRu": "p1: цементные штукатурки/шпаклёвки перед тонкослойной цементной штукатуркой/краской; p2:≈0.1кг/м² одно нанесение, готовый состав без разбавления,5/10кг, высыхание≥3ч. В выбранном финишном комплексе применяется одно нанесение перед окраской по нормально впитывающей цементной шпаклёвке."
+    },
+    {
+      "id": "kg-krer15-wall-finishing-r502",
+      "title": "КРЕР2015, сборник15 «Отделочные работы»",
+      "edition": "утверждён приказом28.03.2016 №2-нпа",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/KRER-15.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "locatorRu": "КРЕР15-04-007-01, печатные173–174,100м² оштукатуренных стен: сплошное шпаклевание, шлифование, грунтование, две окраски.43.56чел.-ч рабочих;0.02чел.-ч машинистов;0.02маш.-ч подъёмника;0.15маш.-ч бортового автомобиля;0.84м² шкурки;0.3кг ветоши. Материалы конкретных продуктов берутся отдельно по паспортам, не из стоимости базового года."
+    },
+    {
+      "id": "kg-sp65-101-2025-r502",
+      "title": "СП КР65-101:2025 «Изоляционные и отделочные покрытия»",
+      "edition": "приказ10.02.2025 №51; official stamped p1",
+      "url": "https://minstroy.gov.kg/kg/state_program/download-pdf/obedinennyeizolacionnye-61267ac76cb3f36a0.49346677.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/SP-KR-65-101-2025-official.pdf",
+      "sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+      "locatorRu": "PDFp1: утверждение и отмена СНиП3.04.01-87;§7.2.3–7.2.6,7.3.1–7.3.5,7.5.1–7.5.4: основание/впитываемость/слои/грунтование/выдержки. Annex сохраняет незаполненные editorial даты; используется с утверждённым титульным приказом."
+    }
+  ],
+  "quantitativeRules":{
+    "basis":"A is independently measured net flat wall field in m2; T is actual cement putty layer >0 and <=3mm. No old parent area, q, guessed thickness or template norm is used.",
+    "putty":{"evidenceKey":"henkel-ct225-ru-kz-r502","consumedKg":"A*T*1.8","orderKg":"ceil(consumedKg/25)*25","packageKg":25},
+    "primer":{"evidenceKey":"knauf-tiefengrund-062026-r502","consumedKg":"A*0.1","applicationCount":1,"orderKg":"ceil(consumedKg/5)*5","packageKg":5},
+    "paint":{"evidenceKey":"henkel-ct42-en-gl-r502","consumedL":"A*0.3","coatCountIncludedInRate":2,"orderL":"ceil(consumedL/15)*15","packageL":15},
+    "balance":"Use the existing effectivePurchaseBalance owner and reciprocal compiler-derived effective-order parameters. Order, packages, consumed, remaining and shortage are distinct. Selected new-order boundary; unknown warehouse inventory is not represented as a known zero.",
+    "labour":{"evidenceKey":"kg-krer15-wall-finishing-r502","normId":"15-04-007-01","measurementM2":100,"workersManH":43.56,"operatorsManH":0.02,"liftMachineH":0.02,"truckMachineH":0.15,"sandingM2":0.84,"ragsKg":0.3,"payment":"The whole norm and included operations are paid once through the whole-work m2 owner; no component receives a second payment from a price alone."},
+    "water":"CT225 requires base moistening; mixing/moistening/washing water is explicit whole-work provision without invented litres/order. No separate numerical water norm is asserted.",
+    "primerNecessity":"SP KR65-101:2025 section7.5.3 requires primer before paint; selected Tiefengrund06/2026 supports cement putty before paint at approximately0.1kg/m2 for one ready undiluted coat on normally uniformly absorbent base.",
+    "identitySeparation":"CT42 ru_KZ is qualitative compatibility evidence only. Its10l pack does not replace the selected CT42 en_GL0819 fifteen-litre supply or its total two-coat rate. Product planning rates are approximate manufacturer declarations, not project acceptance."
+  },
+  "paidOwnerKeys":["ct225-order","primer-order","ct42-order","whole-work"],
+  "independentRowRules":[
+    ["ct225-consumed","putty","kg","MANUFACTURER_CONSUMPTION","henkel-ct225-ru-kz-r502","ROW"],
+    ["ct225-order","putty","kg","PACKAGE_ORDER","henkel-ct225-ru-kz-r502","ROW"],
+    ["ct225-packages","putty","item","PACKAGE_COUNT_FROM_EFFECTIVE_ORDER","henkel-ct225-ru-kz-r502","ROW"],
+    ["ct225-remaining","putty","kg","REMAINING_FROM_EFFECTIVE_ORDER","henkel-ct225-ru-kz-r502","ROW"],
+    ["ct225-shortage","putty","kg","SHORTAGE_FROM_EFFECTIVE_ORDER","henkel-ct225-ru-kz-r502","ROW"],
+    ["primer-consumed","before-paint","kg","MANUFACTURER_ONE_COAT_CONSUMPTION","knauf-tiefengrund-062026-r502","ROW"],
+    ["primer-order","before-paint","kg","PACKAGE_ORDER","knauf-tiefengrund-062026-r502","ROW"],
+    ["primer-packages","before-paint","item","PACKAGE_COUNT_FROM_EFFECTIVE_ORDER","knauf-tiefengrund-062026-r502","ROW"],
+    ["primer-remaining","before-paint","kg","REMAINING_FROM_EFFECTIVE_ORDER","knauf-tiefengrund-062026-r502","ROW"],
+    ["primer-shortage","before-paint","kg","SHORTAGE_FROM_EFFECTIVE_ORDER","knauf-tiefengrund-062026-r502","ROW"],
+    ["primer-contribution-before-paint","before-paint","kg","ONE_DECLARED_APPLICATION_CONTRIBUTION_NO_SECOND_ORDER","knauf-tiefengrund-062026-r502","ROW"],
+    ["ct42-consumed","paint","l","MANUFACTURER_TWO_COATS_TOTAL_CONSUMPTION","henkel-ct42-en-gl-r502","ROW"],
+    ["ct42-order","paint","l","PACKAGE_ORDER","henkel-ct42-en-gl-r502","ROW"],
+    ["ct42-packages","paint","item","PACKAGE_COUNT_FROM_EFFECTIVE_ORDER","henkel-ct42-en-gl-r502","ROW"],
+    ["ct42-remaining","paint","l","REMAINING_FROM_EFFECTIVE_ORDER","henkel-ct42-en-gl-r502","ROW"],
+    ["ct42-shortage","paint","l","SHORTAGE_FROM_EFFECTIVE_ORDER","henkel-ct42-en-gl-r502","ROW"],
+    ["whole-work","preparation","m2","ONE_COMPLETE_COMMERCIAL_WORK_WITH_EXPLICIT_SCOPE","kg-krer15-wall-finishing-r502","ROW"],
+    ["process-preparation","preparation","m2","INCLUDED_PROCESS_ON_MEASURED_WALL_FIELD","kg-sp65-101-2025-r502","INCLUDED_COMPONENT_ROW"],
+    ["process-putty","putty","m2","INCLUDED_PUTTY_MOISTENING_SANDING","henkel-ct225-ru-kz-r502","INCLUDED_COMPONENT_ROW"],
+    ["process-before-paint","before-paint","m2","INCLUDED_REQUIRED_PRIMER_AND_DRYING","knauf-tiefengrund-062026-r502","INCLUDED_COMPONENT_ROW"],
+    ["process-paint","paint","m2","INCLUDED_TWO_COATS_AND_DRYING","henkel-ct42-en-gl-r502","INCLUDED_COMPONENT_ROW"],
+    ["process-completion","completion","m2","INCLUDED_CLEANUP_AND_HANDOVER","kg-sp65-101-2025-r502","INCLUDED_COMPONENT_ROW"],
+    ["paint-putty-primer-workers","paint","man_hour","A_DIV_100_TIMES_43_56_WHOLE_NORM","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
+    ["paint-operators","paint","man_hour","A_DIV_100_TIMES_0_02_ALREADY_IN_MACHINE_SCOPE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
+    ["paint-lift","paint","machine_hour","A_DIV_100_TIMES_0_02_INCLUDED_MACHINE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
+    ["paint-truck","paint","machine_hour","A_DIV_100_TIMES_0_15_INCLUDED_MACHINE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
+    ["sanding-sheet","putty","m2","A_DIV_100_TIMES_0_84_INCLUDED_CONSUMABLE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
+    ["rags","completion","kg","A_DIV_100_TIMES_0_3_INCLUDED_CONSUMABLE","kg-krer15-wall-finishing-r502","INCLUDED_COMPONENT_ROW"],
+    ["included-water","putty","","EXPLICIT_INCLUDED_WATER_NO_INVENTED_LITRES_OR_ORDER","henkel-ct225-ru-kz-r502","ROW"],
+    ["included-tools","putty","","EXPLICIT_INCLUDED_ORDINARY_TOOLS_NO_INVENTED_COUNT_OR_ORDER","kg-sp65-101-2025-r502","ROW"],
+    ["included-protection","preparation","","EXPLICIT_INCLUDED_PROTECTION_NO_SECOND_PAYMENT","kg-sp65-101-2025-r502","ROW"],
+    ["included-ppe","preparation","","EXPLICIT_INCLUDED_PPE_NO_SECOND_PAYMENT","kg-sp65-101-2025-r502","ROW"],
+    ["included-local-supply-cleanup","completion","","EXPLICIT_INCLUDED_ONSITE_SUPPLY_CLEANUP","kg-sp65-101-2025-r502","ROW"],
+    ["check-base","preparation","","ACTUAL_BASE_OBJECT_SCOPE_NOT_A_NUMERICAL_NORM","kg-sp65-101-2025-r502","ROW"],
+    ["check-site","preparation","","ACTUAL_SITE_OBJECT_SCOPE_NOT_A_NUMERICAL_NORM","kg-sp65-101-2025-r502","ROW"]
+  ],
+  "independentExpected":[
+    {
+      "area": 20.1,
+      "puttyMm": 2,
+      "ct225": [
+        72.36,
+        75,
+        3,
+        2.64
+      ],
+      "primer": [
+        2.01,
+        5,
+        1,
+        2.99
+      ],
+      "ct42": [
+        6.03,
+        15,
+        1,
+        8.97
+      ],
+      "paintWorkersManH": 8.75556,
+      "normIncluded": {
+        "paint-operators": 0.00402,
+        "paint-lift": 0.00402,
+        "paint-truck": 0.03015,
+        "sanding-sheet": 0.16884,
+        "rags": 0.0603
+      }
+    },
+    {
+      "area": 50,
+      "puttyMm": 1,
+      "ct225": [
+        90,
+        100,
+        4,
+        10
+      ],
+      "primer": [
+        5,
+        5,
+        1,
+        0
+      ],
+      "ct42": [
+        15,
+        15,
+        1,
+        0
+      ],
+      "paintWorkersManH": 21.78,
+      "normIncluded": {
+        "paint-operators": 0.01,
+        "paint-lift": 0.01,
+        "paint-truck": 0.075,
+        "sanding-sheet": 0.42,
+        "rags": 0.15
+      }
+    }
+  ],
+  "independence":"The35 semantic obligations were authored from the declared manufacturer/KRER/technical/commercial scope, not enumerated from emitted resource rows. The staged descriptor validates their references against the one canonical subject factory.",
+  "noPriceTransfer":true,
+  "noNewWorkIdentity":true,
+  "noDatabaseUuidClaimed":true,
+  "parentFixturePath":"data/estimate-benchmarks/fixtures/interior-wall-paint-retained-parent-r623.json",
+  "parentFixtureSha256":"024a7681089fb9164cd8ce89adeccc764707879b2e318d5f5697e566dde7e15e",
+  "capturedParentSha256":"a255a548b3c42fc9ee9cf4135b414e650d0c41c4e0130067e6f7d61d5ea39abe",
+  "producerCaptureSha256":"4bb8980f7fba6bf6d015388964787a4876b9fefb49617ac3fea5748c4e0d3124"
+}

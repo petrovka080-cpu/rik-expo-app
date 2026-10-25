@@ -6,6 +6,7 @@ import {
 
 const UNIT_LABELS_RU: Record<string, string> = {
   person_hour: 'чел.-ч',
+  service_hour: 'ч',
   pair: 'пара',
   kwh: "кВт·ч",
   linear_m: "\u043f\u043e\u0433. \u043c",

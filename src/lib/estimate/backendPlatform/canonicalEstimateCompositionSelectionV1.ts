@@ -112,7 +112,11 @@ export function planCanonicalCompositionSelectionV1(input:{
     const d=decision(rowId),refs=referencesByRow.get(rowId)??[],a=allocations.get(rowId);
     const owner=a&&!d.excluded?refs.find(ref=>d.activeOperationKeys.includes(canonicalOperationSelectionKeyV1(ref))):refs[0];
     return {...original,compositionSelectionDecisionV1:d,originalOperationCompositionV1:original.operationCompositionV1,...(owner?{operationCompositionV1:{...owner,
-      additionalOperations:refs.filter(ref=>ref.operationId!==owner.operationId&&d.activeOperationKeys.includes(canonicalOperationSelectionKeyV1(ref))).map(ref=>({operationId:ref.operationId,operationTitleRu:ref.operationTitleRu,completionCriterionRu:ref.completionCriterionRu,processOrdinal:ref.processOrdinal,processRole:ref.processRole}))}}:{})};
+      additionalOperations:refs.filter(ref=>ref.operationId!==owner.operationId&&d.activeOperationKeys.includes(canonicalOperationSelectionKeyV1(ref))).map(ref=>({
+        operationId:ref.operationId,operationTitleRu:ref.operationTitleRu,
+        completionCriterionRu:ref.completionCriterionRu,processOrdinal:ref.processOrdinal,processRole:ref.processRole,
+        ...(ref.whenResourcePresent!==undefined?{whenResourcePresent:ref.whenResourcePresent}:{}),
+      }))}}:{})};
   };
   return {selection,decision,operationsExcludeRow,activeInputIds,quantity,graph,partiallyAllocated};
 }

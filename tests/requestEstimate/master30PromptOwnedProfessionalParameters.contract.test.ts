@@ -1,8 +1,5 @@
-import {
-  buildCanonicalBaselinePlan,
-  extractPromptOwnedProfessionalParameters,
-} from
-  "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {extractPromptOwnedProfessionalParameters} from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from
   "../../src/lib/estimate/backendPlatform/contracts";
 import {
@@ -63,7 +60,9 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       formulaConsumers: ordinal === 0 ? ["drainage_channel_install_length_v1"] : [],
     }));
     const catalog = {
-      catalogId: "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area",
+      // Offline fixture identity; the parser/schema assertions below are unchanged.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
+      catalogId: "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard",
       workKey: "surface_drainage_channel",
       parameterSchema,
     } as unknown as CanonicalEstimateCatalogItem;
@@ -1007,6 +1006,8 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
         formulaConsumers: ordinal === 0 ? [] : ["rebar_d12_mass_v1"],
       }));
     const catalog = {
+      // Offline fixture identity; the parser/schema assertions below are unchanged.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       catalogId: "canonical-work:base:reinforcement-frame",
       workKey: "reinforcement-frame",
       parameterSchema,
@@ -1080,6 +1081,8 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       },
     ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
     const catalog = {
+      // Offline fixture identity; the parser/schema assertions below are unchanged.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       catalogId: FILTRATION_STATION_CATALOG_ID,
       workKey: "filtration_station",
       parameterSchema,
@@ -1182,6 +1185,8 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       },
     ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
     const catalog = {
+      // Offline fixture identity; the parser/schema assertions below are unchanged.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       catalogId: CHLORINATION_STATION_CATALOG_ID,
       workKey: "chlorination_station",
       parameterSchema,
@@ -1278,6 +1283,8 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       },
     ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
     const catalog = {
+      // Offline fixture identity; the parser/schema assertions below are unchanged.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       catalogId: FLUSHING_DISINFECTION_CATALOG_ID,
       workKey: "flushing_disinfection",
       parameterSchema,
@@ -1351,6 +1358,8 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       },
     ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
     const catalog = {
+      // Offline fixture identity; the parser/schema assertions below are unchanged.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       catalogId: PRESSURE_PIPELINE_CATALOG_ID,
       workKey: "pressure_pipeline",
       parameterSchema,
@@ -1419,6 +1428,8 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       provenance: {},
     })) as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
     const catalog = {
+      // Offline fixture identity; the parser/schema assertions below are unchanged.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       catalogId: PRESSURE_SEWER_PIPELINE_CATALOG_ID,
       workKey: "pressure_sewer_pipeline",
       parameterSchema,
@@ -1496,6 +1507,8 @@ describe("MASTER-30 shared prompt-owned professional parameter ingress", () => {
       },
     ] as unknown as CanonicalEstimateCatalogItem["parameterSchema"];
     const catalog = {
+      // Offline fixture identity; the parser/schema assertions below are unchanged.
+      releaseId: "00000000-0000-5000-8000-000000000001", definitionVersion: 1,
       catalogId: RESERVOIR_CLEAN_WATER_CATALOG_ID,
       workKey: "reservoir_clean_water",
       parameterSchema,

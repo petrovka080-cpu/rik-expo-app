@@ -1,0 +1,1765 @@
+{
+  "contract": "roof539-exact-existing-shared-need-use-map/r24",
+  "sourceEvidence": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+      "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+      "bytes": 62819
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+      "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+      "bytes": 35905
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+      "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+      "bytes": 47109
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+      "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+      "bytes": 13071
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+      "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+      "bytes": 29143
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+      "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+      "bytes": 46366
+    }
+  ],
+  "rows": [
+    {
+      "rowId": "master212:roof:r1:need:access",
+      "capturedRowSha256": "72b266da9404f782ceef957ebb635cb709faf8d94ba6152ec01d98f29122622f",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:access:formula",
+      "costOwnerId": "master212:roof:r1:need:access",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:base-control",
+      "capturedRowSha256": "b6f1796fa30510e87ff32fada6c4a4e1a7eae8af10d7c36c26fc4148fb8ee4a2",
+      "unitId": "service_hour",
+      "formulaId": "master212:roof:r1:need:base-control:formula",
+      "costOwnerId": "master212:roof:r1:need:base-control",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:base-repair",
+      "capturedRowSha256": "48bdd1ee77864761a0bd3821fb9d7195efad716a1d8fe819d8cc7443c96968c7",
+      "unitId": "man_hour",
+      "formulaId": "master212:roof:r1:need:base-repair:formula",
+      "costOwnerId": "master212:roof:r1:need:base-repair",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:cleaning-tools",
+      "capturedRowSha256": "539e9cf1da1bade2ded59cee8c37d5a859417c5e14151797b31dd4fd87561aba",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:cleaning-tools:formula",
+      "costOwnerId": "master212:roof:r1:need:cleaning-tools",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:drain-outlets",
+      "capturedRowSha256": "46286dbaf18f26465769891fb2614a18b6335e624e53508673740eb8e1f36197",
+      "unitId": "piece",
+      "formulaId": "master212:roof:r1:need:drain-outlets:formula",
+      "costOwnerId": "master212:roof:r1:need:drain-outlets",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:drain-tools",
+      "capturedRowSha256": "74cc1578d7b6461c98702789f496dc7dec37c9f1bfa5c1531b3334cee5bd044a",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:drain-tools:formula",
+      "costOwnerId": "master212:roof:r1:need:drain-tools",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:edge-completeness",
+      "capturedRowSha256": "b562dead43fa3ad13714411b70ab1e694dac1b616b0320e6fdca830d6b78939c",
+      "unitId": "document",
+      "formulaId": "master212:roof:r1:need:edge-completeness:formula",
+      "costOwnerId": "master212:roof:r1:need:edge-completeness",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:edge-protection",
+      "capturedRowSha256": "ad15e8af5bcd74e7e10d0f4dd2da5dbc60da110d72e3c4fe51c65015e0773f3e",
+      "unitId": "m",
+      "formulaId": "master212:roof:r1:need:edge-protection:formula",
+      "costOwnerId": "master212:roof:r1:need:edge-protection",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:external-delivery",
+      "capturedRowSha256": "272a8d0a09df6da328d3936a6b6cb0a8f170b83d9f93f1b20e5d71896a2b656c",
+      "unitId": "trip",
+      "formulaId": "master212:roof:r1:need:external-delivery:formula",
+      "costOwnerId": "master212:roof:r1:need:external-delivery",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:hand-application",
+      "capturedRowSha256": "a73d84e70da1c598f1d4277b6f2f4e4fd9ade7e4edc10a7a2f924882ed9ea480",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:hand-application:formula",
+      "costOwnerId": "master212:roof:r1:need:hand-application",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:hand-measuring",
+      "capturedRowSha256": "ed7e4f497855ad3d27dd27ef75e678fa50035571eed061cf22903c04facdeb6e",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:hand-measuring:formula",
+      "costOwnerId": "master212:roof:r1:need:hand-measuring",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:insulation-completeness",
+      "capturedRowSha256": "3642ec498182bdf9bc9915cf446bbf2100fcff167ad72421e80b593ababf60db",
+      "unitId": "document",
+      "formulaId": "master212:roof:r1:need:insulation-completeness:formula",
+      "costOwnerId": "master212:roof:r1:need:insulation-completeness",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:joint-special",
+      "capturedRowSha256": "0f7dfc037d10083a67fbcb8446e5d9d647d1071fcb7c32c88104cc092a9e056b",
+      "unitId": "m",
+      "formulaId": "master212:roof:r1:need:joint-special:formula",
+      "costOwnerId": "master212:roof:r1:need:joint-special",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:joint-tools",
+      "capturedRowSha256": "251ca072d3952931d8c1aea2570a6df5888f35d21ea3e45637844f6f270c6096",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:joint-tools:formula",
+      "costOwnerId": "master212:roof:r1:need:joint-tools",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:mastic-junction-whole-scope",
+      "capturedRowSha256": "afe03f12c610906e6e3a5e3ac64f0c9b0110d8cd111a0415bf8ab40c8c3d6598",
+      "unitId": "document",
+      "formulaId": "master212:roof:r1:need:mastic-junction-whole-scope:formula",
+      "costOwnerId": "master212:roof:r1:need:mastic-junction-whole-scope",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:mastic-valley-whole-scope",
+      "capturedRowSha256": "28d691bebd16d39fdb9fedf2049949473c39a06d645f1d2413884296d1636d02",
+      "unitId": "document",
+      "formulaId": "master212:roof:r1:need:mastic-valley-whole-scope:formula",
+      "costOwnerId": "master212:roof:r1:need:mastic-valley-whole-scope",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:mixing-containers",
+      "capturedRowSha256": "99832704a26ea96f78ff3c94fd1b0361fc024bc8cf82c95ec720a409bb708c85",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:mixing-containers:formula",
+      "costOwnerId": "master212:roof:r1:need:mixing-containers",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:penetration-fasteners",
+      "capturedRowSha256": "481c81d9b018cad341226bc091fcc1c7f5cff46551df31bbab1e0b4af93a6673",
+      "unitId": "piece",
+      "formulaId": "master212:roof:r1:need:penetration-fasteners:formula",
+      "costOwnerId": "master212:roof:r1:need:penetration-fasteners",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:penetration-kits",
+      "capturedRowSha256": "9e04911544a5ce7305a4a543e41793ab4c5597821a6a7e698f7d52c8fe6dff55",
+      "unitId": "piece",
+      "formulaId": "master212:roof:r1:need:penetration-kits:formula",
+      "costOwnerId": "master212:roof:r1:need:penetration-kits",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:ppe",
+      "capturedRowSha256": "f3e057e83794a961625e75de7cfdec43edb34a257c9f4d9184ba65d220f05a59",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:ppe:formula",
+      "costOwnerId": "master212:roof:r1:need:ppe",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:quality-service",
+      "capturedRowSha256": "92f3022a6973ed7682f17520de3f45ea4295af1d73c84ec92d4cb6ad120b48ce",
+      "unitId": "service_hour",
+      "formulaId": "master212:roof:r1:need:quality-service:formula",
+      "costOwnerId": "master212:roof:r1:need:quality-service",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:quality-tools",
+      "capturedRowSha256": "acbc37d9d8917cf551836aefb5abc46dcd2448b0cc5bad4a6d33d0a570d3e2cb",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:quality-tools:formula",
+      "costOwnerId": "master212:roof:r1:need:quality-tools",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:rigging",
+      "capturedRowSha256": "07822ecd95ee1f3a30b976866ec427d6bd66d32be91e18973e203d919e178d1d",
+      "unitId": "piece",
+      "formulaId": "master212:roof:r1:need:rigging:formula",
+      "costOwnerId": "master212:roof:r1:need:rigging",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:slope-design",
+      "capturedRowSha256": "b5bc65c4305260985b82773b5c0c4d07e5fa94b7375119e2303d6ce9f2dfb46b",
+      "unitId": "document",
+      "formulaId": "master212:roof:r1:need:slope-design:formula",
+      "costOwnerId": "master212:roof:r1:need:slope-design",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:slope-work",
+      "capturedRowSha256": "613969156ef21000939514749590f9bedd2f37340029903e5fca646337997645",
+      "unitId": "m3",
+      "formulaId": "master212:roof:r1:need:slope-work:formula",
+      "costOwnerId": "master212:roof:r1:need:slope-work",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:structural-design",
+      "capturedRowSha256": "04f05a297f4cd86470f509f7dac86ee1315f37bd2171dffc37604b3865a93e32",
+      "unitId": "document",
+      "formulaId": "master212:roof:r1:need:structural-design:formula",
+      "costOwnerId": "master212:roof:r1:need:structural-design",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:structural-materials",
+      "capturedRowSha256": "af8fbec8bf574c646609ce305c9c75dff740050195368681f85f84b00f90a5e4",
+      "unitId": "kg",
+      "formulaId": "master212:roof:r1:need:structural-materials:formula",
+      "costOwnerId": "master212:roof:r1:need:structural-materials",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:torch-fire-protection",
+      "capturedRowSha256": "2b7ddbba6e89831034a116763a6b8c79bcc5a8727d4f65fa4fffc61e7cfca86c",
+      "unitId": "piece",
+      "formulaId": "master212:roof:r1:need:torch-fire-protection:formula",
+      "costOwnerId": "master212:roof:r1:need:torch-fire-protection",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01503",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "PREFAB01705_ONLY"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:underlay",
+      "capturedRowSha256": "b22303f4cbb3e32f39c6b2b77093602475db8fe7cc7f808b78d0cf16cad00e83",
+      "unitId": "m2",
+      "formulaId": "master212:roof:r1:need:underlay:formula",
+      "costOwnerId": "master212:roof:r1:need:underlay",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11"
+      ],
+      "retainedProfileKeys": [
+        "00209"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:vapor-completeness",
+      "capturedRowSha256": "5956ef74087d1d66e894f002ebbf1529948564cfe1a92ee5ea88b7dfb374b3c9",
+      "unitId": "document",
+      "formulaId": "master212:roof:r1:need:vapor-completeness:formula",
+      "costOwnerId": "master212:roof:r1:need:vapor-completeness",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01503"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\mastic-mesh-whole00301-r24\\after\\data\\estimate-benchmarks\\source-packs\\roof-mastic-mesh-existing-owner-operation-map-r24.json",
+          "sha256": "ba23fa8b5a3361f09ba9639ace851d806f8400469c17c9c40d2bec83300ae793",
+          "condition": "EXISTING_FULL_FAMILY_UNKNOWN_CHECK_NOT_SOURCE_OR_PROJECT_APPROVAL"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:wash-containment",
+      "capturedRowSha256": "43ca7807182b84bc98fc13c146674c61d6feea4aeb12fb7b0c35496e3d1188f4",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:wash-containment:formula",
+      "costOwnerId": "master212:roof:r1:need:wash-containment",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:waste-loading",
+      "capturedRowSha256": "7c90a3de3d2cc29e23537bd244f0dea704ae3584d18c0a0a76939716bb822296",
+      "unitId": "man_hour",
+      "formulaId": "master212:roof:r1:need:waste-loading:formula",
+      "costOwnerId": "master212:roof:r1:need:waste-loading",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:waste-mass",
+      "capturedRowSha256": "88c03f6dea653728cfc131d76b3967b9c79d749d86ddd495486977399a559015",
+      "unitId": "kg",
+      "formulaId": "master212:roof:r1:need:waste-mass:formula",
+      "costOwnerId": "master212:roof:r1:need:waste-mass",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:waste-transport",
+      "capturedRowSha256": "694b973c1c7730653d85eca8f2cd57f22afd4184ad6a0c0f4dc734befb6ae8da",
+      "unitId": "trip",
+      "formulaId": "master212:roof:r1:need:waste-transport:formula",
+      "costOwnerId": "master212:roof:r1:need:waste-transport",
+      "normIds": [
+        "12-01-002-01",
+        "12-01-002-02",
+        "12-01-002-03",
+        "12-01-002-04",
+        "12-01-002-05",
+        "12-01-002-06",
+        "12-01-002-07",
+        "12-01-002-08",
+        "12-01-002-10",
+        "12-01-002-11",
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05",
+        "12-01-016-01",
+        "12-01-017-03",
+        "12-01-017-04",
+        "12-01-017-05",
+        "12-01-018-01",
+        "12-01-018-02",
+        "12-01-018-03",
+        "12-01-018-04",
+        "12-01-019-01"
+      ],
+      "retainedProfileKeys": [
+        "00209",
+        "01402",
+        "01503",
+        "01602",
+        "01715",
+        "01725"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\flat-roll-whole002-complete-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof002-complete-table-independent-native-map-r24.json",
+          "sha256": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
+          "condition": "ANY_THERMAL002_OWN_METHOD"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\loose-monolithic-insulation-whole014-source-r24\\revision02\\after\\data\\estimate-benchmarks\\source-packs\\roof014-independent-full-five-profile-map-r24.json",
+          "sha256": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
+          "condition": "ANY_EXACT_014_PROFILE_AFTER_SINGLE_LAYER_OWNER_REVIEW"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\vapor-barrier-whole015-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof015-independent-full-five-column-map-r24.json",
+          "sha256": "1410675e50dea28a157cc3b7d3c441d9558fdf0dfc66b7d6f03b8cc152024499",
+          "condition": "ANY_EXACT_NEW015_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof01601-independent-whole-map-r24.json",
+          "sha256": "ef3340100829019e6b50425e459fd26fa21b0ad0265b99c0757c6b7df78bc8f1",
+          "condition": "OWN_WHOLE_PROFILE"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\asphalt-prefab-screed-whole017-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof017-independent-three-column-composed-native-map-r24.json",
+          "sha256": "a2ef8d565ac64bd478cc8b085fcc9b50137bf849e02b19d54c28c3194a529179",
+          "condition": "ANY_NEW017_EXACT_PROFILE"
+        }
+      ]
+    },
+    {
+      "rowId": "roof:lower-layers:krer12-01503-01402:project-chain-check",
+      "capturedRowSha256": "f51ee9a8b43b9e1cbc8c4330da8118685c0a7c9519b1b8038911a651af0ec6ae",
+      "unitId": "m2",
+      "formulaId": "roof:torch-two:krer12-002-09:formula:source-gap:roof_assembly",
+      "costOwnerId": "canonical-work:base:roofing_interior_flat_roof_install_technical_room:roof:lower-layers:krer12-01503-01402:project-chain-check",
+      "normIds": [
+        "12-01-014-01",
+        "12-01-014-03",
+        "12-01-014-04",
+        "12-01-014-05",
+        "12-01-015-01",
+        "12-01-015-02",
+        "12-01-015-04",
+        "12-01-015-05"
+      ],
+      "retainedProfileKeys": [
+        "01402",
+        "01503"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roof-r209-bounded-owner-metadata\\HELD_FULL539_SELECTORS_ROWS_INDEX_R209_PART01.json",
+          "sha256": "28d934e31595f25210a71e51d8f913ac18d3676b2e61e0397c1bd0484c0e1da7",
+          "condition": "EXISTING_UNKNOWN_LOWER_CHAIN_CHECK_PRESERVED_NO_PPR_PROMOTION"
+        }
+      ]
+    }
+  ],
+  "quantityPolicy": "RETAIN_EXACT_CAPTURED_UNKNOWN_FORMULA_UNIT_COSTOWNER;NO_CONVERSION_FROM_MACHINE_HOURS",
+  "new018019Routing": "OPERATION_USE_ONLY_NOT_NEW_NORM_OR_COMPATIBILITY_ADMISSION",
+  "actual": "UNRUN",
+  "FULL": false
+}

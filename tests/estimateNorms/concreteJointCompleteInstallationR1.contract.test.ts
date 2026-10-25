@@ -1,4 +1,5 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   concreteJointCompleteInstallationPromptDetailsR1,
@@ -17,7 +18,7 @@ import {
 } from "../../src/lib/estimate/v4/concreteJointCompleteInstallationR1";
 
 describe("complete project-specified concrete joint installation family", () => {
-  it("compiles seven distinct joint schedules through the shared core", async () => {
+  it("compiles five distinct joint schedules through the shared core", async () => {
     const fixtures = new Set<string>();
     for (const target of CONCRETE_JOINT_COMPLETE_INSTALLATION_TARGETS) {
       const input = concreteJointCompleteInstallationAcceptanceInputR1(target.contextKey);
@@ -36,7 +37,7 @@ describe("complete project-specified concrete joint installation family", () => 
       expect(compiled.totals.unpricedRowCount).toBe(compiled.totals.includedRowCount);
       fixtures.add(JSON.stringify(input));
     }
-    expect(fixtures.size).toBe(7);
+    expect(fixtures.size).toBe(5);
   });
 
   it("includes only the branches explicitly selected by the project", async () => {
@@ -103,9 +104,9 @@ describe("complete project-specified concrete joint installation family", () => 
 
   it("does not block a preliminary calculation on optional documentary references", async () => {
     const target = CONCRETE_JOINT_COMPLETE_INSTALLATION_TARGETS.find(
-      (candidate) => candidate.contextKey === "small_area",
+      (candidate) => candidate.contextKey === "standard",
     )!;
-    const input = concreteJointCompleteInstallationAcceptanceInputR1(target.contextKey);
+    const input = measuredConcreteProjectInputR533("concreteJointCompleteInstallationAcceptanceInputR1", "compact");
     const {
       joint_location: _location,
       approved_joint_detail_reference: _detail,

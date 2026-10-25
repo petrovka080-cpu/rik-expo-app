@@ -1,0 +1,72 @@
+{
+  "contract": "gox-build.masonry-glass-block-exact-normal-new-card-route/r103",
+  "status": "SOURCE_ONLY_CANDIDATE_IDENTITIES_NOT_DATABASE_ADMISSION",
+  "activeMaster": {
+    "path": "C:\\Users\\User\\Downloads\\GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+    "sha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40"
+  },
+  "immutableR97ComponentPack": {
+    "path": "data/estimate-benchmarks/source-packs/masonry-glass-block-krer08-04-002-r97.json",
+    "sha256": "6fabb08cc53a84f515d5060ccfea1a027d513994c6bb335b0e0ba16260745636"
+  },
+  "rootScopedLookup": {
+    "path": "data/estimate-benchmarks/fixtures/masonry-glass-block-scoped-current-lookup-r58-r103.json",
+    "sha256": "d5ca2e54589c35cee5a2c4bf7d5f44e9c316e3db51d4ee026d4a6078adf2b9cf",
+    "scope": "GLASS_NAME_PATTERNS_ONLY_NOT_EXACT_FOUR_CODE_SEARCH",
+    "exactFourSourceCodesSearched": false,
+    "noMatchIsNotGlobalAbsence": true
+  },
+  "candidatePublicCards": 2,
+  "physicalResults": 2,
+  "wholeNormColumns": 4,
+  "ordinarySimpleFieldsPerCard": 2,
+  "cards": [
+    {
+      "key": "partition",
+      "titleRu": "Устройство перегородки из стеклоблоков",
+      "physicalResultRu": "Самостоятельная стеклоблочная перегородка на готовом основании с исходным армированием и расшивкой швов.",
+      "workKey": "masonry_glass_block_partition_krer08_04_002",
+      "catalogId": "canonical-work:master:masonry_glass_block_partition_krer08_04_002",
+      "sourceIdentity": "master-work:masonry_glass_block_partition_krer08_04_002",
+      "sourceKey": "source:masonry:glass-block:r103:partition",
+      "groupId": "wg:master:masonry_glass_block_partition_krer08_04_002",
+      "primaryMeasureParameterId": "glass97_net_partition_area_m2",
+      "normIds": [
+        "08-04-002-01",
+        "08-04-002-02"
+      ]
+    },
+    {
+      "key": "opening-fill",
+      "titleRu": "Заполнение проёмов стеклоблоками",
+      "physicalResultRu": "Самостоятельное заполнение участка проёма стеклоблоками на готовом основании с исходным армированием; расшивка не включена соседней нормой перегородки.",
+      "workKey": "masonry_glass_block_opening_fill_krer08_04_002",
+      "catalogId": "canonical-work:master:masonry_glass_block_opening_fill_krer08_04_002",
+      "sourceIdentity": "master-work:masonry_glass_block_opening_fill_krer08_04_002",
+      "sourceKey": "source:masonry:glass-block:r103:opening-fill",
+      "groupId": "wg:master:masonry_glass_block_opening_fill_krer08_04_002",
+      "primaryMeasureParameterId": "glass97_filled_opening_area_m2",
+      "normIds": [
+        "08-04-002-03",
+        "08-04-002-04"
+      ]
+    }
+  ],
+  "heightId": "glass97_storey_height_m",
+  "sourceAndLocatorUuids": null,
+  "publisher": "EXISTING_MASTER_CATALOG_APPEND_ROOT_ONLY",
+  "futureNormalAndLockedAbsenceAndCollisionChecks": "MANDATORY_UNRUN",
+  "fullTechnicalAcceptance": false,
+  "newFullTechnologies": 0,
+  "sourceMethodsChanged": false,
+  "newNormRates": 0,
+  "newPaidOrProcurementOwners": 0,
+  "sourceNeedDefaults": 0,
+  "readyM50Post15": "NOT_ATTACHED_TO_M25_WITHOUT_OWN_SOURCE_SCOPE_PROOF",
+  "remaining": [
+    "Точная нормативная и объектная применимость исходной системы стеклоблоков.",
+    "Полный физический состав и количества40 исходных needs; постМ50 не переносится автоматически наМ25.",
+    "Фактические normal/locked catalog/work/group/source collision и absence guards перед единственной записью ROOT.",
+    "Публикация и реальная доставка API/UI/Android/сохранение/PDF/закупка."
+  ]
+}

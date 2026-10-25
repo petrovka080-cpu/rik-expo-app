@@ -17,7 +17,7 @@ describe("KRER 46 tile-on-Arzamite-putty floor covering demolition", () => {
   test("binds the exact official rate and complete narrow operation boundary", () => {
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_ARZAMITE_PUTTY_FLOOR_DEMOLITION_KRER46_CATALOG_ID)
       .toBe("canonical-work:base:demolition_interior_tile_open_standard");
-    expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_ARZAMITE_PUTTY_FLOOR_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(4);
+    expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_ARZAMITE_PUTTY_FLOOR_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(2);
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_ARZAMITE_PUTTY_FLOOR_DEMOLITION_KRER46_ARTIFACT_SHA256)
       .toMatch(/^[0-9a-f]{64}$/u);
     expect(AGGRESSIVE_ENVIRONMENT_TILE_ON_ARZAMITE_PUTTY_FLOOR_DEMOLITION_KRER46_PARAMETERS).toHaveLength(3);

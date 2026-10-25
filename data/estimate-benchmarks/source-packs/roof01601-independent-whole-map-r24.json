@@ -1,0 +1,296 @@
+{
+  "contract": "roof01601-independent-full-source-map/r24",
+  "sourcePack": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\primer-preparation-whole01601-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-primer-with-preparation-native01601-r24.json",
+    "sha256": "d0ba4320bdc106e522a060c30acccf7ce2a631e69088b40dc5748dd8d22fd0c8",
+    "bytes": 10094
+  },
+  "ROOTPrimary": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\SOURCE_PAGES25_28_RENDER_R200.json",
+    "sha256": "811cf22bd1340d42ee069d0a39afe73fe4628d61d128a0a06313587f0b4c3ffb",
+    "bytes": 1711
+  },
+  "image": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-27.png",
+    "sha256": "c9dc5677a449bc312257c4647bf9a3fac3d34d04117b2dd78483295a21417d11",
+    "bytes": 92620
+  },
+  "existing01602": {
+    "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\data\\estimate-benchmarks\\source-packs\\roof-prime-ready-emulsion-five-s27-63.json",
+    "sha256": "81087a29607bb009dbe14636dfd980fef2bf12e2ba5cea24ceb954273b2c18bf",
+    "bytes": 170855
+  },
+  "existingOverlap": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\lower-layers014017-existing-reuse-source-r24\\revision01\\EXACT_EXISTING_014017_REUSE_AND_SOURCE_OVERLAP_MAP_R24.json",
+    "sha256": "a8626dfc63028cb9db536c935cbd94494bf05185f58e6dbdcdb7925af9758022",
+    "bytes": 42482
+  },
+  "nativeEntries": [
+    {
+      "expectedResourceId": "roof:primer-preparation:whole01601:r24:workers",
+      "sourceResourceCode": "000-1003-2",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,2",
+      "unitId": "man_hour",
+      "rateExactPer100m2": "4.46",
+      "requiredOperationIds": [
+        "roof:primer-preparation:whole01601:r24:operation:base_priming",
+        "roof:primer-preparation:whole01601:r24:operation:primer_preparation"
+      ],
+      "independentDecimalOracles": {
+        "100": "4.46",
+        "37.5": "1.67250",
+        "125": "5.5750"
+      }
+    },
+    {
+      "expectedResourceId": "roof:primer-preparation:whole01601:r24:flatbed_to5t",
+      "sourceResourceCode": "40-0001",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностью до5т",
+      "unitId": "machine_hour",
+      "rateExactPer100m2": "0.04",
+      "requiredOperationIds": [
+        "roof:primer-preparation:whole01601:r24:operation:base_priming",
+        "roof:primer-preparation:whole01601:r24:operation:primer_preparation"
+      ],
+      "independentDecimalOracles": {
+        "100": "0.04",
+        "37.5": "0.01500",
+        "125": "0.0500"
+      }
+    },
+    {
+      "expectedResourceId": "roof:primer-preparation:whole01601:r24:roof_bitumen",
+      "sourceResourceCode": "01-0305-0005",
+      "sourceTitleRu": "Битум нефтяной строительный кровельный марокБНК-45/190,БНК-45/180",
+      "unitId": "t",
+      "rateExactPer100m2": "0.025",
+      "requiredOperationIds": [
+        "roof:primer-preparation:whole01601:r24:operation:primer_preparation"
+      ],
+      "independentDecimalOracles": {
+        "100": "0.025",
+        "37.5": "0.009375",
+        "125": "0.03125"
+      }
+    },
+    {
+      "expectedResourceId": "roof:primer-preparation:whole01601:r24:technical_kerosene",
+      "sourceResourceCode": "01-1504-0001",
+      "sourceTitleRu": "Керосин для технических целей марокКТ-1,КТ-2",
+      "unitId": "t",
+      "rateExactPer100m2": "0.058",
+      "requiredOperationIds": [
+        "roof:primer-preparation:whole01601:r24:operation:primer_preparation"
+      ],
+      "independentDecimalOracles": {
+        "100": "0.058",
+        "37.5": "0.021750",
+        "125": "0.07250"
+      }
+    }
+  ],
+  "nativeCount": 4,
+  "sourceOperatorInfoRows": 0,
+  "sourceBoilerRows": 0,
+  "absenceNotZero": true,
+  "existingPhysicalCandidateNeedsOnce": [
+    {
+      "costOwnerId": "master212:roof:r1:need:base-control",
+      "formulaId": "master212:roof:r1:need:base-control:formula",
+      "category": "service",
+      "unitId": "service_hour",
+      "specification": "Приёмка ровности, прочности и сухости основания",
+      "capturedRowSha256": "b6f1796fa30510e87ff32fada6c4a4e1a7eae8af10d7c36c26fc4148fb8ee4a2",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:hand-measuring",
+      "formulaId": "master212:roof:r1:need:hand-measuring:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Рулетки, разметочный и измерительный инструмент",
+      "capturedRowSha256": "ed7e4f497855ad3d27dd27ef75e678fa50035571eed061cf22903c04facdeb6e",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:hand-application",
+      "formulaId": "master212:roof:r1:need:hand-application:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Ручной инструмент подготовки и нанесения",
+      "capturedRowSha256": "a73d84e70da1c598f1d4277b6f2f4e4fd9ade7e4edc10a7a2f924882ed9ea480",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:mixing-containers",
+      "formulaId": "master212:roof:r1:need:mixing-containers:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Ёмкости и инструмент подготовки материалов",
+      "capturedRowSha256": "99832704a26ea96f78ff3c94fd1b0361fc024bc8cf82c95ec720a409bb708c85",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:rigging",
+      "formulaId": "master212:roof:r1:need:rigging:formula",
+      "category": "equipment",
+      "unitId": "piece",
+      "specification": "Стропы, захваты и тара подъёма материалов",
+      "capturedRowSha256": "07822ecd95ee1f3a30b976866ec427d6bd66d32be91e18973e203d919e178d1d",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:access",
+      "formulaId": "master212:roof:r1:need:access:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Настилы, лестницы и безопасные проходы",
+      "capturedRowSha256": "72b266da9404f782ceef957ebb635cb709faf8d94ba6152ec01d98f29122622f",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:edge-protection",
+      "formulaId": "master212:roof:r1:need:edge-protection:formula",
+      "category": "equipment",
+      "unitId": "m",
+      "specification": "Ограждения и системы защиты от падения",
+      "capturedRowSha256": "ad15e8af5bcd74e7e10d0f4dd2da5dbc60da110d72e3c4fe51c65015e0773f3e",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:ppe",
+      "formulaId": "master212:roof:r1:need:ppe:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Средства индивидуальной защиты рабочих",
+      "capturedRowSha256": "f3e057e83794a961625e75de7cfdec43edb34a257c9f4d9184ba65d220f05a59",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:external-delivery",
+      "formulaId": "master212:roof:r1:need:external-delivery:formula",
+      "category": "delivery",
+      "unitId": "trip",
+      "specification": "Внешняя доставка материалов и техники",
+      "capturedRowSha256": "272a8d0a09df6da328d3936a6b6cb0a8f170b83d9f93f1b20e5d71896a2b656c",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:quality-tools",
+      "formulaId": "master212:roof:r1:need:quality-tools:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Приборы проверки толщины и качества покрытия",
+      "capturedRowSha256": "acbc37d9d8917cf551836aefb5abc46dcd2448b0cc5bad4a6d33d0a570d3e2cb",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:quality-service",
+      "formulaId": "master212:roof:r1:need:quality-service:formula",
+      "category": "service",
+      "unitId": "service_hour",
+      "specification": "Проверки, испытания и приёмочная услуга",
+      "capturedRowSha256": "92f3022a6973ed7682f17520de3f45ea4295af1d73c84ec92d4cb6ad120b48ce",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:cleaning-tools",
+      "formulaId": "master212:roof:r1:need:cleaning-tools:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Инструмент очистки и сбора остатков",
+      "capturedRowSha256": "539e9cf1da1bade2ded59cee8c37d5a859417c5e14151797b31dd4fd87561aba",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:wash-containment",
+      "formulaId": "master212:roof:r1:need:wash-containment:formula",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Сбор промывочных жидкостей и загрязнений",
+      "capturedRowSha256": "43ca7807182b84bc98fc13c146674c61d6feea4aeb12fb7b0c35496e3d1188f4",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:waste-mass",
+      "formulaId": "master212:roof:r1:need:waste-mass:formula",
+      "category": "service",
+      "unitId": "kg",
+      "specification": "Остатки материалов, тара и упаковка",
+      "capturedRowSha256": "88c03f6dea653728cfc131d76b3967b9c79d749d86ddd495486977399a559015",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:waste-loading",
+      "formulaId": "master212:roof:r1:need:waste-loading:formula",
+      "category": "labor",
+      "unitId": "man_hour",
+      "specification": "Сбор и погрузка кровельных отходов",
+      "capturedRowSha256": "7c90a3de3d2cc29e23537bd244f0dea704ae3584d18c0a0a76939716bb822296",
+      "createsSecondOwner": false,
+      "quantity": null
+    },
+    {
+      "costOwnerId": "master212:roof:r1:need:waste-transport",
+      "formulaId": "master212:roof:r1:need:waste-transport:formula",
+      "category": "service",
+      "unitId": "trip",
+      "specification": "Вывоз и приём кровельных отходов",
+      "capturedRowSha256": "694b973c1c7730653d85eca8f2cd57f22afd4184ad6a0c0f4dc734befb6ae8da",
+      "createsSecondOwner": false,
+      "quantity": null
+    }
+  ],
+  "candidateProvenance": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\slab-insulation-whole013-source-r24\\revision06\\after\\data\\estimate-benchmarks\\source-packs\\roof-slab013-independent-whole-map-r24.json",
+    "sha256": "e2016e3f1a4a907e1a420631eeaec0e2aa01ea35794bde69f7749bd883201f14",
+    "bytes": 251087
+  },
+  "unresolvedNeeds": [
+    {
+      "needRole": "flatbed-to5t-physical-owner",
+      "quantity": null,
+      "unitId": "piece",
+      "rowId": null,
+      "kind": "CURRENT_STOCK_AND_PPR"
+    },
+    {
+      "needRole": "exact-primer-preparation-application-post",
+      "quantity": null,
+      "unitId": "set",
+      "rowId": null,
+      "kind": "SOURCE_TECHNOLOGY_COMPATIBILITY_AND_OBJECT_POST_NOT_GENERIC_BOILER"
+    },
+    {
+      "needRole": "source-applicability-and-no-duplicate-primer-scope",
+      "quantity": null,
+      "unitId": "document",
+      "rowId": null,
+      "kind": "APPLICATION_SOURCE_AND_PROJECT_BOUNDARY_NOT_USER_PERMISSION"
+    }
+  ],
+  "unknownNeedQuantities": 19,
+  "ready01602Scope": "Existing3rows ownworkers2.80/flatbed0.04/readyemulsion0.045t=45kg,not source01601 recipe. Keep01602IDs/source unchanged. Do not combine two primer methods on same paidsurface.",
+  "sourceIngredientMassNotOutput": "0.025tbitumen+0.058tkerosene is source consumption per100m2,not0.045treadyemulsion;no normalization/density/recipeprocedure inferred.",
+  "nativeMachineHourNotStock": true,
+  "noAutomaticBoilerFrom019": true,
+  "noSecondPrimerIncludedIn01501or04": true,
+  "normalConfig": "ROOT_SOURCE_IDENTITY_CURRENT_OWNER_TECHNOLOGY_AND_STOCK_HOLD",
+  "actualCore": "UNRUN",
+  "READY": false,
+  "FULL": false
+}

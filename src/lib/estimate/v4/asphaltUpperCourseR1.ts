@@ -15,7 +15,7 @@ import {
   ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,
   ASPHALT_INSTALL_KRER27_SOURCE_METADATA,
   ASPHALT_INSTALL_KRER27_SOURCE_PACK_SHA256,
-} from "./asphaltInstallLargeAreaKrer27ProfileR1";
+} from "./asphaltInstallKrer27ProfileR1";
 
 type Json = Record<string, unknown>;
 

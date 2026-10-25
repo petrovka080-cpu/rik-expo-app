@@ -7,7 +7,7 @@ import {INTERIOR_FINISHES_DOMAIN_INVENTORY} from './domains/interiorFinishesComp
 import {compileFormulaGraph} from '../backendPlatform/formulaGraph';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 
-export const SKIRTING_VARIANTS_S2735=['standard','small_area','large_area','high_load','technical_room','wet_zone'] as const;
+export const SKIRTING_VARIANTS_S2735=['standard','high_load','technical_room','wet_zone'] as const;
 export const SKIRTING_TARGETS_S2735=(['install','glue'] as const).flatMap(operation=>SKIRTING_VARIANTS_S2735.map(variant=>({operation,variant,
   catalogId:'canonical-work:base:flooring_interior_baseboard_'+operation+'_'+variant})));
 export const SKIRTING_CONTRACT_S2735='skirting-constructor:s27-35.v1';

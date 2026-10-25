@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   concreteSlabVibrationPromptDetailsR1,
@@ -16,7 +16,7 @@ import {
 } from "../../src/lib/estimate/v4/concreteSlabVibrationR1";
 
 describe("concrete slab vibration canonical family", () => {
-  it("compiles all seven catalog identities through the shared canonical core", async () => {
+  it("compiles all five catalog identities through the shared canonical core", async () => {
     const fixtures = new Set<string>();
     for (const target of CONCRETE_SLAB_VIBRATION_TARGETS) {
       const input = concreteSlabVibrationAcceptanceInputR1(target.contextKey);
@@ -33,7 +33,7 @@ describe("concrete slab vibration canonical family", () => {
         .toBe(false);
       fixtures.add(JSON.stringify(input));
     }
-    expect(fixtures.size).toBe(7);
+    expect(fixtures.size).toBe(5);
   });
 
   it("recalculates only direct project-schedule quantities", async () => {
@@ -54,7 +54,7 @@ describe("concrete slab vibration canonical family", () => {
   });
 
   it("keeps the seven MASTER slab-foundation aliases on the same narrow operation owner", async () => {
-    expect(SLAB_FOUNDATION_VIBRATION_TARGETS).toHaveLength(7);
+    expect(SLAB_FOUNDATION_VIBRATION_TARGETS).toHaveLength(5);
     for (const target of SLAB_FOUNDATION_VIBRATION_TARGETS) {
       const input = concreteSlabVibrationAcceptanceInputR1(target.contextKey);
       const compiled = await compileConcreteSlabVibrationR1(

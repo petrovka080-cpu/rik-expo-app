@@ -1,4 +1,7 @@
 import React from "react";
+import { consumerEstimateHasConfirmedManualQuantities, consumerEstimateManualApprovalStatusRu } from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
+import { consumerRepairRowIsTechnicalDetail, consumerRepairRowProcessNote } from './consumerRepairRowMetadata';
+import { isConsumerEstimatePayableItem } from '../../lib/consumerRequests/consumerEstimateReadiness';
 import { Ionicons } from "@expo/vector-icons";
 import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -369,7 +372,7 @@ function ApprovedHistoryInlineSummary({
   );
 }
 
-function ApprovedHistorySnapshot({
+export function ApprovedHistorySnapshot({
   bundle,
   onOpenPdf,
   onEditHistoryDraft,
@@ -384,6 +387,9 @@ function ApprovedHistorySnapshot({
   if (!viewModel) return null;
   const latestPdf = bundle.pdfs.find((pdf) => pdf.pdfStatus === "generated");
   const canonical = primaryConsumerRepairCanonicalBackendBinding(bundle);
+  const publicItem = (item: ConsumerRepairDraftBundle['items'][number]) => !consumerRepairRowIsTechnicalDetail(item)
+    && !consumerRepairRowProcessNote(item);
+  const itemById = new Map(viewModel.sections.flatMap(section => section.items).map(item => [item.id, item]));
   const canonicalPdf = bundle.events.find((event) =>
     event.eventType === "consumer_approved_canonical_backend_pdf" &&
     event.payload.revisionId === canonical?.revisionId &&
@@ -398,6 +404,9 @@ function ApprovedHistorySnapshot({
   return (
     <View style={styles.snapshot} testID="consumer-repair-history-readonly-snapshot">
       <Text style={styles.snapshotKicker}>Только просмотр</Text>
+      {consumerEstimateHasConfirmedManualQuantities(bundle) ? <Text style={styles.snapshotMeta}>
+        {consumerEstimateManualApprovalStatusRu(bundle)}. Автоматическая проверка этих позиций ещё не завершена.
+      </Text> : null}
       <Text style={styles.snapshotTitle}>{viewModel.summary || viewModel.title}</Text>
       <Text style={styles.snapshotMeta}>Итого: {viewModel.totalLabel}</Text>
       {canonical ? (
@@ -425,7 +434,7 @@ function ApprovedHistorySnapshot({
             testID={`consumer-repair-history-section-${section.id}`}
           >
             <Text style={styles.snapshotSectionTitle}>{section.title}</Text>
-            {section.items.map((item) => (
+            {section.items.filter(publicItem).map((item) => (
               <Text
                 key={item.id}
                 style={styles.snapshotItem}
@@ -433,14 +442,20 @@ function ApprovedHistorySnapshot({
               >
                 {[
                   item.titleRu,
-                  item.quantity,
+                  item.quantity == null ? 'Не рассчитано' : String(item.quantity),
                   formatEstimateUnitLabel(item.unitLabel ?? item.unit),
-                  item.totalPrice,
+                  isConsumerEstimatePayableItem(item) && item.totalPrice != null && Number.isFinite(item.totalPrice)
+                    ? String(item.totalPrice) : null,
                 ]
                   .filter(Boolean)
                   .join(" · ")}
               </Text>
             ))}
+            {(section.sharedResources ?? []).filter(resource => {
+              const owner = itemById.get(resource.rowId);
+              return owner && publicItem(owner) && !section.items.some(item => item.id === resource.rowId);
+            }).map(resource => <Text key={'shared-'+resource.rowId} style={styles.snapshotItem}
+              testID="consumer-repair-history-readonly-shared-item">{resource.titleRu+' · '+resource.quantityLabel}</Text>)}
           </View>
         ))}
       </View>

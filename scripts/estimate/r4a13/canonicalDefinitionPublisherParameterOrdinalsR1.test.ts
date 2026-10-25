@@ -1,5 +1,6 @@
 import {
   assertCanonicalPublisherParameterOrdinalsUniqueR1 as validate,
+  assertCanonicalPublisherResourceOrdinalsUniqueR1 as validateResources,
   createCanonicalDefinitionClonePlan,
 } from './canonicalDefinitionPublisherR1';
 import {pavingCut70ConditionalConsumerDefinitionR1 as paving} from '../../../src/lib/estimate/v4/pavingCut70ConditionalAppendConsumerR1';
@@ -11,6 +12,19 @@ it('persists six appended paving needs after the six unchanged source parameter 
   expect(parameters.slice(0,6)).toEqual(source().parameters);
   expect(()=>validate(parameters)).not.toThrow();
   expect(JSON.stringify(source())).toBe(before);
+});
+
+it('rejects appended resource ordinals colliding with reused rows before constructing a write plan',()=>{
+ const resources=[{row_id:'reused',ordinal:1},{row_id:'appended-kit-component',ordinal:1}];
+ expect(()=>createCanonicalDefinitionClonePlan({representative:{parameters:[],resources}} as unknown as Parameters<typeof createCanonicalDefinitionClonePlan>[0]))
+  .toThrow('STOP_CANONICAL_PUBLISHER_DUPLICATE_RESOURCE_ORDINAL:1');
+});
+it('preserves unique sparse resource ordinals and source ordering',()=>{
+ const resources=[{row_id:'later',ordinal:95},{row_id:'earlier',ordinal:12}],before=JSON.stringify(resources);
+ expect(()=>validateResources(resources)).not.toThrow();expect(JSON.stringify(resources)).toBe(before);
+});
+it.each([undefined,null,'1',1.5,Number.NaN])('rejects a non-integer resource ordinal %s before SQL coercion',ordinal=>{
+ expect(()=>validateResources([{row_id:'invalid',ordinal}])).toThrow('STOP_CANONICAL_PUBLISHER_RESOURCE_ORDINAL_INVALID:invalid');
 });
 
 it('rejects the observed duplicate ordinal in the real clone-plan entry before building a write plan',()=>{

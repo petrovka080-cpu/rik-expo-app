@@ -1,0 +1,90 @@
+{
+  "contract": "current-whole-hole-scope/r237",
+  "status": "PASS_READONLY_BOUNDED_SCOPE",
+  "atUtc": "2026-10-25T15:20:05.031Z",
+  "definitionReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+  "searchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+  "patterns": [
+    "%46-03-017%",
+    "%46_03_017%",
+    "%заделк%отверст%",
+    "%concrete_hole_fill%",
+    "%заделк%гнезд%",
+    "%заделк%борозд%",
+    "%заполн%отверст%бетон%",
+    "%concrete%opening%fill%",
+    "%бетон%отверст%ремонт%"
+  ],
+  "headers": [],
+  "sources": [
+    {
+      "id": "841f3561-6599-5ce0-ad6f-86f4a8a00cea",
+      "source_key": "kg_krer46_concrete_floor_base_4604009_s2754",
+      "title_ru": "КРЕР46-2015: разборка бетонных оснований под полы46-04-009",
+      "authority": "Министерство строительства Кыргызской Республики",
+      "official_url": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+      "artifact_sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+      "effective_from": null,
+      "effective_to": null,
+      "metadata": {
+        "contract": "rik-expo-app.s27-54.concrete-floor-base-demolition.v1",
+        "sourceKind": "OFFICIAL_KRER_BASE_DEMOLITION_PER_1_M3_WITH_OPEN_PROJECT_PROTECTION",
+        "useRestriction": "Только соответствующее бетонное основание под полом, в отдельных местах ручными пневматическими механизмами. Объём1м³ по обследованию/проекту. Это не отдельная сыпучая подушка, не любая цементно-песчаная стяжка, не железобетонная плита и не разборка другим способом. Уборка, сортировка и штабелирование пригодных материалов, спуск через окно в лотках и горизонтальное перемещение суммарно до130м, включая до50м от объекта, включены. Затаривание, иной спуск и внешний вывоз отдельно по фактической применимости. Защитные ограждения прилегающих частей по п.1.20 и обеспыливание по п.1.27 не включены: проектное решение и отдельная норма пока открыты.",
+        "activationAllowed": false,
+        "universalConsumptionClaimed": false,
+        "universalProductivityClaimed": false
+      },
+      "created_at": "2026-10-10T01:22:46.852943+00:00"
+    },
+    {
+      "id": "4af91931-4d72-5f51-8340-781ae20d9149",
+      "source_key": "kg_krer46_floor_coverings_4604010_s2752",
+      "title_ru": "КРЕР46-2015, Разборка покрытий полов, таблица46-04-010",
+      "authority": "Министерство строительства Кыргызской Республики",
+      "official_url": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+      "artifact_sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+      "effective_from": null,
+      "effective_to": null,
+      "metadata": {
+        "contract": "rik-expo-app.s27-52.floor-demolition-series.v1",
+        "sourceKind": "OFFICIAL_KG_RECONSTRUCTION_RATE_AND_EXPLICIT_PROJECT_WASTE_SCOPE",
+        "useRestriction": "Разборка указанного покрытия при реконструкции по выбранной колонке. Уборка и горизонтальное перемещение внутри и от объекта суммарно до130м, в том числе до50м от объекта, включены. Источник описывает вертикальный спуск через окно в лотках. Сортировка и штабелирование пригодных для повторного использования материалов включены. Затаривание, мешки, спуск в мешках/на носилках и внешний вывоз не входят в норму; по применимости нужны отдельные услуги и ресурсы.",
+        "activationAllowed": false,
+        "universalConsumptionClaimed": false,
+        "universalProductivityClaimed": false
+      },
+      "created_at": "2026-10-09T14:35:07.561339+00:00"
+    },
+    {
+      "id": "b814a629-f2c2-5d90-b66f-12ca115ba168",
+      "source_key": "kg_krer_46_2015_reconstruction_official",
+      "title_ru": "КРЕР 46-2015 «Работы при реконструкции зданий и сооружений», таблица 46-04-010",
+      "authority": "Министерство строительства, архитектуры и жилищно-коммунального хозяйства Кыргызской Республики",
+      "official_url": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+      "artifact_sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+      "effective_from": "2016-01-01",
+      "effective_to": null,
+      "metadata": {
+        "contract": "rik-expo-app.s27-54.stone-cubes-scope-correction.v1",
+        "sourceKind": "OFFICIAL_KG_UNIT_RATE",
+        "useRestriction": "Только разборка существующего покрытия пола из каменной шашки по подтверждённой площади; 39,18 чел.-ч на 100 м². Новое покрытие, основание пола, внеобъектовый вывоз и размещение отходов не включены.",
+        "activationAllowed": false,
+        "universalConsumptionClaimed": false,
+        "universalProductivityClaimed": false
+      },
+      "created_at": "2026-09-23T23:49:22.129098+00:00"
+    }
+  ],
+  "locators": [],
+  "identities": [],
+  "rawProof": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\concrete-current-scope-r237\\stage\\results\\CURRENT_HOLE_SCOPE_RAW_TWICE_R61.json",
+    "sha256": "119a7cbe73460d004d874f7cf41f32508ee18635eea10bdac949ee60cd22597c",
+    "bytes": 13784
+  },
+  "queryPasses": 8,
+  "databaseWrites": 0,
+  "transactionRolledBack": true,
+  "globalAbsenceClaim": false,
+  "scope": "Current headers by nine explicit repair-identity patterns; official artifact/source keys; exact017 locators; exact candidate identity. A plausible header requires full capture before replacement; no global catalog absence asserted."
+}

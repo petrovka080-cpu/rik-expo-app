@@ -90,8 +90,6 @@ const MATERIAL_LABELS_RU: Readonly<Record<string, string>> = Object.freeze({
 
 export const INTERIOR_SCOPE_LABELS_RU: Readonly<Record<InteriorFinishesScopeCapability, string>> = Object.freeze({
   standard: "стандартная зона",
-  small_area: "малая площадь",
-  large_area: "большая площадь",
   wet_zone: "мокрая зона",
   technical_room: "техническое помещение",
   high_load: "повышенная эксплуатационная нагрузка",

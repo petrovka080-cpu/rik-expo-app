@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
+  DRYWALL_CEILING_P113_FULL_CYCLE_S2723_CATALOG_ID,
   DRYWALL_CEILING_P113_FULL_CYCLE_S2723_ACCEPTANCE_INPUT,
   DRYWALL_CEILING_P113_FULL_CYCLE_S2723_FORMULAS,
   DRYWALL_CEILING_P113_FULL_CYCLE_S2723_INDEPENDENT_COMPLETENESS_MAP,
@@ -210,4 +211,11 @@ describe("S27.23 complete KNAUF P113 ceiling", () => {
       }
     }
   });
+});
+
+
+test('P113 full cycle uses the single standard catalogue identity', () => {
+  expect(DRYWALL_CEILING_P113_FULL_CYCLE_S2723_CATALOG_ID).toBe(
+    'canonical-work:base:drywall_ceiling_interior_drywall_ceiling_install_standard',
+  );
 });

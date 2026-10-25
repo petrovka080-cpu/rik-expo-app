@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, resolve } from "node:path";
 
 import { Client } from "pg";
+import {assertCanonicalNewWorkCatalogIdV1} from "../../../src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1";
 
 type Json = Record<string, any>;
 
@@ -219,6 +220,7 @@ async function cloneSearch(client: Client, input: {
 }
 
 async function main(): Promise<void> {
+  assertCanonicalNewWorkCatalogIdV1(TARGET_CATALOG_ID);
   exactDatabaseGuard();
   invariant(existsSync(MASTER_PATH) && sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256, "STOP_R8_MASTER_SHA256_DRIFT");
   invariant(git("branch", "--show-current") === EXPECTED_BRANCH, "STOP_R8_BRANCH_DRIFT");

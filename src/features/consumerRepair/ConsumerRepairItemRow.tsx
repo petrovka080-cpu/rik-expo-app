@@ -15,7 +15,7 @@ import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateM
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { canonicalArtifactPurchaseRequirement } from "../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance";
 import { formatEstimateQuantityRu } from "../../lib/estimatePresentation/formatEstimateQuantityRu";
-import { canonicalPublicEstimatePendingRowTitleRu, canonicalPublicEstimatePendingRowGuideRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimatePendingRowTitleRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
 import type { ConsumerRepairQuantityChangeMeta } from "./consumerRepairQuantityEditTrace";
@@ -33,9 +33,9 @@ import {
   consumerRepairRowIncludedInEstimate,
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsNonPayable,
+  consumerRepairRowPriceIsEditable,
   consumerRepairRowRequirementNotice,
   consumerRepairRowApplicationCalculationPending,
-  consumerRepairRowSourceManagedQuantityReason,
   consumerRepairRowPublicResourcePresentation,
 } from "./consumerRepairRowMetadata";
 import { useConsumerRepairItemRowEditing } from "./useConsumerRepairItemRowEditing";
@@ -121,6 +121,9 @@ function ConsumerRepairItemRowComponent({
   const sourceManagedNeed = consumerRepairRowHasSourceManagedQuantity(item, parameterRequirementTables);
   const derivedQuantityEditReason = consumerRepairRowDerivedQuantityEditReason(item);
   const nonPayableRow = consumerRepairRowIsNonPayable(item);
+  const priceEditable = consumerRepairRowPriceIsEditable(item);
+  const [requirementDetailsOpen, setRequirementDetailsOpen] = React.useState(false);
+  React.useEffect(() => setRequirementDetailsOpen(false), [item.id]);
   const manualQuantityOverride = consumerRepairRowHasManualQuantity(item);
   const calculatedQuantity = consumerRepairRowCalculatedQuantity(item);
   const preliminaryNeed = consumerRepairRowIsCanonicalPreliminaryNeed(item);
@@ -131,20 +134,12 @@ function ConsumerRepairItemRowComponent({
     calculationTrace: { purchaseBalance: item.sourceParameters?.canonicalPurchaseBalance } }]);
   const requirementNotice = supplyWarning ?? consumerRepairRowRequirementNotice(item, parameterRequirementTables);
   const publicResourcePresentation = React.useMemo(() => consumerRepairRowPublicResourcePresentation(item), [item]);
-  const pendingGuide = applicationPending ? canonicalPublicEstimatePendingRowGuideRu({
-    rowId: consumerRepairRowCode(item), titleRu: publicResourcePresentation?.sourceTitleRu ?? item.titleRu,
-    manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true,
-  }) : undefined;
   const {
     quantityInputRef,
     quantityText,
     setQuantityText,
     priceText,
     setPriceText,
-    quantityEditing,
-    priceEditing,
-    quantitySelection,
-    priceSelection,
     specificationText,
     setSpecificationText,
     specificationEditing,
@@ -158,12 +153,9 @@ function ConsumerRepairItemRowComponent({
     finishPriceEdit,
     stepQuantity,
     restoreCalculatedQuantity,
-    rememberQuantitySelection,
-    rememberPriceSelection,
   } = useConsumerRepairItemRowEditing({
     item,
     numericEditResetKey,
-    quantityEditable: !sourceManagedNeed,
     onQuantityChange,
     onUnitPriceChange,
     onSpecificationChange,
@@ -189,13 +181,13 @@ function ConsumerRepairItemRowComponent({
             <Text style={styles.unresolvedNoticeText}>{purchaseShortage}</Text>
           </View>
         ) : null}
-        {preliminaryNeed && !applicationPending ? (
+        {preliminaryNeed && requirementDetailsOpen ? (
           <View
             accessibilityLiveRegion="polite"
             style={styles.unresolvedNotice}
             testID={`consumer-repair-item-unresolved-notice-${item.id}`}
           >
-            <Text style={styles.unresolvedNoticeTitle}>Требуется уточнение для подтверждения</Text>
+            <Text style={styles.unresolvedNoticeTitle}>Пояснение к расчёту</Text>
             <Text style={styles.unresolvedNoticeText}>
               {requirementNotice}
             </Text>
@@ -228,6 +220,18 @@ function ConsumerRepairItemRowComponent({
         ) : (
           <View style={styles.titleRow}>
             <Text style={styles.title} testID={`consumer-repair-item-title-${item.id}`}>{applicationPending && item.sourceParameters?.canonicalManualTitleOverride !== true ? canonicalPublicEstimatePendingRowTitleRu(item.titleRu) : item.titleRu}</Text>
+            {preliminaryNeed || nonPayableRow ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Пояснение к расчёту ${item.titleRu}`}
+                accessibilityState={{ expanded: requirementDetailsOpen }}
+                onPress={() => setRequirementDetailsOpen(value => !value)}
+                style={styles.specificationEditButton}
+                testID={`consumer-repair-item-info-${item.id}`}
+              >
+                <Ionicons name="information-circle-outline" size={19} color="#64748B" />
+              </Pressable>
+            ) : null}
             {onSpecificationChange ? (
               <Pressable
                 accessibilityLabel={`Изменить название позиции ${item.titleRu}`}
@@ -241,15 +245,12 @@ function ConsumerRepairItemRowComponent({
             ) : null}
           </View>
         )}
-        {pendingGuide ? <Text style={styles.traceLine} testID={`consumer-repair-item-pending-guide-${item.id}`}>{pendingGuide}</Text> : null}
         <View style={styles.fields}>
           <View style={styles.field}>
             <Text style={styles.label}>Количество</Text>
-            {applicationPending && item.quantity == null ? <Text style={styles.unit}
-              testID={`consumer-repair-item-application-pending-${item.id}`}>Не рассчитано · {unitLabel}</Text> : <View style={styles.quantityLine}>
+            <View style={styles.quantityLine}>
               <Pressable
                 testID={`consumer-repair-item-minus-${item.id}`}
-                disabled={sourceManagedNeed}
                 accessibilityRole="button"
                 accessibilityLabel={`${"\u0423\u043c\u0435\u043d\u044c\u0448\u0438\u0442\u044c"} ${item.titleRu}`}
                 onPress={() => stepQuantity(-1)}
@@ -259,27 +260,23 @@ function ConsumerRepairItemRowComponent({
               </Pressable>
               <TextInput
                 ref={quantityInputRef}
-                editable={!sourceManagedNeed}
                 value={quantityText}
                 importantForAutofill="no"
                 onBlur={finishQuantityEdit}
                 onChangeText={setQuantityText}
                 onFocus={beginQuantityEdit}
-                onSelectionChange={rememberQuantitySelection}
                 onSubmitEditing={finishQuantityEdit}
                 keyboardType="decimal-pad"
                 inputMode="decimal"
-                placeholder={item.quantity == null ? "Нужно уточнить" : undefined}
+                placeholder={item.quantity == null ? "Введите количество" : undefined}
                 placeholderTextColor="#94A3B8"
                 selectTextOnFocus={Platform.OS !== "web"}
-                selection={Platform.OS !== "web" && quantityEditing ? quantitySelection : undefined}
                 style={[styles.input, styles.quantityInput]}
                 testID={`consumer-repair-item-quantity-input-${item.id}`}
                 accessibilityLabel={`${"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e"} ${item.titleRu}: ${quantityText} ${unitLabel}`}
               />
               <Pressable
                 testID={`consumer-repair-item-plus-${item.id}`}
-                disabled={sourceManagedNeed}
                 accessibilityRole="button"
                 accessibilityLabel={`${"\u0423\u0432\u0435\u043b\u0438\u0447\u0438\u0442\u044c"} ${item.titleRu}`}
                 onPress={() => stepQuantity(1)}
@@ -298,12 +295,7 @@ function ConsumerRepairItemRowComponent({
               >
                 {unitLabel}
               </Text>
-            </View>}
-            {sourceManagedNeed && !applicationPending && item.quantity == null && !purchaseRequirement ? (
-              <Text style={styles.inlineSourceHint} testID={`consumer-repair-item-source-gated-quantity-${item.id}`}>
-                {consumerRepairRowSourceManagedQuantityReason(item, parameterRequirementTables)}
-              </Text>
-            ) : null}
+            </View>
             {purchaseRequirement ? <Text style={styles.calculatedQuantityHint} testID={`consumer-repair-item-known-consumption-${item.id}`}>
               {purchaseRequirement.labelRu}: {formatEstimateQuantityRu(purchaseRequirement.quantity)} {formatEstimateUnitLabel(purchaseRequirement.unitId)}. Точный заказ ещё не подтверждён.
             </Text> : null}
@@ -321,27 +313,25 @@ function ConsumerRepairItemRowComponent({
                 style={styles.restoreCalculatedButton}
                 testID={`consumer-repair-item-restore-calculated-${item.id}`}
               >
-                <Text style={styles.restoreCalculatedText}>Вернуть расчётное</Text>
+                <Text style={styles.restoreCalculatedText}>{calculatedQuantity == null ? "Убрать ручное количество" : "Вернуть расчётное"}</Text>
               </Pressable>
             ) : null}
           </View>
-          {!nonPayableRow ? (
+          {priceEditable ? (
             <View style={styles.field}>
-              <Text style={styles.label}>{supplyWarning ? "Сохранённая цена (справочно)" : "Цена за единицу"}</Text>
+              <Text style={styles.label}>Цена за единицу</Text>
               <TextInput
                 value={priceText}
                 importantForAutofill="no"
-                placeholder="Укажите цену"
+                placeholder=""
                 placeholderTextColor="#94A3B8"
                 onChangeText={setPriceText}
                 onFocus={beginPriceEdit}
-                onSelectionChange={rememberPriceSelection}
                 onBlur={finishPriceEdit}
                 onSubmitEditing={finishPriceEdit}
                 keyboardType="decimal-pad"
                 inputMode="decimal"
                 selectTextOnFocus={Platform.OS !== "web"}
-                selection={Platform.OS !== "web" && priceEditing ? priceSelection : undefined}
                 style={styles.priceInput}
                 testID={`consumer-repair-item-unit-price-input-${item.id}`}
                 accessibilityLabel={`Цена за единицу ${item.titleRu}`}
@@ -354,13 +344,11 @@ function ConsumerRepairItemRowComponent({
           <View style={styles.field}>
             <Text style={styles.label}>Сумма</Text>
             <Text style={styles.total} testID={`consumer-repair-item-total-${item.id}`}>
-              {supplyWarning ? "Не суммируется" : applicationPending ? '—' : nonPayableRow
-                ? totalLabel === "—" ? "Не суммируется" : `${totalLabel} · справочно`
-                : totalLabel}
+              {supplyWarning || applicationPending || nonPayableRow || totalLabel === '—' ? '' : totalLabel}
             </Text>
           </View>
         </View>
-        {item.unitPrice != null ? (
+        {item.unitPrice != null && professionalEvidenceOpen ? (
           <Text style={styles.priceStatus} testID={`consumer-repair-item-price-status-${item.id}`}>
             {itemPriceStatusLabel}
           </Text>
@@ -390,7 +378,7 @@ function ConsumerRepairItemRowComponent({
           <Text style={[styles.optionalToggleText, itemOptional && styles.optionalToggleTextActive]}>
             {itemOptional ? "Опциональная позиция" : "Включена в расчёт"}
           </Text>
-        </Pressable> : applicationPending ? null : (
+        </Pressable> : !requirementDetailsOpen ? null : (
           <Text style={styles.nonPayableNotice} testID={`consumer-repair-item-cost-treatment-${item.id}`}>
             {consumerRepairRowCostCoverageLabel(item) ?? (consumerRepairRowCostTreatment(item) === "INCLUDED_IN_RESOURCE_ROWS"
                 ? "Не суммируется повторно: стоимость включена в отдельные строки материалов, работ и механизмов этой сметы."
@@ -401,7 +389,7 @@ function ConsumerRepairItemRowComponent({
                     : "Строка не включена в итог; введённые количество и цена сохраняются справочно.")}
           </Text>
         )}
-        {consumerRepairRowCommercialScopeLabel(item) ? (
+        {requirementDetailsOpen && consumerRepairRowCommercialScopeLabel(item) ? (
           <Text style={styles.nonPayableNotice}>{consumerRepairRowCommercialScopeLabel(item)}</Text>
         ) : null}
         {item.selectedProductBinding ? (
@@ -438,14 +426,14 @@ function ConsumerRepairItemRowComponent({
                     style={manualQuantityOverride ? styles.manualQuantityHint : styles.calculatedQuantityHint}
                     testID={`consumer-repair-item-quantity-mode-${item.id}`}
                   >
-                    {derivedQuantityEditReason
-                      ? derivedQuantityEditReason
-                      : sourceManagedNeed
-                      ? "Сохранённое количество ожидает подтверждения технического источника."
-                      : manualQuantityOverride
+                    {manualQuantityOverride
                       ? calculatedQuantity != null
                         ? `Введено вручную. По формуле: ${exactQuantity?.calculatedQuantityText ?? calculatedQuantity} ${unitLabel}.`
                         : "Введено вручную. Расчётное количество пока неизвестно."
+                      : derivedQuantityEditReason
+                      ? derivedQuantityEditReason
+                      : sourceManagedNeed
+                      ? "Сохранённое количество ожидает подтверждения технического источника."
                       : `Рассчитано автоматически: ${exactQuantity?.calculatedQuantityText ?? calculatedQuantity} ${unitLabel}. Поле можно изменить.`}
                   </Text>
                 ) : null}
@@ -455,7 +443,6 @@ function ConsumerRepairItemRowComponent({
                 {publicResourcePresentation?.specificationRu ? (
                   <Text style={styles.traceLine} testID={`consumer-repair-item-selected-specification-${item.id}`}>{publicResourcePresentation.specificationRu}</Text>
                 ) : null}
-                {publicResourcePresentation?.detailsRu.map((detail, index) => <Text key={index} style={styles.traceLine}>{detail}</Text>)}
                 {professionalEvidence ? <Text style={styles.traceLine}>{professionalEvidence.formulaLabel}</Text> : null}
                 {professionalEvidence?.parameterLabel ? (
                   <Text style={styles.traceLine}>{professionalEvidence.parameterLabel}</Text>

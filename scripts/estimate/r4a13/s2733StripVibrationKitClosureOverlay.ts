@@ -8,8 +8,7 @@ import { STANDALONE_VIBRATION_COMPLETION_TARGETS_S2733 } from "./s2733Standalone
 import type { PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
 
 export const STRIP_VIBRATION_KIT_CLOSURE_S2733_CONTRACT = "strip-vibration-and-actual-kit-closure:s27-33.v1";
-const contexts = { standard: "в стандартной зоне", high_load: "в зоне высокой нагрузки", large_area: "на большом участке",
-  small_area: "на малом участке", technical_room: "в техническом помещении", wet_zone: "во влажной зоне" } as const;
+const contexts = { standard: "в стандартной зоне", high_load: "в зоне высокой нагрузки",  technical_room: "в техническом помещении", wet_zone: "во влажной зоне" } as const;
 export const STRIP_VIBRATION_NEW_TARGETS_S2733 = Object.keys(contexts).map(context => `canonical-work:base:concrete_foundation_interior_strip_foundation_vibrate_${context}`);
 export const STRIP_VIBRATION_KIT_CLOSURE_TARGETS_S2733 = [...FOUNDATION_CURING_PROFILE_TARGETS_S2733,
   ...STANDALONE_LEVELING_COMPLETION_TARGETS_S2733, ...STANDALONE_VIBRATION_COMPLETION_TARGETS_S2733, ...STRIP_VIBRATION_NEW_TARGETS_S2733].sort();

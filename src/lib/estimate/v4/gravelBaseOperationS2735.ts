@@ -6,7 +6,7 @@ import { GRANULAR_BACKFILL_DEFINITION_S2735 as placing } from './granularBackfil
 import { SINGLE_PIPE_TRENCH_DEFINITION_S2735 as trench } from './singlePipeTrenchConstructorS2735';
 import { estimateDeterministicHash } from '../estimateDeterministicHash';
 
-export const GRAVEL_BASE_VARIANTS_S2735 = ['standard', 'small_area', 'large_area', 'high_load', 'technical_room', 'wet_zone'] as const;
+export const GRAVEL_BASE_VARIANTS_S2735 = ['standard', 'high_load', 'technical_room', 'wet_zone'] as const;
 export const GRAVEL_BASE_CATALOG_IDS_S2735 = GRAVEL_BASE_VARIANTS_S2735.map(variant =>
   'canonical-work:base:earthworks_interior_gravel_base_prepare_' + variant);
 export const GRAVEL_BASE_SOURCE_ID_S2735 = 'project_gravel_base_actual_layer_volume_s27_35';

@@ -1,0 +1,175 @@
+{
+  "contract": "TEST_ONLY_REQUEST_GEOMETRY_NOT_PROJECT_DOSSIER/r223",
+  "actualProjectObjects": 0,
+  "nativeOracle": {
+    "08-04-002-03": [
+      [
+        "whole-labour",
+        "19.55",
+        "man_hour"
+      ],
+      [
+        "operator-information",
+        "0.245",
+        "man_hour"
+      ],
+      [
+        "tower-crane8t",
+        "0.245",
+        "machine_hour"
+      ],
+      [
+        "flatbed-truck5t",
+        "0.12375",
+        "machine_hour"
+      ],
+      [
+        "glass-block",
+        "325",
+        "piece"
+      ],
+      [
+        "reinforcement",
+        "14",
+        "kg"
+      ],
+      [
+        "ready-cement-lime-m25",
+        "0.0925",
+        "m3"
+      ]
+    ],
+    "08-04-002-04": [
+      [
+        "whole-labour",
+        "19.11875",
+        "man_hour"
+      ],
+      [
+        "operator-information",
+        "0.245",
+        "man_hour"
+      ],
+      [
+        "tower-crane8t",
+        "0.245",
+        "machine_hour"
+      ],
+      [
+        "flatbed-truck5t",
+        "0.12375",
+        "machine_hour"
+      ],
+      [
+        "glass-block",
+        "325",
+        "piece"
+      ],
+      [
+        "reinforcement",
+        "14",
+        "kg"
+      ],
+      [
+        "ready-cement-lime-m25",
+        "0.0925",
+        "m3"
+      ]
+    ]
+  },
+  "scenarios": [
+    {
+      "key": "original-legacy",
+      "expected": "RESULT",
+      "normId": null,
+      "input": {
+        "q": 100
+      }
+    },
+    {
+      "key": "composed-legacy",
+      "expected": "RESULT",
+      "normId": null,
+      "input": {
+        "q": 100,
+        "masonry_opening_physical_result_r223": "Сохранённый предварительный состав кладки проёма"
+      }
+    },
+    {
+      "key": "own03-at4",
+      "expected": "RESULT",
+      "normId": "08-04-002-03",
+      "input": {
+        "masonry_opening_physical_result_r223": "Заполнение проёма пустотелыми стеклоблоками 194×194×98 мм",
+        "glass97_filled_opening_area_m2": "12.5",
+        "glass97_storey_height_m": "4"
+      }
+    },
+    {
+      "key": "own04-above4",
+      "expected": "RESULT",
+      "normId": "08-04-002-04",
+      "input": {
+        "masonry_opening_physical_result_r223": "Заполнение проёма пустотелыми стеклоблоками 194×194×98 мм",
+        "glass97_filled_opening_area_m2": "12.5",
+        "glass97_storey_height_m": "4.000001"
+      }
+    },
+    {
+      "key": "missing-own-area-not-q100",
+      "expected": "RESULT",
+      "normId": null,
+      "input": {
+        "masonry_opening_physical_result_r223": "Заполнение проёма пустотелыми стеклоблоками 194×194×98 мм",
+        "glass97_storey_height_m": "4"
+      }
+    },
+    {
+      "key": "negative-own-area",
+      "expected": "REJECT",
+      "normId": null,
+      "input": {
+        "masonry_opening_physical_result_r223": "Заполнение проёма пустотелыми стеклоблоками 194×194×98 мм",
+        "glass97_filled_opening_area_m2": "-1",
+        "glass97_storey_height_m": "4"
+      }
+    },
+    {
+      "key": "legacy-q-in-glass-forbidden",
+      "expected": "REJECT",
+      "normId": null,
+      "input": {
+        "masonry_opening_physical_result_r223": "Заполнение проёма пустотелыми стеклоблоками 194×194×98 мм",
+        "glass97_filled_opening_area_m2": "12.5",
+        "glass97_storey_height_m": "4",
+        "q": 100
+      }
+    },
+    {
+      "key": "unresolved-norm-injection",
+      "expected": "REJECT",
+      "normId": null,
+      "input": {
+        "masonry_opening_physical_result_r223": "Заполнение проёма пустотелыми стеклоблоками 194×194×98 мм",
+        "glass97_filled_opening_area_m2": "12.5",
+        "glass97_storey_height_m": "4",
+        "glass97_08_04_002_03_need_source_system_admission": "1"
+      }
+    }
+  ],
+  "expectedSummary": {
+    "coreEntries": 8,
+    "results": 5,
+    "ordinaryResults": 4,
+    "preliminaryResults": 1,
+    "rejects": 3,
+    "actualCoreEntries": 0,
+    "scope": "FUTURE_DEPENDENT_CASE_NEW_OPENING_COMPOSITION_NOT_R160_REPLAY",
+    "sourceNeedOccurrences": 20,
+    "missingOwnAreaNeedsExpected": 19,
+    "normalDb": "UNRUN",
+    "LOCKED": "UNRUN",
+    "workerSave": "UNRUN",
+    "full": false
+  }
+}

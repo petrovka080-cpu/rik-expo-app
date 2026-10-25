@@ -3,6 +3,7 @@ import TestRenderer, {act} from 'react-test-renderer';
 import {CANONICAL_PARAMETER_CORE_SCHEMA_VERSION, type CanonicalParameter, type CanonicalParameterSession} from '../../lib/estimate/canonicalParameters/canonicalParameterCore';
 import {buildCanonicalParameterCards} from '../../lib/estimatePresentation/buildCanonicalParameterCards';
 import {ParameterDisclosurePanel, canonicalConsumerParameterInlineGuide} from './ConsumerRepairProgressiveEstimatePanel';
+import floorFormats from '../../../data/estimate-benchmarks/source-packs/ceramic-floor-m150-selectable-format-r1.json';
 
 jest.mock('@expo/vector-icons',()=>({Ionicons:()=>null}));
 jest.mock('../../lib/estimate/backendPlatform/canonicalEstimateClient',()=>({getCanonicalEstimateCatalogItem:jest.fn(),getCanonicalEstimateRevision:jest.fn()}));
@@ -75,4 +76,12 @@ test('an assumed text reference is readable without changing its stored provenan
   const p={...parameter('brick_supply_specification','Описание поставки кирпича',fixture),source:'ASSUMED' as const};
   expect(canonicalConsumerParameterInlineGuide({parameter:p,baselineValue:fixture})).toBe('принято '+publicExample);
   expect(p.value).toBe(fixture);
+});
+test('the legacy floor format has a short label while exact choices and saved source values remain unchanged',()=>{
+  const s=session();s.parameters=[{...parameter(floorFormats.selectorId,'Формат керамической плитки пола',floorFormats.legacyCombinedValue),
+    allowedValues:floorFormats.choices.map(c=>({value:c.value,label:c.value}))}];
+  const before=JSON.stringify(s),card=buildCanonicalParameterCards({session:s,revision:null})[0]!;
+  expect(card.displayValueRu).toBe('100/150 мм');expect(card.value).toBe(floorFormats.legacyCombinedValue);
+  expect(card.choices).toEqual(floorFormats.choices.map((c,i)=>({value:c.value,labelRu:i===0?'100/150 мм':c.value})));
+  expect(JSON.stringify(s)).toBe(before);
 });

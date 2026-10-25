@@ -10,8 +10,8 @@ import { compileCanonicalEstimateCore } from
   "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { estimateDeterministicHash } from
   "../../src/lib/estimate/estimateDeterministicHash";
-import { ASPHALT_LEVEL_SMALL_AREA_S2716_CATALOG_ID } from
-  "../../src/lib/estimate/v4/asphaltLevelSmallAreaS2716";
+import { ASPHALT_LEVEL_S2716_CATALOG_ID } from
+  "../../src/lib/estimate/v4/asphaltLevelS2716";
 
 type Json = Record<string, any>;
 
@@ -59,7 +59,7 @@ async function main(): Promise<void> {
        join public.estimate_definition_version definition
          on definition.id=manifest.definition_version_id
        where manifest.release_id=$1 and manifest.catalog_id=$2`,
-      [releaseId, ASPHALT_LEVEL_SMALL_AREA_S2716_CATALOG_ID],
+      [releaseId, ASPHALT_LEVEL_S2716_CATALOG_ID],
     )).rows[0] as Json | undefined;
     invariant(manifest, "STOP_S2723_ASPHALT_LEVEL_MANIFEST_MISSING");
     const definitionId = String(manifest.definition_version_id);
@@ -84,7 +84,7 @@ async function main(): Promise<void> {
           on release.id=document.search_release_id
         where document.search_release_id=$1 and document.catalog_id=$2`, [
         current.searchReleaseId,
-        ASPHALT_LEVEL_SMALL_AREA_S2716_CATALOG_ID,
+        ASPHALT_LEVEL_S2716_CATALOG_ID,
       ]),
     ]);
     const baseline = baselineResult.rows[0] as Json;
@@ -94,7 +94,7 @@ async function main(): Promise<void> {
     const compile = async (submittedParameters: Record<string, unknown>) => compileCanonicalEstimateCore({
       operation: "compile",
       compilerVersion: "s27-23-asphalt-level-100-independent-acceptance",
-      catalogId: ASPHALT_LEVEL_SMALL_AREA_S2716_CATALOG_ID,
+      catalogId: ASPHALT_LEVEL_S2716_CATALOG_ID,
       primaryMeasureParameterId: "area_m2",
       parameterDefinitions: parameters.rows,
       formulaDefinitions: formulas.rows,
@@ -252,7 +252,7 @@ async function main(): Promise<void> {
       },
       sourceHashes: {
         sourcePack: sha256File("data/estimate-benchmarks/source-packs/asphalt-level-small-area-s2716.json"),
-        definitionOwner: sha256File("src/lib/estimate/v4/asphaltLevelSmallAreaS2716.ts"),
+        definitionOwner: sha256File("src/lib/estimate/v4/asphaltLevelS2716.ts"),
       },
       productionAccessed: false,
       activationPerformed: false,

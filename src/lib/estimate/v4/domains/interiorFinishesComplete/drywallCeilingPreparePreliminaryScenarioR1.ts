@@ -1,10 +1,10 @@
 import sourcePack from "../../../../../../data/estimate-benchmarks/source-packs/drywall-ceiling-preparation-preliminary-profile-r2.json";
 
-export const DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID =
-  "drywall_ceiling_interior_drywall_ceiling_prepare_large_area" as const;
+export const DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID =
+  "drywall_ceiling_interior_drywall_ceiling_prepare_standard" as const;
 
-export const DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID =
-  `canonical-work:base:${DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID}` as const;
+export const DRYWALL_CEILING_PREPARE_CATALOG_ID =
+  `canonical-work:base:${DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID}` as const;
 
 export const DRYWALL_CEILING_PREPARE_KNAUF_SOURCE_ID =
   "KNAUF_ROTBAND_PASTA_PROFI_IL_2025_02" as const;
@@ -34,16 +34,16 @@ export const DRYWALL_CEILING_PREPARE_PROFILE_SOURCE_METADATA = Object.freeze({
 export const DRYWALL_CEILING_PREPARE_INDEPENDENT_REQUIRED_COMPONENTS = Object.freeze(
   sourcePack.independentRequiredComposition.map((component) => Object.freeze({
     ...component,
-    rowId: `${DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID}:successor-r56:row:${component.rowKey}`,
-    formulaId: `${DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID}:successor-r56:formula:${component.rowKey}`,
+    rowId: `${DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID}:successor-r56:row:${component.rowKey}`,
+    formulaId: `${DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID}:successor-r56:formula:${component.rowKey}`,
   })),
 );
 
 export const DRYWALL_CEILING_PREPARE_CONDITIONAL_REQUIRED_COMPONENTS = Object.freeze(
   sourcePack.conditionalRequiredComposition.map((component) => Object.freeze({
     ...component,
-    rowId: `${DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID}:successor-r56:row:${component.rowKey}`,
-    formulaId: `${DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID}:successor-r56:formula:${component.rowKey}`,
+    rowId: `${DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID}:successor-r56:row:${component.rowKey}`,
+    formulaId: `${DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID}:successor-r56:formula:${component.rowKey}`,
   })),
 );
 

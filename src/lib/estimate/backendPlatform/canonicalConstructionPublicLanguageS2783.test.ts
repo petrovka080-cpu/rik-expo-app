@@ -3,15 +3,53 @@ import simpleBindings from '../../../../data/estimate-benchmarks/source-packs/pu
 import {canonicalPublicEstimateWorkTitleRu as work,canonicalPublicEstimateRowNameRu as row,
   canonicalPublicEstimateRowDetailsRu as details,canonicalPublicEstimateParameterTitleRu as parameter,
   canonicalPublicEstimateParameterGuideRu,canonicalPublicEstimatePendingRowGuideRu,
-  canonicalPublicEstimateTextRu,canonicalPublicEstimateRequestTextRu} from './canonicalPublicEstimateLanguageRu';
+  canonicalPublicEstimateTextRu,canonicalPublicEstimateRequestTextRu,canonicalPublicEstimateOperationReferenceRu} from './canonicalPublicEstimateLanguageRu';
 import {canonicalPublicResourceDisplayPresentationV1 as presentation} from './canonicalPublicResourcePresentationV1';
-import {canonicalArtifactVisibleRowTitle,canonicalArtifactSpecificationParts,CANONICAL_PROCUREMENT_GENERATOR_VERSION} from './canonicalEstimateArtifactContract';
-import {CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION} from './canonicalProfessionalPdf';
+import {canonicalArtifactVisibleRowTitle,canonicalArtifactSpecificationParts,CANONICAL_PROCUREMENT_GENERATOR_VERSION,
+  canonicalArtifactPreliminaryNeeds,buildCanonicalProcurementProjection} from './canonicalEstimateArtifactContract';
+import {CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,buildCanonicalProfessionalPdfProjection} from './canonicalProfessionalPdf';
 import {canonicalEstimateParameterChoiceLabelRu} from './canonicalEstimateParameterSemantics';
 import {brickPartitionCraneModesR1} from '../v4/brickPartitionHalfKrer08Column05R1';
+import {createHash} from 'node:crypto';
+import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
+import {compileCanonicalEstimateCore} from './canonicalEstimateCompileCore';
+import {ct54ReadyFacadeDefinitionS2763,ct54ReadyFacadeControlFactsS2763} from '../v4/ct54ReadyFacadeSeriesS2763';
+import {canonicalEstimateOperationReference} from './canonicalEstimateOperationComposition';
+import type {CanonicalEstimateCatalogItem} from './contracts';
 
 const binding=(rowId:string)=>publicBindings.bindings.find(x=>x.rowId===rowId)!;
 const wp='hydrotest:internal-steel:dn50:krer16-005-01:',tp='ceramic-floor:cement-mortar:krer11-01-027-03:';
+
+it.each([
+ ['Щиты рамной опалубки Doka Frami Xlife','Щиты рамной опалубки'],
+ ['Угловые элементы Doka Frami Xlife','Угловые элементы рамной опалубки'],
+ ['Соединители щитов Doka Frami','Соединители щитов рамной опалубки'],
+ ['Плоская стяжка Frami 10–80 см, артикул 588475000','Плоская стяжка для опалубки, 10–80 см'],
+ ['Зажим плоской стяжки Frami, артикул 588434000','Зажим плоской стяжки опалубки'],
+ ['Фундаментный зажим Frami, артикул 588452000','Фундаментный зажим опалубки'],
+ ['Подкосы Doka 260 для выверки щитов','Подкосы для выверки щитов'],
+ ['Перфорированная лента Frami 50×2 мм, артикул 588206000','Перфорированная лента для опалубки, 50 × 2 мм'],
+])('uses the functional source-bound resource name across reused row namespaces: %s',(source,name)=>{
+ for(const rowId of ['equipment:formwork:source','master212:concrete-cycle:r1:formwork:equipment:formwork:source']){
+  const saved={row_id:rowId,title_ru:source,ordinal:0,category:'equipment',unit_id:'piece',quantity:'2.5',unit_price:'100',amount:'250',currency_code:'KGS',included_in_estimate:true,included_in_procurement:true,procurement_eligible:true,ownership_status:'OWNED',row_sha256:'a'.repeat(64)},before=JSON.stringify(saved);
+  expect(row({rowId,titleRu:source})).toBe(name);expect(canonicalArtifactVisibleRowTitle(saved,{})).toBe(name);
+  expect(row({rowId,titleRu:source,manualTitleOverride:true})).toBe(source);
+  expect(row({rowId,titleRu:'Моя позиция: '+source})).toBe('Моя позиция: '+source);
+  expect(JSON.stringify(saved)).toBe(before);
+ }
+});
+
+it.each(['Монтаж комплекта — 5 set','Монтаж комплекта — 1,5 set','Монтаж комплекта — 1 000 set'])(
+ 'localizes only the saved system measure suffix without altering explicit manual titles: %s',source=>{
+  expect(work(source)).toBe(source.replace(/set$/u,'компл.'));
+  expect(work(source,{manualTitleOverride:true})).toBe(source);
+ });
+it('retains set in ordinary names and unknown units, and preserves exact authored work naming',()=>{
+ expect(work('Набор set для монтажа')).toBe('Набор set для монтажа');
+ expect(work('Монтаж комплекта — 5 unregistered-set')).toBe('Монтаж комплекта — 5 unregistered-set');
+ const b=publicBindings.workBindings[0]!;
+ expect(work(b.sourceTitleRu+' — 5 set')).toBe(b.nameRu+' — 5 компл.');
+});
 
 it.each(publicBindings.workBindings)('uses the exact authored work label and retains its system measure: $sourceTitleRu',b=>{
  expect(work(b.sourceTitleRu)).toBe(b.nameRu);
@@ -20,11 +58,13 @@ it.each(publicBindings.workBindings)('uses the exact authored work label and ret
  expect(work(b.sourceTitleRu,{manualTitleOverride:true})).toBe(b.sourceTitleRu);
  expect(b.detailsRu).toContain(b.sourceTitleRu);
 });
-it('keeps exact product marks, dimensions, packaging and payment units in public names',()=>{
+it('keeps physical dimensions, grades and payment units in names and exact product codes in details',()=>{
  const channel=binding('electrical:elecor-60x40-single-route:channel-order');
- expect(row({rowId:channel.rowId,titleRu:channel.sourceTitleRu})).toContain('60 × 40 мм, CKK10-060-040-1-K01-018: упаковка 18 м, 9 секций по 2 м');
+ expect(row({rowId:channel.rowId,titleRu:channel.sourceTitleRu})).toContain('60 × 40 мм, упаковка 18 м: 9 секций по 2 м');
+ expect(details({rowId:channel.rowId,titleRu:channel.sourceTitleRu}).join(' ')).toContain('CKK10-060-040-1-K01-018');
  const fastener=binding('legrand:p31-blind-ep-joint:fastener-order');
- expect(row({rowId:fastener.rowId,titleRu:fastener.sourceTitleRu})).toContain('341895 BTRCC М6');
+ expect(row({rowId:fastener.rowId,titleRu:fastener.sourceTitleRu})).toContain('Болт М6 с гайкой');
+ expect(details({rowId:fastener.rowId,titleRu:fastener.sourceTitleRu}).join(' ')).toContain('341895 BTRCC M6');
  expect(row({rowId:fastener.rowId,titleRu:fastener.sourceTitleRu})).toContain('одна сборка');
  const brick=binding('masonry:brick-partition:krer08-02-002-05:brick');
  expect(row({rowId:brick.rowId,titleRu:brick.sourceTitleRu})).toContain('М100, 250 × 120 × 65 мм');
@@ -89,11 +129,75 @@ it('distinguishes actual crane choices without overriding an authored contextual
  expect(canonicalEstimateParameterChoiceLabelRu('selected_delivery_selection','NOT_SELECTED')).toBe('Не добавлять отдельную доставку');
 });
 it('versions new document projections while historical artifact bytes and source titles remain independent',()=>{
- expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toContain('template62');
- expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r17-simple-grohe-details');
+ expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe('canonical-professional-pdf.r4-a13-public-selected-specification-template82');
+ expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r28-public-selected-specification');
  const b=binding(wp+'whole-worker');expect(b.sourceTitleRu).toContain('разряда5,3');expect(b.nameRu).not.toContain('разряда5,3');
  expect(details({rowId:b.rowId,titleRu:b.sourceTitleRu})).toEqual([]);
  expect(b.detailsRu?.join(' ')).toContain('разряда5,3');
+});
+
+it.each([
+ ['Два слоя CT54 на готовом простом фасаде — шесть существующих типов','Окраска подготовленного цементного фасада в два слоя'],
+ ['Окраска простого фасада Ceresit CT54 по готовой цементной штукатурке с готовых лесов, два слоя','Окраска цементной штукатурки фасада в два слоя с готовых лесов'],
+ ['Перемешивание готовой CT54','Перемешать готовую фасадную краску'],
+ ['Два ручных слоя CT54 — один владелец труда','Нанести фасадную краску в два слоя вручную'],
+])('names the saved facade operation without a brand while retaining its scope: %s',(source,name)=>{
+ expect(work(source)).toBe(name);expect(work(source+' — 35,5 м²')).toBe(name+' — 35,5 м²');
+ expect(work(source,{manualTitleOverride:true})).toBe(source);
+ expect(work(source+' с другой технологией')).toBe(source+' с другой технологией');
+});
+
+it.each([
+ ['q','Площадь работ, м² (CT54 — за вычетом проёмов)','Площадь окраски фасада за вычетом проёмов, м²'],
+ ['ct54_15l_stock_cans','Пригодное наличие целых канистр CT54 15л выбранного цвета и партии','Пригодные целые канистры фасадной краски по 15 л выбранного цвета и партии'],
+ ['ct54_15l_reserve_cans','Сохраняемый резерв целых канистр CT54 15л','Целые канистры фасадной краски по 15 л, которые оставить в запасе'],
+ ['ct54_15l_supplier_can_multiple','Кратность поставщика в канистрах CT54 15л','Кратность поставки фасадной краски в канистрах по 15 л'],
+])('names the exact facade measurement while preserving other fields and manual names: %s',(id,source,name)=>{
+ expect(parameter(id,source)).toBe(name);
+ expect(parameter('another-parameter',source)).toBe(source);
+ expect(parameter(id,'Мой выбор: '+source)).toBe('Мой выбор: '+source);
+ expect(row({titleRu:source,manualTitleOverride:true})).toBe(source);
+ expect(work(source,{manualTitleOverride:true})).toBe(source);
+});
+
+it('projects actual saved facade operations into PDF and procurement without altering source rows',async()=>{
+ const d=ct54ReadyFacadeDefinitionS2763(),result=await compileCanonicalEstimateCore({operation:'compile',catalogId:'canonical-work:base:facade_interior_facade_paint_apply_standard',
+  compilerVersion:'public-facade-operation-regression',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],
+  submittedParameters:{...ct54ReadyFacadeControlFactsS2763,selected_paint_can_l:'15',ct54_15l_stock_cans:'0',ct54_15l_reserve_cans:'0',ct54_15l_supplier_can_multiple:'1'},
+  confirmedParameters:{},currencyCode:'KGS',maximumResourceRows:d.resources.length,
+  hashJson:value=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex')});
+ const revision={id:'11111111-1111-4111-8111-111111111111',release_id:'22222222-2222-4222-8222-222222222222',catalog_id:'canonical-work:base:facade_interior_facade_paint_apply_standard',
+  checksum_sha256:'a'.repeat(64),row_count:result.rows.length,input_parameters:result.parameters,totals:result.totals,currency_code:'KGS',
+  amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds,userParameters:{q:result.parameters.q,
+   ct54_15l_stock_cans:'0',ct54_15l_reserve_cans:'0',ct54_15l_supplier_can_multiple:'1'}}}};
+ const before=JSON.stringify({revision,rows:result.rows}),needs=canonicalArtifactPreliminaryNeeds(revision),
+  pdf=buildCanonicalProfessionalPdfProjection({revision,rows:result.rows,preliminaryNeeds:needs,workTitleRu:'Окраска фасада',
+   parameterSchema:d.parameters.map(p=>({parameterId:p.parameter_id,ordinal:p.ordinal,valueType:p.value_type,unitId:p.unit_id,
+    titleRu:p.title_ru,required:p.required,defaultValue:p.default_value,constraints:p.constraints_json,
+    visibilityRole:p.truth_metadata.visibility_role,valueSourceRole:p.truth_metadata.value_source_role,
+    formulaConsumers:d.formulas.filter(f=>f.input_parameter_ids.includes(p.parameter_id)).map(f=>f.formula_id)})) as CanonicalEstimateCatalogItem['parameterSchema']}),
+  procurement=buildCanonicalProcurementProjection({revision,procurementRows:result.rows.filter(r=>r.included_in_procurement),sourceRows:result.rows});
+ for(const source of ['Перемешивание готовой CT54','Два ручных слоя CT54 — один владелец труда']){
+  const name=work(source);expect(before).toContain(source);expect(pdf.html).toContain(name);expect(pdf.html).not.toContain(source);
+  const operations=[...result.rows,...needs].map(r=>(r.calculation_trace as Record<string,unknown>|undefined)?.resourceGraph as Record<string,unknown>|undefined)
+   .map(g=>canonicalEstimateOperationReference(g?.operationCompositionV1));
+  const operation=operations.find(op=>op?.operationTitleRu===source);expect(operation).toBeDefined();
+  expect(canonicalPublicEstimateOperationReferenceRu(operation??null)?.operationTitleRu).toBe(name);
+ }
+ expect(procurement.operationGroups.length).toBeGreaterThan(0);
+ expect(procurement.operationGroups.flatMap(g=>[g.operation.groupTitleRu,g.operation.operationTitleRu]).join(' ')).not.toMatch(/CT54|Ceresit|один владелец/iu);
+ expect(procurement.operationGroups.every(g=>g.operation.groupId==='paint:ct54-simple-ready-facade')).toBe(true);
+ for(const id of ['q','ct54_15l_stock_cans','ct54_15l_reserve_cans','ct54_15l_supplier_can_multiple']){
+  const field=d.parameters.find(p=>p.parameter_id===id)!;
+  expect(field.title_ru).toContain('CT54');
+  expect(pdf.html).toContain(parameter(id,field.title_ru));
+  expect(pdf.html).not.toContain(field.title_ru);
+ }
+ for(const field of d.parameters.filter(p=>/CT54|Ceresit|tesa/iu.test(p.title_ru))){
+  expect(parameter(field.parameter_id,field.title_ru)).not.toMatch(/CT54|Ceresit|tesa/iu);
+  expect(parameter(field.parameter_id,'Моё поле: '+field.title_ru)).toBe('Моё поле: '+field.title_ru);
+ }
+ expect(JSON.stringify({revision,rows:result.rows})).toBe(before);
 });
 
 it.each(['CONTROL_ONLY QA exact source-compatible supply, not supplier offer',

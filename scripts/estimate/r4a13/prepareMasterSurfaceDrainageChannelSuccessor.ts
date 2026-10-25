@@ -571,7 +571,7 @@ async function main(): Promise<void> {
         passport: {
           catalogId: SURFACE_DRAINAGE_CHANNEL_CATALOG_ID,
           canonicalRuName: "Монтаж водоотводного лотка с решёткой",
-          workKey: "paving_roads_landscape_interior_asphalt_drain_large_area",
+          workKey: "paving_roads_landscape_interior_asphalt_drain_standard",
           physicalResultRu: "Линия поверхностного водоотводного лотка с решёткой смонтирована по проектной длине, отметкам и уклону",
           projectSourceId: SURFACE_DRAINAGE_CHANNEL_SOURCE_ID,
         },

@@ -1,21 +1,22 @@
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
 import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
-import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateFixtureTextRu } from './canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateFixtureTextRu, canonicalPublicEstimateOperationReferenceRu, canonicalPublicEstimateSelectedSpecificationIsInRowNameRu } from './canonicalPublicEstimateLanguageRu';
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
 import { assertCanonicalPurchaseSupplyRowV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyReadyV1, canonicalPurchaseSupplyBlocksV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { formatEstimateUnitLabel } from "../../ai/globalEstimate/formatEstimateUnitLabel";
-import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
+import { canonicalEstimateOperationReference, canonicalEstimateOperationReferences } from "./canonicalEstimateOperationComposition";
 import { canonicalEstimateSha256HexText } from "./canonicalEstimateSha256";
 import { localizeKnownTechnologyVariantSuffixRu } from "./russianTechnologyTitleR542";
+import {canonicalPublicSelectedSpecificationV1} from './canonicalPublicSelectedSpecificationV1';
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from "./formulaGraph";
 import { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 export { canonicalArtifactPurchaseBalance } from "./canonicalPersistedPurchaseBalance";
 
-export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r11";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r17-simple-grohe-details";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:19";
+export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r12";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r28-public-selected-specification";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:34";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -140,7 +141,7 @@ export function canonicalArtifactRentalBasis(row: CanonicalArtifactRow, paramete
     stageCount: graph.projectStageCountParameterId ? parameters[String(graph.projectStageCountParameterId)] ?? null : null };
 }
 
-export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, parameters: Record<string, unknown>, options?: { splitSelectedValues?: boolean }) {
+export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, parameters: Record<string, unknown>, options?: { splitSelectedValues?: boolean }): {parameterId:string;value:string;parts:string[];publicParts?:string[]}[] {
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   const ids = Array.isArray(graph.titleSpecificationParameterIds) ? graph.titleSpecificationParameterIds
     : graph.titleSpecificationParameterId ? [graph.titleSpecificationParameterId] : [];
@@ -158,7 +159,7 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
   const selectedParts = selected.flatMap(spec => spec.parts);
   const selectedSpecification = selectedParts.join(", ");
   const selectedValues = new Set(selected.map(spec => canonicalPublicEstimateChoiceLabelRu(spec.value).trim()));
-  const presentation = canonicalArtifactPublicResourcePresentationV1(row);
+  const presentation = canonicalArtifactPublicResourcePresentationV1(row,parameters);
   const namedDetails = canonicalPublicEstimateRowDetailsRu({ rowId: typeof row.row_id === 'string' ? row.row_id : null,
     titleRu: canonicalArtifactSourceRowTitle(row, parameters),
     sourceTitleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
@@ -168,13 +169,22 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
     .map(canonicalPublicEstimateFixtureTextRu)
     .filter(part => !selectedParts.includes(part)
       && part !== selectedSpecification && !selectedValues.has(part.trim())))];
-  return [...selected, ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: details }] : [])];
+  const specificationInName = canonicalPublicSelectedSpecificationV1({rowId:String(row.row_id??''),titleRu:String(row.title_ru??''),graph,parameters,
+    manualTitleOverride:objectValue(row.calculation_trace).manualTitleOverride===true,compactPreliminaryNeed:row.ownership_status==='PRELIMINARY_NEED'})!==null || canonicalPublicEstimateSelectedSpecificationIsInRowNameRu({
+    rowId: typeof row.row_id === 'string' ? row.row_id : null,
+    titleRu: canonicalArtifactSourceRowTitle(row, parameters),
+    sourceTitleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
+    manualTitleOverride: objectValue(row.calculation_trace).manualTitleOverride === true,
+  });
+  return [...selected.map(spec => specificationInName ? {...spec,publicParts:[]} : spec),
+    ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: details }] : [])];
 }
 
-export function canonicalArtifactPublicResourcePresentationV1(row: Record<string, unknown>) {
+export function canonicalArtifactPublicResourcePresentationV1(row: Record<string, unknown>,parameters?:Readonly<Record<string,unknown>>) {
   const trace = objectValue(row.calculation_trace), graph = objectValue(trace.resourceGraph);
   return canonicalPublicResourcePresentationV1({ rowId: String(row.row_id ?? ''), titleRu: String(row.title_ru ?? '').trim(),
-    descriptor: graph.publicResourcePresentationV1, manualTitleOverride: trace.manualTitleOverride === true });
+    descriptor: graph.publicResourcePresentationV1, manualTitleOverride: trace.manualTitleOverride === true,
+    graph:Object.keys(graph).length?graph:undefined,parameters,compactPreliminaryNeed:row.ownership_status==='PRELIMINARY_NEED' });
 }
 
 export function canonicalArtifactTechnologyChecks(parameters: Record<string, unknown>) {
@@ -194,7 +204,7 @@ export function canonicalArtifactWorkMeasure(rows: readonly CanonicalArtifactRow
   const trace = objectValue(row.calculation_trace);
   const value = trace.calculatedQuantityBeforeOverride ?? row.quantity;
   if (typeof value !== "string" || !isFormulaGraphExactDecimal(value)) return null;
-  const operation = canonicalEstimateOperationReference(objectValue(trace.resourceGraph).operationCompositionV1);
+  const operation = canonicalPublicEstimateOperationReferenceRu(canonicalEstimateOperationReference(objectValue(trace.resourceGraph).operationCompositionV1));
   return { rowId: String(row.row_id), value, unitId: "kg", titleRu: operation?.groupTitleRu ?? null };
 }
 
@@ -216,7 +226,7 @@ function projectProcurementRow(row: CanonicalArtifactRow, parameters: Record<str
   const netQuantity = purchaseBalance?.netQuantity ?? materialQuantity?.netQuantity ?? row.quantity;
   const grossQuantity = purchaseBalance?.grossQuantity ?? materialQuantity?.grossQuantity ?? row.quantity;
   const procurementQuantity = exactQuantity ? exactQuantity.quantityText : purchaseBalance?.procurementQuantity ?? materialQuantity?.procurementQuantity ?? row.quantity;
-  const operation = canonicalEstimateOperationReference(objectValue(calculationTrace.resourceGraph).operationCompositionV1);
+  const operation = canonicalPublicEstimateOperationReferenceRu(canonicalEstimateOperationReference(objectValue(calculationTrace.resourceGraph).operationCompositionV1));
   return {
     rowId: String(row.row_id),
     ordinal: Number(row.ordinal),
@@ -281,14 +291,17 @@ export function buildCanonicalProcurementProjection(input: {
       }
       return [{ rowId: String(member.row_id), ownerRowId: projected.rowId, unitId: projected.unitId,
         consumed: member.quantity, titleRu: canonicalArtifactVisibleRowTitle(member, parameters),
-        operation: canonicalEstimateOperationReference(graph.operationCompositionV1), separatelyPayable: false,
+        operation: canonicalPublicEstimateOperationReferenceRu(canonicalEstimateOperationReference(graph.operationCompositionV1)), separatelyPayable: false,
         rowSha256: nullableText(member.row_sha256) }];
     });
     return { ...projected, ...(consumptionAllocations.length ? { consumptionAllocations } : {}) };
   });
   const workMeasure = canonicalArtifactWorkMeasure(input.sourceRows ?? input.procurementRows);
   const groups = new Map<string, { section: string; category: string; rowIds: string[] }>();
-  const operationGroups = new Map<string, { operation: NonNullable<ReturnType<typeof canonicalEstimateOperationReference>>; rowIds: string[] }>();
+  type OperationGroup = { operation: NonNullable<ReturnType<typeof canonicalEstimateOperationReference>>; rowIds: string[];
+    sharedResources?: { rowId: string; titleRu: string; ownerOperationTitleRu: string; separatelyPayable: false }[] };
+  const operationGroups = new Map<string, OperationGroup>();
+  const presentIds = new Set((input.sourceRows ?? input.procurementRows).map(row => String(row.row_id)));
   for (const row of rows) {
     const key = `${row.section}\u0000${row.category}`;
     const group = groups.get(key) ?? { section: row.section, category: row.category, rowIds: [] };
@@ -299,6 +312,18 @@ export function buildCanonicalProcurementProjection(input: {
       const allocation = operationGroups.get(operationKey) ?? { operation: row.operation, rowIds: [] };
       allocation.rowIds.push(row.rowId);
       operationGroups.set(operationKey, allocation);
+      // References carry no repeated quantity, amount or procurement row.
+      for (const reference of canonicalEstimateOperationReferences(row.operation).slice(1)) {
+        if (reference.whenResourcePresent && !reference.whenResourcePresent.some(id => presentIds.has(id))) continue;
+        const relatedKey = JSON.stringify([reference.groupId, reference.operationId]);
+        const related = operationGroups.get(relatedKey) ?? { operation: reference, rowIds: [] } as OperationGroup;
+        related.sharedResources ??= [];
+        if (!related.sharedResources.some(resource => resource.rowId === row.rowId)) {
+          related.sharedResources.push({ rowId: row.rowId, titleRu: row.titleRu,
+            ownerOperationTitleRu: row.operation.operationTitleRu, separatelyPayable: false });
+        }
+        operationGroups.set(relatedKey, related);
+      }
     }
   }
   const revision = input.revision;
@@ -457,7 +482,7 @@ export function canonicalArtifactVisibleRowTitle(row: Record<string, unknown>, p
 function canonicalArtifactSourceRowTitle(row: Record<string, unknown>, parameters?: Record<string, unknown>): string {
   const sourceNameRu = String(row.title_ru ?? "").trim();
   if (objectValue(row.calculation_trace).manualTitleOverride === true) return sourceNameRu;
-  const presentation = canonicalArtifactPublicResourcePresentationV1(row);
+  const presentation = canonicalArtifactPublicResourcePresentationV1(row,parameters);
   if (presentation) return presentation.nameRu;
   const graph = objectValue(objectValue(row.calculation_trace).resourceGraph);
   if (parameters && graph.titleSpecificationMode === "APPEND") {

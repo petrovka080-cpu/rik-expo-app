@@ -34,28 +34,12 @@ export const ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS = Object.freeze([
     acceptanceVolumeM3: 18,
   },
   {
-    contextKey: "large_area",
-    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_pour_large_area",
-    titleRu: "Бетонирование оснований анкерных групп на большом участке",
-    contextRu: "большой участок",
-    preliminaryContingencyPercent: 8,
-    acceptanceVolumeM3: 36,
-  },
-  {
     contextKey: "repair",
     catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_pour_repair",
     titleRu: "Бетонирование ремонтного участка основания анкерной группы",
     contextRu: "локальный ремонт основания",
     preliminaryContingencyPercent: 4,
     acceptanceVolumeM3: 4,
-  },
-  {
-    contextKey: "small_area",
-    catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_pour_small_area",
-    titleRu: "Бетонирование основания анкерной группы на малом участке",
-    contextRu: "малый участок",
-    preliminaryContingencyPercent: 4,
-    acceptanceVolumeM3: 3,
   },
   {
     contextKey: "technical_room",

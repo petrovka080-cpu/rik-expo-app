@@ -19,16 +19,6 @@ export const STONE_TILE_FLOOR_DEMOLITION_KRER46_VARIANTS = Object.freeze({
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
     canonicalNameRu: "Разборка покрытия пола из каменной шашки",
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:demolition_interior_flooring_remove_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка покрытия пола из каменной шашки — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:demolition_interior_flooring_remove_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка покрытия пола из каменной шашки — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: "canonical-work:base:demolition_interior_flooring_remove_wet_zone",
     catalogVariant: "WET_ZONE_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",

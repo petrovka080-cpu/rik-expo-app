@@ -1,5 +1,6 @@
 import { canonicalEstimateWorkProcess, canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections } from './canonicalEstimateOperationComposition';
 import type {CanonicalScopeRequirementDecisionV1 as Scope} from './canonicalScopeRequirementV1';
+import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';
 
 const operation = (groupId: string, operationId: string, title: string, ordinal?: number) => ({
   contractVersion: 'canonical-operation-resource/v1', groupId,
@@ -8,6 +9,29 @@ const operation = (groupId: string, operationId: string, title: string, ordinal?
   ...(ordinal == null ? {} : { processOrdinal: ordinal, processRole: 'PROCESS' }),
 });
 const check=(status:Scope['status'],coveringRowIds:string[],kind:Scope['kind']='INCLUDED'):Scope=>({contractVersion:'canonical-scope-requirement-decision/v1',rowId:'check-'+status,groupId:'partition',groupTitleRu:'Монтаж перегородки',titleRu:'Проверка этапа',reasonRu:'Обоснование состава',kind,status,coveringRowIds,originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false});
+
+test('shared-operation references remain valid canonical JSON when optional fields were absent', () => {
+ const source={...operation('membrane','order','Общий заказ рулонов',0),additionalOperations:[
+  {operationId:'field',operationTitleRu:'Основное поле',completionCriterionRu:'Поле наплавлено'},
+  {operationId:'details',operationTitleRu:'Детали',completionCriterionRu:'Детали герметичны',processOrdinal:2,
+   processRole:'PROCESS',whenResourcePresent:['membrane-details']},
+ ]};
+ const before=JSON.stringify(source),references=canonicalEstimateOperationReferences(source);
+ const serialized=canonicalEstimateStableJson(references);
+ expect(()=>JSON.parse(serialized)).not.toThrow();
+ expect(JSON.parse(serialized)).toEqual(references);
+ expect(references[1]).not.toHaveProperty('processOrdinal');
+ expect(references[1]).not.toHaveProperty('processRole');
+ expect(references[1]).not.toHaveProperty('whenResourcePresent');
+ expect(references[2]).toMatchObject({processOrdinal:2,processRole:'PROCESS',whenResourcePresent:['membrane-details']});
+ const sections=canonicalEstimateResourceOperationSections([
+  {rowId:'rolls',titleRu:'Рулоны',operation:source},
+  {rowId:'membrane-details',titleRu:'Полосы',operation:operation('membrane','details','Детали',2)},
+ ]);
+ expect(sections.filter(section=>section.resourceIds.includes('rolls'))).toHaveLength(1);
+ expect(sections.filter(section=>section.sharedResources.some(resource=>resource.rowId==='rolls'))).toHaveLength(2);
+ expect(JSON.stringify(source)).toBe(before);
+});
 test('completed applicability and excluded mandatory coverage stay inside their one declared stage',()=>{
  const resources=[{rowId:'labor',titleRu:'Труд',operation:operation('partition','frame','Монтаж каркаса',0)}];
  const sections=canonicalEstimateResourceOperationSections(resources,[check('COMPLETED',[],'OBJECT_SCOPE'),check('REQUIRED_RESOURCE_EXCLUDED',['labor'])]);

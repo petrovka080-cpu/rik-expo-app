@@ -25,9 +25,9 @@ describe("KRER 46-05-005-01 upper-beam-chord strengthening devices", () => {
     "0.355", "0.00142", "21.3",
   ];
 
-  test("owns four distinct appended identities", () => {
-    expect(TEMPORARY_UPPER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).toHaveLength(4);
-    expect(new Set(TEMPORARY_UPPER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).size).toBe(4);
+  test("preserves the surviving exact identities and source boundary", () => {
+    expect(TEMPORARY_UPPER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).toHaveLength(2);
+    expect(new Set(TEMPORARY_UPPER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS).size).toBe(2);
     expect(TEMPORARY_UPPER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_IDS)
       .toEqual(Object.values(TEMPORARY_UPPER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_VARIANTS)
         .map((variant) => variant.catalogId));
@@ -134,7 +134,7 @@ describe("KRER 46-05-005-01 upper-beam-chord strengthening devices", () => {
   });
 
   test("resolves all variants and rejects an unsupported key", () => {
-    for (const key of ["standard", "large_area", "small_area", "wet_zone"] as const) {
+    for (const key of ["standard", "wet_zone"] as const) {
       expect(resolveTemporaryUpperBeamChordStrengtheningDevicesKrer46Variant(key).catalogId)
         .toContain(`_${key}`);
     }

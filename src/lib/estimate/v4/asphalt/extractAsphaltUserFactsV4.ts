@@ -103,7 +103,6 @@ function asphaltLayersFromText(text: string, count: number | null): AsphaltLayer
 }
 
 function wearingLayerThicknessFromText(text: string, layerCount: number | null): number | null {
-  if (layerCount != null) return null;
   if (!/(?:асфальт|дорожн[а-яё]*\s+покрыт|pavement)/iu.test(text)) return null;
   if (/(?:ремонт|реконструкц|восстановлен|фрезерован|ямоч)/iu.test(text)) return null;
   const directUpperLayerThickness = matchNumber(
@@ -111,6 +110,7 @@ function wearingLayerThicknessFromText(text: string, layerCount: number | null):
     /верхн[а-яё]*\s+сло[а-яё]*[^.!?\d]{0,30}(?:толщин[а-яё]*\s*)?(?:—|–|-|:|=)?\s*(\d+(?:[,.]\d+)?)\s*(?:мм|mm)/iu,
   );
   if (directUpperLayerThickness != null) return directUpperLayerThickness;
+  if (layerCount != null) return null;
   return matchNumber(
     text,
     /(?:верхн[а-яё]*\s+сло[а-яё]*[^.!?]{0,80}|(?:асфальтобетонн|асфальтов)[а-яё]*\s+покрыт[а-яё]*[^.!?]{0,80})?(?:толщин[а-яё]*\s*(?:сло[а-яё]*\s*)?(?:—|–|-|:|=)?\s*|[×xх]\s*)(\d+(?:[,.]\d+)?)\s*(?:мм|mm)/iu,
@@ -204,6 +204,12 @@ export function extractAsphaltUserFactsV4(rawText: string): AsphaltFactExtractio
   if (layerCount != null) addFact(facts, "asphalt_layer_count", layerCount, "pcs");
   const layers = asphaltLayersFromText(text, layerCount);
   if (layers.length > 0) addFact(facts, "asphalt_layers", layers);
+  // Named lower/upper layers are explicit measurements even when the request
+  // does not separately say "two layers". Do not infer a thickness or count.
+  if (/(?:асфальт|дорожн[а-яё]*\s+покрыт|pavement)/iu.test(text)) addFact(
+    facts, "asphalt_layer_1_thickness_mm", matchNumber(text,
+      /нижн[а-яё]*\s+сло[а-яё]*[^.!?\d]{0,30}(?:толщин[а-яё]*\s*)?(?:—|–|-|:|=)?\s*(\d+(?:[,.]\d+)?)\s*(?:мм|mm)/iu), "mm",
+  );
   addFact(
     facts,
     "asphalt_layer_2_thickness_mm",

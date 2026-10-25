@@ -1,0 +1,203 @@
+{
+  "contract": "masonry-glass-m25-operation-display/r152",
+  "scope": "SOURCE_ONLY_EXISTING_R105_IDENTITIES_NATIVE_M25_ROWS_AND_OWN_INCLUDED_OPERATIONS",
+  "cards": [
+    {
+      "key": "partition",
+      "titleRu": "Устройство перегородки из стеклоблоков",
+      "physicalResultRu": "Самостоятельная стеклоблочная перегородка на готовом основании с исходным армированием и расшивкой швов.",
+      "workKey": "masonry_glass_block_partition_krer08_04_002",
+      "catalogId": "canonical-work:master:masonry_glass_block_partition_krer08_04_002",
+      "sourceIdentity": "master-work:masonry_glass_block_partition_krer08_04_002",
+      "sourceKey": "source:masonry:glass-block:r103:partition",
+      "groupId": "wg:master:masonry_glass_block_partition_krer08_04_002",
+      "primaryMeasureParameterId": "glass97_net_partition_area_m2",
+      "normIds": [
+        "08-04-002-01",
+        "08-04-002-02"
+      ]
+    },
+    {
+      "key": "opening-fill",
+      "titleRu": "Заполнение проёмов стеклоблоками",
+      "physicalResultRu": "Самостоятельное заполнение участка проёма стеклоблоками на готовом основании с исходным армированием; расшивка не включена соседней нормой перегородки.",
+      "workKey": "masonry_glass_block_opening_fill_krer08_04_002",
+      "catalogId": "canonical-work:master:masonry_glass_block_opening_fill_krer08_04_002",
+      "sourceIdentity": "master-work:masonry_glass_block_opening_fill_krer08_04_002",
+      "sourceKey": "source:masonry:glass-block:r103:opening-fill",
+      "groupId": "wg:master:masonry_glass_block_opening_fill_krer08_04_002",
+      "primaryMeasureParameterId": "glass97_filled_opening_area_m2",
+      "normIds": [
+        "08-04-002-03",
+        "08-04-002-04"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "path": "src/lib/estimate/v4/masonryGlassBlockNormalCardsR103.ts",
+      "sha256": "3ebafd9f73ba095b1ff0678cf985cc625b11304fee0b317f1691cfc69c70fff0"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryGlassBlockKrer08R97.ts",
+      "sha256": "1e267f35b1ae46b6a69a3b81bd710e66e8b09e354f909aed792d0b48d55f9d25"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasonryGlassBlockNormalAppendR103.ts",
+      "sha256": "71594a58d027f663ac83557b2483e961e55a0b5553ed3792a88b4b2062a0e0eb"
+    },
+    {
+      "path": "scripts/estimate/r4a13/masonryGlassBlockNormalAppendR103.test.ts",
+      "sha256": "5eb437c66b6c5c452a0c32b2c21d55885f5a8965f708b2c136b40c31054908a6"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-glass-block-krer08-04-002-r97.json",
+      "sha256": "6fabb08cc53a84f515d5060ccfea1a027d513994c6bb335b0e0ba16260745636"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-glass-block-independent-full-map-r103.json",
+      "sha256": "62515ac069c71ac6c4165adbfe94df48b177fe3c4e9ecb5318aa6c3b970b34dc"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-glass-block-normal-route-r103.json",
+      "sha256": "4176cb1dd952792d4fa4f859121920c7193e0f8671ccf935e54a8abd1ef6f352"
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/masonry-glass-block-scoped-current-lookup-r58-r103.json",
+      "sha256": "d5ca2e54589c35cee5a2c4bf7d5f44e9c316e3db51d4ee026d4a6078adf2b9cf"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryGlassM25OperationDisplayR152.ts",
+      "sha256": "f9ee5a1c77514518868e103bf30dd656e048642df0d9b8af6a20071db4f718e0"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts",
+      "sha256": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529"
+    },
+    {
+      "path": "scripts/estimate/r4a13/masonryGlassM25OperationDisplayR152.test.ts",
+      "sha256": "1279a1690935cbb353386942ac7726ccbb9836976c489edc5cd40ed8df2ecfa6"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-glass-m25-display-map-r152.json",
+      "sha256": "29ae7f033e36155b88d6eb8f00d1f1cebbd1e7ca005424f49297e20791d2a4fd"
+    },
+    {
+      "path": "data/estimate-benchmarks/fixtures/masonry-glass-m25-display-fixture-r152.json",
+      "sha256": "62de6b9a13ede031569cc3b00c05d5f6197b545bb9b50dede2e44fb8d7a06d0a"
+    }
+  ],
+  "existingSource": {
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "jurisdiction": "KG",
+    "edition": "КРЕР08, Бишкек2015; точная сохранённая редакция",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "wholeColumnVisualReadPages": [
+      55,
+      56
+    ],
+    "sourcePrices2015Imported": false,
+    "currentLegalAdmissionClaimed": false
+  },
+  "reusedFrozenInputs": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\src\\lib\\estimate\\v4\\masonryGlassBlockNormalCardsR103.ts",
+      "sha256": "3ebafd9f73ba095b1ff0678cf985cc625b11304fee0b317f1691cfc69c70fff0",
+      "bytes": 6576,
+      "logicalPath": "src/lib/estimate/v4/masonryGlassBlockNormalCardsR103.ts"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\src\\lib\\estimate\\v4\\masonryGlassBlockKrer08R97.ts",
+      "sha256": "1e267f35b1ae46b6a69a3b81bd710e66e8b09e354f909aed792d0b48d55f9d25",
+      "bytes": 12408,
+      "logicalPath": "src/lib/estimate/v4/masonryGlassBlockKrer08R97.ts"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\scripts\\estimate\\r4a13\\prepareMasonryGlassBlockNormalAppendR103.ts",
+      "sha256": "71594a58d027f663ac83557b2483e961e55a0b5553ed3792a88b4b2062a0e0eb",
+      "bytes": 19285,
+      "logicalPath": "scripts/estimate/r4a13/prepareMasonryGlassBlockNormalAppendR103.ts"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\scripts\\estimate\\r4a13\\masonryGlassBlockNormalAppendR103.test.ts",
+      "sha256": "5eb437c66b6c5c452a0c32b2c21d55885f5a8965f708b2c136b40c31054908a6",
+      "bytes": 4372,
+      "logicalPath": "scripts/estimate/r4a13/masonryGlassBlockNormalAppendR103.test.ts"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\data\\estimate-benchmarks\\source-packs\\masonry-glass-block-krer08-04-002-r97.json",
+      "sha256": "6fabb08cc53a84f515d5060ccfea1a027d513994c6bb335b0e0ba16260745636",
+      "bytes": 25621,
+      "logicalPath": "data/estimate-benchmarks/source-packs/masonry-glass-block-krer08-04-002-r97.json"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\data\\estimate-benchmarks\\source-packs\\masonry-glass-block-independent-full-map-r103.json",
+      "sha256": "62515ac069c71ac6c4165adbfe94df48b177fe3c4e9ecb5318aa6c3b970b34dc",
+      "bytes": 109979,
+      "logicalPath": "data/estimate-benchmarks/source-packs/masonry-glass-block-independent-full-map-r103.json"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\data\\estimate-benchmarks\\source-packs\\masonry-glass-block-normal-route-r103.json",
+      "sha256": "4176cb1dd952792d4fa4f859121920c7193e0f8671ccf935e54a8abd1ef6f352",
+      "bytes": 3983,
+      "logicalPath": "data/estimate-benchmarks/source-packs/masonry-glass-block-normal-route-r103.json"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r105\\FROZEN_PASS_HANDOFF_R105\\after\\data\\estimate-benchmarks\\fixtures\\masonry-glass-block-scoped-current-lookup-r58-r103.json",
+      "sha256": "d5ca2e54589c35cee5a2c4bf7d5f44e9c316e3db51d4ee026d4a6078adf2b9cf",
+      "bytes": 3004,
+      "logicalPath": "data/estimate-benchmarks/fixtures/masonry-glass-block-scoped-current-lookup-r58-r103.json"
+    }
+  ],
+  "operationDisplayDelta": {
+    "nativeRowCount": 4,
+    "additionalReferences": 6,
+    "partitionOperationKeys": [
+      "base-alignment",
+      "assemble",
+      "pointing"
+    ],
+    "openingFillOperationKeys": [
+      "base-alignment",
+      "assemble"
+    ],
+    "materialCode": "03-0405-0002",
+    "mortarGrade": "M25",
+    "quantityPer100OwnM2": "0.74",
+    "quantitySplit": false,
+    "costTreatmentUnchanged": true,
+    "nativeInformationalScope": true,
+    "newResourceRowIds": [],
+    "newPaidOwners": 0,
+    "newProcurementOwners": 0
+  },
+  "sourceAndObjectGaps": {
+    "oldUnknownNeedOccurrencesPreserved": 40,
+    "closedNeeds": 0,
+    "newQuantityDefaults": 0,
+    "currentLegalProjectAdmission": "UNRESOLVED",
+    "actualBOMStockToolsSafetyHandlingLogistics": "UNRESOLVED_EXISTING_NEEDS",
+    "freshCurrentNormalAndLockedIdentityGuard": "UNRUN_REQUIRED",
+    "historicalR58IsNotFreshOrGlobalAbsence": true,
+    "dbUuidGuessed": false,
+    "currentPhysicalOwnerAdmission": "HOLD_UNRUN; prior candidate IDs and bounded R58 capture are not authority for a new physical public card"
+  },
+  "delivery": "EXISTING_BACKEND_CONFIG_SOLE_PUBLISHER_SERVER_CORE",
+  "clientImportsAdded": false,
+  "sourceReady": false,
+  "dispatchReady": false,
+  "full": false,
+  "revision": "R154_SAME_R152_CONFIG_WITH_EXISTING_WHOLE_LABOUR_RELATED_REFERENCE_REPAIR",
+  "includedLabourDisplayRepairR154": {
+    "rows": 4,
+    "existingRelatedIdsCompleted": 6,
+    "repairField": "completionCriterionRu",
+    "from": "same original source operation marker",
+    "newLabourOperationIds": 0,
+    "sourceRatesAndUnitOwnerPriceFieldsChanged": false,
+    "strictSharedReaderChanged": false,
+    "newCoreCallsVsR152": 0
+  },
+  "sameOrdinaryR152FactoryNotParallelConfig": true
+}

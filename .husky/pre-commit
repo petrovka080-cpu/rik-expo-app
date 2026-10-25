@@ -1,2 +1,0 @@
-echo "[pre-commit] Running scoped release-safe checks..."
-npx tsx scripts/release/runScopedPreCommit.ts

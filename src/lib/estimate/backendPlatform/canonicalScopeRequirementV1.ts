@@ -163,7 +163,10 @@ export function resolveCanonicalScopeRequirementV1(input: {
     else if (value == null || value === '' || scope.unknownObjectValues!.includes(String(value))) {
       status = 'OBJECT_FACT_REQUIRED'; missing = [id];
     } else if (!projectOnly&&value === scope.legacyObjectValue) { status = 'LEGACY_SOURCE_REQUIRED'; missing = []; }
-    else if (exact.value === true) { status = 'COMPLETED'; missing = []; }
+    else if (exact.value === true) {
+      missing = (scope.requiredFactParameterIds ?? []).filter(id => input.parameters[id] == null || input.parameters[id] === '');
+      status = missing.length ? 'OBJECT_FACT_REQUIRED' : 'COMPLETED';
+    }
   } else if(scope.operationExclusionSatisfiesScopeV1!=null
     &&(scope.operationExclusionSatisfiesScopeV1!==true||scope.kind!=='INCLUDED'||scope.coveringRowIds.length===0))return fail();
   else if(scope.contextWhen&&context?.value!==true) {
@@ -200,12 +203,19 @@ export function resolveCanonicalScopeRequirementV1(input: {
 }
 
 export function canonicalScopeRequirementStatusRuV1(status: CanonicalScopeRequirementStatusV1): string {
-  return ({INCLUDED:'Учтено рассчитанными ресурсами в этой смете',NOT_APPLICABLE:'Не относится к выбранному полю кровли',
+  return ({INCLUDED:'Учтено рассчитанными ресурсами в этой смете',NOT_APPLICABLE:'Не требуется для выбранного состава работ',
     COMPLETED:'Подтверждено исходными данными',USER_EXCLUDED:'Исключено пользователем из этой сметы',PARTLY_INCLUDED:'Часть учтена; отдельный остаток зависит от проекта',
     REQUIRED_RESOURCE_EXCLUDED:'Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав',
     PROCESS_REQUIRED:'Требование к выполнению работ',PROJECT_SCOPE_OPEN:'Отдельный состав зависит от проекта',
     FINANCIAL_POLICY:'Учитывается по сметным и налоговым правилам',OBJECT_FACT_REQUIRED:'Нужны исходные данные участка',
     LEGACY_SOURCE_REQUIRED:'Нормы прежнего состава ещё не подтверждены',SCOPE_UNVERIFIED:'Применимость ещё не подтверждена'})[status];
+}
+
+/** Future execution duties stay in the saved ledger without impersonating a
+ * missing calculation input. Actual scope, object and source gaps still block. */
+export function canonicalScopeRequirementStatusIsOpenV1(status: CanonicalScopeRequirementStatusV1): boolean {
+  return ['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','OBJECT_FACT_REQUIRED','LEGACY_SOURCE_REQUIRED',
+    'SCOPE_UNVERIFIED','REQUIRED_RESOURCE_EXCLUDED'].includes(status);
 }
 
 export type CanonicalScopeRequirementGroupV1 = {

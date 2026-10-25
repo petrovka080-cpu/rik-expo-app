@@ -5,8 +5,8 @@ import type { ProfessionalPhysicalNormApplicabilityResolutionV1 } from "./profes
 
 const APPLICABILITY_VERSION = "professional-physical-norm-applicability:v1" as const;
 
-export const RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID =
-  "standard-profile:rics-nrm2:formwork-measured-contact-area:v1" as const;
+import { RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID } from "../../contracts/ricsNrm2FormworkProfileIdentityV1";
+export { RICS_NRM2_FORMWORK_PRODUCT_PROFILE_ID } from "../../contracts/ricsNrm2FormworkProfileIdentityV1";
 export const RICS_NRM2_FORMWORK_NORM_ID =
   "formwork_rics_nrm2_measured_contact_area_same_unit_routing_v1" as const;
 export const RICS_NRM2_FORMWORK_SOURCE_ID =

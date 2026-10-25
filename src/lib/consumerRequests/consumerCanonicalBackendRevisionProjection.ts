@@ -15,6 +15,7 @@ import type {
 import { consumerEstimateNormSourceAdmissionReport } from "./consumerEstimateNormSourceReadiness";
 import { isConsumerEstimateCompositionVisibleItem } from "./consumerEstimateReadiness";
 import {canonicalPublicResourcePresentationMatchesV1} from '../estimate/backendPlatform/canonicalPublicResourcePresentationV1';
+import {canonicalScopeRequirementDecisionV1,canonicalScopeRequirementStatusIsOpenV1} from '../estimate/backendPlatform/canonicalScopeRequirementV1';
 
 export const CANONICAL_BACKEND_REVISION_PROJECTION_VERSION =
   "canonical-estimate-backend-projection.v1" as const;
@@ -111,7 +112,7 @@ function parameterProjection(
 }
 
 export type CanonicalPreliminaryNamingEvidence = Pick<NonNullable<StructuredEstimatePayload['canonicalBackend']>,
-  'compilerOwner' | 'revisionId' | 'releaseId' | 'catalogId' | 'checksumSha256' | 'preliminaryNeeds'>;
+  'compilerOwner' | 'revisionId' | 'releaseId' | 'catalogId' | 'checksumSha256' | 'preliminaryNeeds' | 'contentWithdrawalReasonRu'>;
 
 function preliminaryRowProjection(needs: CanonicalPreliminaryNamingEvidence['preliminaryNeeds']): NonNullable<EstimateDraftRevision["preliminaryRows"]> {
   const finite = (value: string | null): number | null => value == null || !value.trim()
@@ -231,6 +232,16 @@ export function appendCanonicalBackendRevisionProjection(input: {
   );
   const normSourceAdmission = consumerEstimateNormSourceAdmissionReport(input.nextBundle);
   const preliminaryNeeds = metadata.preliminaryNeeds ?? [];
+  const calculationNeeds = preliminaryNeeds.filter(need => {
+    if (need.needState !== 'CONDITION_REQUIRED' || need.missingParameterIds.length > 0) return true;
+    const graph = need.calculationTrace?.resourceGraph as Record<string, unknown> | undefined;
+    const decision = canonicalScopeRequirementDecisionV1(need.scopeRequirementDecision ?? graph?.scopeRequirementDecisionV1);
+    const traceDecision = graph?.scopeRequirementDecisionV1 == null ? null
+      : canonicalScopeRequirementDecisionV1(graph.scopeRequirementDecisionV1);
+    return !decision || decision.rowId !== need.rowId || canonicalScopeRequirementStatusIsOpenV1(decision.status)
+      || (graph?.scopeRequirementDecisionV1 != null && (!traceDecision || traceDecision.rowId !== decision.rowId
+        || traceDecision.status !== decision.status || traceDecision.kind !== decision.kind));
+  });
   const missingParameterKeys = Array.from(new Set(
     preliminaryNeeds.flatMap((need) => need.missingParameterIds),
   ));
@@ -305,7 +316,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
         reason,
       })),
     },
-    estimateLevel: preliminaryNeeds.length > 0 || normSourceAdmission.status === "SOURCE_GAPS"
+    estimateLevel: calculationNeeds.length > 0 || normSourceAdmission.status === "SOURCE_GAPS"
       ? "PRELIMINARY_QUANTITY_BOQ"
       : "SOURCE_BACKED_PROFESSIONAL_BOQ",
     rawInputFacts: [],
@@ -360,7 +371,7 @@ export function appendCanonicalBackendRevisionProjection(input: {
       })),
       staleTraceAccepted: false,
     },
-    status: preliminaryNeeds.length > 0
+    status: calculationNeeds.length > 0
       ? "needs_more_params_but_preliminary_available"
       : "draft_ready",
     artifacts: {

@@ -62,7 +62,7 @@ export const FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_METADATA = Object.freeze({
   fireproofing_restored_by_this_profile: false,
   separate_fireproof_restoration_required: true,
   use_restriction:
-    "Предварительная автоматическая модель применяется только к гибкой постоянной водонепроницаемой герметизации трещины шириной более 0,2 мм в бетонном основании системой Sika Injection-201 CE без гидростатического напора. Этот источник не подтверждает огнезащитные свойства и этот профиль не восстанавливает огнезащитное покрытие, облицовку или предел огнестойкости: после ремонта основания требуется отдельная совместимая операция восстановления огнезащитной системы и её контроль. Объём рассчитан как геометрический объём прямоугольного раскрытия с видимым редактируемым коэффициентом 1,0; это не скрытая гарантия фактического поглощения. Шаг механических пакеров d/2 взят из method statement. Суффиксы standard/small_area не меняют физические нормы. Structural-bond, masonry/stone, void fill и hydrostatic-pressure требуют другого подтверждённого профиля.",
+    "Предварительная автоматическая модель применяется только к гибкой постоянной водонепроницаемой герметизации трещины шириной более 0,2 мм в бетонном основании системой Sika Injection-201 CE без гидростатического напора. Этот источник не подтверждает огнезащитные свойства и этот профиль не восстанавливает огнезащитное покрытие, облицовку или предел огнестойкости: после ремонта основания требуется отдельная совместимая операция восстановления огнезащитной системы и её контроль. Объём рассчитан как геометрический объём прямоугольного раскрытия с видимым редактируемым коэффициентом 1,0; это не скрытая гарантия фактического поглощения. Шаг механических пакеров d/2 взят из method statement. Физические нормы определяются выбранной технологией ремонта. Structural-bond, masonry/stone, void fill и hydrostatic-pressure требуют другого подтверждённого профиля.",
   source_kind: "MANUFACTURER_PDS_METHOD_PLUS_TRANSPARENT_PRELIMINARY_GEOMETRY_MODEL",
   compatible_system_url:
     "https://ind.sika.com/dms/getdocument.get/c07bce7d-2c39-4099-813b-5aea842e989d/sika_injection-201ce.pdf",
@@ -96,17 +96,6 @@ export const FIREPROOF_ZONE_INJECTION_REPAIR_SOURCE_METADATA = Object.freeze({
 });
 
 export const FIREPROOF_ZONE_INJECTION_REPAIR_VARIANTS = Object.freeze({
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:special_repair_interior_fireproof_inject_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu:
-      "Герметизация трещин бетонного основания перед восстановлением огнезащиты малой площади",
-    aliasesRu: [
-      "инъектирование трещин бетонного основания перед восстановлением огнезащиты малая площадь",
-      "ремонт основания в зоне повреждённой огнезащиты инъекцией небольшой участок",
-      "инъектирование огнезащиты на малой площади",
-    ],
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:special_repair_interior_fireproof_inject_standard",
     catalogVariant: "STANDARD_AREA_SEARCH_IDENTITY",

@@ -1,7 +1,7 @@
 import {CanonicalSelectedDeliveryDocumentPanel} from './CanonicalSelectedDeliveryDocumentPanel';
 import type {SelectedDeliveryDocumentSourceR1} from '../../lib/estimate/backendPlatform/canonicalSelectedDeliveryDocumentR1';
 import type {CanonicalSelectedMaterialDeliveryRequestR1 as DeliveryConfirmation} from '../../lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1';
-import { buildCanonicalProcurementPreviewRows } from './canonicalProcurementPreviewRows';
+import { buildCanonicalProcurementPreviewRows, buildCanonicalProcurementPreviewSections } from './canonicalProcurementPreviewRows';
 export { buildCanonicalProcurementPreviewRows, type CanonicalProcurementPreviewRow } from './canonicalProcurementPreviewRows';
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -61,6 +61,7 @@ import { safeJsonParseValue } from "../../lib/format";
 import { getCanonicalEstimateCatalogItem, getCanonicalEstimateRevision, getAllCanonicalEstimateRevisionRows } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { jubileeParameterGroups, jubileeParameterWording } from './consumerJubileeParameterPresentation';
 import { canonicalPublicEstimateFixtureTextRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import { consumerParameterApplyFailure, consumerParameterFieldStatus, type ConsumerParameterApplyFailure } from './consumerParameterApplyFeedback';
 
 const LEGACY_ASPHALT_WORK_ID = "asphalt_concrete_pavement";
 
@@ -90,7 +91,7 @@ type ItemEditorHandlers = {
   onSelectCatalogItem?: (item: CatalogItemPickerItem) => void;
 };
 
-export type ConsumerRepairParameterApplyResult = boolean | void | { status: "revision_opened" | "applied"; revisionId: string };
+export type ConsumerRepairParameterApplyResult = boolean | void | { status: "revision_opened" | "applied"; revisionId: string } | ConsumerParameterApplyFailure;
 
 type ParameterHandlers = {
   onParameterDraftInteraction?: () => void;
@@ -295,6 +296,7 @@ export function canonicalConsumerParameterInlineGuide(input: {
   const guideSource = input.parameter?.value != null
     ? input.parameter.source
     : input.parameter?.referenceSource ?? input.parameter?.source;
+  if (input.parameter?.inputOwnership === 'USER_INPUT' && guideSource === 'NORMATIVE_DERIVED') return 'по данным объекта';
   if (displayBaseline) {
     if (guideSource === "NORMATIVE_DERIVED"
       && input.parameter?.normativeSource
@@ -559,6 +561,9 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
     } = this.props;
     const { parametersOpen, positionsOpen, procurementOpen } = this.state;
     const procurementRows = buildCanonicalProcurementPreviewRows(currentRevision, viewModel.sections.flatMap(section => section.items));
+    const procurementById = new Map(procurementRows.map(row => [row.rowId, row]));
+    const procurementSections = buildCanonicalProcurementPreviewSections(currentRevision, procurementRows,
+      viewModel.sections.flatMap(section => section.items));
     const editableMissingCount = canonicalParameterSession
       ? consumerRepairCanonicalMissingObjectParameterCount(canonicalParameterSession, (viewModel.sourceGates ?? []).map(gate => gate.parameterId))
       : 0;
@@ -630,7 +635,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
             </Text>
           </Pressable>
         ) : null}
-        {procurementRows.length > 0 && onOpenProcurement ? (
+        {onOpenProcurement ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Открыть список закупки"
@@ -644,7 +649,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
         ) : null}
       </View>
 
-      {procurementOpen && procurementRows.length > 0 ? (
+      {procurementOpen ? (
         <View style={styles.procurementPanel} testID="consumer-estimate-procurement-list">
           <View style={styles.panelHeader}>
             <Text style={styles.panelTitle}>Список закупки</Text>
@@ -652,7 +657,17 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
               {`${procurementRows.length} ${pluralizeRu(procurementRows.length, "позиция", "позиции", "позиций")} · текущий расчёт`}
             </Text>
           </View>
-          {procurementRows.map((row) => (
+          {procurementRows.length === 0 ? (
+            <Text style={styles.procurementPrice} testID="consumer-estimate-procurement-empty">
+              В этой версии нет рассчитанных позиций к покупке.
+            </Text>
+          ) : null}
+          {procurementSections.map(section => (
+            <View key={section.key} style={styles.procurementSection}>
+              {section.operation ? <Text style={styles.procurementOperationTitle}>
+                {section.operation.operationTitleRu}
+              </Text> : null}
+          {section.resourceIds.map(id => procurementById.get(id)!).map((row) => (
             <View
               key={row.rowId}
               style={styles.procurementRow}
@@ -671,6 +686,14 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
                   ? "Цена не заполнена"
                   : `${compactRuNumber(row.unitPrice)} ${row.currency} за ${row.unit}`}
               </Text>
+            </View>
+          ))}
+              {section.sharedResources.map(resource => (
+                <Text key={resource.rowId} style={styles.procurementPrice}
+                  testID={`consumer-estimate-procurement-shared-${resource.rowId}-${section.operation?.operationId}`}>
+                  {`↳ ${resource.titleRu}`}
+                </Text>
+              ))}
             </View>
           ))}
         </View>
@@ -710,7 +733,7 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
           incompleteResolutionLabel={editableMissingCount > 0
             ? `Заполнить данные объекта (${editableMissingCount})`
             : sourceGateCount > 0
-              ? `Показать отсутствующие нормы (${sourceGateCount})`
+              ? 'Есть нерассчитанные позиции'
               : "Открыть обязательные данные"}
           onResolveIncomplete={editableMissingCount > 0 ? this.openIncompleteRequirements : undefined}
           onDecrease={onDecrease}
@@ -794,7 +817,6 @@ type ParameterDisclosurePanelState = {
   deliveryDocumentReset: number;
   compositionRefresh: { revisionId: string; catalogId: string; sourceReleaseId: string; targetReleaseId: string } | null;
   showAllMissing: boolean;
-  sourceDetailsOpen: boolean;
   automaticDetailsOpen: boolean;
   advancedDetailsOpen: boolean;
   foundationDetailsOpen: boolean;
@@ -810,6 +832,7 @@ type ParameterDisclosurePanelState = {
   explicitlyConfirmedMissingValues: Record<string, true>;
   expandedGuideDetails: Record<string, true>;
   applyState: "idle" | "pending" | "success" | "error" | "revision_opened";
+  applyFailureMessage: string | null;
 };
 
 export function isConsumerRepairParameterExplicitlyDirty(input: {
@@ -902,6 +925,19 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
       : undefined;
   }
 
+  private changeText(controlId: string, value: string, commit: (value: string) => void): void {
+    // The last selection belongs to the previous text. Release it before
+    // publishing the raw edit so a controlled rerender cannot restore the
+    // old cursor while the native selection-change event is still pending.
+    this.setState(state => {
+      if (!state.selectionByControlId[controlId]) return null;
+      const selectionByControlId = { ...state.selectionByControlId };
+      delete selectionByControlId[controlId];
+      return { selectionByControlId };
+    });
+    commit(value);
+  }
+
   private compositeItems(): InlineCompositeItem[] {
     if (!this.props.structuredGroup || !this.props.value.trim()) return [];
     const parsed = safeJsonParseValue<unknown>(this.props.value, null);
@@ -981,7 +1017,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
                       {field.choices.length > 0 ? <View style={styles.batchActions}>{field.choices.map((choice) => <Pressable key={choice.value} onPress={() => this.updateCompositeField(item.itemId, field.key, choice.value)} style={[styles.inlineParamButton, styles.inlineParamChoiceButton, fieldValue === choice.value ? styles.inlineParamPrimaryButton : null]}><Text style={[fieldValue === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText, styles.inlineParamChoiceText]}>{choice.labelRu}</Text></Pressable>)}</View> : <TextInput
                         value={fieldValue}
                         importantForAutofill="no"
-                        onChangeText={(nextValue) => this.updateCompositeField(item.itemId, field.key, nextValue)}
+                        onChangeText={(nextValue) => this.changeText(focusId, nextValue, value => this.updateCompositeField(item.itemId, field.key, value))}
                         onFocus={() => this.focusControl(focusId)}
                         onBlur={() => this.blurControl(focusId)}
                         onSelectionChange={(event) => this.rememberSelection(focusId, event)}
@@ -1038,7 +1074,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
               <TextInput
                 value={value}
                 importantForAutofill="no"
-                onChangeText={(nextValue) => onChange(paramKey, nextValue)}
+                onChangeText={(nextValue) => this.changeText(paramKey, nextValue, value => onChange(paramKey, value))}
                 onFocus={() => this.focusControl(paramKey)}
                 onBlur={() => this.blurControl(paramKey)}
                 onSelectionChange={(event) => this.rememberSelection(paramKey, event)}
@@ -1107,7 +1143,6 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     deliveryConfirmation: undefined,deliveryConfirmationPending:false,deliveryDocumentReset:0,
     compositionRefresh: null,
     showAllMissing: false,
-    sourceDetailsOpen: false,
     automaticDetailsOpen: false,
     advancedDetailsOpen: false,
     foundationDetailsOpen: false,
@@ -1123,6 +1158,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     explicitlyConfirmedMissingValues: {},
     expandedGuideDetails: {},
     applyState: "idle",
+    applyFailureMessage: null,
   };
 
   componentDidMount(): void {
@@ -1414,6 +1450,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         ? { ...state.explicitlyConfirmedMissingValues, [paramKey]: true }
         : state.explicitlyConfirmedMissingValues,
       applyState: "idle",
+      applyFailureMessage: null,
     }));
   };
 
@@ -1439,6 +1476,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       validationErrors: {},
       explicitlyConfirmedMissingValues: {},
       applyState: "idle",
+      applyFailureMessage: null,
     });
   };
 
@@ -1529,33 +1567,37 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       if (this.compositionRefreshDisposed || this.applyingDraftParameters !== operation
         || this.props.canonicalParameterReadinessPending || this.props.onApplyParamBatch !== apply
         || this.props.canonicalParameterSession?.workPassportId !== catalogId) return;
-      const exactChild = result && typeof result === "object" && result.revisionId === this.props.revision?.revisionId
+      const exactChild = result && typeof result === "object" && result.status !== 'failed' && result.revisionId === this.props.revision?.revisionId
         && generation + 1 === this.compositionRefreshGeneration
         && parentRevisionId != null && this.props.revision?.previousRevisionId === parentRevisionId;
       const sameParent = this.props.revision?.revisionId === parentRevisionId && generation === this.compositionRefreshGeneration;
       if (!sameParent && !exactChild) return;
-      this.setState({ applyState: this.parameterApplyState(result) });
+      const failure = result && typeof result === 'object' && result.status === 'failed' ? result : null;
+      this.setState({ applyState: this.parameterApplyState(result), applyFailureMessage: failure?.messageRu ?? null,
+        validationErrors: failure ? Object.fromEntries(failure.parameterIds.filter(id => cardsByKey.get(id)?.editable)
+          .map(id => [id, failure.messageRu])) : {} });
     };
-    this.setState({ applyState: "pending" });
+    this.setState({ applyState: "pending", applyFailureMessage: null, validationErrors: {} });
     try {
       const result = this.state.deliveryConfirmation ? apply?.(patches,this.state.deliveryConfirmation) : apply?.(patches);
       if (result && typeof (result as Promise<ConsumerRepairParameterApplyResult>).then === "function") {
         void (result as Promise<ConsumerRepairParameterApplyResult>).then(
           complete,
-          () => complete(false),
+          error => complete(consumerParameterApplyFailure(error)),
         ).finally(() => { if (this.applyingDraftParameters === operation) this.applyingDraftParameters = null; });
       } else {
         complete(result as ConsumerRepairParameterApplyResult);
         if (this.applyingDraftParameters === operation) this.applyingDraftParameters = null;
       }
-    } catch {
-      complete(false);
+    } catch (error) {
+      complete(consumerParameterApplyFailure(error));
       if (this.applyingDraftParameters === operation) this.applyingDraftParameters = null;
     }
   }
 
   private parameterApplyState(result: ConsumerRepairParameterApplyResult): ParameterDisclosurePanelState["applyState"] {
-    return result === false ? "error" : result && typeof result === "object" && result.status === "revision_opened" ? "revision_opened" : "success";
+    return result === false || result && typeof result === 'object' && result.status === 'failed' ? "error"
+      : result && typeof result === "object" && result.status === "revision_opened" ? "revision_opened" : "success";
   }
 
   private continuePreliminaryCompilation = (): void => {
@@ -1600,7 +1642,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       const applied = await apply([]);
       // A successful screen replacement changes the source and clears the old
       // refresh token. Admit only the exact named child from this one transition.
-      const exactOpenedChild = applied && typeof applied === "object"
+      const exactOpenedChild = applied && typeof applied === "object" && applied.status !== 'failed'
         && !this.compositionRefreshDisposed && !this.props.canonicalParameterReadinessPending
         && generation + 1 === this.compositionRefreshGeneration
         && interactionGeneration === this.draftInteractionGeneration
@@ -1629,29 +1671,38 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
     const rawValue = this.initialEditValue(card);
     const canonicalParameter = this.editableCanonicalParameterSession()?.parameters.find(
       (parameter) => parameter.parameterId === card.key,
-    );
-    const baseline = canonicalParameter?.referenceValue == null
-      ? this.baselineValueForCard(card)
-      : String(canonicalParameter.referenceValue);
+    ) ?? this.editableCanonicalParameterSession()?.applicationParameters?.find(parameter => parameter.parameterId === card.key);
+    const baseline = this.baselineValueForCard(card);
     const isDirty = isConsumerRepairParameterExplicitlyDirty({
       baselineValue: baseline,
       draftValue: rawValue,
       explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
     });
     const meta = card.missing ? card.requiredForLabelRu : card.displayValueRu;
-    const hasValidNormRange = Boolean(
-      canonicalParameter?.normativeSource &&
-      canonicalParameter.validation.min != null &&
+    const hasValidRange = Boolean(
+      canonicalParameter?.validation.min != null &&
       canonicalParameter.validation.max != null &&
       canonicalParameter.validation.max > canonicalParameter.validation.min
     );
-    const validationHint = canonicalParameter?.valueType === "number" && hasValidNormRange
+    const validationHint = canonicalParameter?.valueType === "number" && hasValidRange
       ? `Допустимый диапазон ввода: ${canonicalNumericInputRule({
         ...canonicalParameter.validation,
         unit: card.unitRu,
       })}.`
       : undefined;
     const editableInPlace = paramEditorEnabled && card.editable;
+    const fieldError = this.state.validationErrors[card.key] || (canonicalParameter?.state === 'INVALID'
+      ? 'Проверьте формат и допустимые границы этого поля.' : undefined);
+    const fieldStatus = consumerParameterFieldStatus({ rawValue, dirty: isDirty, error: fieldError,
+      required: card.inputOwnership !== 'APPLICATION' && card.requiredFor !== 'better_accuracy',
+      valid: canonicalParameter?.valid, validationIssues: canonicalParameter?.validationIssues,
+      assumed: canonicalParameter?.source === 'ASSUMED' });
+    const statusStyle = fieldStatus.kind === 'invalid' ? styles.invalidParameterRow
+      : fieldStatus.kind === 'missing' ? styles.missingParameterRow
+      : fieldStatus.kind === 'provided' ? styles.providedParameterRow
+      : fieldStatus.kind === 'pending' || fieldStatus.kind === 'preliminary' ? styles.pendingParameterRow : null;
+    const statusColor = fieldStatus.kind === 'invalid' ? '#B91C1C' : fieldStatus.kind === 'missing' ? '#92400E'
+      : fieldStatus.kind === 'provided' ? '#166534' : '#1D4ED8';
     const guideExpanded = this.state.expandedGuideDetails[card.key] === true;
     // Project known fixture annotations only while rendering. Raw draft and
     // baseline values remain the owners of dirty detection and saved patches.
@@ -1666,7 +1717,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       guideShortRu: wording?.guide ?? card.guideShortRu,
       unitLabel: card.unitRu,
     });
-    const applicationValueStatus = card.missing
+    const applicationValueStatus = card.inputOwnership === 'APPLICATION'
+      ? 'Это значение определяет приложение по источнику. Вводить или изменять его вручную не требуется.'
+      : card.missing
       ? null
       : card.source === "catalog_default"
         ? `Приложение рассчитало или подставило: ${meta}. Поле можно изменить.`
@@ -1683,17 +1736,19 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         : group.rowIds.some(id=>canonicalParameter?.affectsRows.includes(id))));
 
     return (
-      <View key={card.key} style={[styles.parameterRow, card.missing || sourceReview ? styles.requiredParameterRow : null]} testID={`editable-param-chip-${card.key}`}>
+      <View key={card.key} style={[styles.parameterRow, statusStyle]} testID={`editable-param-chip-${card.key}`}>
+        <Text style={[styles.parameterFieldStatus, { color: statusColor }]}
+          accessibilityLabel={`${label}. ${card.inputOwnership === 'APPLICATION' ? 'Только чтение. ' : ''}${fieldStatus.labelRu}`}
+          accessibilityRole={fieldStatus.kind === 'invalid' ? 'alert' : 'text'} accessibilityLiveRegion="polite"
+          testID={`editable-param-status-${card.key}`}>
+          {card.inputOwnership === 'APPLICATION' ? (rawValue.trim() ? 'Значение приложения — только чтение' : 'Приложение ещё не определило значение') : fieldStatus.labelRu}
+        </Text>
         {sourceReview ? <Text style={styles.requiredParameterHint} testID={`editable-param-source-review-${card.key}`}>
           {sourceReview.sourceCheckRestoration
             ? `Восстановите проверку норм в этапе «${sourceReview.titleRu}». Значение поля сохранено; восстановление само по себе не подтверждает нормы.`
             : sourceReview.statuses.includes('OBJECT_FACT_REQUIRED')
             ? `Нужно указать «${label}» для этапа «${sourceReview.titleRu}». Нормы и зависимые количества получает приложение.`
             : 'Нормы выбранного состава ещё не подтверждены приложением. Поле заполнено; вводить профессиональные коэффициенты не требуется.'}
-        </Text> : null}
-        {card.missing ? <Text style={styles.requiredParameterHint}>
-          {rawValue.trim() ? 'Проверьте значение и нажмите «Применить»'
-            : card.requiredFor === 'better_accuracy' ? 'Выберите, если данные известны' : 'Нужно заполнить'}
         </Text> : null}
         <View style={styles.compactParameterLine}>
           <Text
@@ -1710,7 +1765,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
               value={editorValue}
               unitLabel={card.unitRu}
               dirty={isDirty}
-              error={this.state.validationErrors[card.key]}
+              error={fieldError}
               hint={validationHint}
               choices={card.choices}
               guideShortRu={placeholder}
@@ -1736,7 +1791,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
             <Text style={styles.guideInfoButtonText}>i</Text>
           </Pressable>
         </View>
-        {visibleGuide && !card.structuredGroup ? <Text style={styles.parameterMeta} testID={`editable-param-explanation-${card.key}`}>{visibleGuide}</Text> : null}
+        {fieldStatus.kind==='invalid'&&validationHint ? (
+          <Text style={styles.parameterMeta} testID={`editable-param-range-${card.key}`}>{validationHint}</Text>
+        ) : null}
         {applicationValueStatus ? (
           <Text
             style={styles.parameterMeta}
@@ -1746,12 +1803,9 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           </Text>
         ) : null}
         {guideExpanded ? <View style={styles.guideDetailsPanel}>
+          {visibleGuide && !card.structuredGroup ? <Text style={styles.parameterMeta} testID={`editable-param-explanation-${card.key}`}>{visibleGuide}</Text> : null}
+          {card.sourceSummaryRu ? <Text style={styles.parameterSourceSummary} testID={`editable-param-source-${card.key}`}>{card.sourceSummaryRu}</Text> : null}
           {validationHint ? <Text style={styles.parameterMeta}>{validationHint}</Text> : null}
-          {canonicalParameter?.normativeSource ? (
-            <Text style={styles.parameterMeta}>
-              {canonicalParameter.normativeSource.document} · {canonicalParameter.normativeSource.locator}
-            </Text>
-          ) : null}
           {(card.guideDetailsRu ?? []).map((line, index) => <Text key={`${card.key}:guide:${index}`} style={styles.parameterMeta}>{line}</Text>)}
           {card.whyItMattersRu ? <Text style={styles.parameterMeta}>Зачем: {card.whyItMattersRu}</Text> : null}
           {card.changesInEstimateRu ? <Text style={styles.parameterMeta}>{card.changesInEstimateRu}</Text> : null}
@@ -1797,6 +1851,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       canonicalSession?.status === "BLOCKING_REQUIRED";
     const missingCards = cards
       .filter((card) => {
+        if (card.inputOwnership === 'APPLICATION') return false;
         const dirty = isConsumerRepairParameterExplicitlyDirty({
           baselineValue: this.baselineValueForCard(card),
           draftValue: this.initialEditValue(card),
@@ -1828,22 +1883,23 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       explicitlyConfirmedMissingValue: this.state.explicitlyConfirmedMissingValues[card.key] === true,
     }) ? this.state.baselinePlacements[card.key]?.source ?? card.source : card.source;
     const assumptionCards = canonicalSession
-      ? cards.filter((card) => !missingCardIds.has(card.key) && groupSource(card) === "catalog_default"
+      ? cards.filter((card) => card.inputOwnership !== 'APPLICATION' && !missingCardIds.has(card.key) && groupSource(card) === "catalog_default"
         // Keep the legacy primary quantity beside its object question. Its
         // template value still carries the visible assumption provenance.
         && card.consumerInputRole == null && card.key !== 'q')
       : [];
-    const advancedCards = cards.filter(card => card.consumerInputRole === "ADVANCED_OPTION" || card.consumerInputRole === "APPLICATION_TECHNICAL");
+    const advancedCards = cards.filter(card => card.inputOwnership !== 'APPLICATION' && (card.consumerInputRole === "ADVANCED_OPTION" || card.consumerInputRole === "APPLICATION_TECHNICAL"));
     const advancedCardIds = new Set(advancedCards.map(card => card.key));
     const mainMissingCards = missingCards.filter(card => !advancedCardIds.has(card.key));
     const advancedMissingCount = missingCards.filter(card => advancedCardIds.has(card.key)).length;
     const filledCards = cards.filter((card) =>
+      card.inputOwnership !== 'APPLICATION' &&
       !missingCardIds.has(card.key) &&
       groupSource(card) !== "formula_derived" &&
       !assumptionCards.includes(card) && !advancedCards.includes(card)
     );
     const derivedCards = cards.filter((card) =>
-      groupSource(card) === "formula_derived" && !missingCardIds.has(card.key) && !advancedCards.includes(card));
+      card.inputOwnership !== 'APPLICATION' && groupSource(card) === "formula_derived" && !missingCardIds.has(card.key) && !advancedCards.includes(card));
     // A short published set of object facts should remain visible together,
     // including its technology and scope choices after the first save.
     const filledVisibleCount = filledCards.length <= 10 && filledCards.every(card => card.consumerInputRole === 'OBJECT_FACT')
@@ -1892,17 +1948,19 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
         <Text style={styles.panelMeta}>
           {jubileeGroups
             ? 'Можно сохранить известные данные сейчас, а остальные уточнить позже. Пустые поля не считаются подтверждёнными.'
+            : (canonicalSession?.invalidParameterIds.length ?? 0) > 0
+              ? 'Исправьте ошибки в выделенных полях.'
             : blockingMissingCount > 0
             ? `Нужно уточнить: ${blockingMissingCount} обязательных ${pluralizeRu(blockingMissingCount, "параметр", "параметра", "параметров")}`
             : contractMissingCount > 0
               ? `Поля для уточнения: ${contractMissingCount}. Если данных нет, выберите соответствующий вариант или оставьте поле пустым.`
               : this.props.viewModel?.scopeRequirementGroups?.some(group=>group.statuses.includes('LEGACY_SOURCE_REQUIRED')
                   || group.kinds?.includes('OBJECT_SCOPE') && group.statuses.includes('SCOPE_UNVERIFIED'))
-                ? 'Данные введены. Нормы выбранного состава ещё не подтверждены приложением.'
+                ? 'Расчёт сохранён. Часть позиций пока не рассчитана.'
               : this.props.viewModel?.scopeRequirementGroups?.some(group=>group.statuses.includes('OBJECT_FACT_REQUIRED'))
                 ? 'Укажите недостающие данные объекта в выделенных полях.'
               : sourceGateCount > 0
-                ? 'Данные объекта заполнены. Приложению не хватает технических данных для завершения расчёта.'
+                ? 'Расчёт сохранён. Часть позиций пока не рассчитана.'
                 : "Все обязательные параметры заполнены"}
         </Text>
         {canonicalSession && assumptionCards.length > 0 ? (
@@ -1916,23 +1974,6 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           </Text>
         ) : null}
       </View>
-      {visibleSourceGates.length > 0 ? (
-        <View style={styles.parameterGroup} testID="request-estimate-source-gates">
-          <Pressable accessibilityRole="button" onPress={() => this.setState(state => ({ sourceDetailsOpen: !state.sourceDetailsOpen }))}
-            style={styles.inlineToggle} testID="request-estimate-source-gates-toggle">
-            <Text style={styles.groupTitle}>{this.state.sourceDetailsOpen ? 'Скрыть технические данные' : 'Технические данные расчёта'}</Text>
-          </Pressable>
-          <Text style={styles.parameterMeta}>
-            Эти данные должно определить приложение по нормам и паспортам. Вам не нужно искать скрытое поле или вводить нормы вручную. Известный расход сохранён; полный расчёт пока не завершён.
-          </Text>
-          {this.state.sourceDetailsOpen ? visibleSourceGates.map((gate) => (
-            <View key={gate.parameterId} style={styles.sourceGateRow} testID={`request-estimate-source-gate-${gate.parameterId}`}>
-              <Text style={styles.parameterLabel}>{gate.title}</Text>
-              <Text style={styles.parameterMeta}>{gate.sourceRequirement}</Text>
-            </View>
-          )) : null}
-        </View>
-      ) : null}
       {clarification ? (
         <View style={styles.parameterGroup} testID="request-estimate-asphalt-v4-understood">
           <Text style={styles.groupTitle}>{clarification.heading_ru}</Text>
@@ -1998,7 +2039,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
       ) : null}
       {this.state.applyState === "error" ? (
         <Text style={styles.inlineParamError} testID="request-estimate-parameter-apply-error">
-          Не применено. Введённые значения сохранены на экране — исправьте указанную ошибку и повторите.
+          {this.state.applyFailureMessage ?? 'Изменения пока не применены. Ввод сохранён на экране; отдельные поля не отмечены ошибочными без результата их проверки.'}
         </Text>
       ) : null}
       {this.state.applyState === "revision_opened" ? (
@@ -2401,6 +2442,15 @@ const styles = StyleSheet.create({
     borderTopColor: "#D1FAE5",
     paddingTop: 9,
   },
+  procurementSection: {
+    gap: 8,
+  },
+  procurementOperationTitle: {
+    color: "#14532D",
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "900",
+  },
   procurementTitle: {
     color: "#0F172A",
     fontSize: 13,
@@ -2492,6 +2542,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   requiredParameterHint: { color: "#9A3412", fontWeight: "700", fontSize: 12 },
+  invalidParameterRow: { backgroundColor: '#FEF2F2', borderLeftWidth: 3, borderLeftColor: '#B91C1C', paddingHorizontal: 8, paddingVertical: 8 },
+  missingParameterRow: { backgroundColor: '#FFFBEB', borderLeftWidth: 3, borderLeftColor: '#D97706', paddingHorizontal: 8, paddingVertical: 8 },
+  providedParameterRow: { backgroundColor: '#F0FDF4', borderLeftWidth: 3, borderLeftColor: '#15803D', paddingHorizontal: 8, paddingVertical: 8 },
+  pendingParameterRow: { backgroundColor: '#EFF6FF', borderLeftWidth: 3, borderLeftColor: '#2563EB', paddingHorizontal: 8, paddingVertical: 8 },
+  parameterFieldStatus: { fontSize: 11, lineHeight: 15, fontWeight: '700' },
+  parameterSourceSummary: { color: '#334155', fontSize: 11, lineHeight: 16 },
   compactParameterLine: {
     minHeight: 32,
     flexDirection: "row",

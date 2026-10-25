@@ -1,0 +1,376 @@
+{
+  "systemParameterId": "roof_protected002_method_r24",
+  "conditionsParameterId": "roof_protected002_conditions_r24",
+  "areaParameterId": "roof_protected002_measure_scope_r24",
+  "conditionsYesRu": "Точныеусловия и проектнаясистема выбранной002колонки подтверждены",
+  "areaYesRu": "Самостоятельнаяплощадь всейвыбранной системы подтверждена",
+  "unknownChoiceRu": "Применимость илиобмер ещёнепроверены",
+  "legacyChoiceRu": "Историческийсостав безнового002допуска",
+  "measurementParameterId": "roof_protected002_area_m2_r24",
+  "measurementUnitId": "m2",
+  "measurementConditional": true,
+  "measurementTitleRu": "Площадь выбранной системы покрытия,м²",
+  "measurementGuideRu": "Самостоятельный проектныйобмер выбранного основногополя поsourceправилам;неплощадьрулонов,пола илидругого покрытия.",
+  "quantityEditReasonRu": "Количество поцелой собственной002колонке иобмеру;числослоёв/толщина/stock/price не меняютнорму.",
+  "contract": "roof-flat-roll-native00205/r24",
+  "prefix": "roof:flat-roll:missing002:r24:05",
+  "normId": "12-01-002-05",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "WORK_CANDIDATE_KRER12_MISSING002_EXACT_SUBJECT_BUNDLE_R24",
+      "titleRu": "КРЕР12:все10собственныхнедостающих002колонок приотдельномсохранении00209",
+      "printedEdition": "КРЕР12-2015;приказ28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDFphysical/printed9–11/table002;точные собственныеколонки01–08/10/11;existing09непереавторизуется",
+      "reviewedAt": "2026-10-25",
+      "quantityAdmitted": false,
+      "sourceIdentityStatus": "UNADMITTED_WORK_CANDIDATE_NOT_NEW_OWNER_PERMISSION"
+    }
+  ],
+  "scopeRu": "Четырёхслойное покрытие сзащитой бетоннымиплитами накварцевомпеске00205",
+  "systemRu": "Четырёхслойное покрытие сзащитой бетоннымиплитами накварцевомпеске00205. Собственные материалы/числослоёв/защита не заменяются расходами00209;точнаясовместимость ипригодность основания подтверждаются отдельно.",
+  "conditionsRu": "Точные нормативныеусловия,продукты ираздельная физическаяграница оплачиваемогополя/защиты;цена/stock/PPR неисточникновойнормы.",
+  "measurementRu": "100м² кровли;проектный обмер именноэтойсистемы илисамостоятельнойзащиты. Необщаяплощадьматериалов,нечислоплит.",
+  "remainingScopeRu": [
+    "Готовое пригодное основание;полный пирог,проектные узлы иточные условия применения отдельно.",
+    "Не переносить00209два наплавляемыхслоя на этичетырёхслойные оклеечные способы;нет новыхгорелки/пропанбутана из00209.",
+    "Точный исходный антисептический продукт/рецептура/совместимость не ППР-факт и не обычный пользовательскийдопуск.",
+    "Защитный цементныйслой00203 уже внутрицелой нормы;не добавить вторуюоплату017 длятого же верхнегослоя. Иное основание/лицо отдельно пообъекту.",
+    "Площадь460м²рубероида не универсальная норма4слоёв/запаса;толщинацементнойзащиты из3.06м³невыводится.",
+    "Физическийstock/ППР/продуктовыйпост/контрольдозировки/доступ/СИЗ/приёмка UNKNOWN. Одинобщий400лboiler;nativeчасы нештучныйstock.",
+    "Длянехимических07/08/10/11:требуется точный проектныйsource/productдопуск,не произвольнаясовременнаязамена.",
+    "00211 недобавляется повторно кметоду сужевключённойгравийнойзащитой;самостоятельнаяработа надготовымсовместимымполем не требует фиктивногоновогоfirstarea."
+  ],
+  "groupTitleRu": "Собственные способыплоскогопокрытия иего гравийнойзащиты",
+  "operationTitleRu": "Четырёхслойное покрытие сзащитой бетоннымиплитами накварцевомпеске00205",
+  "completionCriterionRu": "Целый собственныйспособ выполнен;точныйпроект/stock/приёмка отдельно.",
+  "systemYesRu": "Четырёхслойное покрытие сзащитой бетоннымиплитами накварцевомпеске00205",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-8",
+      "titleRu": "Рабочие-строители среднего разряда3,8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "81.47",
+      "sourceRatePer100m2": "81.47",
+      "sourceCellLexeme": "81,47",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "sourceTitleRu": "Затраты труда машинистов",
+      "sourceInternalTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "4.07",
+      "sourceRatePer100m2": "4.07",
+      "sourceCellLexeme": "4,07",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ]
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью8т",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "sourceInternalTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологическогооборудования)8т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "2.31",
+      "sourceRatePer100m2": "2.31",
+      "sourceCellLexeme": "2,31",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "truck_crane_10t",
+      "resourceCode": "02-0075",
+      "titleRu": "Кран автомобильный грузоподъёмностью10т",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "sourceInternalTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "1.32",
+      "sourceRatePer100m2": "1.32",
+      "sourceCellLexeme": "1,32",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "forklift_5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчик грузоподъёмностью5т",
+      "sourceTitleRu": "Автопогрузчики5т",
+      "sourceInternalTitleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.44",
+      "sourceRatePer100m2": "0.44",
+      "sourceCellLexeme": "0,44",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "boiler400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Котёл битумный передвижной вместимостью400л",
+      "sourceTitleRu": "Котлы битумные передвижные400л",
+      "sourceInternalTitleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "9.80",
+      "sourceRatePer100m2": "9.80",
+      "sourceCellLexeme": "9,80",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ],
+      "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST"
+    },
+    {
+      "role": "flatbed_to5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "sourceInternalTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "1.47",
+      "sourceRatePer100m2": "1.47",
+      "sourceCellLexeme": "1,47",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ],
+      "machinePriceCoverageRequired": "FULL_DRIVER"
+    },
+    {
+      "role": "ready_hot_roof_mastic",
+      "resourceCode": "01-0202-0003",
+      "titleRu": "Мастика битумная кровельная горячая,готовая",
+      "sourceTitleRu": "Мастика битумная кровельная горячая",
+      "sourceInternalTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "1.2",
+      "sourceRatePer100m2": "1.2",
+      "sourceCellLexeme": "1,2",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ]
+    },
+    {
+      "role": "quartz_sand_0_063mm",
+      "resourceCode": "01-6205-0005",
+      "titleRu": "Песок кварцевый фракции0–0,63мм",
+      "sourceTitleRu": "Песок кварцевый фракции0-0,63мм",
+      "sourceInternalTitleRu": "Песок кварцевый фракции0-0,63мм",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "4.6",
+      "sourceRatePer100m2": "4.6",
+      "sourceCellLexeme": "4,6",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ]
+    },
+    {
+      "role": "fine_dressed_felt_rm350",
+      "resourceCode": "01-7410-0006",
+      "titleRu": "Рубероид кровельный смелкойпосыпкой",
+      "sourceTitleRu": "Рубероид кровельный смелкойпосыпкойРМ-350",
+      "sourceInternalTitleRu": "Рубероид кровельный смелкойпосыпкойРМ-350",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "460",
+      "sourceRatePer100m2": "460",
+      "sourceCellLexeme": "460",
+      "sourceUnit": "м²",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ]
+    },
+    {
+      "role": "simazine50_wettable_powder",
+      "resourceCode": "04-0704-0080",
+      "titleRu": "Смачивающийся порошок симазина50%",
+      "sourceTitleRu": "Симазин50%-ный порошок смачивающийся",
+      "sourceInternalTitleRu": "Симазин50%-ный порошок смачивающийся",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.001",
+      "sourceRatePer100m2": "0.001",
+      "sourceCellLexeme": "0,001",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ]
+    },
+    {
+      "role": "concrete_cement_sand_slabs_m300_35mm",
+      "resourceCode": "05-0106-0005",
+      "titleRu": "Плиты бетонные ицементно-песчаные марки300 толщиной35мм",
+      "sourceTitleRu": "Плиты бетонные ицементно-песчаные длятротуаров,полов иоблицовки,марки300,толщина35мм",
+      "sourceInternalTitleRu": "Плиты бетонные ицементно-песчаные длятротуаров,полов иоблицовки,марки300,толщина35мм",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "102",
+      "sourceRatePer100m2": "102",
+      "sourceCellLexeme": "102",
+      "sourceUnit": "м²",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Точная собственная колонка00205;не соседняя норма ипечатнаяцена не котировка.",
+        "Нативные часы/массы/площади не физическийstock или универсальный запас."
+      ]
+    }
+  ],
+  "applicableWholeOperations": [
+    {
+      "key": "roll_mastic_bonding",
+      "printedOrdinal": 1,
+      "titleRu": "Наклейка рулонных материалов на битумной мастике"
+    },
+    {
+      "key": "roof_carpet_protection",
+      "printedOrdinal": 2,
+      "titleRu": "Защита рулонного кровельного ковра"
+    }
+  ],
+  "printedRawTableOperationRoster": [
+    {
+      "key": "roll_mastic_bonding",
+      "printedOrdinal": 1,
+      "titleRu": "Наклейка рулонных материалов на битумной мастике"
+    },
+    {
+      "key": "roof_carpet_protection",
+      "printedOrdinal": 2,
+      "titleRu": "Защита рулонного кровельного ковра"
+    },
+    {
+      "key": "torch_roll_fusing",
+      "printedOrdinal": 3,
+      "titleRu": "Наплавление рулонных материалов"
+    }
+  ],
+  "requiresApplicationSourceResolution": true,
+  "sourceProductReason": "EXACT_SOURCE_PRODUCT_APPLICABILITY_HOLD:own00205 contains simazine50%wettablepowder04-0704-0080 andantisepticbitumen2mm protective system. Exactsource/productadmission notreplacedbyPPR/user/modernbiocide. Keep ownprotective slabs/quartzsand andfixedsourceconditions;no neighboringmaterial substitution.",
+  "sourceExactNormTitleRu": "Устройство кровель плоских четырёхслойных изрулонныхкровельныхматериалов набитумноймастике споследующимнанесениемантисептированнойбитумноймастики толщиной2мм сзащитнымслоем из:плитбетонных накварцевомпеске",
+  "exactOwnResourceLocator": "PDF10/table002/column05",
+  "primaryVisualEvidence": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary002-pages10-11-r203\\krer12-pdf-page-10.png",
+      "sha256": "665534ce253ad6d52303677d9277a8f05676eb75dc0e81ebcbae5612cf25cac8",
+      "bytes": 92668
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary002-pages10-11-r203\\krer12-pdf-page-11.png",
+      "sha256": "416d8ce2339ae4ad9cec2c63930b79ed7783b9f8cdd0549dee7ca301c524979d",
+      "bytes": 85345
+    }
+  ],
+  "sourceIdentityRootOpen": true,
+  "ordinaryConfig": false,
+  "FULL": false
+}

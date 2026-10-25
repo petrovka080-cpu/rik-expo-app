@@ -59,6 +59,59 @@ function isRecord(value: unknown): value is JsonRecord {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
+const INTERNAL_SOURCE_PARAMETER_ROLES = new Set([
+  'PROJECT_DOCUMENTATION', 'ENGINEERING_DESIGN', 'SITE_SURVEY',
+  'MANDATORY_NORM_VALUE', 'MANUFACTURER_CONFIRMED', 'SELECTED_EQUIPMENT_PASSPORT',
+  'SOURCE_BACKED_PRELIMINARY_PROFILE', 'NORM_REQUIRED_BUT_PROJECT_SELECTED', 'BACKEND_DERIVED',
+]);
+
+/** A classification label alone is not a formula producer. Keep this narrow
+ * wire predicate tied to the existing preliminary source contract; the normal
+ * formula resolver still validates expressions, dependencies and branches. */
+function hasCanonicalPreliminarySourceFormulaProducerV1(
+  definition: CanonicalParameterDefinitionRecord, truth: JsonRecord,
+): boolean {
+  const producer = truth.preliminary_value_formula_v1;
+  const guide = truth.guide;
+  if (truth.value_source_role !== 'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE'
+    || truth.runtime_profile_classification !== 'PRELIMINARY_SOURCE_FORMULA'
+    || !['decimal', 'integer'].includes(String(definition.value_type))
+    || definition.default_value != null || !isRecord(producer) || !isRecord(guide)
+    || producer.version !== 'canonical-preliminary-parameter-formula:v1'
+    || typeof guide.source_document !== 'string' || !guide.source_document.trim()
+    || typeof guide.source_locator !== 'string' || !guide.source_locator.trim()
+    || !/^[a-f0-9]{64}$/iu.test(String(guide.source_snapshot_hash ?? ''))) return false;
+  const branched = Object.hasOwn(producer, 'branches');
+  if (Object.keys(producer).some(key => !(branched ? ['version', 'branches']
+    : ['version', 'expression', 'when', 'explicitValuePolicy']).includes(key))) return false;
+  const branches = branched ? producer.branches : [producer];
+  return Array.isArray(branches) && branches.length > 0 && branches.every(branch => isRecord(branch)
+    && (!branched || Object.keys(branch).every(key => ['expression', 'when', 'explicitValuePolicy'].includes(key)))
+    && typeof branch.expression === 'string' && !!branch.expression.trim() && isRecord(branch.when)
+    && (branch.explicitValuePolicy == null || branch.explicitValuePolicy === 'REQUIRE_MATCH'));
+}
+
+/** Apply only to the untrusted submitted channel, before merging server facts.
+ * Visibility alone does not change a legacy project's input authority. The
+ * immutable passport must also assign the fact to the application and source.
+ * Unresolved norms and compiler-derived values retain their own stricter rules.
+ */
+export function assertCanonicalSubmittedSourceParameterAuthorityV1(
+  definitions: readonly CanonicalParameterDefinitionRecord[], input: JsonRecord,
+): void {
+  if (!isRecord(input)) return fail('parameters must be an object');
+  for (const definition of definitions) {
+    const truth = isRecord(definition.truth_metadata) ? definition.truth_metadata : {};
+    const provenance = isRecord(truth.provenance) ? truth.provenance : {};
+    if (truth.visibility_role !== 'INTERNAL_ONLY'
+      || provenance.consumer_input_role_v1 !== 'APPLICATION_TECHNICAL'
+      || (!INTERNAL_SOURCE_PARAMETER_ROLES.has(String(truth.value_source_role))
+        && !hasCanonicalPreliminarySourceFormulaProducerV1(definition, truth))) continue;
+    const id = String(definition.parameter_id);
+    if (Object.hasOwn(input, id)) return fail(`source-managed parameter cannot be submitted ${id}`);
+  }
+}
+
 function definitionAllowsPreliminaryCompilation(
   _definition: CanonicalParameterDefinitionRecord,
 ): boolean {

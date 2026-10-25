@@ -21,20 +21,6 @@ export const TEMPORARY_HORIZONTAL_PROTECTIVE_BARRIER_BEAMS_ON_LOG_POSTS_KRER46_V
     catalogVariant: "STANDARD_CONFIRMED_HORIZONTAL_BARRIER_BEAMS_ON_LOG_POSTS",
     canonicalNameRu: "Устройство временного горизонтального защитного ограждения с настилом по балкам на стойках из брёвен",
   }),
-  large_area: Object.freeze({
-    catalogId: `canonical-work:master:${FAMILY_KEY}_large_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_HORIZONTAL_BARRIER_BEAMS_ON_LOG_POSTS",
-    canonicalNameRu:
-      "Устройство временного горизонтального защитного ограждения с настилом по балкам на стойках из брёвен — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: `canonical-work:master:${FAMILY_KEY}_small_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_HORIZONTAL_BARRIER_BEAMS_ON_LOG_POSTS",
-    canonicalNameRu:
-      "Устройство временного горизонтального защитного ограждения с настилом по балкам на стойках из брёвен — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: `canonical-work:master:${FAMILY_KEY}_wet_zone`,
     sourceIdentity: `master-work:${FAMILY_KEY}_wet_zone`,

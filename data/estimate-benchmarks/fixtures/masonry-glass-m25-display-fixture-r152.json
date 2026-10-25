@@ -1,0 +1,103 @@
+{
+  "contract": "masonry-glass-m25-operation-display-fixture/r152",
+  "scope": "TEST_ONLY_AREA_HEIGHT_ARITHMETIC_AND_DECLARED_RELATIONSHIPS_NOT_PROJECT_DOSSIER",
+  "realProjectObjects": 0,
+  "sourceKind": "EXISTING_ACCEPTED_NATIVE_COLUMNS_NOT_NEW_NORM",
+  "scenarios": [
+    {
+      "card": "partition",
+      "normId": "08-04-002-01",
+      "prefix": "masonry:glass-block:krer:08-04-002-01",
+      "primaryMeasureParameterId": "glass97_net_partition_area_m2",
+      "areaM2": "12.5",
+      "heightM": "4",
+      "mortarRowId": "masonry:glass-block:krer:08-04-002-01:ready-cement-lime-m25",
+      "expectedM25M3": "0.0925",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-01:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+        "masonry:glass-block:krer:08-04-002-01:operation:pointing"
+      ],
+      "assertionSource": "Literal accepted KG column .74m3/100m2, normalized once; not calculated from model at test execution.",
+      "labourRowId": "masonry:glass-block:krer:08-04-002-01:whole-labour",
+      "expectedWholeLabourManHours": "16.9625",
+      "requiredLabourOperationIds": [
+        "masonry:glass-block:krer:08-04-002-01:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-01:operation:assemble",
+        "masonry:glass-block:krer:08-04-002-01:operation:pointing"
+      ]
+    },
+    {
+      "card": "partition",
+      "normId": "08-04-002-02",
+      "prefix": "masonry:glass-block:krer:08-04-002-02",
+      "primaryMeasureParameterId": "glass97_net_partition_area_m2",
+      "areaM2": "12.5",
+      "heightM": "4.000001",
+      "mortarRowId": "masonry:glass-block:krer:08-04-002-02:ready-cement-lime-m25",
+      "expectedM25M3": "0.0925",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-02:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+        "masonry:glass-block:krer:08-04-002-02:operation:pointing"
+      ],
+      "assertionSource": "Literal accepted KG column .74m3/100m2, normalized once; not calculated from model at test execution.",
+      "labourRowId": "masonry:glass-block:krer:08-04-002-02:whole-labour",
+      "expectedWholeLabourManHours": "16.675",
+      "requiredLabourOperationIds": [
+        "masonry:glass-block:krer:08-04-002-02:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-02:operation:assemble",
+        "masonry:glass-block:krer:08-04-002-02:operation:pointing"
+      ]
+    },
+    {
+      "card": "opening-fill",
+      "normId": "08-04-002-03",
+      "prefix": "masonry:glass-block:krer:08-04-002-03",
+      "primaryMeasureParameterId": "glass97_filled_opening_area_m2",
+      "areaM2": "12.5",
+      "heightM": "4",
+      "mortarRowId": "masonry:glass-block:krer:08-04-002-03:ready-cement-lime-m25",
+      "expectedM25M3": "0.0925",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-03:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+      ],
+      "assertionSource": "Literal accepted KG column .74m3/100m2, normalized once; not calculated from model at test execution.",
+      "labourRowId": "masonry:glass-block:krer:08-04-002-03:whole-labour",
+      "expectedWholeLabourManHours": "19.55",
+      "requiredLabourOperationIds": [
+        "masonry:glass-block:krer:08-04-002-03:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-03:operation:assemble"
+      ]
+    },
+    {
+      "card": "opening-fill",
+      "normId": "08-04-002-04",
+      "prefix": "masonry:glass-block:krer:08-04-002-04",
+      "primaryMeasureParameterId": "glass97_filled_opening_area_m2",
+      "areaM2": "12.5",
+      "heightM": "4.000001",
+      "mortarRowId": "masonry:glass-block:krer:08-04-002-04:ready-cement-lime-m25",
+      "expectedM25M3": "0.0925",
+      "requiredOperationIds": [
+        "masonry:glass-block:krer:08-04-002-04:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+      ],
+      "assertionSource": "Literal accepted KG column .74m3/100m2, normalized once; not calculated from model at test execution.",
+      "labourRowId": "masonry:glass-block:krer:08-04-002-04:whole-labour",
+      "expectedWholeLabourManHours": "19.11875",
+      "requiredLabourOperationIds": [
+        "masonry:glass-block:krer:08-04-002-04:operation:base-alignment",
+        "masonry:glass-block:krer:08-04-002-04:operation:assemble"
+      ]
+    }
+  ],
+  "actualCorePlanned": 4,
+  "old13CallsSelected": false,
+  "newProjectFacts": 0,
+  "workerSave": "UNRUN",
+  "ui": "UNRUN",
+  "full": false,
+  "r154Scope": "Same four R152 area/height scenarios, original accepted literal whole-labour oracle added. No new core call, project fact, dossier or norm."
+}

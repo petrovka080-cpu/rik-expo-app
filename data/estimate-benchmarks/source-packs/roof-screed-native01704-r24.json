@@ -1,0 +1,153 @@
+{
+  "contract": "roof-screed-native01704/r24",
+  "normId": "12-01-017-04",
+  "prefix": "roof:screed:missing017:r24:04",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "WORK_CANDIDATE_KRER12_MISSING017_EXACT_COLUMNS_BUNDLE_R24",
+      "titleRu": "КРЕР12:собственные асфальтобетонные01703/04 и сборная01705",
+      "printedEdition": "КРЕР12-2015;приказ28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDFphysical/printed27–28;таблица12-01-017;полные операции,измеритель и собственные колонки03/04/05",
+      "reviewedAt": "2026-10-25",
+      "quantityAdmitted": false,
+      "sourceIdentityStatus": "UNADMITTED_WORK_CANDIDATE_ROOT_COMMON_SOURCE_OPEN"
+    }
+  ],
+  "scopeRu": "Поправка накаждый1мм изменения толщины к01703;не самостоятельная работа",
+  "groupTitleRu": "Собственная асфальтобетонная или сборная выравнивающая стяжка",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-4",
+      "titleRu": "Рабочие-строители среднего разряда3,4",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда3,4",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,4",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2Per1mm": "1.06",
+      "sourceCellLexeme": "1,06",
+      "sourceUnit": "чел.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "prepare_ready_base",
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01704;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "sourceInternalTitleRu": "Затраты труда машинистов",
+      "sourceTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2Per1mm": "0.14",
+      "sourceCellLexeme": "0,14",
+      "sourceUnit": "чел.-ч",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01704;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ]
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью8т",
+      "sourceInternalTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования)8т",
+      "sourceTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования)8т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2Per1mm": "0.06",
+      "sourceCellLexeme": "0,06",
+      "sourceUnit": "маш.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01704;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "forklift_5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчик грузоподъёмностью5т",
+      "sourceInternalTitleRu": "Автопогрузчики5т",
+      "sourceTitleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2Per1mm": "0.08",
+      "sourceCellLexeme": "0,08",
+      "sourceUnit": "маш.-ч",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01704;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "hot_warm_porous_asphalt_grade1",
+      "resourceCode": "03-0502-0020",
+      "titleRu": "Смесь асфальтобетонная горячая или тёплая для пористого асфальтобетона,маркаI",
+      "sourceInternalTitleRu": "Смеси асфальтобетонные дорожные,аэродромные иасфальтобетон(горячие итёплые дляпористого асфальтобетона щебёночные игравийные),маркаI",
+      "sourceTitleRu": "Смеси асфальтобетонные дорожные,аэродромные иасфальтобетон(горячие итёплые дляпористого асфальтобетона щебёночные игравийные),маркаI",
+      "unitId": "t",
+      "category": "material",
+      "per100m2Per1mm": "0.23",
+      "sourceCellLexeme": "0,23",
+      "sourceUnit": "т",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "asphalt_screed_placement"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01704;не универсальная технология.",
+        "INFOмашинисты без второй оплаты;историческая цена не котировка."
+      ]
+    }
+  ],
+  "remainingScopeRu": [
+    "Пригодное готовое основание и проектная площадь именно стяжки;не пол/кровельный ковёр поумолчанию и не второй готовый слой.",
+    "Материал и фактическая толщина/несущая способность/совместимость/температурный процесс/уход иприёмка отдельно,не выводятся из бюджета.",
+    "Кран/погрузчик/доставка/ручной и специальный инструмент/доступ/СИЗ иППР являются реальными UNKNOWN потребностями,не машино-часы вштуках.",
+    "Историческая цена не текущая котировка;INFOмашинисты не вторая оплата.",
+    "Существующие15/25мм01701/02 иихIDs остаются неизменными;одна физическая стяжка не оплачивается одновременно несколькими ветвями."
+  ],
+  "primaryVisualEvidence": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-27.png",
+      "sha256": "c9dc5677a449bc312257c4647bf9a3fac3d34d04117b2dd78483295a21417d11",
+      "bytes": 92620
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-28.png",
+      "sha256": "a15a42f9387275de3f20e40c06f4ebd5ca41b5e21d618e8d3edef37938dfc9f4",
+      "bytes": 92421
+    }
+  ],
+  "sourceMeasureQuantity": "100",
+  "sourceMeasureUnitId": "m2",
+  "FULL": false,
+  "baseNormId": "12-01-017-03",
+  "sourceThicknessStepMm": "1",
+  "literalInstructionRu": "Накаждый1мм изменения толщины стяжки добавлять илиисключать к расценке12-01-017-3",
+  "standaloneFalse": true,
+  "negativePhysicalRowsForbidden": true,
+  "finalQuantityAlgorithm": "area/100*(base03+(actual_thickness_mm-15)*delta04);source-absent04felt hasno extra term;existing formula_output_bounds minimum0 onfinal rows"
+}

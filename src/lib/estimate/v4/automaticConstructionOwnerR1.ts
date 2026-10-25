@@ -403,6 +403,8 @@ export async function compileAutomaticConstructionOwnerR1(input: Readonly<{
   primaryMeasureParameterId: string;
   definition: AutomaticOwnerDefinition;
   submittedParameters: Record<string, unknown>;
+  /** Server-owned source/readback facts; never copied from a consumer payload. */
+  confirmedParameters?: Record<string, unknown>;
 }>): Promise<CanonicalEstimateCompileCoreResult> {
   return compileCanonicalEstimateCore({
     operation: "compile",
@@ -413,7 +415,7 @@ export async function compileAutomaticConstructionOwnerR1(input: Readonly<{
     formulaDefinitions: [...input.definition.formulas],
     resourceDefinitions: [...input.definition.resources],
     submittedParameters: input.submittedParameters,
-    confirmedParameters: { ...input.definition.runtimeInput },
+    confirmedParameters: { ...input.definition.runtimeInput, ...input.confirmedParameters },
     currencyCode: "KGS",
     priceItems: [],
     maximumResourceRows: input.definition.resources.length,

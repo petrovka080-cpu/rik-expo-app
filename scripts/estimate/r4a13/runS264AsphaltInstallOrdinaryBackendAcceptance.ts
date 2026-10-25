@@ -8,7 +8,7 @@ import { Client } from "pg";
 import {
   ASPHALT_INSTALL_KRER27_ACCEPTANCE_INPUT,
   ASPHALT_INSTALL_KRER27_CATALOG_ID,
-} from "../../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+} from "../../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1";
 
 type Json = Record<string, any>;
 

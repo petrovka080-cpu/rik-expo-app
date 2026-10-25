@@ -1,0 +1,271 @@
+{
+  "contract": "roof-vapor-native01502/r24",
+  "prefix": "roof:vapor:missing015:r24:02",
+  "normId": "12-01-015-02",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "WORK_CANDIDATE_KRER12_MISSING015_EXACT_COLUMNS_BUNDLE_R24",
+      "titleRu": "КРЕР12:собственные новые01501/02/04/05 с раздельными слоями",
+      "printedEdition": "КРЕР12-2015;утверждён приказом28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDFphysical/printed26–27;таблица12-01-015 целиком,собственные столбцы01/02/04/05 и их состав работ",
+      "reviewedAt": "2026-10-25",
+      "quantityAdmitted": false,
+      "sourceIdentityStatus": "UNADMITTED_WORK_CANDIDATE_ROOT_EXACT_COMMON_SOURCE_SELECTION_OPEN"
+    }
+  ],
+  "scopeRu": "Оклеечная пароизоляция:каждый последующий слой01502;не полный пирог и не готовый объект.",
+  "systemRu": "Оклеечная пароизоляция:каждый последующий слой01502 по собственным исходным материалам. Только после положительного собственного первого совместимого слоя;повторного приготовления грунтовки нет.",
+  "conditionsRu": "Точные исходные нормативные условия ипригодность основания/продуктов/полного слоя;название зоны,price иналичие материала их не подтверждают.",
+  "measurementRu": "100м² изолируемой поверхности. Собственный проектный обмер каждого дополнительного слоя суммируется только по совместимой ветви;не площадь первого слоя поумолчанию.",
+  "remainingScopeRu": [
+    "Существующий прокладочный способ01503 не копируется и не превращается в оклеечный/обмазочный. Финальная композиция одного физического слоя требует ROOT existing-owner review.",
+    "Дополнительный02 только после совместимого01,05 только после04;положительная площадь первого слоя обязательна. Самостоятельные дополнительные слои поверх ужеоплаченного первого остаются HOLD.",
+    "Суммарная площадь дополнительных слоёв должна быть обоснована раздельным проектным обмером каждого слоя;число слоёв/толщина не выводятся из расхода мастики или рубероида.",
+    "Для01/04 приготовление грунтовки уже внутрицелого способа;не добавлять вторую01601/01602 на ту же подготовку. Для02/05 приготовление грунтовки повторно не добавляется.",
+    "Готовая горячая мастика не заменяется019сырьём/рецептурой автоматически. Один физический котёл400л/heatfeed,нативные часы фаз сохраняются;двойная закупка готовой мастики и ингредиентов запрещена.",
+    "Основание,проектная система/узлы,совместимость точных продуктов,ППР,физическийstock иприёмка остаются самостоятельными потребностями."
+  ],
+  "groupTitleRu": "Пароизоляция собственным оклеечным или обмазочным способом",
+  "operationTitleRu": "Устройство оклеечной изоляции из рулонных кровельных материалов",
+  "completionCriterionRu": "Выполнен собственный исходный состав выбранного слоя;stock/полная система иприёмка отдельно.",
+  "systemParameterId": "roof_missing015_extra_roll_method_r24",
+  "conditionsParameterId": "roof_missing015_conditions_r24",
+  "areaParameterId": "roof_missing015_measurement_scope_r24",
+  "systemYesRu": "Оклеечная пароизоляция:каждый последующий слой01502",
+  "conditionsYesRu": "Точные исходные материалы иусловия015 подтверждены",
+  "areaYesRu": "Самостоятельные площади иочерёдность собственных слоёв подтверждены",
+  "unknownChoiceRu": "Технология илиграница слоёв ещёнепроверены",
+  "legacyChoiceRu": "Исторический состав безнового015допуска",
+  "measurementParameterId": "roof_missing015_extra_roll_layer_area_sum_m2_r24",
+  "measurementUnitId": "m2",
+  "measurementConditional": true,
+  "measurementTitleRu": "Сумма проектных площадей дополнительных слоёв,м²",
+  "measurementGuideRu": "Введите точный проектный обмер выполняемых слоёв данной собственной колонки. Не выводить число слоёв/толщину из расхода и не включать ужеоплаченный слой.",
+  "quantityEditReasonRu": "Количество по собственному проектному обмеру слоёв и буквальной норме015;изменяйте этот обмер,не площадь чужого слоя.",
+  "printedOperationRoster": [
+    {
+      "key": "roll_application",
+      "printedOrdinal": 1,
+      "titleRu": "Устройство оклеечной изоляции из рулонных кровельных материалов"
+    }
+  ],
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-8",
+      "titleRu": "Рабочие-строители среднего разряда 3,8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда 3,8",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда 3,8",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "11.41",
+      "sourceRatePer100m2": "11.41",
+      "sourceCellLexeme": "11,41",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_application"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01502;норма на100м² изолируемой поверхности,базоваяисторическая цена не котировка.",
+        "Не выводитьинвентарь/смены/числослоёв/толщину из нормы."
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "sourceTitleRu": "Затраты труда машинистов",
+      "sourceInternalTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "0.15",
+      "sourceRatePer100m2": "0.15",
+      "sourceCellLexeme": "0,15",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "roll_application"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01502;норма на100м² изолируемой поверхности,базоваяисторическая цена не котировка.",
+        "Машинисты толькоINFO безвторойоплаты."
+      ]
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью 8 т",
+      "sourceTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+      "sourceInternalTitleRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.10",
+      "sourceRatePer100m2": "0.10",
+      "sourceCellLexeme": "0,10",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_application"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01502;норма на100м² изолируемой поверхности,базоваяисторическая цена не котировка.",
+        "Не выводитьинвентарь/смены/числослоёв/толщину из нормы."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "truck_crane_10t",
+      "resourceCode": "02-0075",
+      "titleRu": "Кран автомобильный грузоподъёмностью 10 т",
+      "sourceTitleRu": "Краны на автомобильном ходу при работе на других видах строительства10 т",
+      "sourceInternalTitleRu": "Краны на автомобильном ходу при работе на других видах строительства10 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.05",
+      "sourceRatePer100m2": "0.05",
+      "sourceCellLexeme": "0,05",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_application"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01502;норма на100м² изолируемой поверхности,базоваяисторическая цена не котировка.",
+        "Не выводитьинвентарь/смены/числослоёв/толщину из нормы."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "boiler400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Котёл битумный передвижной вместимостью 400 л",
+      "sourceTitleRu": "Котлы битумные передвижные400 л",
+      "sourceInternalTitleRu": "Котлы битумные передвижные400 л",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "1.60",
+      "sourceRatePer100m2": "1.60",
+      "sourceCellLexeme": "1,60",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_application"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01502;норма на100м² изолируемой поверхности,базоваяисторическая цена не котировка.",
+        "Не выводитьинвентарь/смены/числослоёв/толщину из нормы."
+      ],
+      "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST"
+    },
+    {
+      "role": "flatbed_truck_5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностью до5 т",
+      "sourceInternalTitleRu": "Автомобили бортовые грузоподъёмностью до5 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.09",
+      "sourceRatePer100m2": "0.09",
+      "sourceCellLexeme": "0,09",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_application"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01502;норма на100м² изолируемой поверхности,базоваяисторическая цена не котировка.",
+        "Не выводитьинвентарь/смены/числослоёв/толщину из нормы."
+      ],
+      "machinePriceCoverageRequired": "FULL_DRIVER"
+    },
+    {
+      "role": "ready_hot_roof_mastic",
+      "resourceCode": "01-0202-0003",
+      "titleRu": "Мастика битумная кровельная горячая,готовая",
+      "sourceTitleRu": "Мастика битумная кровельная горячая",
+      "sourceInternalTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.196",
+      "sourceRatePer100m2": "0.196",
+      "sourceCellLexeme": "0,196",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_application"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01502;норма на100м² изолируемой поверхности,базоваяисторическая цена не котировка.",
+        "Не выводитьинвентарь/смены/числослоёв/толщину из нормы."
+      ]
+    },
+    {
+      "role": "roofing_felt_rkp350b",
+      "resourceCode": "01-7410-0004",
+      "titleRu": "Рубероид кровельный",
+      "sourceTitleRu": "Рубероид кровельный с крупнозернистой посыпкой с пылевидной посыпкойРКП-350б",
+      "sourceInternalTitleRu": "Рубероид кровельный с крупнозернистой посыпкой с пылевидной посыпкойРКП-350б",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "110",
+      "sourceRatePer100m2": "110",
+      "sourceCellLexeme": "110",
+      "sourceUnit": "м²",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_application"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка01502;норма на100м² изолируемой поверхности,базоваяисторическая цена не котировка.",
+        "Не выводитьинвентарь/смены/числослоёв/толщину из нормы."
+      ]
+    }
+  ],
+  "sourceAbsentCells": [
+    {
+      "sourceResourceCode": "000-1003-2",
+      "sourceTitleRu": "Рабочие-строители среднего разряда 3,2",
+      "cell": "-",
+      "quantity": null
+    },
+    {
+      "sourceResourceCode": "01-0305-0005",
+      "sourceTitleRu": "Битум нефтяной строительный кровельный марокБНК-45/190,БНК-45/180",
+      "cell": "-",
+      "quantity": null
+    },
+    {
+      "sourceResourceCode": "01-1504-0001",
+      "sourceTitleRu": "Керосин для технических целей марокКТ-1,КТ-2",
+      "cell": "-",
+      "quantity": null
+    }
+  ],
+  "primaryVisualEvidence": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-26.png",
+      "sha256": "673fb38a865979c1a721fd8f557e411dfa3127466513437864f48deb6d477bb0",
+      "bytes": 90763
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\root-primary014017-pages25-28-r200\\krer12-pdf-page-27.png",
+      "sha256": "c9dc5677a449bc312257c4647bf9a3fac3d34d04117b2dd78483295a21417d11",
+      "bytes": 92620
+    }
+  ],
+  "sourceIdentityRootOpen": true,
+  "ordinaryConfig": false,
+  "FULL": false
+}

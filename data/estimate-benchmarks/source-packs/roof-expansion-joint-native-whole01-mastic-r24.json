@@ -1,0 +1,332 @@
+{
+  "status": "WHOLE12_SOURCE_AUTHORED_NORMAL_CONFIG_UNRUN",
+  "contract": "gox-build.master216.roof-expansion-joint-mastic006-r24",
+  "prefix": "roof:expansion-joint:krer12-006-r24:mastic",
+  "normId": "12-01-006-01",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "kg_krer12_2015_roof_expansion_joint_whole00601_02_r24",
+      "titleRu": "КРЕР12: устройство деформационных швов рулонной кровли",
+      "authority": "Госстрой Кыргызской Республики",
+      "printedEdition": "КРЕР12-2015; приказ28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+      "localArtifact": "data/estimate-benchmarks/source-artifacts/kg-krer12-2015-roofs-114a0db0.pdf",
+      "locators": "КРЕР12-01-006-01/02, PDF/печатная15: состав5операций, измеритель100м и обе целые колонки; техническая частьPDF4–6",
+      "reviewedAt": "2026-10-24T18:14:33.413041+00:00"
+    }
+  ],
+  "groupTitleRu": "Деформационный шов рулонной кровли",
+  "operationTitleRu": "Устройство двух компенсаторов, заполнения и рулонных слоёв шва",
+  "completionCriterionRu": "Устроены оба компенсатора, минеральная вата, сухой и дополнительные рулонные слои по подтверждённому проекту; оставшееся физическое обеспечение проверяется отдельно.",
+  "scopeRu": "Дополнительные рулонные слои деформационного шва на битумной мастике; целые12строк источника и5операций, на100м деформационного шва.",
+  "systemRu": "Готовая проектная конструкция шва и основания пригодна. Дополнительные рулонные слои наклеиваются на горячей битумной мастике; нативный котёл4,32маш.-ч уже включён. Нижний и верхний компенсаторы совместно используют единственный нормативный объём стали; удвоения0,48т нет.",
+  "conditionsRu": "Нужны действительный проект шва, применимость КРЕР к объекту, технология, основания, условия и организация безопасного выполнения. Выбор метода и длина не подтверждают эти обстоятельства.",
+  "measurementRu": "Измеритель исходной таблицы100м швов. Введите собственную фактическую длину шва; площадь/периметр кровли и число компенсаторов её не заменяют.",
+  "remainingScopeRu": [
+    "Фактическая конструкция, ширина и подвижность шва, несущая основа и проектные узлы не определяются одной длиной.",
+    "Норма относится к перечисленным операциям и ресурсам шва; основной кровельный ковёр, пирог и общая теплоизоляция не дублируются.",
+    "Нормативные дробные штуки не являются количеством заказа: раскладка, поставка и закупочное округление остаются отдельными.",
+    "Оснастка изготовления двух компенсаторов, монтажный пистолет, доступ, безопасность, логистика, контроль и отходы требуют реального комплекта и количества.",
+    "Цена, фактическая аренда, упаковка и поставка неизвестны; нативные машинисты и механизм не оплачиваются дважды."
+  ],
+  "systemParameterId": "roof_expansion_joint_method_r24",
+  "conditionsParameterId": "roof_expansion_joint_conditions_r24",
+  "areaParameterId": "roof_expansion_joint_measurement_r24",
+  "systemYesRu": "Дополнительные рулонные слои деформационного шва на битумной мастике",
+  "conditionsYesRu": "Проект, применимость нормы и условия шва подтверждены",
+  "areaYesRu": "Длина деформационного шва проверена",
+  "unknownChoiceRu": "Метод и проект шва ещё не проверены",
+  "legacyChoiceRu": "Прежний общий состав кровли",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-8",
+      "titleRu": "Рабочие-строители среднего разряда 3,8",
+      "unitId": "man_hour",
+      "sourceUnit": "чел.-ч",
+      "category": "labor",
+      "sourceRatePer100Measure": "81.81",
+      "per100Measure": "81.81",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "lower_compensator",
+        "mineral_wool",
+        "upper_compensator",
+        "dry_roll_layer",
+        "additional_roll_layers"
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов",
+      "unitId": "man_hour",
+      "sourceUnit": "чел.-ч",
+      "category": "labor",
+      "sourceRatePer100Measure": "0.45",
+      "per100Measure": "0.45",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются.",
+        "Включён в эксплуатацию нативных кранов; отдельный владелец оплаты не создаётся."
+      ],
+      "requiredNativeOperationKeys": [
+        "lower_compensator",
+        "mineral_wool",
+        "upper_compensator",
+        "dry_roll_layer",
+        "additional_roll_layers"
+      ]
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Башенный кран грузоподъёмностью 8 т",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePer100Measure": "0.29",
+      "per100Measure": "0.29",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "lower_compensator",
+        "mineral_wool",
+        "upper_compensator",
+        "dry_roll_layer",
+        "additional_roll_layers"
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR"
+    },
+    {
+      "role": "truck_crane_10t",
+      "resourceCode": "02-0075",
+      "titleRu": "Автомобильный кран грузоподъёмностью 10 т",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePer100Measure": "0.16",
+      "per100Measure": "0.16",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "lower_compensator",
+        "mineral_wool",
+        "upper_compensator",
+        "dry_roll_layer",
+        "additional_roll_layers"
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR"
+    },
+    {
+      "role": "mobile_bitumen_boiler_400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Передвижной битумный котёл вместимостью 400 л",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePer100Measure": "4.32",
+      "per100Measure": "4.32",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "additional_roll_layers"
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR"
+    },
+    {
+      "role": "flatbed_truck_5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Бортовой автомобиль грузоподъёмностью до 5 т",
+      "unitId": "machine_hour",
+      "sourceUnit": "маш.-ч",
+      "category": "equipment",
+      "sourceRatePer100Measure": "0.24",
+      "per100Measure": "0.24",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "lower_compensator",
+        "mineral_wool",
+        "upper_compensator",
+        "dry_roll_layer",
+        "additional_roll_layers"
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR"
+    },
+    {
+      "role": "hot_roof_mastic",
+      "resourceCode": "01-0202-0003",
+      "titleRu": "Горячая битумная кровельная мастика",
+      "unitId": "t",
+      "sourceUnit": "т",
+      "category": "material",
+      "sourceRatePer100Measure": "0.528",
+      "per100Measure": "0.528",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "additional_roll_layers"
+      ]
+    },
+    {
+      "role": "calibrated_head_dowels",
+      "resourceCode": "01-1912-0007",
+      "titleRu": "Дюбели с калиброванной головкой 3×58,5 мм с защитным покрытием",
+      "unitId": "t",
+      "sourceUnit": "т",
+      "category": "material",
+      "sourceRatePer100Measure": "0.007",
+      "per100Measure": "0.007",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "lower_compensator",
+        "upper_compensator"
+      ],
+      "internalSourceSpecification": "Дюбели в обоймах с цинковым хроматированным покрытием"
+    },
+    {
+      "role": "mineral_wool",
+      "resourceCode": "01-5503-0002",
+      "titleRu": "Минеральная вата для заполнения деформационного шва",
+      "unitId": "m3",
+      "sourceUnit": "м³",
+      "category": "material",
+      "sourceRatePer100Measure": "2.57",
+      "per100Measure": "2.57",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "mineral_wool"
+      ]
+    },
+    {
+      "role": "installation_gun_cartridges",
+      "resourceCode": "01-7226-0002",
+      "titleRu": "Патроны для строительно-монтажного пистолета",
+      "unitId": "pcs",
+      "sourceUnit": "1000 шт.",
+      "category": "material",
+      "sourceRatePer100Measure": "0.818",
+      "per100Measure": "818.000",
+      "exactUnitConversionFactor": "1000",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются.",
+        "Патроны:0,818тыс.шт. =818шт.; нормативное дробное количество не округляется в заказ."
+      ],
+      "requiredNativeOperationKeys": [
+        "lower_compensator",
+        "upper_compensator"
+      ]
+    },
+    {
+      "role": "fine_dressed_roof_felt",
+      "resourceCode": "01-7410-0006",
+      "titleRu": "Рулонный кровельный материал с мелкой посыпкой",
+      "unitId": "m2",
+      "sourceUnit": "м²",
+      "category": "material",
+      "sourceRatePer100Measure": "345.0",
+      "per100Measure": "345.0",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "dry_roll_layer",
+        "additional_roll_layers"
+      ],
+      "internalSourceSpecification": "Рубероид РМ-350"
+    },
+    {
+      "role": "galvanized_sheet_07",
+      "resourceCode": "10-0208-0004",
+      "titleRu": "Оцинкованная листовая сталь толщиной 0,7 мм",
+      "unitId": "t",
+      "sourceUnit": "т",
+      "category": "material",
+      "sourceRatePer100Measure": "0.48",
+      "per100Measure": "0.48",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Ресурс целой исходной колонки на100м шва; напечатанные цены не импортируются."
+      ],
+      "requiredNativeOperationKeys": [
+        "lower_compensator",
+        "upper_compensator"
+      ]
+    }
+  ],
+  "measurementParameterId": "roof_expansion_joint_length_m_r24",
+  "measurementUnitId": "linear_m",
+  "measurementTitleRu": "Длина деформационного шва по обмеру, м",
+  "measurementGuideRu": "Суммарная фактическая протяжённость именно выбранных деформационных швов по проекту и обмеру. Площадь кровли и длина двух компенсаторов не являются двойной длиной шва.",
+  "measurementChoiceTitleRu": "Как проверена длина деформационного шва",
+  "systemChoiceTitleRu": "Способ дополнительных рулонных слоёв деформационного шва",
+  "quantityEditReasonRu": "Количество рассчитано по целой исходной колонке на100м шва. Изменяйте собственную длину шва; площадь кровли не участвует.",
+  "sourceOperationRoster": [
+    {
+      "operationKey": "lower_compensator",
+      "ordinal": 10,
+      "titleRu": "Изготовление и установка нижнего компенсатора"
+    },
+    {
+      "operationKey": "mineral_wool",
+      "ordinal": 20,
+      "titleRu": "Укладка минеральной ваты в деформационный шов"
+    },
+    {
+      "operationKey": "upper_compensator",
+      "ordinal": 30,
+      "titleRu": "Изготовление и установка верхнего компенсатора"
+    },
+    {
+      "operationKey": "dry_roll_layer",
+      "ordinal": 40,
+      "titleRu": "Укладка рулонного кровельного материала насухо"
+    },
+    {
+      "operationKey": "additional_roll_layers",
+      "ordinal": 50,
+      "titleRu": "Наклейка дополнительных рулонных слоёв на мастике либо наплавлением"
+    }
+  ],
+  "printedPricesImported": false,
+  "otherMethodNativeResourcesAreNotZeroRows": true,
+  "projectApprovalFromChoiceAllowed": false,
+  "normalSourceUuid": null,
+  "currentDbIdentityClaimed": false,
+  "fullTechnicalAcceptance": false
+}

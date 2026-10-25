@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
+import {hasMasterTypedPartialQuantityBasisR1,validateMasterTypedPartialQuantityBasisR1,
+ canonicalPublisherTypedPartialQuantityScopeIsConsistentR1,assertMasterTypedPartialQuantityRegistryR1} from './masterTypedPartialQuantityBasisR1';
 
 import type { Client } from "pg";
+import {assertCanonicalNewWorkCatalogIdV1} from "../../../src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1";
 import { canonicalDefinitionPublicationStableValueR1 as stable } from
   "../../../src/lib/estimate/backendPlatform/canonicalDefinitionPublicationStableValueR1";
 import {assertMasterRetainedParentComputationR1,masterRetainParentBindingsOptInR1,
@@ -123,6 +126,7 @@ export function canonicalPublisherQuantityScopeIsConsistent(input: Readonly<{
   resources: readonly CanonicalPublisherJson[];
   baseline: CanonicalPublisherJson;
 }>): boolean {
+  if (hasMasterTypedPartialQuantityBasisR1(input.passport)) return canonicalPublisherTypedPartialQuantityScopeIsConsistentR1(input);
   const decision = input.passport.decision;
   const capability = input.passport.capability_matrix?.find((entry: CanonicalPublisherJson) => entry.capability === 'FULL_APPLICABLE_SCOPE');
   const pending = input.parameters.filter(parameter => parameter.truth_metadata?.value_source_role === 'UNRESOLVED_APPLICATION_NORM');
@@ -213,11 +217,26 @@ export function assertCanonicalPublisherParameterOrdinalsUniqueR1(
   }
 }
 
+export function assertCanonicalPublisherResourceOrdinalsUniqueR1(resources:readonly CanonicalPublisherJson[]):void {
+ const ordinals=new Set<number>();
+ for(const resource of resources){
+  invariant(typeof resource.ordinal==='number'&&Number.isSafeInteger(resource.ordinal),
+   `STOP_CANONICAL_PUBLISHER_RESOURCE_ORDINAL_INVALID:${String(resource.row_id)}`);
+  invariant(!ordinals.has(resource.ordinal),`STOP_CANONICAL_PUBLISHER_DUPLICATE_RESOURCE_ORDINAL:${resource.ordinal}`);
+  ordinals.add(resource.ordinal);
+ }
+}
+
 export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClonePlanInput) {
   assertCanonicalPublisherParameterOrdinalsUniqueR1(input.representative.parameters);
+  assertCanonicalPublisherResourceOrdinalsUniqueR1(input.representative.resources);
   const resourceIds = new Map<string, string>();
   const resourceOrdinals = new Map(input.representative.resources.map(resource => [String(resource.row_id), Number(resource.ordinal)]));
-  const resources = input.representative.resources.map((resource) => {
+  // A captured SELECT may return any row order. Match the persisted audit's
+  // ORDER BY ordinal without changing a source row or its historical number.
+  const resources = [...input.representative.resources]
+    .sort((left, right) => left.ordinal - right.ordinal)
+    .map((resource) => {
     const id = input.resourceId(resource);
     resourceIds.set(String(resource.row_id), id);
     return {
@@ -256,7 +275,11 @@ export function createCanonicalDefinitionClonePlan(input: CanonicalDefinitionClo
       content_status: "QUARANTINED",
       content_gate_status: "RED",
     },
-    parameters: input.representative.parameters.map((parameter) => ({
+    // Snapshot reads need not follow ordinal order. Match the persisted
+    // self-audit without renumbering parameters or mutating the source copy.
+    parameters: [...input.representative.parameters]
+      .sort((left, right) => left.ordinal - right.ordinal)
+      .map((parameter) => ({
       definition_version_id: input.definition.id,
       parameter_id: parameter.parameter_id,
       ordinal: parameter.ordinal,
@@ -503,29 +526,30 @@ export async function canonicalPublisherRegisteredSourceKeysR1(
   const prefix=`STOP_CANONICAL_PUBLISHER_PAYLOAD:${plan.definition.catalog_id}`;
   const sources=flattenNormativeSourceMap(plan.baseline.normative_source_ids,`${prefix}:NORMATIVE_SOURCE_IDS`);
   if(retainedInput===undefined)return sources;
-  const opt=masterRetainParentBindingsOptInR1(retainedInput),legacy=opt?.legacyTemplateAssumptionSources;
-  invariant(opt&&legacy,`${prefix}:LEGACY_ASSUMPTION_EXPLICIT_RETAINED_CONTRACT`);
+  const opt=masterRetainParentBindingsOptInR1(retainedInput),legacy=opt?.legacyTemplateAssumptionSources,
+    fixture=opt?.legacyCapturedFixtureSources,provenance=legacy??fixture;
+  invariant(opt&&provenance,`${prefix}:LEGACY_ASSUMPTION_EXPLICIT_RETAINED_CONTRACT`);
   const old=opt.capturedParent;
   invariant(retainedInput.config.catalogId===plan.definition.catalog_id
     &&plan.baseline.source_definition_version_id===old.definition.id
     &&plan.baseline.supersedes_baseline_id===old.baseline.id,`${prefix}:LEGACY_ASSUMPTION_PARENT`);
   assertMasterRetainedParentComputationR1(retainedInput,plan,"PLAN");
   const equals=(a:unknown,b:unknown)=>JSON.stringify(stable(a))===JSON.stringify(stable(b));
-  const legacyKeys=new Set(Object.values(legacy.parameterSources).flat());
+  const legacyKeys=new Set(Object.values(provenance.parameterSources).flat());
   for(const parameter of old.parameters){
     const id=parameter.parameter_id;
     invariant(equals(plan.baseline.normative_source_ids[id],old.baseline.normative_source_ids[id]),
       `${prefix}:LEGACY_ASSUMPTION_OLD_SOURCE_ARRAY:${id}`);
   }
-  for(const id of Object.keys(legacy.parameterSources)){
+  for(const id of Object.keys(provenance.parameterSources)){
     invariant(equals(plan.baseline.input_values[id],old.baseline.input_values[id])
-      &&plan.baseline.input_classification[id]==='ASSUMPTION'
+      &&plan.baseline.input_classification[id]===(legacy?'ASSUMPTION':old.baseline.input_classification[id])
       &&plan.baseline.uom_by_parameter[id]===old.baseline.uom_by_parameter[id],
       `${prefix}:LEGACY_ASSUMPTION_VALUE_OR_UNIT:${id}`);
   }
   const registeredMap=Object.fromEntries(Object.entries(plan.baseline.normative_source_ids).map(([id,keys])=>{
     invariant(Array.isArray(keys),`${prefix}:NORMATIVE_SOURCE_IDS:${id}`);
-    if(Object.hasOwn(legacy.parameterSources,id))return[id,[]];
+    if(Object.hasOwn(provenance.parameterSources,id))return[id,keys.filter(key=>!provenance.parameterSources[id]!.includes(key))];
     invariant(!keys.some(key=>legacyKeys.has(key)),`${prefix}:LEGACY_ASSUMPTION_NEW_SOURCE_USE:${id}`);
     return[id,keys];
   }));
@@ -533,21 +557,87 @@ export async function canonicalPublisherRegisteredSourceKeysR1(
   return flattenNormativeSourceMap(registeredMap,`${prefix}:NORMATIVE_SOURCE_IDS`);
 }
 
+/** A registered source attached only to frozen historical fixtures remains in
+ * the baseline and registry. It does not acquire a fabricated physical binding.
+ * This applies only to the three SHA-pinned captured-fixture parents admitted
+ * above; ordinary and template-assumption publication keeps its full closure. */
+export async function canonicalPublisherRequiredBindingSourceKeysR1(
+  client: Pick<Client,"query">,
+  plan: CanonicalDefinitionPublishPlan,
+  retainedInput?: MasterRetainedBindingGuardInputR1,
+): Promise<string[]> {
+  const sources=await canonicalPublisherRegisteredSourceKeysR1(client,plan,retainedInput);
+  if(retainedInput===undefined)return sources;
+  const opt=masterRetainParentBindingsOptInR1(retainedInput);
+  if(opt?.legacyCapturedFixtureSources==null)return sources;
+  const prefix=`STOP_CANONICAL_PUBLISHER_PAYLOAD:${plan.definition.catalog_id}:CAPTURED_REGISTERED_FIXTURE`;
+  const old=opt.capturedParent,oldParameterIds=new Set(old.parameters.map(p=>p.parameter_id));
+  const boundOldSources=new Set(old.normativeLocators.map(locator=>
+    old.normativeSources.find(source=>source.id===locator.source_id)!.source_key));
+  const historicalOnly=sources.filter(key=>old.normativeSources.some(source=>source.source_key===key)
+    &&!boundOldSources.has(key));
+  if(historicalOnly.length===0)return sources;
+  const equals=(a:unknown,b:unknown)=>JSON.stringify(stable(a))===JSON.stringify(stable(b));
+  const fixtureParameters=new Set<string>();
+  for(const key of historicalOnly){
+    const uses=Object.entries(old.baseline.normative_source_ids).filter(([,keys])=>Array.isArray(keys)&&keys.includes(key));
+    invariant(uses.length>0,`${prefix}:UNREFERENCED_SOURCE:${key}`);
+    for(const [id]of uses){
+      invariant(["VALIDATION_FIXTURE","DERIVED"].includes(old.baseline.input_classification[id])
+        &&equals(plan.baseline.input_values[id],old.baseline.input_values[id])
+        &&plan.baseline.input_classification[id]===old.baseline.input_classification[id]
+        &&plan.baseline.uom_by_parameter[id]===old.baseline.uom_by_parameter[id],
+      `${prefix}:EXACT_OLD_INPUT:${id}`);
+      fixtureParameters.add(id);
+    }
+    invariant(Object.entries(plan.baseline.normative_source_ids).every(([id,keys])=>
+      oldParameterIds.has(id)||!Array.isArray(keys)||!keys.includes(key)),`${prefix}:NEW_SOURCE_USE:${key}`);
+  }
+  const consumesFixture=(formula:CanonicalPublisherJson|undefined)=>Array.isArray(formula?.input_parameter_ids)
+    &&formula!.input_parameter_ids.some((id:string)=>fixtureParameters.has(id));
+  const oldFormulas=new Set(old.formulas.map(f=>f.formula_id)),oldRows=new Set(old.resources.map(r=>r.row_id));
+  invariant(plan.formulas.filter(f=>!oldFormulas.has(f.formula_id)).every(f=>!consumesFixture(f))
+    &&plan.resources.filter(r=>!oldRows.has(r.row_id)).every(r=>
+      !consumesFixture(plan.formulas.find(f=>f.formula_id===r.formula_id))),`${prefix}:NOT_A_NEW_QUANTITY_NORM`);
+  return sources.filter(key=>!historicalOnly.includes(key));
+}
+
 export async function preflightCanonicalDefinitionPublishPlans(
   client: Client,
   plans: readonly CanonicalDefinitionPublishPlan[],
   retainedLegacyInputs: readonly MasterRetainedBindingGuardInputR1[] = [],
+  typedQuantityInputs: readonly MasterRetainedBindingGuardInputR1[] = [],
 ) {
   invariant(plans.length > 0, "STOP_CANONICAL_PUBLISHER_EMPTY_PLAN");
   invariant(Array.isArray(retainedLegacyInputs)
     &&new Set(retainedLegacyInputs.map(input=>input.config.catalogId)).size===retainedLegacyInputs.length
     &&retainedLegacyInputs.every(input=>plans.some(plan=>plan.definition.catalog_id===input.config.catalogId)),
     "STOP_CANONICAL_PUBLISHER_LEGACY_ASSUMPTION_SCOPE");
+  invariant(Array.isArray(typedQuantityInputs)
+    &&new Set(typedQuantityInputs.map(input=>input.config.catalogId)).size===typedQuantityInputs.length
+    &&typedQuantityInputs.every(input=>plans.some(plan=>plan.definition.catalog_id===input.config.catalogId
+      &&hasMasterTypedPartialQuantityBasisR1(plan.passport))),"STOP_CANONICAL_PUBLISHER_TYPED_QUANTITY_SCOPE");
+  // Collect all independent pure quantity errors before the first schema query.
+  const quantityErrors=plans.flatMap(plan=>hasMasterTypedPartialQuantityBasisR1(plan.passport)
+    ?validateMasterTypedPartialQuantityBasisR1(plan).map(error=>`${plan.definition.catalog_id}:${error}`):[]);
+  for(const plan of plans.filter(plan=>hasMasterTypedPartialQuantityBasisR1(plan.passport))){
+    const input=typedQuantityInputs.find(input=>input.config.catalogId===plan.definition.catalog_id);
+    if(!input?.config.binding.reuseExistingNormativeRegistry){
+      quantityErrors.push(`${plan.definition.catalog_id}:TYPED_QUANTITY_REGISTERED_SOURCE_REQUIRED`);continue;
+    }
+    try{
+      // Reuse the complete existing source/locator preimage guard, without DML.
+      const registered=await readMasterRetainedBindingPreconditionsR1(client,input,"REGISTERED");
+      assertMasterTypedPartialQuantityRegistryR1(plan.passport.decision.partialQuantityBasis,registered);
+    }catch(error){quantityErrors.push(`${plan.definition.catalog_id}:${String((error as Error).message)}`);}
+  }
+  invariant(quantityErrors.length===0,`STOP_CANONICAL_PUBLISHER_TYPED_QUANTITY:${quantityErrors.join(',')}`);
   for (const plan of plans) automaticPriceInheritanceExcludedResourceIds(plan);
   const schema = await preflightCanonicalDefinitionPublisherSchema(client);
   const auditedPlans: CanonicalPublisherJson[] = [];
   for (const plan of plans) {
     const prefix = `STOP_CANONICAL_PUBLISHER_PAYLOAD:${plan.definition.catalog_id}`;
+    assertCanonicalPublisherResourceOrdinalsUniqueR1(plan.resources);
     invariant(plan.contract.trim().length > 0, `${prefix}:CONTRACT`);
     invariant(plan.definition.definition_version > 0, `${prefix}:DEFINITION_VERSION`);
     assertSha256(plan.definition.definition_sha256, `${prefix}:DEFINITION_SHA256`);
@@ -620,7 +710,7 @@ export async function preflightCanonicalDefinitionPublishPlans(
     invariant(plan.bindings.every((binding) => isObject(binding.applicability)),
       `${prefix}:NORMATIVE_BINDING_APPLICABILITY`);
 
-    const expectedSourceKeys = await canonicalPublisherRegisteredSourceKeysR1(client,plan,
+    const expectedSourceKeys = await canonicalPublisherRequiredBindingSourceKeysR1(client,plan,
       retainedLegacyInputs.find(input=>input.config.catalogId===plan.definition.catalog_id));
     invariant(expectedSourceKeys.length > 0, `${prefix}:NORMATIVE_SOURCE_IDS_EMPTY`);
     const locatorIds = plan.bindings.map((binding) => String(binding.locator_id));
@@ -792,6 +882,7 @@ export async function publishCanonicalDefinitionDraft(
   client: Client,
   plan: CanonicalDefinitionPublishPlan,
 ) {
+  assertCanonicalNewWorkCatalogIdV1(plan.definition.catalog_id);
   const excludedPriceInheritanceResourceIds = automaticPriceInheritanceExcludedResourceIds(plan);
   await client.query(`insert into public.estimate_definition_version(
       id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,
@@ -989,6 +1080,7 @@ export async function auditPersistedCanonicalDefinition(
     "contract", "status", "allowed", "quantityScope", "priceState",
     "activationAllowed", "productionEligible", "waveContract",
     "technicalScopeStatus", "preliminaryCompositionOnly", "unresolvedResourceRowIds",
+    "partialQuantityBasis", "engineeringAcceptance",
   ]);
   invariant(decision.contract === CONTENT_PASSPORT_CONTRACT
     && decision.status === "GREEN"

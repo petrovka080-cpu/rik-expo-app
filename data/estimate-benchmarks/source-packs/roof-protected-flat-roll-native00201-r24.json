@@ -1,0 +1,343 @@
+{
+  "contract": "roof-protected-flat-roll-native00201/r24",
+  "prefix": "roof:protected-flat:missing002:r24:01",
+  "normId": "12-01-002-01",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "WORK_CANDIDATE_KRER12_MISSING002_EXACT_SUBJECT_BUNDLE_R24",
+      "titleRu": "КРЕР12:собственные00201/02/03 защищённыеплоскиекровли",
+      "printedEdition": "КРЕР12-2015;приказ28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDFphysical/printed9;таблица12-01-002,полныйзаголовок/измеритель/состав и собственные столбцы01/02/03",
+      "reviewedAt": "2026-10-25",
+      "quantityAdmitted": false,
+      "sourceIdentityStatus": "UNADMITTED_WORK_CANDIDATE_NOT_NEW_OWNER_PERMISSION"
+    }
+  ],
+  "scopeRu": "Четырёхслойная кровля на битумной мастике с гравийнойзащитой на антисептированной мастике00201",
+  "systemRu": "Четырёхслойная кровля на битумной мастике с гравийнойзащитой на антисептированной мастике00201. Только собственные исходные материалы ивсянорма;sourceсимазин/тиокол не замененыуниверсальным антисептиком. Нормы00209 не наследуются.",
+  "conditionsRu": "Точные нормативныеусловия,пригодное основание ипроектные узлы;SOURCEproduct gate не заменяется ППР/ценой/наличиемматериала.",
+  "measurementRu": "100м² кровли,собственный подтверждённый проектный обмер этойчетырёхслойной системы;не сумма460м² материала.",
+  "remainingScopeRu": [
+    "Готовое пригодное основание;полный пирог,проектные узлы иточные условия применения отдельно.",
+    "Не переносить00209два наплавляемыхслоя на этичетырёхслойные оклеечные способы;нет новыхгорелки/пропанбутана из00209.",
+    "Точный исходный антисептический продукт/рецептура/совместимость не ППР-факт и не обычный пользовательскийдопуск.",
+    "Защитный цементныйслой00203 уже внутрицелой нормы;не добавить вторуюоплату017 длятого же верхнегослоя. Иное основание/лицо отдельно пообъекту.",
+    "Площадь460м²рубероида не универсальная норма4слоёв/запаса;толщинацементнойзащиты из3.06м³невыводится.",
+    "Физическийstock/ППР/продуктовыйпост/контрольдозировки/доступ/СИЗ/приёмка UNKNOWN. Одинобщий400лboiler;nativeчасы нештучныйstock."
+  ],
+  "groupTitleRu": "Защищённое плоское рулонное покрытие собственным способом",
+  "operationTitleRu": "Наклейка рулонного покрытия иего защитныйслой",
+  "completionCriterionRu": "Целый собственный способ выполнен;точнаяSOURCEприменимость ифактическаяприёмка отдельно.",
+  "systemParameterId": "roof_protected002_method_r24",
+  "conditionsParameterId": "roof_protected002_conditions_r24",
+  "areaParameterId": "roof_protected002_measure_scope_r24",
+  "systemYesRu": "Четырёхслойная кровля на битумной мастике с гравийнойзащитой на антисептированной мастике00201",
+  "conditionsYesRu": "Точныеусловия и проектнаясистема выбранной002колонки подтверждены",
+  "areaYesRu": "Самостоятельнаяплощадь всейвыбранной системы подтверждена",
+  "unknownChoiceRu": "Применимость илиобмер ещёнепроверены",
+  "legacyChoiceRu": "Историческийсостав безнового002допуска",
+  "measurementParameterId": "roof_protected002_area_m2_r24",
+  "measurementUnitId": "m2",
+  "measurementConditional": true,
+  "measurementTitleRu": "Площадь выбранной системы покрытия,м²",
+  "measurementGuideRu": "Самостоятельный проектныйобмер выбранного основногополя поsourceправилам;неплощадьрулонов,пола илидругого покрытия.",
+  "quantityEditReasonRu": "Количество поцелой собственной002колонке иобмеру;числослоёв/толщина/stock/price не меняютнорму.",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-8",
+      "titleRu": "Рабочие-строители среднего разряда3,8",
+      "sourceTitleRu": "Рабочие-строители среднего разряда3,8",
+      "sourceInternalTitleRu": "Рабочие-строители среднего разряда3,8",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "29.72",
+      "sourceRatePer100m2": "29.72",
+      "sourceCellLexeme": "29,72",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ]
+    },
+    {
+      "role": "included_machine_operators",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "sourceTitleRu": "Затраты труда машинистов",
+      "sourceInternalTitleRu": "Затраты труда машинистов",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "0.82",
+      "sourceRatePer100m2": "0.82",
+      "sourceCellLexeme": "0,82",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ]
+    },
+    {
+      "role": "tower_crane_8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Кран башенный грузоподъёмностью8т",
+      "sourceTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологического оборудования)8т",
+      "sourceInternalTitleRu": "Краны башенные приработе на других видах строительства(кроме монтажа технологического оборудования)8т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.44",
+      "sourceRatePer100m2": "0.44",
+      "sourceCellLexeme": "0,44",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "truck_crane_10t",
+      "resourceCode": "02-0075",
+      "titleRu": "Кран автомобильный грузоподъёмностью10т",
+      "sourceTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "sourceInternalTitleRu": "Краны на автомобильном ходу приработе на других видах строительства10т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.25",
+      "sourceRatePer100m2": "0.25",
+      "sourceCellLexeme": "0,25",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "forklift_5t",
+      "resourceCode": "03-0020",
+      "titleRu": "Автопогрузчик грузоподъёмностью5т",
+      "sourceTitleRu": "Автопогрузчики5т",
+      "sourceInternalTitleRu": "Автопогрузчики5т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.13",
+      "sourceRatePer100m2": "0.13",
+      "sourceCellLexeme": "0,13",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED"
+    },
+    {
+      "role": "boiler400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Котёл битумный передвижной вместимостью400л",
+      "sourceTitleRu": "Котлы битумные передвижные400л",
+      "sourceInternalTitleRu": "Котлы битумные передвижные400л",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "10.29",
+      "sourceRatePer100m2": "10.29",
+      "sourceCellLexeme": "10,29",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ],
+      "machinePriceCoverageRequired": "FULL_MACHINE_SOURCE_COST"
+    },
+    {
+      "role": "flatbed_to5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+      "sourceTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "sourceInternalTitleRu": "Автомобили бортовые грузоподъёмностьюдо5т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.36",
+      "sourceRatePer100m2": "0.36",
+      "sourceCellLexeme": "0,36",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ],
+      "machinePriceCoverageRequired": "FULL_DRIVER"
+    },
+    {
+      "role": "ready_hot_roof_mastic",
+      "resourceCode": "01-0202-0003",
+      "titleRu": "Мастика битумная кровельная горячая,готовая",
+      "sourceTitleRu": "Мастика битумная кровельная горячая",
+      "sourceInternalTitleRu": "Мастика битумная кровельная горячая",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "1.26",
+      "sourceRatePer100m2": "1.26",
+      "sourceCellLexeme": "1,26",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding",
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ]
+    },
+    {
+      "role": "gravel_dr8_fraction5_3_10",
+      "resourceCode": "01-1603-0001",
+      "titleRu": "Гравий для строительных работ фракции5(3)–10мм маркиДр.8",
+      "sourceTitleRu": "Гравий для строительных работ маркаДр.8,фракция5(3)-10мм",
+      "sourceInternalTitleRu": "Гравий для строительных работ маркаДр.8,фракция5(3)-10мм",
+      "unitId": "m3",
+      "category": "material",
+      "per100m2": "1.05",
+      "sourceRatePer100m2": "1.05",
+      "sourceCellLexeme": "1,05",
+      "sourceUnit": "м³",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ]
+    },
+    {
+      "role": "fine_dressed_felt_rm350",
+      "resourceCode": "01-7410-0006",
+      "titleRu": "Рубероид кровельный с мелкой посыпкой",
+      "sourceTitleRu": "Рубероид кровельный с мелкой посыпкойРМ-350",
+      "sourceInternalTitleRu": "Рубероид кровельный с мелкой посыпкойРМ-350",
+      "unitId": "m2",
+      "category": "material",
+      "per100m2": "460",
+      "sourceRatePer100m2": "460",
+      "sourceCellLexeme": "460",
+      "sourceUnit": "м²",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roll_mastic_bonding"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ]
+    },
+    {
+      "role": "simazine50_wettable_powder",
+      "resourceCode": "04-0704-0080",
+      "titleRu": "Смачивающийся порошок симазина50%",
+      "sourceTitleRu": "Симазин50%-ный порошок смачивающийся",
+      "sourceInternalTitleRu": "Симазин50%-ный порошок смачивающийся",
+      "unitId": "t",
+      "category": "material",
+      "per100m2": "0.001",
+      "sourceRatePer100m2": "0.001",
+      "sourceCellLexeme": "0,001",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "requiredOperationKeys": [
+        "roof_carpet_protection"
+      ],
+      "detailsRu": [
+        "Собственная буквальная колонка00201;историческаяцена не текущаякотировка.",
+        "Точный химическийпродукт и совместимость остаютсяSOURCE_HOLD;материалы/машиночасы не выдаются заинвентарь."
+      ]
+    }
+  ],
+  "printedRawTableOperationRoster": [
+    {
+      "key": "roll_mastic_bonding",
+      "printedOrdinal": 1,
+      "titleRu": "Наклейка рулонных материалов на битумной мастике"
+    },
+    {
+      "key": "roof_carpet_protection",
+      "printedOrdinal": 2,
+      "titleRu": "Защита рулонного кровельного ковра"
+    },
+    {
+      "key": "torch_roll_fusing",
+      "printedOrdinal": 3,
+      "titleRu": "Наплавление рулонных материалов"
+    }
+  ],
+  "applicableWholeOperations": [
+    {
+      "key": "roll_mastic_bonding",
+      "printedOrdinal": 1,
+      "titleRu": "Наклейка рулонных материалов на битумной мастике"
+    },
+    {
+      "key": "roof_carpet_protection",
+      "printedOrdinal": 2,
+      "titleRu": "Защита рулонного кровельного ковра"
+    }
+  ],
+  "rawOperationApplicability": "Tablelistsall3operations;own01/02/03titles aremasticbondedwithprotection,not torchfusing. Do notaddtableoperation03toeverynorm.",
+  "sourceProductReason": "EXACT_SOURCE_PRODUCT_APPLICABILITY_HOLD:00201/02/03 contain explicit simazine50% wettablepowder04-0704-0080 and ownantisepticbitumen scopes;00203 additionallythiokolAM-0.5. No currentexactproduct/system applicability source or substitutions admitted. Primaryliteralquantity isnot approvalofanymodernbiocide/userPPRchoice.",
+  "primaryVisualEvidence": {
+    "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\.release-runtime\\r568\\s27-35\\g6-roof-source-audit\\page-09.png",
+    "sha256": "082845ec6f4206dea85c5b8950ab3c59b1a1b75ac0c2f603831e2baf000fac43",
+    "bytes": 573309
+  },
+  "sourceIdentityRootOpen": true,
+  "ordinaryConfig": false,
+  "FULL": false
+}

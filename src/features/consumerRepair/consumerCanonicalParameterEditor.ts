@@ -1,3 +1,6 @@
+import {withCanonicalSourceProfileCalculationConsumersV1} from '../../lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1';
+import {projectCanonicalSourceProfileVisibilityContextV1} from '../../lib/estimate/canonicalParameters/canonicalParameterSessionConditionValuesV1';
+import {resolveCanonicalEstimateProfileInputsS2723} from '../../lib/estimate/backendPlatform/canonicalEstimateProfileInputResolverS2723';
 import {canonicalSelectedDeliveryClientRequestR1,assertCanonicalSelectedDeliveryClientResultR1} from '../../lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryClientR1';
 import {roofScreed25StandaloneInactiveParameterIdsV1,ROOF_SCREED25_STANDALONE_QUESTION_IDS_V1,isRoofScreed25StandaloneCatalogV1,roofScreed25StandaloneGuideTextV1} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25StandaloneV1';
 import {roofScreed25InactiveParameterIdsV1,ROOF_SCREED25_QUESTION_PARAMETER_IDS_V1} from '../../lib/estimate/backendPlatform/canonicalRoofScreed25MigrationV1';
@@ -296,7 +299,7 @@ function objectVisibilityCondition(raw: unknown): CanonicalParameter["visibility
     );
     if (flattenable && flattened.length > 0) return { kind: targetKind, conditions: flattened };
   }
-  if (["literal", "parameter", "present", "selected", "not", "and", "or", "greater_than", "greater_than_or_equal", "less_than", "less_than_or_equal", "formula_greater_than"].includes(String(condition.kind))) {
+  if (["literal", "parameter", "present", "selected", "in", "not_equals", "not", "and", "or", "greater_than", "greater_than_or_equal", "less_than", "less_than_or_equal", "formula_greater_than"].includes(String(condition.kind))) {
     resolveInclusionGraph(condition, {});
     return { kind: "INCLUSION_GRAPH", ast: JSON.parse(JSON.stringify(condition)) as Record<string, unknown> };
   }
@@ -304,7 +307,16 @@ function objectVisibilityCondition(raw: unknown): CanonicalParameter["visibility
 }
 
 function parameterVisibilityCondition(schema: EditableSchema): CanonicalParameter["visibilityCondition"] {
-  return parameterCondition(schema.visibleWhen ?? schema.requiredWhen ?? schema.constraints.requiredWhen);
+  if (schema.visibleWhen != null) return parameterCondition(schema.visibleWhen);
+  const requirement = parameterCondition(schema.requiredWhen ?? schema.constraints.requiredWhen);
+  // A choice cannot hide itself when its own value no longer requires an old
+  // branch. Keep that validation condition, but let the user see and change
+  // the published choice. Conditions owned by other fields remain applicable.
+  if (schema.valueType === "enum" && isCanonicalEstimateVisibleUserResourceSelectionParameter(schema)) {
+    const dependencies = canonicalParameterVisibilityMissingParameterIds(requirement, new Map<string, CanonicalParameterValue>());
+    if (dependencies.length === 1 && dependencies[0] === schema.parameterId) return { kind: "ALWAYS" };
+  }
+  return requirement;
 }
 
 function parameterCondition(raw: unknown): CanonicalParameter["visibilityCondition"] {
@@ -392,6 +404,14 @@ function buildParameter(input: {
       : "OPTIONAL" as const;
   return {
     parameterId: input.schema.parameterId,
+    inputOwnership: isCanonicalEstimateSourceManagedParameter(input.schema)
+      && !isCanonicalEstimateVisibleReplaceableProfile(input.schema) ? "APPLICATION" : "USER_INPUT",
+    sourceProvenance: {
+      guideKind: guide?.guideKind, sourceRole: guide?.sourceRole,
+      runtimeClassification: input.schema.runtimeProfileClassification,
+      document: guide?.sourceDocument, locator: guide?.sourceLocator, unitLabel: guide?.displayUnit,
+      minimum: guide?.guideMin, maximum: guide?.guideMax, target: guide?.guideTarget,
+    },
     label: canonicalPublicEstimateParameterTitleRu(input.schema.parameterId, labelRu, {
       catalogId: input.catalogId, unitId: input.schema.unitId,
       descriptionRu: input.schema.descriptionRu || guide?.guideShortRu || input.schema.titleRu,
@@ -464,6 +484,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   inactiveParameterIds?: ReadonlySet<string>;
   orderedSpecificationParameterIds?: ReadonlySet<string>;
   additionalBlockingIds?: readonly string[];
+  parameterValidationIssues?: readonly CanonicalParameterValidationIssue[];
   sourceByParameterId?: ReadonlyMap<string, CanonicalParameter["source"]>;
   schemaId: string;
   schemaVersion: string;
@@ -471,6 +492,8 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   checksum: string;
   createdAt: string;
 }): CanonicalParameterSession {
+  input={...input,catalog:{...input.catalog,parameterSchema:withCanonicalSourceProfileCalculationConsumersV1(
+    input.catalog.parameterSchema,input.catalog.applicability.sourceProfileSelectionV1)}};
   if(!input.revisionId.startsWith('precompile:')&&input.catalog.parameterSchema.some(p=>p.parameterId===floorPreparationIntentBindingS2769.modeId))input={...input,
     parameters:floorPreparationEditingParametersS2769(input.catalog.catalogId,input.parameters)};
   const allParameters = input.catalog.parameterSchema
@@ -518,6 +541,26 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   const values = new Map(allParameters
     .filter((parameter) => parameter.value != null)
     .map((parameter) => [parameter.parameterId, parameter.value!] as const));
+  if (input.catalog.applicability.sourceProfileSelectionV1 !== undefined) {
+    const editableIds = new Set(input.catalog.parameterSchema
+      .filter(isCanonicalEstimateUserEditableParameter).map(parameter => parameter.parameterId));
+    const actualUserInputs = Object.fromEntries(Object.entries(input.parameters)
+      .filter(([id]) => editableIds.has(id)));
+    const invalidIds = new Set(validateCanonicalEstimateParameterInputs({
+      schema: input.catalog.parameterSchema, rawInputs: actualUserInputs,
+    }).issues.map(issue => issue.parameterId));
+    const profile = resolveCanonicalEstimateProfileInputsS2723({
+      catalogId: input.catalog.catalogId, parameterSchema: input.catalog.parameterSchema,
+      sourceProfileSelectionMetadata: input.catalog.applicability.sourceProfileSelectionV1,
+      confirmedParameters: {},
+      effectiveUserParameters: Object.fromEntries(Object.entries(actualUserInputs)
+        .filter(([id]) => !invalidIds.has(id))),
+    });
+    // Visibility needs the same source-owned branch as the compiler. Keep
+    // these outputs only in condition context, never in questions, raw user
+    // values or saved input provenance. A stale saved selector is not a fact.
+    for (const [id, value] of Object.entries(profile.ownedOutputs ?? {})) values.set(id, value);
+  }
   const conditionState = (parameter: CanonicalParameter): boolean | null => {
     // A backend need is authoritative only inside its applicable branch. The
     // client parser maps an unsupported/newer expression to ALWAYS. For a
@@ -559,6 +602,13 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   });
   const visibleParameters = rawVisibleParameters
     .map(parameter => resolveConsumerCanonicalConditionalRequirement(parameter, values))
+    .map((parameter):CanonicalParameter=>{
+      const issues=input.parameterValidationIssues?.filter(issue=>issue.parameterId===parameter.parameterId)??[];
+      return parameter.value!=null&&issues.length>0
+        ? {...parameter,state:'INVALID',valid:false,
+          validationIssues:issues.map(issue=>canonicalParameterValidationIssueMessageRu(input.catalog.parameterSchema,issue))}
+        : parameter;
+    })
     .map((parameter): CanonicalParameter =>
     parameter.value == null && activeQuestionIds.has(parameter.parameterId)
       ? {
@@ -611,6 +661,14 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
       referenceSource: parameter.referenceSource,
     })),
   });
+  const applicationParameters = input.catalog.parameterSchema
+    .filter(schema => schema.visibilityRole !== 'INTERNAL_ONLY'
+      && isCanonicalEstimateSourceManagedParameter(schema)
+      && !isCanonicalEstimateVisibleReplaceableProfile(schema)
+      && ((schema.formulaConsumers?.length ?? 0) > 0 || (schema.resourceBranchConsumers?.length ?? 0) > 0))
+    .map(schema => ({ ...buildParameter({ catalogId: input.catalog.catalogId, schema, parameters: input.parameters,
+      referenceParameters: input.referenceParameters, userInputSnapshot: input.userInputSnapshot }),
+      inputOwnership: 'APPLICATION' as const, consumerInputRole: 'APPLICATION_TECHNICAL' as const }));
   return {
     coreSchemaVersion: CANONICAL_PARAMETER_CORE_SCHEMA_VERSION,
     sessionId: `backend-session:${input.revisionId}`,
@@ -623,6 +681,11 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
     calculationVersion: input.calculationVersion,
     status,
     parameters: visibleParameters,
+    ...(applicationParameters.length ? { applicationParameters } : {}),
+    ...(input.catalog.applicability.sourceProfileSelectionV1 === undefined ? {} : {
+      sourceProfileVisibilityV1: projectCanonicalSourceProfileVisibilityContextV1(
+        input.catalog.parameterSchema, input.catalog.applicability.sourceProfileSelectionV1),
+    }),
     inactiveConditionalParameters,
     blockingMissingParameterIds,
     contractMissingParameterIds,
@@ -745,6 +808,8 @@ export function buildConsumerCanonicalPrecompileParameterSession(input: {
     referenceParameters,
     userInputSnapshot,
     activeNeedParameterIds: new Set(input.missingParameterIds),
+    parameterValidationIssues: blockingCanonicalParameterIssues(input.catalog,
+      validateCanonicalEstimateParameterInputs({schema:input.catalog.parameterSchema,rawInputs:input.parameters}).issues),
     sourceByParameterId,
     schemaId: `backend-schema:${input.catalog.catalogId}`,
     schemaVersion: `definition:${input.catalog.definitionVersion}`,

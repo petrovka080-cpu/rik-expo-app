@@ -20,15 +20,15 @@ import { runMasterSingleDefinitionSuccessorR1 } from "./prepareMasterSingleDefin
 type Json = Record<string, any>;
 
 const variantKey = String(
-  process.env.S273_F09_SCREED_DEMOLITION_VARIANT ?? "small_area",
+  process.env.S273_F09_SCREED_DEMOLITION_VARIANT ?? "wet_zone",
 ) as CementSandScreedDemolitionVariantKey;
-if (!(["small_area", "wet_zone"] as const).includes(variantKey as never)) {
+if (!([ "wet_zone"] as const).includes(variantKey as never)) {
   throw new Error(`STOP_S273_F09_SCREED_DEMOLITION_VARIANT_UNSUPPORTED:${variantKey}`);
 }
 const variant = resolveCementSandScreedDemolitionVariant(variantKey);
 const token = variantKey.toUpperCase();
 const stem = variantKey.replace(/_/gu, "-");
-const contextRu = variantKey === "small_area" ? "малой площади" : "влажной зоны";
+const contextRu = "влажной зоны";
 
 async function verifyCore(): Promise<Json> {
   const short = await compileCementSandScreedDemolitionR1(

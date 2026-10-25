@@ -13,7 +13,7 @@ import {projectResourceParameterPrefixR1 as prefix,projectResourceRequiredR1 as 
 import type {AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
 import {compileCanonicalEstimateCore,type CanonicalEstimateCompileCoreInput} from '../backendPlatform/canonicalEstimateCompileCore';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
-import {buildCanonicalProfessionalPdfProjection} from '../backendPlatform/canonicalProfessionalPdf';
+import {assertCanonicalProfessionalPdfMoneyCells,buildCanonicalProfessionalPdfProjection} from '../backendPlatform/canonicalProfessionalPdf';
 import {canonicalArtifactPreliminaryNeeds,type CanonicalArtifactRevision} from '../backendPlatform/canonicalEstimateArtifactContract';
 import {canonicalEstimateResourceOperationSections} from '../backendPlatform/canonicalEstimateOperationComposition';
 import {consumerRepairRowIsTechnicalDetail,registerConsumerRepairRowVerifiedPresentation} from '../../../features/consumerRepair/consumerRepairRowMetadata';
@@ -177,9 +177,13 @@ it('keeps actual order amounts while a mesh takeoff is priced once and the commo
 
 it.each(['facade','concrete','screed']as const)('shows included physical tools in the %s editor and PDF without adding a second price',async key=>{
  const result=await compile(key,factories[key](),scheduledFacts(key));
- const tool=result.rows.find(r=>r.row_id===id(key,key==='facade'?'flat-float':'straightedge'))!;
- expect(tool).toMatchObject({included_in_estimate:false,included_in_procurement:false,unit_price:null,amount:null});
+ const schedule=threeSubworkResourceScheduleR3(key),toolKey=key==='facade'?'flat-float':'straightedge',position=schedule.positions.find(p=>p.key===toolKey)!;
+ const tool=result.rows.find(r=>r.row_id===id(key,toolKey))!;
+ expect(tool).toMatchObject({category:'tool',unit_id:position.unitId,quantity:'1',included_in_estimate:false,included_in_procurement:false,unit_price:null,amount:null});
  const graph=(tool.calculation_trace as {resourceGraph:Record<string,unknown>}).resourceGraph;
+ expect(graph.includedInResourceOwnerRowId).toBe(schedule.includedOwnerRowId);
+ expect(result.rows.filter(row=>row.row_id===schedule.includedOwnerRowId)).toHaveLength(1);
+ expect(result.rows.filter(row=>row.row_id===tool.row_id)).toHaveLength(1);
  const presentation=parseCanonicalPublicResourcePresentationV1(graph.publicResourcePresentationV1)!;expect(presentation).not.toBeNull();
  const ui={id:tool.row_id,titleRu:String(tool.title_ru),category:'tool',quantity:Number(tool.quantity),unitPrice:null,
   sourceParameters:{canonicalCostTreatment:'INCLUDED_IN_RESOURCE_ROWS',canonicalPreliminaryNeed:false,payable:false}};
@@ -189,8 +193,15 @@ it.each(['facade','concrete','screed']as const)('shows included physical tools i
   row_count:result.rows.length,input_parameters:result.parameters,totals:result.totals,currency_code:'KGS',amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
  const pdf=buildCanonicalProfessionalPdfProjection({revision,rows:result.rows,preliminaryNeeds:canonicalArtifactPreliminaryNeeds(revision),workTitleRu:'Проверка состава'});
  const table=pdf.html.split('<table class="client">')[1]!.split('</table>')[0]!;
- expect(table).toContain(presentation.nameRu);expect(table).toContain('Включено в №');expect(table).toContain('Без доплаты');
- if(key!=='facade')expect(table).toContain('Уточнить цену');
+ expect(() => assertCanonicalProfessionalPdfMoneyCells(pdf.html)).not.toThrow();
+ expect(table).toContain(presentation.nameRu);expect(table).not.toMatch(/Включено в №|Без доплаты|Уточнить цену/u);
+ const physicalRow=[...table.matchAll(/<tr(?:\s[^>]*)?>[\s\S]*?<\/tr>/gu)].map(match=>match[0])
+  .find(row=>row.includes(presentation.nameRu)&&row.includes('class="money"'))!;
+ expect(physicalRow).toBeDefined();expect(physicalRow).toContain('<td class="numeric">1</td>');
+ expect(physicalRow.match(/<td class="money"><\/td>/gu)).toHaveLength(2);
+ expect(result.totals.amount).toBe('0');expect(pdf.pricedRowCount).toBe(0);
+ expect(Object.values(pdf.categoryTotals).every(total=>total===0)).toBe(true);
+ if(key!=='facade')expect(pdf.missingPriceRowCount).toBeGreaterThan(0);
 });
 
 it('does not infer a tool quantity, delivery trip or mesh allowance from work area or from a supplied price',async()=>{

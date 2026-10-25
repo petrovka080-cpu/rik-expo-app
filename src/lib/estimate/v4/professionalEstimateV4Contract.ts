@@ -44,6 +44,7 @@ export type ParameterDataTypeV4 =
 export type EngineeringDimensionV4 =
   | "dimensionless"
   | "count"
+  | "headcount"
   | "length"
   | "area"
   | "volume"
