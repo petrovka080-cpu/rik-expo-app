@@ -56,5 +56,6 @@
   "scripts/estimate/r4a13/prepareRoofSingle539WholeLayersR24.ts": null,
   "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts": null,
   "scripts/estimate/r4a13/roofSingle539WholeConfigR224.test.ts": null,
-  "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageWhole539R24.test.ts": null
+  "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageWhole539R24.test.ts": null,
+  "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts": null
 }
