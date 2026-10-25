@@ -42,7 +42,7 @@ def main():
   node=subprocess.check_output(['where.exe','node.exe'],text=True).splitlines()[0]
   run='gox_ci_'+os.environ['GITHUB_RUN_ID'];env=dict(os.environ);env.pop('NODE_OPTIONS',None)
   env.update(DELIVERY16_CURRENT_TSC_GUARD_RUN_ID=run,GOX_TYPES_OUTPUT_ROOT=out.as_posix())
-  args=[node,'--max-old-space-size=2048','--max-semi-space-size=8',str(worker),str(out/'full-result.json'),
+  args=[node,'--max-old-space-size=2560','--max-semi-space-size=8',str(worker),str(out/'full-result.json'),
    '--expected-head',a.commit,'--seed-manifest-sha256',sha(seed),'--guard-run-id',run]
   job=OwnedLauncherJob()
   with(out/'compiler.stdout.log').open('xb')as stdout,(out/'compiler.stderr.log').open('xb')as stderr,(out/'samples.jsonl').open('x')as samples:
