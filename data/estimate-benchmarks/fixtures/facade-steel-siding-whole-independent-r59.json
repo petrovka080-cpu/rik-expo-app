@@ -1,0 +1,465 @@
+{
+  "contract": "gox-build.facade-steel-siding-independent-whole-oracle/r59",
+  "generatedFromImplementation": false,
+  "sourceOracleReusedWithoutProductExecution": "facade-steel-siding-independent-oracle-r2.json",
+  "sourceRawCases": [
+    {
+      "caseId": "STEEL06501_100",
+      "areaM2": "100",
+      "raw": {
+        "labour": "175.61",
+        "screwdriver": "57.2",
+        "electric-grinding-machine": "1.07",
+        "perforator": "26.89",
+        "flatbed": "0.97",
+        "dowel-screw": "217.400",
+        "screw": "913.00",
+        "levelling-bracket": "402.98",
+        "stud-profile": "236.89",
+        "weather-membrane": "120"
+      },
+      "projectPNeverScaledFromArea": [
+        "expansion-dowel",
+        "steel-siding",
+        "insulation",
+        "cover-strip",
+        "starter-strip",
+        "corner-strip"
+      ],
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "STEEL06501_12_5",
+      "areaM2": "12.5",
+      "raw": {
+        "labour": "21.95125",
+        "screwdriver": "7.15",
+        "electric-grinding-machine": "0.13375",
+        "perforator": "3.36125",
+        "flatbed": "0.12125",
+        "dowel-screw": "27.1750",
+        "screw": "114.125",
+        "levelling-bracket": "50.3725",
+        "stud-profile": "29.61125",
+        "weather-membrane": "15.0"
+      },
+      "projectPNeverScaledFromArea": [
+        "expansion-dowel",
+        "steel-siding",
+        "insulation",
+        "cover-strip",
+        "starter-strip",
+        "corner-strip"
+      ],
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "STEEL06501_200",
+      "areaM2": "200",
+      "raw": {
+        "labour": "351.22",
+        "screwdriver": "114.4",
+        "electric-grinding-machine": "2.14",
+        "perforator": "53.78",
+        "flatbed": "1.94",
+        "dowel-screw": "434.800",
+        "screw": "1826.00",
+        "levelling-bracket": "805.96",
+        "stud-profile": "473.78",
+        "weather-membrane": "240"
+      },
+      "projectPNeverScaledFromArea": [
+        "expansion-dowel",
+        "steel-siding",
+        "insulation",
+        "cover-strip",
+        "starter-strip",
+        "corner-strip"
+      ],
+      "execution": "UNRUN"
+    }
+  ],
+  "definitionShape": {
+    "parameters": 54,
+    "formulas": 64,
+    "resources": 64,
+    "ordinaryParameters": 1,
+    "independentMapEntries": 64
+  },
+  "publicResourceNames": {
+    "labour": "Рабочие по монтажу фасадного сайдинга",
+    "screwdriver-consumed": "Шуруповёрт",
+    "screwdriver-own": "Шуруповёрт",
+    "screwdriver-hired": "Шуруповёрт",
+    "electric-grinding-machine-consumed": "Машина шлифовальная электрическая",
+    "electric-grinding-machine-own": "Машина шлифовальная электрическая",
+    "electric-grinding-machine-hired": "Машина шлифовальная электрическая",
+    "perforator-consumed": "Перфоратор электрический мощностью 1,5 кВт с энергией удара до 18 Дж",
+    "perforator-own": "Перфоратор электрический мощностью 1,5 кВт с энергией удара до 18 Дж",
+    "perforator-hired": "Перфоратор электрический мощностью 1,5 кВт с энергией удара до 18 Дж",
+    "flatbed-consumed": "Автомобиль бортовой грузоподъёмностью до 5 т",
+    "flatbed-own": "Автомобиль бортовой грузоподъёмностью до 5 т",
+    "flatbed-hired": "Автомобиль бортовой грузоподъёмностью до 5 т",
+    "dowel-screw-consumed": "Дюбель с шурупом диаметром 6 мм длиной 35 мм",
+    "dowel-screw": "Дюбель с шурупом диаметром 6 мм длиной 35 мм",
+    "screw-consumed": "Саморез 4,2×16 мм",
+    "screw": "Саморез 4,2×16 мм",
+    "levelling-bracket-consumed": "Кронштейн выравнивающий стальной оцинкованный высотой 200 мм толщиной 1,2 мм",
+    "levelling-bracket": "Кронштейн выравнивающий стальной оцинкованный высотой 200 мм толщиной 1,2 мм",
+    "stud-profile-consumed": "Профиль стоечный стальной",
+    "stud-profile": "Профиль стоечный стальной",
+    "expansion-dowel-consumed": "Дюбель распорный с гайкой",
+    "expansion-dowel": "Дюбель распорный с гайкой",
+    "steel-siding-consumed": "Сайдинг стальной с полимерным покрытием",
+    "steel-siding": "Сайдинг стальной с полимерным покрытием",
+    "insulation-consumed": "Утеплитель фасадный",
+    "insulation": "Утеплитель фасадный",
+    "weather-membrane-consumed": "Мембрана гидроветрозащитная",
+    "weather-membrane": "Мембрана гидроветрозащитная",
+    "cover-strip-consumed": "Нащельник стальной оцинкованный с полимерным покрытием",
+    "cover-strip": "Нащельник стальной оцинкованный с полимерным покрытием",
+    "starter-strip-consumed": "Планка начальная стальная оцинкованная с полимерным покрытием",
+    "starter-strip": "Планка начальная стальная оцинкованная с полимерным покрытием",
+    "corner-strip-consumed": "Угол стальной оцинкованный с полимерным покрытием",
+    "corner-strip": "Угол стальной оцинкованный с полимерным покрытием"
+  },
+  "machineOwners": [
+    {
+      "key": "screwdriver",
+      "consumed": "screwdriver-consumed",
+      "own": "screwdriver-own",
+      "hired": "screwdriver-hired",
+      "parameter": "machine_fulfillment_screwdriver",
+      "resourceCode": "13-0400",
+      "operatorCoverage": "NO_ADDITIONAL_OPERATOR_NORM",
+      "unitPrice": "10",
+      "amount": "572"
+    },
+    {
+      "key": "electric-grinding-machine",
+      "consumed": "electric-grinding-machine-consumed",
+      "own": "electric-grinding-machine-own",
+      "hired": "electric-grinding-machine-hired",
+      "parameter": "machine_fulfillment_electric_grinding_machine",
+      "resourceCode": "33-0368",
+      "operatorCoverage": "NO_ADDITIONAL_OPERATOR_NORM",
+      "unitPrice": "20",
+      "amount": "21.4"
+    },
+    {
+      "key": "perforator",
+      "consumed": "perforator-consumed",
+      "own": "perforator-own",
+      "hired": "perforator-hired",
+      "parameter": "machine_fulfillment_perforator",
+      "resourceCode": "33-0440",
+      "operatorCoverage": "NO_ADDITIONAL_OPERATOR_NORM",
+      "unitPrice": "30",
+      "amount": "806.7"
+    },
+    {
+      "key": "flatbed",
+      "consumed": "flatbed-consumed",
+      "own": "flatbed-own",
+      "hired": "flatbed-hired",
+      "parameter": "machine_fulfillment_flatbed",
+      "resourceCode": "40-0001",
+      "operatorCoverage": "DRIVER",
+      "unitPrice": "50",
+      "amount": "48.5"
+    }
+  ],
+  "materialOwners": [
+    {
+      "key": "dowel-screw",
+      "owner": "dowel-screw",
+      "consumed": "dowel-screw-consumed",
+      "unitId": "piece",
+      "unitPrice": "1",
+      "amount": "300",
+      "projectQuantityKey": "project_dowel_screw",
+      "literalP": false
+    },
+    {
+      "key": "screw",
+      "owner": "screw",
+      "consumed": "screw-consumed",
+      "unitId": "piece",
+      "unitPrice": "0.1",
+      "amount": "91.3",
+      "projectQuantityKey": null,
+      "literalP": false
+    },
+    {
+      "key": "levelling-bracket",
+      "owner": "levelling-bracket",
+      "consumed": "levelling-bracket-consumed",
+      "unitId": "piece",
+      "unitPrice": "2",
+      "amount": "900",
+      "projectQuantityKey": "project_levelling_bracket",
+      "literalP": false
+    },
+    {
+      "key": "stud-profile",
+      "owner": "stud-profile",
+      "consumed": "stud-profile-consumed",
+      "unitId": "m",
+      "unitPrice": "3",
+      "amount": "750",
+      "projectQuantityKey": "project_stud_profile",
+      "literalP": false
+    },
+    {
+      "key": "expansion-dowel",
+      "owner": "expansion-dowel",
+      "consumed": "expansion-dowel-consumed",
+      "unitId": "piece",
+      "unitPrice": "4",
+      "amount": "3600",
+      "projectQuantityKey": "project_expansion_dowel",
+      "literalP": true
+    },
+    {
+      "key": "steel-siding",
+      "owner": "steel-siding",
+      "consumed": "steel-siding-consumed",
+      "unitId": "m",
+      "unitPrice": "5",
+      "amount": "2300",
+      "projectQuantityKey": "project_steel_siding",
+      "literalP": true
+    },
+    {
+      "key": "insulation",
+      "owner": "insulation",
+      "consumed": "insulation-consumed",
+      "unitId": "m3",
+      "unitPrice": "6",
+      "amount": "72",
+      "projectQuantityKey": "project_insulation",
+      "literalP": true
+    },
+    {
+      "key": "weather-membrane",
+      "owner": "weather-membrane",
+      "consumed": "weather-membrane-consumed",
+      "unitId": "m2",
+      "unitPrice": "7",
+      "amount": "840",
+      "projectQuantityKey": null,
+      "literalP": false
+    },
+    {
+      "key": "cover-strip",
+      "owner": "cover-strip",
+      "consumed": "cover-strip-consumed",
+      "unitId": "m",
+      "unitPrice": "8",
+      "amount": "160",
+      "projectQuantityKey": "project_cover_strip",
+      "literalP": true
+    },
+    {
+      "key": "starter-strip",
+      "owner": "starter-strip",
+      "consumed": "starter-strip-consumed",
+      "unitId": "m",
+      "unitPrice": "9",
+      "amount": "360",
+      "projectQuantityKey": "project_starter_strip",
+      "literalP": true
+    },
+    {
+      "key": "corner-strip",
+      "owner": "corner-strip",
+      "consumed": "corner-strip-consumed",
+      "unitId": "m",
+      "unitPrice": "10",
+      "amount": "300",
+      "projectQuantityKey": "project_corner_strip",
+      "literalP": true
+    }
+  ],
+  "protectedNeeds": [
+    {
+      "key": "source-component-identity",
+      "rowSuffix": "need:source-component-identity",
+      "parameterId": "steel_unresolved_general_source_component_identity",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need:source-component-identity"
+    },
+    {
+      "key": "fire-ventilation",
+      "rowSuffix": "need:fire-ventilation",
+      "parameterId": "steel_unresolved_general_fire_ventilation",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need:fire-ventilation"
+    },
+    {
+      "key": "anchor-tests",
+      "rowSuffix": "need:anchor-tests",
+      "parameterId": "steel_unresolved_general_anchor_tests",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need:anchor-tests"
+    },
+    {
+      "key": "access-rigging-power",
+      "rowSuffix": "need:access-rigging-power",
+      "parameterId": "steel_unresolved_general_access_rigging_power",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need:access-rigging-power"
+    },
+    {
+      "key": "workstation-wear",
+      "rowSuffix": "need:workstation-wear",
+      "parameterId": "steel_unresolved_general_workstation_wear",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need:workstation-wear"
+    },
+    {
+      "key": "qc-services",
+      "rowSuffix": "need:qc-services",
+      "parameterId": "steel_unresolved_general_qc_services",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need:qc-services"
+    },
+    {
+      "key": "cleanup-logistics",
+      "rowSuffix": "need:cleanup-logistics",
+      "parameterId": "steel_unresolved_general_cleanup_logistics",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics"
+    },
+    {
+      "key": "screwdriver-bits",
+      "rowSuffix": "need-tool:screwdriver-bits",
+      "parameterId": "steel_unresolved_tool_screwdriver_bits",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits"
+    },
+    {
+      "key": "drill-anchor-bits",
+      "rowSuffix": "need-tool:drill-anchor-bits",
+      "parameterId": "steel_unresolved_tool_drill_anchor_bits",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits"
+    },
+    {
+      "key": "hole-brush-pump",
+      "rowSuffix": "need-tool:hole-brush-pump",
+      "parameterId": "steel_unresolved_tool_hole_brush_pump",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump"
+    },
+    {
+      "key": "nonabrasive-sheet-cutter",
+      "rowSuffix": "need-tool:nonabrasive-sheet-cutter",
+      "parameterId": "steel_unresolved_tool_nonabrasive_sheet_cutter",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter"
+    },
+    {
+      "key": "cutter-working-parts",
+      "rowSuffix": "need-tool:cutter-working-parts",
+      "parameterId": "steel_unresolved_tool_cutter_working_parts",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts"
+    },
+    {
+      "key": "insulation-knife",
+      "rowSuffix": "need-tool:insulation-knife",
+      "parameterId": "steel_unresolved_tool_insulation_knife",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife"
+    },
+    {
+      "key": "layout-instruments",
+      "rowSuffix": "need-tool:layout-instruments",
+      "parameterId": "steel_unresolved_tool_layout_instruments",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments"
+    },
+    {
+      "key": "rivet-tool",
+      "rowSuffix": "need-tool:rivet-tool",
+      "parameterId": "steel_unresolved_tool_rivet_tool",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool"
+    },
+    {
+      "key": "torque-key-heads",
+      "rowSuffix": "need-tool:torque-key-heads",
+      "parameterId": "steel_unresolved_tool_torque_key_heads",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads"
+    },
+    {
+      "key": "feeler01",
+      "rowSuffix": "need-tool:feeler01",
+      "parameterId": "steel_unresolved_tool_feeler01",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:feeler01"
+    },
+    {
+      "key": "survey-instruments",
+      "rowSuffix": "need-tool:survey-instruments",
+      "parameterId": "steel_unresolved_tool_survey_instruments",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments"
+    },
+    {
+      "key": "lifting-working-parts",
+      "rowSuffix": "need-tool:lifting-working-parts",
+      "parameterId": "steel_unresolved_tool_lifting_working_parts",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts"
+    },
+    {
+      "key": "storage-bearers",
+      "rowSuffix": "need-tool:storage-bearers",
+      "parameterId": "steel_unresolved_tool_storage_bearers",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers"
+    },
+    {
+      "key": "ppe",
+      "rowSuffix": "need-tool:ppe",
+      "parameterId": "steel_unresolved_tool_ppe",
+      "rowId": "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+    }
+  ],
+  "sourceOperationKeys": [
+    "layout",
+    "drilling",
+    "brackets",
+    "insulation",
+    "membrane",
+    "profiles",
+    "starter",
+    "cladding"
+  ],
+  "testOnlyProjectBOM": {
+    "project_dowel_screw": "300",
+    "project_levelling_bracket": "450",
+    "project_stud_profile": "250",
+    "project_expansion_dowel": "900",
+    "project_steel_siding": "460",
+    "project_insulation": "12",
+    "project_cover_strip": "20",
+    "project_starter_strip": "40",
+    "project_corner_strip": "30"
+  },
+  "testOnlyLabourUnitPrice": "2",
+  "testOnlyPricesNotMarketOrSource": true,
+  "expectedPricedAmounts": {
+    "labour": "351.22",
+    "equipment": "1448.6",
+    "material": "9673.3",
+    "total": "11473.12"
+  },
+  "expectedCorePhases": [
+    "01-existing-before",
+    "02-current-after",
+    "03-fractional-12_5",
+    "04-area200-same-bom",
+    "05-hired-priced",
+    "06-own-priced",
+    "07-missing-project-readback",
+    "08-partial-P-bom",
+    "09-zero-scope",
+    "10-reject-modern-frame",
+    "11-reject-protected-zero",
+    "12-reject-raw-project",
+    "13-reject-fractional-P-piece",
+    "14-reject-fractional-structural-piece",
+    "15-reject-negative-P-volume",
+    "16-reject-invalid-machine-mode",
+    "17-reject-other-normative-basis"
+  ],
+  "expectedCanonicalResults": 9,
+  "expectedCoreRejects": 8,
+  "actualObjectApproved": false,
+  "actualNeedClosures": 0,
+  "execution": "UNRUN"
+}

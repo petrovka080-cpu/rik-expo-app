@@ -71,11 +71,11 @@
       "sha256": "f9ee5a1c77514518868e103bf30dd656e048642df0d9b8af6a20071db4f718e0"
     },
     {
-      "path": "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-r152/prepare-r152-historical-5af670e3.txt",
       "sha256": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529"
     },
     {
-      "path": "scripts/estimate/r4a13/masonryGlassM25OperationDisplayR152.test.ts",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-r152/standalone-test-historical-1279a169.txt",
       "sha256": "1279a1690935cbb353386942ac7726ccbb9836976c489edc5cd40ed8df2ecfa6"
     },
     {

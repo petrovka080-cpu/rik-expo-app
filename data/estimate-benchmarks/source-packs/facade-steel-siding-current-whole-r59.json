@@ -1,0 +1,174 @@
+{
+  "contract": "gox-build.facade-steel-siding-current-whole/r59",
+  "profileKey": "historical_steel_siding_06501",
+  "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+  "workKey": "facade_steel_siding_insulated_krer15_01_065_01",
+  "prefix": "facade:steel-siding:krer15-06501:r2",
+  "sourceId": "kg_krer15_2015_steel_siding_06501_r2",
+  "normId": "15-01-065-01",
+  "existingSourcePack": {
+    "path": "data/estimate-benchmarks/source-packs/facade-steel-siding-historical-06501-r2.json",
+    "sha256": "c26484800bb5bf2d6b3602bf8cb6111ff9e7992b0fcb072bc99cba3ff291663f"
+  },
+  "existingProvision": {
+    "path": "data/estimate-benchmarks/source-packs/facade-steel-siding-operation-provision-r2.json",
+    "sha256": "fe614c3589aa77a6cd42ed8d0735117ea8118ea529e22a9c67a6dd4d608aeca0"
+  },
+  "retainedPrimaryArtifacts": [
+    {
+      "sourceId": "KG_KRER15_2015",
+      "decision": "REUSE_EXACT",
+      "localReceipt": "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\facade-first-package\\after\\data\\estimate-benchmarks\\source-artifacts\\facade-bolix-mw120-krer15-r1\\KRER15-2015-official.pdf",
+      "canonicalPath": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "pdfPages": [
+        118,
+        119
+      ],
+      "scopePages": [
+        12,
+        13,
+        17
+      ],
+      "newCopy": false,
+      "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf"
+    },
+    {
+      "sourceId": "KG_BOOK01_2015",
+      "decision": "REUSE_EXACT",
+      "localReceipt": "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\facade-first-package\\after\\data\\estimate-benchmarks\\source-artifacts\\facade-bolix-mw120-krer15-r1\\KG-material-resource-book01-official.pdf",
+      "canonicalPath": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KG-material-resource-book01-official.pdf",
+      "sha256": "4c06ea5b428048cbf33872ded079306f21c2c7f5c798c99a03ec5c6249f9e837",
+      "officialUrl": "https://minstroy.gov.kg/index.php/ru/state_program/download-pdf/kniga01_compressed-18768f9f830b689f4.99664411.pdf",
+      "pdfPages": [
+        26,
+        27,
+        31,
+        116,
+        144,
+        170
+      ],
+      "newCopy": false,
+      "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KG-material-resource-book01-official.pdf"
+    },
+    {
+      "key": "book09",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/KG-material-resource-book09-official.pdf",
+      "sha256": "1e3d810e36f6752bfd9d9dec2f9baa9cd51796b85aec76a8b65ac627080587b8",
+      "officialUrl": "https://minstroy.gov.kg/index.php/ru/state_program/download-pdf/kniga09-74568fa023aaf53d0.62729580.pdf",
+      "pdfPages": [
+        7,
+        10,
+        11
+      ],
+      "scope": "Identity only;no prices imported"
+    },
+    {
+      "key": "sp2025",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/SP-KR53-101-2025-official.pdf",
+      "sha256": "279ad74a648a122a62ccb8bdc1a601c8c14138ef37fcb71fb7692c1bafdcdd31",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/obedinennyjfasad120425-626822c9c4958144.63610845.pdf",
+      "pdfPages": [
+        3,
+        7,
+        12,
+        15,
+        16,
+        22,
+        44,
+        48,
+        49,
+        50
+      ],
+      "scope": "Applicable production/project/QC constraints;not labour or supply norm"
+    },
+    {
+      "key": "steelHandling",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/steel-sheet-handling-cutting-primary2019.pdf",
+      "sha256": "131cd0b440db7b5e5a543821a6eea36586defefe6fe37f00baf084922acfdd43",
+      "officialUrl": "https://metallprofil.kg/about/documents/instruktsii/instruktsiya-po-montazhu-saydinga.pdf",
+      "pdfPages": [
+        3,
+        4
+      ],
+      "scope": "NARROW_PROVEN_ADAPTATION_ONLY:sheetmaterialhandling/cutting;neithermodernframeidentitynorlabour"
+    }
+  ],
+  "scope": {
+    "wholeSourceRows": 16,
+    "sourceOperations": 8,
+    "provisionOperations": 14,
+    "literalP": 6,
+    "actualProjectBOMFields": 9,
+    "currentFrameEquivalence": false,
+    "steelSidingUnit": "m",
+    "areaUnit": "m2",
+    "operatorNormPrinted": false
+  },
+  "publicResourceNames": {
+    "labour": "Рабочие по монтажу фасадного сайдинга",
+    "screwdriver-consumed": "Шуруповёрт",
+    "screwdriver-own": "Шуруповёрт",
+    "screwdriver-hired": "Шуруповёрт",
+    "electric-grinding-machine-consumed": "Машина шлифовальная электрическая",
+    "electric-grinding-machine-own": "Машина шлифовальная электрическая",
+    "electric-grinding-machine-hired": "Машина шлифовальная электрическая",
+    "perforator-consumed": "Перфоратор электрический мощностью 1,5 кВт с энергией удара до 18 Дж",
+    "perforator-own": "Перфоратор электрический мощностью 1,5 кВт с энергией удара до 18 Дж",
+    "perforator-hired": "Перфоратор электрический мощностью 1,5 кВт с энергией удара до 18 Дж",
+    "flatbed-consumed": "Автомобиль бортовой грузоподъёмностью до 5 т",
+    "flatbed-own": "Автомобиль бортовой грузоподъёмностью до 5 т",
+    "flatbed-hired": "Автомобиль бортовой грузоподъёмностью до 5 т",
+    "dowel-screw-consumed": "Дюбель с шурупом диаметром 6 мм длиной 35 мм",
+    "dowel-screw": "Дюбель с шурупом диаметром 6 мм длиной 35 мм",
+    "screw-consumed": "Саморез 4,2×16 мм",
+    "screw": "Саморез 4,2×16 мм",
+    "levelling-bracket-consumed": "Кронштейн выравнивающий стальной оцинкованный высотой 200 мм толщиной 1,2 мм",
+    "levelling-bracket": "Кронштейн выравнивающий стальной оцинкованный высотой 200 мм толщиной 1,2 мм",
+    "stud-profile-consumed": "Профиль стоечный стальной",
+    "stud-profile": "Профиль стоечный стальной",
+    "expansion-dowel-consumed": "Дюбель распорный с гайкой",
+    "expansion-dowel": "Дюбель распорный с гайкой",
+    "steel-siding-consumed": "Сайдинг стальной с полимерным покрытием",
+    "steel-siding": "Сайдинг стальной с полимерным покрытием",
+    "insulation-consumed": "Утеплитель фасадный",
+    "insulation": "Утеплитель фасадный",
+    "weather-membrane-consumed": "Мембрана гидроветрозащитная",
+    "weather-membrane": "Мембрана гидроветрозащитная",
+    "cover-strip-consumed": "Нащельник стальной оцинкованный с полимерным покрытием",
+    "cover-strip": "Нащельник стальной оцинкованный с полимерным покрытием",
+    "starter-strip-consumed": "Планка начальная стальная оцинкованная с полимерным покрытием",
+    "starter-strip": "Планка начальная стальная оцинкованная с полимерным покрытием",
+    "corner-strip-consumed": "Угол стальной оцинкованный с полимерным покрытием",
+    "corner-strip": "Угол стальной оцинкованный с полимерным покрытием"
+  },
+  "protectedNeedIds": [
+    "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+    "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+    "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+    "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+    "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+    "facade:steel-siding:krer15-06501:r2:need:qc-services",
+    "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+    "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+    "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+    "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+    "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+    "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+    "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+    "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+    "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+    "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+    "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+    "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+    "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+    "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+    "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+  ],
+  "sourceNormsAdded": 0,
+  "sourcePricesImported": false,
+  "actualProtectedNeedClosures": 0,
+  "physicalFull": false,
+  "newFULL": 0
+}

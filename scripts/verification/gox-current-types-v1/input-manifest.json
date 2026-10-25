@@ -36,6 +36,13 @@
     "data/estimate-benchmarks/fixtures/elecor-mechanical-fixings-current-parent-r2.json": "3097e5f9497ccde7749f961f3b4a602cfb4d61c1e160c90439b30c3143e8b587",
     "data/estimate-benchmarks/fixtures/euroflex-current-delivery-v2-parent-r3.json": "34466c443e5d9948802b7c3dc203dc8dfb97c2647f7f23b477c300703f8512ad",
     "data/estimate-benchmarks/fixtures/facade-ceresit-ct190-kz-material-subworks-r1.json": "9beeed62679a56d06875dbb75c1e6846b68e2fc16f4762d15dbd75983d64510f",
+    "data/estimate-benchmarks/fixtures/facade-porcelain-existing-owner-independent-r214.json": "32b6be5b148672367e50a062953d7cce097ec992d8aa74131eab340c004177aa",
+    "data/estimate-benchmarks/fixtures/facade-porcelain-independent-oracles-r3.json": "2fdc8b2f516e042b01abd42f5ca7c46f367d4953eb37435c16290feb44b88611",
+    "data/estimate-benchmarks/fixtures/facade-porcelain-whole-independent-r59.json": "a2d1ecc6357dceb702e4e385fec98088ea160e89bb915ac256ca1d52834984de",
+    "data/estimate-benchmarks/fixtures/facade-steel-siding-independent-oracle-r2.json": "69bc8ad0402c094775eb2b4c959dfca9a30781943b3012c3ba4d15d3f825e1c5",
+    "data/estimate-benchmarks/fixtures/facade-steel-siding-whole-independent-r59.json": "7e3215eb865c67405934a0615954deff13b32b127e8ac9949654bf17100b7aa2",
+    "data/estimate-benchmarks/fixtures/facade-ventilated-approved-template-source-r5.json": "8f2ac2724b124306f530b9fe61469257109fd10b3a739fbeb1179256481a1d36",
+    "data/estimate-benchmarks/fixtures/facade-ventilated-current-parent-source-r5.json": "cb1f977624b248f370f8e89266b6a8cc6b01ace44421e56839933a4bdc3b5eb3",
     "data/estimate-benchmarks/fixtures/fire-alarm-psu-whole-test-only-r24.json": "b0e1573a78371e65d8f94b956280d491bf2a11752cfa52c9cc7753567dc4cd54",
     "data/estimate-benchmarks/fixtures/floor-sand-quality-control-open-need-r1.json": "816e80535a7cbba34e8976fc2feba2818bfef5d1b7551661ca6a7a40ad45fa65",
     "data/estimate-benchmarks/fixtures/floor-sand-thickness-full-current-capture-guard-r1.json": "7c5bad6b77ede90252630afd0751c5f8c2823a0dc67c046e6f4f82b16f1eeeed",
@@ -77,6 +84,8 @@
     "data/estimate-benchmarks/fixtures/stone-cubes-four-v5-parents-s27-69.json": "607d06bfd8d9e60125673f0e63b6497beb273a996d8d4ec028abe56af2937e2e",
     "data/estimate-benchmarks/fixtures/wall-ceramic-cement-existing-finite-f271.json": "c42c52fdc57d659b7d3c4db838081cbe3975eeaad6c252974c65a500e3188c09",
     "data/estimate-benchmarks/r568-r4-a8-pump-station-acceptance.json": "da5125bf0edeb9e4f2475ae441d72502d451caec539ca1b4e35bdae482986834",
+    "data/estimate-benchmarks/source-artifacts/masonry-r152/prepare-r152-historical-5af670e3.txt": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529",
+    "data/estimate-benchmarks/source-artifacts/masonry-r152/standalone-test-historical-1279a169.txt": "1279a1690935cbb353386942ac7726ccbb9836976c489edc5cd40ed8df2ecfa6",
     "data/estimate-benchmarks/source-packs/access-control-lock-factory-whole-r24.json": "37a262115d8f1e41bcc13e2700653511e25586b3824328f25fe7c9f12130c532",
     "data/estimate-benchmarks/source-packs/aggressive-floor-actual-thickness-four-s27-69.json": "45d3fc2c583cba5e81b6cfb0f5ebfc56513e4a929b58c38e44a0be0abf5d6b10",
     "data/estimate-benchmarks/source-packs/aggressive-floor-complete-protection-dust-four-s27-69.json": "3b9c748d1fd4786cbb81eed6a33f121bad8416a73cc0478a38a72458be16956f",
@@ -126,8 +135,16 @@
     "data/estimate-benchmarks/source-packs/electrical-elecor-cable-channel-standard-s27-23.json": "758c2c4822923c9619c7c08e43d70ce77cf2cb94d04c0e188c81b367867841b2",
     "data/estimate-benchmarks/source-packs/euroflex-factory-half-current-r3.json": "5afc377b3e9816f1ef671ba40aae9dd55ef1cfa9839b41f66f8d5f2e1b64f7f2",
     "data/estimate-benchmarks/source-packs/euroflex-recycling50-materials-s27-75.json": "bb333e13bf396699998c93e410ce25fff6086115d6a9d136ab1c1c08ac79b531",
+    "data/estimate-benchmarks/source-packs/facade-board-source-fixing-r3.json": "7b3df843ba16c63f4a97bf2af4b888b98f25f4dc9e528573afee62c8f70c8ffa",
     "data/estimate-benchmarks/source-packs/facade-ceresit-ct190-kz-material-subworks-r1.json": "9a3471c8cf2203aedb4c6acf9bfa74cc210a6c426df37715be3b8b6e75ec88f8",
+    "data/estimate-benchmarks/source-packs/facade-current-family-whole-systems-r3.json": "797dee3748699fe701f7b4b2daeaa740c60e6bb6d48452391c25eb00460755ef",
     "data/estimate-benchmarks/source-packs/facade-flashings-with-downpipes-krer12-008-01-quantity-r1.json": "4c746387b60189b6973c7fcb501c2676a153a46ea5adead69f461cbd5181fa56",
+    "data/estimate-benchmarks/source-packs/facade-porcelain-current-whole-r59.json": "510a25e5cd73a75eed44815957de9eebb3088ad0a8c811d10eed141ef58c4f2b",
+    "data/estimate-benchmarks/source-packs/facade-steel-siding-current-whole-r59.json": "18d1e8a9b2c40096a521c82b948e1462c84708e2eeb0c79f4451bb84701cc1ef",
+    "data/estimate-benchmarks/source-packs/facade-steel-siding-historical-06501-r2.json": "c26484800bb5bf2d6b3602bf8cb6111ff9e7992b0fcb072bc99cba3ff291663f",
+    "data/estimate-benchmarks/source-packs/facade-steel-siding-operation-provision-r2.json": "fe614c3589aa77a6cd42ed8d0735117ea8118ea529e22a9c67a6dd4d608aeca0",
+    "data/estimate-benchmarks/source-packs/facade-timber-end-protection-r5.json": "82fa9c0e6e0631f70dedf6bc6f7c1c9f8039fc468f566cd05cde2a70ec29bd29",
+    "data/estimate-benchmarks/source-packs/facade-ventilated-thermowood-existing-owner-r5.json": "96bd8ea52f57495765d895743b30fcc17ba7aff217012e264180095a0e41ed18",
     "data/estimate-benchmarks/source-packs/fire-alarm-rip24-06-whole-factory-delivery-r24.json": "5654b34ac6b3db6ebb6c66f14d5b74d42ff45d5ff69a3d00ecba9aaac3648f8a",
     "data/estimate-benchmarks/source-packs/flat-metal-oil-two-coats-krer15-030-02-quantity-r1.json": "9cf784f9848df164187529d8aeee2442ccd736e91ea04ae0f729e488f7ee42f7",
     "data/estimate-benchmarks/source-packs/flat-roof-scope-s27-65.json": "6da79a052b0e9c7d84173062a885bb4b09af49897f9e9f376d4c3e267cbed651",
@@ -168,7 +185,7 @@
     "data/estimate-benchmarks/source-packs/masonry-glass-block-independent-full-map-r103.json": "62515ac069c71ac6c4165adbfe94df48b177fe3c4e9ecb5318aa6c3b970b34dc",
     "data/estimate-benchmarks/source-packs/masonry-glass-block-krer08-04-002-r97.json": "6fabb08cc53a84f515d5060ccfea1a027d513994c6bb335b0e0ba16260745636",
     "data/estimate-benchmarks/source-packs/masonry-glass-block-normal-route-r103.json": "4176cb1dd952792d4fa4f859121920c7193e0f8671ccf935e54a8abd1ef6f352",
-    "data/estimate-benchmarks/source-packs/masonry-glass-m25-display-link-r152.json": "46c24535a3ec1f5e15b57c882c0360308e8e27abeda6a0d03c31964953b7f80b",
+    "data/estimate-benchmarks/source-packs/masonry-glass-m25-display-link-r152.json": "3954db30e544b474d4c29da515e0a6b770b93ad6938c5e79c352da433b3a40c9",
     "data/estimate-benchmarks/source-packs/masonry-glass-m25-display-map-r152.json": "29ae7f033e36155b88d6eb8f00d1f1cebbd1e7ca005424f49297e20791d2a4fd",
     "data/estimate-benchmarks/source-packs/masonry-glass-opening-existing-owner-map-r223.json": "a4ec1c1efc87193dd9b3d5a3a5818d61fbfb980104f8bf1ff9f6ae72611a071f",
     "data/estimate-benchmarks/source-packs/masonry-glass-opening-existing-owner-r223.json": "2eb2dc8d62069ff7412b15ed3f8081299baf6fc3ab377ccd01cb1b405e995f2d",
@@ -367,6 +384,7 @@
     "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": "dc49ae5ac122a4464d3402593524e0a3999898ed09b7d6cd38dc23877cb816dc",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "0af158ae1338dd3fbf2c9361f4c323c296e6998587383d9e99e463eecd5218f7",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": "22e0c945a463230bed73e7efed680cf7bbd1547b82348737c620e72756bc6691",
+    "scripts/estimate/r4a13/canonicalMachineHourCrossFamilyR233.test.ts": "b22df493c125a24d2dadaf0bebdbbd6cc83942bf871ab9b5c8dbb17c6ab0d2e8",
     "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845",
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts": "c40cd5746bf94c66e95ca2e807cd31c0d1ae3ab15921a074bf407bfaa1808812",
     "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": "e39c2aa3555518620e0d538cfcfe9cd858d48d9aac949976d23e5f9f9450c895",
@@ -375,6 +393,9 @@
     "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts": "4c33d590e163a1a57c987e6ae9093e647c6990c22e3da8b9493f962579880440",
     "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": "0452699e7d46af32e5f0c68992833d3f94385395f3d5eee0dcb99b8dc9168a9a",
     "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": "9bd3e64a03d5e98eb51e7265027545afe1b994188498bfd9a5ee287c75288298",
+    "scripts/estimate/r4a13/facadeNvfSequentialSparseBaselineR226.fixtures.ts": "a3d79437214ba5c0bd153c9539c77ae7a66c76f0f3af169d6b008ae685d00ad6",
+    "scripts/estimate/r4a13/facadeNvfSequentialSparseBaselineR226.test.ts": "df218b3e8eabe78d417656780a29408546d76f6d11318519c3f5a443ccac2319",
+    "scripts/estimate/r4a13/fireAlarmPsuFormalCaptureAndLockedReadR24.test.ts": "4ade796e103374397cfab7f61f2c5edfcf0cf6cace0cf8fe1b9df37dd1d9e686",
     "scripts/estimate/r4a13/fireAlarmPsuWholeActualRehearsalR24.test.ts": "8ed7c99755e52d7fc6197b2d1dc99447d1269b14186866cfe1d3c615a741d973",
     "scripts/estimate/r4a13/floorCementScreed20mmColumn01AppendR1.test.ts": "049a00dc540cec4c10257d696a838a6200642c7a20d85649fcbb06210e133d2f",
     "scripts/estimate/r4a13/floorConcreteUnderlayerColumn09AppendR1.test.ts": "5743738f5082244d862cb9cb7e9b89ec2e23ebc0bca8ce8f7c943b744edb4213",
@@ -389,6 +410,7 @@
     "scripts/estimate/r4a13/masonryGlassOpeningExistingOwnerR223.test.ts": "9993c0f3ceb11c1bf05987705259768c8e91a6504599c8314006c30677020518",
     "scripts/estimate/r4a13/masonryGlassOpeningNativePriceHoldR223.test.ts": "37797bdc95c40c8d395323d3e633e5a4229832fe863b1ee08f4b284ea13057e2",
     "scripts/estimate/r4a13/masonryGlassOpeningNormalLockedR224.test.ts": "73cf464923d0f90dc22aba31b1e14f75345f93eb19f312e7ee645e40850e91e5",
+    "scripts/estimate/r4a13/masonryOpeningHistoricalSourcePinR281.test.ts": "c64ef87d13dfe2ae83f05aba7563415e26cab91a4b7ed3fb2148b24d5bd6184f",
     "scripts/estimate/r4a13/masonryTwoOwnerRetainedPureR239.test.ts": "3ee9d1f9f407c5bd1fa3d989a0b4a00fea903975cb8bc543f7be15906180fd0a",
     "scripts/estimate/r4a13/masterActiveCatalogRetirementR575.test.ts": "8e9d66416130b3fa4d598f0abdfb9308192ee69c434cb1f3aa1da0118e0af03c",
     "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts": "936cdac80470ba4215586433315b41bd6546870e4c0b7d2b4b7c1e2d5b43dca0",
@@ -463,6 +485,9 @@
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsMasterSuccessorR3.ts": "6c5ee9cfb3cd31110040324846c8dd80b5677048bbbccccc4d21391ab18d8d86",
     "scripts/estimate/r4a13/prepareEuroflexFactoryHalfCurrentPublicationR3.ts": "63d02d76290bc18f661934e327d67b488e35d0f637c9cc50d80d921d13f34e61",
     "scripts/estimate/r4a13/prepareEuroflexFactoryHalfLayoutCurrentR3.ts": "7da56c7a8dd9a4a46068494d2c90a606220f83b1d65087b6b6f0781725fe8b14",
+    "scripts/estimate/r4a13/prepareFacadeVentilatedPorcelainExistingOwnerR214.ts": "513e8928b0481bdfc4a2c61ce7b5bde4b93a9f74653bd976627b66b23fec93d4",
+    "scripts/estimate/r4a13/prepareFacadeVentilatedSteelExistingOwnerR5.ts": "f41a642e694b44b138bed1d2425b91a53cce5152932e231c458c76ae748e0533",
+    "scripts/estimate/r4a13/prepareFacadeVentilatedThermowoodR5.ts": "d9eb2105ddcce4f65f0ec492831b2e7f68daf3f9481e6ed43749f913a231ff97",
     "scripts/estimate/r4a13/prepareFireAlarmCommissioningClassifiedVariantSuccessor.ts": "596d412f2bcdf4e748af7668dd40a3ede96d82fd5faf757c1ea09bb4f0fcf482",
     "scripts/estimate/r4a13/prepareFireAlarmProjectPreparationVariantSuccessor.ts": "34b85822071678538d9cded029a90a806ff5796cbd61f807e5264b7fb58275ac",
     "scripts/estimate/r4a13/prepareFireAlarmPsuCurrentMasterR24.ts": "b71d065846365330a4be8db0773e01842c6580cd4ec232dadce3e0ecc7d67ded",
@@ -600,7 +625,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "53a79109528197939929cc838eb98f0edaca0c1e32724b08f9f5cb1adcb369b1",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "4a8c94f9e4f9ba4ae90fa81e604b33a1599bf9b73d76e838a60d93bf21bc024c",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1743,6 +1768,7 @@
     "src/lib/estimate/v4/embeddedWeldingCompletionS2733.ts": "b6c93435491ddfffe63f1a8db011bcf3daf9faf171b1a2ad2c1f52ff3bc41eeb",
     "src/lib/estimate/v4/engineeringUnitRegistryV4.ts": "41312aab1d1e6f03974f8ac773fe2c1680b147c9b09f413d9cc159ef8df25c6d",
     "src/lib/estimate/v4/euroflexRecycling50MaterialsR1.ts": "92bd6915d6361c7e2f900c63bbc13aad52268e47924c39a2494aa284c6635edd",
+    "src/lib/estimate/v4/facadeBoardSourceFixingR3.ts": "18cdde4b76c99fdd91ef6c1cde510f0d85b1838401e4a9af1718f27102d160d5",
     "src/lib/estimate/v4/facadeCeresitCt190MaterialSubworksR1.test.ts": "7ae3367b725a52f4eb101e25f9b71c9f1e21594e296752d96e91b9f097e8a26e",
     "src/lib/estimate/v4/facadeCeresitCt190MaterialSubworksR1.ts": "ad1b5655bc7191e989ab1c17dd024d354bd26f98f5c9bf58ad48716fd3ba15cb",
     "src/lib/estimate/v4/facadeFlashingsWithDownpipes00801QuantityR1.test.ts": "87c49aa39d60111d4d4ac27a7119ac6a3ab040e74c1eac7b9d043280cc646e73",
@@ -1750,6 +1776,14 @@
     "src/lib/estimate/v4/facadeMineralWoolInstallationR1.ts": "1682850f36535744b14184edce554d63274127344833a35e1f8e0648f34ef9e9",
     "src/lib/estimate/v4/facadeMineralWoolOperationCompositionR2.test.ts": "720a3b26d3688431fe10e938272751833839385082f59ff7715b38c286bdb168",
     "src/lib/estimate/v4/facadeMineralWoolOperationCompositionR2.ts": "35a2ef2a304c0fa6219870beafa4d3a54a294182e87f83257f9777c2e75fe714",
+    "src/lib/estimate/v4/facadeNvfSteelPorcelainOneOwnerR221.ts": "51f1b3027e1e6189ed605345c7d1baa93742a6ce77c1d8cdcc566e5688b6fd37",
+    "src/lib/estimate/v4/facadePorcelainWholeR59.ts": "bb4cfd8226ceb41ac214a8655ce04fb629633e51bf1fec0e20c654fe93f06825",
+    "src/lib/estimate/v4/facadeSteelSidingKrer15R2.ts": "baac0e0ea055538cbee1ef1beac96758a970d62f633865cf4f38a39befd9bff9",
+    "src/lib/estimate/v4/facadeSteelSidingWholeR59.ts": "e0fef1c03367194c8e15fd4191bfb92264e597c1557b37671fd94351e03b965a",
+    "src/lib/estimate/v4/facadeTimberEndProtectionWholeR5.ts": "e3f542143efcffcbd680b7ea0d9d66cd6d85e9f5ab9d544e2701d82a517622ba",
+    "src/lib/estimate/v4/facadeVentilatedPorcelainExistingOwnerR214.ts": "7e0672655c74605c4d4fa57d7812bf4a63278379197aca772d586839d187b2b7",
+    "src/lib/estimate/v4/facadeVentilatedPorcelainR3.ts": "11bda031975a97f42a46c1b947275a6b9bd413fdb642c5453b165ace16373fac",
+    "src/lib/estimate/v4/facadeVentilatedSteelExistingOwnerR5.ts": "b70928763751fb7ec640b750e1ce9ca52d329d7b55df345a2cc02d10018229fa",
     "src/lib/estimate/v4/filtrationStationPromptR1.ts": "77ad85e58249bdd16acfbb00dac78324fe7b410c8deaed0848099918f32bebd2",
     "src/lib/estimate/v4/filtrationStationR1.ts": "262a3e48ddd8fe9156a1be918fe8fc72610fe642e797fba6b37773492d1f2e53",
     "src/lib/estimate/v4/fireAlarmCableLayingVariantsR1.ts": "0f4729b7a0b0d4961b99f8523761ed0ab5c03f0fd8e8cb3789b2d33b7b02e96f",
@@ -1827,6 +1861,7 @@
     "src/lib/estimate/v4/masonryGlassBlockNormalCardsR103.ts": "3ebafd9f73ba095b1ff0678cf985cc625b11304fee0b317f1691cfc69c70fff0",
     "src/lib/estimate/v4/masonryGlassM25OperationDisplayR152.ts": "f9ee5a1c77514518868e103bf30dd656e048642df0d9b8af6a20071db4f718e0",
     "src/lib/estimate/v4/masonryGlassOpeningExistingOwnerR223.ts": "7cf3e76a369f69f89bf80139f7deef76d77cdf4f4c5a39dc59e56daad33913fd",
+    "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts": "a93313b9a65ff4058daabe3db412dffa79d9c4f3b3cade47074d0fca202f6a20",
     "src/lib/estimate/v4/mineralCeilingThirdPuttyCoatS2754.ts": "150d9985d86076af8540cd29003ed8ab493d2a50c7431b170a0f1e13cb60f0ed",
     "src/lib/estimate/v4/mineralCeilingThirdPuttySupplierGatesS2754.ts": "feea1d25660d74d2d9ad8d718010639ed353e8128e73f2b156857abea9b20986",
     "src/lib/estimate/v4/monolithicStairDokaKrer06Column11101R1.ts": "4a3f0b4920fbb42e0a300dc16051bb6ccd4b164236446ee23fd9a486b1746ff3",
@@ -3657,14 +3692,14 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "53a79109528197939929cc838eb98f0edaca0c1e32724b08f9f5cb1adcb369b1",
-  "canonicalSourceFreezeSha256": "5d91ef4a30c4d526b36a13fb210b3f510d5a2a813189c4113ad837180eb8d50f",
+  "originalSeedManifestSha256": "4a8c94f9e4f9ba4ae90fa81e604b33a1599bf9b73d76e838a60d93bf21bc024c",
+  "canonicalSourceFreezeSha256": "ca6d2f4ca3d81566174cdcdb8385ef80a2c58e3b5454906fadc94f243e9f798a",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100904220,
+    "sourceBytes": 101904982,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -3759,8 +3794,8 @@
         "owner": "MASONRY_TWO_EXISTING_OWNERS"
       },
       "data/estimate-benchmarks/source-packs/masonry-glass-m25-display-link-r152.json": {
-        "sha256": "46c24535a3ec1f5e15b57c882c0360308e8e27abeda6a0d03c31964953b7f80b",
-        "owner": "MASONRY_TWO_EXISTING_OWNERS"
+        "sha256": "3954db30e544b474d4c29da515e0a6b770b93ad6938c5e79c352da433b3a40c9",
+        "owner": "EXACT_PASSIVE_OPENING_SOURCE_REPAIR_R281_REV02"
       },
       "data/estimate-benchmarks/source-packs/masonry-glass-m25-display-map-r152.json": {
         "sha256": "29ae7f033e36155b88d6eb8f00d1f1cebbd1e7ca005424f49297e20791d2a4fd",
@@ -4425,17 +4460,161 @@
       "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": {
         "sha256": "1134fee0cac14fb18931a7e3c02e7d0b9e6fb228fd03f519d7d1c2f0d5094b6e",
         "owner": "WALL_FUTURE_OBJECT_FACT_SOURCE_ONLY_PENDING_ACTUAL_TYPES_AND_RUNTIME"
+      },
+      "data/estimate-benchmarks/source-artifacts/masonry-r152/prepare-r152-historical-5af670e3.txt": {
+        "sha256": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529",
+        "owner": "EXACT_PASSIVE_OPENING_SOURCE_REPAIR_R281_REV02"
+      },
+      "data/estimate-benchmarks/source-artifacts/masonry-r152/standalone-test-historical-1279a169.txt": {
+        "sha256": "1279a1690935cbb353386942ac7726ccbb9836976c489edc5cd40ed8df2ecfa6",
+        "owner": "EXACT_PASSIVE_OPENING_SOURCE_REPAIR_R281_REV02"
+      },
+      "scripts/estimate/r4a13/masonryOpeningHistoricalSourcePinR281.test.ts": {
+        "sha256": "c64ef87d13dfe2ae83f05aba7563415e26cab91a4b7ed3fb2148b24d5bd6184f",
+        "owner": "EXACT_PASSIVE_OPENING_SOURCE_REPAIR_R281_REV02"
+      },
+      "scripts/estimate/r4a13/fireAlarmPsuFormalCaptureAndLockedReadR24.test.ts": {
+        "sha256": "4ade796e103374397cfab7f61f2c5edfcf0cf6cace0cf8fe1b9df37dd1d9e686",
+        "owner": "GENUINE_TWO_PHASE_READ_ENTRY_PENDING_ACTUAL_TYPES_R282"
+      },
+      "data/estimate-benchmarks/fixtures/facade-porcelain-existing-owner-independent-r214.json": {
+        "sha256": "32b6be5b148672367e50a062953d7cce097ec992d8aa74131eab340c004177aa",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/fixtures/facade-porcelain-independent-oracles-r3.json": {
+        "sha256": "2fdc8b2f516e042b01abd42f5ca7c46f367d4953eb37435c16290feb44b88611",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/fixtures/facade-porcelain-whole-independent-r59.json": {
+        "sha256": "a2d1ecc6357dceb702e4e385fec98088ea160e89bb915ac256ca1d52834984de",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/fixtures/facade-steel-siding-independent-oracle-r2.json": {
+        "sha256": "69bc8ad0402c094775eb2b4c959dfca9a30781943b3012c3ba4d15d3f825e1c5",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/fixtures/facade-steel-siding-whole-independent-r59.json": {
+        "sha256": "7e3215eb865c67405934a0615954deff13b32b127e8ac9949654bf17100b7aa2",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/fixtures/facade-ventilated-approved-template-source-r5.json": {
+        "sha256": "8f2ac2724b124306f530b9fe61469257109fd10b3a739fbeb1179256481a1d36",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/fixtures/facade-ventilated-current-parent-source-r5.json": {
+        "sha256": "cb1f977624b248f370f8e89266b6a8cc6b01ace44421e56839933a4bdc3b5eb3",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/source-packs/facade-board-source-fixing-r3.json": {
+        "sha256": "7b3df843ba16c63f4a97bf2af4b888b98f25f4dc9e528573afee62c8f70c8ffa",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/source-packs/facade-current-family-whole-systems-r3.json": {
+        "sha256": "797dee3748699fe701f7b4b2daeaa740c60e6bb6d48452391c25eb00460755ef",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/source-packs/facade-porcelain-current-whole-r59.json": {
+        "sha256": "510a25e5cd73a75eed44815957de9eebb3088ad0a8c811d10eed141ef58c4f2b",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/source-packs/facade-steel-siding-current-whole-r59.json": {
+        "sha256": "18d1e8a9b2c40096a521c82b948e1462c84708e2eeb0c79f4451bb84701cc1ef",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/source-packs/facade-steel-siding-historical-06501-r2.json": {
+        "sha256": "c26484800bb5bf2d6b3602bf8cb6111ff9e7992b0fcb072bc99cba3ff291663f",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/source-packs/facade-steel-siding-operation-provision-r2.json": {
+        "sha256": "fe614c3589aa77a6cd42ed8d0735117ea8118ea529e22a9c67a6dd4d608aeca0",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/source-packs/facade-timber-end-protection-r5.json": {
+        "sha256": "82fa9c0e6e0631f70dedf6bc6f7c1c9f8039fc468f566cd05cde2a70ec29bd29",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "data/estimate-benchmarks/source-packs/facade-ventilated-thermowood-existing-owner-r5.json": {
+        "sha256": "96bd8ea52f57495765d895743b30fcc17ba7aff217012e264180095a0e41ed18",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "scripts/estimate/r4a13/canonicalMachineHourCrossFamilyR233.test.ts": {
+        "sha256": "b22df493c125a24d2dadaf0bebdbbd6cc83942bf871ab9b5c8dbb17c6ab0d2e8",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "scripts/estimate/r4a13/facadeNvfSequentialSparseBaselineR226.fixtures.ts": {
+        "sha256": "a3d79437214ba5c0bd153c9539c77ae7a66c76f0f3af169d6b008ae685d00ad6",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "scripts/estimate/r4a13/facadeNvfSequentialSparseBaselineR226.test.ts": {
+        "sha256": "df218b3e8eabe78d417656780a29408546d76f6d11318519c3f5a443ccac2319",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "scripts/estimate/r4a13/prepareFacadeVentilatedPorcelainExistingOwnerR214.ts": {
+        "sha256": "513e8928b0481bdfc4a2c61ce7b5bde4b93a9f74653bd976627b66b23fec93d4",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "scripts/estimate/r4a13/prepareFacadeVentilatedSteelExistingOwnerR5.ts": {
+        "sha256": "f41a642e694b44b138bed1d2425b91a53cce5152932e231c458c76ae748e0533",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "scripts/estimate/r4a13/prepareFacadeVentilatedThermowoodR5.ts": {
+        "sha256": "d9eb2105ddcce4f65f0ec492831b2e7f68daf3f9481e6ed43749f913a231ff97",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadeBoardSourceFixingR3.ts": {
+        "sha256": "18cdde4b76c99fdd91ef6c1cde510f0d85b1838401e4a9af1718f27102d160d5",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadeNvfSteelPorcelainOneOwnerR221.ts": {
+        "sha256": "51f1b3027e1e6189ed605345c7d1baa93742a6ce77c1d8cdcc566e5688b6fd37",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadePorcelainWholeR59.ts": {
+        "sha256": "bb4cfd8226ceb41ac214a8655ce04fb629633e51bf1fec0e20c654fe93f06825",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadeSteelSidingKrer15R2.ts": {
+        "sha256": "baac0e0ea055538cbee1ef1beac96758a970d62f633865cf4f38a39befd9bff9",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadeSteelSidingWholeR59.ts": {
+        "sha256": "e0fef1c03367194c8e15fd4191bfb92264e597c1557b37671fd94351e03b965a",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadeTimberEndProtectionWholeR5.ts": {
+        "sha256": "e3f542143efcffcbd680b7ea0d9d66cd6d85e9f5ab9d544e2701d82a517622ba",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadeVentilatedPorcelainExistingOwnerR214.ts": {
+        "sha256": "7e0672655c74605c4d4fa57d7812bf4a63278379197aca772d586839d187b2b7",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadeVentilatedPorcelainR3.ts": {
+        "sha256": "11bda031975a97f42a46c1b947275a6b9bd413fdb642c5453b165ace16373fac",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/facadeVentilatedSteelExistingOwnerR5.ts": {
+        "sha256": "b70928763751fb7ec640b750e1ce9ca52d329d7b55df345a2cc02d10018229fa",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts": {
+        "sha256": "a93313b9a65ff4058daabe3db412dffa79d9c4f3b3cade47074d0fca202f6a20",
+        "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
       }
     },
     "extraRoots": [
       "scripts/estimate/r4a13/accessControlLockWholeActualRehearsalR24.test.ts",
       "scripts/estimate/r4a13/bindAccessControlLockActualFormalRegistryR24.ts",
+      "scripts/estimate/r4a13/canonicalMachineHourCrossFamilyR233.test.ts",
       "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts",
       "scripts/estimate/r4a13/concreteCuringCurrentFourR273.test.ts",
       "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts",
       "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts",
       "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts",
       "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts",
+      "scripts/estimate/r4a13/facadeNvfSequentialSparseBaselineR226.fixtures.ts",
+      "scripts/estimate/r4a13/facadeNvfSequentialSparseBaselineR226.test.ts",
+      "scripts/estimate/r4a13/fireAlarmPsuFormalCaptureAndLockedReadR24.test.ts",
       "scripts/estimate/r4a13/fireAlarmPsuWholeActualRehearsalR24.test.ts",
       "scripts/estimate/r4a13/interiorWallFinishingPhysicalKitR240.test.ts",
       "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts",
@@ -4446,6 +4625,7 @@
       "scripts/estimate/r4a13/masonryGlassOpeningExistingOwnerR223.test.ts",
       "scripts/estimate/r4a13/masonryGlassOpeningNativePriceHoldR223.test.ts",
       "scripts/estimate/r4a13/masonryGlassOpeningNormalLockedR224.test.ts",
+      "scripts/estimate/r4a13/masonryOpeningHistoricalSourcePinR281.test.ts",
       "scripts/estimate/r4a13/masonryTwoOwnerRetainedPureR239.test.ts",
       "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts",
       "scripts/estimate/r4a13/masterMonolithicRepairGeometryVisibilityOnlyR60.ts",
@@ -4456,6 +4636,9 @@
       "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts",
       "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts",
       "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts",
+      "scripts/estimate/r4a13/prepareFacadeVentilatedPorcelainExistingOwnerR214.ts",
+      "scripts/estimate/r4a13/prepareFacadeVentilatedSteelExistingOwnerR5.ts",
+      "scripts/estimate/r4a13/prepareFacadeVentilatedThermowoodR5.ts",
       "scripts/estimate/r4a13/prepareFireAlarmPsuCurrentMasterR24.ts",
       "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts",
       "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts",
@@ -4495,6 +4678,15 @@
       "src/lib/estimate/v4/concreteCuringRollerWholePostR108.ts",
       "src/lib/estimate/v4/concreteWholeHoleFillingKrer46R61.ts",
       "src/lib/estimate/v4/elecorProjectEndcapsCompletionR239.ts",
+      "src/lib/estimate/v4/facadeBoardSourceFixingR3.ts",
+      "src/lib/estimate/v4/facadeNvfSteelPorcelainOneOwnerR221.ts",
+      "src/lib/estimate/v4/facadePorcelainWholeR59.ts",
+      "src/lib/estimate/v4/facadeSteelSidingKrer15R2.ts",
+      "src/lib/estimate/v4/facadeSteelSidingWholeR59.ts",
+      "src/lib/estimate/v4/facadeTimberEndProtectionWholeR5.ts",
+      "src/lib/estimate/v4/facadeVentilatedPorcelainExistingOwnerR214.ts",
+      "src/lib/estimate/v4/facadeVentilatedPorcelainR3.ts",
+      "src/lib/estimate/v4/facadeVentilatedSteelExistingOwnerR5.ts",
       "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts",
       "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts",
       "src/lib/estimate/v4/masonryBrickColumnExistingOwnerR161.ts",
@@ -4504,6 +4696,7 @@
       "src/lib/estimate/v4/masonryGlassBlockNormalCardsR103.ts",
       "src/lib/estimate/v4/masonryGlassM25OperationDisplayR152.ts",
       "src/lib/estimate/v4/masonryGlassOpeningExistingOwnerR223.ts",
+      "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts",
       "src/lib/estimate/v4/roofFlat003006CommonR24.ts",
       "src/lib/estimate/v4/roofMasticMeshExisting003R24.ts",
       "src/lib/estimate/v4/roofMasticPreparationWhole019R24.ts",
@@ -5040,6 +5233,68 @@
       "addedOnlyAlreadyPinnedArtifactSha": true,
       "sharedTypesGuardsNormQuantitiesInputOraclesOrOrdinalFixChanged": false,
       "sameAllRootsAndUnfilteredDiagnosticsAndCaps": true
+    },
+    "actualOpeningFormalAndCompatibilityR282": {
+      "openingManifestSha256": "178b907f32622dac9dd00c7d99c4c975f250abdf310840e757d70015ccc55cb5",
+      "rootRawInverseReviewSha256": "cfec78391ead7be630eb5a97826ea9352409d426cc8ee3a17b7427768066596c",
+      "fireReadStagePlanSha256": "cffc0577117d67acc8f813172d3609008d17d5ce9c12ece2989d3864f76a7c58",
+      "newSelectedSources": {
+        "data/estimate-benchmarks/source-packs/masonry-glass-m25-display-link-r152.json": "3954db30e544b474d4c29da515e0a6b770b93ad6938c5e79c352da433b3a40c9",
+        "data/estimate-benchmarks/source-artifacts/masonry-r152/prepare-r152-historical-5af670e3.txt": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529",
+        "data/estimate-benchmarks/source-artifacts/masonry-r152/standalone-test-historical-1279a169.txt": "1279a1690935cbb353386942ac7726ccbb9836976c489edc5cd40ed8df2ecfa6",
+        "scripts/estimate/r4a13/masonryOpeningHistoricalSourcePinR281.test.ts": "c64ef87d13dfe2ae83f05aba7563415e26cab91a4b7ed3fb2148b24d5bd6184f",
+        "scripts/estimate/r4a13/fireAlarmPsuFormalCaptureAndLockedReadR24.test.ts": "4ade796e103374397cfab7f61f2c5edfcf0cf6cace0cf8fe1b9df37dd1d9e686",
+        "data/estimate-benchmarks/fixtures/facade-porcelain-existing-owner-independent-r214.json": "32b6be5b148672367e50a062953d7cce097ec992d8aa74131eab340c004177aa",
+        "data/estimate-benchmarks/fixtures/facade-porcelain-independent-oracles-r3.json": "2fdc8b2f516e042b01abd42f5ca7c46f367d4953eb37435c16290feb44b88611",
+        "data/estimate-benchmarks/fixtures/facade-porcelain-whole-independent-r59.json": "a2d1ecc6357dceb702e4e385fec98088ea160e89bb915ac256ca1d52834984de",
+        "data/estimate-benchmarks/fixtures/facade-steel-siding-independent-oracle-r2.json": "69bc8ad0402c094775eb2b4c959dfca9a30781943b3012c3ba4d15d3f825e1c5",
+        "data/estimate-benchmarks/fixtures/facade-steel-siding-whole-independent-r59.json": "7e3215eb865c67405934a0615954deff13b32b127e8ac9949654bf17100b7aa2",
+        "data/estimate-benchmarks/fixtures/facade-ventilated-approved-template-source-r5.json": "8f2ac2724b124306f530b9fe61469257109fd10b3a739fbeb1179256481a1d36",
+        "data/estimate-benchmarks/fixtures/facade-ventilated-current-parent-source-r5.json": "cb1f977624b248f370f8e89266b6a8cc6b01ace44421e56839933a4bdc3b5eb3",
+        "data/estimate-benchmarks/source-packs/facade-board-source-fixing-r3.json": "7b3df843ba16c63f4a97bf2af4b888b98f25f4dc9e528573afee62c8f70c8ffa",
+        "data/estimate-benchmarks/source-packs/facade-current-family-whole-systems-r3.json": "797dee3748699fe701f7b4b2daeaa740c60e6bb6d48452391c25eb00460755ef",
+        "data/estimate-benchmarks/source-packs/facade-porcelain-current-whole-r59.json": "510a25e5cd73a75eed44815957de9eebb3088ad0a8c811d10eed141ef58c4f2b",
+        "data/estimate-benchmarks/source-packs/facade-steel-siding-current-whole-r59.json": "18d1e8a9b2c40096a521c82b948e1462c84708e2eeb0c79f4451bb84701cc1ef",
+        "data/estimate-benchmarks/source-packs/facade-steel-siding-historical-06501-r2.json": "c26484800bb5bf2d6b3602bf8cb6111ff9e7992b0fcb072bc99cba3ff291663f",
+        "data/estimate-benchmarks/source-packs/facade-steel-siding-operation-provision-r2.json": "fe614c3589aa77a6cd42ed8d0735117ea8118ea529e22a9c67a6dd4d608aeca0",
+        "data/estimate-benchmarks/source-packs/facade-timber-end-protection-r5.json": "82fa9c0e6e0631f70dedf6bc6f7c1c9f8039fc468f566cd05cde2a70ec29bd29",
+        "data/estimate-benchmarks/source-packs/facade-ventilated-thermowood-existing-owner-r5.json": "96bd8ea52f57495765d895743b30fcc17ba7aff217012e264180095a0e41ed18",
+        "scripts/estimate/r4a13/canonicalMachineHourCrossFamilyR233.test.ts": "b22df493c125a24d2dadaf0bebdbbd6cc83942bf871ab9b5c8dbb17c6ab0d2e8",
+        "scripts/estimate/r4a13/facadeNvfSequentialSparseBaselineR226.fixtures.ts": "a3d79437214ba5c0bd153c9539c77ae7a66c76f0f3af169d6b008ae685d00ad6",
+        "scripts/estimate/r4a13/facadeNvfSequentialSparseBaselineR226.test.ts": "df218b3e8eabe78d417656780a29408546d76f6d11318519c3f5a443ccac2319",
+        "scripts/estimate/r4a13/prepareFacadeVentilatedPorcelainExistingOwnerR214.ts": "513e8928b0481bdfc4a2c61ce7b5bde4b93a9f74653bd976627b66b23fec93d4",
+        "scripts/estimate/r4a13/prepareFacadeVentilatedSteelExistingOwnerR5.ts": "f41a642e694b44b138bed1d2425b91a53cce5152932e231c458c76ae748e0533",
+        "scripts/estimate/r4a13/prepareFacadeVentilatedThermowoodR5.ts": "d9eb2105ddcce4f65f0ec492831b2e7f68daf3f9481e6ed43749f913a231ff97",
+        "src/lib/estimate/v4/facadeBoardSourceFixingR3.ts": "18cdde4b76c99fdd91ef6c1cde510f0d85b1838401e4a9af1718f27102d160d5",
+        "src/lib/estimate/v4/facadeNvfSteelPorcelainOneOwnerR221.ts": "51f1b3027e1e6189ed605345c7d1baa93742a6ce77c1d8cdcc566e5688b6fd37",
+        "src/lib/estimate/v4/facadePorcelainWholeR59.ts": "bb4cfd8226ceb41ac214a8655ce04fb629633e51bf1fec0e20c654fe93f06825",
+        "src/lib/estimate/v4/facadeSteelSidingKrer15R2.ts": "baac0e0ea055538cbee1ef1beac96758a970d62f633865cf4f38a39befd9bff9",
+        "src/lib/estimate/v4/facadeSteelSidingWholeR59.ts": "e0fef1c03367194c8e15fd4191bfb92264e597c1557b37671fd94351e03b965a",
+        "src/lib/estimate/v4/facadeTimberEndProtectionWholeR5.ts": "e3f542143efcffcbd680b7ea0d9d66cd6d85e9f5ab9d544e2701d82a517622ba",
+        "src/lib/estimate/v4/facadeVentilatedPorcelainExistingOwnerR214.ts": "7e0672655c74605c4d4fa57d7812bf4a63278379197aca772d586839d187b2b7",
+        "src/lib/estimate/v4/facadeVentilatedPorcelainR3.ts": "11bda031975a97f42a46c1b947275a6b9bd413fdb642c5453b165ace16373fac",
+        "src/lib/estimate/v4/facadeVentilatedSteelExistingOwnerR5.ts": "b70928763751fb7ec640b750e1ce9ca52d329d7b55df345a2cc02d10018229fa",
+        "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts": "a93313b9a65ff4058daabe3db412dffa79d9c4f3b3cade47074d0fca202f6a20"
+      },
+      "priorAcceptedTypes": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\types-ci-r281\\ROOT_VERIFIED_ACTUAL_TWO_PHASE_HOST_AND_WALL_FULL_TYPES_R281.json",
+        "sha256": "8fbdaccab6b6047447119cd484bf1b8bd5a7b64a6fdd12b37442eac01237a49a",
+        "bytes": 1605
+      },
+      "additionalExplicitSeedRoots": 18,
+      "old603AdditionalSeedPathsPreserved": true,
+      "explicitHeldPriorCompatibilityManifestSha256": "90e2c1c3a63724b225f53eb10f1d874da2cb82830d0e368adcb09a564c8ebf6d",
+      "compatSourcePinsNewToPublicTypes": 31,
+      "selectedLatestR281PublisherInsteadOfPriorR278": [
+        "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts"
+      ],
+      "allHistoricalAppendRootsStillCompiled": true,
+      "sameUnfilteredDiagnosticsAndResourceCaps": true,
+      "canonicalCopyOrPublication": "UNRUN",
+      "formalSourceOrObjectApprovalGranted": false,
+      "oldCompatibility17OnlyValidOnOldCfb9Cut": true,
+      "freshRuntimeCompatibility17": "UNRUN",
+      "newFULL": 0
     }
   }
 }

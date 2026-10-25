@@ -1,0 +1,103 @@
+{
+  "contract": "gox-build.facade-steel-siding-historical-06501/r2",
+  "status": "UNRUN",
+  "sourcePackGeneratedFromImplementation": false,
+  "cases": [
+    {
+      "caseId": "STEEL06501_100",
+      "areaM2": "100",
+      "raw": {
+        "labour": "175.61",
+        "screwdriver": "57.2",
+        "electric-grinding-machine": "1.07",
+        "perforator": "26.89",
+        "flatbed": "0.97",
+        "dowel-screw": "217.400",
+        "screw": "913.00",
+        "levelling-bracket": "402.98",
+        "stud-profile": "236.89",
+        "weather-membrane": "120"
+      },
+      "projectPNeverScaledFromArea": [
+        "expansion-dowel",
+        "steel-siding",
+        "insulation",
+        "cover-strip",
+        "starter-strip",
+        "corner-strip"
+      ],
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "STEEL06501_12_5",
+      "areaM2": "12.5",
+      "raw": {
+        "labour": "21.95125",
+        "screwdriver": "7.15",
+        "electric-grinding-machine": "0.13375",
+        "perforator": "3.36125",
+        "flatbed": "0.12125",
+        "dowel-screw": "27.1750",
+        "screw": "114.125",
+        "levelling-bracket": "50.3725",
+        "stud-profile": "29.61125",
+        "weather-membrane": "15.0"
+      },
+      "projectPNeverScaledFromArea": [
+        "expansion-dowel",
+        "steel-siding",
+        "insulation",
+        "cover-strip",
+        "starter-strip",
+        "corner-strip"
+      ],
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "STEEL06501_200",
+      "areaM2": "200",
+      "raw": {
+        "labour": "351.22",
+        "screwdriver": "114.4",
+        "electric-grinding-machine": "2.14",
+        "perforator": "53.78",
+        "flatbed": "1.94",
+        "dowel-screw": "434.800",
+        "screw": "1826.00",
+        "levelling-bracket": "805.96",
+        "stud-profile": "473.78",
+        "weather-membrane": "240"
+      },
+      "projectPNeverScaledFromArea": [
+        "expansion-dowel",
+        "steel-siding",
+        "insulation",
+        "cover-strip",
+        "starter-strip",
+        "corner-strip"
+      ],
+      "execution": "UNRUN"
+    }
+  ],
+  "expectedSourceRows": 16,
+  "expectedWholeSourceOperations": 8,
+  "printedP": 6,
+  "operatorNorm": null,
+  "expectedUnresolvedInternalNeeds": 21,
+  "negative": [
+    "modernframecannotselecthistoricalfit",
+    "noPzero",
+    "linear_siding_not_m2",
+    "noMWwater/labour/thickness",
+    "no6_35anchorplanfromarea",
+    "nohourstoolcount",
+    "nooperatorhoursimport",
+    "noabrasivepanelcutfrom1_07machinehour",
+    "nointernalnormvia0_1_77",
+    "nohistoricpriceimport",
+    "wrongsource/code/unit/sourcecolumnstop",
+    "zeroarea_no_fictitiouscomposition",
+    "sameprimaryrealparentforoverride",
+    "newcatalognormalappendlockedpreflightrequired"
+  ]
+}
