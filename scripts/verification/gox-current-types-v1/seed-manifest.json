@@ -131,5 +131,8 @@
   "scripts/estimate/r4a13/prepareSocketCompleteSurfaceCurrentMasterR266.ts": null,
   "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts": null,
   "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": null,
-  "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": null
+  "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": null,
+  "scripts/estimate/r4a13/prepareFireAlarmPsuCurrentMasterR24.ts": null,
+  "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": null,
+  "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": null
 }

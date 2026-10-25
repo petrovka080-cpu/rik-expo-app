@@ -465,7 +465,8 @@
     "scripts/estimate/r4a13/prepareEuroflexFactoryHalfLayoutCurrentR3.ts": "7da56c7a8dd9a4a46068494d2c90a606220f83b1d65087b6b6f0781725fe8b14",
     "scripts/estimate/r4a13/prepareFireAlarmCommissioningClassifiedVariantSuccessor.ts": "596d412f2bcdf4e748af7668dd40a3ede96d82fd5faf757c1ea09bb4f0fcf482",
     "scripts/estimate/r4a13/prepareFireAlarmProjectPreparationVariantSuccessor.ts": "34b85822071678538d9cded029a90a806ff5796cbd61f807e5264b7fb58275ac",
-    "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": "55335496f30fb2eb260cf068d77f9e16c47557dad0fb86b5dda690854d93950b",
+    "scripts/estimate/r4a13/prepareFireAlarmPsuCurrentMasterR24.ts": "b71d065846365330a4be8db0773e01842c6580cd4ec232dadce3e0ecc7d67ded",
+    "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": "3e36f932e1141acb4bd1a6a4bcaf45d2a5b182c97d91455e996e5b02bdcdb73a",
     "scripts/estimate/r4a13/prepareFireproofZoneInjectionRepairVariantSuccessor.ts": "71de5196cc4a6049343d4f2022e1deb0c74dc49d646a8182e88f7321bb31e4e5",
     "scripts/estimate/r4a13/prepareFlatMetalOil03002CreateAppendR1.test.ts": "807246a59f6289dfe7f79210bac71674bcf497973462cc00ff6cd63926a1e463",
     "scripts/estimate/r4a13/prepareFlatMetalOil03002CreateAppendR1.ts": "2c34bb081603ef2a859ce79714a59482ba143b63e9702971fa676e79e706e9a0",
@@ -495,7 +496,7 @@
     "scripts/estimate/r4a13/prepareMasterBridgeAsphaltCompleteSuccessor.ts": "c7c6b7f8a4040f94ef1aa4374387318d1be576f7882a57e9146ba7650a34de1f",
     "scripts/estimate/r4a13/prepareMasterDrywallCeilingPreparationProfileSuccessor.ts": "7f3d7f8c4bd5b057366ac75d1c931887a41c143d1c490855a4e31d56144317bf",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.test.ts": "911a3de5ddc727eab2d7a1845d4c25b0946ba444f7971af68d3ce1c85010cc26",
-    "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "6f50183231790713f53114d4d28d70f85de854421c50096608976cb9725894d3",
+    "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "9ec442c9540c51b55ae11b1edc2948470558c3884cb395bfb705e4e6af380f2e",
     "scripts/estimate/r4a13/prepareMasterStripFoundationConcretePlacementProfileSuccessor.ts": "685967f84fb291424437ef9c2ac41c69a3bf65dd8c3e60b92989df4fb125a403",
     "scripts/estimate/r4a13/prepareMasterSurfaceDrainageChannelSuccessor.ts": "912433eb6b61bb988d49abd7d24777ce7de95f4ed4bb7dcf1b2f6bcca6c601ff",
     "scripts/estimate/r4a13/preparePavingCut70AdmittedMasterAppendR2.ts": "214c15286e7ad28d1d094adf145bad923b6ae748ee2daba5254de90ffde17dbd",
@@ -584,6 +585,8 @@
     "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts": "1ba146ed482a432e46dc97c9e337b9071a5bc4de77c9340e2d16712296cf8c73",
     "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": "4dbc54a0a65c543fa6ce08058c11e04dede79c900c42fd48a3ab3a2ffbe5910d",
     "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": "32985ee7ab5d6220f11f983f2c0ccc556040693b16221b5ab42d23e5965e943c",
+    "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": "1134fee0cac14fb18931a7e3c02e7d0b9e6fb228fd03f519d7d1c2f0d5094b6e",
+    "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": "0aa1b0f5ff8a83ae17b5af9e86ea3f3fb6707e27b931c8488b1128f7bf083741",
     "scripts/estimate/r4a8/prepareR4A8DrywallScopeSuccessor.ts": "d795eb35c6faf0c62d18b40ffa482d9793ab14fcbfe6ee6ad66c0945d48db8d5",
     "scripts/estimate/r5/batch001R56SharedCoreProjection.ts": "8f638c301db3af63a9fd639c8330fcedbff9a073e6de3ecbd3a841c343ecb74d",
     "scripts/estimate/r5/batch003R56Fixtures.ts": "44874353066c3da6f0431aa64694733ce933647db1df277d8e1c621cc15014ed",
@@ -597,7 +600,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "4d93f76b3571baec200be59db48b2a7ff7492168e0ded9978b0a41fff6bf9211",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "53a79109528197939929cc838eb98f0edaca0c1e32724b08f9f5cb1adcb369b1",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -3654,14 +3657,14 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "4d93f76b3571baec200be59db48b2a7ff7492168e0ded9978b0a41fff6bf9211",
-  "canonicalSourceFreezeSha256": "bc80e2bb44b6f915d982d4eff4991f1fdebd4afe2019836fd80b231d8aa22554",
+  "originalSeedManifestSha256": "53a79109528197939929cc838eb98f0edaca0c1e32724b08f9f5cb1adcb369b1",
+  "canonicalSourceFreezeSha256": "5fb79ccbe084b8c4d9390546f6b9e265248b3b6594e89c193e18bb78ae2663c0",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100861492,
+    "sourceBytes": 100904175,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4016,8 +4019,8 @@
         "owner": "ROOF_REV09"
       },
       "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": {
-        "sha256": "6f50183231790713f53114d4d28d70f85de854421c50096608976cb9725894d3",
-        "owner": "ROOF_REV09"
+        "sha256": "9ec442c9540c51b55ae11b1edc2948470558c3884cb395bfb705e4e6af380f2e",
+        "owner": "FIRE_PSU_TWO_PHASE_HOST_SOURCE_ONLY_PENDING_ACTUAL_TYPES_AND_RUNTIME"
       },
       "scripts/estimate/r4a13/prepareRoofFlat003006CommonR24.ts": {
         "sha256": "d49f58e4b7e79487e1ba967d163567ed494379d2fa903aa74ea89153effa5706",
@@ -4280,8 +4283,8 @@
         "owner": "FIRE_PSU_WHOLE_FACTORY_DELIVERY_SOURCE_ONLY"
       },
       "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": {
-        "sha256": "55335496f30fb2eb260cf068d77f9e16c47557dad0fb86b5dda690854d93950b",
-        "owner": "FIRE_PSU_WHOLE_FACTORY_DELIVERY_SOURCE_ONLY"
+        "sha256": "3e36f932e1141acb4bd1a6a4bcaf45d2a5b182c97d91455e996e5b02bdcdb73a",
+        "owner": "FIRE_PSU_TWO_PHASE_HOST_SOURCE_ONLY_PENDING_ACTUAL_TYPES_AND_RUNTIME"
       },
       "data/estimate-benchmarks/source-packs/fire-alarm-rip24-06-whole-factory-delivery-r24.json": {
         "sha256": "5654b34ac6b3db6ebb6c66f14d5b74d42ff45d5ff69a3d00ecba9aaac3648f8a",
@@ -4410,6 +4413,18 @@
       "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": {
         "sha256": "e39c2aa3555518620e0d538cfcfe9cd858d48d9aac949976d23e5f9f9450c895",
         "owner": "CURING_FORMAL_NORMAL_SOURCE_ONLY_UNTIL_ACTUAL_VALIDATION"
+      },
+      "scripts/estimate/r4a13/prepareFireAlarmPsuCurrentMasterR24.ts": {
+        "sha256": "b71d065846365330a4be8db0773e01842c6580cd4ec232dadce3e0ecc7d67ded",
+        "owner": "FIRE_PSU_TWO_PHASE_HOST_SOURCE_ONLY_PENDING_ACTUAL_TYPES_AND_RUNTIME"
+      },
+      "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": {
+        "sha256": "0aa1b0f5ff8a83ae17b5af9e86ea3f3fb6707e27b931c8488b1128f7bf083741",
+        "owner": "WALL_FUTURE_OBJECT_FACT_SOURCE_ONLY_PENDING_ACTUAL_TYPES_AND_RUNTIME"
+      },
+      "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": {
+        "sha256": "1134fee0cac14fb18931a7e3c02e7d0b9e6fb228fd03f519d7d1c2f0d5094b6e",
+        "owner": "WALL_FUTURE_OBJECT_FACT_SOURCE_ONLY_PENDING_ACTUAL_TYPES_AND_RUNTIME"
       }
     },
     "extraRoots": [
@@ -4441,6 +4456,7 @@
       "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts",
       "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts",
       "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts",
+      "scripts/estimate/r4a13/prepareFireAlarmPsuCurrentMasterR24.ts",
       "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts",
       "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts",
       "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.ts",
@@ -4466,6 +4482,8 @@
       "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts",
       "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts",
       "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts",
+      "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts",
+      "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts",
       "src/lib/estimate/backendPlatform/accessControlLockWholeFactoryR24.ts",
       "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
       "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageWhole539R24.test.ts",
@@ -4980,6 +4998,33 @@
         "bytes": 566
       },
       "sourceAdmissionGranted": false
+    },
+    "twoPhaseHostAndWallObjectFactR280": {
+      "manifests": {
+        "FIRE_PSU_TWO_PHASE_HOST": "27dd3b71200c5a47c745d9f9f70c8aa274c71614588776c96a94127f17030bd2",
+        "WALL_FUTURE_OBJECT_FACT": "f9b67fa1464ef52c4f7fba42ba9aa43ccd67aaaf61c4c7a30cd7ef06048ce987"
+      },
+      "selectedSources": {
+        "scripts/estimate/r4a13/prepareFireAlarmPsuCurrentMasterR24.ts": "b71d065846365330a4be8db0773e01842c6580cd4ec232dadce3e0ecc7d67ded",
+        "scripts/estimate/r4a13/prepareFireAlarmReservedPowerWholeFactoryR24.ts": "3e36f932e1141acb4bd1a6a4bcaf45d2a5b182c97d91455e996e5b02bdcdb73a",
+        "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "9ec442c9540c51b55ae11b1edc2948470558c3884cb395bfb705e4e6af380f2e",
+        "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.ts": "0aa1b0f5ff8a83ae17b5af9e86ea3f3fb6707e27b931c8488b1128f7bf083741",
+        "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": "1134fee0cac14fb18931a7e3c02e7d0b9e6fb228fd03f519d7d1c2f0d5094b6e"
+      },
+      "reviewedExactPublisherGeneratorExtraction": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\fire-alarm-reserved-power-supply-whole-r1\\formal-hostassembly01\\publisher-proposal\\ROOT_REVIEW_EXACT_PUBLISHER_GENERATOR_EXTRACTION_R279.json",
+        "sha256": "88f7d902b20cc780a86f5cf3dbf55553f09da6ea652adbc279791ed68450f0e1",
+        "bytes": 1353
+      },
+      "existingPublisherRemainsOnlyWriter": true,
+      "realCaptureRequiredNoPlaceholder": true,
+      "wallFuturePartNotWiredIntoFrozenR07": true,
+      "wallFactOrdinalUniqueFixReviewed": true,
+      "oldFivePsuModelCoreResultsNotReplayed": true,
+      "sameAllPreviousSeedsAndUnfilteredDiagnosticsAndResourceCaps": true,
+      "additionalTypeRoots": 3,
+      "sourceAdmissionGranted": false,
+      "newFULL": 0
     }
   }
 }

@@ -1430,6 +1430,41 @@ export function validateMasterTypedPartialQuantityPreparationR1(config: Pick<Mas
       capability_matrix:buildMasterCapabilityMatrix(undefined,config.resourceDefinitions,basis)}})];
 }
 
+/** Pure extraction of the existing publisher's managed-row construction.
+ * IDs are generated candidates until the unchanged normal/locked publisher
+ * verifies and persists them. No SQL, registry admission or UUID alternative. */
+export function buildMasterSingleDefinitionGeneratedRegistryRowsR1(input:Readonly<{
+  config:Pick<MasterSingleDefinitionSuccessorConfig,'contract'|'sourceId'>;
+  resolvedSourceMetadata:MasterSingleDefinitionSuccessorConfig['sourceMetadata'];
+  resolvedLocators:readonly Readonly<{key:string;payload:Json;excerptSha256:string}>[];
+  projectSourcePackage:ReturnType<typeof loadVerifiedProjectSourcePackageBinding>|null;
+  projectSourcePackageSet:ReturnType<typeof verifyS279CompleteProjectSourcePackageSetForSuccessor>|null;
+}>){
+  const {config,resolvedSourceMetadata,resolvedLocators,projectSourcePackage,projectSourcePackageSet}=input;
+  const generatedSourceId = uuid(`${config.contract}:${config.sourceId}:source`);
+  const generatedLocatorIds = resolvedLocators.map((locator) => projectSourcePackage == null
+    ? uuid(`${config.contract}:${config.sourceId}:${locator.key}:locator`)
+    : uuid(`${config.sourceId}:${locator.key}:normative-locator`));
+  const registrySourceMetadata={
+    contract:config.contract,
+    sourceKind:resolvedSourceMetadata.source_kind??"PROJECT_DOCUMENTATION_REQUIRED",
+    useRestriction:resolvedSourceMetadata.use_restriction,
+    universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false,
+    ...(projectSourcePackage==null?{}:{projectSourcePackage:{
+      packageId:projectSourcePackage.packageId,packagePayloadSha256:projectSourcePackage.packagePayloadSha256,
+      ...(projectSourcePackageSet==null?{}:{completePackageSet:projectSourcePackageSet}),
+      artifactReceipts:projectSourcePackage.artifactReceipts,excerptReceipts:projectSourcePackage.excerptReceipts,
+      projectMetadata:projectSourcePackage.projectMetadata,
+    }}),
+  };
+  return{newSource:{id:generatedSourceId,source_key:config.sourceId,
+    title_ru:resolvedSourceMetadata.source_title,authority:resolvedSourceMetadata.source_authority,
+    official_url:resolvedSourceMetadata.official_url??null,artifact_sha256:resolvedSourceMetadata.artifact_sha256??null,
+    effective_from:resolvedSourceMetadata.effective_from??null,effective_to:null,metadata:registrySourceMetadata},
+    newLocators:resolvedLocators.map((locator,index)=>({id:generatedLocatorIds[index]!,source_id:generatedSourceId,
+      locator_key:locator.key,locator:locator.payload,excerpt_sha256:locator.excerptSha256}))};
+}
+
 export async function runMasterSingleDefinitionSuccessorR1(
   config: MasterSingleDefinitionSuccessorConfig,
 ): Promise<void> {
@@ -1660,28 +1695,10 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const searchReleaseId = uuid(`${config.contract}:${fingerprint}:search-release`);
   const definitionId = uuid(`${config.contract}:${fingerprint}:definition`);
   const baselineId = uuid(`${config.contract}:${fingerprint}:baseline`);
-  const generatedSourceId = uuid(`${config.contract}:${config.sourceId}:source`);
-  const generatedLocatorIds = resolvedLocators.map((locator) => projectSourcePackage == null
-    ? uuid(`${config.contract}:${config.sourceId}:${locator.key}:locator`)
-    : uuid(`${config.sourceId}:${locator.key}:normative-locator`));
-  const registrySourceMetadata={
-    contract:config.contract,
-    sourceKind:resolvedSourceMetadata.source_kind??"PROJECT_DOCUMENTATION_REQUIRED",
-    useRestriction:resolvedSourceMetadata.use_restriction,
-    universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false,
-    ...(projectSourcePackage==null?{}:{projectSourcePackage:{
-      packageId:projectSourcePackage.packageId,packagePayloadSha256:projectSourcePackage.packagePayloadSha256,
-      ...(projectSourcePackageSet==null?{}:{completePackageSet:projectSourcePackageSet}),
-      artifactReceipts:projectSourcePackage.artifactReceipts,excerptReceipts:projectSourcePackage.excerptReceipts,
-      projectMetadata:projectSourcePackage.projectMetadata,
-    }}),
-  };
-  const generatedRetentionCandidate={config,newSource:{id:generatedSourceId,source_key:config.sourceId,
-    title_ru:resolvedSourceMetadata.source_title,authority:resolvedSourceMetadata.source_authority,
-    official_url:resolvedSourceMetadata.official_url??null,artifact_sha256:resolvedSourceMetadata.artifact_sha256??null,
-    effective_from:resolvedSourceMetadata.effective_from??null,effective_to:null,metadata:registrySourceMetadata},
-    newLocators:resolvedLocators.map((locator,index)=>({id:generatedLocatorIds[index]!,source_id:generatedSourceId,
-      locator_key:locator.key,locator:locator.payload,excerpt_sha256:locator.excerptSha256}))};
+  const generatedRegistryRows=buildMasterSingleDefinitionGeneratedRegistryRowsR1({config,resolvedSourceMetadata,
+    resolvedLocators,projectSourcePackage,projectSourcePackageSet});
+  const registrySourceMetadata=generatedRegistryRows.newSource.metadata;
+  const generatedRetentionCandidate={config,...generatedRegistryRows};
   const existingRegistryReuse=resolveMasterExistingNormativeRegistryReuseR1(generatedRetentionCandidate);
   if(existingRegistryReuse?.declaration.locatorExcerptHashKind==='REVIEWED_NORM_PACK_ITEM_SHA256_R1'){
     for(const p of [existingRegistryReuse.declaration.reviewedNormPack!.artifactPath,'scripts/estimate/r4a13/masterReviewedNormPackRegistryReuseR1.ts'])

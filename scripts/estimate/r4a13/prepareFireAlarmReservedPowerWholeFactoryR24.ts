@@ -3,16 +3,20 @@ import {appendFireAlarmReservedPowerWholeFactoryR24,fireAlarmReservedPowerWholeR
 import type {AutomaticOwnerDefinition} from '../../../src/lib/estimate/v4/automaticConstructionOwnerR1';
 import type {MasterSingleDefinitionSuccessorConfig} from './prepareMasterSingleDefinitionSuccessorR1';
 
-/** Existing ordinary publisher Config. ROOT supplies actual source assembly,
- * registry/current read witnesses and the actual finite callback; none is
- * synthesized here from the official delivery roster or baseline profile. */
-export function fireAlarmReservedPowerWholeFactoryConfigR24(input:Readonly<{
-  hostConfig:MasterSingleDefinitionSuccessorConfig;capturedParentDefinition:AutomaticOwnerDefinition;
+/** Non-publishable preparation only. The final delivery payload/calculation
+ * body below is shared with the strict normal wrapper; no registry witness is
+ * accepted or manufactured in this phase. */
+export type FireAlarmPsuProposedConfigR24=Omit<MasterSingleDefinitionSuccessorConfig,'capturedScopedNormativeRegistry'>;
+export type FireAlarmPsuFactoryPreparationR24=Readonly<{
+  hostConfig:FireAlarmPsuProposedConfigR24;capturedParentDefinition:AutomaticOwnerDefinition;
   expectedCapturedComputationSha256:string;newSourcePaths:readonly string[];
   verifyWholeFactoryDeliveryCore:MasterSingleDefinitionSuccessorConfig['verifyCore'];
-}>):MasterSingleDefinitionSuccessorConfig{
+}>;
+export function prepareFireAlarmReservedPowerWholeFactoryProposedR24(input:FireAlarmPsuFactoryPreparationR24):FireAlarmPsuProposedConfigR24{
+  if(Object.hasOwn(input.hostConfig,'capturedScopedNormativeRegistry'))
+    throw Error('FIRE_RESERVED_POWER_PROPOSED_PHASE_MUST_NOT_CONTAIN_CAPTURE');
   const host=input.hostConfig,ids=fireAlarmReservedPowerWholeResourceIdsR24();
-  if(host.catalogId!==pack.catalogId||host.catalogAppend!==undefined||!host.binding.retainParentBindings||!host.capturedScopedNormativeRegistry)
+  if(host.catalogId!==pack.catalogId||host.catalogAppend!==undefined||!host.binding.retainParentBindings)
     throw Error('FIRE_RESERVED_POWER_ACTUAL_EXISTING_PARENT_AND_REGISTRY_REQUIRED');
   if(host.projectSourcePackagePath!==undefined||host.sourceMetadata.artifact_sha256!==pack.primary.sha256
     ||host.sourceMetadata.source_kind!==pack.sourceKind)throw Error('FIRE_RESERVED_POWER_FACTORY_SOURCE_NOT_PROJECT_APPROVAL');
@@ -37,4 +41,19 @@ export function fireAlarmReservedPowerWholeFactoryConfigR24(input:Readonly<{
           oldSourceArraysAndBindingsUnchanged:true,wholeOperationalInstallationAccepted:false}}},
     applicability:{...host.applicability,rip24_06FactoryDelivery:{officialFactoryRosterComplete:true,nativeQuantityAlgorithmChanged:false,
       actualProjectOrStockApproval:false,safeUseOrQaAccepted:false,priceScopeConfirmed:false,newLabourNorm:false,FULL:false}}};
+}
+
+/** The existing ordinary route keeps its original actual-parent/capture guard.
+ * Only the pure final-data builder is extracted; callbacks remain references. */
+export function fireAlarmReservedPowerWholeFactoryConfigR24(input:Readonly<{
+  hostConfig:MasterSingleDefinitionSuccessorConfig;capturedParentDefinition:AutomaticOwnerDefinition;
+  expectedCapturedComputationSha256:string;newSourcePaths:readonly string[];
+  verifyWholeFactoryDeliveryCore:MasterSingleDefinitionSuccessorConfig['verifyCore'];
+}>):MasterSingleDefinitionSuccessorConfig{
+  const host=input.hostConfig,ids=fireAlarmReservedPowerWholeResourceIdsR24();
+  if(host.catalogId!==pack.catalogId||host.catalogAppend!==undefined||!host.binding.retainParentBindings||!host.capturedScopedNormativeRegistry)
+    throw Error('FIRE_RESERVED_POWER_ACTUAL_EXISTING_PARENT_AND_REGISTRY_REQUIRED');
+  const {capturedScopedNormativeRegistry,...proposedHost}=host;
+  const prepared=prepareFireAlarmReservedPowerWholeFactoryProposedR24({...input,hostConfig:proposedHost});
+  return{...prepared,capturedScopedNormativeRegistry};
 }
