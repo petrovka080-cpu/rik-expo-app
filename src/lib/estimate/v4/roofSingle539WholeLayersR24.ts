@@ -263,6 +263,7 @@ export function buildRoofSingle539WholeLayersR24(base:Base,input:Roof539LayerInp
   return{...r,inclusion_ast:and(all002.some(n=>r.row_id.startsWith(n.prefix+':'))?eq(main.selector,'whole539:002'):ownerScope,r.inclusion_ast),resource_graph:{...r.resource_graph,operationCompositionV1:{...own,groupId:op.groupId,groupTitleRu:op.groupTitleRu}}};});
  const boilerSelections=[...all002,...n015,...n018].filter(n=>n.rates.some(r=>/boiler/iu.test(r.role))).map(selected).concat(newPrefab,selected019,reusedSelected('01503'));
  const heatSelections=boilerSelections.filter(s=>hash(s)!==hash(selected019));
+ const capturedOperationRowIds=new Set(base.capture.resources.map(r=>r.row_id));
  const addRelated=(row:Row,condition:Json,present:readonly Row[]):Row=>{const primary=canonicalEstimateOperationReference(row.resource_graph.operationCompositionV1);
   if(row.row_id==='roof:lower-layers:krer12-01503-01402:project-chain-check'){
    const captured=base.capture.resources.find(r=>r.row_id===row.row_id);
@@ -276,8 +277,12 @@ export function buildRoofSingle539WholeLayersR24(base:Base,input:Roof539LayerInp
    return row;
   }
   assert(primary);
+  // Captured rows retain their original operation topology, also when reused by a new scope.
+  // Their legacy preliminary presence is not evidence that a newly selected method is active.
+  const newOperationUses=present.filter(used=>!capturedOperationRowIds.has(used.row_id));
+  if(newOperationUses.length===0)return{...row,inclusion_ast:or([row.inclusion_ast,and(ownerScope,condition)])};
   const references=new Map((primary.additionalOperations??[]).map(x=>[x.operationId,x]));
-  for(const used of present){const use=canonicalEstimateOperationReference(used.resource_graph.operationCompositionV1);assert(use);
+  for(const used of newOperationUses){const use=canonicalEstimateOperationReference(used.resource_graph.operationCompositionV1);assert(use);
    const previous=references.get(use.operationId);const when=[...new Set([...(previous?.whenResourcePresent??[]),used.row_id])];
    references.set(use.operationId,{operationId:use.operationId,operationTitleRu:use.operationTitleRu,completionCriterionRu:use.completionCriterionRu,whenResourcePresent:when});}
   return{...row,inclusion_ast:or([row.inclusion_ast,and(ownerScope,condition)]),resource_graph:{...row.resource_graph,operationCompositionV1:{...primary,additionalOperations:[...references.values()]}}};

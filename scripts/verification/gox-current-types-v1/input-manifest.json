@@ -1949,7 +1949,7 @@
     "src/lib/estimate/v4/roofPrimerWithPreparationWhole01601R24.ts": "d552c3b092fc04bed5a1dfa11435cb9bf5f18826adf5e056d1bd052804390b77",
     "src/lib/estimate/v4/roofProtectedFlatRollMissing002R24.ts": "76e86ad82c82abfe048e11ca1492b1c30b62295de35a63cc093f70fb93a50396",
     "src/lib/estimate/v4/roofRooflightCurbWhole018R24.ts": "88c7b6bce1d614d324009e8d7ac5dd3ed529b0c93b72effef6358f19f4badfbd",
-    "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts": "6e83d0ef502eefa4ddcc764d4643343816ea667e3f5c1a2dd1c6fb39b28833a9",
+    "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts": "e50a80754790e8af12cc89510afda19e521f383f1dd0589549fa8dc7cd76bad1",
     "src/lib/estimate/v4/roofWindowOperationResourcesS2750.ts": "5bf5894953d769b2f62c08e3a83e1d384b059c5ca0a2a91777ffb000550c9d46",
     "src/lib/estimate/v4/selectedMaterialDeliveryReuseR1.ts": "4305d4f9d1a23ad191b8c2d2cc332f240c6bfe92bdad41e1ef363cc107554890",
     "src/lib/estimate/v4/simpleCementLimeStoneWall01601QuantityR1.test.ts": "733ab66deb054dda55ffe831148479fb933aa8670416391f997ffc8c1529fd44",
@@ -3693,13 +3693,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "4a8c94f9e4f9ba4ae90fa81e604b33a1599bf9b73d76e838a60d93bf21bc024c",
-  "canonicalSourceFreezeSha256": "f4536dfe45d92f252fb78c348972a07134bac84e8dfef6eb92a866640d862ff1",
+  "canonicalSourceFreezeSha256": "ae169dc0e6502a8d24de8373e04d3728ed329f393347dfa3530d18539d7d19ad",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 101906580,
+    "sourceBytes": 101907067,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4118,8 +4118,8 @@
         "owner": "ROOF_REV09"
       },
       "src/lib/estimate/v4/roofSingle539WholeLayersR24.ts": {
-        "sha256": "6e83d0ef502eefa4ddcc764d4643343816ea667e3f5c1a2dd1c6fb39b28833a9",
-        "owner": "ROOF_EXACT_COLUMN_METADATA_ORDER_SOURCE_ONLY_PENDING_ACTUAL_FULL_TYPES"
+        "sha256": "e50a80754790e8af12cc89510afda19e521f383f1dd0589549fa8dc7cd76bad1",
+        "owner": "ROOF_CAPTURED_OPERATION_TOPOLOGY_SAME_COMPOSITION_OWNER"
       },
       "data/estimate-benchmarks/source-packs/roof-single539-cost-boundary-r24.json": {
         "sha256": "b2ee8cff062c8d59accd0a26b08cc1c81b0a11b9a2ffda8c96ba703e1a34366d",
@@ -5322,6 +5322,12 @@
       "sameAll739Seeds603ExtraRootsAndUnfilteredCaps": true,
       "coreFormulaOraclesUnchanged": true,
       "newFULL": 0
+    },
+    "roofCapturedOperationTopologyR288": {
+      "manifestSha256": "7469468a0900803a062b950940c3bdb211f44d5597948b161a68fac217eaf87c",
+      "rootReviewSha256": "b9fca55110a50b62459f13d2789d9237143d773bddb7e400fd430587153fdd30",
+      "sourceSha256": "e50a80754790e8af12cc89510afda19e521f383f1dd0589549fa8dc7cd76bad1",
+      "sameAllCompilerRootsAndCaps": true
     }
   }
 }
