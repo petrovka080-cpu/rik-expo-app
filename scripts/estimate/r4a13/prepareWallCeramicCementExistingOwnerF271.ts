@@ -32,6 +32,15 @@ export type WallContextF271=Readonly<{sourceRoot:string;outputRoot:string;expect
 const record=(v:unknown):v is Json=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const sha=(path:string)=>createHash('sha256').update(readFileSync(path)).digest('hex');
 const same=(a:unknown,b:unknown)=>assert.deepEqual(stable(a),stable(b));
+/** Exact historical raw-row projection; the compiler's normalized resource type
+ * intentionally omits semantic_owner. Validate the raw record rather than
+ * casting it or dropping any historical identity/owner/source field. */
+function legacyRowProjectionF271(value:unknown){
+ assert(record(value),'EXACT_LEGACY_RESOURCE_RECORD');
+ return{id:value.id,row_id:value.row_id,formula_id:value.formula_id,unit_id:value.unit_id,
+  cost_owner_id:value.cost_owner_id,semantic_owner:value.semantic_owner,source_metadata:value.source_metadata,
+  resource_graph:value.resource_graph,procurement_eligible:value.procurement_eligible};
+}
 const prefix='tile-wall:kg15-01901',catalogId=source.catalogId,sourceId=source.sourceKey;
 const paths={native:'src/lib/estimate/v4/wallCeramicCementNativeF266.ts',model:'src/lib/estimate/v4/wallCeramicCementExistingOwnerF271.ts',
  config:'scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts',test:'scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts',
@@ -115,7 +124,7 @@ export function wallRetainedPureF271(config:Config,sourceRoot:string){
  assert.deepEqual(config.runtimeProfileInput,{});assert.deepEqual([model.parameters.length,model.formulas.length,model.resources.length],[10,81,81]);
  for(const f of c.formulas)same(model.formulas.find(v=>v.formula_id===f.formula_id),f);
  for(const old of c.resources){const r=model.resources.find(v=>v.row_id===old.row_id);assert(r);assert(record(r)&&record(old));
-  for(const k of ['id','row_id','formula_id','unit_id','cost_owner_id','semantic_owner','source_metadata','resource_graph','procurement_eligible'] as const)same(r[k],old[k]);
+  same(legacyRowProjectionF271(r),legacyRowProjectionF271(old));
   same(r.inclusion_ast,{kind:'and',operands:[{kind:'equals',parameterId:method,value:legacy},old.inclusion_ast]});}
  assert.deepEqual(validateIndependentCompletenessMapReferences({completenessMap:independentMap,formulaDefinitions:model.formulas,resourceDefinitions:model.resources}),[]);
  assert.equal(source.nativeRows.find(r=>r.key==='whole-labour')?.ratePer100M2,'228.00');assert.equal(source.nativeRows.length,10);

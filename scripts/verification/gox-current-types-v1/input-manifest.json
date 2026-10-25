@@ -532,7 +532,7 @@
     "scripts/estimate/r4a13/prepareTemporaryTrussNodeStrengtheningDevicesKrer46Successor.ts": "153fa692eabfbabbd74a8482792aad06d37ecd27d2f8317e9258020c63594e9f",
     "scripts/estimate/r4a13/prepareTemporaryUpperBeamChordStrengtheningDevicesKrer46Successor.ts": "2471c27b815388db74cf0e6abb4370c7f199328d003186b06399cfba9df93c8c",
     "scripts/estimate/r4a13/prepareTemporaryVerticalProtectiveBarrierBoardFrameKrer46Successor.ts": "bc31b3ed2cb46c614dd18bb0eee69079c3adbbf4afe1b528635aec6fffaead22",
-    "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": "7959e4d4b8de243c3947f328e04a7cd630662980e71e91f2aace156adcf9aa44",
+    "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": "3295aac86f2744bb12f4397710d6023cf9d87a86eda9bfbc0ccc97b0d1477b8d",
     "scripts/estimate/r4a13/prepareWoodFireproofingLayerStrengtheningVariantSuccessor.ts": "f572cde34be66a35f579a5361768dccf80ba547043cc4012044a62cb8d05b609",
     "scripts/estimate/r4a13/prepareWoodFireproofingLocalRepairVariantSuccessor.ts": "aefa740502d8cab2cff2bed8cfeb7e2a9673717f87aa56c8102eeadd769dbec6",
     "scripts/estimate/r4a13/prepareWoodFireproofingSealingVariantSuccessor.ts": "c8ffc0f3f670b8007151c4e60fb6a7c3b2b621892024c0f45fd84e80ba1bf938",
@@ -3645,13 +3645,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "6ea4eb322bfff4973c82b8c300817d792e21b453d3b4242f65da2eb130388e6e",
-  "canonicalSourceFreezeSha256": "67410dc4d01a2298151878aad1d23343c6d504140451762d29c00d86af3d01dd",
+  "canonicalSourceFreezeSha256": "1476638b9227f7e54337111109deffa560ae9de5ea8b9a9bdc3dfcadf42f91e6",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100658535,
+    "sourceBytes": 100659059,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4326,7 +4326,7 @@
         "owner": "WALL_CERAMIC_CEMENT_SOURCE_CANDIDATE_NOT_PUBLICATION"
       },
       "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": {
-        "sha256": "7959e4d4b8de243c3947f328e04a7cd630662980e71e91f2aace156adcf9aa44",
+        "sha256": "3295aac86f2744bb12f4397710d6023cf9d87a86eda9bfbc0ccc97b0d1477b8d",
         "owner": "WALL_CERAMIC_CEMENT_SOURCE_CANDIDATE_NOT_PUBLICATION"
       },
       "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": {
@@ -4802,7 +4802,7 @@
     "curingWallAccessSourceWaveR273": {
       "manifests": {
         "CONCRETE_CURING": "3cb1447e5e86874def1201d37eb1a31e590a0a8e2e3003ad744f119188483e25",
-        "WALL_CERAMIC_CEMENT": "58bd95407feaa68dd781d79ca2bd3ceea42cd10a2d7f2167b916cb6b9fc8f592",
+        "WALL_CERAMIC_CEMENT": "7d59e494f5a1ce8a4a2e554c1d9519c45ae29b2631be65dcd2a8f05ff7bce699",
         "ACCESS_CONTROL_LOCK": "327506100c48d449b56bccbbb4f3b0505c21bb3f2cf9c749b018bc3c4175c9d0"
       },
       "selectedSources": {
@@ -4818,7 +4818,7 @@
         "data/estimate-benchmarks/source-packs/wall-ceramic-cement-existing-completeness-f271.json": "089619c57f342caff46777543c3d2d59b0318dc86aef62b7c06842e134d26937",
         "data/estimate-benchmarks/source-packs/wall-ceramic-cement-existing-provision-f271.json": "25637c564c950ed9d35ac2e543e01989ffe0c91b4e66c59872bea2bc35c539c8",
         "data/estimate-benchmarks/source-packs/wall-ceramic-cement-native-f266.json": "0ecbf107f3791c94663f5426f6eaa5f8f687252e8c11a65b663c720412ecc4b4",
-        "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": "7959e4d4b8de243c3947f328e04a7cd630662980e71e91f2aace156adcf9aa44",
+        "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts": "3295aac86f2744bb12f4397710d6023cf9d87a86eda9bfbc0ccc97b0d1477b8d",
         "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": "32985ee7ab5d6220f11f983f2c0ccc556040693b16221b5ab42d23e5965e943c",
         "src/lib/estimate/v4/wallCeramicCementExistingOwnerF271.ts": "af0eaac1b345b6a16841a59fffc527ad67d9d6a863f021827991103d461c5ab1",
         "src/lib/estimate/v4/wallCeramicCementNativeF266.ts": "d016aaf3dcf3c0686419e7b1372e2f36d764576bfe8caff99727528c13b54099",
@@ -4838,6 +4838,33 @@
       "newFULL": 0,
       "scope": "Current R145 curing ordinary Config and four-consumer entry; same flat-wall R04 source02; exact whole ACS manufacturer delivery and TEST_ONLY full-native five-call entry. Runtime, registry, price, UI and publication remain separate.",
       "rawSourceDocumentsAndCurrentCapturesNotTransferred": true
+    },
+    "wallTypedHistoricalRawProjectionFixR274": {
+      "manifestSha256": "7d59e494f5a1ce8a4a2e554c1d9519c45ae29b2631be65dcd2a8f05ff7bce699",
+      "priorActualCiFailure": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\types-ci-r273\\ROOT_VERIFIED_ACTUAL_FIRST_FAILURE_R273.json",
+        "sha256": "721cf2cb5df78ffa43faf3c5e485db7d925981503dd0a748afedde56cf0b3cc5",
+        "bytes": 1352
+      },
+      "changedLogicalPath": "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts",
+      "beforeSha256": "7959e4d4b8de243c3947f328e04a7cd630662980e71e91f2aace156adcf9aa44",
+      "afterSha256": "3295aac86f2744bb12f4397710d6023cf9d87a86eda9bfbc0ccc97b0d1477b8d",
+      "exactRawByteInverseVerified": true,
+      "sameNineProtectedRawFields": [
+        "id",
+        "row_id",
+        "formula_id",
+        "unit_id",
+        "cost_owner_id",
+        "semantic_owner",
+        "source_metadata",
+        "resource_graph",
+        "procurement_eligible"
+      ],
+      "sourceRatesCoreIdsOraclesSharedTypesAndGuardsChanged": false,
+      "sameAllEarlierSeeds603ExtraRootsWorkerAndResourceCaps": true,
+      "newSubjectRoots": 0,
+      "newSourceAdmission": false
     }
   }
 }
