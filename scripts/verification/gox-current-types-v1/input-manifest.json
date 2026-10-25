@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "REVIEWED_NEXT_FINISH_ELECTRICAL_SCS_SOURCE_CANDIDATE_FULL_TYPES_ONLY_NOT_RUNTIME_OR_APK",
+  "snapshotKind": "SOURCE_ONLY_ACTUAL_BOUND_ELECTRICAL_AND_SCS_ADAPTER_FULL_TYPES_NO_RUNTIME_OR_SOURCE_ADMISSION",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "8d15752d6ecdbf06e95554d1a298e2d8fbe45dfe9589383591953cd6f3fb6049",
@@ -42,6 +42,7 @@
     "data/estimate-benchmarks/fixtures/four-work-resource-parents-r4.json": "00c07090ff8a5d31392f8274fb97bd1ce8a7105eafce762b2822c911270a5a77",
     "data/estimate-benchmarks/fixtures/interior-wall-finishing-original35-proof-r240.json": "714eaa77983ee012d58a5e392df158459af4dcf0778ff9c2bbab8890e2c81dcc",
     "data/estimate-benchmarks/fixtures/low-current-scs-eight-cases-r24.json": "c15dd4608cb96d1b6821015c6d6edc53ee5bcc451e45b19b9bc2d669f12582ef",
+    "data/estimate-benchmarks/fixtures/low-current-scs-explicit-test-only-runtime-input-r246.json": "5409c5a8158f48e95379459a056c3aaea1da040742cd0b09e334e710cec0b699",
     "data/estimate-benchmarks/fixtures/manual-trench05701-accepted-anchors-r1.json": "f2501ccf80942d70b43e8a65f8caf9d581ab7b5409b1da494db0b3727dcd4caf",
     "data/estimate-benchmarks/fixtures/masonry-brick-column-existing-owner-finite-r161.json": "f581539f0c62a7846e828f3557b1ecffa4630597b2329201e637a6575a08a2fb",
     "data/estimate-benchmarks/fixtures/masonry-brick-column-known-native-priced-r166.json": "055d5fc2fee3abafe1b9dd2d61aa3665af48507b8bc0e556e43c2af2c15daa03",
@@ -140,6 +141,7 @@
     "data/estimate-benchmarks/source-packs/legrand-p31-blind-ep-joint-fasteners-r1.json": "48a88f5dab61309d95ad589ebd4964004884e6cb2d9c10a74314a7ddda8c8749",
     "data/estimate-benchmarks/source-packs/low-current-copper-certifier-pro-stock-r24.json": "3dd2470d2f96eff775bb843d04d27e4ba096d1cd668ba312c401baafaeb577d4",
     "data/estimate-benchmarks/source-packs/low-current-idc-whole-manual-post-r24.json": "87520b888ccdd47a75863e1b4b16a4035b1fb2c93b82d0667c761ecd995e9b31",
+    "data/estimate-benchmarks/source-packs/low-current-scs-two-physical-post-inventories-r246.json": "017aec195a7ecfc12e5b008f8aa122347c2ec8647ef402800fb4110e7741e4f8",
     "data/estimate-benchmarks/source-packs/manual-backfill-soil1-krer01-061-01-quantity-r1.json": "56fb26dcf23d0310e44eaa26e096d5cdbd56889627dcc1985fb7b2dc509af933",
     "data/estimate-benchmarks/source-packs/manual-sloped-trench-g1-krer01-057-01-quantity-r1.json": "208a948092c33be94f5e5762b9a8d243444d45e9aa28cd0ed6e65ef636dc366c",
     "data/estimate-benchmarks/source-packs/masonry-brick-column-existing-owner-map-r161.json": "e9ce762118ac63fe8774244aabadef6b0e579fc03a373a0ad2745ec1fab9dacd",
@@ -353,12 +355,14 @@
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts": "c40cd5746bf94c66e95ca2e807cd31c0d1ae3ab15921a074bf407bfaa1808812",
     "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts": "6fcd3e61268b204bcce82701e98f6111375db99ff515c33c47a83986ef0cc33a",
     "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts": "4c33d590e163a1a57c987e6ae9093e647c6990c22e3da8b9493f962579880440",
+    "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": "6239c38c28cf0c14a879282fadafef0717aa400326f6d1c24f2b9b58e179e978",
     "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts": "4a21d510b7bc82346f257d7dd5f2621a0d5795df1b6bf722483b66682ba8c867",
     "scripts/estimate/r4a13/floorCementScreed20mmColumn01AppendR1.test.ts": "049a00dc540cec4c10257d696a838a6200642c7a20d85649fcbb06210e133d2f",
     "scripts/estimate/r4a13/floorConcreteUnderlayerColumn09AppendR1.test.ts": "5743738f5082244d862cb9cb7e9b89ec2e23ebc0bca8ce8f7c943b744edb4213",
     "scripts/estimate/r4a13/floorSandStraightedgeRetainedMasterR3.test.ts": "d9f06c8626032d2ab2356f8dac8e20009d7110c18840bb91d7318e35f2d03527",
     "scripts/estimate/r4a13/formworkRemainingFamilyApplicabilityCorrection.ts": "71b1c56673fdf4daa82fe756468b8fbe02145ddfe07905fd322ddce0656eb6b0",
     "scripts/estimate/r4a13/interiorWallFinishingPhysicalKitR240.test.ts": "6acb1924f35e83f88635818ded224f2d105b6752af42bd07fe4bf77b0ebe8b69",
+    "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts": "89b171c3513616cf6d608562ae11b1a6a6fe38e3d9c9becdd5dbe71a65d67f61",
     "scripts/estimate/r4a13/lowCurrentScsPostsFiniteRuntimeR24.ts": "b4f55b73e73c78e45e68d95e08dea7bc13233148151d2a8b9ebb09b367c4c787",
     "scripts/estimate/r4a13/masonryBrickColumnExistingOwnerR161.test.ts": "02ba01db88d78f80ac3c27ffc74fa358f185737e75dee570f2df65a496ea1b9c",
     "scripts/estimate/r4a13/masonryGlassBlockNormalAppendR103.test.ts": "5eb437c66b6c5c452a0c32b2c21d55885f5a8965f708b2c136b40c31054908a6",
@@ -429,6 +433,7 @@
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.test.ts": "c2ba5f9367795a3889a2ea61e8b910a7420005ffd4440aafb9002f498acf66a2",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.ts": "f2966bee892f08237f0bd50c054845ee6ea7a6c59032f03f909d536c4bd5fff9",
     "scripts/estimate/r4a13/prepareElecor60x40SingleRouteMaterialsR1.ts": "93fb236d6c999d86a2d4f8a209177265613b1860d39ad5554efbbc8ecc367ab7",
+    "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts": "a6ed47145dd227735555210da562bdd57f4af04385043bd3ef877b5491b23adb",
     "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts": "d12c847aef92e104288b4a429d20a95156d2d1de58a1e8bb76352b08ae0ae4e2",
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsCurrentPublicationR2.test.ts": "a995f50620b4860172b6b0b2958e05a4c97fed9e3dc0d9ce6cb413fc4cf2540f",
     "scripts/estimate/r4a13/prepareElecorMechanicalFixingsCurrentPublicationR2.ts": "d1182865b9a07dfc879ab7c5742aa0705113742428f4cfb23773649963347c30",
@@ -564,7 +569,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "8e5260d59291dfa4f4e1f9ed790cddf617ef94c1ee3773decc323da2db713f4d",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "1ced6cdf1c5f5a03794be2ec2d2b81e8b107b3ca5dd3d0d05cd3ee21fb91bc14",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1251,6 +1256,7 @@
     "src/lib/estimate/backendPlatform/canonicalFloorPreparationIntentS2769.ts": "d53ccf63572aeddf33286a6b0ff5be9154eb8d4cca7967f1dd24d1771c2ad33d",
     "src/lib/estimate/backendPlatform/canonicalFormulaOutputBounds.ts": "f315772261d499ae96b63fe4d6cca6cb84e87a4f10fbb0cd00bc0e37e3c76842",
     "src/lib/estimate/backendPlatform/canonicalFormulaSourceBinding.ts": "0795cb8805cbd645af7365e168ffc3f38eb9f03e5c41db132709bc37ee74bd98",
+    "src/lib/estimate/backendPlatform/canonicalFrozenDefinitionSnapshotV1.ts": "92489f80ef5506c4c47473c3b8dbd2b84c6800afa8cb2f905d4294e40e99d97c",
     "src/lib/estimate/backendPlatform/canonicalFusionDerivedQuantityClearAdmissionS2758.ts": "821cbd7a512b37bc99e4dc4cf22a86c612bc408bf40313d458ce0fd3d4e26104",
     "src/lib/estimate/backendPlatform/canonicalFusionPublishedManifestChainS2758.ts": "659bf6290b7a50739efbcbf791cd3d860c64894dd26584073545b03169dbc71a",
     "src/lib/estimate/backendPlatform/canonicalFusionPublishedSourceOriginS2758.ts": "4daea2333f309e0178a98fdff0fcf2dceb8821238a8f4aa903957907b5ffb879",
@@ -3614,15 +3620,15 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "8e5260d59291dfa4f4e1f9ed790cddf617ef94c1ee3773decc323da2db713f4d",
-  "canonicalSourceFreezeSha256": "4da84cf12070a683c777a7c65f04d2b51e7940bdffaa7149ea8c710a1a3a685d",
+  "originalSeedManifestSha256": "1ced6cdf1c5f5a03794be2ec2d2b81e8b107b3ca5dd3d0d05cd3ee21fb91bc14",
+  "canonicalSourceFreezeSha256": "82755983d5e318f1724f9377b973020e56a32e3f646ea8518831279cf49e8b12",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 100374751,
-    "reviewedCandidateScope": "Previous accepted source candidate plus three new exact existing-owner family overlays; constructor/core/selected-parent and UI not accepted"
+    "sourceBytes": 100413726,
+    "reviewedCandidateScope": "Unchanged accepted family source wave plus three actual-bound TypeScript leaves and two source-only SCS JSON inputs; runtime and publication unaccepted"
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": false,
@@ -4214,13 +4220,35 @@
       "data/estimate-benchmarks/fixtures/low-current-scs-eight-cases-r24.json": {
         "sha256": "c15dd4608cb96d1b6821015c6d6edc53ee5bcc451e45b19b9bc2d669f12582ef",
         "owner": "LOW_VOLTAGE_SCS_TYPED_COMPOSER"
+      },
+      "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts": {
+        "sha256": "a6ed47145dd227735555210da562bdd57f4af04385043bd3ef877b5491b23adb",
+        "owner": "ELECTRICAL_ACTUAL_BOUND_CONFIG_R248"
+      },
+      "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": {
+        "sha256": "6239c38c28cf0c14a879282fadafef0717aa400326f6d1c24f2b9b58e179e978",
+        "owner": "ELECTRICAL_ACTUAL_BOUND_CONFIG_R248"
+      },
+      "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts": {
+        "sha256": "89b171c3513616cf6d608562ae11b1a6a6fe38e3d9c9becdd5dbe71a65d67f61",
+        "owner": "SCS_ACTUAL_CAPTURE_ADAPTER_SOURCE_ONLY_R249"
+      },
+      "data/estimate-benchmarks/source-packs/low-current-scs-two-physical-post-inventories-r246.json": {
+        "sha256": "017aec195a7ecfc12e5b008f8aa122347c2ec8647ef402800fb4110e7741e4f8",
+        "owner": "SCS_ACTUAL_CAPTURE_ADAPTER_SOURCE_ONLY_R249"
+      },
+      "data/estimate-benchmarks/fixtures/low-current-scs-explicit-test-only-runtime-input-r246.json": {
+        "sha256": "5409c5a8158f48e95379459a056c3aaea1da040742cd0b09e334e710cec0b699",
+        "owner": "SCS_ACTUAL_CAPTURE_ADAPTER_SOURCE_ONLY_R249"
       }
     },
     "extraRoots": [
       "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts",
       "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts",
+      "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts",
       "scripts/estimate/r4a13/elecorEndcapsWholeR239.test.ts",
       "scripts/estimate/r4a13/interiorWallFinishingPhysicalKitR240.test.ts",
+      "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts",
       "scripts/estimate/r4a13/lowCurrentScsPostsFiniteRuntimeR24.ts",
       "scripts/estimate/r4a13/masonryBrickColumnExistingOwnerR161.test.ts",
       "scripts/estimate/r4a13/masonryGlassBlockNormalAppendR103.test.ts",
@@ -4233,6 +4261,7 @@
       "scripts/estimate/r4a13/masterMonolithicRepairGeometryVisibilityOnlyR60.ts",
       "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
       "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts",
+      "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts",
       "scripts/estimate/r4a13/prepareElecorEndcapsCurrentMasterR239.ts",
       "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.test.ts",
       "scripts/estimate/r4a13/prepareInteriorWallFinishingExistingPaintR502.ts",
@@ -4539,6 +4568,28 @@
       "sameResourceCaps": true,
       "noCoreOrGoldenReplay": true,
       "canonicalSourceWrites": 0
+    },
+    "actualBoundAdaptersR250": {
+      "scope": "Exact actual-bound ELECOR Config finite entry and SCS capture adapter types; local private captures and receipts never transferred",
+      "sourceOriginManifests": {
+        "ELECTRICAL_ACTUAL_BOUND_CONFIG_R248": "db3d9929c5ecc72c1f505ce58759f5c3fbb41dff06a0741ccb6d6d217780b348",
+        "SCS_ACTUAL_CAPTURE_ADAPTER_SOURCE_ONLY_R249": "f04873cafee56b12c5b8c36feb7cbe58d55a31fdef46138d03868d32dd349240"
+      },
+      "newFiles": {
+        "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts": "a6ed47145dd227735555210da562bdd57f4af04385043bd3ef877b5491b23adb",
+        "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": "6239c38c28cf0c14a879282fadafef0717aa400326f6d1c24f2b9b58e179e978",
+        "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts": "89b171c3513616cf6d608562ae11b1a6a6fe38e3d9c9becdd5dbe71a65d67f61",
+        "data/estimate-benchmarks/source-packs/low-current-scs-two-physical-post-inventories-r246.json": "017aec195a7ecfc12e5b008f8aa122347c2ec8647ef402800fb4110e7741e4f8",
+        "data/estimate-benchmarks/fixtures/low-current-scs-explicit-test-only-runtime-input-r246.json": "5409c5a8158f48e95379459a056c3aaea1da040742cd0b09e334e710cec0b699"
+      },
+      "actualCurrentParentsCaptured": true,
+      "actualSourceScopesCaptured": true,
+      "sourceOrServerApprovalGranted": false,
+      "currentFinishingCt225VsVgtCompatibility": "HOLD_STALE_CT225_ROUTE_NOT_REBOUND_TO_ACTUAL_V9",
+      "newIdcPaymentNonOverlap": "HOLD_NOT_PROVED_AGAINST_CURRENT_LABOR_PRICE_SCOPE",
+      "sameWorkerAll603ExtraSeedsDiagnosticsAndResourceCaps": true,
+      "oldAcceptedTestsNotReplayed": true,
+      "noPrivateRuntimeInputsInGit": true
     }
   }
 }

@@ -1,0 +1,60 @@
+{
+  "contract": "low-current-scs-explicit-test-only-runtime-input/r246",
+  "status": "TEST_ONLY_CANDIDATE_ROOT_REVIEW_REQUIRED_NOT_PROJECT_OR_SOURCE_APPROVAL",
+  "scope": "Inputs for the unchanged eight finite cases/nine planned core callbacks only. Not host acceptanceInput, installed-object facts, supply, stock, PPR, source admission or publication.",
+  "actualCurrentCaptureSha256": "649e4c5b9439bae57e5a23ad32393e6c529c89b76f5b2f102c35354b11cb1cc0",
+  "nativeRuntime": {
+    "runtimeInput": {},
+    "runtimeClassification": {},
+    "runtimeSourceIds": {}
+  },
+  "nativeSubmittedParameters": {
+    "lvs_system_count": 1,
+    "lvs_information_outlet_count": 4,
+    "lvs_outlet_designation": "TEST_ONLY_R246_OUTLET",
+    "lvs_copper_cable_category": "CAT6_LSZH",
+    "lvs_patch_panel_count": 1,
+    "lvs_patch_panel_designation": "TEST_ONLY_R246_PANEL"
+  },
+  "nativeConfirmedParameters": {
+    "lvs_certification_tester_machine_h": 2
+  },
+  "nativeConfirmationMeaning": "Explicit TEST_ONLY machine-hour fixture exercising the already existing certification-hour owner. The value 2 is not an installation/application norm, manufacturer autotest conversion or actual server/project confirmation. All other native project facts remain absent; source/PPR/stock needs must remain visible.",
+  "confirmedNewCountFactsByCase": {
+    "IDC110_24_ONLY": {
+      "lcs_idc_simultaneous_manual_posts_r24": 1
+    },
+    "IDC110_26_ONLY": {
+      "lcs_idc_simultaneous_manual_posts_r24": 2
+    },
+    "IDC66_24_ONLY": {
+      "lcs_idc_simultaneous_manual_posts_r24": 1
+    },
+    "IDC66_26_ONLY": {
+      "lcs_idc_simultaneous_manual_posts_r24": 3
+    },
+    "PRO_ONLY": {
+      "lcs_copper_certifier_simultaneous_pairs_r24": 3
+    },
+    "BOTH_POSTS": {
+      "lcs_idc_simultaneous_manual_posts_r24": 2,
+      "lcs_copper_certifier_simultaneous_pairs_r24": 1
+    },
+    "EXPLICIT_BOTH_NOT_SELECTED_LEGACY": {},
+    "MISSING_PHYSICAL_COUNTS": {}
+  },
+  "notProvided": [
+    "Actual scoped-registry capture and typed registry assembly",
+    "ROOT-reviewed actual source tuple and host Config",
+    "Actual project, stock, safe-use or calibration evidence",
+    "Actual installation labour/application norm for either physical post",
+    "Price scope admitting the new manual provision without duplicate labour/tool coverage"
+  ],
+  "baselineInputValuesCopied": false,
+  "oldPaidOwnersAddedAgain": 0,
+  "newProPaidOwners": 0,
+  "newQuantityOverrides": 0,
+  "actualCoreCallbacks": 0,
+  "operationalPostsAccepted": 0,
+  "FULL": false
+}

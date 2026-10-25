@@ -108,5 +108,8 @@
   "src/lib/estimate/v4/roofMissingVaporProfilesWhole015R24.ts": null,
   "src/lib/estimate/v4/roofPrimerWithPreparationWhole01601R24.ts": null,
   "src/lib/estimate/v4/roofProtectedFlatRollMissing002R24.ts": null,
-  "src/lib/estimate/v4/roofRooflightCurbWhole018R24.ts": null
+  "src/lib/estimate/v4/roofRooflightCurbWhole018R24.ts": null,
+  "scripts/estimate/r4a13/prepareElecorEndcapsBoundContextR248.ts": null,
+  "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": null,
+  "scripts/estimate/r4a13/lowCurrentScsActualCaptureBindingR246.ts": null
 }

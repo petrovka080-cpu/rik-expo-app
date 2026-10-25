@@ -1,0 +1,241 @@
+{
+  "contract": "low-current-scs-two-manufacturer-physical-post-inventories/r246",
+  "status": "SOURCE_ONLY_ROOT_REVIEW_PENDING_NOT_SERVER_APPROVAL",
+  "sourceKind": "MANUFACTURER_PACKAGE_INVENTORY_NO_INSTALLATION_RATE",
+  "existingCatalogId": "canonical-work:expanded:low_voltage_system",
+  "installationLabourNormClaimed": false,
+  "activationAllowed": false,
+  "productionEligible": false,
+  "manufacturerMembers": [
+    {
+      "key": "IDC_MANUAL_POST",
+      "sealedSourcePack": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\idc110-whole-manual-post-r1\\after\\data\\estimate-benchmarks\\source-packs\\low-current-idc-whole-manual-post-r24.json",
+        "sha256": "87520b888ccdd47a75863e1b4b16a4035b1fb2c93b82d0667c761ecd995e9b31",
+        "bytes": 7730
+      },
+      "primaryEvidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\idc110-whole-manual-post-r1\\primary\\pro-tool-kits.html",
+          "sha256": "471414963f60b1abe041ab4afe6d1a4fc6d3c7579c01584819dad5e865c364c2",
+          "bytes": 173514
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\idc110-whole-manual-post-r1\\primary\\d914-series-impact-tools.html",
+          "sha256": "ca065b050fd23897f6264e4ebd40b3f8b155a616697d4c2fdd78d35cf5b91474",
+          "bytes": 180949
+        }
+      ],
+      "officialSource": {
+        "kind": "MANUFACTURER_DECLARED_PACKAGE_CONTENTS_AND_TOOL_CAPABILITY",
+        "url": "https://www.flukenetworks.com/datacom-cabling/installation-tools/Pro-Tool-Kits",
+        "artifactPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\idc110-whole-manual-post-r1\\primary\\pro-tool-kits.html",
+        "sha256": "471414963f60b1abe041ab4afe6d1a4fc6d3c7579c01584819dad5e865c364c2",
+        "locator": "Features: IS50; Models11292000; all kits include pouch; accessories11292400 pouch-only is not a second item",
+        "supportingUrl": "https://www.flukenetworks.com/datacom-cabling/installation-tools/D914-Series-Impact-Tools",
+        "supportingArtifactPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\idc110-whole-manual-post-r1\\primary\\d914-series-impact-tools.html",
+        "supportingSha256": "ca065b050fd23897f6264e4ebd40b3f8b155a616697d4c2fdd78d35cf5b91474",
+        "supportingLocator": "Product Highlights: built-in hook/spudger, LOW for24/26AWG; Models10061810 with one66/110cutblade"
+      },
+      "compatibleProfiles": [
+        {
+          "key": "IDC110_AWG24",
+          "titleRu": "Колодки IDC 110, медные жилы 24 AWG",
+          "interface": "110",
+          "wireGauge": "24 AWG",
+          "impact": "LOW"
+        },
+        {
+          "key": "IDC110_AWG26",
+          "titleRu": "Колодки IDC 110, медные жилы 26 AWG",
+          "interface": "110",
+          "wireGauge": "26 AWG",
+          "impact": "LOW"
+        },
+        {
+          "key": "IDC66_AWG24",
+          "titleRu": "Колодки IDC 66, медные жилы 24 AWG",
+          "interface": "66",
+          "wireGauge": "24 AWG",
+          "impact": "LOW"
+        },
+        {
+          "key": "IDC66_AWG26",
+          "titleRu": "Колодки IDC 66, медные жилы 26 AWG",
+          "interface": "66",
+          "wireGauge": "26 AWG",
+          "impact": "LOW"
+        }
+      ],
+      "parts": [
+        {
+          "key": "impact-tool",
+          "titleRu": "Ударный инструмент IDC-оконцевания с низким усилием",
+          "internalModel": "D914S",
+          "countPerPost": 1,
+          "unitId": "piece",
+          "source": "kits+impact",
+          "assemblyBoundary": "Встроенные крючок и толкатель входят в рукоятку; не отдельные закупочные позиции."
+        },
+        {
+          "key": "snips",
+          "titleRu": "Ножницы для подготовки медного кабеля",
+          "internalModel": "Electrician's D-Snips",
+          "countPerPost": 1,
+          "unitId": "piece",
+          "source": "kits",
+          "assemblyBoundary": "Один штатный инструмент изготовителя в поставке IS50."
+        },
+        {
+          "key": "cable-stripper",
+          "titleRu": "Ручной инструмент снятия оболочки кабеля",
+          "internalModel": "Cable Stripper supplied in IS50",
+          "countPerPost": 1,
+          "unitId": "piece",
+          "source": "kits",
+          "assemblyBoundary": "Применимость к фактической оболочке проверяется отдельно; не назначена глубина реза или универсальный диаметр."
+        },
+        {
+          "key": "66-110-blade",
+          "titleRu": "Сменное рабочее лезвие для контактов IDC 66 и 110",
+          "internalModel": "EverSharp 66/110 cut blade",
+          "countPerPost": 1,
+          "unitId": "piece",
+          "source": "kits+impact",
+          "assemblyBoundary": "Одна перечисленная сменная сборка 66/110; две отдельные дополнительные головки и запасные лезвия не добавлены."
+        },
+        {
+          "key": "pouch",
+          "titleRu": "Поясной чехол ручного кабельного инструмента",
+          "internalModel": "Dur-A-Grip PVC pouch, IS50",
+          "countPerPost": 1,
+          "unitId": "piece",
+          "source": "kits",
+          "assemblyBoundary": "Штатный чехол полного выбранного состава; пустой чехол отдельно не покупается."
+        }
+      ],
+      "countBasis": "One of each of five named components per explicitly supplied simultaneous physical post.",
+      "payOwner": "low-current:idc-manual-post:r24:provision-owner",
+      "priceScopeRu": "Один владелец договорной цены обеспечения всех пяти перечисленных первоначально исправных компонентов на F постах. Это не покупка пяти отдельных инструментов, не износ, не часы, не труд оконцевания и не цена сертификации.",
+      "notCoveredRu": [
+        "Установка розеток, панелей, кабельных трасс и поставка кабеля",
+        "Пайка, обжим наконечников, модульных вилок RJ45, tool-less разъёмы, иные рабочие головки",
+        "Сертификационный тестер, измерения permanent-link/channel, протоколы и приемка сети",
+        "Проверка наличия/отсутствия напряжения, 24В шлейфы пожарной сигнализации, безопасная изоляция",
+        "Запасные детали, износ/периодическое обслуживание, батареи, источники света и маркировочный принтер",
+        "СИЗ, доступ, рабочее место, логистика, труд и материал оконцевания"
+      ]
+    },
+    {
+      "key": "COPPER_CERTIFICATION_PRO_POST",
+      "sealedSourcePack": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\copper-certification-whole-post-r1\\after\\data\\estimate-benchmarks\\source-packs\\low-current-copper-certifier-pro-stock-r24.json",
+        "sha256": "3dd2470d2f96eff775bb843d04d27e4ba096d1cd668ba312c401baafaeb577d4",
+        "bytes": 5449
+      },
+      "primaryEvidence": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\copper-certification-whole-post-r1\\primary\\dsx602-datasheet.html",
+          "sha256": "e3e88655001ea5cb928e0bdf87553cc57f8f2adbffe79474962c4b81c7a78cf8",
+          "bytes": 153871
+        }
+      ],
+      "officialSource": {
+        "url": "https://www.flukenetworks.com/edocs/datasheet-dsx-602-cableanalyzertm",
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\low-current-systems-r24\\copper-certification-whole-post-r1\\primary\\dsx602-datasheet.html",
+        "sha256": "e3e88655001ea5cb928e0bdf87553cc57f8f2adbffe79474962c4b81c7a78cf8",
+        "locator": "DSX-602 Models: exact DSX-602-PRO contents; comparison chart Permanent Link Adapter optional for base602; source test standard/capability entries not project approval"
+      },
+      "selectedProfile": "Полный парный комплект сертификации постоянных медных линий с двумя адаптерами permanent-link",
+      "parts": [
+        {
+          "key": "main",
+          "nameRu": "Основной прибор сертификации медной кабельной линии",
+          "unitId": "piece",
+          "perFront": 1
+        },
+        {
+          "key": "remote",
+          "nameRu": "Удалённый измерительный прибор кабельной линии",
+          "unitId": "piece",
+          "perFront": 1
+        },
+        {
+          "key": "channel-adapters",
+          "nameRu": "Канальные измерительные адаптеры Cat6A",
+          "unitId": "piece",
+          "perFront": 2
+        },
+        {
+          "key": "reference-patch-cord",
+          "nameRu": "Эталонный соединительный шнур RJ45 длиной 15 см",
+          "unitId": "piece",
+          "perFront": 1
+        },
+        {
+          "key": "permanent-link-adapters",
+          "nameRu": "Измерительные адаптеры постоянной линии",
+          "unitId": "piece",
+          "perFront": 2
+        },
+        {
+          "key": "case",
+          "nameRu": "Мягкий переносной чехол измерительного комплекта",
+          "unitId": "piece",
+          "perFront": 1
+        },
+        {
+          "key": "usb-cable",
+          "nameRu": "Кабель передачи результатов измерений на компьютер",
+          "unitId": "piece",
+          "perFront": 1
+        },
+        {
+          "key": "ac-adapters",
+          "nameRu": "Сетевые адаптеры питания измерительных приборов",
+          "unitId": "piece",
+          "perFront": 2
+        },
+        {
+          "key": "getting-started-guide",
+          "nameRu": "Руководство первоначальной настройки измерительного комплекта",
+          "unitId": "document",
+          "perFront": 1
+        }
+      ],
+      "countBasis": "11 pieces and 1 document per explicitly supplied simultaneous certifier pair.",
+      "existingMachineHourOwnerId": "rc09:equipment:lvs-certification-tester",
+      "newPaidOwners": 0,
+      "openObjectFacts": [
+        "Actual F measuring pairs and complete delivered inventory, separate from machinehours",
+        "Actual current calibration identities/validity and compatible installed firmware/selected test standard",
+        "Exact cable/category/permanent-link boundary and accepted QA program",
+        "Correct region/mains supply or initially charged integral units according to actual instructions; no unlisted mains cords or batteries inferred",
+        "Actual result export computer/storage/reporting workflow; supplied USB cable is not a computer",
+        "No actual measured PASS/accepted test report is created by kit selection"
+      ]
+    }
+  ],
+  "newRowIds": [
+    "low-current:idc-manual-post:r24:provision-owner",
+    "low-current:idc-manual-post:r24:impact-tool",
+    "low-current:idc-manual-post:r24:snips",
+    "low-current:idc-manual-post:r24:cable-stripper",
+    "low-current:idc-manual-post:r24:66-110-blade",
+    "low-current:idc-manual-post:r24:pouch",
+    "low-current:copper-certifier-pro:stock:r24:main",
+    "low-current:copper-certifier-pro:stock:r24:remote",
+    "low-current:copper-certifier-pro:stock:r24:channel-adapters",
+    "low-current:copper-certifier-pro:stock:r24:reference-patch-cord",
+    "low-current:copper-certifier-pro:stock:r24:permanent-link-adapters",
+    "low-current:copper-certifier-pro:stock:r24:case",
+    "low-current:copper-certifier-pro:stock:r24:usb-cable",
+    "low-current:copper-certifier-pro:stock:r24:ac-adapters",
+    "low-current:copper-certifier-pro:stock:r24:getting-started-guide"
+  ],
+  "oldRowsAndBindingsChanged": 0,
+  "projectOrPprApprovalClaimed": false,
+  "supplierPackagingOrStockInferred": false,
+  "purchaseEligibility": false,
+  "FULL": false
+}
