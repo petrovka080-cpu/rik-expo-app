@@ -582,6 +582,7 @@
     "scripts/estimate/r4a13/pvcBitumenTransitionGuide2024ControlInput.ts": "ce7f68c70f0fce84efd4f5312de3a62229f014b2ba08dcc5613bf2a4f3cf7760",
     "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts": "1dc65b8424bb1f6faff9507d8feb4f6ba32eead06fdf802200c7836d6c9d7119",
     "scripts/estimate/r4a13/roofSingle539FiniteCasesR24.ts": "32b7ff484656a563c5b6423f2f3c4bcd981db27fb49ec93f6918422d92667e6c",
+    "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts": "9018b239fcc2e41ba4961cab62d9ecd34fa67b91066c6dc16bf19c4063496cc8",
     "scripts/estimate/r4a13/roofSingle539RealR224InputsR24.ts": "df6d0aa87a434a00a149dba68b1f6b133487be1e70c089fcc5a271d3ce9bfb8f",
     "scripts/estimate/r4a13/roofSingle539WholeConfigR224.test.ts": "c178b285b3f11554a22e76ea24b38788f76938dea61aa447c28075fdea566e2a",
     "scripts/estimate/r4a13/runS264AsphaltInstallAndroidAcceptance.ts": "7531b0dce11b9f1168d9f22a6947c51f49866a9111f45f4d900137b69afd5a25",
@@ -625,7 +626,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "4a8c94f9e4f9ba4ae90fa81e604b33a1599bf9b73d76e838a60d93bf21bc024c",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "290a7e46927d961004e7b371a687ac7e02c43127a1c3b1785f557f6696e45f97",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -3692,14 +3693,14 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "4a8c94f9e4f9ba4ae90fa81e604b33a1599bf9b73d76e838a60d93bf21bc024c",
-  "canonicalSourceFreezeSha256": "ae169dc0e6502a8d24de8373e04d3728ed329f393347dfa3530d18539d7d19ad",
+  "originalSeedManifestSha256": "290a7e46927d961004e7b371a687ac7e02c43127a1c3b1785f557f6696e45f97",
+  "canonicalSourceFreezeSha256": "89d1c849e207337a897dd0b12a81bd2dd8f8baeebb9339c3549d639821a6074e",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 101907067,
+    "sourceBytes": 101917807,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4600,6 +4601,10 @@
       "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts": {
         "sha256": "a93313b9a65ff4058daabe3db412dffa79d9c4f3b3cade47074d0fca202f6a20",
         "owner": "UNCHANGED_PRIOR_ACCEPTED_COMPATIBILITY_SOURCE_EXPLICIT_ORIGIN"
+      },
+      "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts": {
+        "sha256": "9018b239fcc2e41ba4961cab62d9ecd34fa67b91066c6dc16bf19c4063496cc8",
+        "owner": "EXISTING_WHOLE539_FORMAL_NORMAL_LOCKED_READONLY_ENTRY_ONLY"
       }
     },
     "extraRoots": [
@@ -4658,6 +4663,7 @@
       "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts",
       "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts",
       "scripts/estimate/r4a13/roofSingle539FiniteCasesR24.ts",
+      "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts",
       "scripts/estimate/r4a13/roofSingle539RealR224InputsR24.ts",
       "scripts/estimate/r4a13/roofSingle539WholeConfigR224.test.ts",
       "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts",
@@ -5328,6 +5334,16 @@
       "rootReviewSha256": "b9fca55110a50b62459f13d2789d9237143d773bddb7e400fd430587153fdd30",
       "sourceSha256": "e50a80754790e8af12cc89510afda19e521f383f1dd0589549fa8dc7cd76bad1",
       "sameAllCompilerRootsAndCaps": true
+    },
+    "roofWhole539NormalLockedEntryR294": {
+      "sourceManifest": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roof-formal-normal-r293\\SOURCE_ONLY_ONE_ENTRY_CI_ORIGIN_R293.json",
+        "sha256": "3c99dfb51a518435b212571a32d8533bc984e3d14c9d09d0c4daa2273faa8442",
+        "bytes": 7829
+      },
+      "rootReviewSha256": "39fa7e844f6a7152a564c1eb71c01919df72ed5dad31273097da9e71ccc6536c",
+      "additionalExplicitSeedRoots": 1,
+      "same603ExtraSeedsAndCaps": true
     }
   }
 }

@@ -152,5 +152,6 @@
   "src/lib/estimate/v4/facadeVentilatedPorcelainExistingOwnerR214.ts": null,
   "src/lib/estimate/v4/facadeVentilatedPorcelainR3.ts": null,
   "src/lib/estimate/v4/facadeVentilatedSteelExistingOwnerR5.ts": null,
-  "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts": null
+  "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts": null,
+  "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts": null
 }
