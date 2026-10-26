@@ -457,7 +457,7 @@
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": "fe8f963ff2b7869949b5593c44517590c836ee32b35a3cf26f9a21e19026ee16",
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts": "8cf5fe6385481c3c9db87e5026f211ded1acd6daa6db30d2418406ed49ba0847",
     "scripts/estimate/r4a13/monolithicRepeatedRetainedContinuationR1.ts": "b4da165a3fcba3d3e227db7191296bb0b5fd48b8290728d79ac83a9c188eb2db",
-    "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": "64bc3ea3c3678f0266cb8b99693fe4323fc8f0b9ea59cb3ce125ac23c791bbf5",
+    "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": "84aa17c09da4fa46008b85482297aba44b64cf1742d5bd9d5f7075b9f1ef0234",
     "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts": "f47af04a3e700b761862fe3b899d7817bd91027f685a39d8ed39b0f640b148c3",
     "scripts/estimate/r4a13/panelReadyGridCurrentMasterR287.bound.test.ts": "08e28c402d58b8b6a6dff906a096c263c9ddba38ca5b9e6c4d28ee886f5e66f5",
     "scripts/estimate/r4a13/panelReadyGridFormalNormalLockedR287.test.ts": "e888389d50aabf754dd74317cc3ab3f1205d827489165806fff87854abc5851c",
@@ -602,7 +602,7 @@
     "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts": "5d94c0531fd94374538acc1da163a785f4020555554646d2ffcf3cddb8d0fb63",
     "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts": "83ea7468adce2e240879984f82dbaa4623d874f55fc17937eadae41e7bc1f44e",
     "scripts/estimate/r4a13/pvcBitumenTransitionGuide2024ControlInput.ts": "ce7f68c70f0fce84efd4f5312de3a62229f014b2ba08dcc5613bf2a4f3cf7760",
-    "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": "6bc5294e321dd7aace181571857c410e0df3220d065767829cd1e2bae8085c79",
+    "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": "97175e489321a02735885fe25f9da501c68838ed851481c1f2707fce3c6b6a82",
     "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": "e82a4729652a7fa0d40c24523a980147040fb71aed58188683dc5eb8dbea9b1d",
     "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts": "6de84ad8e321765e60859ea4a7a5b5344e996c1cc565f6022322e25244102e59",
     "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts": "1dc65b8424bb1f6faff9507d8feb4f6ba32eead06fdf802200c7836d6c9d7119",
@@ -3723,13 +3723,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
-  "canonicalSourceFreezeSha256": "e7fcf506edc11322c8ae22978c9b9cf137cc9e1a0ff4bfd425382c10c50fd188",
+  "canonicalSourceFreezeSha256": "dec71050afbc1e3c76771a6f2a3043a7478e0c4d68e2c1b6d06030f97833cd97",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 106098565,
+    "sourceBytes": 106099968,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4648,8 +4648,8 @@
         "owner": "MINIMAL_ACTUAL_R303_DIAGNOSTIC_REPAIR"
       },
       "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": {
-        "sha256": "64bc3ea3c3678f0266cb8b99693fe4323fc8f0b9ea59cb3ce125ac23c791bbf5",
-        "owner": "MINIMAL_ACTUAL_R303_DIAGNOSTIC_REPAIR"
+        "sha256": "84aa17c09da4fa46008b85482297aba44b64cf1742d5bd9d5f7075b9f1ef0234",
+        "owner": "EXACT_RUNTIME_FAILURE_REPAIR_NATIVE_DSL_OR_BOUNDED_SOURCE_ONLY_FINGERPRINT"
       },
       "data/estimate-benchmarks/source-packs/panel-ready-grid-whole-post-project-r287.json": {
         "sha256": "3a82d0d4ebba442737fe98c309d0510ed787e192bb8e1861c85afd1ffd0a7360",
@@ -4724,8 +4724,8 @@
         "owner": "MINIMAL_ACTUAL_R303_DIAGNOSTIC_REPAIR"
       },
       "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": {
-        "sha256": "6bc5294e321dd7aace181571857c410e0df3220d065767829cd1e2bae8085c79",
-        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+        "sha256": "97175e489321a02735885fe25f9da501c68838ed851481c1f2707fce3c6b6a82",
+        "owner": "EXACT_RUNTIME_FAILURE_REPAIR_NATIVE_DSL_OR_BOUNDED_SOURCE_ONLY_FINGERPRINT"
       },
       "data/estimate-benchmarks/source-packs/roof-parapet004-root-selected-subject-r297.json": {
         "sha256": "6d38cf9b0c38250db310ad7a5d14113d1f3e77d764a40910676681495c313b54",
@@ -5567,6 +5567,36 @@
       "rootReviewSha256": "aafa27188b2df535910d8d16c1b0adf8838537ee1041e9ede51e652112744a30",
       "changedExistingSelectedFiles": 6,
       "noNewRootsOrFiles": true
+    },
+    "twoRuntimeSourceContractRepairsR309": {
+      "manifests": {
+        "PANEL_NATIVE_NUMERIC_CONDITION": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\facades-r59\\electrical-existing-owner-r239\\revision23-panel-native-numeric-condition\\CONSOLIDATED_FINAL_PANEL_SOURCE_MANIFEST_R287_REV03.json",
+          "sha256": "98415a7336d6548b606b2e92c7ffede4afb88bba637862c9bd71719f0908b302",
+          "bytes": 19399
+        },
+        "PARAPET_CAPTURE_BOUNDED_SOURCE_FINGERPRINT": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\pp307\\FINAL_CAPTURE_FINGERPRINT_REPAIR_ORIGINS_R307.json",
+          "sha256": "54270628ef6ee22c6f518f4e26fee5d84aa2007ef2a31179f76061aed1ca4a45",
+          "bytes": 257452
+        }
+      },
+      "rootReviewSha256": "b53c2b7c6c22a44c4d2961e400530660489d781b43b77f43030ab344444da14b",
+      "changedExistingSelectedFiles": 2,
+      "newRootsOrFiles": 0,
+      "actualFailures": {
+        "panel": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\pan305\\ACTUAL_PANEL_FINITE13_R305_RESULT.json",
+          "sha256": "18cb7496dcef0a52bf337ad67ad69e6a1f779997e966ad267d3f658c658d0c53",
+          "bytes": 1316
+        },
+        "parapet": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\pp306\\ACTUAL_ROOT_PARAPET_CAPTURE_R308.json",
+          "sha256": "f60f7ae27732da57aad0ea010f8a9fb670e55f7d39ea7334b066ca1509d3c70d",
+          "bytes": 920
+        }
+      },
+      "parserAndNativeRawCapsUnchanged": true
     }
   }
 }

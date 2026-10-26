@@ -14,6 +14,19 @@ const sha=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
 function pin(v:unknown):v is Pin{return object(v)&&typeof v.path==='string'&&path.isAbsolute(v.path)&&typeof v.sha256==='string'&&/^[a-f0-9]{64}$/u.test(v.sha256);}
 function pinned(p:Pin){assert(fs.statSync(p.path).size<=4*1024*1024,'LOCAL_PINNED_INPUT_CAP');const b=fs.readFileSync(p.path);assert.equal(sha(b),p.sha256,'SOURCE_INPUT_PIN_DRIFT:'+p.path);return b;}
 function read(p:Pin):unknown{return JSON.parse(pinned(p).toString('utf8'));}
+// The immutable source closure is fingerprint-only. It is never a parsed
+// native/registry input; parsed inputs and raw artifacts keep their 4MiB caps.
+type SourceFingerprint=Pin&Readonly<{bytes:number}>;
+function sourceFingerprint(v:unknown):v is SourceFingerprint{return pin(v)&&object(v)&&typeof v.bytes==='number'&&Number.isSafeInteger(v.bytes)&&v.bytes>=0;}
+function verifySourceFingerprint(p:Pin,expectedBytes:number){
+ assert(Number.isSafeInteger(expectedBytes)&&expectedBytes>=0,'SOURCE_FINGERPRINT_RECORDED_LENGTH');
+ const chunk=Buffer.allocUnsafe(Math.max(1,Math.min(expectedBytes,1024*1024))),h=createHash('sha256'),fd=fs.openSync(p.path,'r');
+ try{const before=fs.fstatSync(fd);assert(before.isFile(),'SOURCE_FINGERPRINT_FILE');assert.equal(before.size,expectedBytes,'SOURCE_FINGERPRINT_LENGTH:'+p.path);
+  let total=0;while(total<expectedBytes){const n=fs.readSync(fd,chunk,0,Math.min(chunk.length,expectedBytes-total),null);assert(n>0,'SOURCE_FINGERPRINT_TRUNCATED:'+p.path);h.update(chunk.subarray(0,n));total+=n;}
+  assert.equal(fs.readSync(fd,chunk,0,1,null),0,'SOURCE_FINGERPRINT_GREW:'+p.path);assert.equal(fs.fstatSync(fd).size,expectedBytes,'SOURCE_FINGERPRINT_FINAL_LENGTH:'+p.path);
+  assert.equal(total,expectedBytes);assert.equal(h.digest('hex'),p.sha256,'SOURCE_INPUT_PIN_DRIFT:'+p.path);
+ }finally{fs.closeSync(fd);}
+}
 const sourceRoot=path.resolve(__dirname,'../../..');
 type Request=Readonly<{currentFullParent:Pin;currentPointer:Pin;master:Pin;primaryPdf:Pin;hostContext:Pin;sourceOrigins:Pin}>;
 function request(v:unknown):v is Request{return object(v)&&Object.keys(v).length===6&&['currentFullParent','currentPointer','master','primaryPdf','hostContext','sourceOrigins'].every(k=>pin(v[k]));}
@@ -26,8 +39,8 @@ function base(r:Request,rawDir:string):Preparation{
  const ownPointer=path.join(sourceRoot,'data/estimate-benchmarks/r568-local-developer-canonical-release.json');pinned({path:ownPointer,sha256:r.currentPointer.sha256});
  const host=read(r.hostContext);assert(object(host)&&typeof host.expectedBranch==='string');assert.equal(host.expectedBranch,'codex/r4-a5-clean-08b18902');assert(typeof host.benchmarkOrdinal==='number'&&Number.isInteger(host.benchmarkOrdinal)&&host.benchmarkOrdinal>=0);
  const origins=read(r.sourceOrigins);assert(object(origins)&&object(origins.literalRelativeClosure));const paths:string[]=[];
- for(const [logical,v]of Object.entries(origins.literalRelativeClosure)){assert(pin(v),'EXACT_SELECTED_SOURCE_ORIGIN');assert(!path.isAbsolute(logical)&&!logical.split('/').includes('..'),'OWN_LOGICAL_INPUT_ONLY');
-  const p=path.resolve(sourceRoot,logical);pinned({path:p,sha256:v.sha256});paths.push(p);}
+ for(const [logical,v]of Object.entries(origins.literalRelativeClosure)){assert(sourceFingerprint(v),'EXACT_SELECTED_SOURCE_ORIGIN_WITH_RECORDED_LENGTH');assert(!path.isAbsolute(logical)&&!logical.split('/').includes('..'),'OWN_LOGICAL_INPUT_ONLY');
+  const p=path.resolve(sourceRoot,logical);verifySourceFingerprint({path:p,sha256:v.sha256},v.bytes);paths.push(p);}
  assert(paths.includes(path.join(sourceRoot,'scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts')),'OWN_ENTRY_IN_FROZEN_CLOSURE');
  return{sourceRoot,currentFullParent:r.currentFullParent,source:{sourceKey:subject.sourceKey,sourceMetadata:subject.sourceMetadata,locator:subject.locator},
   host:{expectedBranch:host.expectedBranch,benchmarkOrdinal:host.benchmarkOrdinal,masterPath:r.master.path,masterSha256:r.master.sha256,parentReleaseId:pointer.definitionReleaseId,

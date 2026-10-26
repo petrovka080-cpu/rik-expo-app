@@ -27,7 +27,7 @@ export function panelReadyGridWholePostR287(parent:AutomaticOwnerDefinition):Aut
     {id:f.deliveryTrips,title:'Фактические рейсы внешней доставки по ППР',kind:'conditional',valueType:'integer',unitId:'trip',min:0,requiredWhen:required},
     {id:f.wasteTrips,title:'Фактические рейсы внешнего вывоза упаковки и отходов по ППР',kind:'conditional',valueType:'integer',unitId:'trip',min:0,requiredWhen:required}];
   assert(conditional.every(p=>!prior.has(p.id)),'PANEL_NEW_PARAMETER_COLLISION_NO_ALIAS');
-  const facts=[f.method,f.qualification,f.ppr],costFacts=[...facts,f.quoteScope],n=pack.countParameterId,one=`if(${n}>0,1,0)`;
+  const facts=[f.method,f.qualification,f.ppr],costFacts=[...facts,f.quoteScope],n=pack.countParameterId,one=`${n}?1:0`;
   const rows:AutomaticRowSpec[]=[
     {rowId:rid('measured-panels'),formulaId:rid('formula:measured-panels'),section:'Полный монтажный пост',category:'work',title:'Светильники',unitId:'pcs',expression:n,costTreatment:'INFORMATIONAL_SCOPE',procurement:false,inputParameterIds:facts},
     {rowId:rid('whole-labour'),formulaId:rid('formula:whole-labour'),section:'Полный монтажный пост',category:'work',title:'Труд монтажа светильников',unitId:'man_hour',expression:f.labourHours,costTreatment:'OWN_COST',procurement:false,inputParameterIds:[...costFacts,f.qaCount]},
