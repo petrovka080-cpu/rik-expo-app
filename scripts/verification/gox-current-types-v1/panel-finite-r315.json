@@ -415,7 +415,7 @@
     "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts": "715bee8583ed4de4413f096f63aa38607cdbe88576de1f49c4943aa1b15b5444",
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts": "8cf5fe6385481c3c9db87e5026f211ded1acd6daa6db30d2418406ed49ba0847",
     "scripts/estimate/r4a13/monolithicRepeatedRetainedContinuationR1.ts": "b4da165a3fcba3d3e227db7191296bb0b5fd48b8290728d79ac83a9c188eb2db",
-    "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": "84aa17c09da4fa46008b85482297aba44b64cf1742d5bd9d5f7075b9f1ef0234",
+    "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": "e15871e927e5b5ffb05fb0970bb5356f5aaa7fcbcebf065f4d9c2582eb1a839c",
     "scripts/estimate/r4a13/panelReadyGridCurrentMasterR287.bound.test.ts": "4322c6b484907e90664d9abf8bfda619a9cf63cb1b6162d257539f174e5e531b",
     "scripts/estimate/r4a13/panelReadyGridFormalNormalLockedR287.test.ts": "e888389d50aabf754dd74317cc3ab3f1205d827489165806fff87854abc5851c",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "9ec442c9540c51b55ae11b1edc2948470558c3884cb395bfb705e4e6af380f2e",
@@ -14132,5 +14132,30 @@
     "guardWorkflowAndHeap2816HardCapsUnchanged": true,
     "fullTypesBackend34Panel13": "UNRUN",
     "oldRootR2SealPreserved": true
+  },
+  "exactPanelNumericPostRepair": {
+    "contract": "exact-panel-numeric-single-post-formula-repair/v1",
+    "sourceBaselineCommit": "6328afaad9c88de9c3f115faf4c82a885c2d159d",
+    "actualFailedRunId": 40270667501,
+    "actualFailedArchiveSha256": "0d3aee308776857564041239668f61817fdabbaa3b103ef441c0ec7d27e4b409",
+    "logicalPath": "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts",
+    "beforeSha256": "84aa17c09da4fa46008b85482297aba44b64cf1742d5bd9d5f7075b9f1ef0234",
+    "sha256": "e15871e927e5b5ffb05fb0970bb5356f5aaa7fcbcebf065f4d9c2582eb1a839c",
+    "exactBefore": "one=`${n}?1:0`",
+    "exactAfter": "one=`min(1,${n})`",
+    "integerCountDomain": [
+      0,
+      1000000
+    ],
+    "quantitySemantics": "zero at zero; one for every positive admitted integer count",
+    "changedFormulaSuffixes": [
+      "readiness-included",
+      "completion-included"
+    ],
+    "existing13ScenariosAndExpectedQuantitiesUnchanged": true,
+    "coreParserAndEvaluatorUnchanged": true,
+    "newRoots": 0,
+    "newMappingKeys": 0,
+    "actualCurrentCandidate": "UNRUN"
   }
 }

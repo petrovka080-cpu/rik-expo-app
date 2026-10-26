@@ -770,7 +770,7 @@
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": "fe8f963ff2b7869949b5593c44517590c836ee32b35a3cf26f9a21e19026ee16",
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts": "8cf5fe6385481c3c9db87e5026f211ded1acd6daa6db30d2418406ed49ba0847",
     "scripts/estimate/r4a13/monolithicRepeatedRetainedContinuationR1.ts": "b4da165a3fcba3d3e227db7191296bb0b5fd48b8290728d79ac83a9c188eb2db",
-    "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": "84aa17c09da4fa46008b85482297aba44b64cf1742d5bd9d5f7075b9f1ef0234",
+    "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": "e15871e927e5b5ffb05fb0970bb5356f5aaa7fcbcebf065f4d9c2582eb1a839c",
     "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts": "f47af04a3e700b761862fe3b899d7817bd91027f685a39d8ed39b0f640b148c3",
     "scripts/estimate/r4a13/panelReadyGridCurrentMasterR287.bound.test.ts": "4322c6b484907e90664d9abf8bfda619a9cf63cb1b6162d257539f174e5e531b",
     "scripts/estimate/r4a13/panelReadyGridFormalNormalLockedR287.test.ts": "e888389d50aabf754dd74317cc3ab3f1205d827489165806fff87854abc5851c",
@@ -971,7 +971,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "24dc080ef00b3523332ea784887473e6518a0b7149d7505231cb2a80c8375f4e",
     "scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py": "bf1fc4f4eafcf48503410a821048d0a99287586141f55c4580f2c9d7db0f97ac",
-    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "853abf98ab68f3eb9b546358ce7aba1fe7ac79051dd756db8ae67aa39b29edc2",
+    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "7d8bd8288e2e70c13f61eac2636fdacf52ea33adaabcceb1899ea5ff9ddbdfba",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "239d83604160b199df7e9bb8fac1db8dd55e3ca143ea2a28813eaaf29663b8e7",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
@@ -4140,13 +4140,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "239d83604160b199df7e9bb8fac1db8dd55e3ca143ea2a28813eaaf29663b8e7",
-  "canonicalSourceFreezeSha256": "c749d51d169cac854643804b18753deee2699005725cbbb164b42e81c03fd4cf",
+  "canonicalSourceFreezeSha256": "228f18f00927d44a20b73bfac252f7458ff82247143cc34d2af095d860ca24c2",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 114113837,
+    "sourceBytes": 114114925,
     "reviewedCandidateScope": "Exact reviewed R323 mapping plus ROOT physical-norm backend/Masonry typed repairs/NORMAL contract continuation and required actual client/cloud dependencies; same owned full-types then exact backend4/34 then panel13. Runtime source-text read is pinned, not an extra compiler root."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -6401,6 +6401,35 @@
         "beforeSha256": "8606cb53e079d5d490cc4f7409681c71f3161f2f8b7517982a4fed4a6b7c99bb",
         "sha256": "853abf98ab68f3eb9b546358ce7aba1fe7ac79051dd756db8ae67aa39b29edc2"
       }
+    },
+    "exactPanelNumericPostRepair": {
+      "contract": "exact-panel-numeric-single-post-formula-repair/v1",
+      "sourceBaselineCommit": "6328afaad9c88de9c3f115faf4c82a885c2d159d",
+      "actualFailedRunId": 40270667501,
+      "actualFailedArchiveSha256": "0d3aee308776857564041239668f61817fdabbaa3b103ef441c0ec7d27e4b409",
+      "logicalPath": "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts",
+      "beforeSha256": "84aa17c09da4fa46008b85482297aba44b64cf1742d5bd9d5f7075b9f1ef0234",
+      "sha256": "e15871e927e5b5ffb05fb0970bb5356f5aaa7fcbcebf065f4d9c2582eb1a839c",
+      "exactBefore": "one=`${n}?1:0`",
+      "exactAfter": "one=`min(1,${n})`",
+      "integerCountDomain": [
+        0,
+        1000000
+      ],
+      "quantitySemantics": "zero at zero; one for every positive admitted integer count",
+      "changedFormulaSuffixes": [
+        "readiness-included",
+        "completion-included"
+      ],
+      "existing13ScenariosAndExpectedQuantitiesUnchanged": true,
+      "coreParserAndEvaluatorUnchanged": true,
+      "newRoots": 0,
+      "newMappingKeys": 0,
+      "actualCurrentCandidate": "UNRUN",
+      "panelMetadataPin": {
+        "beforeSha256": "853abf98ab68f3eb9b546358ce7aba1fe7ac79051dd756db8ae67aa39b29edc2",
+        "sha256": "7d8bd8288e2e70c13f61eac2636fdacf52ea33adaabcceb1899ea5ff9ddbdfba"
+      }
     }
   },
   "backendProjectionTests": {
@@ -6531,6 +6560,35 @@
     "panelMetadataPin": {
       "beforeSha256": "8606cb53e079d5d490cc4f7409681c71f3161f2f8b7517982a4fed4a6b7c99bb",
       "sha256": "853abf98ab68f3eb9b546358ce7aba1fe7ac79051dd756db8ae67aa39b29edc2"
+    }
+  },
+  "exactPanelNumericPostRepair": {
+    "contract": "exact-panel-numeric-single-post-formula-repair/v1",
+    "sourceBaselineCommit": "6328afaad9c88de9c3f115faf4c82a885c2d159d",
+    "actualFailedRunId": 40270667501,
+    "actualFailedArchiveSha256": "0d3aee308776857564041239668f61817fdabbaa3b103ef441c0ec7d27e4b409",
+    "logicalPath": "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts",
+    "beforeSha256": "84aa17c09da4fa46008b85482297aba44b64cf1742d5bd9d5f7075b9f1ef0234",
+    "sha256": "e15871e927e5b5ffb05fb0970bb5356f5aaa7fcbcebf065f4d9c2582eb1a839c",
+    "exactBefore": "one=`${n}?1:0`",
+    "exactAfter": "one=`min(1,${n})`",
+    "integerCountDomain": [
+      0,
+      1000000
+    ],
+    "quantitySemantics": "zero at zero; one for every positive admitted integer count",
+    "changedFormulaSuffixes": [
+      "readiness-included",
+      "completion-included"
+    ],
+    "existing13ScenariosAndExpectedQuantitiesUnchanged": true,
+    "coreParserAndEvaluatorUnchanged": true,
+    "newRoots": 0,
+    "newMappingKeys": 0,
+    "actualCurrentCandidate": "UNRUN",
+    "panelMetadataPin": {
+      "beforeSha256": "853abf98ab68f3eb9b546358ce7aba1fe7ac79051dd756db8ae67aa39b29edc2",
+      "sha256": "7d8bd8288e2e70c13f61eac2636fdacf52ea33adaabcceb1899ea5ff9ddbdfba"
     }
   }
 }
