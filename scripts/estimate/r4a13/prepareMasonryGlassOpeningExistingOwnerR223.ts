@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
+import {statSync,realpathSync,readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {resolve} from 'node:path';
+import {isAbsolute,relative,resolve,sep} from 'node:path';
 import independentMap from '../../../data/estimate-benchmarks/source-packs/masonry-glass-opening-existing-owner-map-r223.json';
 import source from '../../../data/estimate-benchmarks/source-packs/masonry-glass-opening-existing-owner-r223.json';
 import fixture from '../../../data/estimate-benchmarks/fixtures/masonry-glass-opening-existing-owner-r223.json';
@@ -22,15 +22,28 @@ import {resolvePrimaryMeasureSelectionV1} from '../../../src/lib/estimate/backen
 import {validateCanonicalEstimateParameters} from '../../../src/lib/estimate/backendPlatform/parameterConstraints';
 import {validateCanonicalEstimateParameterInputs} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation';
 import {masterRetainedParentCaptureSha256R1,prepareMasterRetainedBindingRepresentativeR1,
+ assertMasterRetainedBindingSnapshotR1,type MasterRetainedBindingSnapshotR1,
  type MasterRetainedParentCaptureR1,type MasterRetainedBindingGuardInputR1,type MasterRetainParentBindingsR1}
  from './masterSingleDefinitionRetainParentBindingsR1';
+import {resolveMasterScopedNormativeRegistryOptInR1,type MasterCapturedScopedNormativeRegistryR1} from './masterScopedNormativeRegistryPreimageR1';
 import {validateIndependentCompletenessMapReferences,buildMasterPublicationResourceRowsR1,
  resolveMasterSingleDefinitionBindingRowIds,resolveMasterSingleDefinitionBindingApplicabilityByRowId,
  resolveMasterSingleDefinitionLocatorExcerptSha256R1,hashMasterSingleDefinitionSuccessorReceiptR1,
  type MasterSingleDefinitionSuccessorConfig as Config} from './prepareMasterSingleDefinitionSuccessorR1';
 
 type Json=Record<string,unknown>;
-type Context={releaseId:string;searchReleaseId:string;sourceRoot:string;outputRoot:string};
+type OpeningArtifactPinR223=Readonly<{path:string;sha256:string}>;
+export type MasonryOpeningPublisherSourceProjectionR223=Readonly<{
+ canonicalRoot:string;runtimeEvidenceRoot:string;
+ files:readonly Readonly<{original:OpeningArtifactPinR223;projected:OpeningArtifactPinR223}>[];
+}>;
+export type MasonryOpeningFirstApplyR223=Readonly<{
+ contract:'root-masonry-opening-first-apply/r1';
+ operationalMasterPin:OpeningArtifactPinR223;expectedBranch:string;currentPointerSha256:string;
+ parentSnapshot:OpeningArtifactPinR223;scopedRegistry:OpeningArtifactPinR223;
+ publisherSourceProjection:MasonryOpeningPublisherSourceProjectionR223;
+}>;
+type Context={releaseId:string;searchReleaseId:string;sourceRoot:string;outputRoot:string;rootFirstApplyR223?:MasonryOpeningFirstApplyR223};
 type Capture=MasterRetainedParentCaptureR1&Pick<AutomaticOwnerDefinition,'parameters'|'formulas'|'resources'>;
 /** Preserve the exact existing owner/core arrays across the ordinary Config boundary. */
 type OpeningConfigR223=Omit<Config,'parameterDefinitions'|'formulaDefinitions'|'resourceDefinitions'>&Readonly<{
@@ -73,6 +86,95 @@ export function masonryGlassOpeningCapturedR223(sourceRoot:string):Capture{
 const original=(c:Capture):AutomaticOwnerDefinition=>({parameters:c.parameters,formulas:c.formulas,resources:c.resources,
  runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['q']});
 
+
+// Authoring/backend only. R103 historical216 still validates its original
+// bytes; only the explicitly opted-in final Config receives operational219.
+function openingRootPreparationR223(context:Context,base:Pick<Config,'masterPath'|'masterSha256'>){
+ if(!Object.hasOwn(context,'rootFirstApplyR223'))return undefined;
+ const proof=context.rootFirstApplyR223;
+ function check(value:unknown,code:string):asserts value{assert(value,'MASONRY_OPENING_ROOT_APPLY_'+code);}
+ check(record(proof)&&proof.contract==='root-masonry-opening-first-apply/r1','CONTEXT');
+ check(record(proof.operationalMasterPin)&&typeof proof.operationalMasterPin.path==='string'
+  &&proof.operationalMasterPin.sha256==='66ef69e13c4c189c17215dd614ac35714d2f98c8a944fb859a8a2c9eb450154c','OPERATIONAL_MASTER219_REQUIRED');
+ check(sha(proof.operationalMasterPin.path)===proof.operationalMasterPin.sha256,'OPERATIONAL_MASTER_BYTES');
+ check(base.masterSha256==='541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40','HISTORICAL_MASTER216_UNCHANGED');
+ check(typeof proof.expectedBranch==='string'&&proof.expectedBranch.length>0,'BRANCH_REQUIRED');
+ const pointerBytes=readFileSync(resolve('data/estimate-benchmarks/r568-local-developer-canonical-release.json'));
+ check(createHash('sha256').update(pointerBytes).digest('hex')===proof.currentPointerSha256,'CURRENT_POINTER_SHA');
+ const pointer:unknown=JSON.parse(pointerBytes.toString('utf8'));
+ check(record(pointer)&&pointer.productionAccessed===false&&pointer.definitionReleaseId===context.releaseId
+  &&pointer.searchReleaseId===context.searchReleaseId&&pointer.definitionReleaseStatus==='prepared'&&pointer.searchReleaseStatus==='draft','CURRENT_POINTER_PAIR');
+ const read=(pin:OpeningArtifactPinR223):Json=>{
+  check(record(pin)&&typeof pin.path==='string'
+   &&pin.path.startsWith('data/estimate-benchmarks/source-artifacts/masonry-opening-first-apply-r223/')
+   &&pin.path.endsWith('.json')&&!pin.path.split('/').some(part=>part==='.'||part==='..')
+   &&/^[a-zA-Z0-9_./-]+$/.test(pin.path)&&/^[a-f0-9]{64}$/.test(pin.sha256),'ARTIFACT_PIN');
+  const path=resolve(context.sourceRoot,pin.path);check(statSync(path).size<=4*1024*1024,'ARTIFACT_BYTE_CAP');
+  const bytes=readFileSync(path);check(createHash('sha256').update(bytes).digest('hex')===pin.sha256,'ARTIFACT_SHA');
+  const value:unknown=JSON.parse(bytes.toString('utf8'));check(record(value),'ARTIFACT_OBJECT');return value;
+ };
+ check(proof.parentSnapshot?.path!==proof.scopedRegistry?.path,'DISTINCT_ARTIFACTS');
+ const parentSnapshot=read(proof.parentSnapshot) as unknown as MasterRetainedBindingSnapshotR1;
+ const scopedRegistry=read(proof.scopedRegistry) as unknown as MasterCapturedScopedNormativeRegistryR1;
+ return{parentSnapshot,scopedRegistry,sourcePaths:[proof.parentSnapshot.path,proof.scopedRegistry.path,
+  'scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts'],marker:{contract:'root-reviewed-operational-master/r1',
+   historicalMasterPin:{path:base.masterPath,sha256:base.masterSha256},operationalMasterPin:{...proof.operationalMasterPin},
+   precededReviewDecisionMasterPin:{path:'C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_18_2026-10-26.txt',
+    sha256:'3675b6e7e4dac0da2d1efed39ea7074899b5fa456d434385e8ae9ca5443fac66',status:'SOURCE_REVIEW_ONLY_NOT_PUBLICATION'},
+   parentSnapshot:{...proof.parentSnapshot},scopedRegistry:{...proof.scopedRegistry},currentPointerSha256:proof.currentPointerSha256,
+   publisherSourceProjection:structuredClone(proof.publisherSourceProjection),
+   parentReleaseId:context.releaseId,parentSearchReleaseId:context.searchReleaseId,expectedBranch:proof.expectedBranch}};
+}
+
+// Publisher9ec runs git status on every sourcePaths entry. ROOT creates these
+// exact-byte private projections first; this factory reads and checks only.
+// Keep original external pins for the callback and historical provenance.
+function openingPublisherSourceProjectionR223(context:Context,sourcePaths:readonly string[]){
+ const proof=context.rootFirstApplyR223;if(!proof)return sourcePaths;
+ function check(value:unknown,code:string):asserts value{assert(value,'MASONRY_OPENING_SOURCE_PROJECTION_'+code);}
+ const projection=proof.publisherSourceProjection;
+ check(record(projection)&&Array.isArray(projection.files),'REQUIRED');
+ const canonicalRoot='C:\\dev\\rik-expo-app-r4a5-dc4f0ce7';
+ check(projection.canonicalRoot===canonicalRoot,'CANONICAL_ROOT');
+ const root=resolve(canonicalRoot);
+ check(resolve(context.sourceRoot)===root&&resolve('.')===root&&realpathSync(root)===root,'SOURCE_ROOT');
+ const inside=(parent:string,path:string)=>{const r=relative(parent,path);return r!==''&&!isAbsolute(r)&&r!=='..'&&!r.startsWith('..'+sep);};
+ const privateRoot=resolve(root,'.release-runtime');
+ check(typeof projection.runtimeEvidenceRoot==='string'&&isAbsolute(projection.runtimeEvidenceRoot),'RUNTIME_ROOT');
+ const runtimeRoot=resolve(projection.runtimeEvidenceRoot);
+ check(inside(privateRoot,runtimeRoot)&&realpathSync(privateRoot)===privateRoot
+  &&inside(privateRoot,realpathSync(runtimeRoot)),'RUNTIME_ROOT');
+ const external=new Set(sourcePaths.map(path=>resolve(root,path)).filter(path=>!inside(root,path)));
+ const replacements=new Map<string,string>(),projectedTargets=new Set<string>();
+ for(const file of projection.files){
+  check(record(file)&&record(file.original)&&record(file.projected)
+   &&typeof file.original.path==='string'&&typeof file.projected.path==='string'
+   &&/^[a-f0-9]{64}$/.test(file.original.sha256)&&file.original.sha256===file.projected.sha256,'SHA_IDENTITY');
+  const original=resolve(root,file.original.path),projected=resolve(root,file.projected.path);
+  check(external.has(original),'UNREQUESTED_ORIGINAL');
+  check(!replacements.has(original),'DUPLICATE_ORIGINAL');
+  check(inside(runtimeRoot,projected)&&inside(realpathSync(runtimeRoot),realpathSync(projected)),'PROJECTED_PATH_SCOPE');
+  const actualProjected=realpathSync(projected);
+  check(!projectedTargets.has(actualProjected),'DUPLICATE_PROJECTED');projectedTargets.add(actualProjected);
+  check(statSync(original).isFile()&&sha(original)===file.original.sha256,'ORIGINAL_BYTES');
+  check(statSync(projected).isFile()&&sha(projected)===file.projected.sha256,'PROJECTED_BYTES');
+  replacements.set(original,relative(root,projected).split(sep).join('/'));
+ }
+ check(replacements.size===external.size,'MISSING_EXTERNAL_PIN');
+ return [...new Set(sourcePaths.map(path=>{const absolute=resolve(root,path);
+  if(inside(root,absolute)){
+   check(inside(root,realpathSync(absolute)),'CANONICAL_PATH_ESCAPE');
+   return relative(root,absolute).split(sep).join('/');
+  }
+  const projected=replacements.get(absolute);check(projected,'MISSING_EXTERNAL_PIN');return projected;
+ }))];
+}
+function assertOpeningRootPreparationR223(config:Config,proof:NonNullable<ReturnType<typeof openingRootPreparationR223>>){
+ const input=masonryGlassOpeningRetainedGuardInputR223(config);
+ assertMasterRetainedBindingSnapshotR1(input,proof.parentSnapshot);
+ same(config.capturedScopedNormativeRegistry,proof.scopedRegistry);
+ assert(resolveMasterScopedNormativeRegistryOptInR1(input),'MASONRY_OPENING_ROOT_APPLY_SCOPED_REGISTRY_REQUIRED');
+}
 /** Existing same-parent normal Config only. Old APPEND envelope is discarded;
  * its immutable R154 whole model, source/readers and display owners are reused.
  * expected:null is a strict future precondition, not a live absence assertion. */
@@ -92,11 +194,26 @@ export function masonryGlassOpeningExistingConfigR223(context:Context):OpeningCo
    templateId:String(c.definition.source_metadata.templateId),parameterSources:structuredClone(c.baseline.normative_source_ids)},
   newParameterSources:Object.fromEntries(next.parameters.filter(p=>!ownIds.has(p.parameter_id)).map(p=>[p.parameter_id,
    p.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM'?{kind:'UNRESOLVED',sourceIds:[]}:{kind:'KNOWN',sourceIds:[sourceId]}]))};
- const config:OpeningConfigR223={...base,contract:source.contract,stopCode:'MASONRY_GLASS_OPENING_EXISTING_R223',
+ const rootPreparation=openingRootPreparationR223(context,base);
+ const originalSourcePaths=[...new Set([...base.sourcePaths,...(rootPreparation?.sourcePaths??[]),
+  'data/estimate-benchmarks/source-packs/masonry-glass-m25-display-link-r152.json',
+  ...displaySource.inputs.map(pin=>pin.path),...Object.values(paths),
+  ...(rootPreparation?[base.masterPath,context.rootFirstApplyR223!.operationalMasterPin.path]:[])])];
+ const publisherSourcePaths=openingPublisherSourceProjectionR223(context,originalSourcePaths);
+ const config:OpeningConfigR223={...base,contract:source.contract,
+  ...(rootPreparation?{masterPath:context.rootFirstApplyR223!.operationalMasterPin.path,
+   masterSha256:context.rootFirstApplyR223!.operationalMasterPin.sha256,expectedBranch:context.rootFirstApplyR223!.expectedBranch,
+   capturedScopedNormativeRegistry:rootPreparation.scopedRegistry,
+   // Existing9ec invokes this before its own R70 locks. Recheck changing
+   // byte/pointer inputs here; live DB reads/locks stay with that publisher.
+   verifyTargetPrecondition:async(_client,_phase)=>{
+    const fresh=openingRootPreparationR223(context,base);assert(fresh);same(fresh.marker,rootPreparation.marker);
+    same(openingPublisherSourceProjectionR223(context,originalSourcePaths),publisherSourcePaths);
+    assertOpeningRootPreparationR223(config,fresh);
+   }}:{}),stopCode:'MASONRY_GLASS_OPENING_EXISTING_R223',
   applicationName:'masonry-glass-opening-existing-r223',receiptFileStem:'masonry_glass_opening_existing_r223',
   outputRoot:context.outputRoot,catalogId,sourceId,normId:'08-04-002-03|08-04-002-04',expectedParentShape:[1,59,59],
-  sourcePaths:[...new Set([...base.sourcePaths,'data/estimate-benchmarks/source-packs/masonry-glass-m25-display-link-r152.json',
-   ...displaySource.inputs.map(pin=>pin.path),...Object.values(paths)])],
+  sourcePaths:publisherSourcePaths,
   sourceMetadata:{...base.sourceMetadata,source_title:'Заполнение проёма пустотелыми стеклоблоками',
    artifact_sha256:source.primaryArtifactSha256,source_kind:'SAME_EXISTING_OPENING_OWN_GLASS03_04_RETAINED_COMPOSITION_NOT_FULL',
    exact_locator:'КРЕР08,2015;08-04-002-03/04;PDF55,100м²; exact R154 native/whole-labour/M25 operation references',
@@ -110,7 +227,7 @@ export function masonryGlassOpeningExistingConfigR223(context:Context):OpeningCo
    independentCompletenessMap:independentMap,
    includedScopeRu:['Старые59строк сохранены только в прежней ветви.','Собственные03/04 заполнения проёма стеклоблоками с целым исходным трудом и прежними единичными владельцами.'],
    excludedScopeRu:[...base.passport.excludedScopeRu,'Площадь не подтверждает объект, армирование, комплект доступа, наличие и приёмку; legacyq не определяет площадь стеклоблоков.']},
-  applicability:{legacyApplicability:structuredClone(c.definition.applicability),primaryMeasureSelectionV1:primary(),
+  applicability:{...(rootPreparation?{rootFirstApplyR223:rootPreparation.marker}:{}),legacyApplicability:structuredClone(c.definition.applicability),primaryMeasureSelectionV1:primary(),
    ownGlassColumns:['08-04-002-03','08-04-002-04'],oldAndNewPhysicalRowsMutuallyExclusive:true,
    newPublicCatalogIds:0,fullTechnicalAcceptance:false,sourceProfileChoiceIsNotProjectApproval:true},
   binding:{...base.binding,retainParentBindings:retained},
@@ -122,6 +239,7 @@ export function masonryGlassOpeningExistingConfigR223(context:Context):OpeningCo
    keyDistinguishingParameters:[selector],clarificationFields:[selector],
    sourceProvenance:{contract:source.contract,existingCatalogId:catalogId,noNewPublicCard:true,normalLockedRequired:true}},
   verifyCore:()=>verifyMasonryGlassOpeningExistingR223(config,context.sourceRoot)};
+ if(rootPreparation)assertOpeningRootPreparationR223(config,rootPreparation);
  assert.equal(config.catalogAppend,undefined);return config;
 }
 

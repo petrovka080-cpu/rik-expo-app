@@ -167,5 +167,15 @@
   "scripts/estimate/r4a13/prepareRoofParapet004TechnicalWholeR294.ts": null,
   "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts": null,
   "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": null,
-  "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": null
+  "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": null,
+  "scripts/estimate/r4a13/prepareRoofParapet004TechnicalProductionR1.ts": null,
+  "scripts/estimate/r4a13/prepareRoofParapet004TechnicalProductionTargetR1.ts": null,
+  "scripts/estimate/r4a13/roofParapet004ProductionTargetBoundaryR1.test.ts": null,
+  "scripts/estimate/r4a13/roofParapet004TechnicalNormalLockedR1.test.ts": null,
+  "scripts/estimate/r4a13/roofParapet004TechnicalProductionVerifyR1.ts": null,
+  "src/lib/estimate/v4/asphalt/asphaltRelatedResourceParameterIdsV4.ts": null,
+  "tests/aiEstimateV4/asphaltParkingScopeV5.contract.test.ts": null,
+  "tests/aiEstimateV4/asphaltProfessionalCompilerV4.contract.test.ts": null,
+  "tests/aiEstimateV4/asphaltRelatedCanonicalSchemaOwnership.contract.test.ts": null,
+  "tests/estimateNorms/promptParameterLeafImportBoundary.contract.test.ts": null
 }

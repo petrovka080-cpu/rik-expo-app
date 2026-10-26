@@ -2,8 +2,8 @@ import { professionalEstimatePassportId } from "../professionalEstimatePassportV
 import {
   ASPHALT_BRIDGE_RESOURCE_LEVEL_PARAMETER_KEYS_V4,
   ASPHALT_RESOURCE_LEVEL_CORE_PARAMETER_KEYS_V4,
-} from "./compileAsphaltRelatedThroughCoreV4";
-import { ASPHALT_REMOVAL_RESOURCE_PARAMETER_KEYS_V4 } from "./asphaltRemovalResourceAssembliesV4";
+} from "./asphaltRelatedResourceParameterIdsV4";
+import { ASPHALT_REMOVAL_RESOURCE_PARAMETER_KEYS_V4 } from "./asphaltRelatedResourceParameterIdsV4";
 import type {
   AsphaltRelatedApplicationContextV4,
   AsphaltRelatedOperationClassV4,

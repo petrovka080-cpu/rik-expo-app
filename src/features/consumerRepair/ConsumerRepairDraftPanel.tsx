@@ -7,7 +7,7 @@ import type {
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
-import { asphaltScopeSelectionQuestionForIntentV5 } from "../../lib/estimate/v4/asphalt";
+import { asphaltScopeSelectionQuestionForIntentV5 } from "../../lib/estimate/v4/asphalt/roadScopeTruthV4";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { getConsumerRepairCalculationStateForReadOnlyDisplay } from "../../lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
 import { createConsumerEstimatePresentationTrace, type ConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";

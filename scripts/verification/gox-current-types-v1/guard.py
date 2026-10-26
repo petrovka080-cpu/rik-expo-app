@@ -121,7 +121,7 @@ def main():
    diagnostics=len(result['diagnostics'])if'diagnostics'in result else None,harnessErrors=result.get('harnessErrors'),seedCount=len(result.get('seedFiles',[])),fullProgramFileCount=result.get('fullProgramFileCount'),
    resourcePolicy=dict(stage='PANEL_ORDINARY_CONFIG_FINITE13_R315'if panel else'SCOPED_IDENTITY_ONLY_TESTS'if pure else'FULL_TYPESCRIPT_PROGRAM',admissionPhysicalMiB=4096,admissionCommitMiB=3072,maxOwnedRssMiB=1024 if test_mode else 3072,maxOwnedPrivateMiB=1024 if test_mode else 3584,osPhysicalReserveMiB=3072,commitStopMiB=512,timeoutSeconds=120 if test_mode else 1200,heapMiB=768 if test_mode else 2560),
    peakOwnedRssBytes=peakrss,peakOwnedPrivateBytes=peakprivate,minimumPhysicalFreeBytes=minfree,minimumCommitHeadroomBytes=mincommit,remainingOwnedProcesses=remaining,
-   elapsedSeconds=time.monotonic()-start,scopedTestResult=result if test_mode else None,panelFiniteR315=panel,typesReusedFromCommit='acc63ef2532e08c6668c1aa170259b5bb0bfbc47'if panel else None,runtimePinnedFiles=len(panel_pins)if panel else 0,ownedPids=sorted(owned),sourceApproval=False,FULL=False,applicationRuntimeStarted=False,databaseWrites=False,publicationPerformed=False,productionActivation=False)
+   elapsedSeconds=time.monotonic()-start,scopedTestResult=result if test_mode else None,panelFiniteR315=panel,typesReusedFromCommit=panel_meta.get('acceptedTypesCommit')if panel_meta else None,runtimePinnedFiles=len(panel_pins)if panel else 0,ownedPids=sorted(owned),sourceApproval=False,FULL=False,applicationRuntimeStarted=False,databaseWrites=False,publicationPerformed=False,productionActivation=False)
   (out/'receipt.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8');print(json.dumps(receipt))
   if not passed:raise SystemExit(1)
 
@@ -132,23 +132,27 @@ def prepare_panel_finite_r315(root,out,spec,commit):
  assert meta_path.stat().st_size<=3*1024**2
  meta=json.loads(meta_path.read_text(encoding='utf-8'))
  assert meta['contract']=='panel-r315-single-existing-ci-guard-mode/v1'
- proof=meta['reuseTypes'];old_commit='acc63ef2532e08c6668c1aa170259b5bb0bfbc47'
- assert proof['commit']==old_commit and proof['status']=='PASS_ACTUAL_FULL_TYPES_CURRENT_OWNER_VISIBILITY_REPAIRS_R315'
- assert(proof['fullProgramFileCount'],proof['seedCount'],proof['actualDiagnostics'],proof['runId'])==(3635,754,0,40255053259)
- assert proof['sourceDrift']==proof['dependencyDrift']==proof['ownedRemaining']==[]
- before_raw=subprocess.check_output(['git','-C',str(root),'cat-file','blob',old_commit+':scripts/verification/gox-current-types-v1/input-manifest.json'])
- assert hashlib.sha256(before_raw).hexdigest()==meta['beforeInputManifestSha256'],'EXACT_R315_INPUT_MANIFEST_REQUIRED'
- before=json.loads(before_raw)
- allowed={'scripts/verification/gox-current-types-v1/guard.py','.github/workflows/gox-current-core-types-v1.yml'}
- extras={'scripts/verification/gox-current-types-v1/panel-finite-r315.json','scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py','data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json','data/estimate-benchmarks/r568-local-developer-canonical-release.json','jest.config.js','babel.config.js','jest.setup.js','.release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf'}
- extras|=set(meta['heldRuntimeJsonInputs'])
- assert set(meta['allowedChangedExistingSources'])==allowed and set(meta['allowedExtraCommittedInputs'])==extras
- assert set(spec['sourcePins'])==set(before['sourcePins'])|extras,'UNREVIEWED_EXTRA_OR_REMOVED_SOURCE'
- assert {k for k,h in before['sourcePins'].items()if spec['sourcePins'][k]!=h}==allowed,'ONLY_HARNESS_BYTES_MAY_CHANGE'
- assert spec['dependencyPins']==before['dependencyPins'],'R315_TYPE_DEPENDENCY_BYTES_MUST_REMAIN_EXACT'
- assert spec['originalSeedManifestSha256']==before['originalSeedManifestSha256']==meta['unchangedSeedManifestSha256']
- assert sha(root/'scripts/verification/gox-current-types-v1/seed-manifest.json')==before['originalSeedManifestSha256']
- assert len(before['sourcePins'])==proof['sourcePins']==2482 and len(before['dependencyPins'])==proof['dependencyPins']==1234
+ if meta.get('typesProofMode')=='same-job-current-commit-full-types':
+  proof=verify_current_full_types_before_panel(root,out,spec,commit);before={'dependencyPins':spec['dependencyPins']}
+  allowed=set();extras=set()
+ else:
+  proof=meta['reuseTypes'];old_commit='acc63ef2532e08c6668c1aa170259b5bb0bfbc47'
+  assert proof['commit']==old_commit and proof['status']=='PASS_ACTUAL_FULL_TYPES_CURRENT_OWNER_VISIBILITY_REPAIRS_R315'
+  assert(proof['fullProgramFileCount'],proof['seedCount'],proof['actualDiagnostics'],proof['runId'])==(3635,754,0,40255053259)
+  assert proof['sourceDrift']==proof['dependencyDrift']==proof['ownedRemaining']==[]
+  before_raw=subprocess.check_output(['git','-C',str(root),'cat-file','blob',old_commit+':scripts/verification/gox-current-types-v1/input-manifest.json'])
+  assert hashlib.sha256(before_raw).hexdigest()==meta['beforeInputManifestSha256'],'EXACT_R315_INPUT_MANIFEST_REQUIRED'
+  before=json.loads(before_raw)
+  allowed={'scripts/verification/gox-current-types-v1/guard.py','.github/workflows/gox-current-core-types-v1.yml'}
+  extras={'scripts/verification/gox-current-types-v1/panel-finite-r315.json','scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py','data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json','data/estimate-benchmarks/r568-local-developer-canonical-release.json','jest.config.js','babel.config.js','jest.setup.js','.release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf'}
+  extras|=set(meta['heldRuntimeJsonInputs'])
+  assert set(meta['allowedChangedExistingSources'])==allowed and set(meta['allowedExtraCommittedInputs'])==extras
+  assert set(spec['sourcePins'])==set(before['sourcePins'])|extras,'UNREVIEWED_EXTRA_OR_REMOVED_SOURCE'
+  assert {k for k,h in before['sourcePins'].items()if spec['sourcePins'][k]!=h}==allowed,'ONLY_HARNESS_BYTES_MAY_CHANGE'
+  assert spec['dependencyPins']==before['dependencyPins'],'R315_TYPE_DEPENDENCY_BYTES_MUST_REMAIN_EXACT'
+  assert spec['originalSeedManifestSha256']==before['originalSeedManifestSha256']==meta['unchangedSeedManifestSha256']
+  assert sha(root/'scripts/verification/gox-current-types-v1/seed-manifest.json')==before['originalSeedManifestSha256']
+  assert len(before['sourcePins'])==proof['sourcePins']==2482 and len(before['dependencyPins'])==proof['dependencyPins']==1234
  assert meta['entry']=='scripts/estimate/r4a13/panelReadyGridCurrentMasterR287.bound.test.ts'
  assert meta['policy']=={'admissionMiB':4096,'rssMiB':1024,'privateMiB':1024,'osStopMiB':3072,'timeoutSeconds':120}
  assert all(meta['runtimeVendorPins'].get(k)==h for k,h in before['dependencyPins'].items())
@@ -179,7 +183,8 @@ def prepare_panel_finite_r315(root,out,spec,commit):
  assert all(not k.startswith('/')and'..'not in Path(k).parts for k in pins)
  context=out/'panel-bound-context.json';assert not context.exists()
  context.write_text(json.dumps({'sourceRoot':str(root),'currentFullParent':{'path':str(parent_path),'sha256':parent['sha256']}},indent=2)+'\n',encoding='utf-8')
- (out/'types-reuse-source-equality.json').write_text(json.dumps({'status':'REUSED_ACTUAL_R315_FULL_TYPES_UNCHANGED_COMPILED_SOURCES_ROOTS_AND_DEPENDENCIES','actualTypes':proof,'sourceSnapshotCommit':commit,'beforeInputManifestSha256':meta['beforeInputManifestSha256'],'exactChangedHarnessOnly':sorted(allowed),'exactAdditionalInputs':sorted(extras),'runtimeVendorPins':len(meta['runtimeVendorPins']),'typecheckExecuted':False,'sourceApproval':False,'FULL':False},indent=2)+'\n',encoding='utf-8')
+ meta['acceptedTypesCommit']=proof['commit']
+ (out/'types-reuse-source-equality.json').write_text(json.dumps({'status':'REUSED_ACTUAL_SAME_JOB_CURRENT_COMMIT_FULL_TYPES'if meta.get('typesProofMode')=='same-job-current-commit-full-types'else'REUSED_ACTUAL_R315_FULL_TYPES_UNCHANGED_COMPILED_SOURCES_ROOTS_AND_DEPENDENCIES','actualTypes':proof,'sourceSnapshotCommit':commit,'beforeInputManifestSha256':proof['inputManifestSha256']if meta.get('typesProofMode')=='same-job-current-commit-full-types'else meta['beforeInputManifestSha256'],'exactChangedHarnessOnly':sorted(allowed),'exactAdditionalInputs':sorted(extras),'runtimeVendorPins':len(meta['runtimeVendorPins']),'typecheckExecuted':False,'sourceApproval':False,'FULL':False},indent=2)+'\n',encoding='utf-8')
  return meta,pins,context
 
 def audit_panel_finite_r315(root,out,meta):
@@ -214,5 +219,30 @@ def restore_committed_runtime_json(root,out,spec,commit):
  body={'contract':'exact-held-runtime-json-restoration-before-source-guard/v1','status':'PASS_EXACT_COMMITTED_RUNTIME_JSON_RESTORATION_BEFORE_GUARD','sourceCommit':commit,'approvedInputCount':307,'approvedHeldBytes':2512250,'approvedKeyMapSha256':'64fb24a23506a140c5a4ece2b220fcc1ca97313f91b02bf02b5160166d82f0da','actualRestore':result,'Node':0,'SQL':0,'sourceApproval':False,'FULL':False}
  with report.open('x',encoding='utf-8',newline='\n')as stream:json.dump(body,stream,indent=2);stream.write('\n')
 
+
+
+def verify_current_full_types_before_panel(root,out,spec,commit):
+ base=out.parents[1];rp=base/'receipt.json';fp=base/'full-result.json';seed=root/'scripts/verification/gox-current-types-v1/seed-manifest.json';manifest=root/'scripts/verification/gox-current-types-v1/input-manifest.json'
+ assert rp.is_file()and fp.is_file()and rp.stat().st_size<=1024**2 and fp.stat().st_size<=32*1024**2,'ACTUAL_SAME_JOB_FULL_TYPES_REQUIRED_BEFORE_PANEL'
+ receipt=json.loads(rp.read_text(encoding='utf-8'));full=json.loads(fp.read_text(encoding='utf-8'));run='gox_ci_'+os.environ['GITHUB_RUN_ID']
+ assert receipt['status']=='PASS_EXACT_CURRENT_CORE_FULL_TYPES_CI'and receipt['sourceSnapshotCommit']==commit and receipt['exitCode']==0 and receipt['error']is None,'CURRENT_COMMIT_TYPES_MUST_ACTUALLY_PASS'
+ assert receipt['sourceDrift']==receipt['dependencyDrift']==receipt['remainingOwnedProcesses']==[] and receipt['diagnostics']==0 and receipt['harnessErrors']==[]
+ assert receipt['sourcePins']==len(spec['sourcePins'])and receipt['dependencyPins']==len(spec['dependencyPins'])and receipt['ownedPids']and receipt['peakOwnedRssBytes']>0 and receipt['peakOwnedPrivateBytes']>0
+ assert full['status']=='PASS_CURRENT_CANONICAL_AFFECTED_FULL_TYPESCRIPT_PROGRAM'and full['runId']==run and full['sourceHeadExpected']==full['sourceHeadBefore']==full['sourceHeadAfter']==commit
+ assert full['diagnostics']==full['harnessErrors']==full['missingCompiledSeedFiles']==[] and full['allSeedFilesActuallyCompiled']is True
+ assert full['fullGraphMembershipUnchanged']is True and full['fullGraphSourcesUnchanged']is True and full['configSourcesUnchanged']is True and full['canonicalImportResolutionVerified']is True
+ assert full['seedManifestExpectedSha256']==full['seedManifestSha256After']==sha(seed)==spec['originalSeedManifestSha256']
+ assert full['filteredDiagnostics']is False and full['transpileOnly']is False and full['noEmit']is True and full['virtualCandidateFiles']==0 and full['virtualMappingValuesUsed']is False and full['stagedAfterContentUsed']is False
+ roots=full['seedFiles'];assert len(roots)==len(set(roots))==receipt['seedCount']and len(roots)>0
+ seed_keys=json.loads(seed.read_text(encoding='utf-8'));assert all(str((root/k).resolve()).replace('\\','/')in roots for k in seed_keys if k.lower().endswith(('.ts','.tsx')))
+ records=full['compilerFilesAfter'];assert len(records)==full['fullProgramFileCount']==receipt['fullProgramFileCount']and len(records)>=len(roots)
+ assert full['compilerGraphSha256Before']==full['compilerGraphSha256After']
+ vendor=json.loads((root/'scripts/verification/gox-current-types-v1/panel-finite-r315.json').read_text(encoding='utf-8'))['runtimeVendorPins'];assert len(vendor)==13095
+ pinned={**vendor,**spec['dependencyPins'],**spec['sourcePins']}
+ for row in records:
+  path=Path(row['path']).resolve();assert path.is_relative_to(root)and path.is_file()and row['compiledTextMatchesDisk']is True and sha(path)==row['sha256']
+  key=path.relative_to(root).as_posix();assert pinned.get(key)==row['sha256'],'COMPILED_FILE_MUST_MATCH_CURRENT_SOURCE_OR_PREVIOUS_LOCKED_DEPENDENCY_OR_VENDOR_PIN:'+key
+ proof={'status':'PASS_ACTUAL_SAME_JOB_CURRENT_COMMIT_FULL_TYPES','commit':commit,'runId':int(os.environ['GITHUB_RUN_ID']),'sourcePins':len(spec['sourcePins']),'dependencyPins':len(spec['dependencyPins']),'fullProgramFileCount':full['fullProgramFileCount'],'seedCount':len(roots),'actualDiagnostics':0,'sourceDrift':[],'dependencyDrift':[],'ownedRemaining':[],'inputManifestSha256':sha(manifest),'seedManifestSha256':sha(seed),'compilerGraphSha256':full['compilerGraphSha256After'],'actualReceipt':{'archiveMember':'receipt.json','sha256':sha(rp),'bytes':rp.stat().st_size},'actualFullResult':{'archiveMember':'full-result.json','sha256':sha(fp),'bytes':fp.stat().st_size},'typecheckExecutedBeforeThisPanelStage':True,'oldR315ProofUsedForChangedTypes':False}
+ return proof
 
 if __name__=='__main__':main()

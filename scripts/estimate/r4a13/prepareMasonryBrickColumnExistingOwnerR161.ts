@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
+import {statSync,readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import source from '../../../data/estimate-benchmarks/source-packs/masonry-brick-column-existing-owner-r161.json';
 import map from '../../../data/estimate-benchmarks/source-packs/masonry-brick-column-existing-owner-map-r161.json';
@@ -23,7 +23,9 @@ import {resolvePrimaryMeasureSelectionV1} from '../../../src/lib/estimate/backen
 import {validateCanonicalEstimateParameters,assertCanonicalSubmittedSourceParameterAuthorityV1} from '../../../src/lib/estimate/backendPlatform/parameterConstraints';
 import {validateCanonicalEstimateParameterInputs} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation';
 import {masterRetainedParentCaptureSha256R1,prepareMasterRetainedBindingRepresentativeR1,
+ assertMasterRetainedBindingSnapshotR1,type MasterRetainedBindingSnapshotR1,
  type MasterRetainedParentCaptureR1,type MasterRetainedBindingGuardInputR1,type MasterRetainParentBindingsR1} from './masterSingleDefinitionRetainParentBindingsR1';
+import {resolveMasterScopedNormativeRegistryOptInR1,type MasterCapturedScopedNormativeRegistryR1} from './masterScopedNormativeRegistryPreimageR1';
 import {validateIndependentCompletenessMapReferences,buildMasterPublicationResourceRowsR1,
  resolveMasterSingleDefinitionBindingRowIds,resolveMasterSingleDefinitionBindingApplicabilityByRowId,
  resolveMasterSingleDefinitionLocatorExcerptSha256R1,hashMasterSingleDefinitionSuccessorReceiptR1 as digest,
@@ -33,8 +35,17 @@ type Json=Record<string,unknown>;
 type Capture=MasterRetainedParentCaptureR1&Pick<AutomaticOwnerDefinition,'parameters'|'formulas'|'resources'>;
 type Resource=AutomaticOwnerDefinition['resources'][number];
 type CoreResult=Awaited<ReturnType<typeof compileCanonicalEstimateCore>>;
+type ColumnReleaseArtifactPinR161=Readonly<{path:string;sha256:string}>;
+/** ROOT-only, after a real committed opening publication. These pins name exact
+ * evidence staged in the same reviewed source root; they confer no project,
+ * stock, source-norm or FULL authority. Publisher still rereads and locks DB. */
+export type MasonryColumnSecondReleaseBindingR161=Readonly<{
+ contract:'root-masonry-column-after-committed-opening/r1';
+ openingReceipt:ColumnReleaseArtifactPinR161;currentPointerSha256:string;
+ parentSnapshot:ColumnReleaseArtifactPinR161;scopedRegistry:ColumnReleaseArtifactPinR161;
+}>;
 export type MasonryBrickColumnExistingContextR161=Readonly<{releaseId:string;searchReleaseId:string;sourceRoot:string;outputRoot:string;
- masterPath:string;masterSha256:string;expectedBranch:string}>;
+ masterPath:string;masterSha256:string;expectedBranch:string;rootSecondReleaseBindingR161?:MasonryColumnSecondReleaseBindingR161}>;
 const volume=pack.measurement.primaryId,height=pack.measurement.heightId,kind=pack.measurement.physicalKindId;
 const paths={model:'src/lib/estimate/v4/masonryBrickColumnExistingOwnerR161.ts',config:'scripts/estimate/r4a13/prepareMasonryBrickColumnExistingOwnerR161.ts',
  test:'scripts/estimate/r4a13/masonryBrickColumnExistingOwnerR161.test.ts',pack:'data/estimate-benchmarks/source-packs/masonry-brick-column-existing-owner-r161.json',
@@ -65,12 +76,89 @@ export function masonryBrickColumnExistingCaptureR161(root:string):Capture{
  assert.deepEqual([c.parameters.length,c.formulas.length,c.resources.length,c.bindings.length],[1,59,59,0]);
  assert.equal(c.parameters[0]?.parameter_id,'q');assert.equal(c.parameters[0]?.unit_id,'m2');assert.equal(c.parameters[0]?.default_value,100);return c;
 }
+
+const currentReleasePathR161='data/estimate-benchmarks/r568-local-developer-canonical-release.json';
+type ColumnRegistryConfigR161=Pick<Config,'contract'|'stopCode'|'binding'|'sourceMetadata'|'locator'>;
+// Same managed identity construction previously local to the accepted pure
+// check; both routes now use it. No source/locator IDs depend on release IDs.
+function columnManagedRegistryR161(config:ColumnRegistryConfigR161){
+ const uuid=(seed:string)=>{const bytes=Buffer.from(digest(seed).slice(0,32),'hex');bytes[6]=(bytes[6]!&15)|80;bytes[8]=(bytes[8]!&63)|128;const h=bytes.toString('hex');
+  return`${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;};
+ const id=uuid(`${config.contract}:${pack.sourceId}:source`),lid=uuid(`${config.contract}:${pack.sourceId}:${config.locator.key}:locator`),m=config.sourceMetadata;
+ return{newSource:{id,source_key:pack.sourceId,title_ru:m.source_title,authority:m.source_authority,
+  official_url:m.official_url??null,artifact_sha256:m.artifact_sha256,effective_from:null,effective_to:null,
+  metadata:{contract:config.contract,sourceKind:m.source_kind,useRestriction:m.use_restriction,universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false}},
+  newLocators:[{id:lid,source_id:id,locator_key:config.locator.key,locator:config.locator.payload,excerpt_sha256:resolveMasterSingleDefinitionLocatorExcerptSha256R1(config)}]};
+}
+function columnReleaseProofR161(context:MasonryBrickColumnExistingContextR161,binding:Config['binding'],
+ sourceMetadata:Config['sourceMetadata'],locator:Config['locator']){
+ if(!Object.hasOwn(context,'rootSecondReleaseBindingR161'))return undefined;
+ const proof=context.rootSecondReleaseBindingR161;
+ function check(value:unknown,code:string):asserts value{assert(value,'MASONRY_COLUMN_ROOT_RELEASE_'+code);}
+ check(record(proof)&&proof.contract==='root-masonry-column-after-committed-opening/r1','CONTEXT');
+ const hash=(value:unknown):value is string=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
+ check(hash(proof.currentPointerSha256),'POINTER_SHA_REQUIRED');
+ const read=(pin:ColumnReleaseArtifactPinR161):Json=>{
+  check(record(pin)&&typeof pin.path==='string'&&/^data\/estimate-benchmarks\/source-artifacts\/masonry-column-second-release-r161\/[a-zA-Z0-9_./-]+\.json$/.test(pin.path)
+   &&!pin.path.split('/').some(part=>part==='.'||part==='..')&&hash(pin.sha256),'ARTIFACT_PIN');
+  const path=resolve(context.sourceRoot,pin.path);check(statSync(path).size<=4*1024*1024,'ARTIFACT_BYTE_CAP');
+  const bytes=readFileSync(path);check(createHash('sha256').update(bytes).digest('hex')===pin.sha256,'ARTIFACT_SHA');
+  const value:unknown=JSON.parse(bytes.toString('utf8'));check(record(value),'ARTIFACT_OBJECT');return value;
+ };
+ check(new Set([proof.openingReceipt?.path,proof.parentSnapshot?.path,proof.scopedRegistry?.path]).size===3,'DISTINCT_ARTIFACTS');
+ const receipt=read(proof.openingReceipt),{receiptSha256,...body}=receipt;
+ check(hash(receiptSha256)&&digest(body)===receiptSha256,'RECEIPT_SHA');
+ check(receipt.schemaVersion==='masonry-glass-opening-existing-owner/r223.receipt.v1'
+  &&receipt.status==='GREEN_MASONRY_GLASS_OPENING_EXISTING_R223_PREPARED_NOT_ACTIVE'
+  &&receipt.mutationPerformed===true&&receipt.idempotent===false,'COMMITTED_OPENING_RECEIPT');
+ check(['productionAccessed','deployPerformed','activationPerformed','releasePerformed','otaPerformed'].every(key=>receipt[key]===false),'LOCAL_INACTIVE_ONLY');
+ const predecessor=receipt.predecessor,successor=receipt.successor,audit=receipt.audit,origin=receipt.source,master=receipt.master;
+ check(record(predecessor)&&record(successor)&&record(audit)&&record(origin)&&record(master),'RECEIPT_SHAPE');
+ const opening='canonical-work:base:masonry_interior_opening_lay_standard';
+ check(predecessor.releaseId===fixture.releaseId&&predecessor.searchReleaseId===fixture.searchReleaseId&&predecessor.catalogId===opening,'FIRST_PREDECESSOR');
+ check(successor.releaseId===context.releaseId&&successor.searchReleaseId===context.searchReleaseId
+  &&context.releaseId!==fixture.releaseId&&context.searchReleaseId!==fixture.searchReleaseId,'ACTUAL_SUCCESSOR_PAIR');
+ check(master.sha256===context.masterSha256&&origin.branch===context.expectedBranch&&hash(origin.fingerprint)
+  &&Array.isArray(origin.sourceHashes)&&origin.sourceHashes.length>0,'SOURCE_COHORT');
+ check(record(audit.release)&&record(audit.manifest)&&record(audit.search)&&record(audit.target)
+  &&audit.unrelatedManifestChanges===0&&audit.release.id===context.releaseId&&audit.release.status==='prepared'
+  &&audit.release.activated_at===null&&audit.search.release_status==='draft'&&audit.search.definition_release_id===context.releaseId
+  &&audit.target.catalog_id===opening&&audit.target.definition_version_id===successor.definitionId
+  &&audit.search.catalog_id===opening&&audit.search.definition_version_id===successor.definitionId
+  &&hash(audit.manifest.snapshot)&&hash(audit.search.snapshot_sha256),'OPENING_AUDIT');
+ // This is the live canonical pointer read from the publisher cwd, not a
+ // captured pointer copied into sourceRoot. DB lifecycle is rechecked by it.
+ const pointerBytes=readFileSync(resolve(currentReleasePathR161));
+ check(createHash('sha256').update(pointerBytes).digest('hex')===proof.currentPointerSha256,'CURRENT_POINTER_SHA');
+ const pointer:unknown=JSON.parse(pointerBytes.toString('utf8'));
+ check(record(pointer)&&pointer.productionAccessed===false&&pointer.definitionReleaseId===context.releaseId
+  &&pointer.searchReleaseId===context.searchReleaseId&&pointer.definitionReleaseStatus==='prepared'&&pointer.searchReleaseStatus==='draft'
+  &&pointer.definitionSnapshotSha256===audit.manifest.snapshot&&pointer.manifestHashChainSha256===audit.manifest.snapshot
+  &&pointer.searchHashChainSha256===audit.search.snapshot_sha256,'CURRENT_POINTER_RECEIPT');
+ const snapshot=read(proof.parentSnapshot),scoped=read(proof.scopedRegistry) as unknown as MasterCapturedScopedNormativeRegistryR1;
+ const guardConfig={contract:source.contract,stopCode:'MASONRY_COLUMN_EXISTING_R161',catalogId,parentReleaseId:context.releaseId,
+  normId:pack.profiles.map(profile=>profile.normId).join('|'),sourceMetadata,locator,binding,capturedScopedNormativeRegistry:scoped};
+ const input={config:guardConfig,...columnManagedRegistryR161(guardConfig)};
+ // R70 checks actual current membership and every unchanged column in all
+ // eight tables, including the historical definition.release_id. No mutation.
+ assertMasterRetainedBindingSnapshotR1(input,snapshot as unknown as MasterRetainedBindingSnapshotR1);
+ const scope=resolveMasterScopedNormativeRegistryOptInR1(input);check(scope,'SCOPED_REGISTRY');
+ const openingSource=scope.declaration.sourceRows.find(row=>row.sourceKey==='source:masonry:glass-block:r103:opening-fill');
+ check(openingSource&&scope.declaration.locatorRows.some(row=>row.sourceId===openingSource.id
+  &&row.locatorKey==='kg-krer08-04-002-glass-opening-existing-r223'),'FRESH_SCOPE_MUST_RETAIN_OPENING');
+ return{scoped:scope.declaration,sourcePaths:[proof.openingReceipt.path,proof.parentSnapshot.path,proof.scopedRegistry.path,
+  'scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts'],marker:{contract:proof.contract,receiptSha256,
+   currentPointerSha256:proof.currentPointerSha256,openingReceipt:proof.openingReceipt,parentSnapshot:proof.parentSnapshot,
+   scopedRegistry:proof.scopedRegistry,parentReleaseId:context.releaseId,parentSearchReleaseId:context.searchReleaseId}};
+}
 /** Direct ordinary retained Config. No historical APPEND constructor/callback,
  * public identity creation, new producer, m2->m3 conversion or project default.
  * ROOT supplies the final current MASTER/branch after API integration; source-cut
  * and current consumer bytes remain pending until that governed materialization. */
 export function masonryBrickColumnExistingConfigR161(context:MasonryBrickColumnExistingContextR161):Config{
- assert.equal(context.releaseId,fixture.releaseId);assert.equal(context.searchReleaseId,fixture.searchReleaseId);
+ if(!Object.hasOwn(context,'rootSecondReleaseBindingR161')){
+  assert.equal(context.releaseId,fixture.releaseId);assert.equal(context.searchReleaseId,fixture.searchReleaseId);
+ }
  assert(/^[a-f0-9]{64}$/.test(context.masterSha256));assert.equal(sha(context.masterPath),context.masterSha256);assert(context.expectedBranch);
  for(const pin of [pack.immutableOriginal03Pack,pack.immutableAccepted03_04WholePack,pack.immutableAccepted03_04IndependentMap,
   pack.immutableR116OwnFourProfileRoster,pack.immutableR116OwnFourProfileStageMap,pack.source])assert.equal(sha(resolve(context.sourceRoot,pin.path)),pin.sha256,pin.path);
@@ -82,14 +170,25 @@ export function masonryBrickColumnExistingConfigR161(context:MasonryBrickColumnE
    parameterSources:structuredClone(c.baseline.normative_source_ids)},
   newParameterSources:Object.fromEntries(d.parameters.filter(p=>p.parameter_id!=='q').map(p=>[p.parameter_id,
    p.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM'?{kind:'UNRESOLVED',sourceIds:[]}:{kind:'KNOWN',sourceIds:[pack.sourceId]}]))};
+ const sourceMetadata:Config['sourceMetadata']={source_title:'Кладка кирпичных столбов: собственные исходные колонки01–06',source_authority:'Госстрой Кыргызской Республики',
+   official_url:pack.source.officialUrl,artifact_sha256:pack.source.sha256,source_kind:'SAME_EXISTING_COLUMN_SIX_EXACT_WHOLE_PROFILES_KNOWN_NATIVE_COST_PARTIAL',
+   exact_locator:pack.source.locatorRu,use_restriction:'Только исходные керамические250×120×65М100 и готовый цементно-известковыйМ50; собственный m3обмер. Источник не утверждает проект, доступ, stock, снабжение или FULL. Собственная стоимость native требует нового payment-scope; закупка удержана.'};
+ const locator:Config['locator']={key:'kg08-column-six-existing-r161',payload:{contract:source.contract,wholeSource:pack,independentCompletenessMap:map,
+   currentParentSha256:source.parent.fullFile.sha256,actualProjectProducer:'UNRUN',fullTechnicalAcceptance:false}};
+ const binding:Config['binding']={rowId:known[0]!,additionalRowIds:known.slice(1),applicability:{exactColumns:pack.profiles.map(p=>p.normId),fullTechnicalAcceptance:false},
+   applicabilityByRowId:Object.fromEntries(known.map(rowId=>{const row=d.resources.find(r=>r.row_id===rowId);assert(row);return[rowId,
+    {exact_column:ownExactColumn(row),source_artifact_sha256:pack.source.sha256,noNeighborNormTransfer:true,fullTechnicalAcceptance:false}];})),retainParentBindings:retained};
+ const releaseBinding=columnReleaseProofR161(context,binding,sourceMetadata,locator);
  const included=['Одна существующая карточка столба и три вида по форме/армированию; высота автоматически выбирает одну из шести исходных колонок.',
   'Цельный труд выбранной колонки один раз; армирование01/02/05/06 включено в свою норму, без второй оплаты08-02-007.',
   'Собственные native материалы/машины и включённые операции сохраняют IDs и единичных владельцев; UNKNOWN не становятся закупкой.'];
  const config:Config={contract:source.contract,stopCode:'MASONRY_COLUMN_EXISTING_R161',applicationName:'masonry-column-existing-r161',
   expectedBranch:context.expectedBranch,masterPath:context.masterPath,masterSha256:context.masterSha256,
   parentReleaseId:context.releaseId,parentSearchReleaseId:context.searchReleaseId,currentReleasePath:'data/estimate-benchmarks/r568-local-developer-canonical-release.json',
+  ...(releaseBinding?{capturedScopedNormativeRegistry:releaseBinding.scoped,
+   verifyTargetPrecondition:async()=>{columnReleaseProofR161(context,binding,sourceMetadata,locator);}}:{}),
   outputRoot:context.outputRoot,catalogId,sourceId:pack.sourceId,normId:pack.profiles.map(p=>p.normId).join('|'),
-  sourcePaths:[...new Set([...Object.values(paths),'src/lib/estimate/v4/masonryBrickColumnSixProfileWholeNormalR117.ts',
+  sourcePaths:[...new Set([...Object.values(paths),...(releaseBinding?.sourcePaths??[]),'src/lib/estimate/v4/masonryBrickColumnSixProfileWholeNormalR117.ts',
    'src/lib/estimate/v4/masonryBrickRectangularColumnWholeNormalR109.ts','data/estimate-benchmarks/source-packs/masonry-brick-column-six-profile-whole-r117.json',
    'data/estimate-benchmarks/source-packs/masonry-brick-column-six-profile-normal-route-r117.json','data/estimate-benchmarks/source-packs/masonry-brick-column-six-profile-independent-full-map-r117.json',
    'data/estimate-benchmarks/source-packs/masonry-brick-column-normal-route-r109.json',pack.immutableOriginal03Pack.path,pack.source.path,
@@ -102,25 +201,20 @@ export function masonryBrickColumnExistingConfigR161(context:MasonryBrickColumnE
    'data/estimate-benchmarks/fixtures/masonry-brick-column-known-native-priced-r166.json',
    'data/estimate-benchmarks/source-packs/masonry-brick-column-known-native-cost-map-r166.json',
    'scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts','scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts'])],
-  sourceMetadata:{source_title:'Кладка кирпичных столбов: собственные исходные колонки01–06',source_authority:'Госстрой Кыргызской Республики',
-   official_url:pack.source.officialUrl,artifact_sha256:pack.source.sha256,source_kind:'SAME_EXISTING_COLUMN_SIX_EXACT_WHOLE_PROFILES_KNOWN_NATIVE_COST_PARTIAL',
-   exact_locator:pack.source.locatorRu,use_restriction:'Только исходные керамические250×120×65М100 и готовый цементно-известковыйМ50; собственный m3обмер. Источник не утверждает проект, доступ, stock, снабжение или FULL. Собственная стоимость native требует нового payment-scope; закупка удержана.'},
+  sourceMetadata,
   parameterDefinitions:d.parameters,formulaDefinitions:d.formulas,resourceDefinitions:d.resources,
   shortInput:{q:100,[kind]:legacy},acceptanceInput:{q:100,[kind]:legacy},runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},
   expectedParentShape:[1,59,59],benchmarkOrdinal:0,validationScenario:'EXISTING_COLUMN_KNOWN_NATIVE_COST_ONE_TEST_ONLY_PRICED_CASE_QUANTITY19_SOURCE_REUSE',
   passport:{canonicalRuName:'Кладка столба',workKey:'masonry_interior_column_lay_standard',
    physicalResultRu:'Сохранённый состав кладочного столба либо собственный кирпичный столб выбранной формы/армирования по независимому объёму.',
    includedScopeRu:included,excludedScopeRu:pack.remaining,independentCompletenessMap:map,unresolvedApplicableResourceRowIds:[...child.unknownNeedRowIds]},
-  applicability:{legacyApplicability:structuredClone(c.definition.applicability),primaryMeasureSelectionV1:primary(),
+  applicability:{...(releaseBinding?{rootCommittedOpeningReleaseBindingR161:releaseBinding.marker}:{}),legacyApplicability:structuredClone(c.definition.applicability),primaryMeasureSelectionV1:primary(),
    exactColumns:pack.profiles.map(p=>p.normId),oldAndOwnRowsMutuallyExclusive:true,newPublicCatalogIds:0,sourceProfileChoiceIsNotProjectApproval:true,
    knownNativeCostRouteV1:{status:'ROOT_EXACT_MACHINE_ADMISSION_REQUIRED',native:44,included:6,paidNative:38,operatorInformation:6,
     materialProcurement:'HOLD_SUPPLY_STOCK',machineProcurement:'HOLD_PROVISION_MODE',paymentScope,realProjectDocuments:0},
    ordinaryTechnicalReadbackProducer:'UNRUN_ROOT_R144',technicalFieldsUnion:33,technicalFieldsPerSelectedPhysicalKind:11,realProjectObjects:0,fullTechnicalAcceptance:false},
-  binding:{rowId:known[0]!,additionalRowIds:known.slice(1),applicability:{exactColumns:pack.profiles.map(p=>p.normId),fullTechnicalAcceptance:false},
-   applicabilityByRowId:Object.fromEntries(known.map(rowId=>{const row=d.resources.find(r=>r.row_id===rowId);assert(row);return[rowId,
-    {exact_column:ownExactColumn(row),source_artifact_sha256:pack.source.sha256,noNeighborNormTransfer:true,fullTechnicalAcceptance:false}];})),retainParentBindings:retained},
-  locator:{key:'kg08-column-six-existing-r161',payload:{contract:source.contract,wholeSource:pack,independentCompletenessMap:map,
-   currentParentSha256:source.parent.fullFile.sha256,actualProjectProducer:'UNRUN',fullTechnicalAcceptance:false}},
+  binding,
+  locator,
   search:{primaryUom:'m2',canonicalNameRu:'Кладка столба',aliases:['Кладка столба'],
    shortScopeRu:'Существующая карточка: прежний m2состав либо кирпичный столб с собственной m3primary без конверсии.',
    keyDistinguishingParameters:[kind],clarificationFields:[kind],includedBoundaries:included,excludedBoundaries:pack.remaining,
@@ -197,13 +291,7 @@ export function masonryBrickColumnExistingPureR161(config:Config,root:string){
    constraints:p.constraints_json??{},valueSourceRole:role};});
  const editor=validateCanonicalEstimateParameterInputs({schema:editorSchema,rawInputs:missingVolume});
  const volumeIssue=editor.issues.find(x=>x.parameterId===volume&&(x.code==='REQUIRED'||x.code==='REQUIRED_WHEN'));assert(volumeIssue);
- const uuid=(seed:string)=>{const bytes=Buffer.from(digest(seed).slice(0,32),'hex');bytes[6]=(bytes[6]!&15)|80;bytes[8]=(bytes[8]!&63)|128;const h=bytes.toString('hex');
-  return`${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;};
- const id=uuid(`${config.contract}:${pack.sourceId}:source`),lid=uuid(`${config.contract}:${pack.sourceId}:${config.locator.key}:locator`),m=config.sourceMetadata;
- const input:MasterRetainedBindingGuardInputR1={config,newSource:{id,source_key:pack.sourceId,title_ru:m.source_title,authority:m.source_authority,
-  official_url:m.official_url??null,artifact_sha256:m.artifact_sha256,effective_from:null,effective_to:null,
-  metadata:{contract:config.contract,sourceKind:m.source_kind,useRestriction:m.use_restriction,universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false}},
-  newLocators:[{id:lid,source_id:id,locator_key:config.locator.key,locator:config.locator.payload,excerpt_sha256:resolveMasterSingleDefinitionLocatorExcerptSha256R1(config)}]};
+ const input:MasterRetainedBindingGuardInputR1={config,...columnManagedRegistryR161(config)},lid=String(input.newLocators[0]!.id);
  const resources=buildMasterPublicationResourceRowsR1(config.resourceDefinitions),oldFormulas=new Set(c.formulas.map(f=>f.formula_id));
  const formulas=config.formulaDefinitions.map(f=>({...f,ast_sha256:oldFormulas.has(f.formula_id)?f.ast_sha256:digest(f.ast)}));
  const applicable=resolveMasterSingleDefinitionBindingApplicabilityByRowId(config,resources,[lid]);

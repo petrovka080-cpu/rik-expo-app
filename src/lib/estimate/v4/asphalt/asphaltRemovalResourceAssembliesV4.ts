@@ -206,17 +206,7 @@ function destinationAssembly(value: string, suffix: string, title: string, infor
   };
 }
 
-export const ASPHALT_REMOVAL_RESOURCE_PARAMETER_KEYS_V4 = Object.freeze([
-  "estimate_scope_mode", "asphalt_removal_package_required", "removal_labor_productivity_m2_per_man_hour",
-  "removal_control_interval_m2_per_test", "removal_documentation_count",
-  "milling_productivity_m3_per_machine_hour", "breakout_productivity_m3_per_machine_hour",
-  "manual_breakout_productivity_m3_per_machine_hour", "combined_removal_productivity_m3_per_machine_hour",
-  "loader_productivity_t_per_machine_hour", "truck_average_speed_km_per_machine_hour",
-  "truck_turnaround_machine_hours", "dust_suppression_water_l_m2", "water_truck_productivity_m2_per_machine_hour",
-  "base_cleaning_productivity_m2_per_man_hour", "boundary_cut_required", "boundary_cut_consumable_kg_m",
-  "boundary_cut_productivity_m_per_man_hour", "boundary_saw_productivity_m_per_machine_hour",
-  "surface_cleaner_productivity_m2_per_machine_hour",
-] as const);
+export { ASPHALT_REMOVAL_RESOURCE_PARAMETER_KEYS_V4 } from "./asphaltRelatedResourceParameterIdsV4";
 
 export const ASPHALT_REMOVAL_RESOURCE_ASSEMBLIES_V4: readonly ProfessionalChildAssemblyV4[] = Object.freeze([
   REMOVAL_COMMON, ...METHOD_ASSEMBLIES, LOADING, HAUL, DUST, BASE_CLEANING, BOUNDARY_CUTTING,

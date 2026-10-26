@@ -59,6 +59,24 @@ export function verifyPanelReadyGridPureR287(parent:AutomaticOwnerDefinition,mod
   assert.deepEqual(validateIndependentCompletenessMapReferences({completenessMap:panelReadyGridCompletenessR287(),formulaDefinitions:model.formulas,resourceDefinitions:model.resources}),[]);
   assert.equal(pack.sourceNormHoursAuthored,false);assert.equal(pack.sourceConnectorCountAuthored,false);assert.equal(pack.projectAuthenticated,false);assert.equal(pack.full,false);
 }
+/** Native v5 retains 63 definitions; its pre-existing false row is not an active resource. */
+export function verifyPanelReadyGridLegacyIdentitiesR287(resources:readonly Readonly<{row_id:string;inclusion_ast:Record<string,unknown>}>[],
+  rows:readonly Readonly<{row_id:string}>[],needs:readonly Readonly<{row_id:string}>[]):void{
+  const stem='electrical_interior_lighting_install_technical_room_',blocked=stem+'materials_41';
+  const legacy=resources.filter(row=>row.row_id.startsWith(stem));
+  assert.equal(legacy.length,fixture.legacyExpectedResourceCount,'ALL_63_NATIVE_LEGACY_DEFINITIONS_RETAINED');
+  assert.equal(legacy.length,63);assert.equal(new Set(legacy.map(row=>row.row_id)).size,63,'UNIQUE_NATIVE_LEGACY_DEFINITION_IDS');
+  const disabled=legacy.find(row=>row.row_id===blocked);assert(disabled,'EXACT_NATIVE_DISABLED_ROW_RETAINED');
+  assert.deepEqual(disabled.inclusion_ast,{kind:'and',operands:[{kind:'literal',value:false},
+    {kind:'equals',value:fixture.legacyInput.m30_material_technology,parameterId:'m30_material_technology'}]},'NATIVE_DISABLED_AST_REMAINS_UNCHANGED');
+  const resolved=legacy.map(row=>({id:row.row_id,resolution:resolveInclusionGraph(row.inclusion_ast,fixture.legacyInput)}));
+  assert(resolved.every(row=>row.resolution.value!==null&&row.resolution.missingParameterIds.length===0),'NO_UNKNOWN_NATIVE_LEGACY_APPLICABILITY');
+  assert.deepEqual(resolved.filter(row=>row.resolution.value===false).map(row=>row.id),[blocked],'ONLY_NATIVE_DISABLED_ROW_EXCLUDED');
+  const active=resolved.filter(row=>row.resolution.value===true).map(row=>row.id).sort();assert.equal(active.length,62);
+  assert.equal(needs.length,0,'NO_INVENTED_LEGACY_NEEDS');
+  assert.equal(rows.length,new Set(rows.map(row=>row.row_id)).size,'UNIQUE_ACTIVE_LEGACY_RESULT_IDS');
+  assert.deepEqual(rows.map(row=>row.row_id).sort(),active,'EXACT_62_ACTIVE_NATIVE_LEGACY_IDENTITIES_NO_MISSING_OR_EXTRA');
+}
 function saved(result:CanonicalEstimateCompileCoreResult,input:Record<string,unknown>){
   const checksum=hash(result.revisionProjection),payload=buildCanonicalRevisionCommitPayload({rowCount:result.rows.length,currencyCode:'KGS',totals:result.totals,
     checksumSha256:checksum,compilerVersion:pack.contract,parameters:result.parameters,approvedTemplateBaselineId:null,baselineAssumptions:{},effectiveUserParameters:input,
@@ -93,7 +111,7 @@ export async function verifyPanelReadyGridWholePostR287(context:PanelReadyGridVe
       assert.equal([...result.rows,...result.preliminaryNeeds].some(row=>row.row_id.startsWith(pack.prefix+':')),false,'UNSELECTED_OR_ZERO_NEW_WHOLE_POST_NOT_ADDED');
       const oldIds=new Set(parent.resources.map(row=>row.row_id));
       assert([...result.rows,...result.preliminaryNeeds].every(row=>oldIds.has(row.row_id)),'ONLY_EXACT_RETAINED_IDENTITIES_NO_EXTRA_HIDDEN_CORE_CALLS');
-      if(entry.mode==='legacy'){assert.equal(result.rows.length+result.preliminaryNeeds.length,fixture.legacyExpectedResourceCount,'EXPLICIT_LEGACY_SELECTOR_RETAINS_63_ROWS');
+      if(entry.mode==='legacy'){verifyPanelReadyGridLegacyIdentitiesR287(parent.resources,result.rows,result.preliminaryNeeds);
         assert.equal([...result.rows,...result.preliminaryNeeds].some(row=>row.row_id===pack.retainedFactory.ownerRowId||row.row_id===pack.retainedToolPost.ownerRowId),false);}
       if(entry.mode==='retained'){assert.equal(result.rows.find(row=>row.row_id===pack.retainedFactory.ownerRowId)?.quantity,'3');
         assert.equal(result.rows.find(row=>row.row_id===pack.retainedToolPost.ownerRowId)?.quantity,'1');assert.equal(result.totals.amount,'3200');

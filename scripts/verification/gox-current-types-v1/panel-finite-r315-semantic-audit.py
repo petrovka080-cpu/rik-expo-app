@@ -5,6 +5,11 @@ if True:
  assert len(jest['testResults'])==1 and Path(jest['testResults'][0]['name'])==S/p['entry']
  before=read(raw/'ordinary-config-constructed-before-core.json');assert before['shape']==[38,121,121] and before['actualCoreBegin']==0
  fx=read(S/'data/estimate-benchmarks/fixtures/panel-ready-grid-whole-post-independent-r287.json');pack=read(S/'data/estimate-benchmarks/source-packs/panel-ready-grid-whole-post-project-r287.json');prefix=pack['prefix']+':'
+ oracle=read(raw/'legacy-oracle-pure-negatives.json');assert oracle['status']=='PASS_NATIVE_LEGACY_ORACLE_PURE_POSITIVE_AND_SEVEN_NEGATIVES' and oracle['legacyDefinitionCount']==63 and oracle['activeLegacyCount']==62 and oracle['positiveCases']==1 and oracle['actualCoreBegin']==oracle['verifyCoreCalls']==0
+ assert oracle['negativeCases']==['missing-active-id','extra-result-id','disabled-row-returned','duplicate-active-id','disabled-definition-enabled','extra-legacy-definition','unknown-legacy-applicability']
+ parent=read(S/'data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json')['capture'];stem='electrical_interior_lighting_install_technical_room_';legacy=[x for x in parent['resources'] if x['row_id'].startswith(stem)];blocked=stem+'materials_41';assert len(legacy)==63 and len({x['row_id']for x in legacy})==63
+ disabled=next(x for x in legacy if x['row_id']==blocked);assert disabled['inclusion_ast']=={'kind':'and','operands':[{'kind':'literal','value':False},{'kind':'equals','value':fx['legacyInput']['m30_material_technology'],'parameterId':'m30_material_technology'}]}
+ active_ids={x['row_id']for x in legacy if x['row_id']!=blocked};assert len(active_ids)==62 and oracle['disabledRowId']==blocked
  payable={pack['retainedFactory']['ownerRowId'],pack['retainedToolPost']['ownerRowId'],*[prefix+x for x in fx['newPaidOwnerSuffixes']]};proc={pack['retainedFactory']['ownerRowId'],*[prefix+x for x in fx['newProcurementOwnerSuffixes']]};audited=[]
  expected_files={'actual-core-'+e['id']+'.json' for e in fx['entries']};actual_files={f.name for f in raw.glob('actual-core-*.json') if f.name!='actual-core-entry-counter.json'};assert actual_files==expected_files
  for e in fx['entries']:
@@ -12,6 +17,7 @@ if True:
   if e.get('rejectCode'):assert v['kind']=='REJECT' and v['code']==e['rejectCode']
   else:
    assert v['kind']=='RESULT';r=v['value'];rows=r['rows'];needs=r['preliminaryNeeds'];ids=[x['row_id'] for x in rows+needs];assert len(ids)==len(set(ids))
+   if e['mode']=='legacy':assert set(ids)==active_ids and len(ids)==62 and needs==[] and blocked not in ids
    if e['mode'] not in ['legacy','retained','zero']:
     for x in rows:
      if x['row_id'] not in payable:assert x['included_in_estimate'] is False

@@ -65,11 +65,9 @@ import {
   type EstimateDraftSessionParameterValue,
   type EstimateDraftScopeRequirement,
 } from "../estimate/draftSession/estimateDraftSession";
-import {
-  ASPHALT_REFERENCE_V1_PROFILE,
-  extractAsphaltUserFactsV4,
-  type AsphaltScopeSelectionIdV5,
-} from "../estimate/v4/asphalt";
+import { ASPHALT_REFERENCE_V1_PROFILE } from "../estimate/v4/asphalt/asphaltReferenceV1";
+import { extractAsphaltUserFactsV4 } from "../estimate/v4/asphalt/extractAsphaltUserFactsV4";
+import type { AsphaltScopeSelectionIdV5 } from "../estimate/v4/asphalt/roadScopeTruthV4";
 import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ApprovedEstimateHistoryRecord,
