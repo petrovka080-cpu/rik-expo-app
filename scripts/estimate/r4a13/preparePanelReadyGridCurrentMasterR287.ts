@@ -65,7 +65,7 @@ export function preparePanelReadyGridCurrentMasterR287(context:PanelReadyGridCur
       approvedTemplatePredecessor:{capturedParent:original,capturedParentSha256:masterRetainedParentCaptureSha256R1(original)}},
     newParameterSources:Object.fromEntries(model.parameters.slice(30).map(parameter=>[parameter.parameter_id,{kind:'KNOWN' as const,sourceIds:[pack.sourceId]}])),
     successorProvenanceAppendV1:{contract:'master-retained-binding-append/v1',capturedSourceMetadata:structuredClone(metadata),capturedSourceMetadataSha256:valueSha(metadata),
-      capturedPreviousSuccessorSha256:valueSha(metadata.retainedParentBindingSuccessorV1)}};
+      capturedPreviousSuccessorSha256:valueSha(metadata.retainedParentBindingContinuationV1.successor)}};
   const sourcePaths=['scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts','scripts/estimate/r4a13/verifyPanelReadyGridWholePostR287.ts',
     'scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts','data/estimate-benchmarks/source-packs/panel-ready-grid-whole-post-project-r287.json',
     'data/estimate-benchmarks/fixtures/panel-ready-grid-whole-post-independent-r287.json','src/lib/estimate/v4/automaticConstructionOwnerR1.ts',

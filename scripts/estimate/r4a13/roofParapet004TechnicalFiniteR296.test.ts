@@ -96,7 +96,12 @@ it('uses actual technical004 ordinary Config and original core with own length, 
    // must remain exact while only the new successor input/schema is extended.
    out('LEGACY_BEFORE_AFTER_STRICT_RAW',{beforeRows:before.rows,afterRows:after.rows,beforeNeeds:before.preliminaryNeeds,afterNeeds:after.preliminaryNeeds});
    assert.deepEqual(after.rows,before.rows);assert.deepEqual(after.preliminaryNeeds,before.preliminaryNeeds);assert.deepEqual(after.totals,before.totals);assert.deepEqual(after.priceSnapshotIds,before.priceSnapshotIds);assert.deepEqual(after.purchaseSupplyIndexV1,before.purchaseSupplyIndexV1);
-   assert.deepEqual(new Set([...before.rows,...before.preliminaryNeeds].map(r=>r.row_id)),new Set(c.resources.map(r=>r.row_id)),'ALL_OLD59_VISIBLE');
+   assert.equal(c.resources.length,59,'ALL_OLD59_DECLARED');
+   const legacyVisibility=c.resources.map(row=>{const inclusion:unknown=row.inclusion_ast;
+    assert(typeof row.row_id==='string'&&object(inclusion)&&inclusion.kind==='literal'&&typeof inclusion.value==='boolean','EXACT_CAPTURED_NATIVE_LITERAL_VISIBILITY');
+    return{rowId:row.row_id,visible:inclusion.value};});
+   assert.deepEqual(legacyVisibility.filter(row=>!row.visible).map(row=>row.rowId),['roofing_interior_parapet_seal_technical_room_materials_37'],'EXACT_CAPTURED_INACTIVE_NATIVE_ROW');
+   assert.deepEqual(new Set([...before.rows,...before.preliminaryNeeds].map(row=>row.row_id)),new Set(legacyVisibility.filter(row=>row.visible).map(row=>row.rowId)),'ALL_CAPTURED_ACTIVE_OLD_ROWS_VISIBLE');
    const oldIds=new Set(c.resources.map(r=>r.row_id));assert.equal(native.formulas.filter(f=>f.input_parameter_ids.includes('q')).length,57);assert.equal(native.formulas.filter(f=>!f.input_parameter_ids.includes('q')).length,2);
    for(const [key,p]of [['one',one],['two',two]]as const){const f=fixture.illustrativeInputs[key],u={[ids.method]:p.systemYesRu,[ids.length]:f.lengthLinearM,[ids.height]:f.heightMm};
     const r=await run(key+'-whole-own-length',u,{...baseline,...facts(p)});assert(r);const all=[...r.rows,...r.preliminaryNeeds];

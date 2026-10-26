@@ -544,7 +544,7 @@
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "9ec442c9540c51b55ae11b1edc2948470558c3884cb395bfb705e4e6af380f2e",
     "scripts/estimate/r4a13/prepareMasterStripFoundationConcretePlacementProfileSuccessor.ts": "685967f84fb291424437ef9c2ac41c69a3bf65dd8c3e60b92989df4fb125a403",
     "scripts/estimate/r4a13/prepareMasterSurfaceDrainageChannelSuccessor.ts": "912433eb6b61bb988d49abd7d24777ce7de95f4ed4bb7dcf1b2f6bcca6c601ff",
-    "scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts": "2cbc534073eeb8ce140f42dd14f1ca2ca703bb256a1b27aee21a8ff20cd98cdb",
+    "scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts": "0fec96b3216f33c2b3a2ee089ab325b333d9ac915b57e61d1a62f7ef3b4fba07",
     "scripts/estimate/r4a13/preparePavingCut70AdmittedMasterAppendR2.ts": "214c15286e7ad28d1d094adf145bad923b6ae748ee2daba5254de90ffde17dbd",
     "scripts/estimate/r4a13/preparePavingCutStationary70ConditionalMasterAppendR1.ts": "0c1140c917fd3522e2dd3bedcd408131704300a6049365ce70ff8bfe567a1d27",
     "scripts/estimate/r4a13/prepareRoadMarking01601AdmittedMasterAppendR1.test.ts": "2a457af7dc03456269d1204103476abd6c06b577cb50ef2f8cfae206224271f7",
@@ -603,7 +603,7 @@
     "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts": "83ea7468adce2e240879984f82dbaa4623d874f55fc17937eadae41e7bc1f44e",
     "scripts/estimate/r4a13/pvcBitumenTransitionGuide2024ControlInput.ts": "ce7f68c70f0fce84efd4f5312de3a62229f014b2ba08dcc5613bf2a4f3cf7760",
     "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": "133d373acb2ce40e9a137fccdd58b27283ad82b3e7ce9bdf2b574ae39b1a8459",
-    "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": "e82a4729652a7fa0d40c24523a980147040fb71aed58188683dc5eb8dbea9b1d",
+    "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": "9c0528363780d19dfef902e6eab8800f81954356d4ef50196d89bcc18a6e1d12",
     "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts": "6de84ad8e321765e60859ea4a7a5b5344e996c1cc565f6022322e25244102e59",
     "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts": "1dc65b8424bb1f6faff9507d8feb4f6ba32eead06fdf802200c7836d6c9d7119",
     "scripts/estimate/r4a13/roofSingle539FiniteCasesR24.ts": "32b7ff484656a563c5b6423f2f3c4bcd981db27fb49ec93f6918422d92667e6c",
@@ -3723,13 +3723,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
-  "canonicalSourceFreezeSha256": "7a767f119f194c08d6423d6a2b292e6cf9d6f01777652d31507c6607b3fd7904",
+  "canonicalSourceFreezeSha256": "8d2d6ba371bcd6b83ab443eab2850fd83c5f02264aff2c5277e29778d6a69ab3",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 106099998,
+    "sourceBytes": 106100628,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4656,8 +4656,8 @@
         "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
       },
       "scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts": {
-        "sha256": "2cbc534073eeb8ce140f42dd14f1ca2ca703bb256a1b27aee21a8ff20cd98cdb",
-        "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
+        "sha256": "0fec96b3216f33c2b3a2ee089ab325b333d9ac915b57e61d1a62f7ef3b4fba07",
+        "owner": "EXACT_CURRENT_V5_LINEAGE_OR_NATIVE_VISIBILITY_ORACLE_REPAIR"
       },
       "scripts/estimate/r4a13/verifyPanelReadyGridWholePostR287.ts": {
         "sha256": "5db1d8d8d2cdc1cfdfea97faaea4e866727885bef150a3c9cbb197b4f7cdae6f",
@@ -4720,8 +4720,8 @@
         "owner": "MINIMAL_ACTUAL_R303_DIAGNOSTIC_REPAIR"
       },
       "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": {
-        "sha256": "e82a4729652a7fa0d40c24523a980147040fb71aed58188683dc5eb8dbea9b1d",
-        "owner": "MINIMAL_ACTUAL_R303_DIAGNOSTIC_REPAIR"
+        "sha256": "9c0528363780d19dfef902e6eab8800f81954356d4ef50196d89bcc18a6e1d12",
+        "owner": "EXACT_CURRENT_V5_LINEAGE_OR_NATIVE_VISIBILITY_ORACLE_REPAIR"
       },
       "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": {
         "sha256": "133d373acb2ce40e9a137fccdd58b27283ad82b3e7ce9bdf2b574ae39b1a8459",
@@ -5616,6 +5616,36 @@
       },
       "onePredicateOnly": true,
       "noCastsOrAnyOrDiagnosticFilters": true
+    },
+    "twoRuntimeSourceContractRepairsR315": {
+      "manifests": {
+        "PANEL_CURRENT_V5_LATEST_CONTINUATION_CALLER": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\facades-r59\\electrical-existing-owner-r239\\revision27-panel-current-v5-append-latest\\CONSOLIDATED_FINAL_PANEL_SOURCE_MANIFEST_R287_REV04.json",
+          "sha256": "6c7f5c619899001ade5388052639eb3bc08aece386232511d162f33f397762dd",
+          "bytes": 21537
+        },
+        "PARAPET_ORIGINAL_NATIVE59_ACTIVE58_ORACLE": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\pp312\\FINAL_NATIVE_VISIBILITY_ORACLE_REPAIR_ORIGINS_R312.json",
+          "sha256": "f9a6b3c52763afcb793c8590cbc9903169a71863b6ef15bed2d4d902253e5344",
+          "bytes": 258265
+        }
+      },
+      "rootReviewSha256": "190aab38b09d43fe8a86c5a789f35dd185fafbd9bba6bd591e8eca11bc450604",
+      "changedExistingSelectedFiles": 2,
+      "newRootsOrFiles": 0,
+      "actualFailures": {
+        "panel": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\pan311\\ACTUAL_PANEL_FINITE13_R311_RESULT.json",
+          "sha256": "f5215c17f46a6d9b919ef608748c271bc35db1b3eb5eb6b65d05b352d5b22db5",
+          "bytes": 1316
+        },
+        "parapet": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\pp311\\ACTUAL_ROOT_PARAPET_CAPTURE_FINITE_R313.json",
+          "sha256": "1c7f7aa37ae003cf5ad073560053262213df945457510f90440b21df5cce69b2",
+          "bytes": 1569
+        }
+      },
+      "parserAndNativeRawCapsUnchanged": true
     }
   }
 }
