@@ -969,7 +969,7 @@
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
-    "scripts/verification/gox-current-types-v1/guard.py": "6f98b6f9d2c4c210253935330225c330179f99a0e3e9829f78a360672604d275",
+    "scripts/verification/gox-current-types-v1/guard.py": "24dc080ef00b3523332ea784887473e6518a0b7149d7505231cb2a80c8375f4e",
     "scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py": "bf1fc4f4eafcf48503410a821048d0a99287586141f55c4580f2c9d7db0f97ac",
     "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "8606cb53e079d5d490cc4f7409681c71f3161f2f8b7517982a4fed4a6b7c99bb",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "239d83604160b199df7e9bb8fac1db8dd55e3ca143ea2a28813eaaf29663b8e7",
@@ -4140,7 +4140,7 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "239d83604160b199df7e9bb8fac1db8dd55e3ca143ea2a28813eaaf29663b8e7",
-  "canonicalSourceFreezeSha256": "e5719792035933ce51a3ee57515d026c5560ce8d11a88df43273e5852b2f7357",
+  "canonicalSourceFreezeSha256": "e4c5852868282a80d6935d211fdd14d81b9dd9370c2de57ffe7e278e06801bca",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
@@ -6347,6 +6347,30 @@
       "oldFailuresPreserved": true,
       "noPrivateMASTERProofOrProjectionBytes": true,
       "FULL": false
+    },
+    "boundedExistingFullTypesHeapProfileRepair": {
+      "contract": "gox-current-full-types-heap2816-with-original-owned-caps/v1",
+      "sourceBaselineCommit": "955079aa48a053179425e0ee5e14a72afb3aabd3",
+      "previousFailureRunId": 40268244406,
+      "previousFailureArchiveSha256": "1034e046cdabec99c45f46e24c24dddf35a3134c3bf5e6399f8a756b086132d7",
+      "previousExitCode": 134,
+      "previousDiagnostics": "UNKNOWN_OOM_NO_FULL_RESULT",
+      "previousHeapMiB": 2560,
+      "heapMiB": 2816,
+      "heapIncreaseBytes": 268435456,
+      "admissionPhysicalMiB": 4096,
+      "admissionCommitMiB": 3072,
+      "maxOwnedRssMiB": 3072,
+      "maxOwnedPrivateMiB": 3584,
+      "osPhysicalReserveMiB": 3072,
+      "commitStopMiB": 512,
+      "timeoutSeconds": 1200,
+      "testStageHeapMiB": 768,
+      "originalTypesWorkerSha256": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
+      "same771RootsSameTypedSourcesAndCompilerOptions": true,
+      "sameSourcePinsExceptGuard": true,
+      "actualRetry": "UNRUN_ROOT_REVIEW_REQUIRED",
+      "noPassGuaranteeFromBudgetProjection": true
     }
   },
   "backendProjectionTests": {
@@ -6422,5 +6446,29 @@
     "actualTests": "UNRUN",
     "sourceApproval": false,
     "FULL": false
+  },
+  "fullTypesHeapRepair": {
+    "contract": "gox-current-full-types-heap2816-with-original-owned-caps/v1",
+    "sourceBaselineCommit": "955079aa48a053179425e0ee5e14a72afb3aabd3",
+    "previousFailureRunId": 40268244406,
+    "previousFailureArchiveSha256": "1034e046cdabec99c45f46e24c24dddf35a3134c3bf5e6399f8a756b086132d7",
+    "previousExitCode": 134,
+    "previousDiagnostics": "UNKNOWN_OOM_NO_FULL_RESULT",
+    "previousHeapMiB": 2560,
+    "heapMiB": 2816,
+    "heapIncreaseBytes": 268435456,
+    "admissionPhysicalMiB": 4096,
+    "admissionCommitMiB": 3072,
+    "maxOwnedRssMiB": 3072,
+    "maxOwnedPrivateMiB": 3584,
+    "osPhysicalReserveMiB": 3072,
+    "commitStopMiB": 512,
+    "timeoutSeconds": 1200,
+    "testStageHeapMiB": 768,
+    "originalTypesWorkerSha256": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
+    "same771RootsSameTypedSourcesAndCompilerOptions": true,
+    "sameSourcePinsExceptGuard": true,
+    "actualRetry": "UNRUN_ROOT_REVIEW_REQUIRED",
+    "noPassGuaranteeFromBudgetProjection": true
   }
 }

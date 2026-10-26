@@ -61,7 +61,7 @@ def main():
    env.update(NODE_OPTIONS='--max-old-space-size=768 --max-semi-space-size=8',NODE_ENV='test',EXPO_NO_DOTENV='1',EXPO_NO_TELEMETRY='1',ESTIMATE_MIGRATION_DATABASE_URL='')
    if panel:env.update(PANEL_R287_BOUND_CONTEXT_PATH=str(panel_context),PANEL_R287_ACTUAL_OUTPUT=str(out/'raw'))
   env.update(DELIVERY16_CURRENT_TSC_GUARD_RUN_ID=run,GOX_TYPES_OUTPUT_ROOT=out.as_posix())
-  args=[node,'--max-old-space-size=2560','--max-semi-space-size=8',str(worker),str(out/'full-result.json'),
+  args=[node,'--max-old-space-size=2816','--max-semi-space-size=8',str(worker),str(out/'full-result.json'),
    '--expected-head',a.commit,'--seed-manifest-sha256',sha(seed),'--guard-run-id',run]
   if pure:
    args=[node,'--max-old-space-size=768','--max-semi-space-size=8','--import','tsx','--test','--test-concurrency=1',
@@ -133,7 +133,7 @@ def main():
   receipt=dict(status=('PASS_EXACT_BACKEND_PROJECTION_TESTS_CI'if backend else'PASS_EXACT_PANEL_FINITE13_R315_CI'if panel else'PASS_EXACT_SCOPED_IDENTITY_TWELVE_TESTS_CI'if pure else'PASS_EXACT_CURRENT_CORE_FULL_TYPES_CI')if passed else'NOT_ACCEPTED',error=error,exitCode=code,sourceSnapshotCommit=a.commit,
    sourcePins=len(source),dependencyPins=len(deps),sourceDrift=source_drift,dependencyDrift=dependency_drift,
    diagnostics=len(result['diagnostics'])if'diagnostics'in result else None,harnessErrors=result.get('harnessErrors'),seedCount=len(result.get('seedFiles',[])),fullProgramFileCount=result.get('fullProgramFileCount'),
-   resourcePolicy=dict(stage='BACKEND_PROJECTION_EXACT_FOUR_SUITES'if backend else'PANEL_ORDINARY_CONFIG_FINITE13_R315'if panel else'SCOPED_IDENTITY_ONLY_TESTS'if pure else'FULL_TYPESCRIPT_PROGRAM',admissionPhysicalMiB=4096,admissionCommitMiB=3072,maxOwnedRssMiB=1024 if test_mode else 3072,maxOwnedPrivateMiB=1024 if test_mode else 3584,osPhysicalReserveMiB=3072,commitStopMiB=512,timeoutSeconds=120 if test_mode else 1200,heapMiB=768 if test_mode else 2560),
+   resourcePolicy=dict(stage='BACKEND_PROJECTION_EXACT_FOUR_SUITES'if backend else'PANEL_ORDINARY_CONFIG_FINITE13_R315'if panel else'SCOPED_IDENTITY_ONLY_TESTS'if pure else'FULL_TYPESCRIPT_PROGRAM',admissionPhysicalMiB=4096,admissionCommitMiB=3072,maxOwnedRssMiB=1024 if test_mode else 3072,maxOwnedPrivateMiB=1024 if test_mode else 3584,osPhysicalReserveMiB=3072,commitStopMiB=512,timeoutSeconds=120 if test_mode else 1200,heapMiB=768 if test_mode else 2816),
    peakOwnedRssBytes=peakrss,peakOwnedPrivateBytes=peakprivate,minimumPhysicalFreeBytes=minfree,minimumCommitHeadroomBytes=mincommit,remainingOwnedProcesses=remaining,
    elapsedSeconds=time.monotonic()-start,scopedTestResult=result if test_mode else None,panelFiniteR315=panel,typesReusedFromCommit=backend_meta.get('acceptedTypesCommit')if backend_meta else panel_meta.get('acceptedTypesCommit')if panel_meta else None,runtimePinnedFiles=len(panel_pins)if panel or backend else 0,backendProjectionTests=backend,ownedPids=sorted(owned),sourceApproval=False,FULL=False,applicationRuntimeStarted=False,databaseWrites=False,publicationPerformed=False,productionActivation=False)
   (out/'receipt.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8');print(json.dumps(receipt))
