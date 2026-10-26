@@ -1,0 +1,925 @@
+{
+  "contract": "gox-build.master30.complete-factory-material-kits.r1",
+  "baseDefinitionReleaseId": "ad0bf47b-5ddf-5c3e-a8f8-25fc640147d0",
+  "baseSearchReleaseId": "c6033a80-b7c0-589f-b003-89a880db7fbb",
+  "snapshotPath": "data/estimate-benchmarks/fixtures/master30-electrical-plumbing-five-current-r1.json",
+  "snapshotSha256": "03379cc4892a8536d1852efdb3195de59305ecfbdbc6875e104984c7154f006c",
+  "masterPath": "C:/Users/User/Downloads/GOX_BUILD_TZ_Single_Platform_Core_Sol61_2026-10-19(2).txt",
+  "masterSha256": "4fd2e79388521707cec6c9a75101061f81eb7a72beb4e16a1e39b991fab63f68",
+  "selectorId": "m30_material_technology",
+  "legacyChoiceRu": "Прежняя общая монтажная ветвь без нового заводского комплекта",
+  "profiles": [
+    {
+      "key": "plumbing",
+      "sourceId": "master30_mixer_complete_factory_kit_r1",
+      "countId": "m30_fixture_count",
+      "unitId": "item",
+      "prefix": "plumbing:basin-mixer:ready-site:r3",
+      "ownerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order",
+      "publicNameRu": "Монтаж смесителя на одно отверстие с подводкой, креплением и донным клапаном 1¼",
+      "choiceRu": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+      "wholeFactory": "basinMixerReadySiteMinimumInputDefinitionR3",
+      "sourcePrimaryId": "grohe33265002_install_count",
+      "kitRows": 9,
+      "physicalComponents": 3,
+      "openNeeds": [
+        {
+          "id": "pipes",
+          "nameRu": "Трубы для подключения смесителя",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_01"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "fittings",
+          "nameRu": "Фитинги, муфты и угольники подключения",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_02",
+            "components_07",
+            "components_08"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "seals",
+          "nameRu": "Уплотнители и уплотнительная лента",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_03",
+            "consumables_11"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "pipe-fixings",
+          "nameRu": "Крепёж труб",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_04"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "isolating-valves",
+          "nameRu": "Запорная арматура",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_05"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "pipe-insulation",
+          "nameRu": "Изоляция труб",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_06"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "additional-supports",
+          "nameRu": "Дополнительные кронштейны и закладные детали",
+          "category": "material",
+          "legacySuffixes": [
+            "components_09",
+            "components_46"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "trap",
+          "nameRu": "Сифон и подключение слива",
+          "category": "material",
+          "legacySuffixes": [
+            "components_10"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "interfaces",
+          "nameRu": "Примыкания, ремонтные вставки и доборные детали",
+          "category": "material",
+          "legacySuffixes": [
+            "components_44",
+            "components_45"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "contingency",
+          "nameRu": "Дополнительный запас материалов трубопровода",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_41",
+            "waste_30"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "surface-protection",
+          "nameRu": "Защита зоны работ и готовых поверхностей",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_42",
+            "consumables_48"
+          ],
+          "stage": "preparation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "marking",
+          "nameRu": "Маркировочные материалы",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_43"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-consumables",
+          "nameRu": "Паяльные расходники и расходные материалы инструмента",
+          "category": "material",
+          "legacySuffixes": [
+            "consumables_12",
+            "consumables_47"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "personal-protection",
+          "nameRu": "Средства индивидуальной защиты монтажника",
+          "category": "equipment",
+          "legacySuffixes": [
+            "consumables_13"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "mixer-mounting-key",
+          "nameRu": "Ключ для крепления смесителя",
+          "category": "equipment",
+          "legacySuffixes": [],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "waste-valve-key",
+          "nameRu": "Ключ для донного клапана",
+          "category": "equipment",
+          "legacySuffixes": [],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-25",
+          "nameRu": "Паяльник для труб",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_25"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-26",
+          "nameRu": "Пресс-инструмент",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_26"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-27",
+          "nameRu": "Опрессовочный насос",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_27"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-55",
+          "nameRu": "Измерительный инструмент",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_55"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-56",
+          "nameRu": "Механизированное оснащение монтажника",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_56"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "site-preparation",
+          "nameRu": "Подготовка и организация места монтажа",
+          "category": "service",
+          "legacySuffixes": [
+            "preparation_14",
+            "preparation_15",
+            "preparation_16",
+            "preparation_17",
+            "preparation_49",
+            "preparation_50",
+            "preparation_51"
+          ],
+          "stage": "preparation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "installation-labour",
+          "nameRu": "Труд монтажа, подключения и завершения участка",
+          "category": "labor",
+          "legacySuffixes": [
+            "labor_18",
+            "labor_19",
+            "labor_20",
+            "labor_21",
+            "labor_22",
+            "labor_23",
+            "labor_24",
+            "labor_52",
+            "labor_53",
+            "labor_54"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "delivery-unloading",
+          "nameRu": "Доставка и разгрузка материалов и приборов",
+          "category": "service",
+          "legacySuffixes": [
+            "logistics_28",
+            "logistics_29"
+          ],
+          "stage": "logistics",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "on-site-supply",
+          "nameRu": "Комплектация и подача материалов на участке",
+          "category": "service",
+          "legacySuffixes": [
+            "logistics_57"
+          ],
+          "stage": "logistics",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "returnable-packaging",
+          "nameRu": "Обратная логистика тары",
+          "category": "service",
+          "legacySuffixes": [
+            "logistics_58"
+          ],
+          "stage": "completion",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "waste-handling",
+          "nameRu": "Сбор, сортировка и передача отходов и упаковки",
+          "category": "service",
+          "legacySuffixes": [
+            "waste_31",
+            "waste_59"
+          ],
+          "stage": "completion",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "site-cleanup",
+          "nameRu": "Уборка рабочей зоны",
+          "category": "service",
+          "legacySuffixes": [
+            "waste_60"
+          ],
+          "stage": "completion",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "testing-handover",
+          "nameRu": "Проверки, испытания и сдача участка",
+          "category": "service",
+          "legacySuffixes": [
+            "quality_control_32",
+            "quality_control_33",
+            "quality_control_34",
+            "quality_control_35",
+            "quality_control_36",
+            "quality_control_37",
+            "quality_control_38",
+            "quality_control_61",
+            "quality_control_62",
+            "quality_control_63"
+          ],
+          "stage": "acceptance",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "quantity-review",
+          "nameRu": "Сметное сопровождение и проверка объёмов",
+          "category": "service",
+          "legacySuffixes": [
+            "overhead_39"
+          ],
+          "stage": "acceptance",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        }
+      ],
+      "coveredLegacySuffixes": [],
+      "materialOperationUses": {
+        "kit-order": [
+          "installation",
+          "mounting",
+          "water-connection",
+          "waste-connection"
+        ],
+        "flexible-hoses-reference": [
+          "water-connection"
+        ],
+        "waste-set-reference": [
+          "waste-connection"
+        ],
+        "mounting-set-reference": [
+          "mounting"
+        ]
+      },
+      "materialOperationUseEvidence": {
+        "installation": {
+          "sourceDefinition": "basinMixerReadySiteMinimumInputDefinitionR3",
+          "sourceRowId": "plumbing:basin-mixer:ready-site:r3:complete-installation-work",
+          "sourceLocator": "Accepted R3 whole mounting/water-connection/waste-connection scope; manufacturer exact complete kit instruction pp3–4."
+        },
+        "mounting": {
+          "sourceOperationId": "mounting",
+          "sourceComponentId": "mounting-set-reference"
+        },
+        "water-connection": {
+          "sourceOperationId": "water-connection",
+          "sourceComponentId": "flexible-hoses-reference"
+        },
+        "waste-connection": {
+          "sourceOperationId": "waste-connection",
+          "sourceComponentId": "waste-set-reference"
+        }
+      }
+    },
+    {
+      "key": "electrical",
+      "sourceId": "master30_led_complete_factory_kit_r1",
+      "countId": "m30_fixture_count",
+      "unitId": "pcs",
+      "prefix": "led-grid:dvo6560-6562",
+      "ownerRowId": "led-grid:dvo6560-6562:opal-4000",
+      "publicNameRu": "Монтаж светодиодной панели 36 Вт, 4000 К, IP40 в подготовленную решётку 600 × 600 мм",
+      "choiceRu": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+      "wholeFactory": "ledGridPanelDefinitionS2754 whole opal-4000 product subwork",
+      "sourcePrimaryId": "panel_count",
+      "productKey": "opal-4000",
+      "kitRows": 3,
+      "physicalComponents": 1,
+      "openNeeds": [
+        {
+          "id": "supply-line-materials",
+          "nameRu": "Кабель, гофротруба и канал питающей линии",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_01",
+            "materials_02",
+            "materials_03"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "connection-materials",
+          "nameRu": "Клеммы, наконечники и изоляционные материалы подключения",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_04",
+            "consumables_11",
+            "consumables_13"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "distribution-components",
+          "nameRu": "Щитовые элементы, автоматика и распределительные коробки",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_05",
+            "components_09",
+            "components_10"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "marking",
+          "nameRu": "Маркировочные материалы",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_06",
+            "materials_43"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "contingency",
+          "nameRu": "Дополнительный запас материалов питающей линии",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_41",
+            "waste_30"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "surface-protection",
+          "nameRu": "Защита зоны работ и готовых поверхностей",
+          "category": "material",
+          "legacySuffixes": [
+            "materials_42",
+            "consumables_48"
+          ],
+          "stage": "preparation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "additional-mounting",
+          "nameRu": "Внешние механизмы крепления, примыкания и закладные детали",
+          "category": "material",
+          "legacySuffixes": [
+            "components_07",
+            "components_44",
+            "components_45",
+            "components_46"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "installation-consumables",
+          "nameRu": "Стяжки и расходные материалы инструмента",
+          "category": "material",
+          "legacySuffixes": [
+            "consumables_12",
+            "consumables_47"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "personal-protection",
+          "nameRu": "Средства индивидуальной защиты электромонтажника",
+          "category": "equipment",
+          "legacySuffixes": [],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "access",
+          "nameRu": "Средство безопасного доступа к потолочной решётке",
+          "category": "equipment",
+          "legacySuffixes": [],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-25",
+          "nameRu": "Штроборез",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_25"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-26",
+          "nameRu": "Перфоратор",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_26"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-27",
+          "nameRu": "Электрический тестер",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_27"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-55",
+          "nameRu": "Измерительный инструмент",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_55"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "tool-56",
+          "nameRu": "Механизированное оснащение электромонтажника",
+          "category": "equipment",
+          "legacySuffixes": [
+            "equipment_56"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "site-preparation",
+          "nameRu": "Подготовка и организация места монтажа",
+          "category": "service",
+          "legacySuffixes": [
+            "preparation_14",
+            "preparation_15",
+            "preparation_16",
+            "preparation_17",
+            "preparation_49",
+            "preparation_50",
+            "preparation_51"
+          ],
+          "stage": "preparation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "installation-labour",
+          "nameRu": "Труд монтажа, подключения и завершения участка",
+          "category": "labor",
+          "legacySuffixes": [
+            "labor_18",
+            "labor_19",
+            "labor_20",
+            "labor_21",
+            "labor_22",
+            "labor_23",
+            "labor_24",
+            "labor_52",
+            "labor_53",
+            "labor_54"
+          ],
+          "stage": "installation",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "delivery-unloading",
+          "nameRu": "Доставка и разгрузка материалов и приборов",
+          "category": "service",
+          "legacySuffixes": [
+            "logistics_28",
+            "logistics_29"
+          ],
+          "stage": "logistics",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "on-site-supply",
+          "nameRu": "Комплектация и подача материалов на участке",
+          "category": "service",
+          "legacySuffixes": [
+            "logistics_57"
+          ],
+          "stage": "logistics",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "returnable-packaging",
+          "nameRu": "Обратная логистика тары",
+          "category": "service",
+          "legacySuffixes": [
+            "logistics_58"
+          ],
+          "stage": "completion",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "waste-handling",
+          "nameRu": "Сбор, сортировка и передача отходов и упаковки",
+          "category": "service",
+          "legacySuffixes": [
+            "waste_31",
+            "waste_59"
+          ],
+          "stage": "completion",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "site-cleanup",
+          "nameRu": "Уборка рабочей зоны",
+          "category": "service",
+          "legacySuffixes": [
+            "waste_60"
+          ],
+          "stage": "completion",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "testing-handover",
+          "nameRu": "Проверки, испытания и сдача участка",
+          "category": "service",
+          "legacySuffixes": [
+            "quality_control_32",
+            "quality_control_33",
+            "quality_control_34",
+            "quality_control_35",
+            "quality_control_36",
+            "quality_control_37",
+            "quality_control_38",
+            "quality_control_61",
+            "quality_control_62",
+            "quality_control_63"
+          ],
+          "stage": "acceptance",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        },
+        {
+          "id": "quantity-review",
+          "nameRu": "Сметное сопровождение и проверка объёмов",
+          "category": "service",
+          "legacySuffixes": [
+            "overhead_39"
+          ],
+          "stage": "acceptance",
+          "unitId": null,
+          "quantityUnitUnconfirmed": true
+        }
+      ],
+      "coveredLegacySuffixes": [
+        "components_08"
+      ],
+      "materialOperationUses": {
+        "opal-4000": [
+          "installation"
+        ],
+        "opal-4000-included": [
+          "installation"
+        ]
+      },
+      "materialOperationUseEvidence": {
+        "installation": {
+          "sourceDefinition": "ledGridPanelDefinitionS2754",
+          "sourceRowId": "led-grid:dvo6560-6562:installed-scope",
+          "sourceLocator": "Existing installed-scope operation installation (installation in ready grid and factory lead connection); manufacturer PDF3§4.3–4.4/PDF4§4.7. No connector consumption or mounting labor norm supplied."
+        }
+      }
+    }
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "definitionId": "67fe15dc-421c-5e29-8ff6-530a2603fb4e",
+      "definitionSha256": "a79e8b82df2694907403ea2679110fc05373efdd57d4a70589d3ea483a402b23",
+      "definitionVersion": 3,
+      "baselineId": "2817060e-9881-5c5c-84db-2fef782874d9",
+      "profileKey": "electrical",
+      "expectedParentShape": [
+        1,
+        63,
+        63
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_technical_room",
+      "definitionId": "3c55d9ea-23c9-506a-ab7d-24dcdb946f2c",
+      "definitionSha256": "244d8e581a696b0ef746e86d9b1b07dcfeac35fc3b920680b5342423359ed816",
+      "definitionVersion": 3,
+      "baselineId": "a2978869-d78a-5a1e-a810-501457b6658a",
+      "profileKey": "electrical",
+      "expectedParentShape": [
+        1,
+        63,
+        63
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "definitionId": "2db6ed7e-9481-550d-bb9a-772fd8df07d7",
+      "definitionSha256": "66aca0e0f0d8dfcb1bc4e6d864d12d32ead20e73b510631d32493e97fa6d1f29",
+      "definitionVersion": 3,
+      "baselineId": "6390b61d-dacb-593f-acc6-1c7a72ee9ff7",
+      "profileKey": "plumbing",
+      "expectedParentShape": [
+        1,
+        63,
+        63
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "definitionId": "9e4af712-1bee-56d9-950f-3ef43008b3a3",
+      "definitionSha256": "24a12f2beba59f1f82476c9b27452ea19c60ef6c92241edf37e34e1455005de2",
+      "definitionVersion": 3,
+      "baselineId": "d72af39e-ef1a-5d6e-9346-7b386511011d",
+      "profileKey": "plumbing",
+      "expectedParentShape": [
+        1,
+        63,
+        63
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "definitionId": "a026ced4-40f9-5334-adbd-04f27fce6c56",
+      "definitionSha256": "4fce9a5a8fbf5f1ca9a4e5688aa2a6ae2bee8cf8f33bd1f3a38b187744262e7f",
+      "definitionVersion": 3,
+      "baselineId": "58b37715-c455-56aa-ba44-df688902cd0b",
+      "profileKey": "plumbing",
+      "expectedParentShape": [
+        1,
+        63,
+        63
+      ]
+    }
+  ],
+  "sourcePins": [
+    {
+      "path": "src/lib/estimate/v4/basinMixerReadySiteMinimumInputR3.ts",
+      "sha256": "90066e9f320b302194c7c290d40628673d7cf3769545d82115aae8a624b35676"
+    },
+    {
+      "path": "src/lib/estimate/v4/basinMixerGrohe33265002KitR1.ts",
+      "sha256": "2c397abba07757f4ecf7b8f846aad82b13bc2cc543131c4fb6cab92c5abfc0ad"
+    },
+    {
+      "path": "src/lib/estimate/v4/ledGridPanelDvo6560S2754.ts",
+      "sha256": "48d9294d8637282ce49892ff92e55a300ff23a9c9c36c63c90de6c554025b0c5"
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "sha256": "56ffadc92ec669df51ab0f94a5bfc1d8f25a12b9eb9121f4c6323ea30a40cfc0"
+    },
+    {
+      "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+      "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/formulaGraph.ts",
+      "sha256": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts",
+      "sha256": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
+      "sha256": "1078cf8b1fb9841c40ae22ad16a1e6b737a71d9c1ff8d8d75e70c754c93a15aa"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts",
+      "sha256": "49c4e729df611a646bcf9c732a816d63a9847151350a2fb65672af470897bc7b"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/basin-mixer-ready-site-work-scope-r3.json",
+      "sha256": "5be4aeffadcd5a9af621b89a41c5ccffdbe7126f7845182e600f9e908e932ff5"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/basin-mixer-grohe33265002-kit-r1.json",
+      "sha256": "ab1039b29496f33e7c8205b6b5112bba4a47e2365525bcd91d7210d77f4be5db"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/led-grid-panel-dvo6560-6562-s27-54.json",
+      "sha256": "9eddf902349ec924e578ece8a0de260ab85e031941b4136ede84e41f1b773891"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts",
+      "sha256": "544d561544bf476be60a6de7a9fba207e2c7fb258b44d09458fefd76e9844bfc"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.ts",
+      "sha256": "1b98fe2db8f98581ec06d6c41d02a009b4ce0c039c7b425d20f522dc17e4750c"
+    },
+    {
+      "path": "src/lib/estimateStructuredPipeline/structuredEstimateRequestBinding.ts",
+      "sha256": "9eefb88cfb36e11584c8355f5aa001d1dabef24dfdc7655ab3c435bb73a0290a"
+    },
+    {
+      "path": "src/features/consumerRepair/requestEstimateViewModel.ts",
+      "sha256": "0ad69ec5d277f18be894c2e4511e429afdebf6dcb6fab47f01ce9db1037c25a0"
+    },
+    {
+      "path": "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts",
+      "sha256": "94f653040bb58d569403161e742903e62abdcaca118fd4bb025fe37db6145532"
+    },
+    {
+      "path": "tests/estimateNorms/ledLuminaireInstallationR1.contract.test.ts",
+      "sha256": "4770c9762bde24e4246ace5906913c0670faf75b85c8d109782af160f75730af"
+    }
+  ],
+  "sourceArtifacts": [
+    {
+      "path": "work/stream-c-plumbing-mixer/GROHE-2229613.pdf",
+      "sha256": "601da351cbf1a4423b3af76bfa5e92e70bad2c339564ed72e2bae6dfda7df9bd"
+    },
+    {
+      "path": "work/stream-c-plumbing-mixer/GROHE-33265002-primary.html",
+      "sha256": "6d91a01bc61cb378ed390ae6e943f2f1a79496c8bb941b49b1b3e9c8798cf1c3"
+    },
+    {
+      "path": ".release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf",
+      "sha256": "cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca"
+    }
+  ],
+  "scopeRu": "Полный заводской материал-комплект в существующей монтажной работе; количество целых комплектов равно геометрическому числу монтажных мест. Монтаж, инструмент, СИЗ, доступ, упаковка, отходы, перевозка и испытания не объявляются обеспеченными из комплектности изделия.",
+  "newOrderBoundaryRu": "Новый заказ по потребности без вычета склада и добавления резерва; это граница заказа, а не утверждение о нулевом фактическом складе или отсутствии отходов.",
+  "newFULL": 0,
+  "typedCurrentNeedClosures": 0,
+  "newWholeFactoryKits": 2,
+  "consumers": 5,
+  "newMissingMaterialKitOwners": 5,
+  "coveredLegacyPhysicalFrameRequirements": 2,
+  "priceInheritanceAllowed": false,
+  "sourceFactsNotClientQuestionnaire": true
+}

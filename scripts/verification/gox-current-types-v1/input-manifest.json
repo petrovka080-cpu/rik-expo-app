@@ -65,10 +65,14 @@
     "data/estimate-benchmarks/fixtures/masonry-opening-current-full-parent-r223.json": "7249185dad385b2881e19066ce1f6f42bc7a66fd6ce3076ccb4efd34d900e8a8",
     "data/estimate-benchmarks/fixtures/master24-ceiling-unresolved-included-pdf-r1.json": "7d6bf0f9dd01dcbe9edb761decdcacc05bd285b84ce1c36fcef09a9a594751af",
     "data/estimate-benchmarks/fixtures/master24-ordinary-geometry-current-catalogs-r1.json": "d1ff20a44e0e914fd8cd03cff8293bfa4b187f655b52a2347ef38a1d922ec1a3",
+    "data/estimate-benchmarks/fixtures/master30-electrical-plumbing-five-current-r1.json": "03379cc4892a8536d1852efdb3195de59305ecfbdbc6875e104984c7154f006c",
+    "data/estimate-benchmarks/fixtures/master32-panel-current-two-v4-r1.json": "82e0f2d05a4641a47130092f34a0778c451ee293a48d7d40ee63a62e6eca24b8",
     "data/estimate-benchmarks/fixtures/master33-masonry-published-editor-regression-r1.json": "38333202e8cfa7673e43d26f413011b5a92b291fad770f62fa2f255899e8e558",
     "data/estimate-benchmarks/fixtures/master36-roof-retained-history-edge-r1.json": "b693f5310e5c8acb9d287cad859af628e4de047e3629b62b392358e729c29f49",
     "data/estimate-benchmarks/fixtures/monolithic-repeat-retained-continuation-registration-r1.json": "cebaa54f0b435e8c69f6f5ede499d0f02568df4577fc6e6104e98283fcacb890",
     "data/estimate-benchmarks/fixtures/painting03002-accepted-evidence-r1.json": "22994a421f02b643324e762a31d5224c035d317f5ac2e5f53ba5559df2d47a0b",
+    "data/estimate-benchmarks/fixtures/panel-ready-grid-whole-post-independent-r287.json": "b90a7101a44777e10400e644d0f63bfd9769f22305162e09063d0e25e9168f05",
+    "data/estimate-benchmarks/fixtures/parapet004-technical-finite-testonly-r294.json": "8557066f529822fe195292622baa0a5a68af7eee94e7ae26ee54a951abe4e78f",
     "data/estimate-benchmarks/fixtures/planned-floor-thirteen-parents-s27-69.json": "0226af13066b86317ec192da837a37a50c1ba27b5d65bb657564c94fdb15fdfc",
     "data/estimate-benchmarks/fixtures/pvc-floor-complete-binding-historical-four-s27-69.json": "25edf22881c7cb1ae541bc1cc5420def10281288b1867e1fe63f145aaa21ea5f",
     "data/estimate-benchmarks/fixtures/pvc-floor-four-parents-s27-69.json": "0ea7328c4754286f615d1e841b3b7b9b42a91feb5037ba6753acab1f83eb8804",
@@ -111,6 +115,7 @@
     "data/estimate-benchmarks/source-packs/cn87-separation-screed-s27-54.json": "d39c98b9b6048e097b6e8a5605f14135355cb9c5c380e499c502f3e1b7799668",
     "data/estimate-benchmarks/source-packs/concrete-base-planned-preparation-two-s27-69.json": "0257b7a0405fc8b3972754dc3cd739e0169ef4d240baa06715a46dc103c03c3a",
     "data/estimate-benchmarks/source-packs/concrete-curing-five-consumers-route-r124.json": "24d77ac6a0431bde3d4f73ebd4cfffdea2a22ac6a05d1641091a5870eb3a1058",
+    "data/estimate-benchmarks/source-packs/concrete-curing-floor-only-route-r299.json": "4a19f840420507392e452b7336fd537d81f7ab9447a46f80c2dce0ce654a2302",
     "data/estimate-benchmarks/source-packs/concrete-curing-roller-normal-config-r108.json": "c953c0a7328ec14ea8fe6ecf2aec7b35266b30b02ab96f970040050d569bf5d8",
     "data/estimate-benchmarks/source-packs/concrete-curing-roller-whole-post-r108.json": "95a3dc0bf908614addf91b6575d1ff4950fd97ef151c23f65feaf204876a3d58",
     "data/estimate-benchmarks/source-packs/concrete-floor-base-demolition-s27-54.json": "367a3b1e0c4e9c60bacba5403f5e09c5567c56df730f4b512a7023d7dd8f1a57",
@@ -165,6 +170,8 @@
     "data/estimate-benchmarks/source-packs/interior-wall-finishing-existing-paint-composite-r502.json": "c17eb80a6e08528dec3524d330b263cfead54bd0bbdc8cf3dea65f9de9a03e4e",
     "data/estimate-benchmarks/source-packs/interior-wall-finishing-group-r502.json": "cf0cc62c862124678f303632571ee113b38137d68b13345dde30720343a49aa3",
     "data/estimate-benchmarks/source-packs/knauf-interior-plaster-conditional-composition-five-s27-63.json": "53d2015f32d7743b5354ffe035525d0bb542d707662093b86d3105c04d7ff953",
+    "data/estimate-benchmarks/source-packs/led-grid-panel-dvo6560-6562-s27-54.json": "9eddf902349ec924e578ece8a0de260ab85e031941b4136ede84e41f1b773891",
+    "data/estimate-benchmarks/source-packs/led-wago-project-connection-s27-54.json": "9e5a9e2bb945780387d7fe9d6581e015b5b3f4449a7356a348f24d973559e3f3",
     "data/estimate-benchmarks/source-packs/legrand-p31-blind-ep-joint-fasteners-r1.json": "48a88f5dab61309d95ad589ebd4964004884e6cb2d9c10a74314a7ddda8c8749",
     "data/estimate-benchmarks/source-packs/low-current-copper-certifier-pro-stock-r24.json": "3dd2470d2f96eff775bb843d04d27e4ba096d1cd668ba312c401baafaeb577d4",
     "data/estimate-benchmarks/source-packs/low-current-idc-whole-manual-post-r24.json": "87520b888ccdd47a75863e1b4b16a4035b1fb2c93b82d0667c761ecd995e9b31",
@@ -189,10 +196,13 @@
     "data/estimate-benchmarks/source-packs/masonry-glass-m25-display-map-r152.json": "29ae7f033e36155b88d6eb8f00d1f1cebbd1e7ca005424f49297e20791d2a4fd",
     "data/estimate-benchmarks/source-packs/masonry-glass-opening-existing-owner-map-r223.json": "a4ec1c1efc87193dd9b3d5a3a5818d61fbfb980104f8bf1ff9f6ae72611a071f",
     "data/estimate-benchmarks/source-packs/masonry-glass-opening-existing-owner-r223.json": "2eb2dc8d62069ff7412b15ed3f8081299baf6fc3ab377ccd01cb1b405e995f2d",
+    "data/estimate-benchmarks/source-packs/master30-electrical-plumbing-complete-factory-kits-r1.json": "d7254b12ee4c7c73dd98af5d286a462af081bd63e0a866dcb8b65034b3951013",
+    "data/estimate-benchmarks/source-packs/master32-panel-tool-provision-r1.json": "f4ed03c2dc09a5607b4c5b5cf7421e01817b566a402ad2c2a634d95fcbb96705",
     "data/estimate-benchmarks/source-packs/mineral-ceiling-third-putty-coat-s27-54.json": "a77aca3c2b2054e492f0a7913d196e9acd58562f9cdaafbbbe04148f5e84018a",
     "data/estimate-benchmarks/source-packs/mineral-ceiling-third-putty-supplier-gates-s27-54.json": "629db4b19b6677305238ac626f535d29c40ea9da73cea7b32d3f0738633f3ce1",
     "data/estimate-benchmarks/source-packs/monolithic-stair-doka-krer06-111-01-r1.json": "1f597c7cd1e124f4f29ec0cd7a0219965de3d6ea9f25cd29c5e3668d3efc8674",
     "data/estimate-benchmarks/source-packs/p31-ep341213-physical-side-plate-reference-r1.json": "b41f923bf8ea852e950a983dd64c053389e4281fd3f04e6515d6fec355b55c5e",
+    "data/estimate-benchmarks/source-packs/panel-ready-grid-whole-post-project-r287.json": "3a82d0d4ebba442737fe98c309d0510ed787e192bb8e1861c85afd1ffd0a7360",
     "data/estimate-benchmarks/source-packs/paving-cut-stationary70-quantity-r1.json": "1b0199f7417175fa19c45fe7141249cc02fe7eba3913fe17b37ad9e31d7e5e8a",
     "data/estimate-benchmarks/source-packs/paving-tile-prepared-base-s27-54.json": "d49ae1c03318296d28548bd7e1f4ccdf7d92342f315d1947bd0d06523176ced3",
     "data/estimate-benchmarks/source-packs/public-calculation-detail-roles-r1.json": "df1d4c31d64225b66c90ac9e2bbb6fc481137efa5a5710b000f848ee2c77beec",
@@ -232,6 +242,7 @@
     "data/estimate-benchmarks/source-packs/roof-mastic-mesh-native-whole00302-r24.json": "ef203a763efbed094f059f55bc07ba0fc62d38a21e355cada5b6f33bed517ba5",
     "data/estimate-benchmarks/source-packs/roof-mastic-preparation-native01901-r24.json": "a07589f10a826b6e95dda804d91f50e8137123327c95cf4e5412d3552820da11",
     "data/estimate-benchmarks/source-packs/roof-metal-trim-companion-s27-67.json": "db04a5ddcbedac81777de9dd92e6441d90285de2018ef9f65585eac85d03b65d",
+    "data/estimate-benchmarks/source-packs/roof-parapet004-root-selected-subject-r297.json": "6d38cf9b0c38250db310ad7a5d14113d1f3e77d764a40910676681495c313b54",
     "data/estimate-benchmarks/source-packs/roof-primer-with-preparation-native01601-r24.json": "d0ba4320bdc106e522a060c30acccf7ce2a631e69088b40dc5748dd8d22fd0c8",
     "data/estimate-benchmarks/source-packs/roof-protected-flat-roll-native00201-r24.json": "9c56089773cf74c9c0320ed617ef384c69d83dde1021198ee1f0498dbe4c5df7",
     "data/estimate-benchmarks/source-packs/roof-protected-flat-roll-native00202-r24.json": "5a3589f3f57c74e573d679a9523b268436d5de7075c4d2ead388e5ea9d6d1a87",
@@ -258,6 +269,10 @@
     "data/estimate-benchmarks/source-packs/roof-vapor-native01502-r24.json": "c3fc3d7425058eded02ca6710cce0b0a98f10f4efc3247aaedbcbc79c3df0097",
     "data/estimate-benchmarks/source-packs/roof-vapor-native01504-r24.json": "dfbc34a86c2e90e4816ec01604be4c1f1346d9ef6e1721ad27fa784f17c19b82",
     "data/estimate-benchmarks/source-packs/roof-vapor-native01505-r24.json": "65dc55c0389228fe50feaebf7cbdbd32958c369e6b7a831471a87b87065d1081",
+    "data/estimate-benchmarks/source-packs/roof-wall-parapet-apron-existing-owner-map00402-r24.json": "4fdd5d5c6de3ce632eb0f005f8d444dc17df4668777ba6ca43fc3db87695fa97",
+    "data/estimate-benchmarks/source-packs/roof-wall-parapet-apron-native00402-r24.json": "fcdcfef440b59e340c19c03968b88cb64222352e4fa22956cd6dd1359e5d9897",
+    "data/estimate-benchmarks/source-packs/roof-wall-parapet-two-aprons-native00403-r24.json": "b26e3b335ee4161ff18c70936886d87a718e33718512fb42430692a812bc8bf4",
+    "data/estimate-benchmarks/source-packs/roof-wall0040203-independent-whole-map-r24.json": "5f288cd3cacbec3a66092fb77e945db87a5ca7ea7f70537beb55825b358c6eaa",
     "data/estimate-benchmarks/source-packs/roof-window-operation-resources-s27-50.json": "37a2d107c4902f47ea2f5a651150ba1fdc94d642fc2d9b19bb9b19ba999124ee",
     "data/estimate-benchmarks/source-packs/roof002-complete-table-independent-native-map-r24.json": "4626a5de6b0e6cf9e42cbc38eea61537a3d84c1d08ba28f9c7f546941908dda3",
     "data/estimate-benchmarks/source-packs/roof014-independent-full-five-profile-map-r24.json": "fc1bdc69ded99ce2971b01ec6227eb716099b50c8d1ca431b76134dec1c0a0e6",
@@ -389,6 +404,8 @@
     "scripts/estimate/r4a13/catalogFirstEstimateMinimumInputAudit.shared.ts": "c40cd5746bf94c66e95ca2e807cd31c0d1ae3ab15921a074bf407bfaa1808812",
     "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts": "e39c2aa3555518620e0d538cfcfe9cd858d48d9aac949976d23e5f9f9450c895",
     "scripts/estimate/r4a13/concreteCuringCurrentFourR273.test.ts": "815d1e5fc0c6f7792b3c2991ab54ba339909f7620a10aa5dd3d851756145b28c",
+    "scripts/estimate/r4a13/concreteCuringFloorCurrentR299.test.ts": "55cb2674de418f47346632339d2574db6a011dbeaa1090798724856cfe4a9699",
+    "scripts/estimate/r4a13/concreteCuringFloorFormalNormalLockedR299.test.ts": "9e09db6654e195d6570c6623c2fec3de6f6dc54f7d1ff8b899a18f0ec31a3abc",
     "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts": "6fcd3e61268b204bcce82701e98f6111375db99ff515c33c47a83986ef0cc33a",
     "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts": "4c33d590e163a1a57c987e6ae9093e647c6990c22e3da8b9493f962579880440",
     "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts": "0452699e7d46af32e5f0c68992833d3f94385395f3d5eee0dcb99b8dc9168a9a",
@@ -440,7 +457,10 @@
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": "fe8f963ff2b7869949b5593c44517590c836ee32b35a3cf26f9a21e19026ee16",
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts": "8cf5fe6385481c3c9db87e5026f211ded1acd6daa6db30d2418406ed49ba0847",
     "scripts/estimate/r4a13/monolithicRepeatedRetainedContinuationR1.ts": "b4da165a3fcba3d3e227db7191296bb0b5fd48b8290728d79ac83a9c188eb2db",
+    "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": "abb4422f56d02e8bab20cd6bf5c770d733150b79fbc06db36655bdb998d376fa",
     "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts": "f47af04a3e700b761862fe3b899d7817bd91027f685a39d8ed39b0f640b148c3",
+    "scripts/estimate/r4a13/panelReadyGridCurrentMasterR287.bound.test.ts": "08e28c402d58b8b6a6dff906a096c263c9ddba38ca5b9e6c4d28ee886f5e66f5",
+    "scripts/estimate/r4a13/panelReadyGridFormalNormalLockedR287.test.ts": "46a2f6e7ad8e6fa3972424eebe5e57b877ee3c16c87e6f2559854959aaab5a3e",
     "scripts/estimate/r4a13/prepareAccessControlLockWholeFactoryR24.ts": "383e6ae4424aa50517d99fe4d04377766a342de22912fa3810d538f55a0f8141",
     "scripts/estimate/r4a13/prepareAggressiveEnvironmentBrickFloorOnBituminousMasticOrAcidResistantMortarDemolitionKrer46Successor.ts": "566fdb87fea4177d5c2f15e05631c585e16b8b645c8295f0f7c2971946fa301f",
     "scripts/estimate/r4a13/prepareAggressiveEnvironmentCementOrConcreteFloor25mmDemolitionKrer46Successor.ts": "a96169586744032bf8968f43de3f979e755de1d9e8ad81c7789745336a6e8b3f",
@@ -472,7 +492,7 @@
     "scripts/estimate/r4a13/prepareCementSandScreedDemolitionStandardSuccessor.ts": "c4309fa4ba9846eb78534e791b36e570f0852790fb684f79eea364969c8386f3",
     "scripts/estimate/r4a13/prepareCeramicFloorCementMortarKrer11Column03AppendR1.test.ts": "d9451e92d17a1c61c1fdf36049ae629c10810be7c00bb2dda3b3e47dab32b4b5",
     "scripts/estimate/r4a13/prepareCeramicFloorCementMortarKrer11Column03AppendR1.ts": "0ef4ffe2ca60b063bf60f96fba3d411ea5a446b0a31b77982ed7d9711d32697f",
-    "scripts/estimate/r4a13/prepareConcreteCuringRollerWholePostR108.ts": "b1b80b91b1251e98f863abe7e4f3ca66ce92150d96838082d4843d72b7e876df",
+    "scripts/estimate/r4a13/prepareConcreteCuringRollerWholePostR108.ts": "1bf3db81e78dff28b167f7bd948b5abf0a471c6dfb755dd6f1afade1c66e7c86",
     "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts": "6bf096157be39be09a913fad053d27194c14c3cdf203d99f07457390ff0e3f26",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.test.ts": "c2ba5f9367795a3889a2ea61e8b910a7420005ffd4440aafb9002f498acf66a2",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.ts": "f2966bee892f08237f0bd50c054845ee6ea7a6c59032f03f909d536c4bd5fff9",
@@ -524,6 +544,7 @@
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "9ec442c9540c51b55ae11b1edc2948470558c3884cb395bfb705e4e6af380f2e",
     "scripts/estimate/r4a13/prepareMasterStripFoundationConcretePlacementProfileSuccessor.ts": "685967f84fb291424437ef9c2ac41c69a3bf65dd8c3e60b92989df4fb125a403",
     "scripts/estimate/r4a13/prepareMasterSurfaceDrainageChannelSuccessor.ts": "912433eb6b61bb988d49abd7d24777ce7de95f4ed4bb7dcf1b2f6bcca6c601ff",
+    "scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts": "2cbc534073eeb8ce140f42dd14f1ca2ca703bb256a1b27aee21a8ff20cd98cdb",
     "scripts/estimate/r4a13/preparePavingCut70AdmittedMasterAppendR2.ts": "214c15286e7ad28d1d094adf145bad923b6ae748ee2daba5254de90ffde17dbd",
     "scripts/estimate/r4a13/preparePavingCutStationary70ConditionalMasterAppendR1.ts": "0c1140c917fd3522e2dd3bedcd408131704300a6049365ce70ff8bfe567a1d27",
     "scripts/estimate/r4a13/prepareRoadMarking01601AdmittedMasterAppendR1.test.ts": "2a457af7dc03456269d1204103476abd6c06b577cb50ef2f8cfae206224271f7",
@@ -532,6 +553,7 @@
     "scripts/estimate/r4a13/prepareRolledRoofCoveringDemolitionKrer46RemainingVariantSuccessor.ts": "cc2e066e183c54265cb114c0be6ecf4cbd86d3f66a2c05435eaaf9a6bb54b6b7",
     "scripts/estimate/r4a13/prepareRoofFlat003006CommonR24.ts": "d49f58e4b7e79487e1ba967d163567ed494379d2fa903aa74ea89153effa5706",
     "scripts/estimate/r4a13/prepareRoofMasticMeshExisting003R24.ts": "bb0b745c9abff92eda15e0747469d692356b7503f09525cb1fdbecc16b427f91",
+    "scripts/estimate/r4a13/prepareRoofParapet004TechnicalWholeR294.ts": "1cc349e14521b356a9d689ffee5542d1d0d5dada34698aa055e4a04130eb309c",
     "scripts/estimate/r4a13/prepareRoofSingle539WholeLayersR24.ts": "2d32c38f835964f13a25ce7fab7e1ae7262f03c73c3b09f6b00a1669dbec69b0",
     "scripts/estimate/r4a13/prepareS19FirstEstimateFinishSuccessor.ts": "405efd56b8f7b10ce44b4caa321f969185b7922726e3fbd4f75915f38c6f228c",
     "scripts/estimate/r4a13/prepareS2716AsphaltLevelSuccessor.ts": "6ef01521765ab1b030ea2a9bbdcd9ef2aa388a30058dde905d14019ec4134117",
@@ -580,6 +602,9 @@
     "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts": "5d94c0531fd94374538acc1da163a785f4020555554646d2ffcf3cddb8d0fb63",
     "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts": "83ea7468adce2e240879984f82dbaa4623d874f55fc17937eadae41e7bc1f44e",
     "scripts/estimate/r4a13/pvcBitumenTransitionGuide2024ControlInput.ts": "ce7f68c70f0fce84efd4f5312de3a62229f014b2ba08dcc5613bf2a4f3cf7760",
+    "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": "6bc5294e321dd7aace181571857c410e0df3220d065767829cd1e2bae8085c79",
+    "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": "88a6db6acfaea87a4e939ea7042b36aacb7ae36ba71daa20dcf065895c90d6d2",
+    "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts": "47397c5446b3c83c1f264e2babce371c6eb5bf2fcc89395f18b7373f89cbb047",
     "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts": "1dc65b8424bb1f6faff9507d8feb4f6ba32eead06fdf802200c7836d6c9d7119",
     "scripts/estimate/r4a13/roofSingle539FiniteCasesR24.ts": "32b7ff484656a563c5b6423f2f3c4bcd981db27fb49ec93f6918422d92667e6c",
     "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts": "9018b239fcc2e41ba4961cab62d9ecd34fa67b91066c6dc16bf19c4063496cc8",
@@ -609,6 +634,7 @@
     "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts": "a85d118756cb999ec5eac5bd27a589fa79b80f2c34421e37fc3bf0083baf3aa8",
     "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts": "6b42f92c42a7aaa73d4602735d883aed8130017a4db2288716f05abe6ea36170",
     "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts": "1ba146ed482a432e46dc97c9e337b9071a5bc4de77c9340e2d16712296cf8c73",
+    "scripts/estimate/r4a13/verifyPanelReadyGridWholePostR287.ts": "5db1d8d8d2cdc1cfdfea97faaea4e866727885bef150a3c9cbb197b4f7cdae6f",
     "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts": "520fd7ebd61c69db9b7694c2a21dfd02fc7aa5e0cf56b859a3d06c88d68e267e",
     "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts": "32985ee7ab5d6220f11f983f2c0ccc556040693b16221b5ab42d23e5965e943c",
     "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts": "1134fee0cac14fb18931a7e3c02e7d0b9e6fb228fd03f519d7d1c2f0d5094b6e",
@@ -626,7 +652,7 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "290a7e46927d961004e7b371a687ac7e02c43127a1c3b1785f557f6696e45f97",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1844,6 +1870,7 @@
     "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts": "b604ef74a4a56f68daeba863e962763161ae9262cf7a8ef585faf795d8fd0f70",
     "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts": "f03377bd90ef595efb639c07fec3d22f03972021982e8fc74ce50e2b69ed4485",
     "src/lib/estimate/v4/jointReinforcementR1.ts": "027cb1706469c89475f96c543fd514187436110445894b41d75863091ade2b62",
+    "src/lib/estimate/v4/ledGridPanelDvo6560S2754.ts": "48d9294d8637282ce49892ff92e55a300ff23a9c9c36c63c90de6c554025b0c5",
     "src/lib/estimate/v4/ledLuminaireInstallationR1.ts": "8d35282e45dc3c2873428bb7ff2dda932df565a51da87f65619bc7cc73864351",
     "src/lib/estimate/v4/legrandP31BlindEpJointFastenersR1.test.ts": "b5f861cefa5ab6df59a40d7dc87bbf236962670195d3ed992e5f509be3790c7c",
     "src/lib/estimate/v4/legrandP31BlindEpJointFastenersR1.ts": "71c5bf20d1ad5a7079ea384f62742c1306dc2152ae19db973cff0ac0b7d8a159",
@@ -1862,6 +1889,8 @@
     "src/lib/estimate/v4/masonryGlassBlockNormalCardsR103.ts": "3ebafd9f73ba095b1ff0678cf985cc625b11304fee0b317f1691cfc69c70fff0",
     "src/lib/estimate/v4/masonryGlassM25OperationDisplayR152.ts": "f9ee5a1c77514518868e103bf30dd656e048642df0d9b8af6a20071db4f718e0",
     "src/lib/estimate/v4/masonryGlassOpeningExistingOwnerR223.ts": "7cf3e76a369f69f89bf80139f7deef76d77cdf4f4c5a39dc59e56daad33913fd",
+    "src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.ts": "3a080af2427dc0328a986a0b7691f8adf9f1e44b7bfbe759a72dc51fc7b81c71",
+    "src/lib/estimate/v4/master32PanelToolProvisionR1.ts": "8560971754083b98a3fdc684fb093abaa22f4d06859789c9fdd8337764bba97c",
     "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts": "a93313b9a65ff4058daabe3db412dffa79d9c4f3b3cade47074d0fca202f6a20",
     "src/lib/estimate/v4/mineralCeilingThirdPuttyCoatS2754.ts": "150d9985d86076af8540cd29003ed8ab493d2a50c7431b170a0f1e13cb60f0ed",
     "src/lib/estimate/v4/mineralCeilingThirdPuttySupplierGatesS2754.ts": "feea1d25660d74d2d9ad8d718010639ed353e8128e73f2b156857abea9b20986",
@@ -3693,14 +3722,14 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "290a7e46927d961004e7b371a687ac7e02c43127a1c3b1785f557f6696e45f97",
-  "canonicalSourceFreezeSha256": "89d1c849e207337a897dd0b12a81bd2dd8f8baeebb9339c3549d639821a6074e",
+  "originalSeedManifestSha256": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
+  "canonicalSourceFreezeSha256": "9817aaeb47d5c5e75dc85426820cde4bd620eb50a62eef35f068c505bc16832b",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 101917807,
+    "sourceBytes": 106097791,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4335,8 +4364,8 @@
         "owner": "CONCRETE_CURING_SOURCE_CANDIDATE_NOT_PUBLICATION"
       },
       "scripts/estimate/r4a13/prepareConcreteCuringRollerWholePostR108.ts": {
-        "sha256": "b1b80b91b1251e98f863abe7e4f3ca66ce92150d96838082d4843d72b7e876df",
-        "owner": "CONCRETE_CURING_SOURCE_CANDIDATE_NOT_PUBLICATION"
+        "sha256": "1bf3db81e78dff28b167f7bd948b5abf0a471c6dfb755dd6f1afade1c66e7c86",
+        "owner": "SAME_ROOT_R108_FACTORY_FLOOR_ONLY_EXTENSION"
       },
       "data/estimate-benchmarks/source-packs/concrete-curing-roller-whole-post-r108.json": {
         "sha256": "95a3dc0bf908614addf91b6575d1ff4950fd97ef151c23f65feaf204876a3d58",
@@ -4605,14 +4634,147 @@
       "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts": {
         "sha256": "9018b239fcc2e41ba4961cab62d9ecd34fa67b91066c6dc16bf19c4063496cc8",
         "owner": "EXISTING_WHOLE539_FORMAL_NORMAL_LOCKED_READONLY_ENTRY_ONLY"
+      },
+      "data/estimate-benchmarks/source-packs/concrete-curing-floor-only-route-r299.json": {
+        "sha256": "4a19f840420507392e452b7336fd537d81f7ab9447a46f80c2dce0ce654a2302",
+        "owner": "EXACT_FLOOR_DATA_ONLY_NO_PUBLIC_NEW_OWNER"
+      },
+      "scripts/estimate/r4a13/concreteCuringFloorCurrentR299.test.ts": {
+        "sha256": "55cb2674de418f47346632339d2574db6a011dbeaa1090798724856cfe4a9699",
+        "owner": "ONE_FLOOR_CONFIG_ONLY_OR_EIGHT_FINITE_NOT_OLD_FOUR_REPLAY"
+      },
+      "scripts/estimate/r4a13/concreteCuringFloorFormalNormalLockedR299.test.ts": {
+        "sha256": "9e09db6654e195d6570c6623c2fec3de6f6dc54f7d1ff8b899a18f0ec31a3abc",
+        "owner": "EXISTING_R275_FORMAL_AND_R293_WHOLE_RAW_JOURNAL_PROFILE_ONE_FLOOR_ONLY"
+      },
+      "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": {
+        "sha256": "abb4422f56d02e8bab20cd6bf5c770d733150b79fbc06db36655bdb998d376fa",
+        "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
+      },
+      "data/estimate-benchmarks/source-packs/panel-ready-grid-whole-post-project-r287.json": {
+        "sha256": "3a82d0d4ebba442737fe98c309d0510ed787e192bb8e1861c85afd1ffd0a7360",
+        "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
+      },
+      "scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts": {
+        "sha256": "2cbc534073eeb8ce140f42dd14f1ca2ca703bb256a1b27aee21a8ff20cd98cdb",
+        "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
+      },
+      "scripts/estimate/r4a13/verifyPanelReadyGridWholePostR287.ts": {
+        "sha256": "5db1d8d8d2cdc1cfdfea97faaea4e866727885bef150a3c9cbb197b4f7cdae6f",
+        "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
+      },
+      "scripts/estimate/r4a13/panelReadyGridCurrentMasterR287.bound.test.ts": {
+        "sha256": "08e28c402d58b8b6a6dff906a096c263c9ddba38ca5b9e6c4d28ee886f5e66f5",
+        "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
+      },
+      "data/estimate-benchmarks/fixtures/panel-ready-grid-whole-post-independent-r287.json": {
+        "sha256": "b90a7101a44777e10400e644d0f63bfd9769f22305162e09063d0e25e9168f05",
+        "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
+      },
+      "scripts/estimate/r4a13/panelReadyGridFormalNormalLockedR287.test.ts": {
+        "sha256": "46a2f6e7ad8e6fa3972424eebe5e57b877ee3c16c87e6f2559854959aaab5a3e",
+        "owner": "PANEL_CURRENT_V5_SOURCE_ONLY_FINAL_7"
+      },
+      "src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.ts": {
+        "sha256": "3a080af2427dc0328a986a0b7691f8adf9f1e44b7bfbe759a72dc51fc7b81c71",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "src/lib/estimate/v4/master32PanelToolProvisionR1.ts": {
+        "sha256": "8560971754083b98a3fdc684fb093abaa22f4d06859789c9fdd8337764bba97c",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "data/estimate-benchmarks/source-packs/master30-electrical-plumbing-complete-factory-kits-r1.json": {
+        "sha256": "d7254b12ee4c7c73dd98af5d286a462af081bd63e0a866dcb8b65034b3951013",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "data/estimate-benchmarks/source-packs/led-grid-panel-dvo6560-6562-s27-54.json": {
+        "sha256": "9eddf902349ec924e578ece8a0de260ab85e031941b4136ede84e41f1b773891",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "src/lib/estimate/v4/ledGridPanelDvo6560S2754.ts": {
+        "sha256": "48d9294d8637282ce49892ff92e55a300ff23a9c9c36c63c90de6c554025b0c5",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "data/estimate-benchmarks/fixtures/master30-electrical-plumbing-five-current-r1.json": {
+        "sha256": "03379cc4892a8536d1852efdb3195de59305ecfbdbc6875e104984c7154f006c",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "data/estimate-benchmarks/source-packs/master32-panel-tool-provision-r1.json": {
+        "sha256": "f4ed03c2dc09a5607b4c5b5cf7421e01817b566a402ad2c2a634d95fcbb96705",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "data/estimate-benchmarks/fixtures/master32-panel-current-two-v4-r1.json": {
+        "sha256": "82e0f2d05a4641a47130092f34a0778c451ee293a48d7d40ee63a62e6eca24b8",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "data/estimate-benchmarks/source-packs/led-wago-project-connection-s27-54.json": {
+        "sha256": "9e5a9e2bb945780387d7fe9d6581e015b5b3f4449a7356a348f24d973559e3f3",
+        "owner": "EXACT_EXISTING_HELD_IMPORT_NO_PRODUCT_CHANGE"
+      },
+      "scripts/estimate/r4a13/prepareRoofParapet004TechnicalWholeR294.ts": {
+        "sha256": "1cc349e14521b356a9d689ffee5542d1d0d5dada34698aa055e4a04130eb309c",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts": {
+        "sha256": "47397c5446b3c83c1f264e2babce371c6eb5bf2fcc89395f18b7373f89cbb047",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": {
+        "sha256": "88a6db6acfaea87a4e939ea7042b36aacb7ae36ba71daa20dcf065895c90d6d2",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": {
+        "sha256": "6bc5294e321dd7aace181571857c410e0df3220d065767829cd1e2bae8085c79",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "data/estimate-benchmarks/source-packs/roof-parapet004-root-selected-subject-r297.json": {
+        "sha256": "6d38cf9b0c38250db310ad7a5d14113d1f3e77d764a40910676681495c313b54",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "data/estimate-benchmarks/fixtures/parapet004-technical-finite-testonly-r294.json": {
+        "sha256": "8557066f529822fe195292622baa0a5a68af7eee94e7ae26ee54a951abe4e78f",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "data/estimate-benchmarks/source-packs/roof-wall-parapet-apron-native00402-r24.json": {
+        "sha256": "fcdcfef440b59e340c19c03968b88cb64222352e4fa22956cd6dd1359e5d9897",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "data/estimate-benchmarks/source-packs/roof-wall-parapet-apron-existing-owner-map00402-r24.json": {
+        "sha256": "4fdd5d5c6de3ce632eb0f005f8d444dc17df4668777ba6ca43fc3db87695fa97",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "data/estimate-benchmarks/source-packs/roof-wall-parapet-two-aprons-native00403-r24.json": {
+        "sha256": "b26e3b335ee4161ff18c70936886d87a718e33718512fb42430692a812bc8bf4",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
+      },
+      "data/estimate-benchmarks/source-packs/roof-wall0040203-independent-whole-map-r24.json": {
+        "sha256": "5f288cd3cacbec3a66092fb77e945db87a5ca7ea7f70537beb55825b358c6eaa",
+        "owner": "COMMON_SOURCE_ONLY_BATCH_R303"
       }
     },
     "extraRoots": [
+      "data/estimate-benchmarks/fixtures/master30-electrical-plumbing-five-current-r1.json",
+      "data/estimate-benchmarks/fixtures/master32-panel-current-two-v4-r1.json",
+      "data/estimate-benchmarks/fixtures/panel-ready-grid-whole-post-independent-r287.json",
+      "data/estimate-benchmarks/fixtures/parapet004-technical-finite-testonly-r294.json",
+      "data/estimate-benchmarks/source-packs/concrete-curing-floor-only-route-r299.json",
+      "data/estimate-benchmarks/source-packs/led-grid-panel-dvo6560-6562-s27-54.json",
+      "data/estimate-benchmarks/source-packs/led-wago-project-connection-s27-54.json",
+      "data/estimate-benchmarks/source-packs/master30-electrical-plumbing-complete-factory-kits-r1.json",
+      "data/estimate-benchmarks/source-packs/master32-panel-tool-provision-r1.json",
+      "data/estimate-benchmarks/source-packs/panel-ready-grid-whole-post-project-r287.json",
+      "data/estimate-benchmarks/source-packs/roof-parapet004-root-selected-subject-r297.json",
+      "data/estimate-benchmarks/source-packs/roof-wall-parapet-apron-existing-owner-map00402-r24.json",
+      "data/estimate-benchmarks/source-packs/roof-wall-parapet-apron-native00402-r24.json",
+      "data/estimate-benchmarks/source-packs/roof-wall-parapet-two-aprons-native00403-r24.json",
+      "data/estimate-benchmarks/source-packs/roof-wall0040203-independent-whole-map-r24.json",
       "scripts/estimate/r4a13/accessControlLockWholeActualRehearsalR24.test.ts",
       "scripts/estimate/r4a13/bindAccessControlLockActualFormalRegistryR24.ts",
       "scripts/estimate/r4a13/canonicalMachineHourCrossFamilyR233.test.ts",
       "scripts/estimate/r4a13/concreteCuringCurrentFormalNormalLockedR275.test.ts",
       "scripts/estimate/r4a13/concreteCuringCurrentFourR273.test.ts",
+      "scripts/estimate/r4a13/concreteCuringFloorCurrentR299.test.ts",
+      "scripts/estimate/r4a13/concreteCuringFloorFormalNormalLockedR299.test.ts",
       "scripts/estimate/r4a13/concreteWholeHoleScopeGuardR241.test.ts",
       "scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts",
       "scripts/estimate/r4a13/elecorEndcapsActualBoundR248.test.ts",
@@ -4635,7 +4797,10 @@
       "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts",
       "scripts/estimate/r4a13/masterMonolithicRepairGeometryVisibilityOnlyR60.ts",
       "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+      "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts",
       "scripts/estimate/r4a13/ownedDomain/socketCompleteSurfaceWholeR266.ts",
+      "scripts/estimate/r4a13/panelReadyGridCurrentMasterR287.bound.test.ts",
+      "scripts/estimate/r4a13/panelReadyGridFormalNormalLockedR287.test.ts",
       "scripts/estimate/r4a13/prepareAccessControlLockWholeFactoryR24.ts",
       "scripts/estimate/r4a13/prepareConcreteCuringRollerWholePostR108.ts",
       "scripts/estimate/r4a13/prepareConcreteWholeHoleFillingR61.ts",
@@ -4656,11 +4821,16 @@
       "scripts/estimate/r4a13/prepareMasonryGlassM25OperationDisplayR152.ts",
       "scripts/estimate/r4a13/prepareMasonryGlassOpeningExistingOwnerR223.ts",
       "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+      "scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts",
       "scripts/estimate/r4a13/prepareRoofFlat003006CommonR24.ts",
       "scripts/estimate/r4a13/prepareRoofMasticMeshExisting003R24.ts",
+      "scripts/estimate/r4a13/prepareRoofParapet004TechnicalWholeR294.ts",
       "scripts/estimate/r4a13/prepareRoofSingle539WholeLayersR24.ts",
       "scripts/estimate/r4a13/prepareSocketCompleteSurfaceCurrentMasterR266.ts",
       "scripts/estimate/r4a13/prepareWallCeramicCementExistingOwnerF271.ts",
+      "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts",
+      "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts",
+      "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts",
       "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts",
       "scripts/estimate/r4a13/roofSingle539FiniteCasesR24.ts",
       "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts",
@@ -4669,6 +4839,7 @@
       "scripts/estimate/r4a13/socketCompleteSurfaceCurrentMasterR266.bound.test.ts",
       "scripts/estimate/r4a13/verifyElecorEndcapsWholeR239.ts",
       "scripts/estimate/r4a13/verifyMasonryGlassOpeningNativePriceHoldR223.ts",
+      "scripts/estimate/r4a13/verifyPanelReadyGridWholePostR287.ts",
       "scripts/estimate/r4a13/verifySocketCompleteSurfaceWholeR266.ts",
       "scripts/estimate/r4a13/wallCeramicCementExistingOwnerF271.test.ts",
       "scripts/estimate/r4a13/wallCeramicProvisionScopeF279.test.ts",
@@ -4695,6 +4866,7 @@
       "src/lib/estimate/v4/facadeVentilatedSteelExistingOwnerR5.ts",
       "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts",
       "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts",
+      "src/lib/estimate/v4/ledGridPanelDvo6560S2754.ts",
       "src/lib/estimate/v4/masonryBrickColumnExistingOwnerR161.ts",
       "src/lib/estimate/v4/masonryBrickColumnSixProfileWholeNormalR117.ts",
       "src/lib/estimate/v4/masonryBrickRectangularColumnWholeNormalR109.ts",
@@ -4702,6 +4874,8 @@
       "src/lib/estimate/v4/masonryGlassBlockNormalCardsR103.ts",
       "src/lib/estimate/v4/masonryGlassM25OperationDisplayR152.ts",
       "src/lib/estimate/v4/masonryGlassOpeningExistingOwnerR223.ts",
+      "src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.ts",
+      "src/lib/estimate/v4/master32PanelToolProvisionR1.ts",
       "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts",
       "src/lib/estimate/v4/roofFlat003006CommonR24.ts",
       "src/lib/estimate/v4/roofMasticMeshExisting003R24.ts",
@@ -5343,6 +5517,28 @@
       },
       "rootReviewSha256": "39fa7e844f6a7152a564c1eb71c01919df72ed5dad31273097da9e71ccc6536c",
       "additionalExplicitSeedRoots": 1,
+      "same603ExtraSeedsAndCaps": true
+    },
+    "commonSourceBatchR303": {
+      "manifests": {
+        "CONCRETE_FLOOR_SAME_FACTORY": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\care-floor-factory-review-r299\\revision05\\SOURCE_ORIGINS_FLOOR_FACTORY_FINITE_NORMAL_R299_REV06.json",
+          "sha256": "b81fc6e4b16c52deb4f6c72f10893638ed2593ac0c2c5e12da06f2f8dc4ad8e3",
+          "bytes": 25829
+        },
+        "PANEL_CURRENT_V5_WHOLE_POST": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\facades-r59\\electrical-existing-owner-r239\\revision21-panel-consolidated-final-source\\CONSOLIDATED_FINAL_PANEL_SOURCE_MANIFEST_R303.json",
+          "sha256": "cb69fe7a0f6eba36c2f4b060cd52b99481bee51106e3f3b54a40204f2996255c",
+          "bytes": 14895
+        },
+        "PARAPET004_TECHNICAL_WHOLE_POST": {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\pp297\\FINAL_SOURCE_ONLY_CI_ORIGINS_PARAPET004_R297.json",
+          "sha256": "6eed100aad2bf57815723018e53b9833019ee89045ee580b028869385324fac5",
+          "bytes": 251114
+        }
+      },
+      "rootReviewSha256": "882bb4a33032d2d5dee8bfc8d23474a5d428466ffeb7b640b0e36dab6a5df94f",
+      "additionalExplicitSeedRoots": 14,
       "same603ExtraSeedsAndCaps": true
     }
   }

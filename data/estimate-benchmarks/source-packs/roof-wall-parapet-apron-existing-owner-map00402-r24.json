@@ -1,0 +1,498 @@
+{
+  "contract": "roof-wall00402-whole-native-existing-physical-owners/r24",
+  "status": "SOURCE_ONLY_SINGLE0040203_EXACT_COMMON006_TOOL_REUSE_NOT_EXECUTED",
+  "sourceKey": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+  "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+  "composedGroupId": "master212:roof:r1",
+  "composedGroupTitleRu": "Полный цикл кровельной системы",
+  "productParameterId": "roof_wall_junction00402_exact_node_r24",
+  "productConfirmedChoice": "EXACT00402_ONE_APRON_HOT_MASTIC_NODE_CONFIRMED",
+  "operations": [
+    {
+      "key": "cement_fillet",
+      "ordinal": 64,
+      "titleRu": "Устроить цементный бортик"
+    },
+    {
+      "key": "additional_roll_layers",
+      "ordinal": 65,
+      "titleRu": "Наклеить дополнительные слои рулонного кровельного ковра в местах примыкания кровли к стенам и парапетам"
+    },
+    {
+      "key": "galvanized_aprons_and_strip_fixing",
+      "ordinal": 66,
+      "titleRu": "Обделать примыкания фартуками из оцинкованной стали и закрепить полосовой сталью"
+    }
+  ],
+  "nativeOperationKeys": {
+    "workers": [
+      "cement_fillet",
+      "additional_roll_layers",
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "machinists": [
+      "cement_fillet",
+      "additional_roll_layers",
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "tower_crane8t": [
+      "cement_fillet",
+      "additional_roll_layers",
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "truck_crane10t": [
+      "cement_fillet",
+      "additional_roll_layers",
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "bitumen_boiler400l": [
+      "additional_roll_layers"
+    ],
+    "flatbed5t": [
+      "cement_fillet",
+      "additional_roll_layers",
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "hot_roof_mastic": [
+      "additional_roll_layers"
+    ],
+    "galvanized_nails": [
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "dowels": [
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "thiokol_mastic": [
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "mounting_cartridges": [
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "roofing_felt": [
+      "additional_roll_layers"
+    ],
+    "cement_mortar100": [
+      "cement_fillet"
+    ],
+    "galvanized_sheet0_7mm": [
+      "galvanized_aprons_and_strip_fixing"
+    ],
+    "strip_steel": [
+      "galvanized_aprons_and_strip_fixing"
+    ]
+  },
+  "physicalOwners": [
+    {
+      "rowId": "master212:roof:r1:need:base-control",
+      "titleRu": "Приёмка ровности, прочности и сухости основания",
+      "unitId": "service_hour",
+      "formulaId": "master212:roof:r1:need:base-control:formula",
+      "costOwnerId": "master212:roof:r1:need:base-control",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "service",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:hand-measuring",
+      "titleRu": "Рулетки, разметочный и измерительный инструмент",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:hand-measuring:formula",
+      "costOwnerId": "master212:roof:r1:need:hand-measuring",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:hand-application",
+      "titleRu": "Ручной инструмент подготовки и нанесения",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:hand-application:formula",
+      "costOwnerId": "master212:roof:r1:need:hand-application",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:mixing-containers",
+      "titleRu": "Ёмкости и инструмент подготовки материалов",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:mixing-containers:formula",
+      "costOwnerId": "master212:roof:r1:need:mixing-containers",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:rigging",
+      "titleRu": "Стропы, захваты и тара подъёма материалов",
+      "unitId": "piece",
+      "formulaId": "master212:roof:r1:need:rigging:formula",
+      "costOwnerId": "master212:roof:r1:need:rigging",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:access",
+      "titleRu": "Настилы, лестницы и безопасные проходы",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:access:formula",
+      "costOwnerId": "master212:roof:r1:need:access",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:edge-protection",
+      "titleRu": "Ограждения и системы защиты от падения",
+      "unitId": "m",
+      "formulaId": "master212:roof:r1:need:edge-protection:formula",
+      "costOwnerId": "master212:roof:r1:need:edge-protection",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:ppe",
+      "titleRu": "Средства индивидуальной защиты рабочих",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:ppe:formula",
+      "costOwnerId": "master212:roof:r1:need:ppe",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:external-delivery",
+      "titleRu": "Внешняя доставка материалов и техники",
+      "unitId": "trip",
+      "formulaId": "master212:roof:r1:need:external-delivery:formula",
+      "costOwnerId": "master212:roof:r1:need:external-delivery",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "delivery",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:quality-tools",
+      "titleRu": "Приборы проверки толщины и качества покрытия",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:quality-tools:formula",
+      "costOwnerId": "master212:roof:r1:need:quality-tools",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:quality-service",
+      "titleRu": "Проверки, испытания и приёмочная услуга",
+      "unitId": "service_hour",
+      "formulaId": "master212:roof:r1:need:quality-service:formula",
+      "costOwnerId": "master212:roof:r1:need:quality-service",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "service",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:cleaning-tools",
+      "titleRu": "Инструмент очистки и сбора остатков",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:cleaning-tools:formula",
+      "costOwnerId": "master212:roof:r1:need:cleaning-tools",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:wash-containment",
+      "titleRu": "Сбор промывочных жидкостей и загрязнений",
+      "unitId": "set",
+      "formulaId": "master212:roof:r1:need:wash-containment:formula",
+      "costOwnerId": "master212:roof:r1:need:wash-containment",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:waste-mass",
+      "titleRu": "Остатки материалов, тара и упаковка",
+      "unitId": "kg",
+      "formulaId": "master212:roof:r1:need:waste-mass:formula",
+      "costOwnerId": "master212:roof:r1:need:waste-mass",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "service",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:waste-loading",
+      "titleRu": "Сбор и погрузка кровельных отходов",
+      "unitId": "man_hour",
+      "formulaId": "master212:roof:r1:need:waste-loading:formula",
+      "costOwnerId": "master212:roof:r1:need:waste-loading",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "labor",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:waste-transport",
+      "titleRu": "Вывоз и приём кровельных отходов",
+      "unitId": "trip",
+      "formulaId": "master212:roof:r1:need:waste-transport:formula",
+      "costOwnerId": "master212:roof:r1:need:waste-transport",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "service",
+      "operationKeys": [
+        "cement_fillet",
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "master212:roof:r1:need:torch-fire-protection",
+      "titleRu": "Средства защиты и организация огневых работ",
+      "unitId": "piece",
+      "formulaId": "master212:roof:r1:need:torch-fire-protection:formula",
+      "costOwnerId": "master212:roof:r1:need:torch-fire-protection",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "newOwner": false,
+      "category": "equipment",
+      "operationKeys": [
+        "additional_roll_layers",
+        "galvanized_aprons_and_strip_fixing"
+      ]
+    },
+    {
+      "rowId": "roof:flat003006:r24:stock:boiler-400l",
+      "titleRu": "Передвижной битумный котёл вместимостью 400 л",
+      "unitId": "pcs",
+      "formulaId": "roof:flat003006:r24:stock:boiler-400l:formula",
+      "quantity": null,
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "nativeOperatedHoursOwner": "roof_wall_junction00402_r24:bitumen_boiler400l",
+      "newOwner": false,
+      "hoursToStockConversion": false,
+      "category": "equipment",
+      "operationKeys": [
+        "additional_roll_layers"
+      ]
+    },
+    {
+      "rowId": "roof:mastic-mesh:whole003:r24:hot-feed-post",
+      "titleRu": "Жаростойкая тара и приспособления приёма и подачи мастики",
+      "unitId": "set",
+      "formulaId": "roof:mastic-mesh:whole003:r24:hot-feed-post:formula",
+      "quantity": null,
+      "newOwner": false,
+      "secondBoilerOrOperatingCharge": false,
+      "category": "equipment",
+      "operationKeys": [
+        "additional_roll_layers"
+      ]
+    },
+    {
+      "rowId": "roof:flat003006:r24:need:powder-installation-gun",
+      "formulaId": "roof:flat003006:r24:need:powder-installation-gun:formula",
+      "parameterId": "roof_joint006_installation_gun_sets_r24",
+      "titleRu": "Монтажный пистолет и совместимая оснастка крепления",
+      "unitId": "set",
+      "category": "equipment",
+      "costOwnerId": "roof:flat003006:r24:need:powder-installation-gun",
+      "costTreatment": "OWN_COST",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "operationKeys": [
+        "galvanized_aprons_and_strip_fixing"
+      ],
+      "newOwner": false,
+      "existingCommon006": true
+    },
+    {
+      "rowId": "roof:flat003006:r24:need:sheet-cut-bending-kit",
+      "formulaId": "roof:flat003006:r24:need:sheet-cut-bending-kit:formula",
+      "parameterId": "roof_joint006_sheet_forming_kit_sets_r24",
+      "titleRu": "Инструмент резки и гибки двух компенсаторов",
+      "unitId": "set",
+      "category": "equipment",
+      "costOwnerId": "roof:flat003006:r24:need:sheet-cut-bending-kit",
+      "costTreatment": "OWN_COST",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "operationKeys": [
+        "galvanized_aprons_and_strip_fixing"
+      ],
+      "newOwner": false,
+      "existingCommon006": true
+    }
+  ],
+  "newPhysicalOwners": [
+    {
+      "rowId": "roof:wall00402:r24:stock:sealant-application-kit",
+      "parameterId": "roof_wall_junction00402_sealant_application_kit_sets_r24",
+      "formulaId": "roof:wall00402:r24:stock:sealant-application-kit:formula",
+      "titleRu": "Инструмент подготовки и нанесения герметика",
+      "unitId": "set",
+      "category": "equipment",
+      "quantity": null,
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "operationKeys": [
+        "galvanized_aprons_and_strip_fixing"
+      ],
+      "reasonRu": "Нет применимого количественного producer выбранного инструмента подготовки/дозирования/нанесения совместимого герметика; масса мастики не даёт число комплектов.",
+      "newCandidateOnly": true,
+      "currentParentAbsenceNotObserved": true
+    }
+  ],
+  "sourceIntegrityUnchanged": "Literal .13t strip steel; no transfer/correction to .0013t of torchvariants",
+  "FULL": false,
+  "existingToolReuses": [
+    {
+      "supersededUnpublishedRowId": "roof:wall00402:r24:stock:powder-fastening-kit",
+      "supersededUnpublishedFormulaId": "roof:wall00402:r24:stock:powder-fastening-kit:formula",
+      "supersededUnpublishedParameterId": "roof_wall_junction00402_powder_fastening_kit_sets_r24",
+      "rowId": "roof:flat003006:r24:need:powder-installation-gun",
+      "formulaId": "roof:flat003006:r24:need:powder-installation-gun:formula",
+      "parameterId": "roof_joint006_installation_gun_sets_r24",
+      "titleRu": "Монтажный пистолет и совместимая оснастка крепления",
+      "unitId": "set",
+      "category": "equipment",
+      "costOwnerId": "roof:flat003006:r24:need:powder-installation-gun",
+      "costTreatment": "OWN_COST",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "operationKeys": [
+        "galvanized_aprons_and_strip_fixing"
+      ],
+      "newOwner": false,
+      "existingCommon006": true,
+      "sourceCommonPack": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\deformation-joint-whole006-source-r24\\normal-config\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat003006-composition-r24.json",
+        "sha256": "9c13d41f6675b9e744ed17a99555c8a01f9f6b26ea22ace1bcd70454ee8862a5",
+        "bytes": 22746
+      },
+      "noAliasOrNormIdRedirect": true
+    },
+    {
+      "supersededUnpublishedRowId": "roof:wall00402:r24:stock:sheet-metal-cut-bend-kit",
+      "supersededUnpublishedFormulaId": "roof:wall00402:r24:stock:sheet-metal-cut-bend-kit:formula",
+      "supersededUnpublishedParameterId": "roof_wall_junction00402_sheet_metal_cut_bend_kit_sets_r24",
+      "rowId": "roof:flat003006:r24:need:sheet-cut-bending-kit",
+      "formulaId": "roof:flat003006:r24:need:sheet-cut-bending-kit:formula",
+      "parameterId": "roof_joint006_sheet_forming_kit_sets_r24",
+      "titleRu": "Инструмент резки и гибки двух компенсаторов",
+      "unitId": "set",
+      "category": "equipment",
+      "costOwnerId": "roof:flat003006:r24:need:sheet-cut-bending-kit",
+      "costTreatment": "OWN_COST",
+      "quantity": null,
+      "sourceNormQuantityAccepted": false,
+      "operationKeys": [
+        "galvanized_aprons_and_strip_fixing"
+      ],
+      "newOwner": false,
+      "existingCommon006": true,
+      "sourceCommonPack": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\deformation-joint-whole006-source-r24\\normal-config\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-flat003006-composition-r24.json",
+        "sha256": "9c13d41f6675b9e744ed17a99555c8a01f9f6b26ea22ace1bcd70454ee8862a5",
+        "bytes": 22746
+      },
+      "noAliasOrNormIdRedirect": true
+    }
+  ],
+  "newPhysicalOwnerCount": 1,
+  "old00402CandidateIDsHistoricalOnly": [
+    "roof:wall00402:r24:stock:powder-fastening-kit",
+    "roof:wall00402:r24:stock:sheet-metal-cut-bend-kit"
+  ]
+}

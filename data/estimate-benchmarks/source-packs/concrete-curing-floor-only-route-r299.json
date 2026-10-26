@@ -1,0 +1,30 @@
+{
+  "contract": "concrete-curing-floor-only-exact-derived-context/r299",
+  "scope": "ONE_EXACT_EXISTING_FLOOR_OWNER_NOT_SIXTH_OLD_FIVE_ROUTE",
+  "entry": {
+    "key": "slab-pour",
+    "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard",
+    "fixturePath": "data/estimate-benchmarks/fixtures/concrete-curing-current-floor-derived-preimage-r302.json",
+    "fixtureSha256": "768f53b8e66338b382bdbec9b56e089bb4ce4f148e04674f3ffec86dcee735a6",
+    "capturedParentSha256": "50df683986538ef7532b89f3ce761bad72950f9e9ba6a06b849b85c4da91f1a2",
+    "expectedDefinitionId": "d00d3b23-8f6d-5155-b36f-6dedc0cd4177",
+    "expectedDefinitionSha256": "74bae311c024f5269764d746ae5373f7cb068db480775cfc251204274fa1826a",
+    "expectedDefinitionVersion": 15,
+    "expectedBaselineId": "7946c6db-7a88-5c56-9a1f-65dea95590f2",
+    "expectedParentShape": [
+      649,
+      354,
+      355
+    ],
+    "expectedParentBindings": 281,
+    "primaryMeasureParameterId": "plan_dimension_concrete_volume_m3"
+  },
+  "packetKind": "DERIVED_HELD_UTC_PLUS_OBSERVED_WHOLE_CURRENT_MEMBERSHIP_NOT_FRESH_PARENT_CAPTURE",
+  "expectedPacketReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+  "expectedSearchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+  "currentWholeMembershipRawSha256": "f0b43dcd3d4d9beddd2ecb4eb4df721468c0f7a08ae44ae53f7e525a149c925b",
+  "strictWholeNormalLockedRequired": true,
+  "R249HoldRemains": true,
+  "actualProjectAuthority": false,
+  "FULL": false
+}

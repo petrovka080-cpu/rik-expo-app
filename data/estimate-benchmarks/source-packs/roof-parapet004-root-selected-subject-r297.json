@@ -1,0 +1,71 @@
+{
+  "status": "PROPOSED_SUBJECT_NOT_ACTUAL_REGISTRY_NOT_ABSENCE_NOT_APPROVAL",
+  "sourceKey": "kg_krer12_roof_parapet_technical_whole0040203_r294",
+  "sourceMetadata": {
+    "source_title": "Примыкание кровли к парапету на мастике с одним или двумя фартуками",
+    "source_authority": "КРЕР12-2015;приказ28.03.2016№2-нпа",
+    "source_kind": "EXACT_KRER12_NATIVE_TWO_PARAPET_METHODS_WITH_UNRESOLVED_POST",
+    "artifact_sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+    "exact_locator": "PDF/печатные12–13;таблица12-01-004,полный00402,3операции/15строк,100м примыкания ; PDF/печатные12–13;таблица12-01-004,полный00403,3операции/15строк,100м примыкания",
+    "use_restriction": "Только точные00402/03 и собственный обмер linear_m при высоте>600мм. Источникнеподтверждает ППР/монтажныеусловия/физическийпост/цену/заказ. UNKNOWN22;activationfalse."
+  },
+  "locator": {
+    "key": "krer12-2015-table12-01-004-columns02-03-whole-technical-r294",
+    "payload": {
+      "contract": "roof-technical-parapet004-two-native-columns-source/r294",
+      "exactColumns": [
+        "12-01-004-02",
+        "12-01-004-03"
+      ],
+      "artifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "sourcePackReferences": [
+        {
+          "logicalPath": "data/estimate-benchmarks/source-packs/roof-wall-parapet-apron-native00402-r24.json",
+          "sha256": "fcdcfef440b59e340c19c03968b88cb64222352e4fa22956cd6dd1359e5d9897",
+          "normId": "12-01-004-02",
+          "exactLocator": "PDF/печатные12–13;таблица12-01-004,полный00402,3операции/15строк,100м примыкания"
+        },
+        {
+          "logicalPath": "data/estimate-benchmarks/source-packs/roof-wall-parapet-two-aprons-native00403-r24.json",
+          "sha256": "b26e3b335ee4161ff18c70936886d87a718e33718512fb42430692a812bc8bf4",
+          "normId": "12-01-004-03",
+          "exactLocator": "PDF/печатные12–13;таблица12-01-004,полный00403,3операции/15строк,100м примыкания"
+        }
+      ],
+      "sourceBasisQuantity": "100",
+      "sourceBasisUnitId": "linear_m",
+      "nativeRowsPerMethod": 15,
+      "operationsPerMethod": 3,
+      "heightBoundary": "strictly_greater_than600mm",
+      "activationAllowed": false,
+      "unknownPhysicalCount": 22,
+      "unknownPhysicalRowIds": [
+        "master212:roof:r1:need:base-control",
+        "master212:roof:r1:need:hand-measuring",
+        "master212:roof:r1:need:hand-application",
+        "master212:roof:r1:need:mixing-containers",
+        "master212:roof:r1:need:rigging",
+        "master212:roof:r1:need:access",
+        "master212:roof:r1:need:edge-protection",
+        "master212:roof:r1:need:ppe",
+        "master212:roof:r1:need:external-delivery",
+        "master212:roof:r1:need:quality-tools",
+        "master212:roof:r1:need:quality-service",
+        "master212:roof:r1:need:cleaning-tools",
+        "master212:roof:r1:need:wash-containment",
+        "master212:roof:r1:need:waste-mass",
+        "master212:roof:r1:need:waste-loading",
+        "master212:roof:r1:need:waste-transport",
+        "master212:roof:r1:need:torch-fire-protection",
+        "roof:flat003006:r24:stock:boiler-400l",
+        "roof:mastic-mesh:whole003:r24:hot-feed-post",
+        "roof:flat003006:r24:need:powder-installation-gun",
+        "roof:flat003006:r24:need:sheet-cut-bending-kit",
+        "roof:wall00402:r24:stock:sealant-application-kit"
+      ],
+      "actualStockOwner": null,
+      "sourceProjectApproval": false,
+      "FULL": false
+    }
+  }
+}

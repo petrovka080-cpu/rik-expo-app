@@ -153,5 +153,19 @@
   "src/lib/estimate/v4/facadeVentilatedPorcelainR3.ts": null,
   "src/lib/estimate/v4/facadeVentilatedSteelExistingOwnerR5.ts": null,
   "src/lib/estimate/v4/masterFacadeVentilatedThermowoodR5.ts": null,
-  "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts": null
+  "scripts/estimate/r4a13/roofSingle539FormalNormalLockedR293.test.ts": null,
+  "scripts/estimate/r4a13/concreteCuringFloorCurrentR299.test.ts": null,
+  "scripts/estimate/r4a13/concreteCuringFloorFormalNormalLockedR299.test.ts": null,
+  "scripts/estimate/r4a13/ownedDomain/panelReadyGridWholePostR287.ts": null,
+  "scripts/estimate/r4a13/preparePanelReadyGridCurrentMasterR287.ts": null,
+  "scripts/estimate/r4a13/verifyPanelReadyGridWholePostR287.ts": null,
+  "scripts/estimate/r4a13/panelReadyGridCurrentMasterR287.bound.test.ts": null,
+  "scripts/estimate/r4a13/panelReadyGridFormalNormalLockedR287.test.ts": null,
+  "src/lib/estimate/v4/master30ElectricalPlumbingFactoryKitsR1.ts": null,
+  "src/lib/estimate/v4/master32PanelToolProvisionR1.ts": null,
+  "src/lib/estimate/v4/ledGridPanelDvo6560S2754.ts": null,
+  "scripts/estimate/r4a13/prepareRoofParapet004TechnicalWholeR294.ts": null,
+  "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts": null,
+  "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": null,
+  "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": null
 }

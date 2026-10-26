@@ -1,0 +1,295 @@
+{
+  "contract": "gox-build.master216.roof-wall-parapet-apron-whole00403/r24",
+  "prefix": "roof_wall_junction00403_r24",
+  "normId": "12-01-004-03",
+  "sources": [
+    {
+      "kind": "roof",
+      "id": "kg_krer12_roof_wall_whole00403_r24",
+      "titleRu": "КРЕР12: целое примыкание00403 на мастике с двумя фартуками",
+      "printedEdition": "КРЕР12-2015;приказ28.03.2016№2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "locators": "PDF/печатные12–13;таблица12-01-004,полный00403,3операции/15строк,100м примыкания",
+      "reviewedAt": "2026-10-25"
+    }
+  ],
+  "scopeRu": "Примыкание рулонной кровли на горячей битумной мастике к стене/парапету высотой более600мм с двумя фартуками. Три полные операции00403 на100м самостоятельной длины примыкания.",
+  "systemRu": "Цементный бортик, дополнительные слои на горячей мастике и два стальных фартука с полосовой сталью/креплением по собственному00403. Это не удвоенный00402; количествофартуков и высота — точная внутренняяприменимость прежнейкарточки.",
+  "conditionsRu": "Точные высота/узел/материал, основание, крепёжная совместимость, подача/инструмент и граница оплаты подтверждаются отдельно. Публичный выбор не подтверждает факты или норму .13т полосы для другого метода.",
+  "measurementRu": "Собственная измеренная длина примыкания выбранного узла; не площадь поля и не длина ендов/деформационного шва.",
+  "remainingScopeRu": [
+    "Точная применимость00403 более600мм/двафартука, узел/рулонный материал/мастика/крепёж не подтверждены",
+    "Source.13т полосы остаётсябуквальным;uniform/corrected rate требуетprimarycorrection или отдельноadmitted wholemethod,неППР",
+    "Количествоинструмента/stock/ППР UNKNOWN; переиспользоватьтежеcandidate3toolowners00402,не создаватьещётри набора/вторуюоплату",
+    "00402/00403 на одном неразделённом участке конфликтуют по применимости; final singleConfig долженfailclosed refuse doublechoice",
+    "Native fields andstock IDs are prospectiveinternal source data,notcurrentDB/newpubliccard/newestimate; publicationROOTsingle successoronly"
+  ],
+  "groupTitleRu": "Примыкание кровли с двумя фартуками",
+  "operationTitleRu": "Выполнить целое примыкание на мастике с двумя фартуками",
+  "completionCriterionRu": "Бортик, рулонные слои и два фартука выполнены по точному00403; неизвестные комплект/крепление/совместимость не скрываются.",
+  "systemParameterId": "roof_wall_junction00403_method_r24",
+  "conditionsParameterId": "roof_wall_junction00403_conditions_r24",
+  "areaParameterId": "roof_wall_junction00403_measurement_scope_r24",
+  "systemYesRu": "Примыкание на мастике более600мм с двумя фартуками",
+  "conditionsYesRu": "Точный узел00403, материалы и условия подтверждены источником и проектом",
+  "areaYesRu": "Собственная длина00403 и неповторная оплата подтверждены",
+  "unknownChoiceRu": "Способ ещё не уточнён",
+  "legacyChoiceRu": "Способ00403 не выбран",
+  "measurementParameterId": "roof_wall_junction00403_length_m_r24",
+  "measurementUnitId": "linear_m",
+  "measurementConditional": true,
+  "measurementTitleRu": "Длина примыкания с двумя фартуками, м",
+  "measurementGuideRu": "Введите собственную измеренную длину выбранного узла. Высота/фартук определяют применимость; площадь поля длину не задаёт.",
+  "quantityEditReasonRu": "Количество берётся из собственного столбца00403 на100м примыкания. Норма патронов переведена точно из1000шт; другие массы не превращаются в штуки.",
+  "systemChoiceTitleRu": "Способ примыкания кровли",
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-6",
+      "titleRu": "Труд кровельщиков разряда3,6",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100Measure": "62.05",
+      "sourceRatePer100Measure": "62.05",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Рабочие-строители среднего разряда3,6"
+      ]
+    },
+    {
+      "role": "machinists",
+      "resourceCode": null,
+      "titleRu": "Труд машинистов нормативного комплекса",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100Measure": "0.41",
+      "sourceRatePer100Measure": "0.41",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Затраты труда машинистов",
+        "Машинисты — информационная строка без второй оплаты."
+      ]
+    },
+    {
+      "role": "tower_crane8t",
+      "resourceCode": "02-0005",
+      "titleRu": "Башенный кран грузоподъёмностью8т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100Measure": "0.26",
+      "sourceRatePer100Measure": "0.26",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Кран башенный8т, кроме монтажа технологического оборудования",
+        "Часы не число машин/комплектов и не фактическая аренда."
+      ]
+    },
+    {
+      "role": "truck_crane10t",
+      "resourceCode": "02-0075",
+      "titleRu": "Автомобильный кран грузоподъёмностью10т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100Measure": "0.15",
+      "sourceRatePer100Measure": "0.15",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Кран на автомобильном ходу10т",
+        "Часы не число машин/комплектов и не фактическая аренда."
+      ]
+    },
+    {
+      "role": "bitumen_boiler400l",
+      "resourceCode": "12-0340",
+      "titleRu": "Передвижной битумный котёл400л",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100Measure": "3.71",
+      "sourceRatePer100Measure": "3.71",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Котёл битумный передвижной400л",
+        "Часы не число машин/комплектов и не фактическая аренда."
+      ]
+    },
+    {
+      "role": "flatbed5t",
+      "resourceCode": "40-0001",
+      "titleRu": "Бортовой автомобиль грузоподъёмностью до5т",
+      "unitId": "machine_hour",
+      "category": "delivery",
+      "per100Measure": "0.32",
+      "sourceRatePer100Measure": "0.32",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Автомобиль бортовой грузоподъёмностью до5т",
+        "Часы не число машин/комплектов и не фактическая аренда."
+      ]
+    },
+    {
+      "role": "hot_roof_mastic",
+      "resourceCode": "01-0202-0003",
+      "titleRu": "Горячая битумная кровельная мастика",
+      "unitId": "t",
+      "category": "material",
+      "per100Measure": "0.454",
+      "sourceRatePer100Measure": "0.454",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Мастика битумная кровельная горячая"
+      ]
+    },
+    {
+      "role": "galvanized_nails",
+      "resourceCode": "01-1108-0004",
+      "titleRu": "Оцинкованные гвозди4,5×120мм",
+      "unitId": "t",
+      "category": "material",
+      "per100Measure": "0.008",
+      "sourceRatePer100Measure": "0.008",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Гвозди проволочные оцинкованные для асбестоцементной кровли4.5x120мм"
+      ]
+    },
+    {
+      "role": "dowels",
+      "resourceCode": "01-1912-0007",
+      "titleRu": "Дюбели с калиброванной головкой3×58,5мм",
+      "unitId": "t",
+      "category": "material",
+      "per100Measure": "0.00159",
+      "sourceRatePer100Measure": "0.00159",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Дюбели с калиброванной головкой в обоймах с цинковым хроматированным покрытием3x58.5мм"
+      ]
+    },
+    {
+      "role": "thiokol_mastic",
+      "resourceCode": "01-4607-0001",
+      "titleRu": "Герметизирующая полисульфидная мастика",
+      "unitId": "kg",
+      "category": "material",
+      "per100Measure": "6.7",
+      "sourceRatePer100Measure": "6.7",
+      "sourceUnit": "кг",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Мастика тиоколовая строительного назначения АМ-0,5"
+      ]
+    },
+    {
+      "role": "mounting_cartridges",
+      "resourceCode": "01-7226-0002",
+      "titleRu": "Патроны для строительно-монтажного пистолета",
+      "unitId": "piece",
+      "category": "material",
+      "per100Measure": "187",
+      "sourceRatePer100Measure": "0.187",
+      "sourceUnit": "1000шт.",
+      "exactUnitConversionFactor": "1000",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Патроны для строительно-монтажного пистолета",
+        "0.187×1000=187шт/100м,без округления нормы к упаковке."
+      ]
+    },
+    {
+      "role": "roofing_felt",
+      "resourceCode": "01-7410-0006",
+      "titleRu": "Рулонный битумный материал с мелкой посыпкой",
+      "unitId": "m2",
+      "category": "material",
+      "per100Measure": "189",
+      "sourceRatePer100Measure": "189",
+      "sourceUnit": "м²",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Рубероид кровельный с мелкой посыпкой РМ-350"
+      ]
+    },
+    {
+      "role": "cement_mortar100",
+      "resourceCode": "03-0406-0004",
+      "titleRu": "Цементный раствор марки100",
+      "unitId": "m3",
+      "category": "material",
+      "per100Measure": "0.51",
+      "sourceRatePer100Measure": "0.51",
+      "sourceUnit": "м³",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Раствор готовый кладочный цементный, марка100"
+      ]
+    },
+    {
+      "role": "galvanized_sheet0_7mm",
+      "resourceCode": "10-0208-0004",
+      "titleRu": "Оцинкованная листовая сталь толщиной0,7мм",
+      "unitId": "t",
+      "category": "material",
+      "per100Measure": "0.41",
+      "sourceRatePer100Measure": "0.41",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Сталь листовая оцинкованная толщиной0,7мм"
+      ]
+    },
+    {
+      "role": "strip_steel",
+      "resourceCode": "10-0210-0027",
+      "titleRu": "Полосовая сталь шириной50–200мм толщиной4–5мм",
+      "unitId": "t",
+      "category": "material",
+      "per100Measure": "0.13",
+      "sourceRatePer100Measure": "0.13",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Собственный столбец00403:100м примыкания,более600мм,двафартука. Нормы00402 не удваиваются.",
+        "Внутреннее исходное наименование: Сталь полосовая спокойная Ст3сп, ширина50–200мм, толщина4–5мм",
+        "Собственная буквальная0.13т;не0.0013т изtorch и не удвоение00402."
+      ]
+    }
+  ],
+  "operationProcessOrdinal": 67
+}

@@ -1,0 +1,311 @@
+{
+  "status": "TEST_ONLY_EXPECTATIONS_NO_ACTUALPROJECT_SOURCE_STOCK_APPROVAL",
+  "actualParent": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\parapet004-three-existing-parent-read-request-r238\\revision02-reader-ready\\stage\\results\\CURRENT_FULL_PARENT_2_R59.json",
+    "sha256": "a2926d0b7985bcb13cc2fe9a8e1e57fcbe58a0440b08abc62e9f7589e3f39628",
+    "bytes": 356858
+  },
+  "nativeSources": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\wall-parapet-apron-whole00402-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-wall-parapet-apron-native00402-r24.json",
+      "sha256": "fcdcfef440b59e340c19c03968b88cb64222352e4fa22956cd6dd1359e5d9897",
+      "bytes": 17689
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\wall-parapet-two-aprons-whole00403-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-wall-parapet-two-aprons-native00403-r24.json",
+      "sha256": "b26e3b335ee4161ff18c70936886d87a718e33718512fb42430692a812bc8bf4",
+      "bytes": 17606
+    }
+  ],
+  "illustrativeInputs": {
+    "one": {
+      "method": "Примыкание на мастике более600мм с одним фартуком",
+      "lengthLinearM": "125",
+      "heightMm": "900"
+    },
+    "two": {
+      "method": "Примыкание на мастике более600мм с двумя фартуками",
+      "lengthLinearM": "37.5",
+      "heightMm": "900"
+    },
+    "legacy": {
+      "q": "100",
+      "qRole": "OLD_APPROVED_VISIBLE_ASSUMPTION_NOT_NEW_MEASUREMENT"
+    }
+  },
+  "independentExactNativeQuantities": {
+    "one": [
+      {
+        "rowId": "roof_wall_junction00402_r24:workers",
+        "unitId": "man_hour",
+        "quantity": "59.325",
+        "ratePer100LinearM": "47.46",
+        "sourceCode": "000-1003-6",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:machinists",
+        "unitId": "man_hour",
+        "quantity": "0.45",
+        "ratePer100LinearM": "0.36",
+        "sourceCode": null,
+        "costTreatment": "INFORMATIONAL_SCOPE"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:tower_crane8t",
+        "unitId": "machine_hour",
+        "quantity": "0.2875",
+        "ratePer100LinearM": "0.23",
+        "sourceCode": "02-0005",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:truck_crane10t",
+        "unitId": "machine_hour",
+        "quantity": "0.1625",
+        "ratePer100LinearM": "0.13",
+        "sourceCode": "02-0075",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:bitumen_boiler400l",
+        "unitId": "machine_hour",
+        "quantity": "4.6375",
+        "ratePer100LinearM": "3.71",
+        "sourceCode": "12-0340",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:flatbed5t",
+        "unitId": "machine_hour",
+        "quantity": "0.2125",
+        "ratePer100LinearM": "0.17",
+        "sourceCode": "40-0001",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:hot_roof_mastic",
+        "unitId": "t",
+        "quantity": "0.5675",
+        "ratePer100LinearM": "0.454",
+        "sourceCode": "01-0202-0003",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:galvanized_nails",
+        "unitId": "t",
+        "quantity": "0.005",
+        "ratePer100LinearM": "0.004",
+        "sourceCode": "01-1108-0004",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:dowels",
+        "unitId": "t",
+        "quantity": "0.0019875",
+        "ratePer100LinearM": "0.00159",
+        "sourceCode": "01-1912-0007",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:thiokol_mastic",
+        "unitId": "kg",
+        "quantity": "8.375",
+        "ratePer100LinearM": "6.7",
+        "sourceCode": "01-4607-0001",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:mounting_cartridges",
+        "unitId": "piece",
+        "quantity": "233.75",
+        "ratePer100LinearM": "187",
+        "sourceCode": "01-7226-0002",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:roofing_felt",
+        "unitId": "m2",
+        "quantity": "236.25",
+        "ratePer100LinearM": "189",
+        "sourceCode": "01-7410-0006",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:cement_mortar100",
+        "unitId": "m3",
+        "quantity": "0.6375",
+        "ratePer100LinearM": "0.51",
+        "sourceCode": "03-0406-0004",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:galvanized_sheet0_7mm",
+        "unitId": "t",
+        "quantity": "0.25",
+        "ratePer100LinearM": "0.2",
+        "sourceCode": "10-0208-0004",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00402_r24:strip_steel",
+        "unitId": "t",
+        "quantity": "0.1625",
+        "ratePer100LinearM": "0.13",
+        "sourceCode": "10-0210-0027",
+        "costTreatment": "OWN_COST"
+      }
+    ],
+    "two": [
+      {
+        "rowId": "roof_wall_junction00403_r24:workers",
+        "unitId": "man_hour",
+        "quantity": "23.26875",
+        "ratePer100LinearM": "62.05",
+        "sourceCode": "000-1003-6",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:machinists",
+        "unitId": "man_hour",
+        "quantity": "0.15375",
+        "ratePer100LinearM": "0.41",
+        "sourceCode": null,
+        "costTreatment": "INFORMATIONAL_SCOPE"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:tower_crane8t",
+        "unitId": "machine_hour",
+        "quantity": "0.0975",
+        "ratePer100LinearM": "0.26",
+        "sourceCode": "02-0005",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:truck_crane10t",
+        "unitId": "machine_hour",
+        "quantity": "0.05625",
+        "ratePer100LinearM": "0.15",
+        "sourceCode": "02-0075",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:bitumen_boiler400l",
+        "unitId": "machine_hour",
+        "quantity": "1.39125",
+        "ratePer100LinearM": "3.71",
+        "sourceCode": "12-0340",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:flatbed5t",
+        "unitId": "machine_hour",
+        "quantity": "0.12",
+        "ratePer100LinearM": "0.32",
+        "sourceCode": "40-0001",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:hot_roof_mastic",
+        "unitId": "t",
+        "quantity": "0.17025",
+        "ratePer100LinearM": "0.454",
+        "sourceCode": "01-0202-0003",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:galvanized_nails",
+        "unitId": "t",
+        "quantity": "0.003",
+        "ratePer100LinearM": "0.008",
+        "sourceCode": "01-1108-0004",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:dowels",
+        "unitId": "t",
+        "quantity": "0.00059625",
+        "ratePer100LinearM": "0.00159",
+        "sourceCode": "01-1912-0007",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:thiokol_mastic",
+        "unitId": "kg",
+        "quantity": "2.5125",
+        "ratePer100LinearM": "6.7",
+        "sourceCode": "01-4607-0001",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:mounting_cartridges",
+        "unitId": "piece",
+        "quantity": "70.125",
+        "ratePer100LinearM": "187",
+        "sourceCode": "01-7226-0002",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:roofing_felt",
+        "unitId": "m2",
+        "quantity": "70.875",
+        "ratePer100LinearM": "189",
+        "sourceCode": "01-7410-0006",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:cement_mortar100",
+        "unitId": "m3",
+        "quantity": "0.19125",
+        "ratePer100LinearM": "0.51",
+        "sourceCode": "03-0406-0004",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:galvanized_sheet0_7mm",
+        "unitId": "t",
+        "quantity": "0.15375",
+        "ratePer100LinearM": "0.41",
+        "sourceCode": "10-0208-0004",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "rowId": "roof_wall_junction00403_r24:strip_steel",
+        "unitId": "t",
+        "quantity": "0.04875",
+        "ratePer100LinearM": "0.13",
+        "sourceCode": "10-0210-0027",
+        "costTreatment": "OWN_COST"
+      }
+    ]
+  },
+  "sharedPhysicalRequirementIds": [
+    "master212:roof:r1:need:base-control",
+    "master212:roof:r1:need:hand-measuring",
+    "master212:roof:r1:need:hand-application",
+    "master212:roof:r1:need:mixing-containers",
+    "master212:roof:r1:need:rigging",
+    "master212:roof:r1:need:access",
+    "master212:roof:r1:need:edge-protection",
+    "master212:roof:r1:need:ppe",
+    "master212:roof:r1:need:external-delivery",
+    "master212:roof:r1:need:quality-tools",
+    "master212:roof:r1:need:quality-service",
+    "master212:roof:r1:need:cleaning-tools",
+    "master212:roof:r1:need:wash-containment",
+    "master212:roof:r1:need:waste-mass",
+    "master212:roof:r1:need:waste-loading",
+    "master212:roof:r1:need:waste-transport",
+    "master212:roof:r1:need:torch-fire-protection",
+    "roof:flat003006:r24:stock:boiler-400l",
+    "roof:mastic-mesh:whole003:r24:hot-feed-post",
+    "roof:flat003006:r24:need:powder-installation-gun",
+    "roof:flat003006:r24:need:sheet-cut-bending-kit",
+    "roof:wall00402:r24:stock:sealant-application-kit"
+  ],
+  "sharedPhysicalQuantities": null,
+  "expectedUnknownPhysicalCount": 22,
+  "noMachineHourToPieces": true,
+  "noFakeStockUUID": true,
+  "FULL": false
+}

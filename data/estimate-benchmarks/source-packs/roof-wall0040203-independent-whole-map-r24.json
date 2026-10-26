@@ -1,0 +1,1165 @@
+{
+  "contract": "roof-wall0040203-independent-whole-map/r24",
+  "status": "SOURCE_ONLY_DECLARED_NOT_ACTUAL_PASS",
+  "sourceInputs": {
+    "one": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\wall-parapet-apron-whole00402-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-wall-parapet-apron-native00402-r24.json",
+      "sha256": "fcdcfef440b59e340c19c03968b88cb64222352e4fa22956cd6dd1359e5d9897",
+      "bytes": 17689
+    },
+    "two": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\roofing-r24\\wall-parapet-two-aprons-whole00403-source-r24\\revision01\\after\\data\\estimate-benchmarks\\source-packs\\roof-wall-parapet-two-aprons-native00403-r24.json",
+      "sha256": "b26e3b335ee4161ff18c70936886d87a718e33718512fb42430692a812bc8bf4",
+      "bytes": 17606
+    }
+  },
+  "nativeByMethod": {
+    "one": 15,
+    "two": 15
+  },
+  "physicalOnce": 22,
+  "entries": [
+    {
+      "expectedResourceId": "wall0040203:one:native:workers",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "labor",
+      "unitId": "man_hour",
+      "specification": "Труд кровельщиков разряда3,6",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:workers",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:workers"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:machinists",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "labor",
+      "unitId": "man_hour",
+      "specification": "Труд машинистов нормативного комплекса",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:machinists",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:machinists"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:tower_crane8t",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "specification": "Башенный кран грузоподъёмностью8т",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:tower_crane8t",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:tower_crane8t"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:truck_crane10t",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "specification": "Автомобильный кран грузоподъёмностью10т",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:truck_crane10t",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:truck_crane10t"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:bitumen_boiler400l",
+      "operationId": "roof_wall_junction00402_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:additional_roll_layers"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "specification": "Передвижной битумный котёл400л",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:bitumen_boiler400l",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:bitumen_boiler400l"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:flatbed5t",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "delivery",
+      "unitId": "machine_hour",
+      "specification": "Бортовой автомобиль грузоподъёмностью до5т",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:flatbed5t",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:flatbed5t"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:hot_roof_mastic",
+      "operationId": "roof_wall_junction00402_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:additional_roll_layers"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Горячая битумная кровельная мастика",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:hot_roof_mastic",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:hot_roof_mastic"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:galvanized_nails",
+      "operationId": "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Оцинкованные гвозди4,5×120мм",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:galvanized_nails",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:galvanized_nails"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:dowels",
+      "operationId": "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Дюбели с калиброванной головкой3×58,5мм",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:dowels",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:dowels"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:thiokol_mastic",
+      "operationId": "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "kg",
+      "specification": "Герметизирующая полисульфидная мастика",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:thiokol_mastic",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:thiokol_mastic"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:mounting_cartridges",
+      "operationId": "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "piece",
+      "specification": "Патроны для строительно-монтажного пистолета",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:mounting_cartridges",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:mounting_cartridges"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:roofing_felt",
+      "operationId": "roof_wall_junction00402_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:additional_roll_layers"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "m2",
+      "specification": "Рулонный битумный материал с мелкой посыпкой",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:roofing_felt",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:roofing_felt"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:cement_mortar100",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "m3",
+      "specification": "Цементный раствор марки100",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:cement_mortar100",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:cement_mortar100"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:galvanized_sheet0_7mm",
+      "operationId": "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Оцинкованная листовая сталь толщиной0,7мм",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:galvanized_sheet0_7mm",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:galvanized_sheet0_7mm"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one:native:strip_steel",
+      "operationId": "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Полосовая сталь шириной50–200мм толщиной4–5мм",
+      "condition": "EXACT_GT600MM_ONE_APRON00402",
+      "quantityRule": "OWN_12-01-004-02_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00402_r24:formula:strip_steel",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00402_r24:strip_steel"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:workers",
+      "operationId": "roof_wall_junction00403_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "labor",
+      "unitId": "man_hour",
+      "specification": "Труд кровельщиков разряда3,6",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:workers",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:workers"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:machinists",
+      "operationId": "roof_wall_junction00403_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "labor",
+      "unitId": "man_hour",
+      "specification": "Труд машинистов нормативного комплекса",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:machinists",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:machinists"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:tower_crane8t",
+      "operationId": "roof_wall_junction00403_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "specification": "Башенный кран грузоподъёмностью8т",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:tower_crane8t",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:tower_crane8t"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:truck_crane10t",
+      "operationId": "roof_wall_junction00403_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "specification": "Автомобильный кран грузоподъёмностью10т",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:truck_crane10t",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:truck_crane10t"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:bitumen_boiler400l",
+      "operationId": "roof_wall_junction00403_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:additional_roll_layers"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "specification": "Передвижной битумный котёл400л",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:bitumen_boiler400l",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:bitumen_boiler400l"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:flatbed5t",
+      "operationId": "roof_wall_junction00403_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "delivery",
+      "unitId": "machine_hour",
+      "specification": "Бортовой автомобиль грузоподъёмностью до5т",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:flatbed5t",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:flatbed5t"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:hot_roof_mastic",
+      "operationId": "roof_wall_junction00403_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:additional_roll_layers"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Горячая битумная кровельная мастика",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:hot_roof_mastic",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:hot_roof_mastic"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:galvanized_nails",
+      "operationId": "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Оцинкованные гвозди4,5×120мм",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:galvanized_nails",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:galvanized_nails"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:dowels",
+      "operationId": "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Дюбели с калиброванной головкой3×58,5мм",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:dowels",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:dowels"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:thiokol_mastic",
+      "operationId": "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "kg",
+      "specification": "Герметизирующая полисульфидная мастика",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:thiokol_mastic",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:thiokol_mastic"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:mounting_cartridges",
+      "operationId": "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "piece",
+      "specification": "Патроны для строительно-монтажного пистолета",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:mounting_cartridges",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:mounting_cartridges"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:roofing_felt",
+      "operationId": "roof_wall_junction00403_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:additional_roll_layers"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "m2",
+      "specification": "Рулонный битумный материал с мелкой посыпкой",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:roofing_felt",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:roofing_felt"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:cement_mortar100",
+      "operationId": "roof_wall_junction00403_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:cement_fillet"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "m3",
+      "specification": "Цементный раствор марки100",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:cement_mortar100",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:cement_mortar100"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:galvanized_sheet0_7mm",
+      "operationId": "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Оцинкованная листовая сталь толщиной0,7мм",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:galvanized_sheet0_7mm",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:galvanized_sheet0_7mm"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:two:native:strip_steel",
+      "operationId": "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing",
+      "requiredOperationIds": [
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "kg_krer12_2015_mesh_reinforced_mastic_whole00301_02_r24",
+      "category": "material",
+      "unitId": "t",
+      "specification": "Полосовая сталь шириной50–200мм толщиной4–5мм",
+      "condition": "EXACT_GT600MM_TWO_APRONS00403",
+      "quantityRule": "OWN_12-01-004-03_PER100_LINEAR_M_NOT_OTHER_COLUMN_NOT_DOUBLED",
+      "formulaId": "roof_wall_junction00403_r24:formula:strip_steel",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof_wall_junction00403_r24:strip_steel"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:base-control",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "service",
+      "unitId": "service_hour",
+      "specification": "Приёмка ровности, прочности и сухости основания",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:base-control:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:base-control"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:hand-measuring",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Рулетки, разметочный и измерительный инструмент",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:hand-measuring:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:hand-measuring"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:hand-application",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Ручной инструмент подготовки и нанесения",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:hand-application:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:hand-application"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:mixing-containers",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Ёмкости и инструмент подготовки материалов",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:mixing-containers:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:mixing-containers"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:rigging",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "piece",
+      "specification": "Стропы, захваты и тара подъёма материалов",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:rigging:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:rigging"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:access",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Настилы, лестницы и безопасные проходы",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:access:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:access"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:edge-protection",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "m",
+      "specification": "Ограждения и системы защиты от падения",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:edge-protection:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:edge-protection"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:ppe",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Средства индивидуальной защиты рабочих",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:ppe:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:ppe"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:external-delivery",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "delivery",
+      "unitId": "trip",
+      "specification": "Внешняя доставка материалов и техники",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:external-delivery:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:external-delivery"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:quality-tools",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Приборы проверки толщины и качества покрытия",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:quality-tools:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:quality-tools"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:quality-service",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "service",
+      "unitId": "service_hour",
+      "specification": "Проверки, испытания и приёмочная услуга",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:quality-service:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:quality-service"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:cleaning-tools",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Инструмент очистки и сбора остатков",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:cleaning-tools:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:cleaning-tools"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:wash-containment",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Сбор промывочных жидкостей и загрязнений",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:wash-containment:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:wash-containment"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:waste-mass",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "service",
+      "unitId": "kg",
+      "specification": "Остатки материалов, тара и упаковка",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:waste-mass:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:waste-mass"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:waste-loading",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "labor",
+      "unitId": "man_hour",
+      "specification": "Сбор и погрузка кровельных отходов",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:waste-loading:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:waste-loading"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:waste-transport",
+      "operationId": "roof_wall_junction00402_r24:operation:cement_fillet",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:cement_fillet",
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:cement_fillet",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "service",
+      "unitId": "trip",
+      "specification": "Вывоз и приём кровельных отходов",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:waste-transport:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:waste-transport"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:master212:roof:r1:need:torch-fire-protection",
+      "operationId": "roof_wall_junction00402_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "piece",
+      "specification": "Средства защиты и организация огневых работ",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "master212:roof:r1:need:torch-fire-protection:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "master212:roof:r1:need:torch-fire-protection"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:roof:flat003006:r24:stock:boiler-400l",
+      "operationId": "roof_wall_junction00402_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "pcs",
+      "specification": "Передвижной битумный котёл вместимостью 400 л",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "roof:flat003006:r24:stock:boiler-400l:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof:flat003006:r24:stock:boiler-400l"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:roof:mastic-mesh:whole003:r24:hot-feed-post",
+      "operationId": "roof_wall_junction00402_r24:operation:additional_roll_layers",
+      "requiredOperationIds": [
+        "roof_wall_junction00402_r24:operation:additional_roll_layers",
+        "roof_wall_junction00403_r24:operation:additional_roll_layers"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Жаростойкая тара и приспособления приёма и подачи мастики",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "roof:mastic-mesh:whole003:r24:hot-feed-post:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof:mastic-mesh:whole003:r24:hot-feed-post"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:roof:flat003006:r24:need:powder-installation-gun",
+      "operationId": "roof:flat003006:r24:006:lower_compensator",
+      "requiredOperationIds": [
+        "roof:flat003006:r24:006:lower_compensator",
+        "roof:flat003006:r24:006:upper_compensator",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Монтажный пистолет и совместимая оснастка крепления",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "roof:flat003006:r24:need:powder-installation-gun:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof:flat003006:r24:need:powder-installation-gun"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:roof:flat003006:r24:need:sheet-cut-bending-kit",
+      "operationId": "roof:flat003006:r24:006:lower_compensator",
+      "requiredOperationIds": [
+        "roof:flat003006:r24:006:lower_compensator",
+        "roof:flat003006:r24:006:upper_compensator",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Инструмент резки и гибки двух компенсаторов",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "roof:flat003006:r24:need:sheet-cut-bending-kit:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof:flat003006:r24:need:sheet-cut-bending-kit"
+      }
+    },
+    {
+      "expectedResourceId": "wall0040203:one-owner:roof:wall00402:r24:stock:sealant-application-kit",
+      "operationId": "roof:wall-apron:r24:shared:tool-stock",
+      "requiredOperationIds": [
+        "roof:wall-apron:r24:shared:tool-stock",
+        "roof_wall_junction00402_r24:operation:galvanized_aprons_and_strip_fixing",
+        "roof_wall_junction00403_r24:operation:galvanized_aprons_and_strip_fixing"
+      ],
+      "sourceId": "EXACT_ONE_PHYSICAL_OWNER_NOT_NEW_NORM",
+      "category": "equipment",
+      "unitId": "set",
+      "specification": "Инструмент подготовки и нанесения герметика",
+      "condition": "ONE_UNRESOLVED_PHYSICAL_OWNER_FOR00402_OR00403",
+      "quantityRule": "NULL_NOT_ZERO_SAME_UNIT_FORMULA_PAY_OWNER_NO_HOURS_TO_STOCK",
+      "formulaId": "roof:wall00402:r24:stock:sealant-application-kit:formula",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "roof:wall00402:r24:stock:sealant-application-kit"
+      }
+    }
+  ],
+  "oracles": {
+    "one": {
+      "25": {
+        "workers": "11.865",
+        "machinists": "0.09",
+        "tower_crane8t": "0.0575",
+        "truck_crane10t": "0.0325",
+        "bitumen_boiler400l": "0.9275",
+        "flatbed5t": "0.0425",
+        "hot_roof_mastic": "0.1135",
+        "galvanized_nails": "0.001",
+        "dowels": "0.0003975",
+        "thiokol_mastic": "1.675",
+        "mounting_cartridges": "46.75",
+        "roofing_felt": "47.25",
+        "cement_mortar100": "0.1275",
+        "galvanized_sheet0_7mm": "0.05",
+        "strip_steel": "0.0325"
+      },
+      "7.5": {
+        "workers": "3.5595",
+        "machinists": "0.027",
+        "tower_crane8t": "0.01725",
+        "truck_crane10t": "0.00975",
+        "bitumen_boiler400l": "0.27825",
+        "flatbed5t": "0.01275",
+        "hot_roof_mastic": "0.03405",
+        "galvanized_nails": "0.0003",
+        "dowels": "0.00011925",
+        "thiokol_mastic": "0.5025",
+        "mounting_cartridges": "14.025",
+        "roofing_felt": "14.175",
+        "cement_mortar100": "0.03825",
+        "galvanized_sheet0_7mm": "0.015",
+        "strip_steel": "0.00975"
+      }
+    },
+    "two": {
+      "25": {
+        "workers": "15.5125",
+        "machinists": "0.1025",
+        "tower_crane8t": "0.065",
+        "truck_crane10t": "0.0375",
+        "bitumen_boiler400l": "0.9275",
+        "flatbed5t": "0.08",
+        "hot_roof_mastic": "0.1135",
+        "galvanized_nails": "0.002",
+        "dowels": "0.0003975",
+        "thiokol_mastic": "1.675",
+        "mounting_cartridges": "46.75",
+        "roofing_felt": "47.25",
+        "cement_mortar100": "0.1275",
+        "galvanized_sheet0_7mm": "0.1025",
+        "strip_steel": "0.0325"
+      },
+      "7.5": {
+        "workers": "4.65375",
+        "machinists": "0.03075",
+        "tower_crane8t": "0.0195",
+        "truck_crane10t": "0.01125",
+        "bitumen_boiler400l": "0.27825",
+        "flatbed5t": "0.024",
+        "hot_roof_mastic": "0.03405",
+        "galvanized_nails": "0.0006",
+        "dowels": "0.00011925",
+        "thiokol_mastic": "0.5025",
+        "mounting_cartridges": "14.025",
+        "roofing_felt": "14.175",
+        "cement_mortar100": "0.03825",
+        "galvanized_sheet0_7mm": "0.03075",
+        "strip_steel": "0.00975"
+      }
+    }
+  },
+  "shape": [
+    174,
+    361,
+    367
+  ],
+  "sourceBindingColumns": [
+    "12-01-004-02",
+    "12-01-004-03"
+  ],
+  "unpublishedToolIDsForbidden": [
+    "roof:wall00402:r24:stock:powder-fastening-kit",
+    "roof:wall00402:r24:stock:sheet-metal-cut-bend-kit"
+  ],
+  "common006ToolIDs": [
+    "roof:flat003006:r24:need:powder-installation-gun",
+    "roof:flat003006:r24:need:sheet-cut-bending-kit"
+  ],
+  "sourceIdentity": null,
+  "FULL": false
+}

@@ -34,7 +34,8 @@ type Packet = Readonly<{capture: Capture; readOnly: true; sourceMetadataLossless
     decision: {independentCompletenessMap: Json; unresolvedResourceRowIds: readonly string[]}}}>;
 type Context = Readonly<{releaseId: string; searchReleaseId: string; sourceRoot: string; outputRoot: string;
   onCoreEntry?: (phase: string) => void; onCoreResult?: (phase: string, result: unknown) => void;
-  existingNormativeRegistry?: MasterExistingNormativeRegistryReuseR1}>;
+  existingNormativeRegistry?: MasterExistingNormativeRegistryReuseR1;
+  floorOnlyExtension?: ConcreteCuringRollerFloorOnlyContextR299}>;
 const sha = (path: string) => createHash('sha256').update(readFileSync(path)).digest('hex');
 const paths = {pack: 'data/estimate-benchmarks/source-packs/concrete-curing-roller-whole-post-r108.json',
   normal: 'data/estimate-benchmarks/source-packs/concrete-curing-roller-normal-config-r108.json',
@@ -46,6 +47,38 @@ const quantityId = 'exposed_curing_surface_area_m2';
 const object = (value: unknown): value is Json => value !== null && typeof value === 'object' && !Array.isArray(value);
 const materialPrefix = 'concrete-curing-antisol250w-us';
 const materialIds = ['consumed', 'order', 'packages', 'remaining', 'free', 'shortage', 'reserve-deficit'] as const;
+
+
+type CurrentConsumerEntryR299 = Readonly<{
+  catalogId:string; fixturePath:string; fixtureSha256:string; capturedParentSha256:string;
+  expectedDefinitionId:string; expectedDefinitionSha256:string; expectedDefinitionVersion:number;
+  expectedBaselineId:string; expectedParentShape:readonly number[]; expectedParentBindings:number;
+  primaryMeasureParameterId:string;
+}>;
+const floorCatalogR299 = 'canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard';
+const floorRoutePathR299 = 'data/estimate-benchmarks/source-packs/concrete-curing-floor-only-route-r299.json';
+const floorRouteShaR299 = '4a19f840420507392e452b7336fd537d81f7ab9447a46f80c2dce0ce654a2302';
+export const concreteCuringRollerFloorOnlyContextR299 = Object.freeze({
+  contract:'concrete-curing-floor-only-exact-derived-context/r299', routePath:floorRoutePathR299, routeSha256:floorRouteShaR299,
+});
+type ConcreteCuringRollerFloorOnlyContextR299 = Readonly<typeof concreteCuringRollerFloorOnlyContextR299>;
+function exactCurrentConsumerR299(sourceRoot:string,catalogId:string,floor?:ConcreteCuringRollerFloorOnlyContextR299):CurrentConsumerEntryR299 {
+  if (floor === undefined) {
+    const entry = consumers.entries.find(value => value.catalogId === catalogId); assert(entry, 'EXACT_FIVE_CURRENT_CONSUMERS_ONLY');
+    return entry;
+  }
+  assert.deepEqual(floor,concreteCuringRollerFloorOnlyContextR299,'EXACT_FLOOR_ONLY_PINNED_CONTEXT_REQUIRED');
+  assert.equal(catalogId,floorCatalogR299,'FLOOR_EXTENSION_CANNOT_DISPATCH_OLD_OR_OTHER_OWNER');
+  const path=resolve(sourceRoot,floorRoutePathR299);assert.equal(sha(path),floorRouteShaR299,'EXACT_FLOOR_ROUTE_SOURCE_SHA_REQUIRED');
+  const value:unknown=JSON.parse(readFileSync(path,'utf8'));assert(object(value));
+  assert.equal(value.contract,floor.contract);assert.equal(value.expectedPacketReleaseId,'2df79e8d-4012-5557-87c0-f36285f59f17');
+  const entry={key:'slab-pour',catalogId:floorCatalogR299,
+    fixturePath:'data/estimate-benchmarks/fixtures/concrete-curing-current-floor-derived-preimage-r302.json',fixtureSha256:'768f53b8e66338b382bdbec9b56e089bb4ce4f148e04674f3ffec86dcee735a6',capturedParentSha256:'50df683986538ef7532b89f3ce761bad72950f9e9ba6a06b849b85c4da91f1a2',
+    expectedDefinitionId:'d00d3b23-8f6d-5155-b36f-6dedc0cd4177',expectedDefinitionSha256:'74bae311c024f5269764d746ae5373f7cb068db480775cfc251204274fa1826a',
+    expectedDefinitionVersion:15,expectedBaselineId:'7946c6db-7a88-5c56-9a1f-65dea95590f2',expectedParentShape:[649,354,355],
+    expectedParentBindings:281,primaryMeasureParameterId:'plan_dimension_concrete_volume_m3'};
+  assert.deepEqual(value.entry,entry,'EXACT_FLOOR_ENTRY_PREIMAGE_REQUIRED');return entry;
+}
 
 /** Independent source roster: material balance, literal initial six-piece case
  * and all eight unresolved full-method needs. It does not infer completeness
@@ -72,8 +105,8 @@ function newCompleteness(): Json[] {
   ];
 }
 
-export function concreteCuringRollerCurrentCaptureR108(sourceRoot: string, catalogId = normal.catalogId): Packet {
-  const entry = consumers.entries.find(value => value.catalogId === catalogId); assert(entry, 'EXACT_FIVE_CURRENT_CONSUMERS_ONLY');
+export function concreteCuringRollerCurrentCaptureR108(sourceRoot: string, catalogId = normal.catalogId, floor?: ConcreteCuringRollerFloorOnlyContextR299): Packet {
+  const entry = exactCurrentConsumerR299(sourceRoot,catalogId,floor);
   const path = resolve(sourceRoot, entry.fixturePath);
   assert.equal(sha(path), entry.fixtureSha256);
   const packet: Packet = JSON.parse(readFileSync(path, 'utf8')), c = packet.capture;
@@ -88,12 +121,13 @@ export function concreteCuringRollerCurrentCaptureR108(sourceRoot: string, catal
   assert.equal(c.baseline.id, entry.expectedBaselineId);
   assert.deepEqual([c.parameters.length, c.formulas.length, c.resources.length], entry.expectedParentShape);
   assert.equal(c.bindings.length, entry.expectedParentBindings);
+  if (floor !== undefined) assert.equal(packet.membership.release_id,'2df79e8d-4012-5557-87c0-f36285f59f17','FLOOR_WHOLE_OBSERVED_MEMBERSHIP_REQUIRED');
   return packet;
 }
 
 export function concreteCuringRollerWholeMasterConfigR108(context: Context, catalogId = normal.catalogId): Config {
-  const entry = consumers.entries.find(value => value.catalogId === catalogId); assert(entry, 'EXACT_FIVE_CURRENT_CONSUMERS_ONLY');
-  const own = (path: string) => resolve(context.sourceRoot, path), packet = concreteCuringRollerCurrentCaptureR108(context.sourceRoot, catalogId);
+  const entry = exactCurrentConsumerR299(context.sourceRoot,catalogId,context.floorOnlyExtension);
+  const own = (path: string) => resolve(context.sourceRoot, path), packet = concreteCuringRollerCurrentCaptureR108(context.sourceRoot, catalogId,context.floorOnlyExtension);
   const c = packet.capture;
   const hasExistingRegistry = Object.hasOwn(context, 'existingNormativeRegistry');
   assert(!hasExistingRegistry || context.existingNormativeRegistry != null, 'EXPLICIT_EXISTING_REGISTRY_REQUIRED');
@@ -135,7 +169,9 @@ export function concreteCuringRollerWholeMasterConfigR108(context: Context, cata
       addedEvidence: addedEvidence.map((path, index) => ({path, sha256: addedEvidencePins[index]}))}), fullTechnicalAcceptance: false};
   const bound = newRows.filter(r => !needs.includes(r.row_id)).map(r => r.row_id);
   assert.equal(bound.length, 13);
-  const sourcePaths = [...consumers.entries.map(value => value.fixturePath), normal.consumerRoutePath, ...Object.values(paths),
+  const consumerSourcePaths = context.floorOnlyExtension === undefined
+    ? consumers.entries.map(value => value.fixturePath) : [entry.fixturePath,floorRoutePathR299];
+  const sourcePaths = [...consumerSourcePaths, normal.consumerRoutePath, ...Object.values(paths),
     ...[source.materialSource, source.kitSource, source.coverSource].map(s => s.artifactPath),
     'src/lib/estimate/v4/concreteCuringAntisolMaterialS2763.ts',
     'data/estimate-benchmarks/source-packs/sika-antisol250w-us-curing-series-s27-63.json',

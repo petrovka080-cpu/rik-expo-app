@@ -1,0 +1,35 @@
+{
+ "contract":"rik-expo-app.s27-54.led-grid-panel-dvo6560-6562.v1",
+ "catalogId":"canonical-work:master:led_panel_dvo6560_6562_existing_600mm_grid_standard",
+ "workKey":"led_panel_dvo6560_6562_existing_600mm_grid_standard",
+ "sourceId":"iek_dvo6560_6562_existing_grid_600_s2754",
+ "normId":"IEK_EDITION5_PRODUCT_AND_MOUNTING_FACTS_NOT_LABOR_NORM",
+ "titleRu":"Установка панели ДВО6560–6562 в готовую потолочную решётку 600×600",
+ "source":{"officialUrl":"https://cdn-01.iek.ru/media/original/cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca.pdf","localArtifact":".release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf","sha256":"cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca","edition":"IEK: руководство по эксплуатации, издание5","locatorRu":"PDF1–2, таблица1; PDF3, п.3.1 и4.3–4.4; PDF4, п.4.7, рисунок2"},
+ "scopeRu":"Один выбранный артикул панели36Вт устанавливается вместо плиты600×600 в существующую принятую потолочную системуArmstrong; подключение заводского выводаL/N/PE к готовому исправному питанию. Это один вид работ с шестью исполнениями изделия.",
+ "facts":{"powerW":36,"voltageV":230,"frequencyHz":50,"ip":"IP40","protectionClass":"I","dimensionsMm":[595,595,20],"massKg":2,"lightFluxLm":3960,"temperatureMinC":0,"temperatureMaxC":35,"humidityMaxPercentAt25C":80,"altitudeMaxM":2000,"connectionConductorsMm2":[0.75,1.5]},
+ "products":[
+  {"key":"prism-6500","sku":"LDVO2-6560-36-6500-U-K01","family":"ДВО6560","colourTemperatureK":6500,"diffuserRu":"Призматический"},
+  {"key":"prism-4000","sku":"LDVO2-6561-36-4000-U-K01","family":"ДВО6561","colourTemperatureK":4000,"diffuserRu":"Призматический"},
+  {"key":"prism-5000","sku":"LDVO0-6562P-36-5000-K01","family":"ДВО6562","colourTemperatureK":5000,"diffuserRu":"Призматический"},
+  {"key":"opal-6500","sku":"LDVO3-6560-36-6500-U-K01","family":"ДВО6560","colourTemperatureK":6500,"diffuserRu":"Опаловый"},
+  {"key":"opal-4000","sku":"LDVO3-6561-36-4000-U-K01","family":"ДВО6561","colourTemperatureK":4000,"diffuserRu":"Опаловый"},
+  {"key":"opal-5000","sku":"LDVO0-6562O-36-5000-K01","family":"ДВО6562","colourTemperatureK":5000,"diffuserRu":"Опаловый"}
+ ],
+ "gridValue":"Принятая решётка600×600 совместима с панелью595×595мм массой2кг; несущая способность и применимые подвесы проверены",
+ "supplyValue":"Существующее исправное питание230В/50Гц сL,N,PE и допустимыми проводниками; подключение квалифицированным исполнителем при отключённом питании",
+ "conditionsValue":"Внутреннее помещение0…+35°C; влажность до80% при25°C; высота над уровнем моря до2000м; условияIEK соблюдены",
+ "includedAssemblyRu":"Корпус, передняя рамка, рассеиватель, светодиодная часть, драйвер, заводской сетевой вывод и внутренние крепления относятся к изделию. Полной отдельной упаковочной ведомости инструкция не содержит; дополнительные комплектующие не объявлены включёнными.",
+ "excludedRu":["Накладной монтаж, сверление основания и его анкеры","Новая потолочная система, новая линия питания, выключатели и щит","Отдельные повторные лампа, драйвер, рассеиватель, рамка и внутренние винты","Автоматическая длина дополнительного провода и кольцевойPE-наконечник","Признание подвесов, усиления или соединителей ненужными по рисунку","Монтажные часы из общих указанийКРЕРм2.9.2 или чужой накладной нормы","Одновременная закупка всех шести артикулов, скрытые наличие/резерв/упаковка и придуманные цены"],
+ "connectorCandidate":{"id":"wago-221-412","nameRu":"Двухпроводный рычажный соединитель WAGO221-412","unitId":"pcs","characteristicsRu":"До450В/32А; Cu-жилы: однопроволочные/многопроволочные0,2–4мм², гибкие тонкопроволочные0,14–4мм²; зачистка11мм по маркировке; T85.","applicationRu":"Кандидат для раздельных соединенийL–L,N–N,PE–PE заводского вывода с готовым питанием. Один соединитель объединяет вводимые в него проводники; разные цепи не объединяются.","quantityStatus":"UNRESOLVED_COMPATIBLE_JOINT_AND_CONSUMPTION","approvalStatus":"NO_CONFIRMED_IEK_WAGO_JOINT","restrictionsRu":["Материал и исполнение обоих концов должны быть подтверждены; алюминиевое питание не считается совместимым","Нужны подходящее место/оболочка соединения, защита и разгрузка натяжения","Пересечение диапазонов сечений не является одобрением узла","Три раздельные цепи не задают норму3шт./панель"],"sources":[{"url":"https://www.wago.com/gb/installation-terminal-blocks-and-connectors/splicing-connector-with-levers/p/221-412","locator":"Изделие221-412; двухпроводное исполнение"},{"url":"https://www.wago.com/gb/products/electrical-interconnections/splicing-connectors-221","locator":"РазделUseAnywhere: диапазоны жил,450В/32А,T85"},{"url":"https://www.wago.com/us/221-handling-instructions","locator":"StepOne:11мм и маркировка корпуса"},{"url":"https://www.wago.com/global/faq-interconnection-technology","locator":"FAQ:221 не применяется дляAl/Cu"}]},
+ "sourceNeeds":[
+  {"id":"installation-labor","operation":"installation","category":"labor","nameRu":"Труд квалифицированного электромонтажника по установке и подключению панели в готовой решётке","unitId":"man_hour","reasonRu":"Инструкция определяет способ установки, но не норму часов; накладные часы и производительность не перенесены."},
+  {"id":"additional-mounting","operation":"support","category":"service","nameRu":"Дополнительные подвесы и усиление для панелиДВО6560–6562 по принятому узлу потолка","unitId":"set","reasonRu":"Применимость, конкретные детали, состав и включение в цену не подтверждены; отсутствие деталей не выводится из рисунка."},
+  {"id":"access-tools","operation":"equipment","category":"service","nameRu":"Средство доступа и электромонтажный инструмент для установки панели на фактической высоте","unitId":"item","reasonRu":"Нужны подходящее оснащение, фактическая высота и включение в цену исполнителя; новые инструменты на каждую панель не назначены."},
+  {"id":"electrical-checks","operation":"acceptance","category":"service","nameRu":"Проверка подключенияL/N/PE, защитного соединения и приёмка установленныхLED-панелей","unitId":"test","reasonRu":"Применимые проверки, измерения, объём и владелец стоимости не установлены; отдельная и комплексная оплаты не дублируются."},
+  {"id":"work-area-protection","operation":"protection","category":"service","nameRu":"Защита и ограждение зоны установки потолочныхLED-панелей","unitId":"item","reasonRu":"Объём и включение в договорную цену не подтверждены."},
+  {"id":"delivery","operation":"delivery","category":"service","nameRu":"Доставка и разгрузка выбранного артикулаLED-панелей и подтверждённых комплектующих","unitId":"item","reasonRu":"Партия, маршрут, условия разгрузки и цена требуют подтверждения; рейсы из количества панелей не выводятся."},
+  {"id":"cleanup-waste","operation":"completion","category":"service","nameRu":"Уборка, сбор, погрузка и передача упаковки после установкиLED-панелей","unitId":"item","reasonRu":"Тара, партия отходов, услуга и её цена не подтверждены; масса и вывоз из числа панелей не выдумываются."}
+ ],
+ "fullTechnicalAcceptance":false,"acceptedNewCompleteTypes":0,"manufacturerProductVariants":6
+}
