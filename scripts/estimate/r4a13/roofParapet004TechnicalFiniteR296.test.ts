@@ -104,7 +104,7 @@ it('uses actual technical004 ordinary Config and original core with own length, 
     assert.deepEqual(new Set(all.map(x=>x.row_id)),new Set([...fixture.independentExactNativeQuantities[key].map(x=>x.rowId),...fixture.sharedPhysicalRequirementIds]));
     for(const expected of fixture.independentExactNativeQuantities[key]){const row=all.find(x=>x.row_id===expected.rowId);assert(row);assert.equal(row.unit_id,expected.unitId);assert.equal(row.quantity,expected.quantity);assert.equal(row.procurement_eligible,false);
      if(expected.costTreatment==='INFORMATIONAL_SCOPE'){assert.equal('included_in_estimate'in row?row.included_in_estimate:row.selected,false);}}
-    for(const id of fixture.sharedPhysicalRequirementIds){const row=r.preliminaryNeeds.find(x=>x.row_id===id);assert(row);assert.equal(row.quantity,null);assert.equal(row.procurement_eligible,false);assert(row.missing_parameter_ids.some(x=>x.startsWith('roof_parapet004_post_need_')));
+    for(const id of fixture.sharedPhysicalRequirementIds){const row:Result['preliminaryNeeds'][number]|undefined=r.preliminaryNeeds.find(x=>x.row_id===id);assert(row);assert.equal(row.quantity,null);assert.equal(row.procurement_eligible,false);assert(row.missing_parameter_ids.some((x:string)=>x.startsWith('roof_parapet004_post_need_')));
      const declared=[...physical.physicalOwners,...physical.newPhysicalOwners].find(p=>p.rowId===id);assert(declared);
      const sourceCost='costTreatment'in declared?declared.costTreatment:undefined;assert(sourceCost===undefined||sourceCost==='OWN_COST'||sourceCost==='INFORMATIONAL_SCOPE');
      // Omission keeps the existing AutomaticRowSpec default, not a new rate.

@@ -118,19 +118,19 @@ it('phase1 same current v5 panel strict expectation actual full scoped RR captur
   assert(rollback);assert.deepEqual(prepared.counts,{coreCallbacks:0,actualCompileCallbacks:0});if(failure)throw Error(failure.message);
 });
 it('phase2 same current v5 panel closed formal capture NORMAL existing locks full LOCKED unchanged rollback core0',async()=>{
-  const m=manifest(),out=output(),prepared=proposed(m),bound=bindClosedStage(m,prepared),retained=masterRetainParentBindingsOptInR1({config:bound.config,...prepared.generated});assert(retained);
+  const m=manifest(),out=output(),prepared=proposed(m),bound=bindClosedStage(m,prepared),fullInput={config:bound.config,...prepared.generated},retained=masterRetainParentBindingsOptInR1(fullInput);assert(retained);
   out.save('CONSTRUCTED_BEFORE_NORMAL_R287.json',{status:'CONSTRUCTED_NOT_PUBLISHED',catalogId:bound.config.catalogId,currentVersion:5,nativeShape:[30,112,112],
     proposedShape:[bound.config.parameterDefinitions.length,bound.config.formulaDefinitions.length,bound.config.resourceDefinitions.length],retainedBindings:25,retainedSources:2,
     formalScope:bound.scoped.declaration.scope,sourcePprApproval:false,priceScope:'HOLD',targetGuardRetained:true,FULL:false});
   const {client,url}=connection(),tracked=journal(client,out,true),c=tracked.client;let connected=false,rollback=false,normal=false,locked=false,failure:ReturnType<typeof failureOf>|null=null;
   try{await client.connect();connected=true;await c.query('begin isolation level read committed');await c.query("set local timezone='UTC'");await c.query("set local statement_timeout='10000ms'");await c.query("set local lock_timeout='5000ms'");
     actor((await c.query(actorSql)).rows[0],url,'RC');
-    const before=await readMasterRetainedBindingPreconditionsR1(c,retained);out.save('NORMAL_RETAINED_FULL_SNAPSHOT_R287.json',before);
+    const before=await readMasterRetainedBindingPreconditionsR1(c,fullInput);out.save('NORMAL_RETAINED_FULL_SNAPSHOT_R287.json',before);
     const sourceBefore=await readMasterScopedNormativeRegistryPreconditionsR1(c,bound.scoped,'BEFORE');out.save('NORMAL_SCOPED_FULL_SNAPSHOT_R287.json',sourceBefore);normal=true;
-    await lockMasterRetainedBindingPreconditionsR1(c,retained);
-    const after=await readMasterRetainedBindingPreconditionsR1(c,retained);out.save('LOCKED_RETAINED_FULL_SNAPSHOT_R287.json',after);
+    await lockMasterRetainedBindingPreconditionsR1(c,fullInput);
+    const after=await readMasterRetainedBindingPreconditionsR1(c,fullInput);out.save('LOCKED_RETAINED_FULL_SNAPSHOT_R287.json',after);
     const sourceAfter=await readMasterScopedNormativeRegistryPreconditionsR1(c,bound.scoped,'LOCKED_BEFORE');out.save('LOCKED_SCOPED_FULL_SNAPSHOT_R287.json',sourceAfter);
-    assertMasterRetainedBindingPreflightUnchangedR1(retained,before,after);assertMasterScopedNormativeRegistryUnchangedR1(bound.scoped,sourceBefore,sourceAfter);locked=true;
+    assertMasterRetainedBindingPreflightUnchangedR1(fullInput,before,after);assertMasterScopedNormativeRegistryUnchangedR1(bound.scoped,sourceBefore,sourceAfter);locked=true;
   }catch(error:unknown){failure=failureOf(error);out.save('FIRST_FAILURE_R287.json',failure);}
   finally{if(connected){try{await c.query('rollback');rollback=true;}catch(error:unknown){failure??=failureOf(error);}}await client.end();}
   out.save('NORMAL_LOCKED_ROLLBACK_CORE0_OUTCOME_R287.json',{status:failure?'HOLD_FIRST_FAILURE':'PASS_EXISTING_PANEL_NORMAL_LOCKED_GUARDS_NOT_PUBLISHER',failure,

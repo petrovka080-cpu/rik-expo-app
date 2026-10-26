@@ -38,7 +38,7 @@ export function buildRoofParapet004TechnicalWholeR294(input:Readonly<{
  assert.equal(one.measurementUnitId,'linear_m');assert.equal(two.measurementUnitId,'linear_m');
  const first=one.sources[0],second=two.sources[0];assert(first&&second&&first.sha256===physical.artifactSha256&&second.sha256===first.sha256);
  const controller=buildAutomaticConstructionOwnerR1({contract:roofParapet004TechnicalContractR294,semanticOwner:'roof-parapet004:technical',sourceId:input.sourceKey,normId:'004_CONTROLLER_NOT_NORM',
-  sourceMetadata:{artifact_sha256:first.sha256,source_title:first.titleRu,exact_locator:first.locators},applicabilityRu:'Только прежний технический профиль парапета; собственный обмер узла004.',
+  sourceMetadata:{artifact_sha256:first.sha256,source_title:first.titleRu,source_document_version:first.printedEdition,definition_hash:first.sha256,exact_locator:first.locators},applicabilityRu:'Только прежний технический профиль парапета; собственный обмер узла004.',
   ordinary:[{id:ids.method,title:'Способ герметизации примыкания',valueType:'enum',unitId:null,kind:'ordinary',values:[ids.legacy,ids.one,ids.two]},
    {id:ids.length,title:'Измеренная длина примыкания',valueType:'decimal',unitId:'linear_m',kind:'ordinary',min:0},
    {id:ids.height,title:'Измеренная высота примыкания',valueType:'decimal',unitId:'mm',kind:'ordinary',min:0}],profile:[],conditional:[],rows:[],deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:one.remainingScopeRu});
@@ -64,7 +64,7 @@ export function buildRoofParapet004TechnicalWholeR294(input:Readonly<{
  // Reuse the exact22 logical requirement IDs, including the prior common006
  // powder/sheet IDs. No UUID, kit1 or machine_hour->piece producer is created.
  const post=buildAutomaticConstructionOwnerR1({contract:roofParapet004TechnicalContractR294,semanticOwner:'roof-parapet004:technical:post',sourceId:input.sourceKey,normId:'UNRESOLVED_PHYSICAL_POST_NOT_INSTALLATION_NORM',
-  sourceMetadata:{artifact_sha256:first.sha256,source_title:first.titleRu,exact_locator:first.locators},applicabilityRu:'Неизвестное физическое обеспечение общего поста00402/03.',
+  sourceMetadata:{artifact_sha256:first.sha256,source_title:first.titleRu,source_document_version:first.printedEdition,definition_hash:first.sha256,exact_locator:first.locators},applicabilityRu:'Неизвестное физическое обеспечение общего поста00402/03.',
   ordinary:postRequirements.map((p,i)=>({id:'roof_parapet004_post_need_'+String(i+1).padStart(2,'0')+'_r294',title:p.rowId==='roof:flat003006:r24:need:sheet-cut-bending-kit'?'Инструмент резки и гибки фартуков из листовой стали':p.titleRu,valueType:'decimal',unitId:p.unitId,kind:'ordinary' as const,min:0})),profile:[],conditional:[],
   rows:postRequirements.map((p,i)=>{const treatment='costTreatment'in p?p.costTreatment:undefined;
    assert(treatment===undefined||treatment==='OWN_COST'||treatment==='INFORMATIONAL_SCOPE','EXACT_POST_SOURCE_COST_TREATMENT');return{rowId:p.rowId,section:'Обеспечение и контроль примыкания',category:p.category,title:p.rowId==='roof:flat003006:r24:need:sheet-cut-bending-kit'?'Инструмент резки и гибки фартуков из листовой стали':p.titleRu,unitId:p.unitId,formulaId:p.formulaId,

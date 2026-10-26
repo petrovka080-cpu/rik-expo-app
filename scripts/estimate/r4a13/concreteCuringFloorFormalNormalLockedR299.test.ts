@@ -56,7 +56,8 @@ test('one exact floor derived expected preimage passes genuine scoped and comple
   try{
     await client.connect();connected=true;await c.query('begin isolation level repeatable read read only');
     await c.query("set local timezone='UTC'");await c.query("set local statement_timeout='10000ms'");
-    const formalInput=concreteCuringRollerRegistryInputR145(base);
+    const formalGenerated=concreteCuringRollerRegistryInputR145(base);
+    const formalInput={...formalGenerated,config:base};
     const first=await captureMasterScopedNormativeRegistryPreimageR1(c,formalInput);out.save('FORMAL_FIRST_CAPTURE_R299.json',first);
     const second=await captureMasterScopedNormativeRegistryPreimageR1(c,formalInput);out.save('FORMAL_SECOND_CAPTURE_R299.json',second);
     assert.deepEqual(first,second,'GENUINE_EXACT_SCOPED_RAW_CAPTURE_TWICE');

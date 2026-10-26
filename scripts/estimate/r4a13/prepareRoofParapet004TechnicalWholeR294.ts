@@ -29,7 +29,7 @@ function native(input:RoofParapet004TechnicalPreparationR294){assert.equal(input
  assert(raw.readOnly===true&&raw.sourceMetadataLosslessRoundtrip===true);assert.equal(raw.publicIdentity.catalog_id,'canonical-work:base:roofing_interior_parapet_seal_technical_room');
  const [m]=readFrozenDefinitionSnapshotV1({models:[{...raw.capture,passport:raw.contentPassport}]},'models').models;assert(m);
  const parameters:AutomaticOwnerDefinition['parameters']=m.parameters.map(row=>{assert(typeof row.parameter_id==='string'&&typeof row.value_type==='string'&&typeof row.required==='boolean');assert(typeof row.ordinal==='number'&&typeof row.title_ru==='string'&&typeof row.unit_id==='string');
-  assert(object(row.truth_metadata)&&object(row.constraints_json));return{...row,parameter_id:row.parameter_id,value_type:row.value_type,required:row.required,ordinal:row.ordinal,title_ru:row.title_ru,unit_id:row.unit_id,truth_metadata:row.truth_metadata,constraints_json:row.constraints_json};});
+  assert(Object.hasOwn(row,'default_value'),'NATIVE_DEFAULT_VALUE_FIELD_REQUIRED');assert(object(row.truth_metadata)&&object(row.constraints_json));return{...row,parameter_id:row.parameter_id,value_type:row.value_type,required:row.required,default_value:row.default_value,ordinal:row.ordinal,title_ru:row.title_ru,unit_id:row.unit_id,truth_metadata:row.truth_metadata,constraints_json:row.constraints_json};});
  const formulas:CanonicalEstimateFormulaDefinition[]=m.formulas.map(row=>{assert(typeof row.formula_id==='string');assert(typeof row.expression_source==='string'&&typeof row.output_unit_id==='string'&&typeof row.ast_sha256==='string'&&strings(row.input_parameter_ids));
   const parsed=compileFormulaGraph(row.expression_source);assert.deepEqual(parsed.ast,row.ast);assert.deepEqual(parsed.inputParameterIds,row.input_parameter_ids);
   return{...row,formula_id:row.formula_id,expression_source:row.expression_source,output_unit_id:row.output_unit_id,ast_sha256:row.ast_sha256,input_parameter_ids:row.input_parameter_ids,ast:parsed.ast};});
@@ -60,6 +60,8 @@ export function prepareRoofParapet004TechnicalCaptureInputR294(input:RoofParapet
  for(const p of ownPaths){assert(fs.existsSync(p),'EXPLICIT_SOURCE_PATH_MISSING:'+p);}
  const first=model.sourceRowIds[0];assert(first);
  const config:Config={...input.host,contract:model.contract,stopCode:'ROOF_TECHNICAL_PARAPET004_R294',applicationName:'roof-technical-parapet004-whole',sourcePaths:ownPaths,
+  forbiddenAdjacentMatchers:[/roofing_interior_parapet_seal_(?:standard|wet_zone)_/iu,/roofing_interior_flat_roof_install_technical_room_/iu,/roof_wall_junction0040[1456]_r24:/iu,/roof:metal-trim:krer12-010-/iu],
+  owner:'ROOT_SINGLE_INTEGRATOR_ROOF_TECHNICAL_PARAPET_R294',receiptFileStem:'roof_technical_parapet004_whole_r294',
   catalogId:capture.definition.catalog_id,sourceId:input.source.sourceKey,normId:model.sourceColumns.join('/'),sourceMetadata:input.source.sourceMetadata,locator:input.source.locator,
   parameterDefinitions:model.parameters,formulaDefinitions:model.formulas,resourceDefinitions:model.resources,applicability:model.applicability,
   runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},shortInput:{[ids.method]:ids.one,[ids.length]:'125',[ids.height]:'900'},acceptanceInput:{[ids.method]:ids.two,[ids.length]:'37.5',[ids.height]:'900'},
