@@ -39,6 +39,7 @@ def main():
  try:
   assert spec['contract']=='gox-full-affected-types-source-snapshot/r1'
   assert subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=True).strip()==a.commit
+  restore_committed_runtime_json(root,out,spec,a.commit)
   if panel:panel_meta,panel_pins,panel_context=prepare_panel_finite_r315(root,out,spec,a.commit)
   source_drift=check({**source,**panel_pins});dependency_drift=check(deps)
   assert not source_drift,'SOURCE_PIN_DRIFT';assert not dependency_drift,'LOCKED_DEPENDENCY_PIN_DRIFT'
@@ -140,6 +141,7 @@ def prepare_panel_finite_r315(root,out,spec,commit):
  before=json.loads(before_raw)
  allowed={'scripts/verification/gox-current-types-v1/guard.py','.github/workflows/gox-current-core-types-v1.yml'}
  extras={'scripts/verification/gox-current-types-v1/panel-finite-r315.json','scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py','data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json','data/estimate-benchmarks/r568-local-developer-canonical-release.json','jest.config.js','babel.config.js','jest.setup.js','.release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf'}
+ extras|=set(meta['heldRuntimeJsonInputs'])
  assert set(meta['allowedChangedExistingSources'])==allowed and set(meta['allowedExtraCommittedInputs'])==extras
  assert set(spec['sourcePins'])==set(before['sourcePins'])|extras,'UNREVIEWED_EXTRA_OR_REMOVED_SOURCE'
  assert {k for k,h in before['sourcePins'].items()if spec['sourcePins'][k]!=h}==allowed,'ONLY_HARNESS_BYTES_MAY_CHANGE'
@@ -194,6 +196,23 @@ def audit_panel_finite_r315(root,out,meta):
  exec(compile(path.read_text(encoding='utf-8'),str(path),'exec'),scope)
  observed.update(diagnostics=[],harnessErrors=[],sourceApproval=False,PPR='HOLD',quoteScope='HOLD',FULL=False)
  save(out/'exact-panel-finite13-audit.json',observed);return observed
+
+
+
+def restore_committed_runtime_json(root,out,spec,commit):
+ meta=json.loads((root/'scripts/verification/gox-current-types-v1/panel-finite-r315.json').read_text(encoding='utf-8'))
+ held=meta['heldRuntimeJsonInputs'];canonical=json.dumps(held,sort_keys=True,separators=(',',':')).encode()
+ assert len(held)==307 and hashlib.sha256(canonical).hexdigest()=='64fb24a23506a140c5a4ece2b220fcc1ca97313f91b02bf02b5160166d82f0da','EXACT_REVIEWED_307_RUNTIME_JSON_INPUT_SET'
+ assert all(k.startswith('node_modules/')and k.endswith('.json')and'..'not in Path(k).parts and any(marker in k for marker in ['/.vite/vitest/','/android/build/','/android/.cxx/'])for k in held)
+ assert not(set(held)&set(spec['dependencyPins'])),'NO_ACCEPTED_TYPE_DEPENDENCY_OVERWRITE'
+ assert all(spec['sourcePins'].get(k)==h==meta['runtimeVendorPins'].get(k)for k,h in held.items()),'HELD_BYTES_MUST_MATCH_BOTH_PREVIOUS_VENDOR_AND_NEW_COMMITTED_SOURCE_PINS'
+ from restore_exact_git_blobs import restore_exact_git_blobs
+ result=restore_exact_git_blobs(root,commit,held)
+ assert result['status']=='PASS_RAW_GIT_PIN_BYTES'and result['checkedPins']==307 and result['sourceCommit']==commit and result.get('noOwnedProcessStillRunning',result['batchProcesses']==0)is True and result['noGitMetadataMutation']is True
+ assert all((root/k).is_file()and not(root/k).is_symlink()and sha(root/k)==h for k,h in held.items())
+ report=out/'committed-runtime-json-restoration.json';assert not report.exists()
+ body={'contract':'exact-held-runtime-json-restoration-before-source-guard/v1','status':'PASS_EXACT_COMMITTED_RUNTIME_JSON_RESTORATION_BEFORE_GUARD','sourceCommit':commit,'approvedInputCount':307,'approvedHeldBytes':2512250,'approvedKeyMapSha256':'64fb24a23506a140c5a4ece2b220fcc1ca97313f91b02bf02b5160166d82f0da','actualRestore':result,'Node':0,'SQL':0,'sourceApproval':False,'FULL':False}
+ with report.open('x',encoding='utf-8',newline='\n')as stream:json.dump(body,stream,indent=2);stream.write('\n')
 
 
 if __name__=='__main__':main()
