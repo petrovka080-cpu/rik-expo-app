@@ -458,7 +458,7 @@
     "src/lib/estimate/backendPlatform/canonicalMaterialQuantityProjection.ts": "9dd1023f89476dacfc5c9ce9f79750a81cc9282eca0e4adce9a10bb96e8763cb",
     "src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts": "a43d8452b63ba2957a9741d141f483f34df5317a302ef6a75fbdd55469e5b549",
     "src/lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance.ts": "656bab027f94dc9f4c80f843151e0283cd575a27f080f026ee00ea9b98fb2c2c",
-    "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": "8c29db5f304f4b03de0b9adfcd1ba112b0b87139cdfbf5a0c56618a214f5867c",
+    "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": "884ee8811e016c9d726c514d83b8ca6024163fb493cb83f105ba8a35c0007537",
     "src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1.ts": "805ffa0ef640b42697d8a868710dfcd1f1bb0ab84636008c1ee4a764cfda0d90",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "b2b75f750bfcb039f55537a0d8d124561f58bc2dde27c92edef37b871e0c4e5d",
@@ -14106,5 +14106,31 @@
     ],
     "sourceApproval": false,
     "FULL": false
+  },
+  "exactPostHeapTypedCorrection": {
+    "contract": "exact-one-ts7053-and-normal-source-hash-correction/v1",
+    "sourceBaselineCommit": "9dc67327c9c7b59ecf9a128d416c45b42a12fa42",
+    "actualFailedRunId": 40269182982,
+    "actualFailedArchiveSha256": "5da158ca7ce0417167ffd8abb9372a1681bad2b60405021187e4205d6d3d1b09",
+    "diagnosticCode": 7053,
+    "diagnosticSource": "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts",
+    "diagnosticLine": 51,
+    "typedSourceCorrections": {
+      "scripts/estimate/r4a13/roofParapet004TechnicalNormalLockedR1.test.ts": {
+        "beforeSha256": "c04c9c31b5618cf06728d092eecadc105c8040173041c5b48c2892af11b6296d",
+        "sha256": "715af713395450a693ef0896e92ab4105c81615a4b700b21cf67eee2a096608d"
+      },
+      "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": {
+        "beforeSha256": "8c29db5f304f4b03de0b9adfcd1ba112b0b87139cdfbf5a0c56618a214f5867c",
+        "sha256": "884ee8811e016c9d726c514d83b8ca6024163fb493cb83f105ba8a35c0007537"
+      }
+    },
+    "normalContinuationSha256": "7717c2e9f2b4545cb79a6639615400db1cec004e4176ce89c6232cc14d2d1e3f",
+    "newTypeRoots": 0,
+    "newMappingKeys": 0,
+    "compilerOptionsAndWorkerUnchanged": true,
+    "guardWorkflowAndHeap2816HardCapsUnchanged": true,
+    "fullTypesBackend34Panel13": "UNRUN",
+    "oldRootR2SealPreserved": true
   }
 }

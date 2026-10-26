@@ -920,7 +920,7 @@
     "scripts/estimate/r4a13/roofParapet004ProductionTargetBoundaryR1.test.ts": "9c7a178aad94b34fa4dfc1255b5dab771bdb1019aa9b548bf896abf864e171a6",
     "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": "133d373acb2ce40e9a137fccdd58b27283ad82b3e7ce9bdf2b574ae39b1a8459",
     "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": "9c0528363780d19dfef902e6eab8800f81954356d4ef50196d89bcc18a6e1d12",
-    "scripts/estimate/r4a13/roofParapet004TechnicalNormalLockedR1.test.ts": "c04c9c31b5618cf06728d092eecadc105c8040173041c5b48c2892af11b6296d",
+    "scripts/estimate/r4a13/roofParapet004TechnicalNormalLockedR1.test.ts": "715af713395450a693ef0896e92ab4105c81615a4b700b21cf67eee2a096608d",
     "scripts/estimate/r4a13/roofParapet004TechnicalProductionVerifyR1.ts": "378bedfd047c7b41d95067df6be14d39cfc2588d3d67e924065125817a57d829",
     "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts": "6de84ad8e321765e60859ea4a7a5b5344e996c1cc565f6022322e25244102e59",
     "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts": "1dc65b8424bb1f6faff9507d8feb4f6ba32eead06fdf802200c7836d6c9d7119",
@@ -971,7 +971,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "24dc080ef00b3523332ea784887473e6518a0b7149d7505231cb2a80c8375f4e",
     "scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py": "bf1fc4f4eafcf48503410a821048d0a99287586141f55c4580f2c9d7db0f97ac",
-    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "8606cb53e079d5d490cc4f7409681c71f3161f2f8b7517982a4fed4a6b7c99bb",
+    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "853abf98ab68f3eb9b546358ce7aba1fe7ac79051dd756db8ae67aa39b29edc2",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "239d83604160b199df7e9bb8fac1db8dd55e3ca143ea2a28813eaaf29663b8e7",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
@@ -1764,7 +1764,7 @@
     "src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts": "a43d8452b63ba2957a9741d141f483f34df5317a302ef6a75fbdd55469e5b549",
     "src/lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1.ts": "a1967c162e50355103d03191dd44a9c6fb6edc8445be8a54ef4e3eb45857e3ad",
     "src/lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance.ts": "656bab027f94dc9f4c80f843151e0283cd575a27f080f026ee00ea9b98fb2c2c",
-    "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": "8c29db5f304f4b03de0b9adfcd1ba112b0b87139cdfbf5a0c56618a214f5867c",
+    "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": "884ee8811e016c9d726c514d83b8ca6024163fb493cb83f105ba8a35c0007537",
     "src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1.ts": "805ffa0ef640b42697d8a868710dfcd1f1bb0ab84636008c1ee4a764cfda0d90",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.test.ts": "68a81598f210d4e4566e7ff931bcc9328233619d30ca026a9257b9e413544d76",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
@@ -4140,13 +4140,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "239d83604160b199df7e9bb8fac1db8dd55e3ca143ea2a28813eaaf29663b8e7",
-  "canonicalSourceFreezeSha256": "e4c5852868282a80d6935d211fdd14d81b9dd9370c2de57ffe7e278e06801bca",
+  "canonicalSourceFreezeSha256": "c749d51d169cac854643804b18753deee2699005725cbbb164b42e81c03fd4cf",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 114112459,
+    "sourceBytes": 114113837,
     "reviewedCandidateScope": "Exact reviewed R323 mapping plus ROOT physical-norm backend/Masonry typed repairs/NORMAL contract continuation and required actual client/cloud dependencies; same owned full-types then exact backend4/34 then panel13. Runtime source-text read is pinned, not an extra compiler root."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -6371,6 +6371,36 @@
       "sameSourcePinsExceptGuard": true,
       "actualRetry": "UNRUN_ROOT_REVIEW_REQUIRED",
       "noPassGuaranteeFromBudgetProjection": true
+    },
+    "exactPostHeapTypedCorrection": {
+      "contract": "exact-one-ts7053-and-normal-source-hash-correction/v1",
+      "sourceBaselineCommit": "9dc67327c9c7b59ecf9a128d416c45b42a12fa42",
+      "actualFailedRunId": 40269182982,
+      "actualFailedArchiveSha256": "5da158ca7ce0417167ffd8abb9372a1681bad2b60405021187e4205d6d3d1b09",
+      "diagnosticCode": 7053,
+      "diagnosticSource": "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts",
+      "diagnosticLine": 51,
+      "typedSourceCorrections": {
+        "scripts/estimate/r4a13/roofParapet004TechnicalNormalLockedR1.test.ts": {
+          "beforeSha256": "c04c9c31b5618cf06728d092eecadc105c8040173041c5b48c2892af11b6296d",
+          "sha256": "715af713395450a693ef0896e92ab4105c81615a4b700b21cf67eee2a096608d"
+        },
+        "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": {
+          "beforeSha256": "8c29db5f304f4b03de0b9adfcd1ba112b0b87139cdfbf5a0c56618a214f5867c",
+          "sha256": "884ee8811e016c9d726c514d83b8ca6024163fb493cb83f105ba8a35c0007537"
+        }
+      },
+      "normalContinuationSha256": "7717c2e9f2b4545cb79a6639615400db1cec004e4176ce89c6232cc14d2d1e3f",
+      "newTypeRoots": 0,
+      "newMappingKeys": 0,
+      "compilerOptionsAndWorkerUnchanged": true,
+      "guardWorkflowAndHeap2816HardCapsUnchanged": true,
+      "fullTypesBackend34Panel13": "UNRUN",
+      "oldRootR2SealPreserved": true,
+      "panelMetadataPin": {
+        "beforeSha256": "8606cb53e079d5d490cc4f7409681c71f3161f2f8b7517982a4fed4a6b7c99bb",
+        "sha256": "853abf98ab68f3eb9b546358ce7aba1fe7ac79051dd756db8ae67aa39b29edc2"
+      }
     }
   },
   "backendProjectionTests": {
@@ -6466,9 +6496,41 @@
     "timeoutSeconds": 1200,
     "testStageHeapMiB": 768,
     "originalTypesWorkerSha256": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
-    "same771RootsSameTypedSourcesAndCompilerOptions": true,
-    "sameSourcePinsExceptGuard": true,
+    "same771RootsSameTypedSourcesAndCompilerOptions": false,
+    "sameSourcePinsExceptGuard": false,
     "actualRetry": "UNRUN_ROOT_REVIEW_REQUIRED",
-    "noPassGuaranteeFromBudgetProjection": true
+    "noPassGuaranteeFromBudgetProjection": true,
+    "same771RootsAndCompilerOptions": true,
+    "currentTypedCorrectionsExplicitlyBound": "exactPostHeapTypedCorrection"
+  },
+  "exactPostHeapTypedCorrection": {
+    "contract": "exact-one-ts7053-and-normal-source-hash-correction/v1",
+    "sourceBaselineCommit": "9dc67327c9c7b59ecf9a128d416c45b42a12fa42",
+    "actualFailedRunId": 40269182982,
+    "actualFailedArchiveSha256": "5da158ca7ce0417167ffd8abb9372a1681bad2b60405021187e4205d6d3d1b09",
+    "diagnosticCode": 7053,
+    "diagnosticSource": "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts",
+    "diagnosticLine": 51,
+    "typedSourceCorrections": {
+      "scripts/estimate/r4a13/roofParapet004TechnicalNormalLockedR1.test.ts": {
+        "beforeSha256": "c04c9c31b5618cf06728d092eecadc105c8040173041c5b48c2892af11b6296d",
+        "sha256": "715af713395450a693ef0896e92ab4105c81615a4b700b21cf67eee2a096608d"
+      },
+      "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": {
+        "beforeSha256": "8c29db5f304f4b03de0b9adfcd1ba112b0b87139cdfbf5a0c56618a214f5867c",
+        "sha256": "884ee8811e016c9d726c514d83b8ca6024163fb493cb83f105ba8a35c0007537"
+      }
+    },
+    "normalContinuationSha256": "7717c2e9f2b4545cb79a6639615400db1cec004e4176ce89c6232cc14d2d1e3f",
+    "newTypeRoots": 0,
+    "newMappingKeys": 0,
+    "compilerOptionsAndWorkerUnchanged": true,
+    "guardWorkflowAndHeap2816HardCapsUnchanged": true,
+    "fullTypesBackend34Panel13": "UNRUN",
+    "oldRootR2SealPreserved": true,
+    "panelMetadataPin": {
+      "beforeSha256": "8606cb53e079d5d490cc4f7409681c71f3161f2f8b7517982a4fed4a6b7c99bb",
+      "sha256": "853abf98ab68f3eb9b546358ce7aba1fe7ac79051dd756db8ae67aa39b29edc2"
+    }
   }
 }

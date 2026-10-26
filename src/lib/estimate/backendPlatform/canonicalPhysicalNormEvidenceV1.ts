@@ -48,7 +48,7 @@ export const readCanonicalPhysicalNormEvidenceV1: CanonicalPhysicalNormProjectio
     }
     return null;
   }
-  if (!object(evidence) || !['revisionId','releaseId','catalogId','rowId'].every(key=>nonempty(evidence[key]))
+  if (!object(evidence) || ![evidence.revisionId,evidence.releaseId,evidence.catalogId,evidence.rowId].every(nonempty)
     || ![revision.revisionId,revision.releaseId,revision.catalogId,row.rowId].every(nonempty)
     || !Object.hasOwn(evidence,'resolution') || !validResolution(evidence.resolution)
     || evidence.contractVersion !== 'canonical-physical-norm-evidence/v1'

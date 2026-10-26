@@ -93,7 +93,7 @@ it('requires actual capture five pins and finite10 PASS, then checks existing te
   assert(object(audit)&&audit.status==='PASS_INDEPENDENT_ACTUAL_PARAPET_CAPTURE_AND_FINITE10_RAW_AUDIT_NOT_ADMISSION'&&audit.actualEntries===10&&audit.actualResults===5&&audit.actualRejects===5&&audit.FULL===false&&pin(audit.finalCallbackRaw));
   assert.deepEqual(audit.finalCallbackRaw,{...input.finiteFinalRaw,bytes:bytes(input.finiteFinalRaw).length});
   assert(object(types)&&typeof types.status==='string'&&types.status.startsWith('PASS_ACTUAL_FULL_TYPES')&&types.actualDiagnostics===0);assert.deepEqual(types.sourceDrift,[]);assert.deepEqual(types.dependencyDrift,[]);assert.deepEqual(types.ownedRemaining,[]);
-  assert.equal(input.sourceOrigins.sha256,'9f61b3dc21419b9a8c8821e35542e15729cf5e1bcf4d2f89999f95b977000848','EXACT_REVIEWED_ASSEMBLY_AND_TYPE_ONLY_CONTRACT_TRANSITIONS');
+  assert.equal(input.sourceOrigins.sha256,'7717c2e9f2b4545cb79a6639615400db1cec004e4176ce89c6232cc14d2d1e3f','EXACT_REVIEWED_ASSEMBLY_AND_TYPE_ONLY_CONTRACT_TRANSITIONS');
   assert.equal(input.architectureGovernorReceipt.sha256,'98f54238e91cd1044203fc123e8a9585588e6505b211b9a921bbc67e68173558');assert.equal(input.architectureJest.sha256,'f2ade91f33e7332f98a5f8d48f570996aac1861f69a7aab1728cb3be90b5ded6');
   closed(read(input.architectureGovernorReceipt));const architecture=read(input.architectureJest);
   assert(object(architecture)&&architecture.success===true&&architecture.numTotalTests===31&&architecture.numPassedTests===31&&architecture.numFailedTests===0&&architecture.numPendingTests===0
