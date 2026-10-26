@@ -188,5 +188,7 @@
   "tests/consumerRepair/canonicalBackendNormSourceAdmission.contract.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\consumerRepair\\canonicalBackendNormSourceAdmission.contract.test.ts",
   "tests/consumerRepair/consumerEstimateNormSourceReadiness.contract.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\consumerRepair\\consumerEstimateNormSourceReadiness.contract.test.ts",
   "tests/estimateNorms/professionalNormSourceAdmission.contract.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\estimateNorms\\professionalNormSourceAdmission.contract.test.ts",
-  "src/lib/estimate/v4/ct29IndoorResourceProvisionR4CommercialBoundary.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\ct29IndoorResourceProvisionR4CommercialBoundary.test.ts"
+  "src/lib/estimate/v4/ct29IndoorResourceProvisionR4CommercialBoundary.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\ct29IndoorResourceProvisionR4CommercialBoundary.test.ts",
+  "tests/architecture/canonicalOrderedSpecificationClientBoundary.contract.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\architecture\\canonicalOrderedSpecificationClientBoundary.contract.test.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalEstimateCompileCore.test.ts"
 }

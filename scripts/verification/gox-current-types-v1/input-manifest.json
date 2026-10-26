@@ -978,8 +978,8 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "24dc080ef00b3523332ea784887473e6518a0b7149d7505231cb2a80c8375f4e",
     "scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py": "bf1fc4f4eafcf48503410a821048d0a99287586141f55c4580f2c9d7db0f97ac",
-    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "a1d37a05a68b9949647fade884e0ae276d584b32bb57463ae173079a95f6d4bb",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "85c1b7904df40adc49f0bbd776081c96a54495300620dac4142f0fccb6e9ef6d",
+    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "891d22e7465e52d814222fdb9a8b571f06c34b8e758bd97b235802b28d6c06ac",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "0348230c91d266e0cdade121ef1bc7aa2e5689d652a33c4bf301ee8937dc3398",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1710,7 +1710,8 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.ts": "5c59629f9c6c307b1432bae451cdad3a87468e5ce3de82bad5e71c71170a2a0c",
     "src/lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection.ts": "5889ba9e5c3a53c2f0609bb1c116c52b95018a50292a37dc61f954dd22b56b23",
     "src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity.ts": "0a3de9780795f25367ca73596b3933e60f7c75cf261b764d9ea4ac82089f2d36",
-    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "26fc1ee0132b7a0076aec725fce3dce5e085825688301785e612cfab503cd1f5",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts": "e5f3a5427ddfbe9c68ec38b2adc3f622f528c601a498ec8f0f6aa9829bf9dcb7",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "5fee58eee8e577166490b50b669e98a4813a75b85c514ae1aff157ae17bb3426",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts": "40486f1c7f0e4f58e98efcba5960d71ca6b32f38c24752966a43a128b5bb30e5",
     "src/lib/estimate/backendPlatform/canonicalEstimateConditionProfilesV1.ts": "ae0057c9b01aede2046211ef59a1ed29be0487e9845292a0ba6374395da3db43",
     "src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts": "e8b0b7462638944ca7d314227845e8f313ca8e932fc115b6e94a3058f130796f",
@@ -1739,6 +1740,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateProfileInputResolverS2723.test.ts": "1f9f912464e6883273e68af9a305520cf24b527fbd7b1bb5934a7d7563d786bc",
     "src/lib/estimate/backendPlatform/canonicalEstimateProfileInputResolverS2723.ts": "99998cf807fdc06b66195e07bcc3eec037389fb7ec6c4bf251bef0ab1ca494dc",
     "src/lib/estimate/backendPlatform/canonicalEstimatePromptParameters.ts": "f96fd44d3c1dc905b8c71b42bb6bbd2057bef5cdad9da5e78c8f2d887e12d7f0",
+    "src/lib/estimate/backendPlatform/canonicalEstimateResourceInclusionV1.ts": "0d283e95193dd57406a1c53d63c0b852f3d918db686e9671f97ee0d638ced6a2",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "425cfdf621557b6de2b7d3249e54a1c71898ccd2e8eab0c6f2750150568bcae2",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "42cc437ba33fdc64dbeac73b45db987ad6bc63f6e86101ca7d34f8f314252b14",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
@@ -1770,7 +1772,7 @@
     "src/lib/estimate/backendPlatform/canonicalMaterialQuantityProjection.ts": "9dd1023f89476dacfc5c9ce9f79750a81cc9282eca0e4adce9a10bb96e8763cb",
     "src/lib/estimate/backendPlatform/canonicalNormSourceAdmissionEvidenceV1.ts": "eb34e7024894a31a45f3462837f13338632334d2faa15e65a5caf971d5c32345",
     "src/lib/estimate/backendPlatform/canonicalNormativeTraceV1.ts": "c98e5b12299aea589ea777add3ea457a84e92fb72f450ee5ba136fdd443601f3",
-    "src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts": "a43d8452b63ba2957a9741d141f483f34df5317a302ef6a75fbdd55469e5b549",
+    "src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts": "31cb2252caa2e20c19887ac8031f1f503e6307b86d6fd1463ad564528659dc88",
     "src/lib/estimate/backendPlatform/canonicalParameterMigrationBindingV1.ts": "a1967c162e50355103d03191dd44a9c6fb6edc8445be8a54ef4e3eb45857e3ad",
     "src/lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance.ts": "656bab027f94dc9f4c80f843151e0283cd575a27f080f026ee00ea9b98fb2c2c",
     "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": "884ee8811e016c9d726c514d83b8ca6024163fb493cb83f105ba8a35c0007537",
@@ -2776,6 +2778,7 @@
     "tests/architecture/anyEstimateArchitectureTestHelpers.ts": "b38778ef227012f21b5c8308007dd09d528865c97b6ff88478a46e034ff9f56c",
     "tests/architecture/canonicalBackendProjectionNoClientCompilerReachability.contract.test.ts": "71fec5ce1e1355585e8a30d79acd83d7415214061a1b2ba911825efd8bcfaf16",
     "tests/architecture/canonicalMeasuredGeometryCatalog.contract.test.ts": "e957e21988c85091f5da954a0a3ee9a9e21659779bca55ddb1da4b6af1209588",
+    "tests/architecture/canonicalOrderedSpecificationClientBoundary.contract.test.ts": "d8ccade1d604a9762abb032b5f39ebf37602f5f1143c8547dc0bd8d782e4a63d",
     "tests/architecture/entrypointFixSharedViewModelRequired.contract.test.ts": "a9701bde2e78dece6f159845e7a2eef66f3fe86f83a5e73c0bddef4242494f4e",
     "tests/consumerRepair/canonicalBackendNormSourceAdmission.contract.test.ts": "7eadefde61dcd4d722bef285f246aad213211469208a1a13cf4de99d590dbb4c",
     "tests/consumerRepair/canonicalBackendPhysicalNormProjection.contract.test.ts": "2a9f042811b5ab67c1b0bca9435dc5052c3809f7261415fffcb0f44e0765d014",
@@ -4162,14 +4165,14 @@
     "node_modules/resolve-pkg-maps/README.md": "cb82232c87083b5f5afc2a4b4ed80b6dc3680ee443d1d52b16be8523283c2dc4"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "85c1b7904df40adc49f0bbd776081c96a54495300620dac4142f0fccb6e9ef6d",
-  "canonicalSourceFreezeSha256": "0688d1cfbfd4f949dbf89162972288ad52592fc0de1dfe262a8bb753483024d9",
+  "originalSeedManifestSha256": "0348230c91d266e0cdade121ef1bc7aa2e5689d652a33c4bf301ee8937dc3398",
+  "canonicalSourceFreezeSha256": "0d8f1ffd2cb0c1a308a409cdef6c270b654d8cff563cdf31175233542ac42052",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 114352688,
+    "sourceBytes": 114414881,
     "reviewedCandidateScope": "Exact reviewed R323 mapping plus ROOT physical-norm backend/Masonry typed repairs/NORMAL contract continuation and required actual client/cloud dependencies; same owned full-types then exact backend4/34 then panel13. Runtime source-text read is pinned, not an extra compiler root."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -6506,6 +6509,27 @@
       "changesPreservePreviousRootsAndDependencies": true,
       "publicDatabaseWrites": false,
       "productionActivation": false
+    },
+    "sameJobEditorBoundaryR8": {
+      "contract": "existing-client-editor-compiler-boundary-r8/v1",
+      "sourceBaselineCommit": "b95ba4d72c346bc4641878084a3d12666793bd7c",
+      "reviewedSourcePins": {
+        "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts": "e5f3a5427ddfbe9c68ec38b2adc3f622f528c601a498ec8f0f6aa9829bf9dcb7",
+        "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "5fee58eee8e577166490b50b669e98a4813a75b85c514ae1aff157ae17bb3426",
+        "src/lib/estimate/backendPlatform/canonicalEstimateResourceInclusionV1.ts": "0d283e95193dd57406a1c53d63c0b852f3d918db686e9671f97ee0d638ced6a2",
+        "src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts": "31cb2252caa2e20c19887ac8031f1f503e6307b86d6fd1463ad564528659dc88",
+        "tests/architecture/canonicalOrderedSpecificationClientBoundary.contract.test.ts": "d8ccade1d604a9762abb032b5f39ebf37602f5f1143c8547dc0bd8d782e4a63d"
+      },
+      "newTypeRootPaths": [
+        "tests/architecture/canonicalOrderedSpecificationClientBoundary.contract.test.ts",
+        "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts"
+      ],
+      "runtimeAddedKeys": [
+        "src/lib/estimate/backendPlatform/canonicalEstimateResourceInclusionV1.ts"
+      ],
+      "singleExistingFunctionBodyMovedVerbatim": true,
+      "existingCompilerExportPreserved": true,
+      "normQuantityPriceSemanticsChanged": false
     }
   },
   "backendProjectionTests": {
@@ -6719,5 +6743,26 @@
     "changesPreservePreviousRootsAndDependencies": true,
     "publicDatabaseWrites": false,
     "productionActivation": false
+  },
+  "sameJobEditorBoundaryR8": {
+    "contract": "existing-client-editor-compiler-boundary-r8/v1",
+    "sourceBaselineCommit": "b95ba4d72c346bc4641878084a3d12666793bd7c",
+    "reviewedSourcePins": {
+      "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts": "e5f3a5427ddfbe9c68ec38b2adc3f622f528c601a498ec8f0f6aa9829bf9dcb7",
+      "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "5fee58eee8e577166490b50b669e98a4813a75b85c514ae1aff157ae17bb3426",
+      "src/lib/estimate/backendPlatform/canonicalEstimateResourceInclusionV1.ts": "0d283e95193dd57406a1c53d63c0b852f3d918db686e9671f97ee0d638ced6a2",
+      "src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts": "31cb2252caa2e20c19887ac8031f1f503e6307b86d6fd1463ad564528659dc88",
+      "tests/architecture/canonicalOrderedSpecificationClientBoundary.contract.test.ts": "d8ccade1d604a9762abb032b5f39ebf37602f5f1143c8547dc0bd8d782e4a63d"
+    },
+    "newTypeRootPaths": [
+      "tests/architecture/canonicalOrderedSpecificationClientBoundary.contract.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts"
+    ],
+    "runtimeAddedKeys": [
+      "src/lib/estimate/backendPlatform/canonicalEstimateResourceInclusionV1.ts"
+    ],
+    "singleExistingFunctionBodyMovedVerbatim": true,
+    "existingCompilerExportPreserved": true,
+    "normQuantityPriceSemanticsChanged": false
   }
 }
