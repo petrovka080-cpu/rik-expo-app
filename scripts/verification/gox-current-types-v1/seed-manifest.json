@@ -184,5 +184,9 @@
   "supabase/functions/canonical-estimate/index.ts": null,
   "tests/architecture/canonicalBackendProjectionNoClientCompilerReachability.contract.test.ts": null,
   "tests/architecture/entrypointFixSharedViewModelRequired.contract.test.ts": null,
-  "tests/consumerRepair/canonicalBackendPhysicalNormProjection.contract.test.ts": null
+  "tests/consumerRepair/canonicalBackendPhysicalNormProjection.contract.test.ts": null,
+  "tests/consumerRepair/canonicalBackendNormSourceAdmission.contract.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\consumerRepair\\canonicalBackendNormSourceAdmission.contract.test.ts",
+  "tests/consumerRepair/consumerEstimateNormSourceReadiness.contract.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\consumerRepair\\consumerEstimateNormSourceReadiness.contract.test.ts",
+  "tests/estimateNorms/professionalNormSourceAdmission.contract.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\estimateNorms\\professionalNormSourceAdmission.contract.test.ts",
+  "src/lib/estimate/v4/ct29IndoorResourceProvisionR4CommercialBoundary.test.ts": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\ct29IndoorResourceProvisionR4CommercialBoundary.test.ts"
 }

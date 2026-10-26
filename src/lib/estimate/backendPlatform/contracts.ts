@@ -1,3 +1,4 @@
+import type {CanonicalNormSourceAdmissionEvidenceV1} from './canonicalNormSourceAdmissionEvidenceV1';
 import type { CanonicalPhysicalNormEvidenceV1 } from './canonicalPhysicalNormEvidenceV1';
 import {parseCanonicalSelectedMaterialDeliveryRequestR1} from './canonicalSelectedMaterialDeliveryContractR1';
 import { assertCanonicalPurchaseSupplyRowV1, canonicalPurchaseSupplyBlocksV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
@@ -585,6 +586,7 @@ export type CanonicalEstimateRevisionRowView = {
   priceSource?: CanonicalEstimateRevisionRowPriceSource;
   /** Server evaluation bound to this immutable revision and row. */
   physicalNormEvidenceV1?: CanonicalPhysicalNormEvidenceV1;
+  normSourceAdmissionEvidenceV1?:CanonicalNormSourceAdmissionEvidenceV1;
 };
 
 export type CanonicalEstimateRevisionRowPriceSource = {

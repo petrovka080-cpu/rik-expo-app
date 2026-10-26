@@ -1,0 +1,92 @@
+{
+  "contract": "rik-expo-app.s27-54.ct29-existing-mineral-series.v1",
+  "source": {
+    "officialUrl": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+    "localArtifact": ".release-runtime/r568/s27-54/ct29-indoor-plaster/CT-29.pdf",
+    "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+    "edition": "C_CT29_TDS_1_0120",
+    "locatorRu": "Стр. 1: выравнивание цементной и цементно-известковой штукатурки, традиционные штукатурки как основание, подготовка и нанесение; стр. 2: приблизительный расход штукатурного нанесения 1,8 кг/м²/мм, разные рецепты 5/25 кг, наружная защита минимум 24 ч"
+  },
+  "acceptedPhysicalSourcePack": "data/estimate-norms/professional/plaster.json",
+  "applicationModeValue": "По принятому узлу выполняется штукатурный выравнивающий слой CT29 по площади и назначенной толщине поверх существующей штукатурки; не тонкая финишная шпаклёвка и не заполнение глубоких дефектов",
+  "layerValue": "Совместимость слоя CT29 с существующей штукатуркой, назначенная толщина и штукатурное нанесение подтверждены согласованным узлом и применимой инструкцией; числовая граница с тонкой шпаклёвкой не назначена",
+  "excludedRu": [
+    "Тонкая финишная шпаклёвка и заполнение глубоких дефектов по объёмной норме",
+    "Непрочное, окрашенное, высоковпитывающее или смешанное основание",
+    "Повторная оплата уже принятой подготовки основания, CT17 и CT16",
+    "Автоматическое признание низкого водопоглощения по названию штукатурки",
+    "Выдуманные числовые пределы толщины и автоматический запас смеси",
+    "Открытые мешки без отдельно принятого решения",
+    "Рецепт воды другой фасовки, вода ухода как вода затворения",
+    "ETICS, теплоизоляция, последующая окраска и иные покрытия",
+    "Автоматическое назначение лесов, площади укрытия, часов работы или массы отходов"
+  ],
+  "types": [
+    {
+      "key": "cement-indoor",
+      "materialRu": "цементной штукатурки",
+      "materialTitleRu": "Цементная штукатурка",
+      "materialValue": "CEMENT_PLASTER",
+      "location": "INDOOR",
+      "catalogId": "canonical-work:master:ct29_existing_cement_plaster_indoor_standard",
+      "workKey": "ct29_existing_cement_plaster_indoor_standard",
+      "titleRu": "Штукатурное выравнивание Ceresit CT29 по готовой цементной штукатурке внутри помещения",
+      "controlThicknessMm": 5,
+      "controlBagIndex": 1,
+      "controlWholeBatches": 13,
+      "expectedNetKg": "320.13",
+      "expectedPlanKg": "325",
+      "expectedWaterL": "78"
+    },
+    {
+      "key": "cement-lime-indoor",
+      "materialRu": "цементно-известковой штукатурки",
+      "materialTitleRu": "Цементно-известковая штукатурка",
+      "materialValue": "CEMENT_LIME_PLASTER",
+      "location": "INDOOR",
+      "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_indoor_standard",
+      "workKey": "ct29_existing_cement_lime_plaster_indoor_standard",
+      "titleRu": "Штукатурное выравнивание Ceresit CT29 по готовой цементно-известковой штукатурке внутри помещения",
+      "controlThicknessMm": 8,
+      "controlBagIndex": 1,
+      "controlWholeBatches": 21,
+      "expectedNetKg": "512.208",
+      "expectedPlanKg": "525",
+      "expectedWaterL": "126"
+    },
+    {
+      "key": "cement-exterior",
+      "materialRu": "цементной штукатурки",
+      "materialTitleRu": "Цементная штукатурка",
+      "materialValue": "CEMENT_PLASTER",
+      "location": "OUTDOOR",
+      "catalogId": "canonical-work:master:ct29_existing_cement_plaster_exterior_standard",
+      "workKey": "ct29_existing_cement_plaster_exterior_standard",
+      "titleRu": "Штукатурное выравнивание Ceresit CT29 по готовой цементной штукатурке снаружи здания",
+      "controlThicknessMm": 7,
+      "controlBagIndex": 0,
+      "controlWholeBatches": 90,
+      "expectedNetKg": "448.182",
+      "expectedPlanKg": "450",
+      "expectedWaterL": "108"
+    },
+    {
+      "key": "cement-lime-exterior",
+      "materialRu": "цементно-известковой штукатурки",
+      "materialTitleRu": "Цементно-известковая штукатурка",
+      "materialValue": "CEMENT_LIME_PLASTER",
+      "location": "OUTDOOR",
+      "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_exterior_standard",
+      "workKey": "ct29_existing_cement_lime_plaster_exterior_standard",
+      "titleRu": "Штукатурное выравнивание Ceresit CT29 по готовой цементно-известковой штукатурке снаружи здания",
+      "controlThicknessMm": 6,
+      "controlBagIndex": 1,
+      "controlWholeBatches": 16,
+      "expectedNetKg": "384.156",
+      "expectedPlanKg": "400",
+      "expectedWaterL": "96"
+    }
+  ],
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0
+}

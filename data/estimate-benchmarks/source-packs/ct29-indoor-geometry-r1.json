@@ -1,0 +1,260 @@
+{
+  "contract": "rik-expo-app.ct29-existing-cement-lime-indoor-geometry-r1",
+  "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_indoor_standard",
+  "profileKey": "CT29_EXISTING_CEMENT_LIME_INDOOR_GEOMETRY_R1",
+  "titleRu": "CT29 по готовой цементно-известковой штукатурке внутри: геометрия и нормативные ресурсы",
+  "sourceAudit": "work/ct29-source-audit/ct29-primary-source-audit-r2.json",
+  "product": {
+    "edition": "C_CT29_TDS_1_0120",
+    "dryKgM2Mm": 1.8,
+    "bagKg": 25,
+    "waterMinLPerBag": 5.7,
+    "waterMaxLPerBag": 6.2,
+    "maxPassMm": 20
+  },
+  "normative": {
+    "normId": "КРЕР15-02-019-03",
+    "laborPersonHPer100M2": 51.89,
+    "laborGrade": 3.6,
+    "loader5tMachineHPer100M2": 0.04,
+    "mastLift500kg45mMachineHPer100M2": 0.16,
+    "mixer65LMachineHPer100M2": 1.67,
+    "operatorPersonHIncludedPer100M2": 1.87,
+    "baseThicknessMm": 10,
+    "aboveBaseThicknessFactor": "max(1,t/10)",
+    "waterM3ReferencePer100M2": 0.63,
+    "tableWaterAdmittedAsCt29AllOperationWater": false
+  },
+  "sources": [
+    {
+      "id": "ct29_global",
+      "kind": "manufacturer_product_page",
+      "url": "https://www.ceresit.com/products/interoir-finishing/product.html/ceresit-ct-29/SAP_0201JDC014G9.html",
+      "file": "CT29-global-product.html",
+      "sha256": "cffb14e9f19888bde4c147e0783bd96ff1916c7536d6ff4873e62e218602846a",
+      "locators": [
+        "Product Description",
+        "Documents: CERESIT CT 29 en_GL"
+      ],
+      "supports": [
+        "cement-lime and cement-sand plaster, concrete and brickwork, walls/ceilings, indoor/outdoor",
+        "maximum 20 mm per single pass",
+        "links the selected en_GL TDS"
+      ]
+    },
+    {
+      "id": "ct29_en_gl",
+      "kind": "manufacturer_TDS",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-29-en_GL.pdf",
+      "file": "CT29-en_GL.pdf",
+      "sha256": "55fa25f48f2ce3bb5435a3773a0001ced6d26f007e770dbb7ddb68ac411478fc",
+      "edition": "C_CT29_TDS_1_0120; digital signature 2025-11-27",
+      "locators": [
+        {
+          "pdfPage": 1,
+          "sections": [
+            "Scope of use",
+            "Substrate preparation",
+            "Application",
+            "Please note"
+          ]
+        },
+        {
+          "pdfPage": 2,
+          "sections": [
+            "Technical data",
+            "Other information",
+            "Packaging"
+          ]
+        }
+      ],
+      "supports": [
+        "specific physical dry consumption 1.8 kg/m2/mm",
+        "5 and 25 kg packs; whole pack mixed with measured clean cold water",
+        "1.1-1.3 L/5 kg and 5.7-6.2 L/25 kg",
+        "drill with mixer; metal float; felt or Styrofoam float",
+        "low absorption/non-homogeneous base moist but not wet",
+        "slight water spray against excessive drying; avoid draughts/low room temperature"
+      ],
+      "doesNotProvide": [
+        "mixing duration or drilling hours",
+        "L/m2 of prewetting or curing",
+        "number/frequency of indoor curing sprays",
+        "general 24 h indoor curing duration"
+      ]
+    },
+    {
+      "id": "krer15",
+      "kind": "national_estimate_standard",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "listingUrl": "https://minstroy.gov.kg/ru/kyzmat/431/show",
+      "file": "KRER-15.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "locators": [
+        {
+          "pdfPage": 8,
+          "section": "technical part 1.2(a)",
+          "claim": "inventory stools/stepladders/ladders erect/relocate included in normal inside work to 3.5 m"
+        },
+        {
+          "pdfPage": 10,
+          "section": "technical part 1.5",
+          "claim": "for thickness above the tabulated thickness, K=Tactual/Tnorm applies to labor/machines/materials; no downward correction for thinner coats stated here"
+        },
+        {
+          "pdfPage": 137,
+          "section": "15-02-019-03 composition and labor",
+          "claim": "manual single-coat dry-mortar walls up to 10 mm; preparation from dry mix, substrate priming, hand application/rubbing, finishing internal/external corners; labor 51.89 person-h/100 m2, grade3.6"
+        },
+        {
+          "pdfPage": 138,
+          "section": "15-02-019-03 resource rows",
+          "claim": "loader5t .04, mast lift <=500kg/45m .16, mobile mortar mixer65L1.67 machine-h/100m2; operator1.87 person-h included in machine cost; water .63m3/100m2; generic hand dry mortar .97t/100m2"
+        },
+        {
+          "pdfPage": 124,
+          "section": "15-02-001 composition",
+          "claim": "explicit curing belongs to different facade multi-coat lime-cement plaster; NOT transferred to this CT29 branch"
+        }
+      ]
+    },
+    {
+      "id": "krer_general",
+      "kind": "national_estimate_application_guidance",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+      "listingUrl": "https://www.gosstroy.gov.kg/ru/kyzmat/359/show",
+      "file": "krer-general-application.pdf",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "locators": [
+        {
+          "pdfPage": 2,
+          "sections": [
+            "1.3",
+            "1.4"
+          ],
+          "claim": "full complex under normal positive-temperature conditions; substantially different technology/resource basis requires individual rates/corrections"
+        },
+        {
+          "pdfPage": 6,
+          "section": "2.8",
+          "claim": "main composition omits minor ancillary operations while including them; does NOT explicitly name CT29 curing/water quantities"
+        },
+        {
+          "pdfPage": 9,
+          "section": "4.2",
+          "claim": "normative rate not corrected solely because planned machines are actually replaced by manual work/small mechanization or compatible machine types; other materials permitted only without principal change of technology/organization/quality"
+        },
+        {
+          "pdfPage": 10,
+          "section": "4.12",
+          "claim": "cost of water/energy from permanent sources included; not a separate physical consumption rule for CT29 curing"
+        }
+      ]
+    },
+    {
+      "id": "kr_method",
+      "kind": "national_estimate_methodology",
+      "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/opredeleniastoimosti-466920560ea4a901.89801061.pdf",
+      "listingUrl": "https://www.gosstroy.gov.kg/ru/kyzmat/465/show",
+      "file": "kr-estimate-method-changes.pdf",
+      "sha256": "acb9ba73163ad48fb41d2bce073d4a75d8b7f20bf65842988ce2d3ae4ded1c03",
+      "edition": "order10-npa 2017-12-05; registration109 2018-01-15",
+      "locators": [
+        {
+          "pdfPage": 3,
+          "section": "2.2",
+          "claim": "norms are averaged minimum sufficient resource quantities; no downward correction"
+        },
+        {
+          "pdfPage": 5,
+          "sections": [
+            "2.10",
+            "2.13"
+          ],
+          "claim": "individual norms when absent/substantially different; generic material nomenclature concretized by project data"
+        },
+        {
+          "pdfPage": 13,
+          "section": "continuation4.8",
+          "claim": "formal repair/reconstruction analogous new-work processes use labor1.15 and machines1.25; existing substrate alone does not establish this legal project classification"
+        },
+        {
+          "pdfPage": 15,
+          "sections": [
+            "4.22",
+            "4.23"
+          ],
+          "claim": "physical material demand may use project VM/SVM/specifications; comparison with resource indicators and selection of appropriate variant permitted"
+        }
+      ]
+    },
+    {
+      "id": "kr_overheads",
+      "kind": "national_overhead_methodology",
+      "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/nakladnyerashodyvstroitelstv-938692055ac0ce2a6.16153263.pdf",
+      "listingUrl": "https://www.gosstroy.gov.kg/ru/kyzmat/464/show",
+      "file": "kr-overheads-method.pdf",
+      "sha256": "89afde6f0135bb465db576dc8e6d1a1154054df6887e8011447e6fcdee114a76",
+      "locators": [
+        {
+          "pdfPage": 22,
+          "section": "appendix6 III.1",
+          "claim": "wear and repair of construction tools/production inventory in overhead composition"
+        },
+        {
+          "pdfPage": 22,
+          "section": "appendix6 III.2",
+          "claim": "temporary stools/stepladders/ladders/access inventory in overhead composition"
+        },
+        {
+          "pdfPage": 14,
+          "section": "appendix4 item15",
+          "claim": "KRER15 finishing overhead105% wage fund"
+        },
+        {
+          "pdfPage": 8,
+          "section": "4.7",
+          "claim": "organizations applying aggregate overhead norms apply0.7; this must accompany the quoted105%, not silently omitted"
+        },
+        {
+          "pdfPage": 6,
+          "section": "3.5",
+          "claim": "reference overhead cost structure is not a basis for an invented individual overhead rate"
+        }
+      ]
+    }
+  ],
+  "scopeRu": "Ручное однослойное штукатурное выравнивание CT29 en_GL по уже подготовленной прочной, очищенной, шероховатой, влажной, но не мокрой цементно-известковой штукатурке внутри помещения; сухие условия, +5…+25°C, без сквозняка и ускоренной сушки; обычная высота до3.5м. Нет повторной оплаты ранее выполненной подготовки, CT17/CT16, демонтажа, сетки, глубоких дефектов, последующей отделки или особых условий. Нормативный состав ручной однослойной штукатурки сопоставлен по операциям; часы не являются фактической хронометрией CT29.",
+  "costScopeRu": "Один владелец трудового/накладного обеспечения: строка нормативного труда по выбранному составу; её цена должна содержать опубликованный накладной состав предоставления, износа и ремонта обычного ручного инвентаря/доступа/СИЗ. Отдельная повторная закупка инструмента и оплата труда машинистов не начисляются. Внутриобъектная подача имеет собственные нормативные машино-часы. Внешняя доставка и вывоз фактических отходов не объявляются вычисленными из площади.",
+  "planningPolicyRu": "Фасовка25кг предопределена выбранной ветвью. Минимальный план последовательных целых замесов=ceil(net/25). Закупка=max(0,планмешков-явновыделенныйпригодныйостаток). При отсутствии указанного остатка кредит закупки0; это не утверждение о наличии на складе. Резерв0. Верхняя рецептура6.2л/мешок является планированием нормальной консистенции; диапазон5.7–6.2л показан. Плановая избыточная масса не считается нормативом отходов.",
+  "readiness": {
+    "fullTechnicalAcceptance": false,
+    "geometryOnlyFullBranch": false,
+    "requiredNonGeometryQuestions": 0,
+    "unresolvedApplicationNorms": [
+      "curing-water"
+    ],
+    "openAuthorObligationsRu": [
+      "Применимая количественная норма воды лёгкого распыления при уходе; табличные0.63м³ не подтверждены как общий водный пул exact CT29.",
+      "Прямое нормативное покрытие ухода CT29 в общем трудовом составе, без двойной оплаты.",
+      "Внешняя доставка и фактический вывоз не количественно закрыты этим профилем."
+    ]
+  },
+  "forbiddenRu": [
+    "Часы65лсмесителя нельзя переименовать в часы дрели.",
+    "Нельзя0.97т усреднённой смеси считать нормой CT29 или оплачивать её вместе с конкретной CT29.",
+    "Нельзя складывать табличную воду и полный рецепт, брать max(pool,recipe) или считать остаток нормой ухода.",
+    "Нельзя подставить неизвестную норму ухода как INFO или обязательный ответ пользователя.",
+    "Полный набор производственных вопросов старой advanced ветви не требуется от обычной выбранной ветви."
+  ],
+  "laborColumnCorrection": {
+    "oldUnverifiedLaborPer100M2": 51.4,
+    "oldUnverifiedGrade": 3.3,
+    "wrongColumn": "15-02-019-02; ready-mortar ceiling",
+    "confirmedColumn": "15-02-019-03; dry-mortar walls",
+    "confirmedLaborPer100M2": 51.89,
+    "confirmedGrade": 3.6,
+    "evidence": "krer15-p137-labor-detail.png",
+    "crossCheck": "Existing local source-pack knauf-interior-plaster-base-labour-six-s27-63.json and PDF138 labor cost6021.31 support source column03, not02."
+  }
+}

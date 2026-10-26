@@ -1,3 +1,5 @@
+import {publicNormativeTraceV1 as publicNormativeTrace,canonicalProjectedNormIdentityV1} from './canonicalNormativeTraceV1';
+import {readCanonicalNormSourceAdmissionEvidenceV1,type CanonicalNormSourceAdmissionProjectionV1} from './canonicalNormSourceAdmissionEvidenceV1';
 import { canonicalPurchaseSupplyBlocksV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
 import { stableStructuredEstimateHash } from "../../estimateStructuredPipeline/buildStructuredEstimatePayload";
@@ -47,19 +49,6 @@ function record(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function publicNormativeTrace(row: CanonicalEstimateRevisionRowView): Record<string, unknown>[] {
-  return row.normativeTrace.flatMap((value) => {
-    const trace = record(value);
-    if (!trace) return [];
-    const documentCode = String(trace.document_code ?? trace.sourceId ?? trace.source_id ?? "").trim();
-    const exactLocator = String(trace.exact_locator ?? trace.exactLocator ?? "").trim();
-    return [{
-      ...trace,
-      document_code: documentCode,
-      exact_locator: exactLocator,
-    }];
-  });
-}
 
 function sectionTitle(type: GlobalEstimateSectionType): string {
   if (type === "materials") return "Материалы";
@@ -113,7 +102,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
   rows: CanonicalEstimateRevisionRowView[];
   inputText?: string;
   assumptions?: string[];
-}, projectPhysicalNorm: CanonicalPhysicalNormProjectionV1 = readCanonicalPhysicalNormEvidenceV1): StructuredEstimatePayload {
+}, projectPhysicalNorm: CanonicalPhysicalNormProjectionV1 = readCanonicalPhysicalNormEvidenceV1,
+  projectSourceAdmission:CanonicalNormSourceAdmissionProjectionV1=readCanonicalNormSourceAdmissionEvidenceV1): StructuredEstimatePayload {
   const sourceRequestText = input.revision.sourceRequestText?.trim()
     || input.inputText?.trim()
     || input.catalog.titleRu;
@@ -171,10 +161,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
       revision: input.revision,
       row,
     });
-    const primaryNormativeSource = physicalNormApplicability?.status === "APPLIED"
-      ? normativeTrace.find((trace) => String(trace.source_id ?? trace.sourceId ?? trace.document_code ?? "")
-        === physicalNormApplicability.source_id) ?? normativeTrace[0]
-      : normativeTrace[0];
+    const normIdentity=canonicalProjectedNormIdentityV1(row,physicalNormApplicability);
+    const normSourceAdmissionEvidence=projectSourceAdmission({revision:input.revision,row,resolution:physicalNormApplicability});
     return {
       rowId: row.rowId,
       sectionNumber: String(sectionOrder.indexOf(type) + 1),
@@ -267,6 +255,8 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
         canonicalBackendRevisionId: input.revision.revisionId,
         canonicalBackendReleaseId: input.revision.releaseId,
         canonicalBackendCatalogId: input.revision.catalogId,
+        canonicalBackendRevisionChecksumSha256:input.revision.checksumSha256,
+        ...(normSourceAdmissionEvidence==null?{}:{canonicalNormSourceAdmissionEvidenceV1:normSourceAdmissionEvidence}),
         canonicalBackendOwnershipStatus: row.ownershipStatus,
         canonicalCostTreatment: costTreatment,
         canonicalIncludedCostOwnerTitleRu: includedCostOwnerTitle(row),
@@ -284,12 +274,10 @@ export function adaptCanonicalRevisionToStructuredEstimate(input: {
           professionalPhysicalNormApplicabilityV1: physicalNormApplicability,
         }),
       },
-      normId: String(primaryNormativeSource?.norm_id ?? primaryNormativeSource?.normId ?? "").trim() || null,
-      normSourceId: String(primaryNormativeSource?.document_code ?? "").trim() || null,
-      normSourceTitle: String(primaryNormativeSource?.source_title
-        ?? primaryNormativeSource?.document_code ?? "").trim() || null,
-      normVersion: String(primaryNormativeSource?.source_document_version
-        ?? primaryNormativeSource?.normVersion ?? "").trim() || null,
+      normId:normIdentity.normId,
+      normSourceId:normIdentity.normSourceId,
+      normSourceTitle:normIdentity.normSourceTitle,
+      normVersion:normIdentity.normVersion,
       catalogItemId: null,
       includedInEstimate: row.includedInEstimate,
       includedInProcurement: row.includedInProcurement,
@@ -461,10 +449,11 @@ export function adaptCanonicalCompilationToAssistantProjection(
   draft: unknown,
   userId?: string,
   projectPhysicalNorm: CanonicalPhysicalNormProjectionV1 = readCanonicalPhysicalNormEvidenceV1,
+  projectSourceAdmission:CanonicalNormSourceAdmissionProjectionV1=readCanonicalNormSourceAdmissionEvidenceV1,
 ) {
   const compilation = compilationRecord(draft);
   if (!compilation) return null;
-  const payload = adaptCanonicalRevisionToStructuredEstimate(compilation, projectPhysicalNorm);
+  const payload = adaptCanonicalRevisionToStructuredEstimate(compilation, projectPhysicalNorm,projectSourceAdmission);
   const binding = buildStructuredEstimateForemanBinding(payload, userId);
   return {
     ...binding,

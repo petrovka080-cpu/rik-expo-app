@@ -3,11 +3,11 @@ import {
   adaptCanonicalRevisionToStructuredEstimate as projectRevision,
   adaptCanonicalCompilationToAssistantProjection as projectCompilation,
 } from './canonicalEstimateClientForemanProjection';
-import { projectCanonicalEstimatePhysicalNormApplicabilityV1 } from './canonicalEstimatePhysicalNormProjection';
+import { projectCanonicalEstimatePhysicalNormApplicabilityV1,projectCanonicalNormSourceAdmissionEvidenceV1 } from './canonicalEstimatePhysicalNormProjection';
 
 export function adaptCanonicalRevisionToStructuredEstimate(input: Parameters<typeof projectRevision>[0]) {
-  return projectRevision(input,projectCanonicalEstimatePhysicalNormApplicabilityV1);
+  return projectRevision(input,projectCanonicalEstimatePhysicalNormApplicabilityV1,projectCanonicalNormSourceAdmissionEvidenceV1);
 }
 export function adaptCanonicalCompilationToAssistantProjection(draft: unknown,userId?: string) {
-  return projectCompilation(draft,userId,projectCanonicalEstimatePhysicalNormApplicabilityV1);
+  return projectCompilation(draft,userId,projectCanonicalEstimatePhysicalNormApplicabilityV1,projectCanonicalNormSourceAdmissionEvidenceV1);
 }

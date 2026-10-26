@@ -442,7 +442,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts": "f40e1f5cf38d85485e1d4bf43b78874d3d8e6ad577740560b5b55021f83a5f6e",
     "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "544d561544bf476be60a6de7a9fba207e2c7fb258b44d09458fefd76e9844bfc",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts": "a175263b958b6de239b68a8166d786d54f1602498de28b56e88de106f0eba687",
-    "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts": "6d9af38a42770d7468a390a5d9a632587bfc998de88b8cad679156199b9f0c8e",
+    "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts": "f1efc4146454cb63583e00195eeeaf4f6d4df962a059fda66bba549e7b304492",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "42cc437ba33fdc64dbeac73b45db987ad6bc63f6e86101ca7d34f8f314252b14",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
@@ -491,7 +491,7 @@
     "src/lib/estimate/backendPlatform/canonicalScopeRequirementV1.ts": "99047e2babebe590adbb254732f5423033201f89d8f844426214e9168fce77af",
     "src/lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1.ts": "97daaad21aa9e285333665ff1356e5cb53bfd3c4c1c61765a15bd7f0bfd7e6f0",
     "src/lib/estimate/backendPlatform/canonicalSourceProfileSelectionV1.ts": "4e8c4975131b1f3d7ea934d6985667de43713a9f560b2b0ab4d31ed327616cb5",
-    "src/lib/estimate/backendPlatform/contracts.ts": "bd7e816f2ab5b584f99396d1b0a5359a61cc3b7a8d24421d03a8d454649d0424",
+    "src/lib/estimate/backendPlatform/contracts.ts": "37f894ef44f5d938778cc1b287253ea8e591e8c10e7b87eb2b09da9923d032e8",
     "src/lib/estimate/backendPlatform/estimateAdmissionR3.ts": "4f197b8f3bde877c4bc02883dd4f3985068d0d3f1154ff3a236edea7e2857293",
     "src/lib/estimate/backendPlatform/formulaGraph.ts": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c",
     "src/lib/estimate/backendPlatform/inclusionGraph.ts": "f6bcf6d8fcb5b30e2c7fe489b6b5b9aaed97366f35f9e6e0f818e51b23796c02",
@@ -586,7 +586,11 @@
     "src/lib/logger.ts": "9057f18f3546b4c66704736df329c03d1daa884be7ffbc2967d9bde99cb7b34f",
     "src/lib/security/redaction.ts": "218dbef48d73da0a52890befe6e8b7a3b7bd5e93ed6356f5039dd695e6051457",
     "src/lib/text/encoding.ts": "2988f3da86f0031f2a261a50852b59758ef8a05a01f6a83e21c2a0a3db53874e",
-    "tsconfig.json": "459177a2e1212cc9b406526527bb0dae2b447b4e0144d735bb6c6ebf01be639b"
+    "tsconfig.json": "459177a2e1212cc9b406526527bb0dae2b447b4e0144d735bb6c6ebf01be639b",
+    "src/lib/estimate/professionalNormSourceAdmission.ts": "6b6c3d3d11530c53362d80d16531ec6d5e125b22c24677ee9476252d1cb6c547",
+    "src/lib/estimate/professionalNormSourceStaticAdmission.ts": "06ddc84d7c4127c80dd56c55964ee8d1be8c18224b8b980632906a839306122f",
+    "src/lib/estimate/backendPlatform/canonicalNormativeTraceV1.ts": "c98e5b12299aea589ea777add3ea457a84e92fb72f450ee5ba136fdd443601f3",
+    "src/lib/estimate/backendPlatform/canonicalNormSourceAdmissionEvidenceV1.ts": "eb34e7024894a31a45f3462837f13338632334d2faa15e65a5caf971d5c32345"
   },
   "runtimeVendorPins": {
     "node_modules/typescript/lib/lib.es5.d.ts": "c430d44666289dae81f30fa7b2edebf186ecc91a2d4c71266ea6ae76388792e1",
@@ -14157,5 +14161,58 @@
     "newRoots": 0,
     "newMappingKeys": 0,
     "actualCurrentCandidate": "UNRUN"
+  },
+  "sameJobBackendR7Cohort": {
+    "contract": "reviewed-existing-backend-r7-and-ct29-cohort/v1",
+    "sourceBaselineCommit": "3e8071844128d90574bec6db0e694a2c5a74286b",
+    "reviewedSourcePins": {
+      "data/estimate-benchmarks/source-packs/ct29-existing-mineral-series-s27-54.json": "3da2f498cc00c024f4dc93492d88071aadcd46abd64330b22c38f4a610d86d4e",
+      "data/estimate-benchmarks/source-packs/ct29-exterior-plaster-s27-54.json": "4f37c7a4c5610bd9ac7f16925732899bd476aa0fdd3c5b50a520a65fb5a00ad0",
+      "data/estimate-benchmarks/source-packs/ct29-indoor-delivery-cleanup-r2.json": "fe488000268fdf3391e92173625424ece2ae1d1bf1301af90ee268dbe53df018",
+      "data/estimate-benchmarks/source-packs/ct29-indoor-geometry-r1.json": "ca4fda77d160ec06db47c0e8636feafa7ef02a297d92cef240f8dd8c3c53f24b",
+      "data/estimate-benchmarks/source-packs/ct29-indoor-plaster-s27-54.json": "cc6a47bd3cdaf5fc7f8d88b4a62710e3142308f5f803ed08e9d914df378d8c8e",
+      "data/estimate-benchmarks/source-packs/ct29-indoor-resource-provision-r3.json": "8f5506609b77c48f2d5a3ccf373b8c9ed57c9ad1df35d4d3aa0a88d0a088e612",
+      "data/estimate-benchmarks/source-packs/ct29-indoor-resource-provision-r4.json": "2b0161304c1a6b610f883d1c8e9109a928e0bd217c68681b8f94a96bdafa281f",
+      "src/lib/consumerRequests/consumerEstimateNormSourceReadiness.ts": "58546b4d1f4a81681e53e18b9b46378442c843cb1d5cc61138f4d66f0b6e08ca",
+      "src/lib/consumerRequests/consumerRequestPdfService.ts": "c7f6bfa7c45e2d903a33a78e0b97e31d1df33dfe5ac223d52ac6343dad4cb67c",
+      "src/lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection.ts": "5889ba9e5c3a53c2f0609bb1c116c52b95018a50292a37dc61f954dd22b56b23",
+      "src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.ts": "82c2be65f040d79d65ff26fe7ee2ec9874d74a9dd48f9f92865d5215304a007e",
+      "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts": "f1efc4146454cb63583e00195eeeaf4f6d4df962a059fda66bba549e7b304492",
+      "src/lib/estimate/backendPlatform/canonicalNormSourceAdmissionEvidenceV1.ts": "eb34e7024894a31a45f3462837f13338632334d2faa15e65a5caf971d5c32345",
+      "src/lib/estimate/backendPlatform/canonicalNormativeTraceV1.ts": "c98e5b12299aea589ea777add3ea457a84e92fb72f450ee5ba136fdd443601f3",
+      "src/lib/estimate/backendPlatform/contracts.ts": "37f894ef44f5d938778cc1b287253ea8e591e8c10e7b87eb2b09da9923d032e8",
+      "src/lib/estimate/professionalNormSourceAdmission.ts": "6b6c3d3d11530c53362d80d16531ec6d5e125b22c24677ee9476252d1cb6c547",
+      "src/lib/estimate/professionalNormSourceAdmissionContract.ts": "699fc01079034387e09efd2a02d68bc523e007fed8cb0197ed7a637645ee3760",
+      "src/lib/estimate/professionalNormSourceClientAdmission.ts": "9b2cc87ffea648f6fddab4596836ebf730816696e63fa67170546fba53d6dfc2",
+      "src/lib/estimate/professionalNormSourceStaticAdmission.ts": "06ddc84d7c4127c80dd56c55964ee8d1be8c18224b8b980632906a839306122f",
+      "src/lib/estimate/v4/ct29ExistingMineralSeriesS2754.ts": "8126331ccb6fecd40a8f8c6e8df206c374b386314e80fb2dfa09acf266d8f6ac",
+      "src/lib/estimate/v4/ct29ExteriorPlasterS2754.ts": "2f3c28e11d13065ef97bd1cf5d649b1d50a5ada360427de3ffe3dfcd809fbb4b",
+      "src/lib/estimate/v4/ct29IndoorDeliveryCleanupR2.ts": "5819721ac7fa3dfb5d9e8129e71854e58492dc33309aa4b59afeabe69de425a1",
+      "src/lib/estimate/v4/ct29IndoorPlasterS2754.ts": "ab6ffbb039dfef1639014593d577472eed320d0c90f323891749fdb4eb55c334",
+      "src/lib/estimate/v4/ct29IndoorResourceProvisionR3.ts": "b2c113d55ff9732d22c1440e213a6ce88f623697697da00cd8e2f0aed6263bfb",
+      "src/lib/estimate/v4/ct29IndoorResourceProvisionR4.ts": "8a0db9daa822f8cdb3ed8e0ec72606a43ff40b0eb3be98485fede976ef19e395",
+      "src/lib/estimate/v4/ct29IndoorResourceProvisionR4CommercialBoundary.test.ts": "a30e96c8f820a292850e2f74ee0bd03b00e71525e36bb65862401d98002eccb5",
+      "tests/consumerRepair/canonicalBackendNormSourceAdmission.contract.test.ts": "7eadefde61dcd4d722bef285f246aad213211469208a1a13cf4de99d590dbb4c",
+      "tests/consumerRepair/canonicalBackendPhysicalNormProjection.contract.test.ts": "2a9f042811b5ab67c1b0bca9435dc5052c3809f7261415fffcb0f44e0765d014",
+      "tests/consumerRepair/consumerEstimateNormSourceReadiness.contract.test.ts": "57ffad3bf15d040dfc965623f1be1f9f569e310d8763446dcda08d6144bd1212",
+      "tests/consumerRepair/fixtures/canonicalNormSourceAdmissionFixture.ts": "147966d0b05772e0234cf409dc5112216812ffbaa352d460b256f4f0f299f830",
+      "tests/estimateNorms/professionalNormSourceAdmission.contract.test.ts": "eece61daf74122697da677d69d63d0317ac54bb0a0a701e642b3ef7faf5ee807"
+    },
+    "newTypeRootPaths": [
+      "tests/consumerRepair/canonicalBackendNormSourceAdmission.contract.test.ts",
+      "tests/consumerRepair/consumerEstimateNormSourceReadiness.contract.test.ts",
+      "tests/estimateNorms/professionalNormSourceAdmission.contract.test.ts",
+      "src/lib/estimate/v4/ct29IndoorResourceProvisionR4CommercialBoundary.test.ts"
+    ],
+    "previousSeedKeys": 186,
+    "runtimeAddedKeys": [
+      "src/lib/estimate/professionalNormSourceAdmission.ts",
+      "src/lib/estimate/professionalNormSourceStaticAdmission.ts",
+      "src/lib/estimate/backendPlatform/canonicalNormativeTraceV1.ts",
+      "src/lib/estimate/backendPlatform/canonicalNormSourceAdmissionEvidenceV1.ts"
+    ],
+    "changesPreservePreviousRootsAndDependencies": true,
+    "publicDatabaseWrites": false,
+    "productionActivation": false
   }
 }
