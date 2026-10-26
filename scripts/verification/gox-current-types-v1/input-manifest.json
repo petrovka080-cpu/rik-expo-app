@@ -3,7 +3,8 @@
   "snapshotKind": "SOURCE_ONLY_ACTUAL_BOUND_ELECTRICAL_AND_SCS_ADAPTER_FULL_TYPES_NO_RUNTIME_OR_SOURCE_ADMISSION",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
-    ".github/workflows/gox-current-core-types-v1.yml": "e66092eafeabe6247c3a4c5238e094eca8cb2f8c53df7d267d536d9504ae6df1",
+    ".github/workflows/gox-current-core-types-v1.yml": "4e90364823b15fab70a97303884f98fc6bcfbb0ddf90051b77aa679e2bda46ce",
+    ".release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf": "cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca",
     "app/(tabs)/office/index.tsx": "4773281a7daac103265ce6a5d28828f22b7cc1f733cece454dbc4105634d3e8f",
     "app/_layout.tsx": "db6e356a662020d15c8e9dcbde423fefb8dd2bb861e3f240d4434ce69d5f7be8",
     "app/auth/login.tsx": "852516a258395686fc8b7e398224fcf09ac5556dfc5675f88d864c959bd72ea0",
@@ -656,9 +657,9 @@
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
-    "scripts/verification/gox-current-types-v1/guard.py": "82cd1a6baa878b66c3bff9593e8a61a8bce0f6a2bebfd2a69e673e16edec03c9",
+    "scripts/verification/gox-current-types-v1/guard.py": "0ff8ab7feca9fa09222dc667606c5977c42655c50a142e8dfd06193c8e95c19d",
     "scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py": "b0e94941498c2152cd7f94bd0bad0185d61e25e1e849c42e77df78c9798a6bfe",
-    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "414dc7caf5f4744df44039f73dffcf613442d461a4df64a726528eb4eb1c1cee",
+    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "f5116f3406de5b343f24b031ce6eee32757e462fd135d4486219caea3def23f7",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
@@ -3730,13 +3731,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
-  "canonicalSourceFreezeSha256": "bd51251dd4947d00b7aac249a1cceb5a162a6dd1f88211a18327f5c927a07896",
+  "canonicalSourceFreezeSha256": "b5faed8615db752e9850be5636b320e523bb82f8e80214a2c4cc44747555073c",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 109174266,
+    "sourceBytes": 110673740,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -5689,6 +5690,20 @@
       "runtimeVendorPinsAddedWithoutByteChanges": 11861,
       "officialPdfDownloadedAndHashCheckedNotUploaded": true,
       "NodeSQLThisPreparation": 0,
+      "FULL": false
+    },
+    "panelFiniteR315ExactPdfDeliveryR321": {
+      "baseCommit": "22b6d107586d8cb2dd3b69fbbc3d08cbb5771ee7",
+      "previousActualFailureRunId": 40257829293,
+      "previousActualFailureArtifactId": 12622668844,
+      "previousFailureArchiveSha256": "6e7c0b41ae38ac3782ed47a58e29a579cfc71bbf52dc563433ca0202db526e73",
+      "sourceOnlyInputRepair": "Existing official PDF exact binary Git blob restored through existing bootstrap; retained network fallback and SHA/size checks unchanged.",
+      "officialPdfSha256": "cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca",
+      "officialPdfBytes": 1498721,
+      "typeScriptAndNormAndDependencyAndSemanticAuditBytesChanged": 0,
+      "newExtraCommittedInputOnly": ".release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf",
+      "bootstrapPins": 2491,
+      "typesReusedFrom": "acc63ef2532e08c6668c1aa170259b5bb0bfbc47",
       "FULL": false
     }
   }

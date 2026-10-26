@@ -139,7 +139,7 @@ def prepare_panel_finite_r315(root,out,spec,commit):
  assert hashlib.sha256(before_raw).hexdigest()==meta['beforeInputManifestSha256'],'EXACT_R315_INPUT_MANIFEST_REQUIRED'
  before=json.loads(before_raw)
  allowed={'scripts/verification/gox-current-types-v1/guard.py','.github/workflows/gox-current-core-types-v1.yml'}
- extras={'scripts/verification/gox-current-types-v1/panel-finite-r315.json','scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py','data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json','data/estimate-benchmarks/r568-local-developer-canonical-release.json','jest.config.js','babel.config.js','jest.setup.js'}
+ extras={'scripts/verification/gox-current-types-v1/panel-finite-r315.json','scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py','data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json','data/estimate-benchmarks/r568-local-developer-canonical-release.json','jest.config.js','babel.config.js','jest.setup.js','.release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf'}
  assert set(meta['allowedChangedExistingSources'])==allowed and set(meta['allowedExtraCommittedInputs'])==extras
  assert set(spec['sourcePins'])==set(before['sourcePins'])|extras,'UNREVIEWED_EXTRA_OR_REMOVED_SOURCE'
  assert {k for k,h in before['sourcePins'].items()if spec['sourcePins'][k]!=h}==allowed,'ONLY_HARNESS_BYTES_MAY_CHANGE'

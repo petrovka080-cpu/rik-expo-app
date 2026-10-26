@@ -31,6 +31,14 @@ jobs:
           fetch-depth: 2
       - uses: actions/setup-python@v5
         with: {python-version: '3.13'}
+      - name: Fetch exact accepted R315 source manifest
+        shell: pwsh
+        run: |
+          git -C "$env:GITHUB_WORKSPACE" fetch --no-tags --depth=1 origin acc63ef2532e08c6668c1aa170259b5bb0bfbc47
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $actualR315 = git -C "$env:GITHUB_WORKSPACE" rev-parse --verify 'acc63ef2532e08c6668c1aa170259b5bb0bfbc47^{commit}'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($actualR315 -ne 'acc63ef2532e08c6668c1aa170259b5bb0bfbc47') { throw 'Exact accepted R315 commit required' }
       - name: Restore exact reviewed source bytes
         shell: pwsh
         env:

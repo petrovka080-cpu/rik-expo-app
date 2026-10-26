@@ -25,6 +25,7 @@
     ".github/workflows/gox-current-core-types-v1.yml"
   ],
   "allowedExtraCommittedInputs": [
+    ".release-runtime/r568/s27-51/electrical-series-primary/DVO_6560_6561_6562_OFFICIAL.pdf",
     "babel.config.js",
     "data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json",
     "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
