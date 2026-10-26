@@ -149,6 +149,7 @@ function openingPublisherSourceProjectionR223(context:Context,sourcePaths:readon
  for(const file of projection.files){
   check(record(file)&&record(file.original)&&record(file.projected)
    &&typeof file.original.path==='string'&&typeof file.projected.path==='string'
+   &&typeof file.original.sha256==='string'&&typeof file.projected.sha256==='string'
    &&/^[a-f0-9]{64}$/.test(file.original.sha256)&&file.original.sha256===file.projected.sha256,'SHA_IDENTITY');
   const original=resolve(root,file.original.path),projected=resolve(root,file.projected.path);
   check(external.has(original),'UNREQUESTED_ORIGINAL');
@@ -173,7 +174,9 @@ function assertOpeningRootPreparationR223(config:Config,proof:NonNullable<Return
  const input=masonryGlassOpeningRetainedGuardInputR223(config);
  assertMasterRetainedBindingSnapshotR1(input,proof.parentSnapshot);
  same(config.capturedScopedNormativeRegistry,proof.scopedRegistry);
- assert(resolveMasterScopedNormativeRegistryOptInR1(input),'MASONRY_OPENING_ROOT_APPLY_SCOPED_REGISTRY_REQUIRED');
+ // R70 deliberately narrows its input Config. Pass the same complete typed
+ // Config to the scoped guard so normId/catalogAppend retain their field types.
+ assert(resolveMasterScopedNormativeRegistryOptInR1({...input,config}),'MASONRY_OPENING_ROOT_APPLY_SCOPED_REGISTRY_REQUIRED');
 }
 /** Existing same-parent normal Config only. Old APPEND envelope is discarded;
  * its immutable R154 whole model, source/readers and display owners are reused.

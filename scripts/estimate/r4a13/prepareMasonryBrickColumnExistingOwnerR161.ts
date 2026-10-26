@@ -97,6 +97,7 @@ function columnReleaseProofR161(context:MasonryBrickColumnExistingContextR161,bi
  function check(value:unknown,code:string):asserts value{assert(value,'MASONRY_COLUMN_ROOT_RELEASE_'+code);}
  check(record(proof)&&proof.contract==='root-masonry-column-after-committed-opening/r1','CONTEXT');
  const hash=(value:unknown):value is string=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
+ check(hash(context.masterSha256)&&sha(context.masterPath)===context.masterSha256,'MASTER_BYTES');
  check(hash(proof.currentPointerSha256),'POINTER_SHA_REQUIRED');
  const read=(pin:ColumnReleaseArtifactPinR161):Json=>{
   check(record(pin)&&typeof pin.path==='string'&&/^data\/estimate-benchmarks\/source-artifacts\/masonry-column-second-release-r161\/[a-zA-Z0-9_./-]+\.json$/.test(pin.path)

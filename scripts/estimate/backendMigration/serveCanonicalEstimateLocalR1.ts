@@ -1,3 +1,4 @@
+import { attachCanonicalPhysicalNormEvidenceV1, canonicalPhysicalNormRevisionFromStorageV1 } from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection';
 import {deriveCanonicalCatalogPromptExtractionV1} from "../../../src/lib/estimate/backendPlatform/canonicalConcretePlacementPromptServerR1";
 import {parseCanonicalCatalogPromptRequestV1,assertCanonicalCatalogPromptBytesV1,
   MAX_CANONICAL_CATALOG_PROMPT_REQUEST_BYTES_V1,MAX_CANONICAL_CATALOG_PROMPT_RESPONSE_BYTES_V1} from "../../../src/lib/estimate/backendPlatform/canonicalCatalogPromptExtractionV1";
@@ -5887,7 +5888,7 @@ async function route(
       async (client) =>
         (
           await client.query(
-            "select id,release_id::text,catalog_id,definition_version_id::text,amendment_contract from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
+            "select id,release_id::text,catalog_id,definition_version_id::text,amendment_contract,input_parameters,checksum_sha256,created_at from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3)",
             [path[1], currentOwnerId(), currentTenantId()],
           )
         ).rows[0] as JsonRecord | undefined,
@@ -5940,7 +5941,7 @@ async function route(
       apiVersion: API_VERSION,
       revisionId: path[1],
       contentAdmission: contentAdmission.decision,
-      rows: page.map((row) => canonicalEstimateRevisionRowFromStorage(
+      rows: page.map((row) => attachCanonicalPhysicalNormEvidenceV1(canonicalPhysicalNormRevisionFromStorageV1(revision),canonicalEstimateRevisionRowFromStorage(
         row,
         row._price_record_present
           ? {
@@ -5956,7 +5957,7 @@ async function route(
           route_source_kind: row._price_route_source_kind,
         },
         revision.amendment_contract,
-      )),
+      ))),
       nextCursor:
         rows.length > limit
           ? Buffer.from(

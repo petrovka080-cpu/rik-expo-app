@@ -3,7 +3,7 @@
   "sourceOnly": true,
   "beforeInputManifestSha256": "cbc5deb1d020b7528599c376fd1bd85f3d8b95df537cc38d61b40ae23a5094c7",
   "beforeMappingSha256": "2a90d90bc5f2305348118e80f62023320507b4bd44bc6a84e7c7f920fa096426",
-  "unchangedSeedManifestSha256": "eb546e0bc25031eae25ae6b9cd9c6724e23b940ecd5d0275a26dec5b46ef224a",
+  "unchangedSeedManifestSha256": "239d83604160b199df7e9bb8fac1db8dd55e3ca143ea2a28813eaaf29663b8e7",
   "allowedChangedExistingSources": [
     "scripts/verification/gox-current-types-v1/guard.py",
     ".github/workflows/gox-current-core-types-v1.yml"
@@ -442,7 +442,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts": "f40e1f5cf38d85485e1d4bf43b78874d3d8e6ad577740560b5b55021f83a5f6e",
     "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "544d561544bf476be60a6de7a9fba207e2c7fb258b44d09458fefd76e9844bfc",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts": "a175263b958b6de239b68a8166d786d54f1602498de28b56e88de106f0eba687",
-    "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts": "dbc945657eddc1fa1de56720523e8ca58cc91bab6e0a1c69148bba581b607bce",
+    "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts": "6d9af38a42770d7468a390a5d9a632587bfc998de88b8cad679156199b9f0c8e",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "42cc437ba33fdc64dbeac73b45db987ad6bc63f6e86101ca7d34f8f314252b14",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
@@ -458,6 +458,7 @@
     "src/lib/estimate/backendPlatform/canonicalMaterialQuantityProjection.ts": "9dd1023f89476dacfc5c9ce9f79750a81cc9282eca0e4adce9a10bb96e8763cb",
     "src/lib/estimate/backendPlatform/canonicalOrderedSpecificationBindings.ts": "a43d8452b63ba2957a9741d141f483f34df5317a302ef6a75fbdd55469e5b549",
     "src/lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance.ts": "656bab027f94dc9f4c80f843151e0283cd575a27f080f026ee00ea9b98fb2c2c",
+    "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts": "8c29db5f304f4b03de0b9adfcd1ba112b0b87139cdfbf5a0c56618a214f5867c",
     "src/lib/estimate/backendPlatform/canonicalPreliminaryParameterFormulaV1.ts": "805ffa0ef640b42697d8a868710dfcd1f1bb0ab84636008c1ee4a764cfda0d90",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "b2b75f750bfcb039f55537a0d8d124561f58bc2dde27c92edef37b871e0c4e5d",
@@ -490,7 +491,7 @@
     "src/lib/estimate/backendPlatform/canonicalScopeRequirementV1.ts": "99047e2babebe590adbb254732f5423033201f89d8f844426214e9168fce77af",
     "src/lib/estimate/backendPlatform/canonicalSelectedMaterialDeliveryContractR1.ts": "97daaad21aa9e285333665ff1356e5cb53bfd3c4c1c61765a15bd7f0bfd7e6f0",
     "src/lib/estimate/backendPlatform/canonicalSourceProfileSelectionV1.ts": "4e8c4975131b1f3d7ea934d6985667de43713a9f560b2b0ab4d31ed327616cb5",
-    "src/lib/estimate/backendPlatform/contracts.ts": "ab0049dd14e4a54b931f0392b1f7e927f04947543ac239b376c3153caae6eca1",
+    "src/lib/estimate/backendPlatform/contracts.ts": "bd7e816f2ab5b584f99396d1b0a5359a61cc3b7a8d24421d03a8d454649d0424",
     "src/lib/estimate/backendPlatform/estimateAdmissionR3.ts": "4f197b8f3bde877c4bc02883dd4f3985068d0d3f1154ff3a236edea7e2857293",
     "src/lib/estimate/backendPlatform/formulaGraph.ts": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c",
     "src/lib/estimate/backendPlatform/inclusionGraph.ts": "f6bcf6d8fcb5b30e2c7fe489b6b5b9aaed97366f35f9e6e0f818e51b23796c02",
@@ -14065,30 +14066,43 @@
     "freshFullTypesRequired": true
   },
   "sameJobCurrentTypesCohort": {
-    "contract": "reviewed-common-full-types-then-panel/v1",
-    "sourceBaseCommit": "4a3f182768aba6fc4a307696634eb271140f3d4c",
-    "reviewedTSFiles": 26,
-    "previousSeedKeysRetained": 169,
-    "newExplicitSeeds": [
-      "scripts/estimate/r4a13/prepareRoofParapet004TechnicalProductionR1.ts",
-      "scripts/estimate/r4a13/prepareRoofParapet004TechnicalProductionTargetR1.ts",
-      "scripts/estimate/r4a13/roofParapet004ProductionTargetBoundaryR1.test.ts",
-      "scripts/estimate/r4a13/roofParapet004TechnicalNormalLockedR1.test.ts",
-      "scripts/estimate/r4a13/roofParapet004TechnicalProductionVerifyR1.ts",
-      "src/lib/estimate/v4/asphalt/asphaltRelatedResourceParameterIdsV4.ts",
-      "tests/aiEstimateV4/asphaltParkingScopeV5.contract.test.ts",
-      "tests/aiEstimateV4/asphaltProfessionalCompilerV4.contract.test.ts",
-      "tests/aiEstimateV4/asphaltRelatedCanonicalSchemaOwnership.contract.test.ts",
-      "tests/estimateNorms/promptParameterLeafImportBoundary.contract.test.ts"
+    "contract": "reviewed-common-full-types-backend-tests-panel/v1",
+    "sourceBaseCommit": "c8095de7e095fd6fc3716822852738a462505913",
+    "reviewedTSFiles": 99,
+    "runtimeSourceTextInputs": [
+      "src/features/ai/AIAssistantEstimatePdfActions.tsx"
     ],
-    "currentSeedKeys": 179,
+    "previousSeedKeysRetained": 179,
+    "newExplicitSeeds": [
+      "src/components/estimate/ProfessionalEstimateComposer.tsx",
+      "src/features/ai/assistantAnswerPipeline.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.test.ts",
+      "supabase/functions/canonical-estimate/index.ts",
+      "tests/architecture/canonicalBackendProjectionNoClientCompilerReachability.contract.test.ts",
+      "tests/architecture/entrypointFixSharedViewModelRequired.contract.test.ts",
+      "tests/consumerRepair/canonicalBackendPhysicalNormProjection.contract.test.ts"
+    ],
+    "currentSeedKeys": 186,
     "previousAdditionalRootCount": 603,
-    "expectedCurrentTypeRoots": 764,
+    "expectedCurrentTypeRoots": 771,
     "actualFullProgramCount": "UNKNOWN_UNTIL_FRESH_FULL_RESULT",
-    "fullTypesRequiredBeforePanel": true,
+    "fullTypesRequiredBeforeBackendAndPanel": true,
+    "backendTestsRequiredBeforePanel": true,
+    "expectedBackendSuiteCount": 4,
+    "expectedBackendTestCount": 34,
     "oldR315CoverageClaimed": false,
+    "selectedRuntimePinChanges": {
+      "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts": {
+        "beforeSha256": "dbc945657eddc1fa1de56720523e8ca58cc91bab6e0a1c69148bba581b607bce",
+        "sha256": "6d9af38a42770d7468a390a5d9a632587bfc998de88b8cad679156199b9f0c8e"
+      },
+      "src/lib/estimate/backendPlatform/contracts.ts": {
+        "beforeSha256": "ab0049dd14e4a54b931f0392b1f7e927f04947543ac239b376c3153caae6eca1",
+        "sha256": "bd7e816f2ab5b584f99396d1b0a5359a61cc3b7a8d24421d03a8d454649d0424"
+      }
+    },
     "selectedRuntimeLeafAdditions": [
-      "src/lib/estimate/v4/asphalt/asphaltRelatedResourceParameterIdsV4.ts"
+      "src/lib/estimate/backendPlatform/canonicalPhysicalNormEvidenceV1.ts"
     ],
     "sourceApproval": false,
     "FULL": false

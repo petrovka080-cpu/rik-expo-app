@@ -1,3 +1,4 @@
+import type { CanonicalPhysicalNormEvidenceV1 } from './canonicalPhysicalNormEvidenceV1';
 import {parseCanonicalSelectedMaterialDeliveryRequestR1} from './canonicalSelectedMaterialDeliveryContractR1';
 import { assertCanonicalPurchaseSupplyRowV1, canonicalPurchaseSupplyBlocksV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { canonicalEstimateOperationReference } from "./canonicalEstimateOperationComposition";
@@ -582,6 +583,8 @@ export type CanonicalEstimateRevisionRowView = {
   rowSha256: string;
   /** Immutable price evidence saved with this exact revision row. */
   priceSource?: CanonicalEstimateRevisionRowPriceSource;
+  /** Server evaluation bound to this immutable revision and row. */
+  physicalNormEvidenceV1?: CanonicalPhysicalNormEvidenceV1;
 };
 
 export type CanonicalEstimateRevisionRowPriceSource = {

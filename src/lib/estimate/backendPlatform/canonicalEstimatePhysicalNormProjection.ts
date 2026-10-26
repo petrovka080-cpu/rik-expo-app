@@ -1,6 +1,6 @@
+import type { CanonicalPhysicalNormRevisionV1 } from './canonicalPhysicalNormEvidenceV1';
 import type {
   CanonicalEstimateRevisionRowView,
-  CanonicalEstimateRevisionView,
 } from "./contracts";
 import {
   resolveProfessionalPhysicalNormParameterValuesV1,
@@ -150,7 +150,7 @@ export function resolveCanonicalEstimatePhysicalNormApplicabilityV1(input: {
  * does not evaluate a second quantity formula.
  */
 export function projectCanonicalEstimatePhysicalNormApplicabilityV1(input: {
-  revision: CanonicalEstimateRevisionView;
+  revision: CanonicalPhysicalNormRevisionV1;
   row: CanonicalEstimateRevisionRowView;
 }): ProfessionalPhysicalNormApplicabilityResolutionV1 | null {
   const resourceGraph = record(input.row.calculationTrace?.resourceGraph);
@@ -160,4 +160,24 @@ export function projectCanonicalEstimatePhysicalNormApplicabilityV1(input: {
     resourceGraph,
     normativeTrace: input.row.normativeTrace,
   });
+}
+
+/** Called only after the existing rows endpoint has authorised the revision. */
+export function attachCanonicalPhysicalNormEvidenceV1(
+  revision: CanonicalPhysicalNormRevisionV1,
+  row: CanonicalEstimateRevisionRowView,
+): CanonicalEstimateRevisionRowView {
+  // Ignore any incoming presentation evidence and always use the existing resolver.
+  const resolution = projectCanonicalEstimatePhysicalNormApplicabilityV1({revision,row});
+  return {...row,physicalNormEvidenceV1:{
+    contractVersion:'canonical-physical-norm-evidence/v1',owner:'canonical-estimate-backend',
+    revisionId:revision.revisionId,releaseId:revision.releaseId,catalogId:revision.catalogId,
+    revisionChecksumSha256:revision.checksumSha256,rowId:row.rowId,rowSha256:row.rowSha256,resolution,
+  }};
+}
+
+/** Uses the exact same stored inputs and timestamp representation as revision detail. */
+export function canonicalPhysicalNormRevisionFromStorageV1(row: Readonly<Record<string,unknown>>): CanonicalPhysicalNormRevisionV1 {
+  return {revisionId:String(row.id ?? ''),releaseId:String(row.release_id ?? ''),catalogId:String(row.catalog_id ?? ''),
+    checksumSha256:String(row.checksum_sha256 ?? ''),parameters:record(row.input_parameters) ?? {},createdAt:String(row.created_at ?? '')};
 }

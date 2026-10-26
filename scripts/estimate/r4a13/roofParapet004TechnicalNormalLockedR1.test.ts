@@ -93,14 +93,14 @@ it('requires actual capture five pins and finite10 PASS, then checks existing te
   assert(object(audit)&&audit.status==='PASS_INDEPENDENT_ACTUAL_PARAPET_CAPTURE_AND_FINITE10_RAW_AUDIT_NOT_ADMISSION'&&audit.actualEntries===10&&audit.actualResults===5&&audit.actualRejects===5&&audit.FULL===false&&pin(audit.finalCallbackRaw));
   assert.deepEqual(audit.finalCallbackRaw,{...input.finiteFinalRaw,bytes:bytes(input.finiteFinalRaw).length});
   assert(object(types)&&typeof types.status==='string'&&types.status.startsWith('PASS_ACTUAL_FULL_TYPES')&&types.actualDiagnostics===0);assert.deepEqual(types.sourceDrift,[]);assert.deepEqual(types.dependencyDrift,[]);assert.deepEqual(types.ownedRemaining,[]);
-  assert.equal(input.sourceOrigins.sha256,'b069739bae7c9fa897d083fa4549da8dd2a231c771fa45bab1238786f93f1c09','EXACT_REVIEWED_SINGLE_ASSEMBLY_ID_LEAF_TRANSITION');
+  assert.equal(input.sourceOrigins.sha256,'9f61b3dc21419b9a8c8821e35542e15729cf5e1bcf4d2f89999f95b977000848','EXACT_REVIEWED_ASSEMBLY_AND_TYPE_ONLY_CONTRACT_TRANSITIONS');
   assert.equal(input.architectureGovernorReceipt.sha256,'98f54238e91cd1044203fc123e8a9585588e6505b211b9a921bbc67e68173558');assert.equal(input.architectureJest.sha256,'f2ade91f33e7332f98a5f8d48f570996aac1861f69a7aab1728cb3be90b5ded6');
   closed(read(input.architectureGovernorReceipt));const architecture=read(input.architectureJest);
   assert(object(architecture)&&architecture.success===true&&architecture.numTotalTests===31&&architecture.numPassedTests===31&&architecture.numFailedTests===0&&architecture.numPendingTests===0
     &&architecture.numTotalTestSuites===4&&architecture.numPassedTestSuites===4&&architecture.numFailedTestSuites===0&&architecture.numPendingTestSuites===0);
   assert(Array.isArray(architecture.testResults)&&architecture.testResults.length===4&&architecture.testResults.every(r=>object(r)&&r.status==='passed'));
 
-  const origins=read(input.sourceOrigins);assert(object(origins)&&object(origins.literalRelativeClosure));assert.equal(origins.contract,'roof-parapet004-exact-family-source-continuation/master219-r1');assert.equal(origins.allowAnyOtherSourceChange,false);assert.equal(Object.keys(origins.literalRelativeClosure).length,239);
+  const origins=read(input.sourceOrigins);assert(object(origins)&&object(origins.literalRelativeClosure));assert.equal(origins.contract,'roof-parapet004-exact-family-source-continuation/master219-r2');assert.equal(origins.allowAnyOtherSourceChange,false);assert.equal(Object.keys(origins.literalRelativeClosure).length,240);
   const sourcePaths:string[]=[];for(const [logical,v]of Object.entries(origins.literalRelativeClosure)){assert(object(v)&&typeof v.bytes==='number'&&typeof v.sha256==='string');assert(!path.isAbsolute(logical)&&!logical.split('/').includes('..'));
     const p=path.resolve(sourceRoot,logical);fingerprint(p,v.bytes,v.sha256);sourcePaths.push(p);}
   const pointer=path.join(sourceRoot,'data/estimate-benchmarks/r568-local-developer-canonical-release.json');bytes({path:pointer,sha256:'404bdb3657d36efb731f8131f63dc126e452f635579926d0f3855dbf749053f6'});

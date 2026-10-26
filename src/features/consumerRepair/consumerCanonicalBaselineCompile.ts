@@ -9,7 +9,7 @@ import {
   isCanonicalEstimateConsumerSuppliedParameter,
   isCanonicalEstimateUserEditableParameter,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterSemantics";
-import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
+import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection";
 import { validateCanonicalEstimateParameterInputs } from "../../lib/estimate/backendPlatform/canonicalEstimateParameterValidation";
 import {
   CanonicalEstimateApiError,

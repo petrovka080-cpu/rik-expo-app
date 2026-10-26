@@ -1,5 +1,5 @@
 name: GOX exact current source validation
-run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.validation == 'full-types' && 'GOX full current core types' || 'GOX fresh full types then panel finite13' }} ${{ github.sha }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.validation == 'full-types' && 'GOX full current core types' || 'GOX fresh full types then backend34 then panel finite13' }} ${{ github.sha }}
 on:
   push:
     branches: ['codex/gox-types-*']
@@ -8,8 +8,8 @@ on:
       validation:
         description: Existing guard stage
         type: choice
-        default: full-types-then-panel
-        options: [full-types-then-panel, full-types]
+        default: full-types-backend-tests-then-panel
+        options: [full-types-backend-tests-then-panel, full-types]
 permissions:
   contents: read
 concurrency:
@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   full-affected-types:
-    name: ${{ github.event_name == 'workflow_dispatch' && inputs.validation == 'full-types' && 'GOX full current core types' || 'GOX fresh full types then panel finite13' }}
+    name: ${{ github.event_name == 'workflow_dispatch' && inputs.validation == 'full-types' && 'GOX full current core types' || 'GOX fresh full types then backend34 then panel finite13' }}
     runs-on: windows-2022
     timeout-minutes: 25
     env:
@@ -57,7 +57,14 @@ jobs:
           SOURCE_COMMIT: ${{ github.sha }}
           GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
         run: python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT"
-      - name: Exact panel Config finite13 after same commit fresh full types
+      - name: Exact four backend projection suites after same commit fresh full types
+        if: github.event_name != 'workflow_dispatch' || inputs.validation != 'full-types'
+        shell: pwsh
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
+        run: python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT" --backend-projection-tests
+      - name: Exact panel Config finite13 after same commit fresh full types and backend34
         if: github.event_name != 'workflow_dispatch' || inputs.validation != 'full-types'
         shell: pwsh
         env:

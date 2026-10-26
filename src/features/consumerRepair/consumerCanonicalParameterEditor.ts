@@ -22,7 +22,7 @@ import {
   recalculateCanonicalEstimateAndLoad,
 } from "../../lib/estimate/backendPlatform/canonicalEstimateClient";
 import { canonicalEstimateRecalculateIdempotencyKey } from "../../lib/estimate/backendPlatform/canonicalEstimateCommandIdentity";
-import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateForemanAdapter";
+import { adaptCanonicalRevisionToStructuredEstimate } from "../../lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection";
 import {
   canonicalNumericPeerConstraintMessageRu,
   canonicalParameterValidationIssueMessageRu,

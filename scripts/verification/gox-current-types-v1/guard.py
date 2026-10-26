@@ -13,18 +13,18 @@ def memory():
  return p.PhysicalAvailable*p.PageSize,(p.CommitLimit-p.CommitTotal)*p.PageSize
 
 def main():
- parser=argparse.ArgumentParser();parser.add_argument('--root',required=True);parser.add_argument('--commit',required=True);parser.add_argument('--output',required=True);parser.add_argument('--test-entry',choices=['scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts']);parser.add_argument('--panel-finite-r315',action='store_true');a=parser.parse_args()
+ parser=argparse.ArgumentParser();parser.add_argument('--root',required=True);parser.add_argument('--commit',required=True);parser.add_argument('--output',required=True);parser.add_argument('--test-entry',choices=['scripts/estimate/r4a13/concreteWholeHoleScopedIdentityPureR243.test.ts']);parser.add_argument('--panel-finite-r315',action='store_true');parser.add_argument('--backend-projection-tests',action='store_true');a=parser.parse_args()
  assert os.environ.get('GITHUB_ACTIONS')=='true'and os.name=='nt','WINDOWS_CI_ONLY'
  root=Path(a.root).resolve();restore_root=Path(a.output).resolve();assert restore_root.is_dir()
- pure=bool(a.test_entry);panel=bool(a.panel_finite_r315);assert not(pure and panel);test_mode=pure or panel
- out=restore_root/'panel-finite13-r315'/'02-config-and-finite13'if panel else restore_root/'hole-scoped-identity-only'if pure else restore_root
+ pure=bool(a.test_entry);panel=bool(a.panel_finite_r315);backend=bool(a.backend_projection_tests);assert sum([pure,panel,backend])<=1;test_mode=pure or panel or backend
+ out=restore_root/'backend-projection-tests'if backend else restore_root/'panel-finite13-r315'/'02-config-and-finite13'if panel else restore_root/'hole-scoped-identity-only'if pure else restore_root
  if test_mode:out.mkdir(parents=True)
  assert out.is_dir()and not(out/'receipt.json').exists()
  assert re.fullmatch('[a-f0-9]{40}',a.commit)
  import psutil
  helpers=root/'scripts/verification/android-waterproof-current-v1';sys.path.insert(0,str(helpers))
  from owned_launcher_job_snapshot_retry_v1 import OwnedLauncherJob
- MiB=1024**2;job=None;child=None;owned={};error=None;code=None;peakrss=peakprivate=0;minfree=mincommit=2**63;start=time.monotonic();remaining=[];source_drift=[];dependency_drift=[];panel_meta=None;panel_pins={};panel_context=None
+ MiB=1024**2;job=None;child=None;owned={};error=None;code=None;peakrss=peakprivate=0;minfree=mincommit=2**63;start=time.monotonic();remaining=[];source_drift=[];dependency_drift=[];panel_meta=None;panel_pins={};panel_context=None;backend_meta=None
  manifest_path=root/'scripts/verification/gox-current-types-v1/input-manifest.json'
  restored=json.loads((restore_root/'source-restore.json').read_text(encoding='utf-8'))
  assert restored['sourceCommit']==a.commit and restored['inputManifestSha256']==sha(manifest_path),'BOOTSTRAP_MANIFEST_DRIFT'
@@ -40,7 +40,10 @@ def main():
   assert spec['contract']=='gox-full-affected-types-source-snapshot/r1'
   assert subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=True).strip()==a.commit
   restore_committed_runtime_json(root,out,spec,a.commit)
-  if panel:panel_meta,panel_pins,panel_context=prepare_panel_finite_r315(root,out,spec,a.commit)
+  if backend:backend_meta,panel_pins=prepare_backend_projection_tests(root,out,spec,a.commit)
+  if panel:
+   panel_meta,panel_pins,panel_context=prepare_panel_finite_r315(root,out,spec,a.commit)
+   if panel_meta.get('typesProofMode')=='same-job-current-commit-full-types':verify_backend_projection_before_panel(root,restore_root,spec,a.commit)
   source_drift=check({**source,**panel_pins});dependency_drift=check(deps)
   assert not source_drift,'SOURCE_PIN_DRIFT';assert not dependency_drift,'LOCKED_DEPENDENCY_PIN_DRIFT'
   if pure:
@@ -52,10 +55,11 @@ def main():
   node=subprocess.check_output(['where.exe','node.exe'],text=True).splitlines()[0]
   run='gox_ci_'+os.environ['GITHUB_RUN_ID'];env=dict(os.environ);env.pop('NODE_OPTIONS',None)
   for key in ['PGPASSWORD','DATABASE_URL','R568_LOCAL_DATABASE_URL','SUPABASE_SERVICE_ROLE_KEY']:env.pop(key,None)
-  if panel:
+  if panel or backend:
    for key in list(env):
     if any(word in key.upper()for word in ['PASSWORD','SECRET','TOKEN','DATABASE_URL','SUPABASE','PGHOST','PGUSER','PGPORT','PGDATABASE']):env.pop(key,None)
-   env.update(NODE_OPTIONS='--max-old-space-size=768 --max-semi-space-size=8',NODE_ENV='test',EXPO_NO_DOTENV='1',EXPO_NO_TELEMETRY='1',ESTIMATE_MIGRATION_DATABASE_URL='',PANEL_R287_BOUND_CONTEXT_PATH=str(panel_context),PANEL_R287_ACTUAL_OUTPUT=str(out/'raw'))
+   env.update(NODE_OPTIONS='--max-old-space-size=768 --max-semi-space-size=8',NODE_ENV='test',EXPO_NO_DOTENV='1',EXPO_NO_TELEMETRY='1',ESTIMATE_MIGRATION_DATABASE_URL='')
+   if panel:env.update(PANEL_R287_BOUND_CONTEXT_PATH=str(panel_context),PANEL_R287_ACTUAL_OUTPUT=str(out/'raw'))
   env.update(DELIVERY16_CURRENT_TSC_GUARD_RUN_ID=run,GOX_TYPES_OUTPUT_ROOT=out.as_posix())
   args=[node,'--max-old-space-size=2560','--max-semi-space-size=8',str(worker),str(out/'full-result.json'),
    '--expected-head',a.commit,'--seed-manifest-sha256',sha(seed),'--guard-run-id',run]
@@ -64,6 +68,8 @@ def main():
     '--test-reporter=junit','--test-reporter-destination='+str(out/'scope.junit.xml'),str(root/a.test_entry)]
   if panel:
    args=[node,str(root/'node_modules/jest/bin/jest.js'),'--config',str(root/'jest.config.js'),'--runInBand','--bail','--no-cache','--coverage=false','--json','--outputFile',str(out/'actual-jest.json'),'--runTestsByPath',str(root/panel_meta['entry'])]
+  if backend:
+   args=[node,str(root/'node_modules/jest/bin/jest.js'),'--config',str(root/'jest.config.js'),'--runInBand','--bail','--no-cache','--coverage=false','--json','--outputFile',str(out/'actual-jest.json'),'--runTestsByPath',*[str(root/k)for k in backend_meta['suitePaths']]]
   maxrss=(1024 if test_mode else 3072)*MiB;maxprivate=(1024 if test_mode else 3584)*MiB;timeout=120 if test_mode else 1200
   job=OwnedLauncherJob()
   with(out/'compiler.stdout.log').open('xb')as stdout,(out/'compiler.stderr.log').open('xb')as stderr,(out/'samples.jsonl').open('x')as samples:
@@ -115,13 +121,21 @@ def main():
    except BaseException as exc:
     error=error or repr(exc);result={'status':'PANEL_FINITE13_NOT_ACCEPTED','diagnostics':[],'harnessErrors':[type(exc).__name__]}
    if not owned or peakrss<=0 or peakprivate<=0:error=error or 'PANEL_OWNED_RUNTIME_WITNESS_REQUIRED'
-  passed=error is None and code==0 and result.get('status')==('PASS_ACTUAL_PANEL_ORDINARY_CONFIG_FINITE13_TEST_ONLY'if panel else'PASS_SCOPED_IDENTITY_TWELVE_CASES'if pure else'PASS_CURRENT_CANONICAL_AFFECTED_FULL_TYPESCRIPT_PROGRAM')and result.get('diagnostics')==[]and not remaining and not source_drift and not dependency_drift
-  receipt=dict(status=('PASS_EXACT_PANEL_FINITE13_R315_CI'if panel else'PASS_EXACT_SCOPED_IDENTITY_TWELVE_TESTS_CI'if pure else'PASS_EXACT_CURRENT_CORE_FULL_TYPES_CI')if passed else'NOT_ACCEPTED',error=error,exitCode=code,sourceSnapshotCommit=a.commit,
+  if backend:
+   try:
+    assert error is None and code==0 and backend_meta is not None,'BACKEND_STAGE_MUST_EXIT_CLEAN_BEFORE_AUDIT'
+    result=audit_backend_projection_tests(root,out,backend_meta)
+    (out/'exact-backend-projection-audit.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+   except BaseException as exc:
+    error=error or repr(exc);result={'status':'BACKEND_PROJECTION_NOT_ACCEPTED','diagnostics':[],'harnessErrors':[type(exc).__name__]}
+   if not owned or peakrss<=0 or peakprivate<=0:error=error or 'BACKEND_OWNED_RUNTIME_WITNESS_REQUIRED'
+  passed=error is None and code==0 and result.get('status')==('PASS_ACTUAL_BACKEND_PROJECTION_EXACT_FOUR_SUITES'if backend else'PASS_ACTUAL_PANEL_ORDINARY_CONFIG_FINITE13_TEST_ONLY'if panel else'PASS_SCOPED_IDENTITY_TWELVE_CASES'if pure else'PASS_CURRENT_CANONICAL_AFFECTED_FULL_TYPESCRIPT_PROGRAM')and result.get('diagnostics')==[]and not remaining and not source_drift and not dependency_drift
+  receipt=dict(status=('PASS_EXACT_BACKEND_PROJECTION_TESTS_CI'if backend else'PASS_EXACT_PANEL_FINITE13_R315_CI'if panel else'PASS_EXACT_SCOPED_IDENTITY_TWELVE_TESTS_CI'if pure else'PASS_EXACT_CURRENT_CORE_FULL_TYPES_CI')if passed else'NOT_ACCEPTED',error=error,exitCode=code,sourceSnapshotCommit=a.commit,
    sourcePins=len(source),dependencyPins=len(deps),sourceDrift=source_drift,dependencyDrift=dependency_drift,
    diagnostics=len(result['diagnostics'])if'diagnostics'in result else None,harnessErrors=result.get('harnessErrors'),seedCount=len(result.get('seedFiles',[])),fullProgramFileCount=result.get('fullProgramFileCount'),
-   resourcePolicy=dict(stage='PANEL_ORDINARY_CONFIG_FINITE13_R315'if panel else'SCOPED_IDENTITY_ONLY_TESTS'if pure else'FULL_TYPESCRIPT_PROGRAM',admissionPhysicalMiB=4096,admissionCommitMiB=3072,maxOwnedRssMiB=1024 if test_mode else 3072,maxOwnedPrivateMiB=1024 if test_mode else 3584,osPhysicalReserveMiB=3072,commitStopMiB=512,timeoutSeconds=120 if test_mode else 1200,heapMiB=768 if test_mode else 2560),
+   resourcePolicy=dict(stage='BACKEND_PROJECTION_EXACT_FOUR_SUITES'if backend else'PANEL_ORDINARY_CONFIG_FINITE13_R315'if panel else'SCOPED_IDENTITY_ONLY_TESTS'if pure else'FULL_TYPESCRIPT_PROGRAM',admissionPhysicalMiB=4096,admissionCommitMiB=3072,maxOwnedRssMiB=1024 if test_mode else 3072,maxOwnedPrivateMiB=1024 if test_mode else 3584,osPhysicalReserveMiB=3072,commitStopMiB=512,timeoutSeconds=120 if test_mode else 1200,heapMiB=768 if test_mode else 2560),
    peakOwnedRssBytes=peakrss,peakOwnedPrivateBytes=peakprivate,minimumPhysicalFreeBytes=minfree,minimumCommitHeadroomBytes=mincommit,remainingOwnedProcesses=remaining,
-   elapsedSeconds=time.monotonic()-start,scopedTestResult=result if test_mode else None,panelFiniteR315=panel,typesReusedFromCommit=panel_meta.get('acceptedTypesCommit')if panel_meta else None,runtimePinnedFiles=len(panel_pins)if panel else 0,ownedPids=sorted(owned),sourceApproval=False,FULL=False,applicationRuntimeStarted=False,databaseWrites=False,publicationPerformed=False,productionActivation=False)
+   elapsedSeconds=time.monotonic()-start,scopedTestResult=result if test_mode else None,panelFiniteR315=panel,typesReusedFromCommit=backend_meta.get('acceptedTypesCommit')if backend_meta else panel_meta.get('acceptedTypesCommit')if panel_meta else None,runtimePinnedFiles=len(panel_pins)if panel or backend else 0,backendProjectionTests=backend,ownedPids=sorted(owned),sourceApproval=False,FULL=False,applicationRuntimeStarted=False,databaseWrites=False,publicationPerformed=False,productionActivation=False)
   (out/'receipt.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8');print(json.dumps(receipt))
   if not passed:raise SystemExit(1)
 
@@ -221,8 +235,8 @@ def restore_committed_runtime_json(root,out,spec,commit):
 
 
 
-def verify_current_full_types_before_panel(root,out,spec,commit):
- base=out.parents[1];rp=base/'receipt.json';fp=base/'full-result.json';seed=root/'scripts/verification/gox-current-types-v1/seed-manifest.json';manifest=root/'scripts/verification/gox-current-types-v1/input-manifest.json'
+def verify_current_full_types_before_panel(root,out,spec,commit,base=None):
+ base=Path(base)if base is not None else out.parents[1];rp=base/'receipt.json';fp=base/'full-result.json';seed=root/'scripts/verification/gox-current-types-v1/seed-manifest.json';manifest=root/'scripts/verification/gox-current-types-v1/input-manifest.json'
  assert rp.is_file()and fp.is_file()and rp.stat().st_size<=1024**2 and fp.stat().st_size<=32*1024**2,'ACTUAL_SAME_JOB_FULL_TYPES_REQUIRED_BEFORE_PANEL'
  receipt=json.loads(rp.read_text(encoding='utf-8'));full=json.loads(fp.read_text(encoding='utf-8'));run='gox_ci_'+os.environ['GITHUB_RUN_ID']
  assert receipt['status']=='PASS_EXACT_CURRENT_CORE_FULL_TYPES_CI'and receipt['sourceSnapshotCommit']==commit and receipt['exitCode']==0 and receipt['error']is None,'CURRENT_COMMIT_TYPES_MUST_ACTUALLY_PASS'
@@ -244,5 +258,57 @@ def verify_current_full_types_before_panel(root,out,spec,commit):
   key=path.relative_to(root).as_posix();assert pinned.get(key)==row['sha256'],'COMPILED_FILE_MUST_MATCH_CURRENT_SOURCE_OR_PREVIOUS_LOCKED_DEPENDENCY_OR_VENDOR_PIN:'+key
  proof={'status':'PASS_ACTUAL_SAME_JOB_CURRENT_COMMIT_FULL_TYPES','commit':commit,'runId':int(os.environ['GITHUB_RUN_ID']),'sourcePins':len(spec['sourcePins']),'dependencyPins':len(spec['dependencyPins']),'fullProgramFileCount':full['fullProgramFileCount'],'seedCount':len(roots),'actualDiagnostics':0,'sourceDrift':[],'dependencyDrift':[],'ownedRemaining':[],'inputManifestSha256':sha(manifest),'seedManifestSha256':sha(seed),'compilerGraphSha256':full['compilerGraphSha256After'],'actualReceipt':{'archiveMember':'receipt.json','sha256':sha(rp),'bytes':rp.stat().st_size},'actualFullResult':{'archiveMember':'full-result.json','sha256':sha(fp),'bytes':fp.stat().st_size},'typecheckExecutedBeforeThisPanelStage':True,'oldR315ProofUsedForChangedTypes':False}
  return proof
+
+
+def backend_projection_contract(root,spec):
+ meta=spec.get('backendProjectionTests');assert isinstance(meta,dict),'REVIEWED_BACKEND_FOUR_SUITE_SEAL_REQUIRED'
+ assert meta['contract']=='same-job-backend-projection-exact-four-suites/v1'
+ exact=['tests/consumerRepair/canonicalBackendPhysicalNormProjection.contract.test.ts','src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.test.ts','tests/architecture/canonicalBackendProjectionNoClientCompilerReachability.contract.test.ts','tests/architecture/entrypointFixSharedViewModelRequired.contract.test.ts']
+ assert meta['suitePaths']==exact and set(meta['suiteSourcePins'])==set(meta['expectedJestFullNamesBySuite'])==set(exact),'ONLY_EXACT_FOUR_BACKEND_SUITE_PATHS'
+ assert meta['expectedSuiteCount']==4 and meta['expectedTestCount']==34 and meta['expectedPendingTests']==meta['expectedTodoTests']==0
+ assert sum(len(v)for v in meta['expectedJestFullNamesBySuite'].values())==34 and all(isinstance(v,list)and v and all(isinstance(n,str)and n for n in v)for v in meta['expectedJestFullNamesBySuite'].values())
+ assert meta['policy']=={'admissionMiB':4096,'rssMiB':1024,'privateMiB':1024,'osStopMiB':3072,'timeoutSeconds':120}and meta['fullTypesPrerequisite']=='actual-same-job-current-commit'
+ for key in exact:
+  path=(root/key).resolve();assert path.is_relative_to(root)and path.is_file()and not path.is_symlink()and sha(path)==meta['suiteSourcePins'][key]==spec['sourcePins'][key],'BACKEND_SUITE_SOURCE_PIN_DRIFT'
+ return dict(meta)
+
+def prepare_backend_projection_tests(root,out,spec,commit):
+ meta=backend_projection_contract(root,spec);proof=verify_current_full_types_before_panel(root,out,spec,commit,out.parent)
+ full=json.loads((out.parent/'full-result.json').read_text(encoding='utf-8'));compiled={str(Path(row['path']).resolve()):row['sha256']for row in full['compilerFilesAfter']}
+ assert all(compiled.get(str((root/k).resolve()))==h for k,h in meta['suiteSourcePins'].items()),'ALL_FOUR_BACKEND_SUITES_MUST_ACTUALLY_BE_COMPILED'
+ vendor=json.loads((root/'scripts/verification/gox-current-types-v1/panel-finite-r315.json').read_text(encoding='utf-8'))['runtimeVendorPins'];assert len(vendor)==13095
+ meta['acceptedTypesCommit']=proof['commit']
+ report={'status':'REUSED_ACTUAL_SAME_JOB_CURRENT_COMMIT_FULL_TYPES','actualTypes':proof,'sourceSnapshotCommit':commit,'typecheckExecuted':False,'backendSuitePaths':meta['suitePaths'],'backendSuiteSourcePins':meta['suiteSourcePins'],'runtimeVendorPins':len(vendor),'sourceApproval':False,'FULL':False}
+ p=out/'types-prerequisite-source-equality.json';assert not p.exists();p.write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+ return meta,vendor
+
+def audit_backend_projection_tests(root,out,meta):
+ from collections import Counter
+ path=out/'actual-jest.json';assert path.is_file()and path.stat().st_size<=8*1024**2,'ACTUAL_BACKEND_JEST_JSON_REQUIRED'
+ raw=json.loads(path.read_text(encoding='utf-8-sig'))
+ assert raw['success']is True and raw['wasInterrupted']is False and raw['openHandles']==[],'BACKEND_JEST_MUST_COMPLETE_WITHOUT_HANDLES_OR_INTERRUPTION'
+ assert all(raw[k]==0 for k in ['numFailedTestSuites','numFailedTests','numPendingTestSuites','numPendingTests','numRuntimeErrorTestSuites','numTodoTests']),'BACKEND_ZERO_FAILED_PENDING_TODO_RUNTIME_ERRORS_REQUIRED'
+ assert raw['numPassedTestSuites']==raw['numTotalTestSuites']==4 and raw['numPassedTests']==raw['numTotalTests']==meta['expectedTestCount']==34
+ suites=raw['testResults'];assert len(suites)==4
+ actual={};witness=[]
+ for suite in suites:
+  path=Path(suite['name']).resolve();assert path.is_relative_to(root)
+  key=path.relative_to(root).as_posix();assert key in meta['suitePaths']and key not in actual and suite['status']=='passed'and not suite['message']
+  cases=suite['assertionResults'];assert all(c['status']=='passed'and c['failureMessages']==[]and c['failureDetails']==[]for c in cases)
+  names=[c['fullName']for c in cases];assert Counter(names)==Counter(meta['expectedJestFullNamesBySuite'][key]),'EXACT_SEALED_BACKEND_FULL_NAMES_MULTISET_REQUIRED:'+key
+  actual[key]=names;witness.append({'path':key,'sha256':sha(path),'assertionCount':len(cases),'fullNames':names})
+ assert set(actual)==set(meta['suitePaths'])and sum(map(len,actual.values()))==34
+ return {'status':'PASS_ACTUAL_BACKEND_PROJECTION_EXACT_FOUR_SUITES','diagnostics':[],'harnessErrors':[],'actualJestSha256':sha(out/'actual-jest.json'),'suiteCount':4,'testCount':34,'failed':0,'pending':0,'todo':0,'exactSuiteWitness':witness,'expectedJestFullNamesBySuite':meta['expectedJestFullNamesBySuite'],'duplicateFullNamesComparedAs':'Counter/multiset','sourceApproval':False,'FULL':False}
+
+def verify_backend_projection_before_panel(root,restore_root,spec,commit):
+ meta=backend_projection_contract(root,spec);out=restore_root/'backend-projection-tests';rp=out/'receipt.json'
+ assert rp.is_file()and rp.stat().st_size<=1024**2,'ACTUAL_BACKEND_PROJECTION_PASS_REQUIRED_BEFORE_PANEL'
+ receipt=json.loads(rp.read_text(encoding='utf-8'));actual=audit_backend_projection_tests(root,out,meta)
+ assert receipt['status']=='PASS_EXACT_BACKEND_PROJECTION_TESTS_CI'and receipt['sourceSnapshotCommit']==receipt['typesReusedFromCommit']==commit and receipt['backendProjectionTests']is True and receipt['exitCode']==0 and receipt['error']is None
+ assert receipt['scopedTestResult']==actual and receipt['sourceDrift']==receipt['dependencyDrift']==receipt['remainingOwnedProcesses']==[] and receipt['diagnostics']==0 and receipt['harnessErrors']==[]
+ assert receipt['sourcePins']==len(spec['sourcePins'])and receipt['dependencyPins']==len(spec['dependencyPins'])and receipt['runtimePinnedFiles']==13095 and receipt['ownedPids']and receipt['peakOwnedRssBytes']>0 and receipt['peakOwnedPrivateBytes']>0
+ assert receipt['resourcePolicy']==dict(stage='BACKEND_PROJECTION_EXACT_FOUR_SUITES',admissionPhysicalMiB=4096,admissionCommitMiB=3072,maxOwnedRssMiB=1024,maxOwnedPrivateMiB=1024,osPhysicalReserveMiB=3072,commitStopMiB=512,timeoutSeconds=120,heapMiB=768)
+ proof=json.loads((out/'types-prerequisite-source-equality.json').read_text(encoding='utf-8'));current=verify_current_full_types_before_panel(root,out,spec,commit,restore_root)
+ assert proof['status']=='REUSED_ACTUAL_SAME_JOB_CURRENT_COMMIT_FULL_TYPES'and proof['sourceSnapshotCommit']==commit and proof['actualTypes']==current and proof['backendSuitePaths']==meta['suitePaths']and proof['backendSuiteSourcePins']==meta['suiteSourcePins']
 
 if __name__=='__main__':main()

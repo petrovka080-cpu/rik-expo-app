@@ -25,7 +25,7 @@ test('existing column: normal pure plus exact44native/6included proof before one
 // This test has no fabricated successful receipt or future UUID fixture. ROOT
 // may run ONLY this named test after a real opening APPLY + fresh R70/scoped
 // capture, supplying its actual context. It never calls core or publisher.
-test('root second release binding: rejects mutations of actual committed opening evidence without core',{timeout:110000},()=>{
+test('root second release binding: rejects mutations of actual committed opening evidence without core',{timeout:110000},async()=>{
  const contextPath=process.env.MASONRY_R161_SECOND_RELEASE_CONTEXT_PATH;
  assert(contextPath,'ACTUAL_ROOT_POST_OPENING_CONTEXT_REQUIRED_NO_SYNTHETIC_SUCCESS');
  const context:MasonryBrickColumnExistingContextR161=JSON.parse(readFileSync(contextPath,'utf8'));
@@ -94,5 +94,25 @@ test('root second release binding: rejects mutations of actual committed opening
  reject(negativeArtifact('scopedRegistry','different-scope',value=>{
   rec(value.scope).normId='';value.captureSha256=masterScopedNormativeRegistryCaptureSha256R1(value as unknown as Omit<MasterCapturedScopedNormativeRegistryR1,'captureSha256'>);
  }),/EXACT_GENERATED_SCOPE/);
+ // The real receipt/context is required above. No synthetic successful input
+ // is created here. Neither production callback may issue SQL or call core.
+ const noQueries={query:async()=>{throw new Error('COLUMN_PIN_CALLBACK_MUST_NOT_QUERY');}} as never;
+ await config.verifyTargetPrecondition(noQueries,'PREFLIGHT');
+ await config.verifyTargetPrecondition(noQueries,'LOCKED_BEFORE');
+ // The existing publisher checks MASTER before verifyCore. Each later target
+ // callback must reject bytes changed during that interval. Mutate only a new
+ // private negative copy; retain the actual original MASTER and proof files.
+ const actualMasterBytes=readFileSync(context.masterPath);
+ for(const phase of ['PREFLIGHT','LOCKED_BEFORE'] as const){
+  const negativeRoot=mkdtempSync(join(context.outputRoot,'column-master-negative-'+phase+'-'));
+  const negativeMaster=join(negativeRoot,'TEST_ONLY_PRIVATE_MASTER_COPY.txt');
+  writeFileSync(negativeMaster,actualMasterBytes,{flag:'wx'});
+  const negativeConfig=masonryBrickColumnExistingConfigR161({...context,masterPath:negativeMaster});
+  assert(negativeConfig.verifyTargetPrecondition);
+  writeFileSync(negativeMaster,Buffer.concat([actualMasterBytes,Buffer.from('\nTEST_ONLY_NEGATIVE_MASTER_BYTE_DRIFT\n')]));
+  await assert.rejects(()=>negativeConfig.verifyTargetPrecondition!(noQueries,phase),/MASONRY_COLUMN_ROOT_RELEASE_MASTER_BYTES/);
+  assert.equal(masonryBrickColumnExistingActualEntriesR161(),0);
+ }
+ assert.deepEqual(readFileSync(context.masterPath),actualMasterBytes,'ACTUAL_ORIGINAL_MASTER_UNCHANGED');
  assert.equal(masonryBrickColumnExistingActualEntriesR161(),0);
 });

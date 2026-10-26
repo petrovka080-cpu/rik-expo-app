@@ -177,5 +177,12 @@
   "tests/aiEstimateV4/asphaltParkingScopeV5.contract.test.ts": null,
   "tests/aiEstimateV4/asphaltProfessionalCompilerV4.contract.test.ts": null,
   "tests/aiEstimateV4/asphaltRelatedCanonicalSchemaOwnership.contract.test.ts": null,
-  "tests/estimateNorms/promptParameterLeafImportBoundary.contract.test.ts": null
+  "tests/estimateNorms/promptParameterLeafImportBoundary.contract.test.ts": null,
+  "src/components/estimate/ProfessionalEstimateComposer.tsx": null,
+  "src/features/ai/assistantAnswerPipeline.ts": null,
+  "src/lib/estimate/backendPlatform/canonicalEstimateForemanAdapter.test.ts": null,
+  "supabase/functions/canonical-estimate/index.ts": null,
+  "tests/architecture/canonicalBackendProjectionNoClientCompilerReachability.contract.test.ts": null,
+  "tests/architecture/entrypointFixSharedViewModelRequired.contract.test.ts": null,
+  "tests/consumerRepair/canonicalBackendPhysicalNormProjection.contract.test.ts": null
 }
