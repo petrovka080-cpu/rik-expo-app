@@ -3,13 +3,14 @@
   "snapshotKind": "SOURCE_ONLY_ACTUAL_BOUND_ELECTRICAL_AND_SCS_ADAPTER_FULL_TYPES_NO_RUNTIME_OR_SOURCE_ADMISSION",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
-    ".github/workflows/gox-current-core-types-v1.yml": "8d15752d6ecdbf06e95554d1a298e2d8fbe45dfe9589383591953cd6f3fb6049",
+    ".github/workflows/gox-current-core-types-v1.yml": "e66092eafeabe6247c3a4c5238e094eca8cb2f8c53df7d267d536d9504ae6df1",
     "app/(tabs)/office/index.tsx": "4773281a7daac103265ce6a5d28828f22b7cc1f733cece454dbc4105634d3e8f",
     "app/_layout.tsx": "db6e356a662020d15c8e9dcbde423fefb8dd2bb861e3f240d4434ce69d5f7be8",
     "app/auth/login.tsx": "852516a258395686fc8b7e398224fcf09ac5556dfc5675f88d864c959bd72ea0",
     "app/auth/register.tsx": "f56d56acc214278c37f8b9fc18b2d6652bd0be7f4c4b64ce0bdbb20add129864",
     "app/auth/reset.tsx": "9b87ff283ab1cbaa8856755b179fe5ee071e44beb39347c8edec3cb126928a64",
     "app/pdf-viewer.tsx": "00ff7c759f2b8e9adc353e5c3147c03a9246b31a7c0938cbf1ae37c32f7b1071",
+    "babel.config.js": "11eed46b1f157201829e27ba6c08cdb47b11e7c715dfaa7d9bbbd447ad25d819",
     "data/estimate-benchmarks/fixtures/access-control-lock-whole-test-only-r24.json": "2363b68c9d0afe352806529e7ff7677670653d3507f3d8212a9d6112ab6d4e15",
     "data/estimate-benchmarks/fixtures/aggressive-floor-actual-thickness-binding-historical-four-s27-69.json": "a775d6bb4ff4484abdab7b024a43c00a224004a6553e5493e2d4b51afbb51e6d",
     "data/estimate-benchmarks/fixtures/aggressive-floor-four-v3-parents-s27-69.json": "acba0c779c25229adef88b0b0d1aa9e45dce3049abeb3f09703ef0f5b012ab18",
@@ -71,6 +72,7 @@
     "data/estimate-benchmarks/fixtures/master36-roof-retained-history-edge-r1.json": "b693f5310e5c8acb9d287cad859af628e4de047e3629b62b392358e729c29f49",
     "data/estimate-benchmarks/fixtures/monolithic-repeat-retained-continuation-registration-r1.json": "cebaa54f0b435e8c69f6f5ede499d0f02568df4577fc6e6104e98283fcacb890",
     "data/estimate-benchmarks/fixtures/painting03002-accepted-evidence-r1.json": "22994a421f02b643324e762a31d5224c035d317f5ac2e5f53ba5559df2d47a0b",
+    "data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json": "a0933ccc34829c29e084bf74a1e0841714fff941ab52b015de85dc433e6fa403",
     "data/estimate-benchmarks/fixtures/panel-ready-grid-whole-post-independent-r287.json": "b90a7101a44777e10400e644d0f63bfd9769f22305162e09063d0e25e9168f05",
     "data/estimate-benchmarks/fixtures/parapet004-technical-finite-testonly-r294.json": "8557066f529822fe195292622baa0a5a68af7eee94e7ae26ee54a951abe4e78f",
     "data/estimate-benchmarks/fixtures/planned-floor-thirteen-parents-s27-69.json": "0226af13066b86317ec192da837a37a50c1ba27b5d65bb657564c94fdb15fdfc",
@@ -87,6 +89,7 @@
     "data/estimate-benchmarks/fixtures/standard-asphalt-compaction-retained-capture-r567.json": "ca3bbb04788618ef7fc1c10facf2745d35d852e0a5831895c1d00b80a6969e21",
     "data/estimate-benchmarks/fixtures/stone-cubes-four-v5-parents-s27-69.json": "607d06bfd8d9e60125673f0e63b6497beb273a996d8d4ec028abe56af2937e2e",
     "data/estimate-benchmarks/fixtures/wall-ceramic-cement-existing-finite-f271.json": "c42c52fdc57d659b7d3c4db838081cbe3975eeaad6c252974c65a500e3188c09",
+    "data/estimate-benchmarks/r568-local-developer-canonical-release.json": "404bdb3657d36efb731f8131f63dc126e452f635579926d0f3855dbf749053f6",
     "data/estimate-benchmarks/r568-r4-a8-pump-station-acceptance.json": "da5125bf0edeb9e4f2475ae441d72502d451caec539ca1b4e35bdae482986834",
     "data/estimate-benchmarks/source-artifacts/masonry-r152/prepare-r152-historical-5af670e3.txt": "5af670e31fd37f9972285c64d96dacf10329fc08b6b3297c11a518f4d85e7529",
     "data/estimate-benchmarks/source-artifacts/masonry-r152/standalone-test-historical-1279a169.txt": "1279a1690935cbb353386942ac7726ccbb9836976c489edc5cd40ed8df2ecfa6",
@@ -355,6 +358,8 @@
     "data/estimate/pricebook/service-rates.json": "94ad50735343daece8d0841714e1214bf28ba4feedc3454e91f62227548c28d5",
     "data/estimate/pricebook/transport-rates.json": "1e1160f6aabb6c553e314a153c6c63550e1df25ade6380018b2a4e648e221759",
     "expo-env.d.ts": "6fc02634da46d3edc5a88eec9173ba6bf709726be3cba83c73ebd8e859d5c147",
+    "jest.config.js": "e8ec12f711ce53a030fb7e9ac6b51ca3dccf32035357a77de39b7b0632720708",
+    "jest.setup.js": "88956f4429b53e19936bb3c0704c524fd097e8a68b457691716c1cd5753ae1c1",
     "package-lock.json": "ee6621c44b5b63a18b8f7c7e164d39608621d55990f4fac817c00a1e5203c1fe",
     "package.json": "c23e73dec82fe210a856fb9f0340848afcab68a5a5dc55a144ba028d466eef96",
     "scripts/dev/runFormworkFramiXlifePileCapDistinctProjectDifferentialWebAcceptance.ts": "612481635ec44d67e5104630ef0b8b8df961502a6579a58e8c35a5ac86e0446e",
@@ -651,7 +656,9 @@
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
-    "scripts/verification/gox-current-types-v1/guard.py": "55ebb177445c410ce7888a6641d54269e34cc3e2d1f4208e97d1cf8a66cdd54e",
+    "scripts/verification/gox-current-types-v1/guard.py": "82cd1a6baa878b66c3bff9593e8a61a8bce0f6a2bebfd2a69e673e16edec03c9",
+    "scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py": "b0e94941498c2152cd7f94bd0bad0185d61e25e1e849c42e77df78c9798a6bfe",
+    "scripts/verification/gox-current-types-v1/panel-finite-r315.json": "414dc7caf5f4744df44039f73dffcf613442d461a4df64a726528eb4eb1c1cee",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
@@ -3723,13 +3730,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
-  "canonicalSourceFreezeSha256": "8d2d6ba371bcd6b83ab443eab2850fd83c5f02264aff2c5277e29778d6a69ab3",
+  "canonicalSourceFreezeSha256": "bd51251dd4947d00b7aac249a1cceb5a162a6dd1f88211a18327f5c927a07896",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 106100628,
+    "sourceBytes": 109174266,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -5646,6 +5653,43 @@
         }
       },
       "parserAndNativeRawCapsUnchanged": true
+    },
+    "panelFiniteR315ExistingCiGuardR320": {
+      "actualTypesReused": {
+        "status": "PASS_ACTUAL_FULL_TYPES_CURRENT_OWNER_VISIBILITY_REPAIRS_R315",
+        "commit": "acc63ef2532e08c6668c1aa170259b5bb0bfbc47",
+        "runId": 40255053259,
+        "artifactId": 12622436011,
+        "runUrl": "https://github.com/petrovka080-cpu/rik-expo-app/actions/runs/40255053259",
+        "sourcePins": 2482,
+        "dependencyPins": 1234,
+        "fullProgramFileCount": 3635,
+        "seedCount": 754,
+        "actualDiagnostics": 0,
+        "sourceDrift": [],
+        "dependencyDrift": [],
+        "ownedRemaining": [],
+        "artifactSha256": "54e192aad0b48db264ba01c642816cf17b965403b69e49b6254b544ffecd219a"
+      },
+      "beforeInputManifestSha256": "cbc5deb1d020b7528599c376fd1bd85f3d8b95df537cc38d61b40ae23a5094c7",
+      "beforeMappingSha256": "2a90d90bc5f2305348118e80f62023320507b4bd44bc6a84e7c7f920fa096426",
+      "allowedChangedHarnessKeys": [
+        "scripts/verification/gox-current-types-v1/guard.py",
+        ".github/workflows/gox-current-core-types-v1.yml"
+      ],
+      "extraCommittedInputs": [
+        "babel.config.js",
+        "data/estimate-benchmarks/fixtures/panel-current-v5-full-catalog-parent-r315-ci.json",
+        "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
+        "jest.config.js",
+        "jest.setup.js",
+        "scripts/verification/gox-current-types-v1/panel-finite-r315-semantic-audit.py",
+        "scripts/verification/gox-current-types-v1/panel-finite-r315.json"
+      ],
+      "runtimeVendorPinsAddedWithoutByteChanges": 11861,
+      "officialPdfDownloadedAndHashCheckedNotUploaded": true,
+      "NodeSQLThisPreparation": 0,
+      "FULL": false
     }
   }
 }

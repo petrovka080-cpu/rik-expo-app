@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "r568-local-developer-canonical-release.v1",
+  "status": "ACTIVE_LOCAL_DEVELOPER_CANONICAL_RELEASE",
+  "definitionReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+  "searchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+  "definitionReleaseStatus": "prepared",
+  "searchReleaseStatus": "draft",
+  "definitionSnapshotSha256": "83e1264b7ea0f1f73880205ab67f19047f4094a6d3b705373eb2ffeca643cb4c",
+  "manifestHashChainSha256": "83e1264b7ea0f1f73880205ab67f19047f4094a6d3b705373eb2ffeca643cb4c",
+  "searchHashChainSha256": "7d7a05009aec5683e73fc803a5cf4ac106e334ad93b33ba33c4a1d3315d4311e",
+  "identities": 11610,
+  "visibleCanonicalDefinitions": 10322,
+  "aliasesRedirects": 1288,
+  "currentRuntimeDefinitions": 6438,
+  "runtimeAdditionalAdmissions": 18,
+  "currentInventoryRowsIncludingAliases": 11628,
+  "denominatorNote": "11610 is the immutable historical source-identity reconciliation (10322 canonical owners plus 1288 redirects); the current cumulative runtime also preserves 18 separately identified inherited admissions.",
+  "owner": "ROOT_SINGLE_INTEGRATOR_CONCRETE",
+  "productionAccessed": false,
+  "fakeGreenClaimed": false,
+  "activeAreaRetirement": {
+    "policy": "single-work-with-internal-conditions-v3",
+    "parentReleaseId": "b8b04018-6cd3-5cde-b4d2-0d78b02837eb",
+    "retiredCounts": {
+      "definitions": 0,
+      "parameters": 0,
+      "formulas": 0,
+      "resources": 0,
+      "snapshot": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "successorRetiredSelectionCounts": {
+      "manifest": 0,
+      "documents": 0,
+      "memberships": 0,
+      "questions": 0
+    },
+    "historicalDefinitionsDeleted": false
+  }
+}
