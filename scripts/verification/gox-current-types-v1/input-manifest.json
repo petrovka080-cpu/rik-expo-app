@@ -602,7 +602,7 @@
     "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts": "5d94c0531fd94374538acc1da163a785f4020555554646d2ffcf3cddb8d0fb63",
     "scripts/estimate/r4a13/projectSourcePackagePreflightR1.ts": "83ea7468adce2e240879984f82dbaa4623d874f55fc17937eadae41e7bc1f44e",
     "scripts/estimate/r4a13/pvcBitumenTransitionGuide2024ControlInput.ts": "ce7f68c70f0fce84efd4f5312de3a62229f014b2ba08dcc5613bf2a4f3cf7760",
-    "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": "97175e489321a02735885fe25f9da501c68838ed851481c1f2707fce3c6b6a82",
+    "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": "133d373acb2ce40e9a137fccdd58b27283ad82b3e7ce9bdf2b574ae39b1a8459",
     "scripts/estimate/r4a13/roofParapet004TechnicalFiniteR296.test.ts": "e82a4729652a7fa0d40c24523a980147040fb71aed58188683dc5eb8dbea9b1d",
     "scripts/estimate/r4a13/roofParapet004TechnicalWholeModelR294.ts": "6de84ad8e321765e60859ea4a7a5b5344e996c1cc565f6022322e25244102e59",
     "scripts/estimate/r4a13/roofSingle539ConstructionSmokeRev09.ts": "1dc65b8424bb1f6faff9507d8feb4f6ba32eead06fdf802200c7836d6c9d7119",
@@ -3723,13 +3723,13 @@
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
   "originalSeedManifestSha256": "2ee8cb08080f0a5e36424c955274491589a90dd1b8b79781169a4c9e4833fffc",
-  "canonicalSourceFreezeSha256": "dec71050afbc1e3c76771a6f2a3043a7478e0c4d68e2c1b6d06030f97833cd97",
+  "canonicalSourceFreezeSha256": "7a767f119f194c08d6423d6a2b292e6cf9d6f01777652d31507c6607b3fd7904",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 106099968,
+    "sourceBytes": 106099998,
     "reviewedCandidateScope": "All accepted prior candidate sources plus whole curing, flat wall and access factory source candidates; no raw new captures, auth, history or normative admission."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4724,8 +4724,8 @@
         "owner": "MINIMAL_ACTUAL_R303_DIAGNOSTIC_REPAIR"
       },
       "scripts/estimate/r4a13/roofParapet004TechnicalCaptureR297.test.ts": {
-        "sha256": "97175e489321a02735885fe25f9da501c68838ed851481c1f2707fce3c6b6a82",
-        "owner": "EXACT_RUNTIME_FAILURE_REPAIR_NATIVE_DSL_OR_BOUNDED_SOURCE_ONLY_FINGERPRINT"
+        "sha256": "133d373acb2ce40e9a137fccdd58b27283ad82b3e7ce9bdf2b574ae39b1a8459",
+        "owner": "EXACT_THREE_TS2339_GUARD_NARROWING_REPAIR"
       },
       "data/estimate-benchmarks/source-packs/roof-parapet004-root-selected-subject-r297.json": {
         "sha256": "6d38cf9b0c38250db310ad7a5d14113d1f3e77d764a40910676681495c313b54",
@@ -5597,6 +5597,25 @@
         }
       },
       "parserAndNativeRawCapsUnchanged": true
+    },
+    "exactSourceFingerprintTypeNarrowingRepairR311": {
+      "rootReview": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\types-ci-r311\\ROOT_REVIEW_EXACT_TYPEGUARD_REPAIR_R311.json",
+        "sha256": "9a722f2f343e0c15b1d4fec4dae591bafa1d088636b973f2e657861e6ebb31a9",
+        "bytes": 1311
+      },
+      "manifest": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\pp311\\FINAL_ONE_PREDICATE_REPAIR_ORIGINS_R311.json",
+        "sha256": "5c9c11e866f5344d4e18083b105ac6bbb424a603c37ebdbb791b817e2da2aa61",
+        "bytes": 257556
+      },
+      "failure": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\types-ci-r309\\ACTUAL_UNFILTERED_RUNTIME_REPAIR_TYPES_FAILURE_R309.json",
+        "sha256": "e84d4583fcc204fdae0881e14e51be0884b49203b5f3139cf7feb6f2b859eaf2",
+        "bytes": 161852
+      },
+      "onePredicateOnly": true,
+      "noCastsOrAnyOrDiagnosticFilters": true
     }
   }
 }

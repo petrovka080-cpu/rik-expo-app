@@ -17,7 +17,7 @@ function read(p:Pin):unknown{return JSON.parse(pinned(p).toString('utf8'));}
 // The immutable source closure is fingerprint-only. It is never a parsed
 // native/registry input; parsed inputs and raw artifacts keep their 4MiB caps.
 type SourceFingerprint=Pin&Readonly<{bytes:number}>;
-function sourceFingerprint(v:unknown):v is SourceFingerprint{return pin(v)&&object(v)&&typeof v.bytes==='number'&&Number.isSafeInteger(v.bytes)&&v.bytes>=0;}
+function sourceFingerprint(v:unknown):v is SourceFingerprint{if(!object(v))return false;const bytes=v.bytes;return pin(v)&&typeof bytes==='number'&&Number.isSafeInteger(bytes)&&bytes>=0;}
 function verifySourceFingerprint(p:Pin,expectedBytes:number){
  assert(Number.isSafeInteger(expectedBytes)&&expectedBytes>=0,'SOURCE_FINGERPRINT_RECORDED_LENGTH');
  const chunk=Buffer.allocUnsafe(Math.max(1,Math.min(expectedBytes,1024*1024))),h=createHash('sha256'),fd=fs.openSync(p.path,'r');
