@@ -77,7 +77,7 @@ def main():
         env = dict(os.environ); env.pop('NODE_OPTIONS', None)
         env.update(DELIVERY16_CURRENT_TSC_GUARD_RUN_ID=run_id, GOX_TYPES_OUTPUT_ROOT=out.as_posix())
         if args.stage == 'types':
-            command = [node, '--max-old-space-size=2048', '--max-semi-space-size=8',
+            command = [node, '--max-old-space-size=2816', '--max-semi-space-size=8',
                 str(root / 'scripts/verification/gox-current-types-v1/typecheck.mjs'), str(out / 'full-result.json'),
                 '--expected-head', args.commit, '--seed-manifest-sha256', seed_sha, '--guard-run-id', run_id]
         else:
@@ -182,7 +182,7 @@ def main():
             seedCount=len(result.get('seedFiles', [])), fullProgramFileCount=result.get('fullProgramFileCount'), resultIdentityAccepted=identity_ok,
             stage=args.stage, batch=args.batch, expectedJestSuitePaths=sorted(expected_paths), actualJestSuitePaths=sorted(actual_paths),
             jestPassed=result.get('numPassedTests'), jestFailed=result.get('numFailedTests'),
-            resourcePolicy=dict(admissionPhysicalMiB=4096, admissionCommitMiB=3072, maxOwnedRssMiB=maxrss, maxOwnedPrivateMiB=maxprivate, osPhysicalReserveMiB=3072, commitStopMiB=512, timeoutSeconds=timeout),
+            resourcePolicy=dict(heapMiB=2816 if args.stage == 'types' else 768, admissionPhysicalMiB=4096, admissionCommitMiB=3072, maxOwnedRssMiB=maxrss, maxOwnedPrivateMiB=maxprivate, osPhysicalReserveMiB=3072, commitStopMiB=512, timeoutSeconds=timeout),
             peakOwnedRssBytes=peakrss, peakOwnedPrivateBytes=peakprivate, minimumPhysicalFreeBytes=minfree, minimumCommitHeadroomBytes=mincommit,
             ownedJobClosure=closure, remainingOwnedProcesses=remaining, elapsedSeconds=time.monotonic()-start,
             applicationRuntimeStarted=False, databaseWrites=False, publicationPerformed=False, productionActivation=False)

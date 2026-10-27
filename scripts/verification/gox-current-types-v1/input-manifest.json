@@ -550,7 +550,7 @@
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
-    "scripts/verification/gox-current-types-v1/guard.py": "46f47bf164ac187e8f00a542215f73d44b227574af503a89a0a43e7aad055238",
+    "scripts/verification/gox-current-types-v1/guard.py": "86916661239085de248c80d3117bad352eb09805ae975ac31f60bdb65e494985",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "10cc43af32adcb9d0de38b47997c4c373a99a10b6937f85189bfe9f3443628be",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "6035e460e4fb8c18f644e623861e444fd49cd62f67aa4749aee218c01b1aed9d",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
@@ -3602,8 +3602,9 @@
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
+    "patternScanFromPredecessorSourcePlan": "81f630f069c9e53edb8a6faea5d370a0f1ad019dab5b333752352983ecd0fb18",
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 38233795
+    "sourceBytes": 132654891
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
@@ -3679,5 +3680,14 @@
         "sha256": "e09a402a2a62a27693717faf52d2763859b801b43d1fb496bf90a56797bd41d6"
       }
     }
+  },
+  "existingCiTypesStageBudget": {
+    "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
+    "historicalPassRun": 40278141950,
+    "heapMiB": 2816,
+    "ownedRssMiB": 3072,
+    "ownedPrivateMiB": 3584,
+    "osPhysicalReserveMiB": 3072,
+    "reason": "Restore the already executed existing CI stage setting; old canonical guard had2048. Preserve first OOM. No cap/reserve/admission relaxation."
   }
 }
