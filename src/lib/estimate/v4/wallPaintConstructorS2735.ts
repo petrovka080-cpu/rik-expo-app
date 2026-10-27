@@ -1,3 +1,5 @@
+import ct54ReferenceProjectSystem from '../../../../data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json';
+import type {AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
 import {buildAutomaticConstructionOwnerR1,compileAutomaticConstructionOwnerR1,type AutomaticParameterSpec,type AutomaticRowSpec,type AutomaticInclusionCondition} from './automaticConstructionOwnerR1';
 import {effectivePurchaseBalanceExpressionsR1} from './effectivePurchaseBalanceR1';
 import {buildPaintCeresitCt54Ct17ProfessionalPackagePartsV1} from './domains/interiorFinishesComplete/paintCeresitCt54Ct17ProfessionalV1';
@@ -173,4 +175,50 @@ export const WALL_PAINT_DEFINITION_S2735=Object.freeze({...built,ordinaryParamet
 export function compileWallPaintConstructorS2735(submittedParameters:Record<string,unknown>,catalogId=WALL_PAINT_CATALOGS_S2735[0]){
  if(!WALL_PAINT_CATALOGS_S2735.includes(catalogId))throw Error('WALL_PAINT_CATALOG_UNSUPPORTED');
  return compileAutomaticConstructionOwnerR1({compilerVersion:WALL_PAINT_CONTRACT_S2735,catalogId,primaryMeasureParameterId:'area_m2',definition:WALL_PAINT_DEFINITION_S2735,submittedParameters});
+}
+
+/** Explicit PROJECT_SYSTEM demonstration, source-only. Existing catalog/old
+ * definitions and source norms are untouched; no reference input is a default. */
+export const CT54_REFERENCE_INDEPENDENT_COMPOSITION_S2735=ct54ReferenceProjectSystem.independentComposition;
+export function buildWallPaintReferenceProjectSystemS2735():AutomaticOwnerDefinition{
+  const source=ct54ReferenceProjectSystem;
+  const conditions=Object.entries(source.conditions);
+  const conditionTitles:Record<string,string>=source.conditionTitlesRu;
+  const ordinary:AutomaticParameterSpec[]=[{id:'area_m2',title:'Площадь стены',kind:'ordinary',valueType:'decimal',unitId:'m2',min:0.001},
+    ...conditions.map(([id,value]):AutomaticParameterSpec=>({id,title:conditionTitles[id]!,kind:'ordinary',valueType:'enum',unitId:null,values:[value]}))];
+  const conditional:AutomaticParameterSpec[]=source.resources.filter(r=>!r.rowId.endsWith(':ct54')).map(r=>({
+    id:r.quantityParameterId,title:r.nameRu,kind:'internal',valueType:'decimal',unitId:r.unitId,min:0}));
+  const rows:AutomaticRowSpec[]=source.resources.map(r=>({rowId:r.rowId,section:'Ручная окраска готовой стены',
+    category:r.resourceKind==='LABOR'?'labor':r.resourceKind==='MATERIAL'||r.resourceKind==='CONSUMABLE'?'material':'equipment',
+    title:r.nameRu,unitId:r.unitId,formulaId:r.rowId+':reference-quantity',
+    expression:r.rowId.endsWith(':ct54')?'area_m2 * 0.3':r.quantityParameterId,
+    inputParameterIds:conditions.map(([id])=>id),procurement:false,costTreatment:'INFORMATIONAL_SCOPE'}));
+  const built=buildAutomaticConstructionOwnerR1({contract:source.contract,semanticOwner:'wall-paint:ct54-reference-project-system',
+    sourceId:source.sourceId,normId:'PROJECT_SYSTEM_COMPOSITION_NOT_A_NEW_QUANTITY_NORM',
+    sourceMetadata:{source_title:'Ручная окраска готовой минеральной стены',source_document_version:source.contract,
+      definition_hash:source.projectSystemDocumentSha256,artifact_sha256:source.projectSystemDocumentSha256,
+      exact_locator:'PROJECT_SYSTEM_METHOD.md; CT54 C_CT54_TDS_1_0819 pp1–2; selected manual roller source'},
+    applicabilityRu:'Только явно выбранные DEMO-условия PROJECT_SYSTEM; условия не переносятся в существующие сметы.',
+    ordinary,profile:[],conditional,rows,deferMissingProjectFactsToRows:true,
+    excludedUnownedAssumptions:['Не переносить демонстрационные факты в реальный объект или старую смету.',
+      'Не переносить нормы труда, износа, доступа или другой краски. Количества остаются неизвестными.',
+      'Подача всех ресурсов в точку работы и заданная накопительная зона — явные входные границы, не нулевая доставка/утилизация.']});
+  const operations=new Map(source.operationRoster.map(op=>[op.operationId,{...op,processRole:'PROCESS' as const}]));
+  return {...built,resources:built.resources.map(row=>{
+    const r=source.resources.find(item=>item.rowId===row.row_id)!;
+    const refs=r.operationIds.map(id=>{const op=operations.get(id);if(!op)throw Error('CT54_REFERENCE_EXACT_OPERATION_REQUIRED:'+id);return op;});
+    const [primary,...shared]=refs;
+    const body={...row,resource_graph:{...row.resource_graph,
+      operationCompositionV1:{...primary!,...(shared.length?{additionalOperations:shared}:{})},
+      publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:row.title_ru,
+        nameRu:r.nameRu,resourceKind:r.resourceKind,brandAndModelRu:null,specificationRu:null,detailsRu:[r.authority]}},
+      source_metadata:{...row.source_metadata,sourceRole:'EXPLICIT_REFERENCE_PROJECT_SYSTEM',
+        objectFactsAreDemoOnly:true,quantityNormsAdded:0,full_technical_acceptance:false},row_sha256:''};
+    return {...body,row_sha256:estimateDeterministicHash(body)};
+  })};
+}
+export function compileWallPaintReferenceProjectSystemS2735(submittedParameters:Record<string,unknown>,catalogId:string=WALL_PAINT_CATALOGS_S2735[0]){
+  if(!WALL_PAINT_CATALOGS_S2735.includes(catalogId))throw Error('CT54_REFERENCE_EXISTING_CATALOG_REQUIRED');
+  return compileAutomaticConstructionOwnerR1({compilerVersion:ct54ReferenceProjectSystem.contract,catalogId,
+    primaryMeasureParameterId:'area_m2',definition:buildWallPaintReferenceProjectSystemS2735(),submittedParameters});
 }

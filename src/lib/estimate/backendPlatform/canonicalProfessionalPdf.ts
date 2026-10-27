@@ -28,7 +28,7 @@ import {isCanonicalEstimateConsumerSuppliedParameter,isCanonicalEstimateUserEdit
 import type {CanonicalEstimateCatalogItem} from './contracts';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-verified-operation-composition-template86" as const;
+  "canonical-professional-pdf.r4-a13-verified-operation-composition-template87" as const;
 
 /** All catalogs use the same money-cell contract; status text belongs outside
  * the resource table. Reject a regression before a worker creates the PDF. */
@@ -463,7 +463,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
     ${currentMeasurements.length?`<div class="notice current-measurements"><strong>Данные расчёта:</strong> ${currentMeasurements.map(escapeCanonicalArtifactHtml).join('; ')}.</div>`:''}
     <div class="summary"><div><strong>Позиций сметы</strong><br>${publicResourceRows.length}</div><div><strong>Количество известно</strong><br>${knownQuantityRowCount}; ещё не рассчитано ${missingQuantityRowCount}${scopeGroups.length?`; групп состава и этапов: ${scopeGroups.length}`:''}</div><div><strong>${pricedSummary}</strong></div></div>
     <div class="notice">${priceNotice}</div>
-    ${!operationAcceptance.completeClaimAllowed?'<div class="notice composition-acceptance"><strong>Предварительная смета.</strong> Полнота состава операций ещё не подтверждена. Показаны сохранённые позиции и известные количества; стоимость относится к учтённым позициям. Неизвестные количества отмечены отдельно.</div>':''}
+    ${!operationAcceptance.completeClaimAllowed?'<div class="notice composition-acceptance"><strong>Предварительная смета.</strong> Состав операций проверен. Количества отдельных ресурсов ещё не рассчитаны и отмечены отдельно; стоимость относится к учтённым позициям.</div>':''}
     ${supplyBlockedRows.length > 0 ? '<div class="notice"><strong>Закупка пока не готова.</strong> Сохранённые ручные количества не исправлялись автоматически. Причины по условиям поставки указаны у позиций; зависимые количества и остатки не определены.</div>' : ''}
     ${hasUserExclusions?'<div class="notice">Состав изменён пользователем. Стоимость относится к оставшимся позициям; полнота исходной технологии этим документом не подтверждена.</div>':''}
     ${technologyChecks.map(check => `<div class="notice"><strong>Технология требует уточнения.</strong> ${escapeCanonicalArtifactHtml(check.messageRu)} Закупочная ведомость пока не готова.</div>`).join("")}

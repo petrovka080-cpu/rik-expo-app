@@ -12,7 +12,8 @@
     "owners": [
       "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts",
       "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts",
-      "src/lib/estimate/v4/ct126PreparedWallBranchesR2.test.ts"
+      "src/lib/estimate/v4/ct126PreparedWallBranchesR2.test.ts",
+      "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts"
     ],
     "ui-render": [
       "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx"

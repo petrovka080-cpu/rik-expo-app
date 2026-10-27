@@ -79,5 +79,8 @@
   "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": null,
   "src/features/consumerRepair/consumerCanonicalArtifactHydration.ts": null,
   "src/features/consumerRepair/consumerCanonicalArtifactHydration.test.ts": null,
-  "AGENTS.md": null
+  "AGENTS.md": null,
+  "src/lib/estimate/v4/wallPaintConstructorS2735.ts": null,
+  "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": null,
+  "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": null
 }

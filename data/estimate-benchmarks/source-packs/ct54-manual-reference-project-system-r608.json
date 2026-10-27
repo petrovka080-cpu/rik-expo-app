@@ -1,0 +1,1612 @@
+{
+  "contract": "ct54-manual-reference-project-system/s2735-r608-v1",
+  "sourceId": "project-system:ct54-ready-ground-manual-r608",
+  "projectSystemDocumentSha256": "31f6a6651795aa722d845c3bff84255a8a34ce3170edf30356cd30c45eaa8640",
+  "resources": [
+    {
+      "rowId": "reference:wall-paint:ct54:ct54",
+      "nameRu": "Силикатная краска для минеральной стены",
+      "resourceKind": "MATERIAL",
+      "unitId": "l",
+      "operationIds": [
+        "mix-paint",
+        "paint"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819: mineral lime-cement plaster; two coats average0.3l/m2, no new rate",
+      "quantityParameterId": "ct54_reference_qty_ct54"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:water",
+      "nameRu": "Чистая вода для промывки инструмента",
+      "resourceKind": "MATERIAL",
+      "unitId": "l",
+      "operationIds": [
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819 p2: tools washed with water immediately after use; total litres unknown",
+      "quantityParameterId": "ct54_reference_qty_water"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:electricity",
+      "nameRu": "Электроэнергия для перемешивания краски",
+      "resourceKind": "MATERIAL",
+      "unitId": "kwh",
+      "operationIds": [
+        "mix-paint"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM selects mains drill, supplied protected socket at mixing point; energy unknown, no fixed consumption",
+      "quantityParameterId": "ct54_reference_qty_electricity"
+    },
+    {
+      "rowId": "material:wall-paint:tool:paint-roller",
+      "nameRu": "Шубка валика для силикатной краски, 250 мм, ворс 12 мм, посадка 8 мм",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "Retained CT54 manual roller official cover/frame source observations; source-only physical stock/wear unknown",
+      "quantityParameterId": "ct54_reference_qty_paint_roller"
+    },
+    {
+      "rowId": "material:wall-paint:tool:paint-roller-frame",
+      "nameRu": "Держатель валика 250 мм, стержень из нержавеющей стали 8 мм",
+      "resourceKind": "TOOL",
+      "unitId": "piece",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "Same retained selected pair, not CE40/CT126 tool transfer",
+      "quantityParameterId": "ct54_reference_qty_paint_roller_frame"
+    },
+    {
+      "rowId": "material:wall-paint:tool:roller-tray",
+      "nameRu": "Малярная ванночка 30 × 33 см для валика 250–270 мм",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "Retained official tray191625 source; PROJECT_SYSTEM selects tray without disposable liner",
+      "quantityParameterId": "ct54_reference_qty_roller_tray"
+    },
+    {
+      "rowId": "material:wall-paint:tool:cut-in-brush",
+      "nameRu": "Кисть для окраски углов и примыканий",
+      "resourceKind": "TOOL",
+      "unitId": "piece",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819 brush/roller allowed; PROJECT_SYSTEM selects compatible clean waterborne/silicate brush",
+      "quantityParameterId": "ct54_reference_qty_cut_in_brush"
+    },
+    {
+      "rowId": "material:wall-paint:tool:telescopic-pole",
+      "nameRu": "Телескопическая рукоять валика",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM ground reach with retained manual roller frame; no work platform",
+      "quantityParameterId": "ct54_reference_qty_telescopic_pole"
+    },
+    {
+      "rowId": "material:wall-paint:tool:mixing-drill",
+      "nameRu": "Электрическая дрель для перемешивания краски",
+      "resourceKind": "TOOL",
+      "unitId": "piece",
+      "operationIds": [
+        "mix-paint"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819 p1 drill with mixer about2min; no dry repair mixture",
+      "quantityParameterId": "ct54_reference_qty_mixing_drill"
+    },
+    {
+      "rowId": "material:wall-paint:tool:mixing-paddle",
+      "nameRu": "Нержавеющая насадка для перемешивания краски",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "mix-paint",
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819 drill/mixer; no rusty tools; selected paint-only compatible fitting",
+      "quantityParameterId": "ct54_reference_qty_mixing_paddle"
+    },
+    {
+      "rowId": "material:wall-paint:tool:mixing-bucket",
+      "nameRu": "Чистая рабочая ёмкость для краски",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "mix-paint",
+        "paint",
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM clean non-rusty paint handling vessel; exact capacity/count unknown",
+      "quantityParameterId": "ct54_reference_qty_mixing_bucket"
+    },
+    {
+      "rowId": "material:wall-paint:tool:protection-film",
+      "nameRu": "Защитная плёнка для пола и примыканий",
+      "resourceKind": "CONSUMABLE",
+      "unitId": "m2",
+      "operationIds": [
+        "protect",
+        "paint",
+        "clean-site"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819 p2 foil protection; PROJECT_SYSTEM also contains wash zone",
+      "quantityParameterId": "ct54_reference_qty_protection_film"
+    },
+    {
+      "rowId": "material:wall-paint:tool:masking-tape",
+      "nameRu": "Малярная лента для крепления защитной плёнки",
+      "resourceKind": "CONSUMABLE",
+      "unitId": "m",
+      "operationIds": [
+        "protect",
+        "paint",
+        "clean-site"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM explicitly fastens foil edges; no area-based quantity rule",
+      "quantityParameterId": "ct54_reference_qty_masking_tape"
+    },
+    {
+      "rowId": "material:wall-paint:tool:wipes",
+      "nameRu": "Салфетки для сбора брызг и очистки инструмента",
+      "resourceKind": "CONSUMABLE",
+      "unitId": "piece",
+      "operationIds": [
+        "paint",
+        "clean-tools",
+        "clean-site"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819 immediate stain removal with water; PROJECT_SYSTEM selects wiping collection, no uncontrolled rinse",
+      "quantityParameterId": "ct54_reference_qty_wipes"
+    },
+    {
+      "rowId": "material:wall-paint:tool:waste-bags",
+      "nameRu": "Пакеты для загрязнённой плёнки, ленты и салфеток",
+      "resourceKind": "CONSUMABLE",
+      "unitId": "piece",
+      "operationIds": [
+        "clean-site"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM separate solid collection in bags; receiving conditions declared, no disposal norm",
+      "quantityParameterId": "ct54_reference_qty_waste_bags"
+    },
+    {
+      "rowId": "material:wall-paint:tool:gloves",
+      "nameRu": "Защитные перчатки для щелочных материалов",
+      "resourceKind": "PPE",
+      "unitId": "pair",
+      "operationIds": [
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819 p2 protective gloves, alkaline material; exact compatible grade/size selection is a precondition, count unknown",
+      "quantityParameterId": "ct54_reference_qty_gloves"
+    },
+    {
+      "rowId": "material:wall-paint:tool:eye-protection",
+      "nameRu": "Защитные очки от брызг",
+      "resourceKind": "PPE",
+      "unitId": "piece",
+      "operationIds": [
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS1_0819 p2 protective glasses; exact fit compatibility is a precondition",
+      "quantityParameterId": "ct54_reference_qty_eye_protection"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:work-clothing",
+      "nameRu": "Закрытая рабочая одежда маляра",
+      "resourceKind": "PPE",
+      "unitId": "piece",
+      "operationIds": [
+        "prepare",
+        "protect",
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM selects closed work clothing for covered skin during manual cycle; no transferred wear norm",
+      "quantityParameterId": "ct54_reference_qty_work_clothing"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:work-shoes",
+      "nameRu": "Закрытая рабочая обувь",
+      "resourceKind": "PPE",
+      "unitId": "pair",
+      "operationIds": [
+        "prepare",
+        "protect",
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM ground manual work on dry unobstructed non-slip floor; no ladder/fall arrest",
+      "quantityParameterId": "ct54_reference_qty_work_shoes"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:clean-water-pail",
+      "nameRu": "Ёмкость с чистой водой для промывки",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM hand wash: separate clean-water vessel; no water hose/pressure washer",
+      "quantityParameterId": "ct54_reference_qty_clean_water_pail"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:wash-pail",
+      "nameRu": "Ёмкость для ручной промывки инструмента",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM tools washed in contained vessel inside tray; no mechanical wash system",
+      "quantityParameterId": "ct54_reference_qty_wash_pail"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:wash-tray",
+      "nameRu": "Поддон для ёмкостей ручной промывки",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "clean-tools"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM impervious compatible containment at wash point, selected capacity adequate for held wash-water volume; quantities/capacity input unknown",
+      "quantityParameterId": "ct54_reference_qty_wash_tray"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:used-paint-container",
+      "nameRu": "Пустая оригинальная тара краски для сбора промывной воды",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "clean-tools",
+        "clean-site"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM object provides undamaged empty original selected CT54 containers for compatible residue collection; no transferred bucket chemical compatibility",
+      "quantityParameterId": "ct54_reference_qty_used_paint_container"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:used-paint-container-lid",
+      "nameRu": "Штатная крышка тары с промывной водой",
+      "resourceKind": "ACCESSORY",
+      "unitId": "piece",
+      "operationIds": [
+        "clean-tools",
+        "clean-site"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM same original container/lid identity, leak-tight before transfer within work zone",
+      "quantityParameterId": "ct54_reference_qty_used_paint_container_lid"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:air-thermometer",
+      "nameRu": "Термометр для измерения температуры воздуха",
+      "resourceKind": "TOOL",
+      "unitId": "piece",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS ambient5–25C, PROJECT_SYSTEM separately measures ambient air before/during passes",
+      "quantityParameterId": "ct54_reference_qty_air_thermometer"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:surface-thermometer",
+      "nameRu": "Термометр для измерения температуры стены",
+      "resourceKind": "TOOL",
+      "unitId": "piece",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS substrate5–25C; separate surface measuring instrument, not an assumed combined device",
+      "quantityParameterId": "ct54_reference_qty_surface_thermometer"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:humidity-instrument",
+      "nameRu": "Гигрометр для измерения влажности воздуха",
+      "resourceKind": "TOOL",
+      "unitId": "piece",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS humidity<80%, existing named humidity-control need",
+      "quantityParameterId": "ct54_reference_qty_humidity_instrument"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:clock",
+      "nameRu": "Часы для контроля времени перемешивания и выдержек",
+      "resourceKind": "TOOL",
+      "unitId": "piece",
+      "operationIds": [
+        "mix-paint",
+        "paint",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "CT54 TDS approx2min mixing and minimum12h between coats; PROJECT_SYSTEM records times",
+      "quantityParameterId": "ct54_reference_qty_clock"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:record-sheet",
+      "nameRu": "Лист записи условий и результата окраски",
+      "resourceKind": "CONSUMABLE",
+      "unitId": "piece",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM internal manual batch/environment/pass record, no external testing service",
+      "quantityParameterId": "ct54_reference_qty_record_sheet"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:record-pen",
+      "nameRu": "Ручка для записи условий и результата",
+      "resourceKind": "TOOL",
+      "unitId": "piece",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM manual record on paper, no software/service resource",
+      "quantityParameterId": "ct54_reference_qty_record_pen"
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:whole-cycle-labour",
+      "nameRu": "Труд ручного цикла окраски стены",
+      "resourceKind": "LABOR",
+      "unitId": "man_hour",
+      "operationIds": [
+        "prepare",
+        "protect",
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site",
+        "quality"
+      ],
+      "sourceId": "project-system:ct54-ready-ground-manual-r608",
+      "authority": "PROJECT_SYSTEM one unallocated whole-cycle labour requirement, UNKNOWN hours; no VGT/CT126/CE40 rate/paid duplication",
+      "quantityParameterId": "ct54_reference_qty_whole_cycle_labour"
+    }
+  ],
+  "operationRoster": [
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "wall-paint-ct54-reference-r608",
+      "groupTitleRu": "Ручная окраска готовой минеральной стены",
+      "operationId": "prepare",
+      "operationTitleRu": "Проверить готовую стену и условия окраски",
+      "completionCriterionRu": "Основание прочное, сухое, чистое, без пыли; цементно-известковая штукатурка старше14сут, без полимерного слоя. Температура стены и воздуха5–25°C, влажность<80%.",
+      "processRole": "PROCESS",
+      "processOrdinal": 10
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "wall-paint-ct54-reference-r608",
+      "groupTitleRu": "Ручная окраска готовой минеральной стены",
+      "operationId": "protect",
+      "operationTitleRu": "Укрыть прилегающие поверхности",
+      "completionCriterionRu": "Пол и примыкания закрыты плёнкой; края закреплены лентой до окраски.",
+      "processRole": "PROCESS",
+      "processOrdinal": 20
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "wall-paint-ct54-reference-r608",
+      "groupTitleRu": "Ручная окраска готовой минеральной стены",
+      "operationId": "mix-paint",
+      "operationTitleRu": "Перемешать краску",
+      "completionCriterionRu": "Неразбавленная краска одной партии перемешана дрелью с чистой нержавеющей насадкой около2мин.",
+      "processRole": "PROCESS",
+      "processOrdinal": 30
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "wall-paint-ct54-reference-r608",
+      "groupTitleRu": "Ручная окраска готовой минеральной стены",
+      "operationId": "paint",
+      "operationTitleRu": "Окрасить стену в два слоя",
+      "completionCriterionRu": "Краска равномерно нанесена валиком и кистью; выдержка между слоями не менее12ч; повторное перемешивание и очистка инструмента выполняются для каждого прохода.",
+      "processRole": "PROCESS",
+      "processOrdinal": 40
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "wall-paint-ct54-reference-r608",
+      "groupTitleRu": "Ручная окраска готовой минеральной стены",
+      "operationId": "clean-tools",
+      "operationTitleRu": "Промыть малярный инструмент",
+      "completionCriterionRu": "Инструмент промыт водой сразу после использования внутри поддона; вся промывная вода и загрязнённые салфетки собраны раздельно, сброс отсутствует.",
+      "processRole": "PROCESS",
+      "processOrdinal": 50
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "wall-paint-ct54-reference-r608",
+      "groupTitleRu": "Ручная окраска готовой минеральной стены",
+      "operationId": "clean-site",
+      "operationTitleRu": "Собрать укрывные материалы и остатки",
+      "completionCriterionRu": "Плёнка, лента и загрязнённые салфетки собраны в пакет; промывная вода закрыта в предоставленной оригинальной таре с крышкой; всё передано в заданную накопительную зону объекта.",
+      "processRole": "PROCESS",
+      "processOrdinal": 60
+    },
+    {
+      "contractVersion": "canonical-operation-resource/v1",
+      "groupId": "wall-paint-ct54-reference-r608",
+      "groupTitleRu": "Ручная окраска готовой минеральной стены",
+      "operationId": "quality",
+      "operationTitleRu": "Проверить покрытие и записать результат",
+      "completionCriterionRu": "Проверена равномерность двух слоёв; записаны партия, времена проходов и показания температуры/влажности до и во время каждого прохода.",
+      "processRole": "PROCESS",
+      "processOrdinal": 70
+    }
+  ],
+  "conditions": {
+    "ct54_reference_method": "Демонстрационный пример: ручная окраска готовой минеральной стены",
+    "ct54_reference_substrate": "Прочная сухая чистая цементно-известковая штукатурка старше 14 суток, без пыли и полимерного покрытия",
+    "ct54_reference_access": "Вся поверхность доступна с земли выбранным валиком с рукоятью и кистью",
+    "ct54_reference_materials_at_point": "Неразбавленная краска одной партии и все перечисленные ресурсы находятся в рабочей зоне",
+    "ct54_reference_utilities": "Чистая вода и защищённая совместимая розетка находятся у места перемешивания, удлинитель не нужен",
+    "ct54_reference_waste_receiver": "Вся промывная вода собирается без сброса; закрытая оригинальная тара и пакеты принимаются в указанной накопительной зоне объекта",
+    "ct54_reference_compatible_tools_ppe": "Выбраны совместимые инструменты для этой краски и защита от щелочных брызг; сухие смеси не перемешиваются",
+    "ct54_reference_conditions": "Демонстрационный пример: проветриваемое сухое помещение, свободный нескользкий пол, воздух и стена 20 °C, влажность 50 %, условия контролируются во время работы"
+  },
+  "independentComposition": {
+    "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+    "sourceKind": "PROJECT_SYSTEM",
+    "generatedFromCurrentRows": false,
+    "operationResourceBindingRequired": true,
+    "evidenceSha256": "31f6a6651795aa722d845c3bff84255a8a34ce3170edf30356cd30c45eaa8640",
+    "evidenceReferences": [
+      "PROJECT_SYSTEM_METHOD.md SHA256 31f6a6651795aa722d845c3bff84255a8a34ce3170edf30356cd30c45eaa8640",
+      "CT54 C_CT54_TDS_1_0819 pp1–2; retained selected manual roller evidence"
+    ],
+    "operationRoster": [
+      {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "wall-paint-ct54-reference-r608",
+        "groupTitleRu": "Ручная окраска готовой минеральной стены",
+        "operationId": "prepare",
+        "operationTitleRu": "Проверить готовую стену и условия окраски",
+        "completionCriterionRu": "Основание прочное, сухое, чистое, без пыли; цементно-известковая штукатурка старше14сут, без полимерного слоя. Температура стены и воздуха5–25°C, влажность<80%.",
+        "processRole": "PROCESS",
+        "processOrdinal": 10
+      },
+      {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "wall-paint-ct54-reference-r608",
+        "groupTitleRu": "Ручная окраска готовой минеральной стены",
+        "operationId": "protect",
+        "operationTitleRu": "Укрыть прилегающие поверхности",
+        "completionCriterionRu": "Пол и примыкания закрыты плёнкой; края закреплены лентой до окраски.",
+        "processRole": "PROCESS",
+        "processOrdinal": 20
+      },
+      {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "wall-paint-ct54-reference-r608",
+        "groupTitleRu": "Ручная окраска готовой минеральной стены",
+        "operationId": "mix-paint",
+        "operationTitleRu": "Перемешать краску",
+        "completionCriterionRu": "Неразбавленная краска одной партии перемешана дрелью с чистой нержавеющей насадкой около2мин.",
+        "processRole": "PROCESS",
+        "processOrdinal": 30
+      },
+      {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "wall-paint-ct54-reference-r608",
+        "groupTitleRu": "Ручная окраска готовой минеральной стены",
+        "operationId": "paint",
+        "operationTitleRu": "Окрасить стену в два слоя",
+        "completionCriterionRu": "Краска равномерно нанесена валиком и кистью; выдержка между слоями не менее12ч; повторное перемешивание и очистка инструмента выполняются для каждого прохода.",
+        "processRole": "PROCESS",
+        "processOrdinal": 40
+      },
+      {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "wall-paint-ct54-reference-r608",
+        "groupTitleRu": "Ручная окраска готовой минеральной стены",
+        "operationId": "clean-tools",
+        "operationTitleRu": "Промыть малярный инструмент",
+        "completionCriterionRu": "Инструмент промыт водой сразу после использования внутри поддона; вся промывная вода и загрязнённые салфетки собраны раздельно, сброс отсутствует.",
+        "processRole": "PROCESS",
+        "processOrdinal": 50
+      },
+      {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "wall-paint-ct54-reference-r608",
+        "groupTitleRu": "Ручная окраска готовой минеральной стены",
+        "operationId": "clean-site",
+        "operationTitleRu": "Собрать укрывные материалы и остатки",
+        "completionCriterionRu": "Плёнка, лента и загрязнённые салфетки собраны в пакет; промывная вода закрыта в предоставленной оригинальной таре с крышкой; всё передано в заданную накопительную зону объекта.",
+        "processRole": "PROCESS",
+        "processOrdinal": 60
+      },
+      {
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "wall-paint-ct54-reference-r608",
+        "groupTitleRu": "Ручная окраска готовой минеральной стены",
+        "operationId": "quality",
+        "operationTitleRu": "Проверить покрытие и записать результат",
+        "completionCriterionRu": "Проверена равномерность двух слоёв; записаны партия, времена проходов и показания температуры/влажности до и во время каждого прохода.",
+        "processRole": "PROCESS",
+        "processOrdinal": 70
+      }
+    ],
+    "entries": [
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:ct54",
+        "operationId": "mix-paint",
+        "requiredOperationIds": [
+          "mix-paint",
+          "paint"
+        ],
+        "publicNameRu": "Силикатная краска для минеральной стены",
+        "resourceKind": "MATERIAL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "l",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:ct54"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:water",
+        "operationId": "clean-tools",
+        "requiredOperationIds": [
+          "clean-tools"
+        ],
+        "publicNameRu": "Чистая вода для промывки инструмента",
+        "resourceKind": "MATERIAL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "l",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:water"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:electricity",
+        "operationId": "mix-paint",
+        "requiredOperationIds": [
+          "mix-paint"
+        ],
+        "publicNameRu": "Электроэнергия для перемешивания краски",
+        "resourceKind": "MATERIAL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "kwh",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:electricity"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:paint-roller",
+        "operationId": "paint",
+        "requiredOperationIds": [
+          "paint",
+          "clean-tools"
+        ],
+        "publicNameRu": "Шубка валика для силикатной краски, 250 мм, ворс 12 мм, посадка 8 мм",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:paint-roller"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:paint-roller-frame",
+        "operationId": "paint",
+        "requiredOperationIds": [
+          "paint",
+          "clean-tools"
+        ],
+        "publicNameRu": "Держатель валика 250 мм, стержень из нержавеющей стали 8 мм",
+        "resourceKind": "TOOL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:paint-roller-frame"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:roller-tray",
+        "operationId": "paint",
+        "requiredOperationIds": [
+          "paint",
+          "clean-tools"
+        ],
+        "publicNameRu": "Малярная ванночка 30 × 33 см для валика 250–270 мм",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:roller-tray"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:cut-in-brush",
+        "operationId": "paint",
+        "requiredOperationIds": [
+          "paint",
+          "clean-tools"
+        ],
+        "publicNameRu": "Кисть для окраски углов и примыканий",
+        "resourceKind": "TOOL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:cut-in-brush"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:telescopic-pole",
+        "operationId": "paint",
+        "requiredOperationIds": [
+          "paint",
+          "clean-tools"
+        ],
+        "publicNameRu": "Телескопическая рукоять валика",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:telescopic-pole"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:mixing-drill",
+        "operationId": "mix-paint",
+        "requiredOperationIds": [
+          "mix-paint"
+        ],
+        "publicNameRu": "Электрическая дрель для перемешивания краски",
+        "resourceKind": "TOOL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:mixing-drill"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:mixing-paddle",
+        "operationId": "mix-paint",
+        "requiredOperationIds": [
+          "mix-paint",
+          "clean-tools"
+        ],
+        "publicNameRu": "Нержавеющая насадка для перемешивания краски",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:mixing-paddle"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:mixing-bucket",
+        "operationId": "mix-paint",
+        "requiredOperationIds": [
+          "mix-paint",
+          "paint",
+          "clean-tools"
+        ],
+        "publicNameRu": "Чистая рабочая ёмкость для краски",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:mixing-bucket"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:protection-film",
+        "operationId": "protect",
+        "requiredOperationIds": [
+          "protect",
+          "paint",
+          "clean-site"
+        ],
+        "publicNameRu": "Защитная плёнка для пола и примыканий",
+        "resourceKind": "CONSUMABLE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "m2",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:protection-film"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:masking-tape",
+        "operationId": "protect",
+        "requiredOperationIds": [
+          "protect",
+          "paint",
+          "clean-site"
+        ],
+        "publicNameRu": "Малярная лента для крепления защитной плёнки",
+        "resourceKind": "CONSUMABLE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "m",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:masking-tape"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:wipes",
+        "operationId": "paint",
+        "requiredOperationIds": [
+          "paint",
+          "clean-tools",
+          "clean-site"
+        ],
+        "publicNameRu": "Салфетки для сбора брызг и очистки инструмента",
+        "resourceKind": "CONSUMABLE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:wipes"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:waste-bags",
+        "operationId": "clean-site",
+        "requiredOperationIds": [
+          "clean-site"
+        ],
+        "publicNameRu": "Пакеты для загрязнённой плёнки, ленты и салфеток",
+        "resourceKind": "CONSUMABLE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:waste-bags"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:gloves",
+        "operationId": "mix-paint",
+        "requiredOperationIds": [
+          "mix-paint",
+          "paint",
+          "clean-tools",
+          "clean-site"
+        ],
+        "publicNameRu": "Защитные перчатки для щелочных материалов",
+        "resourceKind": "PPE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "pair",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:gloves"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:eye-protection",
+        "operationId": "mix-paint",
+        "requiredOperationIds": [
+          "mix-paint",
+          "paint",
+          "clean-tools",
+          "clean-site"
+        ],
+        "publicNameRu": "Защитные очки от брызг",
+        "resourceKind": "PPE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "material:wall-paint:tool:eye-protection"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:work-clothing",
+        "operationId": "prepare",
+        "requiredOperationIds": [
+          "prepare",
+          "protect",
+          "mix-paint",
+          "paint",
+          "clean-tools",
+          "clean-site",
+          "quality"
+        ],
+        "publicNameRu": "Закрытая рабочая одежда маляра",
+        "resourceKind": "PPE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:work-clothing"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:work-shoes",
+        "operationId": "prepare",
+        "requiredOperationIds": [
+          "prepare",
+          "protect",
+          "mix-paint",
+          "paint",
+          "clean-tools",
+          "clean-site",
+          "quality"
+        ],
+        "publicNameRu": "Закрытая рабочая обувь",
+        "resourceKind": "PPE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "pair",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:work-shoes"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:clean-water-pail",
+        "operationId": "clean-tools",
+        "requiredOperationIds": [
+          "clean-tools"
+        ],
+        "publicNameRu": "Ёмкость с чистой водой для промывки",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:clean-water-pail"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:wash-pail",
+        "operationId": "clean-tools",
+        "requiredOperationIds": [
+          "clean-tools"
+        ],
+        "publicNameRu": "Ёмкость для ручной промывки инструмента",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:wash-pail"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:wash-tray",
+        "operationId": "clean-tools",
+        "requiredOperationIds": [
+          "clean-tools"
+        ],
+        "publicNameRu": "Поддон для ёмкостей ручной промывки",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:wash-tray"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:used-paint-container",
+        "operationId": "clean-tools",
+        "requiredOperationIds": [
+          "clean-tools",
+          "clean-site"
+        ],
+        "publicNameRu": "Пустая оригинальная тара краски для сбора промывной воды",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:used-paint-container"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:used-paint-container-lid",
+        "operationId": "clean-tools",
+        "requiredOperationIds": [
+          "clean-tools",
+          "clean-site"
+        ],
+        "publicNameRu": "Штатная крышка тары с промывной водой",
+        "resourceKind": "ACCESSORY",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:used-paint-container-lid"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:air-thermometer",
+        "operationId": "prepare",
+        "requiredOperationIds": [
+          "prepare",
+          "paint",
+          "quality"
+        ],
+        "publicNameRu": "Термометр для измерения температуры воздуха",
+        "resourceKind": "TOOL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:air-thermometer"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:surface-thermometer",
+        "operationId": "prepare",
+        "requiredOperationIds": [
+          "prepare",
+          "paint",
+          "quality"
+        ],
+        "publicNameRu": "Термометр для измерения температуры стены",
+        "resourceKind": "TOOL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:surface-thermometer"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:humidity-instrument",
+        "operationId": "prepare",
+        "requiredOperationIds": [
+          "prepare",
+          "paint",
+          "quality"
+        ],
+        "publicNameRu": "Гигрометр для измерения влажности воздуха",
+        "resourceKind": "TOOL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:humidity-instrument"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:clock",
+        "operationId": "mix-paint",
+        "requiredOperationIds": [
+          "mix-paint",
+          "paint",
+          "quality"
+        ],
+        "publicNameRu": "Часы для контроля времени перемешивания и выдержек",
+        "resourceKind": "TOOL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:clock"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:record-sheet",
+        "operationId": "prepare",
+        "requiredOperationIds": [
+          "prepare",
+          "paint",
+          "quality"
+        ],
+        "publicNameRu": "Лист записи условий и результата окраски",
+        "resourceKind": "CONSUMABLE",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:record-sheet"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:record-pen",
+        "operationId": "prepare",
+        "requiredOperationIds": [
+          "prepare",
+          "paint",
+          "quality"
+        ],
+        "publicNameRu": "Ручка для записи условий и результата",
+        "resourceKind": "TOOL",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "piece",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:record-pen"
+        }
+      },
+      {
+        "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:whole-cycle-labour",
+        "operationId": "prepare",
+        "requiredOperationIds": [
+          "prepare",
+          "protect",
+          "mix-paint",
+          "paint",
+          "clean-tools",
+          "clean-site",
+          "quality"
+        ],
+        "publicNameRu": "Труд ручного цикла окраски стены",
+        "resourceKind": "LABOR",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "condition": "{\"kind\":\"equals\",\"parameterId\":\"ct54_reference_method\",\"value\":\"Демонстрационный пример: ручная окраска готовой минеральной стены\"}",
+        "unitId": "man_hour",
+        "resolution": {
+          "kind": "ROW",
+          "rowId": "reference:wall-paint:ct54:whole-cycle-labour"
+        }
+      }
+    ],
+    "operationRequirements": [
+      {
+        "operationId": "prepare",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "requirements": {
+          "MATERIAL": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Ready dry dust-free wall is inspected and measured; no substrate treatment material is applied."
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:record-sheet"
+            ]
+          },
+          "TOOL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:air-thermometer",
+              "reference:wall-paint:ct54:surface-thermometer",
+              "reference:wall-paint:ct54:humidity-instrument",
+              "reference:wall-paint:ct54:record-pen"
+            ]
+          },
+          "ACCESSORY": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Ground visual/environment inspection and paper record use the named tools, not a separate mounting/support accessory."
+          },
+          "EQUIPMENT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Selected ground-only hand method uses the individually listed hand tools/accessories; no access platform, scaffold, freestanding powered wash station or work machine is part of this PROJECT_SYSTEM."
+          },
+          "MECHANISM": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "No spraying, lifting, powered transport or powered washing is selected. The hand-held mixing drill is classified TOOL, not a machine-hour mechanism."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:whole-cycle-labour"
+            ]
+          },
+          "SERVICE": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All listed preparation, application, manual wash and visual/internal record actions belong to the same crew labour row. No external laboratory, rental, disposal or other contracted service is inside this interface-bounded method."
+          },
+          "TRANSPORT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All supplies are already at the point of use and accepted accumulation zone is within that work zone. No vehicle trip/site/floor delivery or offsite waste haul is in this selected method."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:work-clothing",
+              "reference:wall-paint:ct54:work-shoes"
+            ]
+          }
+        }
+      },
+      {
+        "operationId": "protect",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "requirements": {
+          "MATERIAL": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "The selected protective layer is film+tape classified CONSUMABLE; no coating/mortar or other installed material is applied."
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:protection-film",
+              "material:wall-paint:tool:masking-tape"
+            ]
+          },
+          "TOOL": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Provided film is sized for the DEMO zone and tape is hand-tearable; fastening/removal is manual, no cutting tool selected."
+          },
+          "ACCESSORY": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Film is fixed directly by tape; no protective frame/stand or separate accessory in this selected method."
+          },
+          "EQUIPMENT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Selected ground-only hand method uses the individually listed hand tools/accessories; no access platform, scaffold, freestanding powered wash station or work machine is part of this PROJECT_SYSTEM."
+          },
+          "MECHANISM": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "No spraying, lifting, powered transport or powered washing is selected. The hand-held mixing drill is classified TOOL, not a machine-hour mechanism."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:whole-cycle-labour"
+            ]
+          },
+          "SERVICE": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All listed preparation, application, manual wash and visual/internal record actions belong to the same crew labour row. No external laboratory, rental, disposal or other contracted service is inside this interface-bounded method."
+          },
+          "TRANSPORT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All supplies are already at the point of use and accepted accumulation zone is within that work zone. No vehicle trip/site/floor delivery or offsite waste haul is in this selected method."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:work-clothing",
+              "reference:wall-paint:ct54:work-shoes"
+            ]
+          }
+        }
+      },
+      {
+        "operationId": "mix-paint",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:ct54",
+              "reference:wall-paint:ct54:electricity"
+            ]
+          },
+          "CONSUMABLE": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Undiluted paint is mixed directly with reusable drill/paddle/vessel; no added water, disposable liner or chemical is used in mixing. Subsequent washing has its own listed water/wipes."
+          },
+          "TOOL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:mixing-drill",
+              "reference:wall-paint:ct54:clock"
+            ]
+          },
+          "ACCESSORY": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:mixing-paddle",
+              "material:wall-paint:tool:mixing-bucket"
+            ]
+          },
+          "EQUIPMENT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Selected ground-only hand method uses the individually listed hand tools/accessories; no access platform, scaffold, freestanding powered wash station or work machine is part of this PROJECT_SYSTEM."
+          },
+          "MECHANISM": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "No spraying, lifting, powered transport or powered washing is selected. The hand-held mixing drill is classified TOOL, not a machine-hour mechanism."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:whole-cycle-labour"
+            ]
+          },
+          "SERVICE": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All listed preparation, application, manual wash and visual/internal record actions belong to the same crew labour row. No external laboratory, rental, disposal or other contracted service is inside this interface-bounded method."
+          },
+          "TRANSPORT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All supplies are already at the point of use and accepted accumulation zone is within that work zone. No vehicle trip/site/floor delivery or offsite waste haul is in this selected method."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:gloves",
+              "material:wall-paint:tool:eye-protection",
+              "reference:wall-paint:ct54:work-clothing",
+              "reference:wall-paint:ct54:work-shoes"
+            ]
+          }
+        }
+      },
+      {
+        "operationId": "paint",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:ct54"
+            ]
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:protection-film",
+              "material:wall-paint:tool:masking-tape",
+              "material:wall-paint:tool:wipes",
+              "reference:wall-paint:ct54:record-sheet"
+            ]
+          },
+          "TOOL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:paint-roller-frame",
+              "material:wall-paint:tool:cut-in-brush",
+              "reference:wall-paint:ct54:air-thermometer",
+              "reference:wall-paint:ct54:surface-thermometer",
+              "reference:wall-paint:ct54:humidity-instrument",
+              "reference:wall-paint:ct54:clock",
+              "reference:wall-paint:ct54:record-pen"
+            ]
+          },
+          "ACCESSORY": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:paint-roller",
+              "material:wall-paint:tool:roller-tray",
+              "material:wall-paint:tool:telescopic-pole",
+              "material:wall-paint:tool:mixing-bucket"
+            ]
+          },
+          "EQUIPMENT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Selected ground-only hand method uses the individually listed hand tools/accessories; no access platform, scaffold, freestanding powered wash station or work machine is part of this PROJECT_SYSTEM."
+          },
+          "MECHANISM": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "No spraying, lifting, powered transport or powered washing is selected. The hand-held mixing drill is classified TOOL, not a machine-hour mechanism."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:whole-cycle-labour"
+            ]
+          },
+          "SERVICE": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All listed preparation, application, manual wash and visual/internal record actions belong to the same crew labour row. No external laboratory, rental, disposal or other contracted service is inside this interface-bounded method."
+          },
+          "TRANSPORT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All supplies are already at the point of use and accepted accumulation zone is within that work zone. No vehicle trip/site/floor delivery or offsite waste haul is in this selected method."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:gloves",
+              "material:wall-paint:tool:eye-protection",
+              "reference:wall-paint:ct54:work-clothing",
+              "reference:wall-paint:ct54:work-shoes"
+            ]
+          }
+        }
+      },
+      {
+        "operationId": "clean-tools",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:water"
+            ]
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:wipes"
+            ]
+          },
+          "TOOL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:paint-roller-frame",
+              "material:wall-paint:tool:cut-in-brush"
+            ]
+          },
+          "ACCESSORY": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:paint-roller",
+              "material:wall-paint:tool:roller-tray",
+              "material:wall-paint:tool:telescopic-pole",
+              "material:wall-paint:tool:mixing-paddle",
+              "material:wall-paint:tool:mixing-bucket",
+              "reference:wall-paint:ct54:clean-water-pail",
+              "reference:wall-paint:ct54:wash-pail",
+              "reference:wall-paint:ct54:wash-tray",
+              "reference:wall-paint:ct54:used-paint-container",
+              "reference:wall-paint:ct54:used-paint-container-lid"
+            ]
+          },
+          "EQUIPMENT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Selected ground-only hand method uses the individually listed hand tools/accessories; no access platform, scaffold, freestanding powered wash station or work machine is part of this PROJECT_SYSTEM."
+          },
+          "MECHANISM": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "No spraying, lifting, powered transport or powered washing is selected. The hand-held mixing drill is classified TOOL, not a machine-hour mechanism."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:whole-cycle-labour"
+            ]
+          },
+          "SERVICE": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All listed preparation, application, manual wash and visual/internal record actions belong to the same crew labour row. No external laboratory, rental, disposal or other contracted service is inside this interface-bounded method."
+          },
+          "TRANSPORT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All supplies are already at the point of use and accepted accumulation zone is within that work zone. No vehicle trip/site/floor delivery or offsite waste haul is in this selected method."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:gloves",
+              "material:wall-paint:tool:eye-protection",
+              "reference:wall-paint:ct54:work-clothing",
+              "reference:wall-paint:ct54:work-shoes"
+            ]
+          }
+        }
+      },
+      {
+        "operationId": "clean-site",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "requirements": {
+          "MATERIAL": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "No new coating or treatment material is applied; existing residues are contained in listed accessories/bags."
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:protection-film",
+              "material:wall-paint:tool:masking-tape",
+              "material:wall-paint:tool:wipes",
+              "material:wall-paint:tool:waste-bags"
+            ]
+          },
+          "TOOL": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Selected cleanup hand-folds film/tape and bags wipes; all liquid is already contained at the wash operation. No sweeping/scraping/pumping tool is required for this predeclared no-dust/no-drain method."
+          },
+          "ACCESSORY": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:used-paint-container",
+              "reference:wall-paint:ct54:used-paint-container-lid"
+            ]
+          },
+          "EQUIPMENT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Selected ground-only hand method uses the individually listed hand tools/accessories; no access platform, scaffold, freestanding powered wash station or work machine is part of this PROJECT_SYSTEM."
+          },
+          "MECHANISM": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "No spraying, lifting, powered transport or powered washing is selected. The hand-held mixing drill is classified TOOL, not a machine-hour mechanism."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:whole-cycle-labour"
+            ]
+          },
+          "SERVICE": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All listed preparation, application, manual wash and visual/internal record actions belong to the same crew labour row. No external laboratory, rental, disposal or other contracted service is inside this interface-bounded method."
+          },
+          "TRANSPORT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All supplies are already at the point of use and accepted accumulation zone is within that work zone. No vehicle trip/site/floor delivery or offsite waste haul is in this selected method."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "material:wall-paint:tool:gloves",
+              "material:wall-paint:tool:eye-protection",
+              "reference:wall-paint:ct54:work-clothing",
+              "reference:wall-paint:ct54:work-shoes"
+            ]
+          }
+        }
+      },
+      {
+        "operationId": "quality",
+        "sourceId": "project-system:ct54-ready-ground-manual-r608",
+        "requirements": {
+          "MATERIAL": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Visual acceptance, environmental measurements and manual records apply no treatment material."
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:record-sheet"
+            ]
+          },
+          "TOOL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:air-thermometer",
+              "reference:wall-paint:ct54:surface-thermometer",
+              "reference:wall-paint:ct54:humidity-instrument",
+              "reference:wall-paint:ct54:clock",
+              "reference:wall-paint:ct54:record-pen"
+            ]
+          },
+          "ACCESSORY": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "The named handheld measuring tools and paper/pen require no separate support or measuring accessory for this ground method."
+          },
+          "EQUIPMENT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "Selected ground-only hand method uses the individually listed hand tools/accessories; no access platform, scaffold, freestanding powered wash station or work machine is part of this PROJECT_SYSTEM."
+          },
+          "MECHANISM": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "No spraying, lifting, powered transport or powered washing is selected. The hand-held mixing drill is classified TOOL, not a machine-hour mechanism."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:whole-cycle-labour"
+            ]
+          },
+          "SERVICE": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All listed preparation, application, manual wash and visual/internal record actions belong to the same crew labour row. No external laboratory, rental, disposal or other contracted service is inside this interface-bounded method."
+          },
+          "TRANSPORT": {
+            "status": "NOT_APPLICABLE",
+            "reasonRu": "All supplies are already at the point of use and accepted accumulation zone is within that work zone. No vehicle trip/site/floor delivery or offsite waste haul is in this selected method."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "reference:wall-paint:ct54:work-clothing",
+              "reference:wall-paint:ct54:work-shoes"
+            ]
+          }
+        }
+      }
+    ],
+    "fullTechnicalAcceptance": false
+  },
+  "sourceNormQuantityAccepted": false,
+  "completeCompositionAuthoringClaim": "REVIEW_PENDING_NO_UNRESOLVED_RESOURCE_CLASSES_WITHIN_EXPLICIT_DEMO_SCOPE",
+  "fullTechnicalAcceptance": false,
+  "conditionTitlesRu": {
+    "ct54_reference_method": "Способ окраски",
+    "ct54_reference_substrate": "Готовность стены",
+    "ct54_reference_access": "Доступ к поверхности стены",
+    "ct54_reference_materials_at_point": "Материалы и оснащение в рабочей зоне",
+    "ct54_reference_utilities": "Вода и электропитание",
+    "ct54_reference_waste_receiver": "Сбор промывной воды и остатков",
+    "ct54_reference_compatible_tools_ppe": "Совместимость инструмента и защиты",
+    "ct54_reference_conditions": "Условия выполнения работ"
+  },
+  "conditionValueLabelsRu": {
+    "ct54_reference_method": "Демонстрационный пример: ручная окраска готовой минеральной стены",
+    "ct54_reference_substrate": "Прочная сухая чистая цементно-известковая штукатурка старше 14 суток, без пыли и полимерного покрытия",
+    "ct54_reference_access": "Вся поверхность доступна с земли выбранным валиком с рукоятью и кистью",
+    "ct54_reference_materials_at_point": "Неразбавленная краска одной партии и все перечисленные ресурсы находятся в рабочей зоне",
+    "ct54_reference_utilities": "Чистая вода и защищённая совместимая розетка находятся у места перемешивания, удлинитель не нужен",
+    "ct54_reference_waste_receiver": "Вся промывная вода собирается без сброса; закрытая оригинальная тара и пакеты принимаются в указанной накопительной зоне объекта",
+    "ct54_reference_compatible_tools_ppe": "Выбраны совместимые инструменты для этой краски и защита от щелочных брызг; сухие смеси не перемешиваются",
+    "ct54_reference_conditions": "Демонстрационный пример: проветриваемое сухое помещение, свободный нескользкий пол, воздух и стена 20 °C, влажность 50 %, условия контролируются во время работы"
+  }
+}

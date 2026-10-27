@@ -19,7 +19,7 @@ import {canonicalScopeRequirementDecisionV1,canonicalScopeRequirementHasAddition
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r12";
 export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r28-public-selected-specification";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:38";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:39";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {

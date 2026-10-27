@@ -406,7 +406,7 @@ test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
   });
 
 it('separates archived metadata identity from current PDF issuance and preserves old bytes/source',()=>{
-  const renderer='canonical-professional-pdf.r4-a13-verified-operation-composition-template86';
+  const renderer='canonical-professional-pdf.r4-a13-verified-operation-composition-template87';
   const saved={...revision,definition_version_id:'definition-version-1'};
   const current=buildCanonicalArtifactMetadata({operation:'professional_pdf',renderer,revision:saved,
     sourceRowCount:3,projectedRowCount:3,selectedProcurementRowCount:0,definitionVersionId:'definition-version-1',

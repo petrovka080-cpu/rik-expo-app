@@ -134,6 +134,7 @@
     "data/estimate-benchmarks/source-packs/ct126-prepared-series-s27-54.json": "46e8608ea504afed98bd8b470454b08a948067abc627f739515eef0e56a4bf49",
     "data/estimate-benchmarks/source-packs/ct126-six-wall-bindings-s27-69.json": "6e49d1502eae01bc57e72b552ef8018722ed8c585a59657369ae642ec13b18fa",
     "data/estimate-benchmarks/source-packs/ct29-ordinary-manual-migration-r1.json": "62dc1717572c31954266ae51b983ebcf6a9c960269194a77d2e1933662faddc9",
+    "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": "3c54b07a2f8f9565d210ec571611f219264e7594837d9efa7146e1ceca5dd92c",
     "data/estimate-benchmarks/source-packs/ct54-ready-facade-six-s27-63.json": "5b666ee44e1f127fb786dd759d71859c82aad086ec2df005cb04e1b92df7aae1",
     "data/estimate-benchmarks/source-packs/ct54-simple-ready-cement-facade-s27-54.json": "f3cf5b2045d0995d284dd3e8d0e0c3db764e5a545b197c254d9d2657425558b1",
     "data/estimate-benchmarks/source-packs/curb-base-curing-antisol250w-completion-r1.json": "1de5d9b14d2bfb3633997725ff4fb07d21e4dc18be81ea286cd1c1b820fc1bf8",
@@ -557,8 +558,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "30aca0f900750bac9e9d8e663d1b4761f8dff931f75ece3173d59ab6e4a90e1f",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "1d4c4e0b6ca26a8a6562f1f914519614723ec776021d7379353121c4ab9f66f5",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "961d03b8b2f4dc9cce60b8d049516161a9fd1198b145ac846a9f59fc063dafcf",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "caeb8ad870505a3053724f605508be5a7a2644a3e5d67780976df64212efadd9",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "e39c32149e7ffbd80b2b763d434ebaa84caef89b3fc42dc6a23ab2ab2b9f95eb",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1211,8 +1212,8 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "039b6eca90cae33296d9833c871b8d41b470411374bfab55ddc02858d2c3659b",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "3d399c56d0b0b318c30014659ff92d54483d1950437443c45ea958460ecc54de",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "90aef6bb713b5a490858cd2017fea20bd41a85b8c323f800d83dc3d31055f7de",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "4f3edff38b4f4a05035e9c10263dbabdcb821cae87be3ef4cb1d9d8312620e55",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.ts": "5c59629f9c6c307b1432bae451cdad3a87468e5ce3de82bad5e71c71170a2a0c",
@@ -1287,8 +1288,8 @@
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.test.ts": "68a81598f210d4e4566e7ff931bcc9328233619d30ca026a9257b9e413544d76",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
     "src/lib/estimate/backendPlatform/canonicalProcurementOperationAllocation.test.ts": "69e677cfdf6fc0106c97436e8433450604cb1e8537847e1e3fe1615ffd878730",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "8daabbdda8915a8d45703758241689e96c97bc178d16a8b40ccf20bffc774f60",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "c90e4eb0f151d47db0ec65bdc0db440bf15a66dc4eb538e95f46f678fd496eca",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "74daf96e9fceda55ec5ecf2161a1b323c01ec725f5d621103866c755a7faff30",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "d5f25622e12c23bd10408c1b7ef22ffffdd5e2f3b1bbfabd8a18edf077b6d9c0",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.test.ts": "3aa6ed34ddd2b0e7bd35aa67674e5cfed153f1e0802c169a43b180fc1f1a2f3b",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts": "cf73e5767efe06a52a5b54ebbb83124d939fd24237cdf8d811c15ac707cc9931",
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts": "d083dab58274d98404d95407cd25bedb688d140b843ed5397ac45dbb315dc6c1",
@@ -1946,7 +1947,7 @@
     "src/lib/estimate/v4/ventPitotPortCapsProjectPReferenceR1.ts": "fa2b4a1b2acd595d66e3e25de1bba183999ec64d53052690860a1f3bf0a757a3",
     "src/lib/estimate/v4/vibrationOperationCompletionS2733.ts": "6122469fc21e1cd4fb2a409500461bb4f0dcfb42647687dffb07f228035a7aa5",
     "src/lib/estimate/v4/vvgngLsPowerCableR1.ts": "93f38232d47f0aebc6076211d7cbd28330ad2536d7a74b1c30515b3672084313",
-    "src/lib/estimate/v4/wallPaintConstructorS2735.ts": "1d44d15f619a3585f3969c3ebb662c2d42c96b5e10c2ebaf3946c5d621af7a43",
+    "src/lib/estimate/v4/wallPaintConstructorS2735.ts": "2b9d38d00d39ec53b4758d377f37825caab1a02359b0e1a6e620d1c51a182c9e",
     "src/lib/estimate/v4/woodCeilingFireproofCoatingKrer26R1.ts": "85ac311c6a688a054f0edf7ccca79d4be6b2d94dca812b0fa35476dc582064f2",
     "src/lib/estimate/v4/woodFireproofingLayerStrengtheningVariantsR1.ts": "e60a9925b1f8c2463ad2d53746626d2057df4abee17a8365c36bf91a7e263c71",
     "src/lib/estimate/v4/woodFireproofingLocalRepairVariantsR1.ts": "b568769e049499de0c336057bf0514af289a653caf2f510761ba24e280acde7a",
@@ -2398,6 +2399,7 @@
     "tests/estimateNorms/temporaryTrussNodeStrengtheningDevicesKrer46R1.contract.test.ts": "29526da51dfee3861e319dd08d5c050de466a6755b0f4d4ec313516857cb8a43",
     "tests/estimateNorms/temporaryUpperBeamChordStrengtheningDevicesKrer46R1.contract.test.ts": "55b297096439835ffa64954922f0eb8af18d0136dbe4ce960d1c0123701a0a68",
     "tests/estimateNorms/temporaryVerticalProtectiveBarrierBoardFrameKrer46R1.contract.test.ts": "cc5d45d3af2c98a187e62dbb2aa70554b5f31fbe4825e4fc280233e895832bc7",
+    "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": "ae64cee09864fc6d7a131600de012b9aa30c1202983fc07afb5e15a97e0742eb",
     "tests/estimateNorms/woodCeilingFireproofCoatingKrer26R1.contract.test.ts": "a8f9e28a391190aca9a59d98a6e0ad7c76ba149fadc7405cea9c8ee35180050a",
     "tests/estimateNorms/woodFireproofingLayerStrengtheningVariantsR1.contract.test.ts": "1113af0f6871d64c1a401307da5e8073affbee273a11fe522cb651bc34f402f5",
     "tests/estimateNorms/woodFireproofingLocalRepairVariantsR1.contract.test.ts": "589e7f07c1a2eecb49bf9256cedc3c3db371c94eef9e2caf6b989aaac34502d5",
@@ -3609,7 +3611,7 @@
     "node_modules/zustand/vanilla.d.ts": "4d7d964609a07368d076ce943b07106c5ebee8138c307d3273ba1cf3a0c3c751"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "961d03b8b2f4dc9cce60b8d049516161a9fd1198b145ac846a9f59fc063dafcf",
+  "originalSeedManifestSha256": "e39c32149e7ffbd80b2b763d434ebaa84caef89b3fc42dc6a23ab2ab2b9f95eb",
   "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -3623,47 +3625,35 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2443,
+    "sourceFiles": 2445,
     "dependencyFiles": 1160,
-    "sourceBytes": 132949997
+    "sourceBytes": 133051983
   },
   "candidateSourceComposition": {
-    "contract": "verified-composition-required-for-pdf/r608",
+    "contract": "source-authored-complete-reference-method-existing-ordinary-compiler/r612",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
-      "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": {
-        "sha256": "41dd9bfc0d8e56cc7cbe9e079357ff3cf7a5ecd8a004c11898185937882e7671"
-      },
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": {
-        "sha256": "c90e4eb0f151d47db0ec65bdc0db440bf15a66dc4eb538e95f46f678fd496eca"
-      },
-      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": {
-        "sha256": "3d399c56d0b0b318c30014659ff92d54483d1950437443c45ea958460ecc54de"
+        "sha256": "d5f25622e12c23bd10408c1b7ef22ffffdd5e2f3b1bbfabd8a18edf077b6d9c0"
       },
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": {
-        "sha256": "8daabbdda8915a8d45703758241689e96c97bc178d16a8b40ccf20bffc774f60"
-      },
-      "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": {
-        "sha256": "4c0734caf4ae742e4c9a35d81ac45113f23589f25dd079c4f1bb4b99053d91de"
-      },
-      "docs/estimate-operation-resource-acceptance.md": {
-        "sha256": "59dbba746ffd1a525dfaddd12bb4d48fd069a182767aa8bcd5df4a11a96b4a3c"
-      },
-      "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": {
-        "sha256": "0306868be8cc0ef91cdc3b0ea1c287017652390078741cc0616d69bbe9d0b8a8"
-      },
-      "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx": {
-        "sha256": "35cef9db6a5883611ff3de8b117ebf81f7c5ee780c80bc9148c695ec507e47fe"
-      },
-      "src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx": {
-        "sha256": "1afa841d6060dff1899eb2da47fd3ce5a5ed27312f8dbdc5dc139a09cdfbfbaa"
+        "sha256": "74daf96e9fceda55ec5ecf2161a1b323c01ec725f5d621103866c755a7faff30"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": {
-        "sha256": "039b6eca90cae33296d9833c871b8d41b470411374bfab55ddc02858d2c3659b"
+        "sha256": "90aef6bb713b5a490858cd2017fea20bd41a85b8c323f800d83dc3d31055f7de"
       },
-      "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx": {
-        "sha256": "30a75b25106d0b4e71538e5587fdd2b9d7d1ce66cf9f88612ed65bfd3276169e"
+      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": {
+        "sha256": "4f3edff38b4f4a05035e9c10263dbabdcb821cae87be3ef4cb1d9d8312620e55"
+      },
+      "src/lib/estimate/v4/wallPaintConstructorS2735.ts": {
+        "sha256": "2b9d38d00d39ec53b4758d377f37825caab1a02359b0e1a6e620d1c51a182c9e"
+      },
+      "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": {
+        "sha256": "3c54b07a2f8f9565d210ec571611f219264e7594837d9efa7146e1ceca5dd92c"
+      },
+      "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": {
+        "sha256": "ae64cee09864fc6d7a131600de012b9aa30c1202983fc07afb5e15a97e0742eb"
       }
     }
   },
