@@ -6,6 +6,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  readSync,
   renameSync,
   statSync,
   writeFileSync,
@@ -95,26 +96,38 @@ function backendRuntimeClosureSha256(entryPath: string): string {
     const absolute = resolve(path);
     if (visited.has(absolute)) return;
     visited.add(absolute);
-    const source = readFileSync(absolute, "utf8");
+    let source: string | null = readFileSync(absolute, "utf8");
     const importPattern = /(?:from\s+|import\s*)["'](\.{1,2}\/[^"']+)["']/gu;
     const imports = [...source.matchAll(importPattern)]
       .map((match) => resolveLocalImport(absolute, String(match[1] ?? "")))
       .filter((value): value is string => Boolean(value))
       .sort();
+    source = null;
     for (const imported of imports) visit(imported);
   };
   visit(entryPath);
   const hash = createHash("sha256");
+  const buffer = Buffer.allocUnsafe(64 * 1024);
   for (const path of [...visited].sort()) {
     hash.update(relative(process.cwd(), path).replace(/\\/gu, "/"));
     hash.update("\0");
-    hash.update(readFileSync(path));
+    const descriptor = openSync(path, "r");
+    try {
+      let count: number;
+      while ((count = readSync(descriptor, buffer, 0, buffer.length, null)) > 0) {
+        hash.update(buffer.subarray(0, count));
+      }
+    } finally { closeSync(descriptor); }
     hash.update("\0");
   }
   return hash.digest("hex");
 }
 
-function portOwner(): { pid: number; name: string; commandLine: string } | null {
+async function portOwner(): Promise<{ pid: number; name: string; commandLine: string } | null> {
+  // A closed port has no listener to inspect. Avoid loading another shell and
+  // its CIM modules alongside the completed Web graph on a quiescent startup.
+  // A listener appearing later still has to pass the exact runtime tuple.
+  if (!await portOpen()) return null;
   const script = [
     `$c=Get-NetTCPConnection -LocalPort ${BACKEND_PORT} -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1`,
     "if($null -eq $c){'null';exit 0}",
@@ -466,7 +479,7 @@ async function main(): Promise<void> {
     })}\n`);
     return;
   }
-  const ownerBefore = portOwner();
+  const ownerBefore = await portOwner();
   if (ownerBefore && !isOwnedBackend(ownerBefore)) throw new Error(`R568_BACKEND_FOREIGN_OWNER_PID_${ownerBefore.pid}`);
   const identityBefore = ownerBefore ? await runtimeIdentity() : null;
   if (ownerBefore && !manifestOwnedByCurrentWorktree(identityBefore)) {

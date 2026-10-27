@@ -495,7 +495,8 @@ $env:LOCAL_DEVELOPER_SOURCE_TREE_HASH = [string]$Identity.sourceTreeHash
 $env:LOCAL_DEVELOPER_PRODUCT_SOURCE_HASH = [string]$Identity.productSourceHash
 $env:LOCAL_DEVELOPER_JS_BUNDLE_FINGERPRINT = [string]$Identity.jsBundleFingerprint
 
-$DeferBackendForColdBundle = -not $PreflightOnly -and -not $PrepareBuildOnly -and -not $ReuseTransformCache `
+$DeferBackendForColdBundle = -not $PreflightOnly -and -not $PrepareBuildOnly `
+  -and (-not $ReuseTransformCache -or $WarmupTarget -eq 'Web') `
   -and @(Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue).Count -eq 0
 $BackendManagerRaw = & $Node --import tsx (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") $(if ($PreflightOnly) { "--preflight" } elseif ($DeferBackendForColdBundle) { "--prepare-only" }) 2>$null
 if ($LASTEXITCODE -ne 0 -or -not $BackendManagerRaw) {

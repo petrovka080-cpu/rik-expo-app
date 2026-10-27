@@ -1,11 +1,59 @@
-import { readFileSync, mkdtempSync, existsSync, readdirSync, unlinkSync, rmdirSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readSync, openSync, closeSync, writeFileSync, statSync, mkdtempSync, existsSync, readdirSync, unlinkSync, rmdirSync } from "node:fs";
+import { resolve, dirname, relative } from "node:path";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
+import { runInNewContext } from "node:vm";
+import ts from "typescript";
 
 const source = (relative: string) => readFileSync(resolve(relative), "utf8");
 
 describe("whole-app developer review runtime", () => {
+  it("streams the exact existing closure hash across imports, cycles, UTF-8 and multiple read blocks", () => {
+    const ast = ts.createSourceFile("manager.ts", source("scripts/dev/ensureLocalDeveloperCanonicalBackend.ts"), ts.ScriptTarget.Latest, true);
+    const declarations = ast.statements.filter(statement => ts.isFunctionDeclaration(statement)
+      && ["resolveLocalImport", "backendRuntimeClosureSha256"].includes(statement.name?.text ?? ""));
+    expect(declarations).toHaveLength(2);
+    const code = ts.transpileModule(declarations.map(statement => statement.getText(ast)).join("\n"),
+      { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+    const folder = mkdtempSync(resolve(tmpdir(), "gox-closure-stream-"));
+    const files = [resolve(folder, "entry.ts"), resolve(folder, "child.ts"), resolve(folder, "data.json")];
+    try {
+      writeFileSync(files[0], "import './child';\nimport data from './data.json';\n// Окраска\n");
+      writeFileSync(files[1], "export * from './entry';\n// Цикл сохраняет одного владельца\n");
+      writeFileSync(files[2], JSON.stringify({ text: "Ресурс и оснастка — ".repeat(12000) }));
+      const expected = createHash("sha256");
+      for (const path of [...files].sort()) expected.update(relative(process.cwd(), path).replaceAll("\\", "/"))
+        .update("\0").update(readFileSync(path)).update("\0");
+      const reads = jest.fn(readSync);
+      const hashClosure = runInNewContext(code + ";backendRuntimeClosureSha256", {
+        readFileSync, readSync: reads, openSync, closeSync, existsSync, statSync,
+        resolve, dirname, relative, createHash, Buffer, process,
+      });
+      expect(hashClosure(files[0])).toBe(expected.digest("hex"));
+      expect(reads.mock.calls.length).toBeGreaterThan(6);
+      expect(reads.mock.calls.every(call => call[3] <= 64 * 1024)).toBe(true);
+    } finally { for (const path of files) unlinkSync(path); rmdirSync(folder); }
+  });
+  it("inspects the actual listener owner only for an open port and keeps owner inspection errors fail-closed", async () => {
+    const manager = source("scripts/dev/ensureLocalDeveloperCanonicalBackend.ts");
+    const ast = ts.createSourceFile("manager.ts", manager, ts.ScriptTarget.Latest, true);
+    const declaration = ast.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "portOwner");
+    if (!declaration) throw new Error("ACTUAL_PORT_OWNER_FUNCTION_REQUIRED");
+    const code = ts.transpileModule(declaration.getText(ast), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+    const execFileSync = jest.fn(() => JSON.stringify({ pid: 123, name: "node.exe", commandLine: "serveCanonicalEstimateLocalR1.ts" }));
+    let open = false;
+    const readOwner = runInNewContext(code + ";portOwner", { portOpen: async () => open, execFileSync, BACKEND_PORT: 8765 });
+    expect(await readOwner()).toBeNull();
+    expect(execFileSync).not.toHaveBeenCalled();
+    open = true;
+    expect(await readOwner()).toMatchObject({ pid: 123, name: "node.exe" });
+    expect(execFileSync).toHaveBeenCalledTimes(1);
+    execFileSync.mockImplementationOnce(() => { throw new Error("CIM_FAILED"); });
+    await expect(readOwner()).rejects.toThrow("CIM_FAILED");
+    expect(manager).toContain("const ownerBefore = await portOwner()");
+    expect(manager).toContain('invariant(runtimeIdentityMatches(identity, desired), "R568_RUNTIME_IDENTITY_TUPLE_RED")');
+  });
   it.each(["powershell", "pwsh"])("frontend build stamp persists one real timestamp per exact tuple and refuses a modified record (%s)", (shell) => {
     const folder = mkdtempSync(resolve(tmpdir(), "gox-build-stamp-"));
     const quote = (value: string) => "'" + value.replaceAll("'", "''") + "'";
@@ -41,7 +89,7 @@ describe("whole-app developer review runtime", () => {
       rmdirSync(folder);
     }
   });
-  it("cached startup scheduling runs normal backend admission before cached bundles and preserves cold/preflight modes", () => {
+  it("Web startup keeps backend execution after bundle completion even with transform cache, and preserves combined/preflight/prepare modes", () => {
     const launcher = resolve("scripts/dev/startWholeAppDeveloperReview.ps1").replaceAll("'", "''");
     const command = [
       "$ErrorActionPreference='Stop';$tokens=$null;$parseErrors=$null",
@@ -49,14 +97,14 @@ describe("whole-app developer review runtime", () => {
       "if($parseErrors.Count){throw 'LAUNCHER_PARSE_FAILED'}",
       "$assignment=@($ast.FindAll({param($node)$node -is [System.Management.Automation.Language.AssignmentStatementAst] -and $node.Left.Extent.Text -eq '$DeferBackendForColdBundle'},$true));if($assignment.Count -ne 1){throw 'UNIQUE_ASSIGNMENT_REQUIRED'}",
       "function Get-NetTCPConnection {param($LocalPort,$State,$ErrorAction)if($portOpen){[pscustomobject]@{OwningProcess=1}}}",
-      "$cases=@(@{cache=$false;preflight=$false;prepare=$false;open=$false},@{cache=$true;preflight=$false;prepare=$false;open=$false},@{cache=$false;preflight=$true;prepare=$false;open=$false},@{cache=$false;preflight=$false;prepare=$true;open=$false},@{cache=$false;preflight=$false;prepare=$false;open=$true})",
-      "$result=@(foreach($case in $cases){$ReuseTransformCache=$case.cache;$PreflightOnly=$case.preflight;$PrepareBuildOnly=$case.prepare;$portOpen=$case.open;& ([ScriptBlock]::Create($assignment[0].Right.Extent.Text))});ConvertTo-Json -InputObject $result -Compress",
+      "$cases=@(@{target='Combined';cache=$false;preflight=$false;prepare=$false;open=$false},@{target='Combined';cache=$true;preflight=$false;prepare=$false;open=$false},@{target='Web';cache=$true;preflight=$false;prepare=$false;open=$false},@{target='Web';cache=$true;preflight=$true;prepare=$false;open=$false},@{target='Web';cache=$true;preflight=$false;prepare=$true;open=$false},@{target='Web';cache=$true;preflight=$false;prepare=$false;open=$true})",
+      "$result=@(foreach($case in $cases){$WarmupTarget=$case.target;$ReuseTransformCache=$case.cache;$PreflightOnly=$case.preflight;$PrepareBuildOnly=$case.prepare;$portOpen=$case.open;& ([ScriptBlock]::Create($assignment[0].Right.Extent.Text))});ConvertTo-Json -InputObject $result -Compress",
     ].join("\n");
     const result = spawnSync("powershell", ["-NoProfile", "-NonInteractive", "-Command", command], {
       cwd: resolve("."), windowsHide: true, encoding: "utf8",
     });
     expect(result.status).toBe(0);
-    expect(JSON.parse(result.stdout)).toEqual([true, false, false, false, false]);
+    expect(JSON.parse(result.stdout)).toEqual([true, false, true, false, false, false]);
   });
   it("direct TypeScript loader executes the real manager's early mode guard without database effects", () => {
     const result = spawnSync(process.execPath, ["--import", "tsx",
@@ -76,7 +124,7 @@ describe("whole-app developer review runtime", () => {
       cwd: resolve("."), windowsHide: true, encoding: "utf8",
     });
     expect(result.error).toBeUndefined();
-    expect(result.status).toBe(0);
+    expect({ status: result.status, stderr: result.stderr }).toEqual({ status: 0, stderr: "" });
     const identity = JSON.parse(result.stdout);
     for (const field of ["sourceTreeHash", "productSourceHash", "jsBundleFingerprint"]) {
       expect(identity[field]).toMatch(/^[0-9a-f]{64}$/u);

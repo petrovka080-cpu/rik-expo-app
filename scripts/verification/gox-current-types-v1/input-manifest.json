@@ -3,7 +3,7 @@
   "snapshotKind": "CURRENT_FULL_AFFECTED_TYPES_AND_EXACT_OPERATION_RESOURCE_JEST_SOURCE_ONLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
-    ".github/workflows/gox-current-core-types-v1.yml": "55a38c804cf0d678dededd366308d5356e2eaf501805df8d5cdb6e7f9509f728",
+    ".github/workflows/gox-current-core-types-v1.yml": "cf618278ec7d69d7fdd37f2305d09283184fe6432d4f6a9543f260b591eb8d39",
     "AGENTS.md": "66eb1253ef479a135ceb44d7e6d7bd71676e9bbef999ac0cccbb67008c935040",
     "app/(tabs)/office/index.tsx": "4773281a7daac103265ce6a5d28828f22b7cc1f733cece454dbc4105634d3e8f",
     "app/_layout.tsx": "db6e356a662020d15c8e9dcbde423fefb8dd2bb861e3f240d4434ce69d5f7be8",
@@ -292,7 +292,7 @@
     "jest.setup.js": "88956f4429b53e19936bb3c0704c524fd097e8a68b457691716c1cd5753ae1c1",
     "package-lock.json": "ee6621c44b5b63a18b8f7c7e164d39608621d55990f4fac817c00a1e5203c1fe",
     "package.json": "c23e73dec82fe210a856fb9f0340848afcab68a5a5dc55a144ba028d466eef96",
-    "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts": "e50c7b9caf5a4594dbf8de0180069be2633a8f2686d40513941a9fced7a9922e",
+    "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts": "de6175bbbd67d022bf2e18be72cea4d7e26bafaf06cb9278b11f2cb00cadf33d",
     "scripts/dev/runFormworkFramiXlifePileCapDistinctProjectDifferentialWebAcceptance.ts": "612481635ec44d67e5104630ef0b8b8df961502a6579a58e8c35a5ac86e0446e",
     "scripts/dev/runFormworkFramiXlifePileCapDistinctProjectFamilyBackendAcceptance.ts": "efa31fc5cec085e497fb01e09361080cad2b6357e2de8629356f51c0da69362f",
     "scripts/dev/runS2716RoadsBackendAcceptance.ts": "663aaa5aea0a00398a2ad572972054dab9753a83470868dcb3c5c93197950c88",
@@ -2453,15 +2453,17 @@
     "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": "b85b7496155f070c836fa08ecc8d25142d41d6ffb56572e8c428774999cc2f88",
     "app.json": "ef89bea7e24439ffadddda58cbe91552509420b4326bf2bbd2ace7d6bbca6d4e",
     "metro.config.js": "96719ad2eacd8a8ed5357c13ee057595992ad8e3cd8dbd22372b114137d0d360",
-    "scripts/dev/startWholeAppDeveloperReview.ps1": "b4269f6c8ff1c5f1b0586b945de6738bd900d2935a2b36f6fb62b632661ef860",
+    "scripts/dev/startWholeAppDeveloperReview.ps1": "5fc81f8008eb239774a4ae65e67f6356cc43feac1f3b4c2f00ab67d83a385a88",
     "scripts/dev/metroGeneratedRuntimeExclusion.test.js": "c8a736b039156353ed598b0927124b37516c0d18f05d8ff700aa1a7a92a82b47",
     "scripts/dev/wholeAppDevelopmentAsyncRoutes.test.js": "7136f402d6e3c84fa90b3f6f9d734b07b14b1f8c8152788300fd7b9c9f4ddb2c",
     "scripts/dev/warmWholeAppDeveloperRuntime.cjs": "dba64055b8dbb34144f713eac6bef69fb21b0fd242982b6e3bfe7eae1b234017",
     "scripts/dev/warmWholeAppDeveloperRuntime.test.ts": "8d0f7f6173deb52b201d0b4d6aad472eb1310d6880b5adde7d64163b257f06ec",
-    "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "6adb38bbc7159de59594cdf49d371fe41255c1559606e9ae30f75addeb48dddc",
+    "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "3b42594edb1e279c975cc57c59b8cf67fb8ca4c4236ff405700dcf9e4eadbef4",
     "scripts/dev/wholeAppEmbeddedBuildTarget.test.js": "d06db891ac5b9e8d525042416d8ddb1a48535805ae9bbf2cd4c6c880b0efe307",
     "src/features/consumerRepair/ConsumerRepairEstimateNotes.tsx": "4740e1e39093c4297dacc97ee56468a3d01535d0e67c860601663d081094989a",
-    "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx": "2f0f3cd679b46535c9f1a110374d15419bdd0ab715e28a379f9e7c68e4ac32e8"
+    "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx": "2f0f3cd679b46535c9f1a110374d15419bdd0ab715e28a379f9e7c68e4ac32e8",
+    "scripts/release/computeReleaseFingerprints.ts": "4ac1915c343f0d6b9efe96ddabd0ee097506c96d78415927891e251952c72b7c",
+    "android/app/src/main/res/xml/network_security_config.xml": "c18af8f6bc8bce27c4bd5b904697ae834f7977e70d2937e6f26a6c559331209a"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3640,19 +3642,19 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2460,
+    "sourceFiles": 2462,
     "dependencyFiles": 1160,
-    "sourceBytes": 133352863
+    "sourceBytes": 133366030
   },
   "candidateSourceComposition": {
-    "contract": "metadata-notes-preserve-exact-saved-resources/r687",
-    "actualUiDefect": "R681 orphan custom note and lost canonical category admission",
-    "coverage": "Save/reopen/delete note outside resources; exact source/revision/category/quantity preserved; stale owner/revision rejected",
-    "sourceOnly": true,
+    "contract": "existing-current-types-and-developer-runtime-only-followup/r698",
+    "referenceCommonCommit": "20e3f94234317f64afd5eb1ef7da536d8bb614d2",
+    "referenceCommonRun": 40513302536,
+    "referenceCommonTestsPassed": 609,
+    "commonSourcePinsUnchanged": true,
+    "runtimeOnly": true,
     "actualApplicationAcceptance": false,
-    "previousRun": 40506922129,
-    "previousRunTypesAndSevenGroupsPassed": true,
-    "previousDevBatchRejectedBeforeExecution": true
+    "reason": "Actual previous developer batch33pass2fail because exact loader/XML inputs absent; add pinned closure, actual startup scheduling and exact streaming hash/owner tests; preserve all guards and limits"
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",

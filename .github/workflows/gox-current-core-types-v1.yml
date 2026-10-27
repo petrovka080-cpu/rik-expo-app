@@ -1,9 +1,16 @@
 name: GOX exact current core types
-run-name: GOX current core types ${{ github.sha }}
+run-name: GOX ${{ inputs.validation_scope || 'all' }} ${{ github.sha }}
 on:
   push:
     branches: ['codex/gox-types-*']
   workflow_dispatch:
+    inputs:
+      validation_scope:
+        description: Exact validation scope; runtime scope retains type checking and does not claim common Jest execution
+        required: true
+        default: all
+        type: choice
+        options: [all, developer-runtime]
 permissions:
   contents: read
 concurrency:
@@ -11,6 +18,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   full-affected-types:
+    if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'GOX developer runtime only:') }}
+    name: ${{ inputs.validation_scope == 'developer-runtime' && 'Current types and developer runtime only' || 'Full current types and affected tests' }}
     runs-on: windows-2022
     timeout-minutes: 25
     env:
@@ -42,6 +51,7 @@ jobs:
           GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
         run: python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT"
       - name: Exact affected Jest - admission
+        if: ${{ inputs.validation_scope != 'developer-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -51,6 +61,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch admission
       - name: Exact affected Jest - contracts
+        if: ${{ inputs.validation_scope != 'developer-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -60,6 +71,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch contracts
       - name: Exact affected Jest - owners
+        if: ${{ inputs.validation_scope != 'developer-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -69,6 +81,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch owners
       - name: Exact affected Jest - ui-render
+        if: ${{ inputs.validation_scope != 'developer-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -78,6 +91,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-render
       - name: Exact affected Jest - ui-cold
+        if: ${{ inputs.validation_scope != 'developer-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -87,6 +101,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-cold
       - name: Exact affected Jest - ui-contract
+        if: ${{ inputs.validation_scope != 'developer-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -96,6 +111,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-contract
       - name: Exact affected Jest - ui-procurement
+        if: ${{ inputs.validation_scope != 'developer-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
