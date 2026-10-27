@@ -1215,7 +1215,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "76d345c6cdf0ecbbf335aa51dce6a6b546bd904e2951a53a70ca5b167f0e5f7e",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "873d3f568af85010f81322ea53470ba32010818dd1f5f02ac5c4a2cdc43c4182",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "60da3042d4b2f442d59fb975b768b0b099477764ee259c28f9cdebf24c7d6131",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -1223,7 +1223,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection.ts": "5889ba9e5c3a53c2f0609bb1c116c52b95018a50292a37dc61f954dd22b56b23",
     "src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity.ts": "0a3de9780795f25367ca73596b3933e60f7c75cf261b764d9ea4ac82089f2d36",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts": "e5f3a5427ddfbe9c68ec38b2adc3f622f528c601a498ec8f0f6aa9829bf9dcb7",
-    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "13d53fea5697402fd7bad93b7633fb56652a268782b5068079e9cca044000495",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "5136220626daed28b16f6d03188d73e6337b24d400ff6ecb1fb04991fab8dfd7",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts": "40486f1c7f0e4f58e98efcba5960d71ca6b32f38c24752966a43a128b5bb30e5",
     "src/lib/estimate/backendPlatform/canonicalEstimateConditionProfilesV1.ts": "ae0057c9b01aede2046211ef59a1ed29be0487e9845292a0ba6374395da3db43",
     "src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts": "e8b0b7462638944ca7d314227845e8f313ca8e932fc115b6e94a3058f130796f",
@@ -1253,7 +1253,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "a0a61d3e702b8a57c5a98f77d1306170dfcf34700a34ab506c9a7b7d8c6622d1",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "fd96029227f6aa2ceb3b2ae36a19d212f94156cf9387d8fe5a3adf91a94a980e",
+    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "50095660dc8943927e24ffbf7f7124f39239beafff9a84df5f959e2140d56b14",
     "src/lib/estimate/backendPlatform/canonicalEstimateSearchInput.ts": "8db129b35d8f80b05a79376336fdfa4222a9dcb7c51288f1eae3d24403d62139",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
     "src/lib/estimate/backendPlatform/canonicalExactConditionalSuccessorMigrationV1.ts": "914d3aaf669a97e2f11231c887272a0e4c49206c22782d732ff840c55731d47e",
@@ -1831,7 +1831,7 @@
     "src/lib/estimate/v4/multiDomainReferencePassportsV4.ts": "0e4dbd02a6bd4034122272befd672a7028d6eb4398afaefd12624d0dbd85ef3d",
     "src/lib/estimate/v4/multiDomainReferenceProductionBindingV4.ts": "78a15dc6a1851d33cf655013df7841d30cab16c846ed3d566a0e16252a2f8311",
     "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts": "8ac1d2591b435dd786666be397b28a410cf73560410a8e87ed14fdf2a2bd6595",
-    "src/lib/estimate/v4/opticalFiberSplicingR1.ts": "26fba4d79b585db6c9adf9a59233fa038e2285d72ee8096209235c9c48626397",
+    "src/lib/estimate/v4/opticalFiberSplicingR1.ts": "64069c4bc8cafa6673c87f5e76483c05cd0627210a0fe5b8f5c9290bbae0aa0f",
     "src/lib/estimate/v4/optionalAutomaticOwnerCompositionR1.ts": "02422786fbc67034956a3153348d4594c85693365a23d80b54b80791670aaabb",
     "src/lib/estimate/v4/p31Ep341213PhysicalReferenceR1.test.ts": "6f18a5819358e542dfe5ed598d4105178dd386dbd13c9c025b502f0bb0a37323",
     "src/lib/estimate/v4/p31Ep341213PhysicalReferenceR1.ts": "967212188a7e474be52eae2ae6683a544d2c227555a9372cd652c30ee565e2b3",
@@ -1943,7 +1943,7 @@
     "src/lib/estimate/v4/temporaryTrussNodeStrengtheningDevicesKrer46R1.ts": "ff139780e577e1d0132e3bcb15aae81846ac30188438e1c31c0ab721e520b829",
     "src/lib/estimate/v4/temporaryUpperBeamChordStrengtheningDevicesKrer46R1.ts": "b617da6fce1cd753506d0a23802e44fc10d358292e37e230141b968578b061b5",
     "src/lib/estimate/v4/temporaryVerticalProtectiveBarrierBoardFrameKrer46R1.ts": "650a13f18831625ca6c48fae052308e893f71a283c73b40976422ce44d58b1a7",
-    "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts": "12d96f9a6fc8ed71165203c65210838d24808fd4bdaa4e4fbf4f89369222d660",
+    "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts": "06ebce299842f747f0c042414d59b4f8765cd9d9ca8c36f4b0e8728cdf310078",
     "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.ts": "2058c381854bb280ae4789a7be10bcca39ad879f5e2c0ae6f5d365c23ef1abc1",
     "src/lib/estimate/v4/validateProfessionalEstimateV4.ts": "16706551d1db837090c0bd8acf197f32fa94d5a9c67af846e5b150d512ce93cd",
     "src/lib/estimate/v4/ventPitotPortCapsProjectPReferenceR1.test.ts": "2e5d58134bb596898ca06ffdd2af47fd360807f6f4b62d5166f1e8967f0a9ff9",
@@ -2471,7 +2471,7 @@
     "tests/estimateNorms/ledLuminaireInstallationR1.contract.test.ts": "5f05f8b677295f832f84209f0311e5872c2d0dbdbd620c39d34fe3842dc6ba7b",
     "scripts/estimate/r4a13/prepareMasterLedLuminaireInstallationSuccessor.ts": "94f2dfce5b6bfc7bcbd2760e8c8480e93a7eaa8744556dbdff38a431478eb6e8",
     "data/estimate-benchmarks/source-packs/optical-fiber-whole-splice-method-r1.json": "035ca8778f692b30272718709f47c2f575b693fb303c3d656a8003f78aae9d10",
-    "tests/estimateNorms/opticalFiberSplicingR1.contract.test.ts": "2fc5e054810b6bba1ff9f3de5f14127b6593b7d58b91bff295f1bdd7629b354f",
+    "tests/estimateNorms/opticalFiberSplicingR1.contract.test.ts": "119cd2c8dd4604e1053ac1703306b8a072ff2e25d41c827ac6174698e9c2a4aa",
     "scripts/estimate/r4a13/prepareMasterOpticalFiberSplicingSuccessor.ts": "836935607c14749ac7abdcc4ef86684fd0b4e4ef23196e7e7deef64b0d931e61",
     "data/estimate-benchmarks/source-packs/OPTICAL_WHOLE_QUANTITY_METHOD_R2.txt": "60a864d8381b86dd60effff82234a4715de2b2c69a4b85223486a9e4eb93c18d",
     "data/estimate-benchmarks/source-packs/cement-screed20mm-current-physical-cycle-r1.json": "5cd96daf8796e32c91b310a4970611b3ff740b3cf5d93b2491d53bf1b2501a42"
@@ -3655,7 +3655,7 @@
   "stats": {
     "sourceFiles": 2473,
     "dependencyFiles": 1160,
-    "sourceBytes": 135829504
+    "sourceBytes": 135837842
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -3716,6 +3716,47 @@
         "canonicalWrites": 0,
         "ciPassClaim": false
       }
+    },
+    "addressedSourceForwardR875": {
+      "parent": "2fd3e04c0a125f98b1eed5d2fcf9664e73c16f57",
+      "priorRun": 40576819539,
+      "priorActualDiagnostics": 25,
+      "changes": [
+        {
+          "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+          "beforeSha256": "13d53fea5697402fd7bad93b7633fb56652a268782b5068079e9cca044000495",
+          "afterSha256": "5136220626daed28b16f6d03188d73e6337b24d400ff6ecb1fb04991fab8dfd7"
+        },
+        {
+          "path": "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts",
+          "beforeSha256": "fd96029227f6aa2ceb3b2ae36a19d212f94156cf9387d8fe5a3adf91a94a980e",
+          "afterSha256": "50095660dc8943927e24ffbf7f7124f39239beafff9a84df5f959e2140d56b14"
+        },
+        {
+          "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts",
+          "beforeSha256": "76d345c6cdf0ecbbf335aa51dce6a6b546bd904e2951a53a70ca5b167f0e5f7e",
+          "afterSha256": "873d3f568af85010f81322ea53470ba32010818dd1f5f02ac5c4a2cdc43c4182"
+        },
+        {
+          "path": "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts",
+          "beforeSha256": "12d96f9a6fc8ed71165203c65210838d24808fd4bdaa4e4fbf4f89369222d660",
+          "afterSha256": "06ebce299842f747f0c042414d59b4f8765cd9d9ca8c36f4b0e8728cdf310078"
+        },
+        {
+          "path": "src/lib/estimate/v4/opticalFiberSplicingR1.ts",
+          "beforeSha256": "26fba4d79b585db6c9adf9a59233fa038e2285d72ee8096209235c9c48626397",
+          "afterSha256": "64069c4bc8cafa6673c87f5e76483c05cd0627210a0fe5b8f5c9290bbae0aa0f"
+        },
+        {
+          "path": "tests/estimateNorms/opticalFiberSplicingR1.contract.test.ts",
+          "beforeSha256": "2fc5e054810b6bba1ff9f3de5f14127b6593b7d58b91bff295f1bdd7629b354f",
+          "afterSha256": "119cd2c8dd4604e1053ac1703306b8a072ff2e25d41c827ac6174698e9c2a4aa"
+        }
+      ],
+      "scopeThreeCasesPassed": true,
+      "newCommonSourceFiles": 2,
+      "noAnyOrTsIgnoreAdded": true,
+      "actualDbOrNativeAcceptance": false
     }
   },
   "existingCiTypesStageBudget": {

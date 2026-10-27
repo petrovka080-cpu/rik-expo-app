@@ -1,6 +1,6 @@
 import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 import {canonicalEstimateSha256HexText} from './canonicalEstimateSha256';
-import {canonicalScopeRequirementDecisionV1} from './canonicalScopeRequirementV1';
+import {canonicalScopeRequirementDecisionV1,canonicalScopeRequirementDecisionIsOpenV1} from './canonicalScopeRequirementV1';
 import {
   auditCanonicalEstimateOperationResourcesV1, canonicalLegacyResourceKindV1,
   canonicalLegacyResourceNameV1, resolveCanonicalLegacyOperationDisplayV1,
@@ -83,7 +83,7 @@ export function canonicalEstimateSavedOperationAcceptanceV1(input: {
     const scope = canonicalScopeRequirementDecisionV1(graph.scopeRequirementDecisionV1);
     return row.need_state === 'CONDITION_REQUIRED' || trace.needState === 'CONDITION_REQUIRED'
       || (Array.isArray(trace.unresolvedConditionParameterIds) && trace.unresolvedConditionParameterIds.length > 0)
-      || (scope != null && scope.rowId === row.row_id && scope.status === 'OBJECT_FACT_REQUIRED');
+      || (scope != null && scope.rowId === row.row_id && canonicalScopeRequirementDecisionIsOpenV1(scope));
   }).map(row => String(row.row_id ?? ''));
   const acceptance = auditCanonicalEstimateOperationResourcesV1({unresolvedConditionRowIds,
     resources: input.resources.flatMap((row, index) => {

@@ -585,3 +585,29 @@ it('cold-reads the exact server passport snapshot, rejects drift and never upgra
   expect(()=>canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'pinned-release',definitionVersionId:'other',passport})).toThrow();
   expect(JSON.stringify({saved,resources,passport})).toBe(before);
 });
+
+
+it('R873 preserves known unverified scope through historical cold rows without manufacturing missing numeric inputs',()=>{
+  // Synthetic saved contract only. The real Core/cold path is also exercised by
+  // the existing whole BMS capacity case; this covers historical ordinary rows.
+  const scope={contractVersion:'canonical-scope-requirement-decision/v1',rowId:'test-known-scope',
+    groupId:'test-scope',groupTitleRu:'Проверка применимости',titleRu:'Подтвердить область применения',
+    reasonRu:'Выбранная технология не подтверждена для известной нагрузки',kind:'OBJECT_SCOPE',status:'SCOPE_UNVERIFIED',
+    coveringRowIds:[],originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false};
+  const resource={row_id:scope.rowId,title_ru:scope.titleRu,quantity:'1',unit_price:null,
+    included_in_estimate:false,included_in_procurement:false,procurement_eligible:false,
+    calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE',scopeRequirementDecisionV1:scope}}};
+  const cold=JSON.parse(JSON.stringify(resource)) as typeof resource,before=JSON.stringify(cold);
+  const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[cold]});
+  expect(result.issues).toContainEqual({code:'RESOURCE_CONDITION_UNRESOLVED',rowId:scope.rowId});
+  expect(result.pdfAllowed).toBe(false);
+  expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(result)).toThrow(expect.objectContaining({httpStatus:409,
+    message:'Не подтверждены обязательные условия выполнения работы. PDF пока недоступен.'}));
+  expect(cold.calculation_trace.resourceGraph.scopeRequirementDecisionV1.missingObjectFactParameterIds).toEqual([]);
+  expect(JSON.stringify(cold)).toBe(before);
+  // A future process duty is intentionally not an unverified application fact.
+  const future={...cold,calculation_trace:{resourceGraph:{...cold.calculation_trace.resourceGraph,
+    scopeRequirementDecisionV1:{...scope,kind:'PROCESS',status:'PROCESS_REQUIRED'}}}};
+  const futureResult=canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[future]});
+  expect(futureResult.issues.some(issue=>issue.code==='RESOURCE_CONDITION_UNRESOLVED')).toBe(false);
+});

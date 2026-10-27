@@ -27,7 +27,8 @@ import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {assertCanonicalProfessionalPdfMoneyCells,buildCanonicalProfessionalPdfProjection} from '../backendPlatform/canonicalProfessionalPdf';
 import {canonicalArtifactPreliminaryNeeds,type CanonicalArtifactRevision} from '../backendPlatform/canonicalEstimateArtifactContract';
-import {canonicalEstimateResourceOperationSections} from '../backendPlatform/canonicalEstimateOperationComposition';
+import {canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections} from '../backendPlatform/canonicalEstimateOperationComposition';
+import {canonicalScopeRequirementDecisionV1} from '../backendPlatform/canonicalScopeRequirementV1';
 import {consumerRepairRowIsTechnicalDetail,registerConsumerRepairRowVerifiedPresentation} from '../../../features/consumerRepair/consumerRepairRowMetadata';
 import {parseCanonicalPublicResourcePresentationV1,canonicalPublicResourceRowKindV1} from '../backendPlatform/canonicalPublicResourcePresentationV1';
 import {canonicalPublicHiddenResourceAlternativeIdsV1,type CanonicalPublicResourceAlternativeInputV1} from '../backendPlatform/canonicalPublicResourceAlternativesV1';
@@ -37,8 +38,32 @@ import {adaptCanonicalRevisionToStructuredEstimate} from '../backendPlatform/can
 import {buildStructuredEstimateRequestDraft} from '../../estimateStructuredPipeline/structuredEstimateRequestBinding';
 import {appendCanonicalBackendRevisionProjection} from '../../consumerRequests/consumerCanonicalBackendRevisionProjection';
 import {buildRequestEstimateViewModel} from '../../../features/consumerRepair/requestEstimateViewModel';
-import {ESTIMATE_PLATFORM_API_VERSION,type CanonicalEstimateCatalogItem,type CanonicalEstimateRevisionView} from '../backendPlatform/contracts';
+import {ESTIMATE_PLATFORM_API_VERSION,type CanonicalEstimateCatalogItem,type CanonicalEstimateRevisionView,type CanonicalEstimateParameterInputValue} from '../backendPlatform/contracts';
 import type {ConsumerRepairRequestItem,ConsumerRepairDraftBundle} from '../../consumerRequests/consumerRequestTypes';
+
+/** Compiler rows deliberately expose transport additions as unknown. These test
+ * boundaries validate the actual stored shape without changing any assertion. */
+function testRecord(value:unknown,label:string):Record<string,unknown>{
+ if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('TEST_EXPECTED_RECORD:'+label);
+ return value as Record<string,unknown>;
+}
+function testTrace(row:unknown):Record<string,unknown>{return testRecord(testRecord(row,'compiled_row').calculation_trace,'calculation_trace');}
+function testResourceGraph(row:unknown):Record<string,unknown>{return testRecord(testTrace(row).resourceGraph,'resourceGraph');}
+function testScopeDecision(row:unknown){
+ const decision=canonicalScopeRequirementDecisionV1(testResourceGraph(row).scopeRequirementDecisionV1);
+ if(!decision)throw Error('TEST_EXPECTED_EXISTING_SCOPE_DECISION');return decision;
+}
+function testRowTitle(row:unknown):string{
+ const title=testRecord(row,'compiled_row').title_ru;if(typeof title!=='string')throw Error('TEST_EXPECTED_STRING:title_ru');return title;
+}
+function testPrimitiveParameterInputs(values:Record<string,unknown>):Record<string,CanonicalEstimateParameterInputValue>{
+ const inputs:Record<string,CanonicalEstimateParameterInputValue>={};
+ for(const[id,value]of Object.entries(values)){
+  if(typeof value!=='string'&&typeof value!=='number'&&typeof value!=='boolean')throw Error('TEST_EXPECTED_PRIMITIVE_PARAMETER:'+id);
+  inputs[id]=value;
+ }
+ return inputs;
+}
 
 const factories={facade:facadePhysicalResourceCompletionR3,concrete:floorConcretePhysicalResourceCompletionR3,screed:floorScreedPhysicalResourceCompletionR3};
 const previous={facade:facadeMineralWoolOperationCompositionR2,concrete:floorConcreteSimplePresentationR2,screed:floorScreed20mmSimplePresentationR2};
@@ -423,7 +448,7 @@ describe('source-only complete physical cycle of exact20mm floor cement screed',
   const confirmed=cycleConfirmed();delete confirmed[cycleFact('waste_receiver')];delete confirmed[cycleFact('control_scope')];
   const r=await compileCycle(cycleSubmitted('0.5'),confirmed),receiver=r.preliminaryNeeds.find(need=>need.row_id===cycleRow('wash-water-receiver'))!;
   expect(receiver.quantity).toBeNull();expect(receiver.missing_parameter_ids).toEqual(expect.arrayContaining([cycleFact('waste_receiver'),cycleUnknown('wash-water-receiver')]));
-  expect(receiver.calculation_trace.unresolvedConditionParameterIds).toContain(cycleFact('waste_receiver'));
+  expect(testTrace(receiver).unresolvedConditionParameterIds).toContain(cycleFact('waste_receiver'));
   expect(r.rows.find(row=>row.row_id===cycleRow('one-small-room-flatness-minimum'))).toBeUndefined();
  });
  it('retains single mortar order with actual stock/reserve/quantum and does not allocate water to washing by area',async()=>{
@@ -436,7 +461,7 @@ describe('source-only complete physical cycle of exact20mm floor cement screed',
   const submitted=select('screed',cycleSubmitted(),'straightedge',separate,'2'),rowId=id('screed','straightedge','separate'),
    r=await compileCycle(submitted,cycleConfirmed(),{[rowId]:{titleRu:'TEST_ONLY двухметровая рейка',unitPrice:'77',provenance}}),row=r.rows.find(row=>row.row_id===rowId)!;
   expect(row).toMatchObject({quantity:'2',unit_price:'77',amount:'154',included_in_estimate:true});expect(r.rows.filter(row=>row.row_id===rowId)).toHaveLength(1);
-  const sections=canonicalEstimateResourceOperationSections(r.rows.map(row=>({rowId:row.row_id,titleRu:row.title_ru,operation:(row.calculation_trace.resourceGraph as Record<string,unknown>).operationCompositionV1})));
+  const sections=canonicalEstimateResourceOperationSections(r.rows.map(row=>({rowId:row.row_id,titleRu:testRowTitle(row),operation:testResourceGraph(row).operationCompositionV1})));
   expect(sections.find(section=>section.operation?.operationId===cycleOp('control'))?.sharedResources).toEqual(expect.arrayContaining([expect.objectContaining({rowId,titleRu:row.title_ru})]));
  });
  it('explicit pump3.25h owns included hose/coupling/nozzle once and is never seven-days*24h',async()=>{
@@ -448,11 +473,11 @@ describe('source-only complete physical cycle of exact20mm floor cement screed',
   for(const key of ['curing-hose','hose-coupling','water-nozzle']){
    const row=r.rows.find(row=>row.row_id===id('screed',key,'included-in-curing-pump-separate'))!;
    expect(row.included_in_estimate).toBe(false);expect(row.included_in_procurement).toBe(false);
-   expect(row.calculation_trace.resourceGraph).toMatchObject({includedInResourceOwnerRowId:id('screed','curing-pump','separate')});
+   expect(testResourceGraph(row)).toMatchObject({includedInResourceOwnerRowId:id('screed','curing-pump','separate')});
   }
  });
  it('exclusion of obligatory mortar or whole labour uses the existing common scope check',async()=>{
-  const normal=await compileCycle(),decision=(r:typeof normal)=>(anyCycleRow(r,cycleRow('whole-required-scope'))!.calculation_trace.resourceGraph as Record<string,any>).scopeRequirementDecisionV1;
+  const normal=await compileCycle(),decision=(r:typeof normal)=>testScopeDecision(anyCycleRow(r,cycleRow('whole-required-scope'))!);
   expect(decision(normal).status).toBe('INCLUDED');
   for(const suffix of ['ready-mortar-m150-order','whole-labor']){
    const r=await compileCycle(cycleSubmitted(),cycleConfirmed(),{[cycleId(suffix)]:{includedInEstimate:false,includedInProcurement:false,provenance}});
@@ -461,7 +486,7 @@ describe('source-only complete physical cycle of exact20mm floor cement screed',
  });
  it('ordinary full compatible stock can leave a zero purchase while the physical whole scope stays included',async()=>{
   const key='floor_cement_screed20mm_mortar',r=await compileCycle({...cycleSubmitted(),[key+'_stock']:'3',[key+'_stock_reference']:'TEST_ONLY compatible full stock'}),
-   decision=(anyCycleRow(r,cycleRow('whole-required-scope'))!.calculation_trace.resourceGraph as Record<string,any>).scopeRequirementDecisionV1;
+   decision=testScopeDecision(anyCycleRow(r,cycleRow('whole-required-scope'))!);
   expect(anyCycleRow(r,cycleId('ready-mortar-m150-order'))?.quantity).toBe('0');expect(decision.status).toBe('INCLUDED');
  });
  it('independent whole/source-position map detects removed physical functions and wrong consumers',()=>{
@@ -515,8 +540,8 @@ describe('R833 actual whole cement screed measured source continuation',()=>{
   expect(d.runtimeInput).toEqual({});expect(screedCycle.actualCurrent.declaredOldSourceNormParameters).toBe(5);
   expect(d.resources.find(r=>r.row_id===cycleId('open-tools-and-ppe'))!.inclusion_ast).toEqual({kind:'and',operands:[
    {kind:'greater_than',parameterId:screed.measurement.parameterId,value:0},{kind:'literal',value:false}]});
-  actual.formulas[0]={...actual.formulas[0]!,expression_source:actual.formulas[0]!.expression_source+'+0'};
-  expect(()=>cycleOverlay(actual,'ACTUAL_MEASURES_R1')).toThrow('SCREED_PHYSICAL_ACTUAL_R833_BODY_REQUIRED');
+  const changed={...actual,formulas:actual.formulas.map((formula,index)=>index===0?{...formula,expression_source:formula.expression_source+'+0'}:formula)};
+  expect(()=>cycleOverlay(changed,'ACTUAL_MEASURES_R1')).toThrow('SCREED_PHYSICAL_ACTUAL_R833_BODY_REQUIRED');
  });
  it.each([['125','2.55','4.375','49.3875'],['0.5','0.0102','0.0175','0.19755']]as const)
  ('uses whole20mm source rates and four measured balances for area%s without changing an owner',async(area,mortar,water,labour)=>{
@@ -535,7 +560,7 @@ describe('R833 actual whole cement screed measured source continuation',()=>{
  });
  it('keeps absent numerical measures a quantity need and rejects zero/negative capacity without inventing an applicability condition',async()=>{
   const missing=values();delete missing[did('wash_receiver_usable_l')];const r=await run(missing),need=r.preliminaryNeeds.find(n=>n.row_id===cycleRow('wash-water-receiver'))!;
-  expect(need).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});expect(need.calculation_trace.unresolvedConditionParameterIds??[]).toEqual([]);
+  expect(need).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});expect(testTrace(need).unresolvedConditionParameterIds??[]).toEqual([]);
   for(const capacity of [0,-1])await expect(run({...values(),[did('wash_receiver_usable_l')]:capacity})).rejects.toThrow();
  });
  it('keeps incomplete meter pairs UNKNOWN and rejects reversed/equal separate-water readings',async()=>{
@@ -550,7 +575,7 @@ describe('R833 actual whole cement screed measured source continuation',()=>{
  });
  it('cannot hide missing receiver conditions with known capacities and the same saved bytes retain the common PDF refusal',async()=>{
   const confirmed=cycleConfirmed();delete confirmed[cycleFact('waste_receiver')];const r=await run(values(),confirmed),need=r.preliminaryNeeds.find(n=>n.row_id===cycleRow('wash-water-receiver'))!;
-  expect(need.need_state).toBe('CONDITION_REQUIRED');expect(need.calculation_trace.unresolvedConditionParameterIds).toContain(cycleFact('waste_receiver'));
+  expect(need.need_state).toBe('CONDITION_REQUIRED');expect(testTrace(need).unresolvedConditionParameterIds).toContain(cycleFact('waste_receiver'));
   const revision={id:'TEST_ONLY_SAVED',release_id:'TEST_ONLY_R833',definition_version_id:'TEST_ONLY_DEFINITION',checksum_sha256:'a'.repeat(64),input_parameters:r.parameters},
    cold=JSON.parse(JSON.stringify({revision,resources:[...r.rows,...r.preliminaryNeeds]})),before=JSON.stringify(cold),
    acceptance=canonicalEstimateSavedOperationAcceptanceV1(cold);
@@ -567,7 +592,7 @@ describe('R833 actual whole cement screed measured source continuation',()=>{
  });
  it('keeps whole mortar and labour mandatory after source measurement and preserves stock/order as a separate supply balance',async()=>{
   for(const suffix of ['ready-mortar-m150-order','whole-labor']){const r=await run(values(),cycleConfirmed(),{[cycleId(suffix)]:{includedInEstimate:false,includedInProcurement:false,provenance}});
-   expect((anyCycleRow(r,cycleRow('whole-required-scope'))!.calculation_trace.resourceGraph as Record<string,any>).scopeRequirementDecisionV1.status).toBe('REQUIRED_RESOURCE_EXCLUDED');}
+   expect(testScopeDecision(anyCycleRow(r,cycleRow('whole-required-scope'))!).status).toBe('REQUIRED_RESOURCE_EXCLUDED');}
   const key='floor_cement_screed20mm_mortar',r=await run({...values(),[key+'_stock']:'1',[key+'_stock_reference']:'TEST_ONLY compatible stock',[key+'_reserve']:'0.2',[key+'_quantum']:'0.5'});
   expect(anyCycleRow(r,cycleId('ready-mortar-m150-consumed'))?.quantity).toBe('2.55');expect(anyCycleRow(r,cycleId('ready-mortar-m150-order'))?.quantity).toBe('2');
  });
@@ -586,7 +611,7 @@ describe('R833 actual whole cement screed measured source continuation',()=>{
   parameterSchema:d.parameters.map(p=>{const truth=p.truth_metadata,g=truth.guide as Record<string,unknown>;return{
    parameterId:p.parameter_id,ordinal:p.ordinal,valueType:p.value_type,unitId:p.unit_id,titleRu:p.title_ru,required:p.required,defaultValue:p.default_value,
    constraints:p.constraints_json,semanticParameterKey:truth.semantic_parameter_key,visibilityRole:truth.visibility_role,valueSourceRole:truth.value_source_role,
-   provenance:truth.provenance,preliminaryCompilationAllowed:truth.preliminary_compilation_allowed,requiredWhen:p.constraints_json.requiredWhen??truth.required_when,
+   provenance:truth.provenance,preliminaryCompilationAllowed:truth.preliminary_compilation_allowed,requiredWhen:p.constraints_json?.requiredWhen??truth.required_when,
    visibleWhen:truth.visible_when,formulaConsumers:truth.formula_consumers,resourceBranchConsumers:truth.resource_branch_consumers,
    guide:{guideKind:g.guide_kind,guideValidationPolicy:g.guide_validation_policy,sourceRole:g.source_role,sourceDocument:g.source_document,
     sourceLocator:g.source_locator,sourceSnapshotHash:g.source_snapshot_hash,guideShortRu:g.guide_short_ru,guideVersion:g.guide_version,
@@ -627,7 +652,7 @@ describe('R833 actual whole cement screed measured source continuation',()=>{
    expect(JSON.stringify(cold)).toBe(before);
   }
   const injected={...cycleSubmitted(),...cycleConfirmed(),[scope]:'ADDITIONAL_WASH_WATER_REQUIRED'},
-   raw=buildConsumerCanonicalPrecompileParameterSession({catalog:cat,draftId:'TEST_ONLY_UNTRUSTED_INJECTION',parameters:injected,
+   raw=buildConsumerCanonicalPrecompileParameterSession({catalog:cat,draftId:'TEST_ONLY_UNTRUSTED_INJECTION',parameters:testPrimitiveParameterInputs(injected),
     missingParameterIds:[],userExplicitParameterIds:Object.keys(injected),textExtractedParameterIds:[]}),
    rawCards=buildCanonicalParameterCards({session:raw,revision:null});
   for(const key of meterKeys)expect(rawCards.some(card=>card.key===did(key))).toBe(false);

@@ -1103,6 +1103,8 @@ export async function compileCanonicalEstimateCore(
         && !(r.calculation_trace as JsonRecord)?.physicalScopeExcludedV1
         && !(r.calculation_trace as JsonRecord)?.purchaseSupplyBlocksV1).map(r => r.row_id)) });
     if (scopeRequirementDecision) effectiveResourceGraph = {...effectiveResourceGraph,scopeRequirementDecisionV1:scopeRequirementDecision};
+    const scopeRequirementOpen = scopeRequirementDecision != null
+      && canonicalScopeRequirementDecisionIsOpenV1(scopeRequirementDecision);
     const costInclusion = resolveCanonicalResourceCostInclusion(
       commercialOwner ? { ...resource, resource_graph: effectiveResourceGraph } : resource, override,
     );
@@ -1295,7 +1297,8 @@ export async function compileCanonicalEstimateCore(
       || missingRequiredTitleSpecificationParameterIds.length > 0
       || missingRequiredConsumerParameterIds.length > 0
       || missingNumericRelationParameterIds.length > 0
-      || missingCommercialScopeParameterIds.length > 0 || inheritedSupplyBlocks.length > 0) {
+      || missingCommercialScopeParameterIds.length > 0 || inheritedSupplyBlocks.length > 0
+      || scopeRequirementOpen) {
       let needState: CanonicalEstimateCompiledPreliminaryNeed["need_state"] = missingNumericRelationParameterIds.length > 0
         || missingCommercialScopeParameterIds.length > 0
         || (inclusion.value == null && !inclusionOnlyWaitsForFormulaInputs)
@@ -1313,7 +1316,7 @@ export async function compileCanonicalEstimateCore(
         ...missingNumericRelationParameterIds,
         ...missingCommercialScopeParameterIds,
       ]);
-      if (scopeRequirementDecision) {
+      if (scopeRequirementOpen) {
         needState = 'CONDITION_REQUIRED';
         missingParameterIds = scopeRequirementDecision.missingObjectFactParameterIds;
       }
