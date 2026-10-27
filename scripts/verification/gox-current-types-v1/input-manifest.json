@@ -292,7 +292,7 @@
     "jest.setup.js": "88956f4429b53e19936bb3c0704c524fd097e8a68b457691716c1cd5753ae1c1",
     "package-lock.json": "ee6621c44b5b63a18b8f7c7e164d39608621d55990f4fac817c00a1e5203c1fe",
     "package.json": "c23e73dec82fe210a856fb9f0340848afcab68a5a5dc55a144ba028d466eef96",
-    "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts": "332493e07916adfad805cf9396743f622d91f28cc42dc48f19058bef290d43ec",
+    "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts": "90c63b5c7526a5e69939c805b9d0ebee93adcfe6f8904d908b097bab9603ec1b",
     "scripts/dev/runFormworkFramiXlifePileCapDistinctProjectDifferentialWebAcceptance.ts": "612481635ec44d67e5104630ef0b8b8df961502a6579a58e8c35a5ac86e0446e",
     "scripts/dev/runFormworkFramiXlifePileCapDistinctProjectFamilyBackendAcceptance.ts": "efa31fc5cec085e497fb01e09361080cad2b6357e2de8629356f51c0da69362f",
     "scripts/dev/runS2716RoadsBackendAcceptance.ts": "663aaa5aea0a00398a2ad572972054dab9753a83470868dcb3c5c93197950c88",
@@ -318,7 +318,7 @@
     "scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryReadSetR1.ts": "520d80b9c68bfa42894bcddce6be5c4d3ac1f506486d55ad851d909b46fe71a5",
     "scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryServerR1.ts": "3622f74a8c3a67db56d5da91287de9ad95d63b69cf7a6a1ba05ddc533f8f68b2",
     "scripts/estimate/backendMigration/roofRetainedHistoryContextR1.ts": "aa338df982d127439f35ab6d4e120ae49ca4e534ac75dcf15c9010b444e711ee",
-    "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": "b14b068ff68ec56976afd59c2b83ee0c0f3e056e206947febd438b56964cece7",
+    "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": "27ccaae4d51238fa5c92bf2ce09431baf2fc9e2df39a4cddf9f4185072025269",
     "scripts/estimate/batch001008R3/batch001DrywallGoldFixtureR3.ts": "a72df97a02221e699380c6b15ca17f1d62b2dc58eb25460ef1e956e2b57952e6",
     "scripts/estimate/buildAsphaltRelatedR8Inventory.ts": "c384816684ae0b6f3e68f47ffd385923a38c0a4558401630b046fe66719de270",
     "scripts/estimate/buildControlledPilotHealthDashboard.ts": "11eb9952703e60b0794ea3f2052022f9624f6ab8c4fd770539aec47c6e4d43b2",
@@ -2458,13 +2458,14 @@
     "scripts/dev/wholeAppDevelopmentAsyncRoutes.test.js": "7136f402d6e3c84fa90b3f6f9d734b07b14b1f8c8152788300fd7b9c9f4ddb2c",
     "scripts/dev/warmWholeAppDeveloperRuntime.cjs": "dba64055b8dbb34144f713eac6bef69fb21b0fd242982b6e3bfe7eae1b234017",
     "scripts/dev/warmWholeAppDeveloperRuntime.test.ts": "8d0f7f6173deb52b201d0b4d6aad472eb1310d6880b5adde7d64163b257f06ec",
-    "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "5093a32a13cbeca7b9a717ff2745fdb5a0aa5b32a3a1a95217d81b60e793c544",
+    "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "d5d61678d4751f4677cf617d4266745846cfbde03b385fbacb51264182c63af9",
     "scripts/dev/wholeAppEmbeddedBuildTarget.test.js": "d06db891ac5b9e8d525042416d8ddb1a48535805ae9bbf2cd4c6c880b0efe307",
     "src/features/consumerRepair/ConsumerRepairEstimateNotes.tsx": "4740e1e39093c4297dacc97ee56468a3d01535d0e67c860601663d081094989a",
     "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx": "2f0f3cd679b46535c9f1a110374d15419bdd0ab715e28a379f9e7c68e4ac32e8",
     "scripts/release/computeReleaseFingerprints.ts": "4ac1915c343f0d6b9efe96ddabd0ee097506c96d78415927891e251952c72b7c",
     "android/app/src/main/res/xml/network_security_config.xml": "c18af8f6bc8bce27c4bd5b904697ae834f7977e70d2937e6f26a6c559331209a",
-    "scripts/dev/printLocalDeveloperBuildIdentity.ts": "42942a12cc952bc4506b217b4d6e327bc85129cb85136b114577873d72bf6f38"
+    "scripts/dev/printLocalDeveloperBuildIdentity.ts": "42942a12cc952bc4506b217b4d6e327bc85129cb85136b114577873d72bf6f38",
+    "scripts/dev/waitForBackendStartupManagerExit.mjs": "9d898517bbe5214eef20a306cc17101c08e013d17a4d57de49cb5b8ae85b6ef3"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3643,25 +3644,22 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2463,
+    "sourceFiles": 2464,
     "dependencyFiles": 1160,
-    "sourceBytes": 133382120
+    "sourceBytes": 133391383
   },
   "candidateSourceComposition": {
-    "contract": "existing-resource-search-projection-current-types/r716",
+    "contract": "existing-manager-ipc-exit-barrier-and-lazy-existing-pdf/r727",
     "referenceCommonCommit": "20e3f94234317f64afd5eb1ef7da536d8bb614d2",
     "referenceCommonRun": 40513302536,
     "referenceCommonTestsPassed": 609,
     "referenceRuntimeCommit": "cb4ab997f4251d0ef4d7fc5998e1011a4c8f4cbc",
     "referenceRuntimeRun": 40522178810,
     "referenceRuntimeTestsPassed": 39,
-    "unchangedTestsNotRerun": true,
-    "actualResourceIndexEquivalence": {
-      "proofSha256": "7cb05a79826b9bc38a30e6602e5f4d1384367511511b617727a4b59cf58302f5",
-      "publicRows": 19313,
-      "publicIndexSha256": "74cbdefa2077f8becc54bb95cfc26ddf7ce9ba99c86828f5adf381001fc414f7",
-      "wireBytesSaved": 50047353
-    },
+    "referenceIndexTypesCommit": "ab6a63c9e88caa91c61fe728e919dcd1baeb8ff7",
+    "referenceIndexTypesRun": 40524520219,
+    "newExpectedRuntimeTests": 42,
+    "commonSourcePinsUnchanged": true,
     "actualApplicationAcceptance": false
   },
   "existingCiTypesStageBudget": {

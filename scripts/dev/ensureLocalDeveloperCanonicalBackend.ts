@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { connect } from "node:net";
 import { dirname, relative, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { Client } from "pg";
 
@@ -24,6 +25,7 @@ invariant(Number.isInteger(BACKEND_PORT) && BACKEND_PORT >= 1024 && BACKEND_PORT
   "R568_BACKEND_PORT_INVALID");
 const BACKEND_URL = `http://127.0.0.1:${BACKEND_PORT}`;
 const BACKEND_SOURCE = resolve("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts");
+const BACKEND_STARTUP_PRELOAD = resolve("scripts/dev/waitForBackendStartupManagerExit.mjs");
 const PURPOSE = "estimate_candidate_admission_r3";
 type BackendAuthProfile = "local_provider" | "whole_app_staging";
 const BACKEND_AUTH_PROFILE_INPUT = String(
@@ -93,7 +95,7 @@ function resolveLocalImport(importer: string, specifier: string): string | null 
   )) ?? null;
 }
 
-function backendRuntimeClosureSha256(entryPath: string): string {
+function backendRuntimeClosureSha256(entryPath: string, startupPaths: readonly string[] = []): string {
   const visited = new Set<string>();
   const visit = (path: string): void => {
     const absolute = resolve(path);
@@ -109,6 +111,7 @@ function backendRuntimeClosureSha256(entryPath: string): string {
     for (const imported of imports) visit(imported);
   };
   visit(entryPath);
+  for (const path of startupPaths) visit(path);
   const hash = createHash("sha256");
   const buffer = Buffer.allocUnsafe(64 * 1024);
   for (const path of [...visited].sort()) {
@@ -284,6 +287,7 @@ function startBackend(input: {
   const stdout = openSync(resolve(runtimeDirectory, "stdout.log"), "a");
   const stderr = openSync(resolve(runtimeDirectory, "stderr.log"), "a");
   const child = spawn(process.execPath, [
+    ...(RETURN_AFTER_START ? ["--import", pathToFileURL(BACKEND_STARTUP_PRELOAD).href] : []),
     "--import",
     "tsx",
     "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts",
@@ -291,9 +295,10 @@ function startBackend(input: {
     cwd: process.cwd(),
     detached: true,
     windowsHide: true,
-    stdio: ["ignore", stdout, stderr],
+    stdio: RETURN_AFTER_START ? ["ignore", stdout, stderr, "ipc"] : ["ignore", stdout, stderr],
     env: {
       ...process.env,
+      LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID: RETURN_AFTER_START ? String(process.pid) : "",
       CANONICAL_ESTIMATE_LOCAL_AUTH_MODE: "STRICT_SESSION_INTROSPECTION",
       CANONICAL_ESTIMATE_SUPABASE_AUTH_URL: input.authProviderUrl,
       CANONICAL_ESTIMATE_SUPABASE_AUTH_API_KEY: input.authPublicKey,
@@ -345,6 +350,7 @@ function startBackend(input: {
   closeSync(stderr);
   invariant(child.pid, "R568_BACKEND_PID_MISSING");
   child.unref();
+  if (RETURN_AFTER_START) child.channel?.unref();
   return child.pid;
 }
 
@@ -468,7 +474,7 @@ async function main(): Promise<void> {
     frontendSourceTreeHash: sourceTree,
     frontendProductSourceHash,
     frontendJsBundleFingerprint,
-    backendRuntimeSourceSha256: backendRuntimeClosureSha256(BACKEND_SOURCE),
+    backendRuntimeSourceSha256: backendRuntimeClosureSha256(BACKEND_SOURCE, [BACKEND_STARTUP_PRELOAD]),
     masterSha256: MASTER_SHA256,
     capabilityId: String(capability!.id ?? ""),
     authProviderUrlSha256: createHash("sha256").update(authProviderUrl).digest("hex"),

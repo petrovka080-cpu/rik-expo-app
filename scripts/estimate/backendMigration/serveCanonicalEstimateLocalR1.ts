@@ -63,7 +63,7 @@ import {
 } from "node:http";
 import { dirname, resolve } from "node:path";
 import { Pool, type PoolClient } from "pg";
-import { chromium, type Browser } from "playwright";
+import type { Browser } from "playwright";
 
 import { evaluateFormulaGraph } from "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import {
@@ -3678,7 +3678,10 @@ async function artifactBrowser(): Promise<Browser> {
   artifactBrowserInstance = null;
   if (artifactBrowserPromise) return artifactBrowserPromise;
 
-  const launch = chromium.launch({ headless: true });
+  // Load the existing PDF engine only when an artifact actually needs it.
+  // Assign the import-and-launch promise before awaiting either step so two
+  // concurrent PDF requests still share one browser and the same failure.
+  const launch = import("playwright").then(({ chromium }) => chromium.launch({ headless: true }));
   artifactBrowserPromise = launch;
   try {
     const browser = await launch;

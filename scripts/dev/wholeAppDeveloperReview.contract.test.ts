@@ -1,5 +1,6 @@
 import { readFileSync, readSync, openSync, closeSync, writeFileSync, statSync, mkdtempSync, existsSync, readdirSync, unlinkSync, rmdirSync } from "node:fs";
 import { resolve, dirname, relative } from "node:path";
+import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
@@ -9,6 +10,83 @@ import ts from "typescript";
 const source = (relative: string) => readFileSync(resolve(relative), "utf8");
 
 describe("whole-app developer review runtime", () => {
+  it("keeps the backend preload fail-closed for invalid parent, missing IPC and bounded parent lifetime", async () => {
+    const ast = ts.createSourceFile("preload.mjs", source("scripts/dev/waitForBackendStartupManagerExit.mjs"), ts.ScriptTarget.Latest, true);
+    const declaration = ast.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "waitForBackendStartupManagerExit");
+    if (!declaration) throw new Error("ACTUAL_STARTUP_PRELOAD_REQUIRED");
+    const code = ts.transpileModule(declaration.getText(ast), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+    let timeout = () => {};
+    let disconnected = () => {};
+    const clear = jest.fn(), schedule = jest.fn((callback: () => void) => { timeout = callback; return 1; });
+    const wait = runInNewContext(code + ";waitForBackendStartupManagerExit", { exports: {}, setTimeout: schedule, clearTimeout: clear });
+    const runtime = () => ({ env: { LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID: "123" }, pid: 456, ppid: 123, send: () => {}, connected: true,
+      once: jest.fn((_event: string, callback: () => void) => { disconnected = callback; }), removeListener: jest.fn() });
+    for (const pid of ["0", "-1", "1.5", "456", "NaN", "789"]) expect(() => wait({ ...runtime(), env: { LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID: pid } })).toThrow("BACKEND_STARTUP_MANAGER_PID_INVALID");
+    expect(() => wait({ ...runtime(), send: undefined })).toThrow("BACKEND_STARTUP_MANAGER_IPC_REQUIRED");
+    await expect(wait({ ...runtime(), connected: false })).resolves.toBeUndefined();
+    const active = runtime(), pending = wait(active);
+    expect(schedule).toHaveBeenLastCalledWith(expect.any(Function), 5000);
+    expect(active.env.LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID).toBeUndefined();
+    disconnected(); await expect(pending).resolves.toBeUndefined(); expect(clear).toHaveBeenCalledWith(1);
+    const stuck = runtime(), failure = wait(stuck); timeout();
+    await expect(failure).rejects.toThrow("BACKEND_STARTUP_MANAGER_EXIT_TIMEOUT");
+    expect(stuck.removeListener).toHaveBeenCalled();
+  });
+  it("the actual Node preload starts the child module only after the real launching manager has exited", async () => {
+    const folder = mkdtempSync(resolve(tmpdir(), "gox-manager-exit-"));
+    const marker = resolve(folder, "child-proof.json"), managerFile = resolve(folder, "manager.cjs");
+    const stdout = resolve(folder, "child.stdout"), stderr = resolve(folder, "child.stderr"), parentProof = resolve(folder, "parent-proof.json");
+    const preload = pathToFileURL(resolve("scripts/dev/waitForBackendStartupManagerExit.mjs")).href;
+    const childCode = "const fs=require('node:fs');fs.writeFileSync(process.argv[1],JSON.stringify({managerDisconnected:!process.connected,parentTokenCleared:!process.env.LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID}));";
+    writeFileSync(managerFile, "const fs=require('node:fs');const {spawn}=require('node:child_process');const out=fs.openSync(" + JSON.stringify(stdout) + ",'a'),err=fs.openSync(" + JSON.stringify(stderr) + ",'a');const child=spawn(process.execPath,['--import'," + JSON.stringify(preload) + ",'-e'," + JSON.stringify(childCode) + "," + JSON.stringify(marker) + "],{env:{...process.env,LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID:String(process.pid)},windowsHide:true,stdio:['ignore',out,err,'ipc']});child.unref();child.channel.unref();fs.closeSync(out);fs.closeSync(err);setTimeout(()=>fs.writeFileSync(" + JSON.stringify(parentProof) + ",JSON.stringify({childStartedWhileManagerAlive:fs.existsSync(" + JSON.stringify(marker) + ")})),300);\n");
+    try {
+      const manager = spawnSync(process.execPath, [managerFile], { cwd: resolve("."), windowsHide: true, encoding: "utf8" });
+      expect({ status: manager.status, stderr: manager.stderr }).toEqual({ status: 0, stderr: "" });
+      const deadline = Date.now() + 3000;
+      while (!existsSync(marker) && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 20));
+      expect(readFileSync(stderr, "utf8")).toBe("");
+      expect(JSON.parse(readFileSync(parentProof, "utf8"))).toEqual({ childStartedWhileManagerAlive: false });
+      expect(JSON.parse(readFileSync(marker, "utf8"))).toEqual({ managerDisconnected: true, parentTokenCleared: true });
+    } finally {
+      for (const file of [marker, managerFile, stdout, stderr, parentProof]) if (existsSync(file)) unlinkSync(file);
+      rmdirSync(folder);
+    }
+  });
+  it("defers the real PDF dependency until needed and preserves one shared browser, reconnect and failed-start recovery", async () => {
+    const ast = ts.createSourceFile("backend.ts", source("scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts"), ts.ScriptTarget.Latest, true);
+    const imports = ast.statements.filter(statement => ts.isImportDeclaration(statement)
+      && ts.isStringLiteral(statement.moduleSpecifier) && statement.moduleSpecifier.text === "playwright");
+    expect(imports).toHaveLength(1);
+    expect((imports[0] as ts.ImportDeclaration).importClause?.isTypeOnly).toBe(true);
+    const declaration = ast.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "artifactBrowser");
+    if (!declaration) throw new Error("ACTUAL_PDF_BROWSER_FUNCTION_REQUIRED");
+    const code = ts.transpileModule("let artifactBrowserPromise=null;let artifactBrowserInstance=null;\n" + declaration.getText(ast),
+      { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+    let connected = true;
+    let disconnect = () => {};
+    const browser = { isConnected: () => connected, once: jest.fn((_event: string, callback: () => void) => { disconnect = callback; }) };
+    let finishLaunch: (instance: typeof browser) => void = () => {};
+    let notifyLaunch: () => void = () => {};
+    const launchEntered = new Promise<void>(resolve => { notifyLaunch = resolve; });
+    const launch = jest.fn(() => { notifyLaunch(); return new Promise<typeof browser>(resolve => { finishLaunch = resolve; }); });
+    const requirePdf = jest.fn((name: string) => { expect(name).toBe("playwright"); return { chromium: { launch } }; });
+    const getBrowser = runInNewContext(code + ";artifactBrowser", { require: requirePdf });
+    expect(requirePdf).not.toHaveBeenCalled();
+    const first = getBrowser(), second = getBrowser();
+    await launchEntered;
+    expect(launch).toHaveBeenCalledTimes(1);
+    expect(launch).toHaveBeenCalledWith({ headless: true });
+    finishLaunch(browser);
+    expect(await first).toBe(browser); expect(await second).toBe(browser);
+    expect(await getBrowser()).toBe(browser); expect(launch).toHaveBeenCalledTimes(1);
+    connected = false; disconnect();
+    launch.mockImplementationOnce(() => Promise.reject(new Error("PDF_START_FAILED")));
+    await expect(getBrowser()).rejects.toThrow("PDF_START_FAILED");
+    connected = true;
+    launch.mockImplementationOnce(() => Promise.resolve(browser));
+    expect(await getBrowser()).toBe(browser);
+    expect(launch).toHaveBeenCalledTimes(3);
+  });
   it("releases the startup manager without claiming READY and preserves full verification for synchronous starts and reused backends", async () => {
     const ast = ts.createSourceFile("manager.ts", source("scripts/dev/ensureLocalDeveloperCanonicalBackend.ts"), ts.ScriptTarget.Latest, true);
     const declaration = ast.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "verifyBackendRuntimeStart");
