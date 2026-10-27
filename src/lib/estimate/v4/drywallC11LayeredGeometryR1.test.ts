@@ -15,7 +15,7 @@ import {drywallC11CurrentPhysicalContinuationR1 as physicalC11,drywallC11Current
  drywallC11CurrentPhysicalCompletenessR1 as physicalCompleteness} from './drywallC11LayeredGeometryR1';
 import type {AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
 import {canonicalEstimateResourceOperationSections} from '../backendPlatform/canonicalEstimateOperationComposition';
-import captured from '../../../../.release-runtime/r568/master29-floor-drywall/partition-parent.json';
+import captured from '../../../../data/estimate-benchmarks/fixtures/c11-legacy-partition-parent-r948.json';
 import oracle from '../../../../data/estimate-benchmarks/fixtures/drywall-c11-layered-geometry-r1-small-normal-boundary.json';
 import {appendDrywallC11LayeredGeometryR1 as append,compileDrywallC11LayeredGeometryR1 as compile,drywallC11LayeredGeometryPackR1 as pack,
  drywallC11LayeredCompletenessR1 as completeness,drywallC11LayeredPrimarySelectionR1 as primary} from './drywallC11LayeredGeometryR1';
@@ -27,6 +27,14 @@ import {canonicalPublicResourceRowKindV1,parseCanonicalPublicResourcePresentatio
 import {canonicalEstimateOperationReferences} from '../backendPlatform/canonicalEstimateOperationComposition';
 import {buildCanonicalBaselinePlan} from '../backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {resolvePrimaryMeasureSelectionV1,assertCanonicalPrimaryMeasureSelectionV1} from '../backendPlatform/canonicalPrimaryMeasureSelectionV1';
+// Exact historical v6 input bytes, relocated to a stable source fixture;
+// this is not the current R919 parent and contains no reconstructed arrays.
+const legacyC11FixtureBytes=readCurrentC11Fixture(currentC11Resolve(__dirname,'../../../../data/estimate-benchmarks/fixtures/c11-legacy-partition-parent-r948.json'));
+if(currentC11CryptoHash('sha256').update(legacyC11FixtureBytes).digest('hex')!=='168516829e9fb0c0a65d4b9a94f4f6165db427b6010bcd69180770713e6e3882'
+ ||captured.capturedParentSha256!=='ce75ab31a318d85bf3fcf6dad031a7c31ab2fa21a304e848d1a30d422573ce1f'
+ ||captured.capturedParent.definition.id!=='91004f43-a66d-5bb2-aade-d85837a9e695'
+ ||captured.capturedParent.parameters.length!==77||captured.capturedParent.formulas.length!==50||captured.capturedParent.resources.length!==50||captured.capturedParent.bindings.length!==1)
+ throw Error('C11_TEST_EXACT_LEGACY_V6_FIXTURE_REQUIRED');
 type Parent=Parameters<typeof append>[0];
 const parent=captured.capturedParent as unknown as Parent,identity={definitionVersionId:captured.capturedParent.definition.id,definitionSha256:captured.capturedParent.definition.definition_sha256},
  facts=(key:string,L='4',H='2.75')=>({[pack.selector.id]:pack.profiles.find(p=>p.key===key)!.value,partition_length_m:L,partition_height_m:H}),
@@ -150,7 +158,7 @@ const currentWholeC11=():AutomaticOwnerDefinition=>({parameters:JSON.parse(JSON.
   parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:values,
   confirmedParameters:{...d.runtimeInput,...confirmed},rowOverrides:overrides,priceItems:[],currencyCode:'KGS',maximumResourceRows:d.resources.length,hashJson:async value=>hash(value)});
 },physicalAny=(r:Awaited<ReturnType<typeof physicalCompile>>,rowId:string)=>[...r.rows,...r.preliminaryNeeds].find(row=>row.row_id===rowId),
- physicalDecision=(r:Awaited<ReturnType<typeof physicalCompile>>,branch:string,key:string)=>(physicalAny(r,physicalId(branch,'control:'+key))!.calculation_trace.resourceGraph as Record<string,any>).scopeRequirementDecisionV1,
+ physicalDecision=(r:Awaited<ReturnType<typeof physicalCompile>>,branch:string,key:string)=>currentC11Record(currentC11Record(currentC11Record(currentC11Record(physicalAny(r,physicalId(branch,'control:'+key)),'resource').calculation_trace,'trace').resourceGraph,'graph').scopeRequirementDecisionV1,'decision'),
  demoEdit={kind:'manual',reason:'TEST_ONLY existing physical water/work revision, not source approval'};
 
 describe('SOURCE_ONLY whole C11 R919 physical continuation through existing compiler',()=>{
@@ -227,13 +235,13 @@ describe('SOURCE_ONLY whole C11 R919 physical continuation through existing comp
   const confirmed=physicalBatch();delete confirmed[physicalFact('waste_receiver')];const r=await physicalCompile('c111',physicalValues(),confirmed),
    need=r.preliminaryNeeds.find(row=>row.row_id===physicalId('c111','function:wash-water-receiver'))!;
   expect(need.missing_parameter_ids).toEqual(expect.arrayContaining([physicalFact('waste_receiver'),physicalUnknown('wash-water-receiver')]));
-  expect(need.calculation_trace.unresolvedConditionParameterIds).toContain(physicalFact('waste_receiver'));
+  expect(currentC11Record(need.calculation_trace,'trace').unresolvedConditionParameterIds).toContain(physicalFact('waste_receiver'));
   expect(physicalDecision(r,'c111','method-facts').status).toBe('OBJECT_FACT_REQUIRED');
  });
  it('existing legacy labour is charged once, while both faceoperations see the same manually named owner',async()=>{
   const rowId='work:c111:worker',r=await physicalCompile('c111',physicalValues(),physicalBatch(),{[rowId]:{titleRu:'TEST_ONLY единый труд C111',unitPrice:'77',provenance:demoEdit}});
   expect(r.rows.filter(row=>row.row_id===rowId)).toHaveLength(1);expect(physicalAny(r,rowId)).toMatchObject({quantity:'10.78',unit_price:'77',amount:'830.06'});
-  const sections=canonicalEstimateResourceOperationSections(r.rows.map(row=>({rowId:row.row_id,titleRu:row.title_ru,operation:(row.calculation_trace.resourceGraph as Record<string,unknown>).operationCompositionV1})));
+  const sections=canonicalEstimateResourceOperationSections(r.rows.map(row=>({rowId:row.row_id,titleRu:currentC11Text(row.title_ru,'resource title'),operation:currentC11Record(currentC11Record(row.calculation_trace,'trace').resourceGraph,'graph').operationCompositionV1})));
   for(const face of ['clad-first','clad-second'])expect(sections.find(section=>section.operation?.operationId===physicalId('c111','operation:'+face))?.sharedResources)
    .toEqual(expect.arrayContaining([expect.objectContaining({rowId})]));
  });
@@ -247,8 +255,8 @@ describe('SOURCE_ONLY whole C11 R919 physical continuation through existing comp
   const r=await physicalCompile('c111',{...physicalValues(),c111_insulation_mode:'NONE'});
   expect(physicalAny(r,physicalId('c111','function:insulation-knife-blade'))).toBeUndefined();
   expect(physicalAny(r,'material:c111:board')?.quantity).toBe('8');
-  const sections=canonicalEstimateResourceOperationSections([...r.rows,...r.preliminaryNeeds].map(row=>({rowId:row.row_id,titleRu:row.title_ru,
-   operation:(row.calculation_trace.resourceGraph as Record<string,unknown>).operationCompositionV1})));
+  const sections=canonicalEstimateResourceOperationSections([...r.rows,...r.preliminaryNeeds].map(row=>({rowId:row.row_id,titleRu:currentC11Text(row.title_ru,'resource title'),
+   operation:currentC11Record(currentC11Record(row.calculation_trace,'trace').resourceGraph,'graph').operationCompositionV1})));
   expect(sections.some(section=>section.operation?.operationId===physicalId('c111','operation:insulate'))).toBe(false);
  });
  it('independent physical map catches deleted addedfunctions/checks and wrongoperation consumers',()=>{
@@ -263,7 +271,8 @@ describe('SOURCE_ONLY whole C11 R919 physical continuation through existing comp
  });
 });
 
-const currentC11Record=(value:unknown,label:string):Record<string,unknown>=>{if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('TEST_ONLY_C11_RECORD:'+label);return value as Record<string,unknown>;},
+const currentC11Record=(value:unknown,label:string):Record<string,unknown>=>{const isRecord=(candidate:unknown):candidate is Record<string,unknown>=>candidate!==null&&typeof candidate==='object'&&!Array.isArray(candidate);if(!isRecord(value))throw Error('TEST_ONLY_C11_RECORD:'+label);return value;},
+ currentC11Text=(value:unknown,label:string):string=>{if(typeof value!=='string')throw Error('TEST_ONLY_C11_STRING:'+label);return value;},
  currentC11Meters={c11_current_wash_meter_before_l:100,c11_current_wash_meter_after_l:102.5,c11_current_energy_meter_before_kwh:80,c11_current_energy_meter_after_kwh:83.4};
 describe('SOURCE_ONLY actual R919 whole C11 quantity and ordinary continuation',()=>{
  it('typed current reader model preserves exact181 ordinals and212 formula ASTs/resources without baseline hydration',()=>{

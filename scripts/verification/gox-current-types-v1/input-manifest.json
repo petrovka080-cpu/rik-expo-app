@@ -1215,7 +1215,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "14e6eccb600f8c8942111f27224927cabfb3d90186f7dce917d44dcc2c8e4c39",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "30942431a6ed8524195b03b7e4c3c4bbb5fd2ec26993f97aaa2c28048433ac00",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "60da3042d4b2f442d59fb975b768b0b099477764ee259c28f9cdebf24c7d6131",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -2531,13 +2531,14 @@
     "data/estimate-benchmarks/fixtures/c11-current-parent-r919.json": "dc738c221588b30e6fc4a0dca9a1f05ec2363ac7f15699395bad8d0e1923c194",
     "data/estimate-benchmarks/source-packs/c11-current-physical-continuation-r1.json": "c212d6470223e18e811a8786101c3f19c129fb051cc39cbd06e73e3dbfc24dc6",
     "scripts/estimate/r4a13/prepareDrywallC11LayeredGeometryR1.ts": "8fdfa947a7cf2f9293a80e45108cac984c5c080e42a0fb04464c506a79f88803",
-    "src/lib/estimate/v4/drywallC11LayeredGeometryR1.test.ts": "da5121a5285a09d5f7c4d10792d5c8c96d7b9bc4c243f67b4990bcc0137c1419",
+    "src/lib/estimate/v4/drywallC11LayeredGeometryR1.test.ts": "e168c0e7612a73a21b245411d0448e8ca4a693f5bb9fa3db60750a4ff79e012f",
     "src/lib/estimate/v4/drywallC11LayeredGeometryR1.ts": "38df47e5942e1b09e0c9e79a371172dd9ea79251c9d8fdd286374be398599666",
-    "src/lib/estimate/v4/cctvSystemR1.ts": "bbd335713a85ab429ae9e3e6636d591e1f3576c8b1a7ce56671241549bc53eaf",
+    "src/lib/estimate/v4/cctvSystemR1.ts": "5ee440a7da98281fa861bcafbd464eb4270e499bf93ff452f25b40649305c6a9",
     "tests/estimateNorms/cctvSystemR1.contract.test.ts": "931066b7d05b80c9ac9b4cb5fd68b1c294aa7af87dd7a7de425ae153d5f52938",
-    "scripts/estimate/r4a13/prepareS2724CctvSystemBalancedSuccessor.ts": "73dc1282afce3a06e07bdc9ee118e08a24b5fc8e6327fffeddef8eb924289ac3",
+    "scripts/estimate/r4a13/prepareS2724CctvSystemBalancedSuccessor.ts": "e50d785546cf5bb9857fbdfb0f1a2fd298f3a8939a6f583a40a1c31cdbfe4b90",
     "data/estimate-benchmarks/source-packs/cctv-whole-g5-protect-method-r1.json": "52ea5d4133910d559edba0c3d7455fb92dfd6e2bf920dec2d1777d53d5a573d2",
-    "data/estimate-benchmarks/source-packs/CCTV_WHOLE_MEASURED_METHOD_R5.txt": "b9e00513390c88e6975b08094d60b9abb50fe95827883dbdf1848511cb25c45f"
+    "data/estimate-benchmarks/source-packs/CCTV_WHOLE_MEASURED_METHOD_R5.txt": "b9e00513390c88e6975b08094d60b9abb50fe95827883dbdf1848511cb25c45f",
+    "data/estimate-benchmarks/fixtures/c11-legacy-partition-parent-r948.json": "168516829e9fb0c0a65d4b9a94f4f6165db427b6010bcd69180770713e6e3882"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3710,15 +3711,15 @@
     "findings": [],
     "patternScanFromPredecessorSourcePlan": "81f630f069c9e53edb8a6faea5d370a0f1ad019dab5b333752352983ecd0fb18",
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 148946274
+    "sourceBytes": 149771766
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2536,
+    "sourceFiles": 2537,
     "dependencyFiles": 1160,
-    "sourceBytes": 148946274
+    "sourceBytes": 149771766
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -4255,6 +4256,45 @@
       "newProductCandidate": false,
       "formalPublicationAndSavedUiAccepted": false,
       "allPriorNeedsRetained": true
+    },
+    "addressedFourteenTypesR954": {
+      "parent": "67f687c4f5b82b9363a60aedcb3a8d90296681a9",
+      "exactFiveFiles": [
+        {
+          "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts",
+          "beforeSha256": "14e6eccb600f8c8942111f27224927cabfb3d90186f7dce917d44dcc2c8e4c39",
+          "afterSha256": "30942431a6ed8524195b03b7e4c3c4bbb5fd2ec26993f97aaa2c28048433ac00"
+        },
+        {
+          "path": "src/lib/estimate/v4/drywallC11LayeredGeometryR1.test.ts",
+          "beforeSha256": "da5121a5285a09d5f7c4d10792d5c8c96d7b9bc4c243f67b4990bcc0137c1419",
+          "afterSha256": "e168c0e7612a73a21b245411d0448e8ca4a693f5bb9fa3db60750a4ff79e012f"
+        },
+        {
+          "path": "data/estimate-benchmarks/fixtures/c11-legacy-partition-parent-r948.json",
+          "beforeSha256": null,
+          "afterSha256": "168516829e9fb0c0a65d4b9a94f4f6165db427b6010bcd69180770713e6e3882"
+        },
+        {
+          "path": "src/lib/estimate/v4/cctvSystemR1.ts",
+          "beforeSha256": "bbd335713a85ab429ae9e3e6636d591e1f3576c8b1a7ce56671241549bc53eaf",
+          "afterSha256": "5ee440a7da98281fa861bcafbd464eb4270e499bf93ff452f25b40649305c6a9"
+        },
+        {
+          "path": "scripts/estimate/r4a13/prepareS2724CctvSystemBalancedSuccessor.ts",
+          "beforeSha256": "73dc1282afce3a06e07bdc9ee118e08a24b5fc8e6327fffeddef8eb924289ac3",
+          "afterSha256": "e50d785546cf5bb9857fbdfb0f1a2fd298f3a8939a6f583a40a1c31cdbfe4b90"
+        }
+      ],
+      "actualPriorDiagnostics": 14,
+      "runtimeAddressedCctvCases": 2,
+      "runtimeAddressedFinishingCases": 7,
+      "sourceOnly": true,
+      "newProductCandidate": false,
+      "allUnchangedOldPassesReused": true,
+      "allExplicitRootsRetained": true,
+      "noCommonSchemaOrGuardChange": true,
+      "canonicalProductUnchanged": true
     }
   },
   "existingCiTypesStageBudget": {

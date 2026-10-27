@@ -628,7 +628,8 @@ it('R873 preserves known unverified scope through historical cold rows without m
 // New opt-in quantity rules only. Existing R642 tests/captures above are unchanged.
 // Narrow the actual Core/saved JSON records before reading trace evidence.
 const ct54PlanObject=(value:unknown):Record<string,unknown>=>{
- if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('CT54_TEST_EXPECTED_REAL_JSON_RECORD');return value;
+ const isRecord=(candidate:unknown):candidate is Record<string,unknown>=>candidate!==null&&typeof candidate==='object'&&!Array.isArray(candidate);
+ if(!isRecord(value))throw Error('CT54_TEST_EXPECTED_REAL_JSON_RECORD');return value;
 },ct54PlanTrace=(row:unknown)=>ct54PlanObject(ct54PlanObject(row).calculation_trace);
 
 const ct54PlanId=(key:string)=>'ct54_plan_'+key,
@@ -722,7 +723,9 @@ it('SOURCE_ONLY CT54 opt-in uses the existing typed partial publisher and22drive
   candidate=assembleCt54PlanCandidate(c,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate,
   scope={artifactSha256:String(candidate.newSource.artifact_sha256),normId:c.normId,sourceKey:c.sourceId,generatedSourceId:candidate.newSource.id,generatedLocatorIds:candidate.newLocators.map(v=>v.id),generatedLocatorKeys:candidate.newLocators.map(v=>v.locator_key)},
   scoped={...c,capturedScopedNormativeRegistry:captureCt54PlanRegistry(scope,{sourceRows:[],locatorRows:[]})};
- expect(validateCt54PlanPartial(scoped)).toEqual([]);expect((c.passport.partialQuantityBasis as {parameters:unknown[]}).parameters).toHaveLength(22);expect((c.passport.partialQuantityBasis as {resourceRowIds:string[]}).resourceRowIds).toHaveLength(30);
+ expect(validateCt54PlanPartial(scoped)).toEqual([]);const basis=c.passport.partialQuantityBasis;
+ if(basis?.kind!=='DEFERRED_PROJECT_QUANTITIES')throw Error('CT54_TEST_DEFERRED_PROJECT_QUANTITY_BASIS_REQUIRED');
+ expect(basis.parameters).toHaveLength(22);expect(basis.resourceRowIds).toHaveLength(30);
  expect(c.sourcePaths).toContain(ct54QuantityPlan.sourceDocumentPath);expect(c.sourceId).toBe(ct54QuantityPlan.sourceId);expect(c.resourceDefinitions.every(v=>!v.procurement_eligible&&v.resource_graph.costTreatment==='INFORMATIONAL_SCOPE')).toBe(true);
 });
 
@@ -959,7 +962,9 @@ describe('CT54 R930 whole current reference quantity continuation',()=>{
  it('uses the existing ordinary config and typed witness but refuses admission without a fresh scoped registry capture',()=>{
   const c=prepareCt54MeasuredCurrentReferenceR930(ct54R930Context());expect(c.sourceId).toBe(ct54QuantityPlan.sourceId);expect(c.parentReleaseId).toBe('514af229-9dbd-5c45-9383-6d21fe2b9f21');expect(c.expectedParentShape).toEqual([39,31,31]);
   expect([c.parameterDefinitions.length,c.formulaDefinitions.length,c.resourceDefinitions.length]).toEqual([66,31,31]);expect(c.sourcePaths).toEqual(expect.arrayContaining([ct54R930Pin.path,ct54R934Pin.path]));
-  expect((c.passport.partialQuantityBasis as {parameters:unknown[]}).parameters).toHaveLength(22);expect((c.passport.partialQuantityBasis as {resourceRowIds:string[]}).resourceRowIds).toHaveLength(30);
+  const basis=c.passport.partialQuantityBasis;
+ if(basis?.kind!=='DEFERRED_PROJECT_QUANTITIES')throw Error('CT54_TEST_DEFERRED_PROJECT_QUANTITY_BASIS_REQUIRED');
+ expect(basis.parameters).toHaveLength(22);expect(basis.resourceRowIds).toHaveLength(30);
   // The existing candidate source guard refuses BEFORE the typed-witness
   // wrapper's generic absent-capture check. It is the real strict entrypoint.
   expect(validateCt54PlanPartial(c)).toEqual(['STOP_CT54_REFERENCE_PROJECT_SYSTEM_SCOPED_REGISTRY_ORDINARY_SOURCE_CAPTURE_REQUIRED']);
