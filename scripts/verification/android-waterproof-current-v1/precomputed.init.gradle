@@ -1,0 +1,45 @@
+import groovy.json.JsonSlurper
+import java.security.MessageDigest
+// Exact pinned CI invocation only: genuine export/Hermes/Expo outputs, rechecked inside producer tasks.
+def receipt = new JsonSlurper().parse(new File(@RECEIPT_JSON@))
+assert receipt.status == 'PASS_CURRENT_SOURCE_PRECOMPUTED_PHASE_UNION'
+assert receipt.files && receipt.sourceHead && receipt.sourceTree && receipt.jsBundleFingerprint
+
+def expectedRoot = new File(@ROOT_JSON@).canonicalFile
+def digestFile = { File f ->
+  def digest = MessageDigest.getInstance('SHA-256')
+  f.withInputStream { stream -> byte[] buffer = new byte[1048576]; int n; while ((n = stream.read(buffer)) != -1) { digest.update(buffer, 0, n) } }
+  digest.digest().encodeHex().toString()
+}
+gradle.projectsEvaluated {
+  if (gradle.rootProject.projectDir.canonicalFile != new File(expectedRoot,'android').canonicalFile) return
+  def p = gradle.rootProject.findProject(':app')
+  assert p != null && p.rootDir.parentFile.canonicalFile == expectedRoot
+  ['createBundleWaterProofJsAndAssets','createWaterProofUpdatesResources'].each { name ->
+    def t = p.tasks.getByName(name)
+    t.setActions([])
+    t.doNotTrackState('External phases executed sequentially under full-tree memory guard; verify exact artifacts on every invocation')
+    t.doLast {
+      def wanted = receipt.files.findAll { it.path.contains('/'+name+'/') }
+      assert !wanted.isEmpty()
+      if (name == 'createBundleWaterProofJsAndAssets') {
+        assert t.jsBundleDir.get().asFile.canonicalFile == new File(expectedRoot,'android/app/build/generated/assets/'+name).canonicalFile
+        assert t.resourcesDir.get().asFile.canonicalFile == new File(expectedRoot,'android/app/build/generated/res/'+name).canonicalFile
+      }
+      def directories = name == 'createBundleWaterProofJsAndAssets' ? ['assets','res'].collect { new File(expectedRoot,'android/app/build/generated/'+it+'/'+name) } : [new File(expectedRoot,'android/app/build/generated/assets/'+name)]
+      def observed = []
+      directories.each { directory ->
+        assert directory.isDirectory()
+        directory.eachFileRecurse { candidate -> if (candidate.isFile()) observed.add(expectedRoot.toPath().relativize(candidate.toPath()).toString().replace('\\','/')) }
+      }
+      assert observed.sort() == wanted.collect { it.path }.sort() : 'Precomputed directory has missing or extra files: '+name
+      wanted.each { f ->
+        def actual = new File(expectedRoot, f.path)
+        assert actual.isFile() && actual.length() == f.bytes && digestFile(actual) == f.sha256 : 'Precomputed artifact changed: '+f.path
+      }
+      logger.lifecycle('VERIFIED_PRECOMPUTED_PHASE '+t.path+' files='+wanted.size())
+    }
+  }
+}
+
+

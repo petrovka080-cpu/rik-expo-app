@@ -1,0 +1,18 @@
+{
+  "status": "EXACT_EXISTING_PRODUCT_CONFIG_DELTA_REVIEWED_NOT_NATIVE_IMPLEMENTATION_CHANGE",
+  "appJsonBeforeSha256": "bda9e9ecfcb41b3962a616e23ecad475ce5f0935203e43dcbbfbc77ed483519b",
+  "appJsonCurrentSha256": "ef89bea7e24439ffadddda58cbe91552509420b4326bf2bbd2ace7d6bbca6d4e",
+  "onlyJsonDelta": {
+    "expo.plugins[0]": [
+      "expo-router",
+      {
+        "asyncRoutes": "development"
+      }
+    ]
+  },
+  "existingCanonicalDeltaPreserved": true,
+  "remaining47ControlFileHashesUnchanged": true,
+  "originalCanonicalNative48ReferenceUnmodified": true,
+  "installedSourceSemantics": "@expo/metro-config/build/rewriteRequestUrl.js getAsyncRoutesFromExpoConfig returns [mode,true].includes(asyncRoutesSetting); development routes therefore remain disabled in production mode",
+  "ciNativeExecution": "PENDING"
+}
