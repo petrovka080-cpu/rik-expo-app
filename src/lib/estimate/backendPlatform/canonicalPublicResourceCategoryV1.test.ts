@@ -1,3 +1,4 @@
+import {canonicalPublicResourceKindFromCategoryV1 as financialKind} from './canonicalPublicResourcePresentationV1';
 import {
   CANONICAL_PUBLIC_RESOURCE_KINDS_V1,parseCanonicalPublicResourcePresentationV1 as parse,
   canonicalPublicResourcePresentationMatchesV1 as matches,
@@ -51,4 +52,13 @@ it('matches includes taxonomy and saved-title binding preserves kind without cha
   expect(display({titleRu:old.sourceTitleRu,descriptor})?.resourceKind).toBe('ACCESSORY');
   expect(bind({graph,sourceTitleRu:old.sourceTitleRu,savedTitleRu:'Ручное имя',appendedSpecificationRu:null,
     manualTitleOverride:true})).toBe(graph);
+});
+
+it('uses only exact persisted financial category tokens for the kind fallback',()=>{
+  for(const category of ['labor','work'])expect(financialKind(category)).toBe('LABOR');
+  for(const category of ['transport','delivery'])expect(financialKind(category)).toBe('TRANSPORT');
+  expect(financialKind('service')).toBe('SERVICE');expect(financialKind('material')).toBe('MATERIAL');
+  expect(financialKind('tool')).toBe('TOOL');expect(financialKind('equipment')).toBe('EQUIPMENT');
+  for(const category of ['',null,undefined,'LABOR',' labor ','construction_work','Дрель','materials'])
+    expect(financialKind(category)).toBeNull();
 });

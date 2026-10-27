@@ -1,3 +1,4 @@
+import type {CanonicalEstimateOperationResourceAcceptanceV1} from './canonicalEstimateOperationComposition';
 import { assertCanonicalPurchaseSupplyRowV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import {readRoofStageRestorationV6} from './canonicalRoofScreed25MigrationV1';
 import {readRoofStageRestorationV5} from './canonicalRoofHangingGuttersMigrationV1';
@@ -57,6 +58,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
   row: StorageRecord,
   environment: {
     contentAdmission?: AdmissionDecision;
+    operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
     legacyWarningRu?: string | null;
     principalOrganizationId?: string | null;
   } = {},
@@ -140,6 +142,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
     inputHash: nullableText(row.input_hash),
     outputHash: nullableText(row.output_hash ?? row.checksum_sha256),
     ...(environment.contentAdmission == null ? {} : { contentAdmission: environment.contentAdmission }),
+    ...(environment.operationResourceAcceptanceV1 == null ? {} : { operationResourceAcceptanceV1: environment.operationResourceAcceptanceV1 }),
     ...(environment.legacyWarningRu === undefined ? {} : { legacyWarningRu: environment.legacyWarningRu }),
     ...(row.definition_withdrawal_reason == null ? {} : {
       contentWithdrawalReasonRu: String(row.definition_withdrawal_reason),

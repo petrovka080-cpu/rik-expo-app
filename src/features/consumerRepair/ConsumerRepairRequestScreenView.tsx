@@ -1,5 +1,6 @@
+import {useCanonicalOperationCompositionDiagnostic} from './useCanonicalOperationCompositionDiagnostic';
 import React from "react";
-import { KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
 import { canonicalLanternIntent, CANONICAL_LANTERN_KIND_CHOICES, selectCanonicalLanternKindText } from '../../lib/estimate/backendPlatform/canonicalLanternIntent';
 import type { TextInput } from "react-native";
 
@@ -201,6 +202,21 @@ export function ConsumerRepairRequestScreenView({
   onSelectRoadScope,
   onScrollPositionChange,
 }: ConsumerRepairRequestScreenViewProps) {
+  const operationBinding=consumerRepairCanonicalBackendBinding(renderModel.bundle);
+  const operationBackend=renderModel.bundle?.structuredEstimatePayload?.canonicalBackend;
+  const operationDiagnostic=useCanonicalOperationCompositionDiagnostic(operationBinding?{...operationBinding,
+    ...(operationBackend?.revisionId===operationBinding.revisionId&&operationBackend.releaseId===operationBinding.releaseId
+      ? {checksumSha256:operationBackend.checksumSha256}:{})}:null);
+  const runDocumentAction=(action:()=>void,targetRequestDraftId?:string)=>{
+    // History targets keep their existing target-aware revision/artifact path.
+    // A diagnostic for the open editor is never authority for another draft.
+    const targetsCurrent=!targetRequestDraftId||targetRequestDraftId===renderModel.bundle?.draft.id;
+    if(targetsCurrent&&operationDiagnostic?.acceptance?.pdfAllowed===false){
+      Alert.alert('Состав сметы требует исправления','PDF и список закупки пока недоступны. Сохранённая смета остаётся доступной для просмотра и исправления.');
+      return;
+    }
+    action();
+  };
   const canonicalReopenPending = consumerRepairCanonicalReopenPending(renderModel.bundle, expectedCanonicalRevisionId, openedCanonicalRouteRevisionId);
   const currentDraftRevisionState =
     getConsumerRepairCalculationStateForReadOnlyDisplay(renderModel.bundle);
@@ -327,8 +343,8 @@ export function ConsumerRepairRequestScreenView({
           onSelectTemplateCandidate={onSelectTemplateCandidate}
           onLoadMoreWorkSuggestions={onLoadMoreWorkSuggestions}
           onPrepareDraft={onPrepareDraft}
-          onMakePdf={onMakePdf}
-          onOpenProcurement={onOpenProcurement}
+          onMakePdf={()=>runDocumentAction(onMakePdf)}
+          onOpenProcurement={()=>runDocumentAction(onOpenProcurement)}
           onRefineCanonicalParameters={onRefineCanonicalParameters}
           onDecrease={onDecrease}
           onIncrease={onIncrease}
@@ -356,7 +372,7 @@ export function ConsumerRepairRequestScreenView({
           onParameterDraftInteraction={onParameterDraftInteraction}
           primerPrerequisiteNode={primerPrerequisiteNode}
           onCompositionRowsChange={onCompositionRowsChange}
-          onOpenPdf={onOpenPdf}
+          onOpenPdf={(requestDraftId)=>runDocumentAction(()=>onOpenPdf(requestDraftId),requestDraftId)}
           onOpenDraft={onOpenDraft}
           onToggleHistorySnapshot={onToggleHistorySnapshot}
           onEditHistoryDraft={onEditHistoryDraft}
@@ -369,6 +385,7 @@ export function ConsumerRepairRequestScreenView({
           roadScopeSelectionBusy={state.roadScopeSelectionBusy}
         />
         <ConsumerRepairRequestStickyActions
+          operationCompositionDiagnostic={operationDiagnostic}
           approved={renderModel.approved}
           sent={renderModel.sent}
           hasBundle={Boolean(renderModel.bundle)}
@@ -394,8 +411,8 @@ export function ConsumerRepairRequestScreenView({
           deleteCommitBusy={state.deleteCommitBusy}
           pdfOpenBusy={state.pdfOpenBusy === true}
           needsFreshApproval={consumerRepairNeedsFreshApproval(renderModel.bundle)}
-          onOpenPdf={() => onOpenPdf()}
-          onMakePdf={onMakePdf}
+          onOpenPdf={() => runDocumentAction(()=>onOpenPdf())}
+          onMakePdf={()=>runDocumentAction(onMakePdf)}
           onCreateNew={onCreateNew}
           onDeleteDraft={onDeleteDraft}
           onApproveDraft={onApproveDraft}

@@ -1,3 +1,6 @@
+import {auditCanonicalEstimateOperationResourcesV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
+import {canonicalScopeRequirementDecisionV1} from '../../../src/lib/estimate/backendPlatform/canonicalScopeRequirementV1';
+import {canonicalPublicResourceDisplayPresentationV1,canonicalPublicSavedResourceRowKindV1} from '../../../src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { createHash } from "node:crypto";
 import {hasMasterTypedPartialQuantityBasisR1,validateMasterTypedPartialQuantityBasisR1,
  canonicalPublisherTypedPartialQuantityScopeIsConsistentR1,assertMasterTypedPartialQuantityRegistryR1} from './masterTypedPartialQuantityBasisR1';
@@ -76,6 +79,37 @@ type CanonicalDefinitionClonePlanInput = {
 };
 
 export type CanonicalDefinitionPublishPlan = ReturnType<typeof createCanonicalDefinitionClonePlan>;
+
+/** Required only at new definition admission. Historical readers and clone
+ * construction remain readable without manufacturing new source evidence.
+ * Template rows have no object quantity: do not set quantityKnown from absence. */
+export function auditCanonicalPublisherSuccessorOperationResourcesR1(input:Readonly<{
+ resourceDefinitions:readonly CanonicalPublisherJson[];independentComposition?:unknown;
+}>){
+ return auditCanonicalEstimateOperationResourcesV1({requireIndependentComposition:true,
+  independentComposition:input.independentComposition,
+  resources:input.resourceDefinitions.flatMap(row=>{
+   const graph=isObject(row.resource_graph)?row.resource_graph:{};
+   // Project source metadata only; no object quantities or financial defaults.
+   // Keep the full raw plan for existing source/norm/payment guards, and never
+   // derive independent expected entries from this classified output.
+   const scope=canonicalScopeRequirementDecisionV1(graph.scopeRequirementDecisionV1);
+   const savedShape={...row,calculation_trace:{resourceGraph:graph,needState:row.need_state}};
+   if(scope?.rowId===row.row_id||canonicalPublicSavedResourceRowKindV1(savedShape)!=='RESOURCE')return [];
+   const titleRu=String(row.title_ru??'');
+   const presentation=canonicalPublicResourceDisplayPresentationV1({rowId:String(row.row_id??''),titleRu,graph,
+    descriptor:graph.publicResourcePresentationV1});
+   return[{rowId:String(row.row_id??''),nameRu:presentation?.nameRu??titleRu,sourceNameRu:titleRu,
+    resourceKind:presentation?.resourceKind??null,operation:graph.operationCompositionV1,
+    publicNameVerified:presentation!=null}];
+  })});
+}
+export function assertCanonicalPublisherSuccessorOperationResourcesR1(input:Parameters<typeof auditCanonicalPublisherSuccessorOperationResourcesR1>[0]&{catalogId?:string}){
+ const result=auditCanonicalPublisherSuccessorOperationResourcesR1(input);
+ invariant(result.definitionAdmissionAllowed,
+  'STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES:'+String(input.catalogId??'')+':'+result.status+':'+result.issues.map(issue=>[issue.code,issue.rowId,issue.operationId].filter(Boolean).join(':')).join(','));
+ return result;
+}
 
 /**
  * Price routes may be carried to a successor only when the stable cost owner
@@ -609,6 +643,10 @@ export async function preflightCanonicalDefinitionPublishPlans(
   typedQuantityInputs: readonly MasterRetainedBindingGuardInputR1[] = [],
 ) {
   invariant(plans.length > 0, "STOP_CANONICAL_PUBLISHER_EMPTY_PLAN");
+  // Mandatory for all new plans, including callers that bypass the Master adapter.
+  // Pure source-composition check precedes the first schema/registry query.
+  for(const plan of plans)assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
+    resourceDefinitions:plan.resources,independentComposition:plan.passport.decision?.independentCompletenessMap});
   invariant(Array.isArray(retainedLegacyInputs)
     &&new Set(retainedLegacyInputs.map(input=>input.config.catalogId)).size===retainedLegacyInputs.length
     &&retainedLegacyInputs.every(input=>plans.some(plan=>plan.definition.catalog_id===input.config.catalogId)),
@@ -882,6 +920,9 @@ export async function publishCanonicalDefinitionDraft(
   client: Client,
   plan: CanonicalDefinitionPublishPlan,
 ) {
+  // The write boundary repeats admission even if a caller skipped preflight.
+  assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
+    resourceDefinitions:plan.resources,independentComposition:plan.passport.decision?.independentCompletenessMap});
   assertCanonicalNewWorkCatalogIdV1(plan.definition.catalog_id);
   const excludedPriceInheritanceResourceIds = automaticPriceInheritanceExcludedResourceIds(plan);
   await client.query(`insert into public.estimate_definition_version(

@@ -248,3 +248,26 @@ test('public row taxonomy uses only verified presentation even when public name 
  expect(r.root.findByProps({testID:'consumer-repair-item-resource-kind-unverified-kind'}).props.children).toBe('Оборудование');
  act(()=>r.unmount());
 });
+test('unverified composition is visible before manual preliminary approval without disabling that explicit path',()=>{
+ const manual=jest.fn(),result={contractVersion:'canonical-operation-resource-acceptance/v1' as const,
+  status:'COMPOSITION_UNVERIFIED' as const,issues:[{code:'RESOURCE_QUANTITY_UNRESOLVED'}],pdfAllowed:true,
+  definitionAdmissionAllowed:false,completeClaimAllowed:false};
+ const before=JSON.stringify(result),r=render(<ConsumerRepairRequestStickyActions approved={false} sent={false} hasBundle hasSnapshot
+  operationCompositionDiagnostic={{state:'AVAILABLE',acceptance:result}} manualQuantityApprovalAvailable
+  approvalManualUnresolvedRowCount={1} onOpenPdf={noop} onMakePdf={noop} onCreateNew={noop} onDeleteDraft={noop}
+  onApproveDraft={noop} onApproveManualQuantities={manual} onPrepareDraft={noop}/>);
+ expect(JSON.stringify(r.toJSON())).toContain('Состав подработ ещё не подтверждён полностью');
+ const approve=r.root.findByProps({testID:'consumer-repair-approve'});expect(approve.props.disabled).toBe(false);
+ act(()=>approve.props.onPress());expect(manual).not.toHaveBeenCalled();
+ act(()=>r.root.findByProps({testID:'consumer-repair-manual-quantity-confirm'}).props.onPress());
+ expect(manual).toHaveBeenCalledTimes(1);expect(JSON.stringify(result)).toBe(before);act(()=>r.unmount());
+});
+test('structurally invalid saved composition visibly blocks PDF while retaining the saved editor and manual path',()=>{
+ const result={contractVersion:'canonical-operation-resource-acceptance/v1' as const,status:'STRUCTURE_INVALID' as const,
+  issues:[{code:'RESOURCE_OPERATION_MISSING'}],pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false};
+ const r=render(<ConsumerRepairRequestStickyActions approved sent={false} hasBundle hasSnapshot
+  operationCompositionDiagnostic={{state:'AVAILABLE',acceptance:result}} onOpenPdf={noop} onMakePdf={noop}
+  onCreateNew={noop} onDeleteDraft={noop} onApproveDraft={noop} onPrepareDraft={noop}/>);
+ expect(JSON.stringify(r.toJSON())).toContain('PDF и список закупки пока недоступны');
+ expect(r.root.findByProps({testID:'consumer-repair-open-pdf'}).props.disabled).toBe(true);act(()=>r.unmount());
+});

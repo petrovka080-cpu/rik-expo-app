@@ -1,3 +1,4 @@
+import type {CanonicalOperationCompositionDiagnostic} from './useCanonicalOperationCompositionDiagnostic';
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View, type TextInput } from "react-native";
@@ -79,6 +80,7 @@ type StickyActionsProps = {
   hasPendingPrompt?: boolean;
   estimateRequiresRebuild?: boolean;
   parameterCollectionRequired?: boolean;
+  operationCompositionDiagnostic?: CanonicalOperationCompositionDiagnostic | null;
   approvalBlockedByEstimate?: boolean;
   approvalBlockedByParameters?: boolean;
   approvalMissingObjectParameterCount?: number | null;
@@ -113,6 +115,7 @@ export function ConsumerRepairRequestStickyActions({
   hasPendingPrompt = false,
   estimateRequiresRebuild = false,
   parameterCollectionRequired = false,
+  operationCompositionDiagnostic,
   approvalBlockedByEstimate = false,
   approvalBlockedByParameters = false,
   approvalMissingObjectParameterCount = null,
@@ -144,6 +147,7 @@ export function ConsumerRepairRequestStickyActions({
   const shouldPrepareEstimate =
     !parameterCollectionRequired && (hasPendingPrompt || (!finalized && estimateRequiresRebuild));
   const canDeleteDraft = hasBundle && !approved && !sent;
+  const compositionPdfBlocked=operationCompositionDiagnostic?.acceptance?.pdfAllowed===false;
   const manualApproval = manualQuantityApprovalAvailable && Boolean(onApproveManualQuantities);
   const approvalActionLabel = manualApproval ? 'Подтвердить вручную' : "Подтвердить смету";
   const canApplyAndApprove = approvalPendingRowEditCount > 0
@@ -191,6 +195,15 @@ export function ConsumerRepairRequestStickyActions({
       testID="consumer-repair-bottom-actions"
     >
       <Text style={styles.bottomActionsTitle}>Действия со сметой</Text>
+      {operationCompositionDiagnostic ? <Text style={styles.approvalBlockedNoticeText}
+        accessibilityRole="alert" testID="consumer-repair-operation-composition-diagnostic">
+        {operationCompositionDiagnostic.state==='PENDING'?'Проверяем состав сохранённой сметы…'
+          :operationCompositionDiagnostic.state==='UNAVAILABLE'?'Проверка состава этой версии пока недоступна. Перед выдачей PDF и списка закупки приложение проверит состав.'
+          :compositionPdfBlocked?'Состав сметы требует исправления. PDF и список закупки пока недоступны; сохранённые позиции, количества и цены не изменены.'
+          :operationCompositionDiagnostic.acceptance?.status==='COMPOSITION_UNVERIFIED'
+            ?'Состав подработ ещё не подтверждён полностью. Можно вручную подтвердить предварительную версию; это не означает, что все необходимые ресурсы проверены.'
+            :'Состав подработ и ресурсов проверен.'}
+      </Text>:null}
       {manualApproval && !finalized ? <Text style={styles.approvalBlockedNoticeText}>
         {approvalManualUnresolvedRowCount > 0
           ? `Сохранена предварительная версия. Не рассчитаны количества в ${approvalManualUnresolvedRowCount} поз.; вы можете подтвердить эту версию вручную.`
@@ -224,8 +237,8 @@ export function ConsumerRepairRequestStickyActions({
         <Pressable
           accessibilityLabel="PDF"
           accessibilityRole="button"
-          accessibilityState={{ busy: pdfOpenBusy, disabled: pdfOpenBusy }}
-          disabled={pdfOpenBusy}
+          accessibilityState={{ busy: pdfOpenBusy, disabled: pdfOpenBusy || compositionPdfBlocked }}
+          disabled={pdfOpenBusy || compositionPdfBlocked}
           onPress={finalized ? onOpenPdf : onMakePdf}
           style={[styles.bottomActionButton, styles.bottomActionSecondary]}
           testID={finalized ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf"}

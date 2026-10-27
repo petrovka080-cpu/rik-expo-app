@@ -1,3 +1,5 @@
+import {canonicalEstimateSavedOperationAcceptanceV1, assertCanonicalEstimateSavedArtifactStructureV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
+import type {CanonicalEstimateOperationResourceAcceptanceV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import { attachCanonicalPhysicalNormEvidenceV1, canonicalPhysicalNormRevisionFromStorageV1 } from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection';
 import {deriveCanonicalCatalogPromptExtractionV1} from "../../../src/lib/estimate/backendPlatform/canonicalConcretePlacementPromptServerR1";
 import {parseCanonicalCatalogPromptRequestV1,assertCanonicalCatalogPromptBytesV1,
@@ -2269,6 +2271,7 @@ async function createArtifactJob(
       )).rows;
       if (supplySourceRows.length !== supplyRevision.row_count) throw Object.assign(new Error("artifact source invalid"), {code:"ARTIFACT_SOURCE_INVALID"});
       const supplyRows = [...supplySourceRows, ...canonicalArtifactPreliminaryNeeds(supplyRevision)];
+      assertCanonicalEstimateSavedArtifactStructureV1(canonicalEstimateSavedOperationAcceptanceV1({revision:supplyRevision,resources:supplyRows}));
       assertCanonicalPurchaseSupplyRevisionV1(supplyRows, supplyRevision.amendment_contract);
       if (kind === "procurement") assertCanonicalPurchaseSupplyReadyV1(supplyRows);
       const candidateCapabilityId =
@@ -3776,6 +3779,7 @@ async function buildArtifactClaimedJob(
     });
   assertCanonicalPurchaseSupplyRevisionV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)], revision.amendment_contract);
   if (job.operation === "procurement") assertCanonicalPurchaseSupplyReadyV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)]);
+  assertCanonicalEstimateSavedArtifactStructureV1(canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[...allRows,...canonicalArtifactPreliminaryNeeds(revision)]}));
   const selection = selectCanonicalArtifactRows(allRows);
   const estimateRows = selection.estimateRows;
   const rows = job.operation === "procurement"
@@ -4319,11 +4323,32 @@ function localDraftView(row: Record<string, any>) {
   };
 }
 
+// Call only after the existing actor check or signed-file identity check.
+// The signed-file route intentionally has no logged-in principal.
+async function localSavedOperationAcceptanceV1(revisionId:string) {
+  const acceptance=await findAcrossModelDatabases(async client=>{
+    await client.query('begin isolation level repeatable read read only');
+    try {
+      const revision=(await client.query('select * from public.estimate_revision where id=$1',[revisionId])).rows[0];
+      if(!revision){await client.query('rollback');return null;}
+      const rows=(await client.query('select * from public.estimate_revision_row where revision_id=$1 order by ordinal',[revisionId])).rows;
+      if(rows.length!==Number(revision.row_count))throw Object.assign(new Error('revision source invalid'),{code:'ARTIFACT_SOURCE_INVALID',httpStatus:409});
+      // No independent roster is persisted on this revision storage contract.
+      // Absence remains UNVERIFIED; never load the active factory/map.
+      const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[...rows,...canonicalArtifactPreliminaryNeeds(revision)]});
+      await client.query('rollback');return result;
+    } catch(error){await client.query('rollback');throw error;}
+  });
+  if(!acceptance)throw Object.assign(new Error('revision not found'),{code:'NOT_FOUND',httpStatus:404});
+  return acceptance;
+}
+
 function localRevisionView(
   revision: Record<string, any>,
   environment: {
     contentAdmission?: AdmissionDecision;
     legacyWarningRu?: string | null;
+    operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
   } = {},
 ) {
   return canonicalEstimateRevisionDetailFromStorage(revision, {
@@ -4619,6 +4644,7 @@ async function route(
         httpStatus: 401,
       });
     }
+    assertCanonicalEstimateSavedArtifactStructureV1(await localSavedOperationAcceptanceV1(String(artifact.revision_id)));
     const bytes = readFileSync(artifactFilePath(artifact.storage_key));
     response.writeHead(200, {
       "Access-Control-Allow-Origin": "*",
@@ -5855,7 +5881,9 @@ async function route(
         throw error;
       }
     }):null;
+    const operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(revision.id));
     return send(response, 200, {...localRevisionView(revision, {
+      operationResourceAcceptanceV1,
       contentAdmission: contentAdmission.decision,
       legacyWarningRu:
         "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
@@ -6122,6 +6150,8 @@ async function route(
           code: "NOT_FOUND",
           httpStatus: 404,
         });
+      const operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(artifact.revision_id));
+      if(artifact.status==='ready')assertCanonicalEstimateSavedArtifactStructureV1(operationResourceAcceptanceV1);
       const forwardedProtocol = String(
         request.headers["x-forwarded-proto"] ?? "",
       )
@@ -6201,6 +6231,7 @@ async function route(
         sha256: artifact.sha256,
         metadata,
         contentAdmission: contentAdmission.decision,
+        operationResourceAcceptanceV1,
         errorCode: artifact.error_code,
         createdAt: artifact.created_at,
         updatedAt: artifact.updated_at,

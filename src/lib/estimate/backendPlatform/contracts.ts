@@ -1,3 +1,4 @@
+import type {CanonicalEstimateOperationResourceAcceptanceV1} from './canonicalEstimateOperationComposition';
 import type {CanonicalNormSourceAdmissionEvidenceV1} from './canonicalNormSourceAdmissionEvidenceV1';
 import type { CanonicalPhysicalNormEvidenceV1 } from './canonicalPhysicalNormEvidenceV1';
 import {parseCanonicalSelectedMaterialDeliveryRequestR1} from './canonicalSelectedMaterialDeliveryContractR1';
@@ -161,6 +162,7 @@ export type CanonicalEstimateArtifactView = {
   sha256: string | null;
   metadata: Record<string, unknown>;
   contentAdmission?: AdmissionDecision;
+  operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
   errorCode: string | null;
   createdAt: string;
   updatedAt: string;
@@ -281,6 +283,7 @@ export type CanonicalEstimateRevisionView = {
   inputHash?: string | null;
   outputHash?: string | null;
   contentAdmission?: AdmissionDecision;
+  operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
   legacyWarningRu?: string | null;
   /** Current external admission annotation; the saved revision is unchanged. */
   contentWithdrawalReasonRu?: string | null;

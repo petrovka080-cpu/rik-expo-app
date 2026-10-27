@@ -1,3 +1,7 @@
+import unresolvedCeiling from '../../../../data/estimate-benchmarks/fixtures/master24-ceiling-unresolved-included-pdf-r1.json';
+import {canonicalPublicSavedResourceRowKindV1} from './canonicalPublicResourcePresentationV1';
+import savedFanAcceptanceFixture from './fixtures/saved-operation-acceptance-native-fan-source-r1.json';
+import {canonicalEstimateSavedOperationAcceptanceV1, assertCanonicalEstimateSavedArtifactStructureV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 import {
   buildCanonicalArtifactMetadata,
   buildCanonicalProcurementProjection,
@@ -229,7 +233,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:36",
+      templateVersion: "professional-estimate-pdf:37",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,
@@ -282,3 +286,109 @@ describe("canonical estimate artifact contract", () => {
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({ metadata: { templateVersion }, revision })).toBe(false);
   });
 });
+
+describe('full saved-row operation acceptance before artifact filtering', () => {
+  const operation={contractVersion:'canonical-operation-resource/v1',groupId:'mount',groupTitleRu:'Монтаж',
+    operationId:'fix',operationTitleRu:'Закрепить устройство',completionCriterionRu:'Устройство закреплено'};
+  const resource=(rowId:string, quantity:string|null)=>({row_id:rowId,title_ru:'Крепёж',quantity,
+    included_in_estimate:false,included_in_procurement:false,ownership_status:'PRELIMINARY_NEED',
+    calculation_trace:{resourceGraph:{operationCompositionV1:operation,publicResourcePresentationV1:{
+      contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:'Крепёж',nameRu:'Крепёж',
+      brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:'MATERIAL'}}}});
+  it('keeps an unresolved independent need draft-visible without claiming completeness or mutating history',()=>{
+    const saved={...revision,input_parameters:{},amendment_contract:{parameterSources:{}}};
+    const resources=[resource('fixings',null)];const before=JSON.stringify({saved,resources});
+    const result=canonicalEstimateSavedOperationAcceptanceV1({revision:saved,resources});
+    expect(result.status).toBe('COMPOSITION_UNVERIFIED');expect(result.pdfAllowed).toBe(true);
+    expect(result.completeClaimAllowed).toBe(false);expect(result.issues).toContainEqual({code:'RESOURCE_QUANTITY_UNRESOLVED'});
+    expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(result)).not.toThrow();
+    expect(JSON.stringify({saved,resources})).toBe(before);
+  });
+  it('does not lose an invalid excluded row before the common structure guard',()=>{
+    const resources=[resource('good','1'),{...resource('unassigned',null),calculation_trace:{}}];
+    const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
+    expect(result.status).toBe('STRUCTURE_INVALID');
+    expect(result.issues).toContainEqual({code:'RESOURCE_OPERATION_MISSING',rowId:'unassigned'});
+    expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(result)).toThrow('saved operation/resource structure invalid');
+  });
+  it('keeps explicit manual names and shared operation identities without creating a second row',()=>{
+    const first=resource('fixings','1');
+    const related={...resource('tool','1'),title_ru:'Мой инструмент',calculation_trace:{manualTitleOverride:true,
+      resourceGraph:{...first.calculation_trace.resourceGraph,operationCompositionV1:{...operation,
+        additionalOperations:[{operationId:'check',operationTitleRu:'Проверить крепление',completionCriterionRu:'Крепление проверено'}]}}}};
+    const resources=[first,related];const before=JSON.stringify(resources);
+    const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
+    expect(result.pdfAllowed).toBe(true);expect(result.completeClaimAllowed).toBe(false);
+    expect(result.issues.some(issue=>issue.code==='PUBLIC_RESOURCE_NAME_UNVERIFIED')).toBe(false);
+    expect(resources).toHaveLength(2);expect(JSON.stringify(resources)).toBe(before);
+  });
+});
+
+it('does not call an explicit labor/work row physical when its generic operation has the same name',()=>{
+  const operation={contractVersion:'canonical-operation-resource/v1',groupId:'work',groupTitleRu:'Работы',
+    operationId:'mount',operationTitleRu:'Монтаж',completionCriterionRu:'Монтаж выполнен'};
+  for(const category of ['labor','work']) {
+    const resources=[{row_id:'labor',title_ru:'Монтаж',quantity:null,category,
+      calculation_trace:{resourceGraph:{operationCompositionV1:operation}}}];
+    const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
+    expect(result.pdfAllowed).toBe(true);expect(result.completeClaimAllowed).toBe(false);
+    expect(result.issues.some(issue=>issue.code==='RESOURCE_USED_AS_OPERATION')).toBe(false);
+  }
+  const unresolved=[{row_id:'resource',title_ru:'Монтаж',quantity:null,category:'unclassified',
+    calculation_trace:{resourceGraph:{operationCompositionV1:operation}}}];
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision,resources:unresolved}).issues)
+    .toContainEqual({code:'RESOURCE_USED_AS_OPERATION',rowId:'resource',operationId:'mount'});
+});
+
+it('admits exact native saved5 membership as a draft and blocks checksum drift without substituting current source',()=>{
+  const fixture=JSON.parse(JSON.stringify(savedFanAcceptanceFixture));const before=JSON.stringify(fixture);
+  expect(fixture.resources).toHaveLength(19);
+  const result=canonicalEstimateSavedOperationAcceptanceV1(fixture);
+  expect(result.status).toBe('COMPOSITION_UNVERIFIED');expect(result.pdfAllowed).toBe(true);
+  expect(result.completeClaimAllowed).toBe(false);expect(result.definitionAdmissionAllowed).toBe(false);
+  const drift=canonicalEstimateSavedOperationAcceptanceV1({...fixture,
+    revision:{...fixture.revision,checksum_sha256:'0'.repeat(64)}});
+  expect(drift.pdfAllowed).toBe(false);expect(drift.status).toBe('STRUCTURE_INVALID');
+  expect(JSON.stringify(fixture)).toBe(before);
+});
+
+it('retains original source-title parity across public and manual aliases without guessing absent source metadata',()=>{
+  const sourceTitle='Крепёж из исходного комплекта';
+  const operation={contractVersion:'canonical-operation-resource/v1',groupId:'fix',groupTitleRu:'Крепление',
+    operationId:'bad-heading',operationTitleRu:sourceTitle,completionCriterionRu:'Историческая запись'};
+  const descriptor={contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:sourceTitle,
+    nameRu:'Крепёж',brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:'MATERIAL'};
+  const source={row_id:'source',title_ru:sourceTitle,quantity:null,category:'material',
+    calculation_trace:{resourceGraph:{operationCompositionV1:operation,publicResourcePresentationV1:descriptor}}};
+  const audit=(resource:Record<string,unknown>)=>canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[resource]});
+  expect(audit(source).issues).toContainEqual({code:'RESOURCE_USED_AS_OPERATION',rowId:'source',operationId:'bad-heading'});
+  const manual={...source,title_ru:'Мой крепёж',calculation_trace:{...source.calculation_trace,manualTitleOverride:true}};
+  expect(audit(manual).issues).toContainEqual({code:'RESOURCE_USED_AS_OPERATION',rowId:'source',operationId:'bad-heading'});
+  const noSavedSource={...manual,calculation_trace:{manualTitleOverride:true,resourceGraph:{operationCompositionV1:operation}}};
+  expect(audit(noSavedSource).pdfAllowed).toBe(true);expect(audit(noSavedSource).completeClaimAllowed).toBe(false);
+});
+
+test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
+  'shared classification keeps actual ceiling labor UNKNOWN despite %s and omits genuine scope/counters',rowKind=>{
+    const source=unresolvedCeiling.need,trace=source.calculation_trace;
+    const need={...source,ownership_status:'PRELIMINARY_NEED',need_state:'QUANTITY_REQUIRED',quantity:null,
+      amount:null,unit_price:null,included_in_estimate:false,included_in_procurement:false,
+      calculation_trace:{...trace,resourceGraph:{...trace.resourceGraph,
+        operationCompositionV1:null,
+        publicResourcePresentationV1:{...trace.resourceGraph.publicResourcePresentationV1,rowKind}}}};
+    const counter={...need,row_id:'explicit-counter',ownership_status:'OWNED',need_state:undefined,quantity:'1',
+      calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE',
+        publicResourcePresentationV1:{...trace.resourceGraph.publicResourcePresentationV1,rowKind:'CALCULATION_DETAIL'}}}};
+    const scope={...counter,row_id:'scope',calculation_trace:{resourceGraph:{scopeRequirementDecisionV1:{
+      contractVersion:'canonical-scope-requirement-decision/v1',rowId:'scope',groupId:'ceiling',groupTitleRu:'Потолок',
+      titleRu:'Проверка основания',reasonRu:'Нужны данные объекта',kind:'OBJECT_SCOPE',status:'OBJECT_FACT_REQUIRED',
+      coveringRowIds:[],originalRowIds:[],missingObjectFactParameterIds:['base'],numericNormAccepted:false,separatePaymentAccepted:false}}}};
+    const resources=[need,counter,scope];const before=JSON.stringify(resources);
+    expect(canonicalPublicSavedResourceRowKindV1(need)).toBe('RESOURCE');
+    expect(canonicalPublicSavedResourceRowKindV1(counter)).toBe('CALCULATION_DETAIL');
+    const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
+    expect(result.issues).toContainEqual({code:'RESOURCE_OPERATION_MISSING',rowId:need.row_id});
+    expect(result.issues).toContainEqual({code:'RESOURCE_QUANTITY_UNRESOLVED'});
+    expect(result.issues.some(issue=>issue.rowId==='explicit-counter'||issue.rowId==='scope')).toBe(false);
+    expect(result.pdfAllowed).toBe(false);expect(JSON.stringify(resources)).toBe(before);
+  });

@@ -169,3 +169,31 @@ export function canonicalPublicResourceCategoryTitleRuV1(input: {
   const category=(input.category??'').trim().toLocaleLowerCase('ru-RU');
   return Object.hasOwn(raw,category)?raw[category]:null;
 }
+
+/** Conservative fallback for explicit persisted financial categories only.
+ * Authored/legacy kinds take priority. A title never supplies a category. */
+export function canonicalPublicResourceKindFromCategoryV1(category: unknown): CanonicalPublicResourceKindV1 | null {
+  switch(category) {
+    case 'labor': case 'work': return 'LABOR';
+    case 'service': return 'SERVICE';
+    case 'transport': case 'delivery': return 'TRANSPORT';
+    case 'material': return 'MATERIAL';
+    case 'tool': return 'TOOL';
+    case 'equipment': return 'EQUIPMENT';
+    default: return null;
+  }
+}
+
+/** Shared saved-row wrapper formerly private to the professional PDF owner.
+ * Exact same classifier, including the genuine unknown-quantity override. */
+export function canonicalPublicSavedResourceRowKindV1(row: Readonly<Record<string,unknown>>): 'RESOURCE'|'CALCULATION_DETAIL'|'PROCESS_NOTE' {
+  const objectValue=(value:unknown):Record<string,unknown>=>value!=null&&typeof value==='object'&&!Array.isArray(value)
+    ? value as Record<string,unknown>:{};
+  const trace=objectValue(row.calculation_trace),graph=objectValue(trace.resourceGraph);
+  if(row.ownership_status==='PRELIMINARY_NEED'
+    &&(row.need_state==='QUANTITY_REQUIRED'||trace.needState==='QUANTITY_REQUIRED'))return 'RESOURCE';
+  return canonicalPublicResourceRowKindV1({titleRu:String(row.title_ru),descriptor:graph.publicResourcePresentationV1,
+    manualTitleOverride:trace.manualTitleOverride===true,costTreatment:graph.costTreatment,
+    includedInEstimate:row.included_in_estimate===true,includedInProcurement:row.included_in_procurement===true,
+    unitPrice:row.unit_price,amount:row.amount,rowId:String(row.row_id),graph,category:String(row.category??'')});
+}

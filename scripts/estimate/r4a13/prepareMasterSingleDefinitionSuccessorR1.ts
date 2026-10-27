@@ -23,6 +23,7 @@ import { compileFormulaGraph } from
   "../../../src/lib/estimate/backendPlatform/formulaGraph";
 import {
   createCanonicalDefinitionClonePlan,
+  assertCanonicalPublisherSuccessorOperationResourcesR1,
   preflightCanonicalDefinitionPublishPlans,
   publishCanonicalDefinitionDraft,
   resolveCanonicalApprovedBaselineLeaf,
@@ -915,6 +916,8 @@ export function validateIndependentCompletenessMapReferences(input: Readonly<{
   completenessMap: unknown;
   formulaDefinitions: readonly Json[];
   resourceDefinitions: readonly Json[];
+  /** Mandatory only for a new successor; legacy reference readers keep their contract. */
+  requireOperationBindings?: boolean;
 }>): readonly string[] {
   const errors: string[] = [];
   const completeness = isJsonRecord(input.completenessMap) ? input.completenessMap : null;
@@ -942,8 +945,8 @@ export function validateIndependentCompletenessMapReferences(input: Readonly<{
   const entryKeys = new Set<string>();
   // New source maps opt in to physical operation binding. Historical maps keep
   // their existing contract; a resource title never proves which stage uses it.
-  const requireOperationBindings = completeness.operationResourceBindingRequired === true;
-  if (completeness.operationResourceBindingRequired != null && !requireOperationBindings) {
+  const requireOperationBindings = input.requireOperationBindings === true || completeness.operationResourceBindingRequired === true;
+  if (completeness.operationResourceBindingRequired != null && completeness.operationResourceBindingRequired !== true) {
     errors.push("OPERATION_RESOURCE_BINDING_POLICY");
   }
   for (const [index, rawEntry] of entries.entries()) {
@@ -1545,10 +1548,24 @@ export function validateMasterTypedPartialQuantityPreparationR1(config: Pick<Mas
       capability_matrix:buildMasterCapabilityMatrix(undefined,config.resourceDefinitions,basis)}})];
 }
 
+function masterSuccessorIndependentCompositionR1(config:MasterSingleDefinitionSuccessorConfig):unknown{
+ const retained=config.binding.retainParentBindings;
+ const captured=retained?.operationCompositionOnly?.capturedContentPassport
+  ??retained?.projectScopeMetadataOnlyV1?.capturedContentPassport??retained?.truthAuthorityOnlyV1?.capturedContentPassport
+  ??retained?.monolithicRepairGeometryVisibilityOnlyR60?.capturedContentPassport;
+ return config.passport.independentCompletenessMap??captured?.decision?.independentCompletenessMap;
+}
+
 export async function runMasterSingleDefinitionSuccessorR1(
   config: MasterSingleDefinitionSuccessorConfig,
 ): Promise<void> {
   assertCanonicalNewWorkCatalogIdV1(config.catalogId);
+  const admissionCompletenessMap=masterSuccessorIndependentCompositionR1(config);
+  const operationReferenceErrors=validateIndependentCompletenessMapReferences({completenessMap:admissionCompletenessMap,
+    formulaDefinitions:config.formulaDefinitions,resourceDefinitions:config.resourceDefinitions,requireOperationBindings:true});
+  invariant(operationReferenceErrors.length===0,`${stop(config,'NEW_SUCCESSOR_INDEPENDENT_COMPOSITION')}:${operationReferenceErrors.join(',')}`);
+  assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:config.catalogId,
+    resourceDefinitions:config.resourceDefinitions,independentComposition:admissionCompletenessMap});
   const typedQuantityErrors=validateMasterTypedPartialQuantityPreparationR1(config);
   invariant(typedQuantityErrors.length===0,`${stop(config,'TYPED_QUANTITY_PREFLIGHT')}:${typedQuantityErrors.join(',')}`);
   const apply = process.argv.includes("--apply");
@@ -1557,6 +1574,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
     ...config.sourcePaths,
     ...(config.passport.partialQuantityBasis==null&&!config.binding.retainParentBindings?.operationCompositionOnly?.capturedContentPassport.decision?.partialQuantityBasis?[]:['scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts']),
     'src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts',
+    'src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts',
+    'src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts',
+    'scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts',
     ...(config.catalogAppend == null && config.binding.additionalRowIds == null ? [] : [
       "scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts",
     ]),
@@ -1684,15 +1704,14 @@ export async function runMasterSingleDefinitionSuccessorR1(
   invariant(Object.keys(runtimeProfileSourceIds).every((parameterId) =>
     Object.hasOwn(runtimeProfileInput, parameterId)),
   stop(config, "RUNTIME_PROFILE_SOURCE_ORPHAN"));
-  if (config.passport.independentCompletenessMap != null) {
-    const completenessErrors = validateIndependentCompletenessMapReferences({
-      completenessMap: config.passport.independentCompletenessMap,
-      formulaDefinitions: formulaRows,
-      resourceDefinitions: resourceRows,
-    });
-    invariant(completenessErrors.length === 0,
-      `${stop(config, "INDEPENDENT_COMPLETENESS_MAP")}:${completenessErrors.join(",")}`);
-  }
+  const completenessErrors = validateIndependentCompletenessMapReferences({
+    completenessMap: admissionCompletenessMap,formulaDefinitions: formulaRows,resourceDefinitions: resourceRows,
+    requireOperationBindings:true,
+  });
+  invariant(completenessErrors.length === 0,
+    `${stop(config, "INDEPENDENT_COMPLETENESS_MAP")}:${completenessErrors.join(",")}`);
+  assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:config.catalogId,
+    resourceDefinitions:resourceRows,independentComposition:admissionCompletenessMap});
   const { formulaConsumers, resourceConsumers } = buildMasterParameterCalculationConsumers({
     parameters: parameterRows, formulas: formulaRows, resources: resourceRows,
   });
@@ -2058,6 +2077,10 @@ export async function runMasterSingleDefinitionSuccessorR1(
       bindingApplicability: (binding) => ({ ...binding.applicability }),
       expectedNormativeBindingCount: retainedRepresentative?.expectedNormativeBindingCount??normativeBindingRowIds.length,
     });
+    // The final effective passport is audited too: metadata-only publication
+    // cannot validate a new map and silently persist a different captured map.
+    assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
+      resourceDefinitions:plan.resources,independentComposition:plan.passport.decision?.independentCompletenessMap});
     // New sparse baselines carry exact metadata coverage; historical records
     // stay untouched. Missing input values are never manufactured from metadata.
     if(!operationParent&&retainedRepresentative&&config.binding.retainParentBindings?.legacyTemplateAssumptionSources?.approvedSourceEvidence

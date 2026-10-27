@@ -355,3 +355,165 @@ export function canonicalLegacyResourceNameV1(
   const name = names[rowId];
   return typeof name === 'string' && name.trim().length > 0 && name.length <= 180 ? name : null;
 }
+
+/** One acceptance rule for definition admission and the saved estimate/PDF path.
+ * It audits composition; it never calculates quantities, prices or replacements.
+ * Independent evidence must name real operations and their expected resources.
+ */
+export type CanonicalEstimateOperationResourceAcceptanceV1 = Readonly<{
+  contractVersion: 'canonical-operation-resource-acceptance/v1';
+  status: 'ACCEPTED' | 'COMPOSITION_UNVERIFIED' | 'STRUCTURE_INVALID';
+  issues: readonly {code:string;rowId?:string;operationId?:string}[];
+  pdfAllowed: boolean;
+  definitionAdmissionAllowed: boolean;
+  completeClaimAllowed: boolean;
+}>;
+
+export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
+  resources: readonly Readonly<{rowId:string;nameRu:string;sourceNameRu?:string;resourceKind?:string|null;
+    operation?:unknown;publicNameVerified?:boolean;manualTitleOverride?:boolean;quantityKnown?:boolean}>[];
+  independentComposition?:unknown;
+  requireIndependentComposition?:boolean;
+}>): CanonicalEstimateOperationResourceAcceptanceV1 {
+  type Issue = {code:string;rowId?:string;operationId?:string};
+  const errors:Issue[]=[],unverified:Issue[]=[];
+  const record=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  const text=(v:unknown)=>typeof v==='string'?v.trim():'';
+  const key=(v:string)=>v.trim().replace(/\s+/gu,' ').toLocaleLowerCase('ru-RU');
+  const kinds=new Set<string>(['MATERIAL','CONSUMABLE','TOOL','ACCESSORY','EQUIPMENT','MECHANISM','LABOR','SERVICE','TRANSPORT','PPE']);
+  const physical=new Set(['MATERIAL','CONSUMABLE','TOOL','ACCESSORY','EQUIPMENT','MECHANISM','PPE']);
+  const operationBody=(op:CanonicalEstimateOperationReference)=>({contractVersion:op.contractVersion,
+    groupId:op.groupId,groupTitleRu:op.groupTitleRu,operationId:op.operationId,
+    operationTitleRu:op.operationTitleRu,completionCriterionRu:op.completionCriterionRu,
+    processOrdinal:op.processOrdinal??null,processRole:op.processRole??'PROCESS',
+    whenResourcePresent:op.whenResourcePresent??[]});
+  const sameOperation=(a:CanonicalEstimateOperationReference,b:CanonicalEstimateOperationReference)=>
+    canonicalEstimateStableJson(operationBody(a))===canonicalEstimateStableJson(operationBody(b));
+  const rows=new Map<string,(typeof input.resources)[number]>(),uses=new Map<string,CanonicalEstimateOperationReference[]>();
+  const operations=new Map<string,CanonicalEstimateOperationReference>();
+  if(input.resources.length===0)errors.push({code:'RESOURCES_EMPTY'});
+  for(const row of input.resources){
+    if(!text(row.rowId)||rows.has(row.rowId)){errors.push({code:'RESOURCE_ID_MISSING_OR_DUPLICATED',rowId:row.rowId});continue;}
+    rows.set(row.rowId,row);
+    if(!text(row.nameRu)||row.nameRu.length>180||(!row.manualTitleOverride&&/сверх доказанной поставки|по фактическому основанию|инструмент квалифицированного/iu.test(row.nameRu)))
+      errors.push({code:'PUBLIC_RESOURCE_NAME_INVALID',rowId:row.rowId});
+    if(!row.manualTitleOverride&&row.publicNameVerified!==true)unverified.push({code:'PUBLIC_RESOURCE_NAME_UNVERIFIED',rowId:row.rowId});
+    if(!row.resourceKind||!kinds.has(row.resourceKind))unverified.push({code:'RESOURCE_KIND_UNVERIFIED',rowId:row.rowId});
+    const parsedRefs=canonicalEstimateOperationReferences(row.operation);
+    const refs=parsedRefs.filter(op=>(!op.whenResourcePresent||op.whenResourcePresent.some(id=>input.resources.some(r=>r.rowId===id)))
+      &&op.processRole!=='REFERENCE_ONLY'&&op.processRole!=='COST_SUMMARY');
+    uses.set(row.rowId,refs);
+    if(refs.length===0)errors.push({code:'RESOURCE_OPERATION_MISSING',rowId:row.rowId});
+    if(record(row.operation)&&row.operation.additionalOperations!=null
+      &&(!Array.isArray(row.operation.additionalOperations)||parsedRefs.length!==row.operation.additionalOperations.length+1))
+      errors.push({code:'RELATED_OPERATION_INVALID_OR_DUPLICATED',rowId:row.rowId});
+    for(const op of refs){
+      if((physical.has(row.resourceKind??'')||!row.resourceKind)
+        &&((!row.manualTitleOverride&&key(op.operationTitleRu)===key(row.nameRu))
+          ||Boolean(text(row.sourceNameRu)&&key(op.operationTitleRu)===key(row.sourceNameRu!))))
+        errors.push({code:'RESOURCE_USED_AS_OPERATION',rowId:row.rowId,operationId:op.operationId});
+      const old=operations.get(op.operationId);
+      if(old&&!sameOperation(old,op))errors.push({code:'OPERATION_METADATA_CONFLICT',rowId:row.rowId,operationId:op.operationId});
+      else operations.set(op.operationId,op);
+    }
+  }
+  const independent=record(input.independentComposition)?input.independentComposition:null;
+  const roster=independent&&Array.isArray(independent.operationRoster)?independent.operationRoster:[];
+  const entries=independent&&Array.isArray(independent.entries)?independent.entries:[];
+  const evidenceValid=independent?.contract==='rik-expo-app.s26-3.independent-completeness-map.v1'
+    &&['NORMATIVE_OPERATION_MAP','TECHNOLOGY_MAP','PRODUCT_SYSTEM_TDS','PROJECT_SYSTEM'].includes(text(independent.sourceKind))
+    &&independent.generatedFromCurrentRows===false
+    &&/^[a-f0-9]{64}$/u.test(text(independent.evidenceSha256))&&roster.length>0&&entries.length>0;
+  if(!evidenceValid)(input.requireIndependentComposition?errors:unverified)
+    .push({code:'INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED'});
+  else{
+    const expectedOps=new Map<string,CanonicalEstimateOperationReference>();
+    for(const raw of roster){
+      const op=canonicalEstimateOperationReference(raw);
+      if(!op||expectedOps.has(op.operationId)){errors.push({code:'INDEPENDENT_OPERATION_ROSTER_INVALID'});continue;}
+      expectedOps.set(op.operationId,op);
+    }
+    for(const [id,op]of operations){
+      const expected=expectedOps.get(id);
+      if(!expected||!sameOperation(expected,op))errors.push({code:'OPERATION_NOT_IN_INDEPENDENT_ROSTER',operationId:id});
+    }
+    const declaredRows=new Set<string>(),entryKeys=new Set<string>();
+    for(const raw of entries){
+      if(!record(raw)||!record(raw.resolution)){errors.push({code:'INDEPENDENT_RESOURCE_ENTRY_INVALID'});continue;}
+      const entryKey=text(raw.operationId)+'\u0000'+text(raw.expectedResourceId);
+      if(!text(raw.operationId)||!text(raw.expectedResourceId)||!text(raw.condition)||!text(raw.sourceId)||entryKeys.has(entryKey))
+        errors.push({code:'INDEPENDENT_RESOURCE_ENTRY_AUTHORITY_INVALID'});
+      entryKeys.add(entryKey);
+      if(!expectedOps.has(text(raw.operationId)))errors.push({code:'INDEPENDENT_RESOURCE_OPERATION_UNKNOWN',operationId:text(raw.operationId)});
+      if(!['ROW','INCLUDED_COMPONENT_ROW','INCLUDED_IN_PARENT','NOT_APPLICABLE'].includes(text(raw.resolution.kind))){
+        errors.push({code:'INDEPENDENT_RESOURCE_RESOLUTION_INVALID'});continue;
+      }
+      if(raw.resolution.kind==='NOT_APPLICABLE'){
+        if(!text(raw.resolution.reasonRu)||!text(raw.sourceId))errors.push({code:'RESOURCE_NOT_APPLICABLE_WITHOUT_EVIDENCE'});
+        continue;
+      }
+      const rowId=text(raw.resolution.rowId??raw.resolution.parentRowId),row=rows.get(rowId);
+      if(!row){errors.push({code:'REQUIRED_RESOURCE_MISSING',rowId});continue;}
+      declaredRows.add(rowId);
+      const required=raw.requiredOperationIds;
+      if(!Array.isArray(required)||required.length===0||required.some(id=>!text(id)||!expectedOps.has(String(id))))
+        errors.push({code:'REQUIRED_OPERATION_DECLARATION_INVALID',rowId});
+      else if(!required.includes(raw.operationId))errors.push({code:'INDEPENDENT_RESOURCE_PRIMARY_USE_MISSING',rowId,operationId:text(raw.operationId)});
+      else for(const id of required){
+        if(!uses.get(rowId)?.some(op=>op.operationId===id))errors.push({code:'REQUIRED_RESOURCE_OPERATION_MISSING',rowId,operationId:String(id)});
+      }
+      if(!text(raw.publicNameRu)||!kinds.has(text(raw.resourceKind)))unverified.push({code:'INDEPENDENT_RESOURCE_PRESENTATION_UNVERIFIED',rowId});
+      else if((!row.manualTitleOverride&&row.nameRu!==raw.publicNameRu)||row.resourceKind!==raw.resourceKind)
+        errors.push({code:'RESOURCE_PRESENTATION_SOURCE_MISMATCH',rowId});
+    }
+    for(const row of rows.values())if(!declaredRows.has(row.rowId))
+      errors.push({code:'RESOURCE_NOT_IN_INDEPENDENT_COMPOSITION',rowId:row.rowId});
+    for(const [id,op]of expectedOps)if(op.processRole!=='REFERENCE_ONLY'&&op.processRole!=='COST_SUMMARY'&&!operations.has(id))errors.push({code:'REQUIRED_OPERATION_WITHOUT_RESOURCES',operationId:id});
+    // A row list alone cannot prove completeness: the author must review every
+    // resource class for each real operation, including documented exclusions.
+    const reviews=Array.isArray(independent?.operationRequirements)?independent.operationRequirements:[];
+    const reviewed=new Set<string>();
+    for(const review of reviews){
+      if(!record(review)||!expectedOps.has(text(review.operationId))||reviewed.has(text(review.operationId))
+        ||!text(review.sourceId)||!record(review.requirements)){
+        errors.push({code:'OPERATION_RESOURCE_REQUIREMENTS_INVALID'});continue;
+      }
+      const operationId=text(review.operationId);reviewed.add(operationId);
+      for(const resourceKind of kinds){
+        const requirement=review.requirements[resourceKind];
+        if(!record(requirement)||!['REQUIRED','NOT_APPLICABLE','UNRESOLVED'].includes(text(requirement.status))){
+          unverified.push({code:'OPERATION_RESOURCE_CLASS_UNVERIFIED_'+resourceKind,operationId});continue;
+        }
+        if(requirement.status==='NOT_APPLICABLE'){
+          if(!text(requirement.reasonRu))errors.push({code:'RESOURCE_CLASS_NOT_APPLICABLE_WITHOUT_REASON',operationId});
+          if([...rows.values()].some(row=>row.resourceKind===resourceKind&&uses.get(row.rowId)?.some(op=>op.operationId===operationId)))
+            errors.push({code:'RESOURCE_CLASS_NOT_APPLICABLE_CONFLICT',operationId});
+          continue;
+        }
+        if(!Array.isArray(requirement.rowIds)||requirement.rowIds.length===0){
+          errors.push({code:'REQUIRED_RESOURCE_CLASS_WITHOUT_VISIBLE_ROWS',operationId});continue;
+        }
+        for(const value of requirement.rowIds){
+          const rowId=text(value),row=rows.get(rowId);
+          if(!row||row.resourceKind!==resourceKind||!uses.get(rowId)?.some(op=>op.operationId===operationId))
+            errors.push({code:'REQUIRED_RESOURCE_CLASS_BINDING_MISSING',rowId,operationId});
+        }
+        if(requirement.status==='UNRESOLVED')unverified.push({code:'OPERATION_RESOURCE_CLASS_UNRESOLVED_'+resourceKind,operationId});
+      }
+    }
+    for(const [operationId,op]of expectedOps)if(op.processRole!=='REFERENCE_ONLY'&&op.processRole!=='COST_SUMMARY'&&!reviewed.has(operationId))
+      unverified.push({code:'OPERATION_RESOURCE_REQUIREMENTS_UNVERIFIED',operationId});
+  }
+  const quantityUnknown=input.resources.some(row=>row.quantityKnown===false);
+  if(quantityUnknown)unverified.push({code:'RESOURCE_QUANTITY_UNRESOLVED'});
+  const status=errors.length?'STRUCTURE_INVALID':unverified.length?'COMPOSITION_UNVERIFIED':'ACCEPTED';
+  const unresolvedOnly=(issue:Issue)=>issue.code==='RESOURCE_QUANTITY_UNRESOLVED'
+    ||issue.code.startsWith('OPERATION_RESOURCE_CLASS_UNRESOLVED_');
+  return{contractVersion:'canonical-operation-resource-acceptance/v1',status,issues:[...errors,...unverified],
+    pdfAllowed:errors.length===0,
+    definitionAdmissionAllowed:errors.length===0&&unverified.every(unresolvedOnly),
+    // This is a necessary composition condition. Existing source, quantity,
+    // engineering and money acceptance remain mandatory for a complete estimate.
+    completeClaimAllowed:errors.length===0&&unverified.length===0};
+}
+
