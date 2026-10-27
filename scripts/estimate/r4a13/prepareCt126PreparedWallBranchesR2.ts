@@ -22,42 +22,81 @@ const sha=(path:string)=>createHash('sha256').update(readFileSync(path)).digest(
 const masterPath='C:/Users/User/Downloads/GOX_BUILD_TZ_Single_Platform_Core_Sol61_2026-10-19(2).txt';
 const packPath='data/estimate-benchmarks/source-packs/ct126-four-prepared-wall-branches-r2.json';
 const subject='src/lib/estimate/v4/ct126PreparedWallBranchesR2.ts';
-/** Exact R329 presentation-only additions. Every retained field, source ID,
- * schema and binding is hashed after removing only these disjoint roof IDs.
+/** Exact R329 and current ELECOR presentation-only additions. Every retained field, source ID,
+ * schema and binding is hashed after removing only these exact disjoint presentation IDs.
  * This does not forward any norm, owner, quantity or retained old89 row. */
 const publicPresentationForwardR2:Record<string,{fromSha256:string;currentSha256:string;retainedSemanticSha256:string;
  arrays:Record<string,{identityFields:string[];added:(string|null)[][]}>}>={
   "data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json": {
-    "fromSha256": "82c26fabe15fea774a4ac2f806b3490eeefae037f82b7aeb8e33bf25d716aed3",
-    "currentSha256": "170dfd03b0ec275939b229d7d46fd0fc32efa0115f3dae27dca14a39b94cff8f",
-    "retainedSemanticSha256": "bb7ae569b788cd8bcaa52b3065df42c23c469c955da51cc6c494a71f176ad6ed",
-    "arrays": {
-      "workBindings": {
-        "identityFields": [
-          "sourceTitleRu"
+  "fromSha256": "82c26fabe15fea774a4ac2f806b3490eeefae037f82b7aeb8e33bf25d716aed3",
+  "currentSha256": "dcd44c10b370d0762ebbdab622d13a57dcd5b66dd2c4a8d664bab797617d6274",
+  "retainedSemanticSha256": "bb7ae569b788cd8bcaa52b3065df42c23c469c955da51cc6c494a71f176ad6ed",
+  "arrays": {
+    "workBindings": {
+      "identityFields": [
+        "sourceTitleRu"
+      ],
+      "added": [
+        [
+          "Наплавление двух дополнительных слоёв ЭПП-4 в ендовах"
         ],
-        "added": [
-          [
-            "Наплавление двух дополнительных слоёв ЭПП-4 в ендовах"
-          ]
-        ]
-      },
-      "parameterBindings": {
-        "identityFields": [
-          "catalogId",
-          "parameterId",
-          "sourceTitleRu"
+        [
+          "Монтаж кабель-канала ELECOR"
         ],
-        "added": [
-          [
-            "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
-            "m212_roof_reuse_torch_primer_q",
-            "Нормативная площадь кровли для огрунтовки, м²"
-          ]
+        [
+          "Материалы IEK ELECOR 60×40: прямой участок и крепёж по ППР — частичный состав"
         ]
-      }
+      ]
+    },
+    "parameterBindings": {
+      "identityFields": [
+        "catalogId",
+        "parameterId",
+        "sourceTitleRu"
+      ],
+      "added": [
+        [
+          "canonical-work:base:roofing_interior_flat_roof_install_technical_room",
+          "m212_roof_reuse_torch_primer_q",
+          "Нормативная площадь кровли для огрунтовки, м²"
+        ],
+        [
+          null,
+          "elecor_fixing_method",
+          "Принятый способ крепления ELECOR по ППР"
+        ],
+        [
+          null,
+          "elecor_fixing_product_sku",
+          "Комплект DuoPower 6 × 30 с винтом Panhead 4,5 × 40, артикул 535463"
+        ]
+      ]
+    },
+    "choiceBindings": {
+      "identityFields": ["sourceValue"],
+      "added": [
+        [
+          "Механическое крепление к бетонной стене: комплект535463 по принятому ППР"
+        ],
+        [
+          "Одна штука — полный комплект535463: дюбельDuoPower6×30 и винтPanhead4,5×40"
+        ],
+        [
+          "Узел535463 на бетонной стене принят в ППР: нагрузка, отверстие, головка и полный состав проверены"
+        ],
+        [
+          "ППР принимает белую заглушку КМЗ 60 × 40 для каждого указанного закрытого торца данного прямого участка; остальные примыкания и узлы не закрыты"
+        ],
+        [
+          "Принята ведомость одиночных комплектных розеток069730L; готовое основание и крепёж; подготовленный совместимый обесточенный ввод; проверены маркировка изделия, проводники и программа электроиспытаний; работы выполняет допущенный персонал"
+        ],
+        [
+          "50 комплектов в заводской коробке: 50 дюбелей DuoPower 6×30 и 50 винтов Panhead 4,5×40. Строка измеряется в комплектных парах, цена за одну пару, не за коробку."
+        ]
+      ]
     }
-  },
+  }
+},
   "data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json": {
     "fromSha256": "d46879709c79f99485203f86b86f631521fd11469597ed81c2c3703fd1b841d1",
     "currentSha256": "c74a1df4ebdea8590c0faaf62e767cad4f6ea726c369ad15375234eb58359e14",

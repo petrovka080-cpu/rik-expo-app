@@ -8,7 +8,7 @@ import { formatEstimateQuantityRu } from '../../lib/estimatePresentation/formatE
 import { publicBoqDisplayNameRu } from '../../lib/estimate/publicBoqNaming';
 import { formatEstimateUnitLabel } from '../../lib/ai/globalEstimate/formatEstimateUnitLabel';
 import { canonicalPurchaseSupplyWarningV1, parseCanonicalExactPurchaseQuantityV1 } from '../../lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1';
-import { canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections,
+import { canonicalLegacyResourceNameV1, type CanonicalLegacyOperationDisplayContextV1, canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections,
   type CanonicalEstimateOperationReference } from '../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 
 export type CanonicalProcurementPreviewRow = {
@@ -24,6 +24,18 @@ export type CanonicalProcurementPreviewRow = {
   operation?: CanonicalEstimateOperationReference;
 };
 
+function legacyDisplayContext(revision:EstimateDraftRevision|null,items:readonly ConsumerRepairRequestItem[]):CanonicalLegacyOperationDisplayContextV1|undefined {
+  if(!revision?.resolvedIdentity)return undefined;
+  const records=new Map((revision.boq.rows??[]).map(row=>[row.rowId,{rowId:row.rowId,operation:row.sourceParameters?.canonicalOperationComposition}]));
+  for(const item of items)if(item.sourceParameters?.canonicalBackendRevisionId===revision.revisionId){
+    const rowId=String(item.sourceParameters.rowCode??item.id),operation=item.sourceParameters.canonicalOperationComposition;
+    if(records.has(rowId)&&JSON.stringify(records.get(rowId)?.operation)!==JSON.stringify(operation))return undefined;
+    records.set(rowId,{rowId,operation});
+  }
+  return {revisionId:revision.revisionId,releaseId:String(revision.resolvedIdentity.canonicalModelVersion??''),
+    checksumSha256:String(revision.applicableBoqSignature??''),savedResources:[...records.values()]};
+}
+
 function operationMetadata(source: Record<string, unknown> | null | undefined) {
   const operation = canonicalPublicEstimateOperationReferenceRu(canonicalEstimateOperationReference(source?.canonicalOperationComposition));
   return operation ? { operation } : {};
@@ -36,6 +48,7 @@ export function buildCanonicalProcurementPreviewSections(
   rows: readonly CanonicalProcurementPreviewRow[],
   items: readonly ConsumerRepairRequestItem[] = [],
 ) {
+  const displayContext=legacyDisplayContext(revision,items);
   const purchasingIds = new Set(rows.map(row => row.rowId));
   const resources = new Map((revision?.boq.rows ?? []).map(row => [row.rowId, {
     rowId: row.rowId, titleRu: row.titleRu, operation: row.sourceParameters?.canonicalOperationComposition,
@@ -46,8 +59,8 @@ export function buildCanonicalProcurementPreviewSections(
       rowId, titleRu: item.titleRu, operation: item.sourceParameters.canonicalOperationComposition,
     });
   }
-  for (const row of rows) resources.set(row.rowId, { rowId: row.rowId, titleRu: row.titleRu, operation: row.operation });
-  return canonicalEstimateResourceOperationSections([...resources.values()]).map(section => ({
+  for (const row of rows) resources.set(row.rowId, { rowId: row.rowId, titleRu: row.titleRu, operation: resources.get(row.rowId)?.operation ?? row.operation });
+  return canonicalEstimateResourceOperationSections([...resources.values()],[],[],displayContext).map(section => ({
     ...section,
     operation: canonicalPublicEstimateOperationReferenceRu(section.operation),
     resourceIds: section.resourceIds.filter(id => purchasingIds.has(id)),
@@ -72,13 +85,14 @@ export function buildCanonicalProcurementPreviewRows(
   items: readonly ConsumerRepairRequestItem[] = [],
 ): CanonicalProcurementPreviewRow[] {
   if (!revision) return [];
+  const displayContext=legacyDisplayContext(revision,items);
   const rows: CanonicalProcurementPreviewRow[] = revision.boq.rows
     .filter((row) => row.includedInProcurement || supplyWarning(row.rowId, row.unit, row.titleRu, row.sourceParameters) != null)
     .map((row) => {
       const manualTitleOverride = row.sourceParameters?.canonicalManualTitleOverride === true;
       const presentation = canonicalPublicResourceDisplayPresentationV1({ rowId: row.rowId, titleRu: row.titleRu,
         descriptor: row.sourceParameters?.canonicalPublicResourcePresentationV1, manualTitleOverride });
-      const titleRu = canonicalPublicEstimateRowNameRu({ rowId: row.rowId, sourceTitleRu: row.titleRu,
+      const titleRu = canonicalLegacyResourceNameV1(row.rowId,displayContext,manualTitleOverride) ?? canonicalPublicEstimateRowNameRu({ rowId: row.rowId, sourceTitleRu: row.titleRu,
         titleRu: manualTitleOverride ? row.titleRu : presentation?.nameRu
           ?? publicBoqDisplayNameRu({ sourceNameRu: row.titleRu, rowType: row.rowType }), manualTitleOverride });
       const warning = supplyWarning(row.rowId, row.unit, titleRu, row.sourceParameters);
@@ -122,7 +136,7 @@ export function buildCanonicalProcurementPreviewRows(
     if (source?.canonicalPreliminaryNeed !== true || source.canonicalBackendRevisionId !== revision.revisionId) continue;
     const rowId = String(source.rowCode ?? item.id);
     if (includedIds.has(rowId)) continue;
-    const titleRu = canonicalPublicEstimateRowNameRu({ rowId, titleRu: item.titleRu,
+    const titleRu = canonicalLegacyResourceNameV1(rowId,displayContext,source.canonicalManualTitleOverride===true) ?? canonicalPublicEstimateRowNameRu({ rowId, titleRu: item.titleRu,
       manualTitleOverride: source.canonicalManualTitleOverride === true });
     const warning = supplyWarning(rowId, item.unit, titleRu, source);
     if (warning) {
@@ -136,8 +150,7 @@ export function buildCanonicalProcurementPreviewRows(
     if (source.includedInProcurement !== true) continue;
     const requirement = canonicalArtifactPurchaseRequirement({ row_id: rowId, unit_id: item.unit,
       calculation_trace: { purchaseRequirementV1: source.canonicalPurchaseRequirement } });
-    rows.push({ rowId, titleRu: canonicalPublicEstimateRowNameRu({ rowId, titleRu: item.titleRu,
-      manualTitleOverride: source.canonicalManualTitleOverride === true }), quantity: exactQuantity(source, item.quantity ?? null), preliminary: true,
+    rows.push({ rowId, titleRu, quantity: exactQuantity(source, item.quantity ?? null), preliminary: true,
       ...operationMetadata(source),
       unit: formatEstimateUnitLabel(item.unit), unitPrice: item.unitPrice ?? null, currency: item.currency,
       quantityDetails: requirement ? [`${requirement.labelRu}: ${formatEstimateQuantityRu(requirement.quantity)} ${formatEstimateUnitLabel(requirement.unitId)}`] : [],

@@ -166,7 +166,7 @@
     "data/estimate-benchmarks/source-packs/interior-wall-finishing-existing-paint-composite-r502.json": "8439b37ecd177d26565b40e4be753e20c9fe0cc3bca93399b6652bf7b72e8035",
     "data/estimate-benchmarks/source-packs/interior-wall-finishing-group-r502.json": "d8489f46fcd60e64748e4dd5666b50e475ce8d981a4798d2cc43ab0ff6d85e01",
     "data/estimate-benchmarks/source-packs/knauf-interior-plaster-conditional-composition-five-s27-63.json": "53d2015f32d7743b5354ffe035525d0bb542d707662093b86d3105c04d7ff953",
-    "data/estimate-benchmarks/source-packs/legacy-operation-display-five-saved-v1.json": "fd77ca19a142351cfcbbd4427819410b81c547f2a8a55f66ae351f066a10117e",
+    "data/estimate-benchmarks/source-packs/legacy-operation-display-five-saved-v1.json": "1437fc9db630f62c55feed5927e47779bd73934050047177a7dd73ae5d7ef442",
     "data/estimate-benchmarks/source-packs/legrand-p31-blind-ep-joint-fasteners-r1.json": "48a88f5dab61309d95ad589ebd4964004884e6cb2d9c10a74314a7ddda8c8749",
     "data/estimate-benchmarks/source-packs/low-current-nk688m-jackrapid-method-post-r24.json": "57891020656b86c42276a463c480471fd144aaafe1a2ddef52cf1832d2b44cfa",
     "data/estimate-benchmarks/source-packs/manual-backfill-soil1-krer01-061-01-quantity-r1.json": "56fb26dcf23d0310e44eaa26e096d5cdbd56889627dcc1985fb7b2dc509af933",
@@ -402,7 +402,7 @@
     "scripts/estimate/r4a13/prepareCementSandScreedDemolitionStandardSuccessor.ts": "c4309fa4ba9846eb78534e791b36e570f0852790fb684f79eea364969c8386f3",
     "scripts/estimate/r4a13/prepareCeramicFloorCementMortarKrer11Column03AppendR1.test.ts": "d9451e92d17a1c61c1fdf36049ae629c10810be7c00bb2dda3b3e47dab32b4b5",
     "scripts/estimate/r4a13/prepareCeramicFloorCementMortarKrer11Column03AppendR1.ts": "0ef4ffe2ca60b063bf60f96fba3d411ea5a446b0a31b77982ed7d9711d32697f",
-    "scripts/estimate/r4a13/prepareCt126PreparedWallBranchesR2.ts": "31e92e5b975a1c55e3f09ca15c0c8b25f5181a3eab7b3631eed5b7fec4e80435",
+    "scripts/estimate/r4a13/prepareCt126PreparedWallBranchesR2.ts": "48801fb31039e8bcd2d7eacec8cc8865fc20005ede277f945160e5f50a0b02e3",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.test.ts": "c2ba5f9367795a3889a2ea61e8b910a7420005ffd4440aafb9002f498acf66a2",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.ts": "f2966bee892f08237f0bd50c054845ee6ea7a6c59032f03f909d536c4bd5fff9",
     "scripts/estimate/r4a13/prepareElecor60x40SingleRouteMaterialsR1.ts": "93fb236d6c999d86a2d4f8a209177265613b1860d39ad5554efbbc8ecc367ab7",
@@ -599,7 +599,7 @@
     "src/features/consumerRepair/RequestEstimateStageRequirements.tsx": "fed85f910e3b5c0d7a7d3eb4f4fca99a444c7440be98f0f74c59ec4af8a289d1",
     "src/features/consumerRepair/RequestEstimateSummaryCard.tsx": "10e30965d34ad185955dd0e58ef723d9998e7d451fd74d7a08514595c6dda0ef",
     "src/features/consumerRepair/canonicalExactPurchaseEditingV1.ts": "be2422009cab9bcbc477e6f84ab32f144bc801ca5773d809301683d113e5ae25",
-    "src/features/consumerRepair/canonicalProcurementPreviewRows.ts": "b187d708af719c5faef43c815bdf008926bae0190be02a1cb94f64a8d390824d",
+    "src/features/consumerRepair/canonicalProcurementPreviewRows.ts": "aea0da4c8bab30d0df4d3c5ad6f5be3de9b69178d1832c5749bd2ba7b6fab7a9",
     "src/features/consumerRepair/consumerAsphaltLevelExistingStandardR566.test.ts": "df2663410bfc37228d31d4877af079edfc4f5e4f05b9727f990f05eb92462a9a",
     "src/features/consumerRepair/consumerCanonicalArtifactHydration.ts": "cc0848dd1925cb72d3d70dc00ab6a8a618c8e5523648f9b8b9a91cc8dcb93aa5",
     "src/features/consumerRepair/consumerCanonicalBaselineCompile.test.ts": "8091cb4e163777844b64d4bb853ce3e9e74a3b6c5e66974f252ad24f3fde7d0a",
@@ -633,7 +633,7 @@
     "src/features/consumerRepair/consumerRepairRowRequirements.test.ts": "f8fa31e29dec8bb7255e414e52d610973c728cbbdb7ebebb1a62d44e573e0f2a",
     "src/features/consumerRepair/requestEstimateScreenActions.ts": "5c8dd8852b081bf8955fd7798a17fe263e56c6dd1660922740474b1115be2bbf",
     "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts": "a6c818e7d9961538e0052ce4c90ead1c0b902d57feeb98f9e644574356ad5b1f",
-    "src/features/consumerRepair/requestEstimateViewModel.ts": "ed6dc770d969a689ec7e005c5046683c32a3ce4a1fb66fd30fb4ab180d871727",
+    "src/features/consumerRepair/requestEstimateViewModel.ts": "a17c7b9b1c07c85d96b9c984ffdf701503a2dbf89200e832cbace72c3b6f26d7",
     "src/features/consumerRepair/useCanonicalPreliminaryNeedEvidence.ts": "827d0e189b727e971b4a6118cb0c7334c77fbd9bcd5cbb06c53367cdf7e5c299",
     "src/features/consumerRepair/useConsumerRepairItemRowEditing.ts": "aefaeadbc47eb838207ce4e11a21318885ab493f76513d4635120453691085be",
     "src/features/consumerRepair/useConsumerRepairPhotoCaptureController.tsx": "d643878967e5ccda4af2884fa9d5b9bf9182b614ba05bd79a5bde6b60a1a9c34",
@@ -1203,8 +1203,8 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "62252424d09e5c20042586a36f4e7a562239b6ddaf7ac3e08a3d61b9e7e76dc0",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "a4ebefe06c6db7e2079a3fb4eb9daa8ebf4b2010ab086bf9cdb1821fb0eb606c",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "6cbeac00172c21bb26c3b9dd56d7ec57828bcc0834ab517e02012ffbd6607af5",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "c95b29c53391a48a51fc273379086739175cccb1b24b7248ad9c6023ab4afcf7",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.ts": "5c59629f9c6c307b1432bae451cdad3a87468e5ce3de82bad5e71c71170a2a0c",
@@ -1224,8 +1224,8 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalIngress.ts": "2db29fb7d5d8c27f706d1c8123341357a8c9f1bd3e88d71974ee264a87a6f0c7",
     "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalRecalculation.ts": "b7cc752131d66fc0a5bec90ce53d2696719642eb9f99c5488c1579fc31145472",
     "src/lib/estimate/backendPlatform/canonicalEstimateOfflineCache.ts": "7793a6b9cec9c1ccc212a0ee5eb8647dd1a71b011f353c405d2e8750da3e960e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": "152b8292b7838a3809fe5f2c3b717a9c7d30f0645fd6b36d57f31da35d639548",
-    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "73a598bd8729b3bbe47b31f57ef5c83cfe7ad95fc52804349a55dca1020359a1",
+    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": "6bf51bcd6e3dff049acc1397606e8b28efcd11eb40bd755995634ce69e26d69a",
+    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "0580a7c0c73d26b9b8e6dcc0f7759eb7d5df8ae534f586bf2ba600a774428b1e",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.test.ts": "4908d07962f9642d07fc617008bdc7863ddfdc69b0b89cc97d0e44e6a355dfee",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts": "cac2b06547720c704b21d15d87df00b1393966f5fd07c5a13884d7d10f045b81",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot.ts": "00951c3c11d9ab18190f2ad8f034dca95432bd93a8645154f6eb9e11ec98b185",
@@ -1277,8 +1277,8 @@
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.test.ts": "68a81598f210d4e4566e7ff931bcc9328233619d30ca026a9257b9e413544d76",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
     "src/lib/estimate/backendPlatform/canonicalProcurementOperationAllocation.test.ts": "69e677cfdf6fc0106c97436e8433450604cb1e8537847e1e3fe1615ffd878730",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "934a92003619b6c15448a01dfe3eb16bc50e4cd073f74c75f673c3d70236ffa2",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "a9c9272bab8965928f57e751f5dc2c6503086d88ff1d00b0196659eba722e0d2",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "8b1fae960d67fdc43fd75e4f82907b4433eb521424ec9bbbae4b35d664a72d27",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "df5babf06aa9c1510e8ec80e13c42c97cb1983c04845b7e56a0130163476d4d8",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.test.ts": "3aa6ed34ddd2b0e7bd35aa67674e5cfed153f1e0802c169a43b180fc1f1a2f3b",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts": "cf73e5767efe06a52a5b54ebbb83124d939fd24237cdf8d811c15ac707cc9931",
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts": "d083dab58274d98404d95407cd25bedb688d140b843ed5397ac45dbb315dc6c1",
@@ -3615,12 +3615,12 @@
     "sourceBytes": 132654891
   },
   "candidateSourceComposition": {
-    "contract": "global-operation-resource-source-candidate/r584",
+    "contract": "shared-plain-resource-names-and-legacy-operation-display/r588",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
       "data/estimate-benchmarks/source-packs/legacy-operation-display-five-saved-v1.json": {
-        "sha256": "fd77ca19a142351cfcbbd4427819410b81c547f2a8a55f66ae351f066a10117e"
+        "sha256": "1437fc9db630f62c55feed5927e47779bd73934050047177a7dd73ae5d7ef442"
       },
       "src/features/consumerRepair/ConsumerRepairItemRow.tsx": {
         "sha256": "b4875dcd6885c96d67677d2bc51283bd4fb745d0b42e6228075f807c3aa45871"
@@ -3635,25 +3635,25 @@
         "sha256": "a6c818e7d9961538e0052ce4c90ead1c0b902d57feeb98f9e644574356ad5b1f"
       },
       "src/features/consumerRepair/requestEstimateViewModel.ts": {
-        "sha256": "ed6dc770d969a689ec7e005c5046683c32a3ce4a1fb66fd30fb4ab180d871727"
+        "sha256": "a17c7b9b1c07c85d96b9c984ffdf701503a2dbf89200e832cbace72c3b6f26d7"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": {
-        "sha256": "62252424d09e5c20042586a36f4e7a562239b6ddaf7ac3e08a3d61b9e7e76dc0"
+        "sha256": "6cbeac00172c21bb26c3b9dd56d7ec57828bcc0834ab517e02012ffbd6607af5"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": {
-        "sha256": "a4ebefe06c6db7e2079a3fb4eb9daa8ebf4b2010ab086bf9cdb1821fb0eb606c"
+        "sha256": "c95b29c53391a48a51fc273379086739175cccb1b24b7248ad9c6023ab4afcf7"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": {
-        "sha256": "152b8292b7838a3809fe5f2c3b717a9c7d30f0645fd6b36d57f31da35d639548"
+        "sha256": "6bf51bcd6e3dff049acc1397606e8b28efcd11eb40bd755995634ce69e26d69a"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": {
-        "sha256": "73a598bd8729b3bbe47b31f57ef5c83cfe7ad95fc52804349a55dca1020359a1"
+        "sha256": "0580a7c0c73d26b9b8e6dcc0f7759eb7d5df8ae534f586bf2ba600a774428b1e"
       },
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": {
-        "sha256": "934a92003619b6c15448a01dfe3eb16bc50e4cd073f74c75f673c3d70236ffa2"
+        "sha256": "8b1fae960d67fdc43fd75e4f82907b4433eb521424ec9bbbae4b35d664a72d27"
       },
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": {
-        "sha256": "a9c9272bab8965928f57e751f5dc2c6503086d88ff1d00b0196659eba722e0d2"
+        "sha256": "df5babf06aa9c1510e8ec80e13c42c97cb1983c04845b7e56a0130163476d4d8"
       },
       "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": {
         "sha256": "d6af18289e4d5fe9deb3868a347b9cea786819fc177f72f113e4204f860e74ec"
@@ -3680,7 +3680,10 @@
         "sha256": "e09a402a2a62a27693717faf52d2763859b801b43d1fb496bf90a56797bd41d6"
       },
       "scripts/estimate/r4a13/prepareCt126PreparedWallBranchesR2.ts": {
-        "sha256": "31e92e5b975a1c55e3f09ca15c0c8b25f5181a3eab7b3631eed5b7fec4e80435"
+        "sha256": "48801fb31039e8bcd2d7eacec8cc8865fc20005ede277f945160e5f50a0b02e3"
+      },
+      "src/features/consumerRepair/canonicalProcurementPreviewRows.ts": {
+        "sha256": "aea0da4c8bab30d0df4d3c5ad6f5be3de9b69178d1832c5749bd2ba7b6fab7a9"
       }
     }
   },

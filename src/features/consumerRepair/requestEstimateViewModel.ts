@@ -1,5 +1,5 @@
 import { canonicalPurchaseItemSupplyWarningV1, canonicalExactPurchaseEditingV1 } from "./canonicalExactPurchaseEditingV1";
-import { canonicalLegacyResourceKindV1, type CanonicalLegacyOperationDisplayContextV1, canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
+import { canonicalLegacyResourceKindV1, canonicalLegacyResourceNameV1, type CanonicalLegacyOperationDisplayContextV1, canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections, canonicalEstimateWorkProcess, type CanonicalEstimateOperationReference, type CanonicalEstimateWorkProcessGroup } from "../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import {consumerMachineHourPriceNeedsConfirmation} from '../../lib/consumerRequests/consumerMachineHourPriceCoverage';
 import { consumerCanonicalApplicationScopeRequirementNotice, consumerCanonicalMissingRequirements, consumerCanonicalParameterTitle, type CanonicalParameterRequirementTables } from "../../lib/consumerRequests/consumerCanonicalParameterRequirements";
@@ -1408,7 +1408,8 @@ export function buildRequestEstimateViewModel(
         .filter((item) => itemSection(item) === id)
         .sort((a, b) => itemSortRank(a) - itemSortRank(b))
         .map((item) => {
-          const titleRu = publicItemTitle(item, canonicalTitleItems.has(item),canonicalPublicParameters);
+          const legacyName=canonicalLegacyResourceNameV1(String(item.sourceParameters?.rowCode??''),legacyDisplayContext,item.sourceParameters?.canonicalManualTitleOverride===true);
+          const titleRu = legacyName ?? publicItemTitle(item, canonicalTitleItems.has(item),canonicalPublicParameters);
           // Admission and public naming still run against the current bundle.
           // Preserve unchanged row props so editing one quantity does not
           // defeat the row's React.memo and rerender every neighbouring input.
@@ -1418,9 +1419,9 @@ export function buildRequestEstimateViewModel(
             manualTitleOverride: item.sourceParameters?.canonicalManualTitleOverride === true,
             graph:selectedSpecificationGraph(item),parameters:canonicalPublicParameters,compactPreliminaryNeed:item.sourceParameters?.canonicalPreliminaryNeed===true }) : null;
           const legacyKind=canonicalLegacyResourceKindV1(String(item.sourceParameters?.rowCode??''),legacyDisplayContext);
-          const displayPresentation=legacyKind?{...(presentation??{
+          const displayPresentation=legacyKind||legacyName?{...(presentation??{
             contractVersion:'canonical-public-resource-presentation/v1' as const,sourceTitleRu:item.titleRu,nameRu:titleRu,
-            brandAndModelRu:null,specificationRu:null,detailsRu:[]}),resourceKind:legacyKind}:presentation;
+            brandAndModelRu:null,specificationRu:null,detailsRu:[]}),...(legacyKind?{resourceKind:legacyKind}:{}),...(legacyName?{nameRu:legacyName}:{})}:presentation;
           return itemWithPublicTitle(item, titleRu, displayPresentation);
         }),
     }))

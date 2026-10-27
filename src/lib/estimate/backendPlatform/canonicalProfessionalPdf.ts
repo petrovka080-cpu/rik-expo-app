@@ -14,7 +14,7 @@ import {
   type CanonicalArtifactRevision,
   type CanonicalArtifactRow,
 } from "./canonicalEstimateArtifactContract";
-import { canonicalEstimateResourceOperationSections, canonicalLegacyResourceKindV1, type CanonicalLegacyOperationDisplayContextV1 } from "./canonicalEstimateOperationComposition";
+import { canonicalEstimateResourceOperationSections, canonicalLegacyResourceKindV1, canonicalLegacyResourceNameV1, type CanonicalLegacyOperationDisplayContextV1 } from "./canonicalEstimateOperationComposition";
 import { canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateRequestTextRu, canonicalPublicEstimatePendingRowTitleRu,canonicalPublicEstimateParameterTitleRu,canonicalPublicEstimateFixtureTextRu } from './canonicalPublicEstimateLanguageRu';
 import { resolveCanonicalEstimateExplicitRowCategory } from './canonicalEstimateRowCategory';
 import {canonicalScopeRequirementDecisionV1,groupCanonicalScopeRequirementsV1,canonicalScopeRequirementStatusIsOpenV1} from './canonicalScopeRequirementV1';
@@ -27,7 +27,7 @@ import {isCanonicalEstimateConsumerSuppliedParameter,isCanonicalEstimateUserEdit
 import type {CanonicalEstimateCatalogItem} from './contracts';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-source-bound-resource-kinds-legacy2-template83" as const;
+  "canonical-professional-pdf.r4-a13-plain-resource-names-legacy4-template84" as const;
 
 /** All catalogs use the same money-cell contract; status text belongs outside
  * the resource table. Reject a regression before a worker creates the PDF. */
@@ -164,8 +164,8 @@ function assertSingleCurrency(
   return [...currencies][0] ?? nullableText(revision.currency_code) ?? "KGS";
 }
 
-function selectedResourceTitle(row: CanonicalArtifactRow, parameters: Record<string, unknown>): string {
-  const title = canonicalArtifactVisibleRowTitle(row, parameters);
+function selectedResourceTitle(row: CanonicalArtifactRow, parameters: Record<string, unknown>, legacyDisplayContext?:CanonicalLegacyOperationDisplayContextV1): string {
+  const title = canonicalLegacyResourceNameV1(String(row.row_id),legacyDisplayContext,objectValue(row.calculation_trace).manualTitleOverride===true) ?? canonicalArtifactVisibleRowTitle(row, parameters);
   const trace = objectValue(row.calculation_trace), graph = objectValue(trace.resourceGraph);
   if (trace.manualTitleOverride === true || graph.titleSpecificationMode !== "APPEND") return title;
   // These are saved project selections that define the resource or service.
@@ -198,7 +198,7 @@ function renderClientRow(row: CanonicalArtifactRow, displayOrdinal: number, para
   const amount = referenceOnly || !includedInEstimate || row.amount == null ? '' : canonicalArtifactMoney(row.amount, row.currency_code);
   return `<tr${supplyWarning ? ' class="purchase-supply-block"' : ""}>
     <td class="number">${displayOrdinal}</td>
-    <td class="name"><strong>${escapeCanonicalArtifactHtml(selectedResourceTitle(row, parameters))}</strong>${rentalText?`<span>${escapeCanonicalArtifactHtml(rentalText)}</span>`:''}</td>
+    <td class="name"><strong>${escapeCanonicalArtifactHtml(selectedResourceTitle(row, parameters,legacyDisplayContext))}</strong>${rentalText?`<span>${escapeCanonicalArtifactHtml(rentalText)}</span>`:''}</td>
     <td>${escapeCanonicalArtifactHtml(publicResourceCategoryTitle(row,legacyDisplayContext))}</td>
     <td class="unit">${escapeCanonicalArtifactHtml(canonicalArtifactUnit(row))}</td>
     <td class="numeric">${escapeCanonicalArtifactHtml(savedQuantityLabel)}</td>
@@ -213,9 +213,9 @@ function renderPreliminaryNeedRow(row: CanonicalArtifactRow, displayOrdinal: num
   const exactQuantity = parseCanonicalExactPurchaseQuantityV1(trace.exactPurchaseQuantityV1);
   const savedQuantityLabel = exactQuantity ? exactQuantity.quantityText ?? "Не рассчитано" : canonicalArtifactQuantity(row.quantity);
   const quantityLabel = row.quantity == null ? "Не рассчитано" : savedQuantityLabel;
-  const pendingTitle = supplyWarning && trace.manualTitleOverride === true
+  const pendingTitle = canonicalLegacyResourceNameV1(String(row.row_id),legacyDisplayContext,trace.manualTitleOverride===true) ?? (supplyWarning && trace.manualTitleOverride === true
     ? canonicalArtifactVisibleRowTitle(row,parameters)
-    : canonicalPublicEstimatePendingRowTitleRu(canonicalArtifactVisibleRowTitle(row,parameters));
+    : canonicalPublicEstimatePendingRowTitleRu(canonicalArtifactVisibleRowTitle(row,parameters)));
   // A pending physical quantity remains unpaid, but its saved manual price
   // must still be visible when the user exports the same immutable revision.
   const savedUnitPrice = row.unit_price != null

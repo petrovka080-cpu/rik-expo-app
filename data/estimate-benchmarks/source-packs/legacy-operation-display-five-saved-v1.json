@@ -1,6 +1,6 @@
 {
   "contractVersion": "canonical-legacy-operation-display/v1",
-  "version": "fan-five-saved-v2",
+  "version": "fan-five-saved-v4",
   "entries": [
     {
       "revisionId": "10dcc3ab-d37e-45cc-b356-7bda7d7be388",
@@ -297,6 +297,25 @@
         "factory-fan:onsite:ppe": "PPE",
         "factory-fan:onsite:delivery-handling": "TRANSPORT",
         "factory-fan:onsite:cleanup-waste": "SERVICE"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
       }
     },
     {
@@ -615,6 +634,25 @@
         "factory-fan:onsite:delivery-handling": "TRANSPORT",
         "factory-fan:onsite:cleanup-waste": "SERVICE",
         "factory-fan:axial-100-timer:setting-screwdriver": "TOOL"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
       }
     },
     {
@@ -912,6 +950,25 @@
         "factory-fan:onsite:ppe": "PPE",
         "factory-fan:onsite:delivery-handling": "TRANSPORT",
         "factory-fan:onsite:cleanup-waste": "SERVICE"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
       }
     },
     {
@@ -1230,6 +1287,25 @@
         "factory-fan:onsite:delivery-handling": "TRANSPORT",
         "factory-fan:onsite:cleanup-waste": "SERVICE",
         "factory-fan:axial-125-timer:setting-screwdriver": "TOOL"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
       }
     },
     {
@@ -1548,6 +1624,25 @@
         "factory-fan:onsite:delivery-handling": "TRANSPORT",
         "factory-fan:onsite:cleanup-waste": "SERVICE",
         "factory-fan:axial-125-timer:setting-screwdriver": "TOOL"
+      },
+      "operationTitlesByRowId": {
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+      },
+      "resourceNamesByRowId": {
+        "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
+        "factory-fan:onsite:electrical-cable": "Кабель и материалы подключения",
+        "factory-fan:onsite:isolator": "Выключатель полного отключения питания",
+        "factory-fan:onsite:drill": "Дрель",
+        "factory-fan:onsite:drill-bit": "Сверло для крепёжных отверстий",
+        "factory-fan:onsite:marking-pencil": "Карандаш для разметки",
+        "factory-fan:onsite:screwdriver": "Отвёртка",
+        "factory-fan:onsite:electrical-tools": "Инструменты электрика",
+        "factory-fan:onsite:ppe": "Средства защиты монтажника",
+        "factory-fan:onsite:installation-labour": "Труд по монтажу и подключению вентилятора",
+        "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
+        "factory-fan:onsite:access": "Оборудование для безопасного доступа",
+        "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
       }
     }
   ]

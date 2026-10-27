@@ -72,7 +72,7 @@ export type CanonicalLegacyOperationDisplayContextV1 = {
   /** Complete immutable saved rows plus preliminary needs, before display filters. */
   savedResources: readonly CanonicalLegacyOperationDisplayResourceV1[];
 };
-export const CANONICAL_LEGACY_OPERATION_DISPLAY_VERSION_V1 = 'fan-five-saved-v2';
+export const CANONICAL_LEGACY_OPERATION_DISPLAY_VERSION_V1 = 'fan-five-saved-v4';
 
 /** Exact historical display links only. The saved graph and all row fields stay
  * untouched. Missing identity, membership or source relation returns the input. */
@@ -106,8 +106,26 @@ export function resolveCanonicalLegacyOperationDisplayV1<T extends CanonicalLega
   if (new Set(resources.map(id)).size !== resources.length
     || resources.some(resource => !saved.has(id(resource))
       || !same(resource.operation, saved.get(id(resource))?.operation))) return resources;
+  // Names are authored for exact historical source IDs, never inferred from titles.
+  const names: Readonly<Record<string, unknown>> = binding.resourceNamesByRowId;
+  for (const [rowId, name] of Object.entries(names)) {
+    if (!saved.has(rowId) || typeof name !== 'string' || name.trim().length === 0
+      || name.length > 180) return resources;
+  }
   const replacements = new Set<string>(binding.replacementRowIds);
-  return resources.map(resource => replacements.has(id(resource)) ? { ...resource, operation: { ...target } } : resource);
+  const titles: Readonly<Record<string, unknown>> = binding.operationTitlesByRowId;
+  for (const [rowId, title] of Object.entries(titles)) {
+    if (!saved.has(rowId) || replacements.has(rowId) || typeof title !== 'string'
+      || title.trim().length === 0 || title.length > 160
+      || !canonicalEstimateOperationReference(saved.get(rowId)?.operation)) return resources;
+  }
+  return resources.map(resource => {
+    if (replacements.has(id(resource))) return { ...resource, operation: { ...target } };
+    const title = titles[id(resource)];
+    if (typeof title !== 'string') return resource;
+    const original = canonicalEstimateOperationReference(resource.operation);
+    return original ? { ...resource, operation: { ...original, operationTitleRu: title } } : resource;
+  });
 }
 
 /** Optional display-only kind override; the original descriptor is never edited.
@@ -321,4 +339,19 @@ export function canonicalEstimateWorkProcess(
       }),
     };
   });
+}
+
+/** Optional readonly caption override. Consumers retain the original source title,
+ * specification/details and saved descriptor; an explicit manual title wins. */
+export function canonicalLegacyResourceNameV1(
+  rowId: string, context?: CanonicalLegacyOperationDisplayContextV1, manualTitleOverride = false,
+): string | null {
+  if (manualTitleOverride || !context || !Array.isArray(context.savedResources)) return null;
+  if (resolveCanonicalLegacyOperationDisplayV1(context.savedResources, context) === context.savedResources) return null;
+  const binding = legacyDisplayBindings.entries.find(entry => entry.revisionId === context.revisionId
+    && entry.releaseId === context.releaseId && entry.checksumSha256 === context.checksumSha256);
+  if (!binding || !Object.hasOwn(binding.resourceNamesByRowId, rowId)) return null;
+  const names: Readonly<Record<string, unknown>> = binding.resourceNamesByRowId;
+  const name = names[rowId];
+  return typeof name === 'string' && name.trim().length > 0 && name.length <= 180 ? name : null;
 }

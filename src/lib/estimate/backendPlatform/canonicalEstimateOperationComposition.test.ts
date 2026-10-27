@@ -1,5 +1,5 @@
 import legacyDisplayBindings from '../../../../data/estimate-benchmarks/source-packs/legacy-operation-display-five-saved-v1.json';
-import {resolveCanonicalLegacyOperationDisplayV1, canonicalLegacyResourceKindV1, CANONICAL_LEGACY_OPERATION_DISPLAY_VERSION_V1} from './canonicalEstimateOperationComposition';
+import {resolveCanonicalLegacyOperationDisplayV1, canonicalLegacyResourceKindV1, canonicalLegacyResourceNameV1, CANONICAL_LEGACY_OPERATION_DISPLAY_VERSION_V1} from './canonicalEstimateOperationComposition';
 import { canonicalEstimateWorkProcess, canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections } from './canonicalEstimateOperationComposition';
 import type {CanonicalScopeRequirementDecisionV1 as Scope} from './canonicalScopeRequirementV1';
 import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';
@@ -199,7 +199,7 @@ describe('exact saved revision legacy display adapter', () => {
     const display = resolveCanonicalLegacyOperationDisplayV1(resources, context);
     expect(display).not.toBe(resources);
     expect(display).toHaveLength(resources.length);
-    expect(display.filter((row, index) => row.operation !== resources[index]!.operation)).toHaveLength(11);
+    expect(display.filter((row, index) => row.operation !== resources[index]!.operation)).toHaveLength(12);
     for (const [index, row] of display.entries()) {
       expect({...row, operation: resources[index]!.operation}).toEqual(resources[index]);
       expect(row.quantity).toBeNull(); expect(row.unitPrice).toBeNull(); expect(row.amount).toBeNull();
@@ -264,4 +264,55 @@ it.each(legacyDisplayBindings.entries)('binds TOOL ACCESSORY and PPE display ove
     ? {...row, operation: {...row.operation, operationId: 'foreign'}} : row);
   expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill', {...context, savedResources: changed})).toBeNull();
   expect(JSON.stringify({resources, context})).toBe(before);
+});
+
+it.each(legacyDisplayBindings.entries)('changes only the exact saved duct operation caption for $revisionId', binding => {
+  const resources = JSON.parse(JSON.stringify(binding.expectedResources)) as typeof binding.expectedResources;
+  const context = {revisionId: binding.revisionId, releaseId: binding.releaseId,
+    checksumSha256: binding.checksumSha256, savedResources: resources};
+  const before = JSON.stringify({resources, context});
+  const rowId = 'factory-fan:onsite:duct-interface';
+  const original = resources.find(row => row.rowId === rowId);
+  if (!original) throw new Error('saved duct relationship required');
+  const display = resolveCanonicalLegacyOperationDisplayV1(resources, context);
+  const duct = display.find(row => row.rowId === rowId);
+  expect(duct?.operation).toEqual({...original.operation, operationTitleRu: 'Присоединение вентилятора к воздуховоду'});
+  const sections = canonicalEstimateResourceOperationSections(resources.map(row => ({...row, titleRu: 'Сохранённый ресурс'})), [], [], context);
+  expect(sections.find(section => section.resourceIds.includes(rowId))?.operation?.operationTitleRu)
+    .toBe('Присоединение вентилятора к воздуховоду');
+  const drift = resources.map(row => row.rowId === rowId
+    ? {...row, operation: {...row.operation, operationId: 'foreign-duct'}} : row);
+  expect(resolveCanonicalLegacyOperationDisplayV1(drift, {...context, savedResources: drift})).toBe(drift);
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill', {...context, savedResources: drift})).toBeNull();
+  expect(resolveCanonicalLegacyOperationDisplayV1(resources, {...context, checksumSha256: 'unlisted'})).toBe(resources);
+  expect(JSON.stringify({resources, context})).toBe(before);
+});
+it.each(legacyDisplayBindings.entries)('projects exact source-authored names without rewriting saved fields for $revisionId', binding => {
+  const resources = binding.expectedResources.map(row => ({...JSON.parse(JSON.stringify(row)),
+    titleRu: 'Сохранённое полное имя', sourceTitleRu: 'Исходное полное имя',
+    specificationRu: 'Сохранённая характеристика', detailsRu: ['Полный источник'],
+    quantity: null, unitPrice: null, costOwnerId: row.rowId, procurementEligible: false}));
+  const context = {revisionId: binding.revisionId, releaseId: binding.releaseId,
+    checksumSha256: binding.checksumSha256, savedResources: resources};
+  const stored = JSON.stringify({resources, context});
+  for (const [rowId, name] of Object.entries(binding.resourceNamesByRowId)) {
+    expect(canonicalLegacyResourceNameV1(rowId, context)).toBe(name);
+    expect(canonicalLegacyResourceNameV1(rowId, context, true)).toBeNull();
+  }
+  expect(canonicalLegacyResourceNameV1('factory-fan:onsite:electrical-cable', context)).toBe('Кабель и материалы подключения');
+  expect(canonicalLegacyResourceNameV1('factory-fan:onsite:access', context)).toBe('Оборудование для безопасного доступа');
+  expect(canonicalLegacyResourceNameV1('factory-fan:onsite:duct-interface', context)).toBe('Воздуховод и соединительные детали');
+  expect(canonicalLegacyResourceNameV1('unlisted', context)).toBeNull();
+  expect(canonicalLegacyResourceNameV1('factory-fan:onsite:drill')).toBeNull();
+  for (const key of ['revisionId','releaseId','checksumSha256'] as const)
+    expect(canonicalLegacyResourceNameV1('factory-fan:onsite:drill', {...context, [key]: 'unlisted'})).toBeNull();
+  const drift = resources.map(row => row.rowId === 'factory-fan:onsite:duct-interface'
+    ? {...row, operation: {...row.operation, operationId: 'foreign'}} : row);
+  expect(canonicalLegacyResourceNameV1('factory-fan:onsite:drill', {...context, savedResources: drift})).toBeNull();
+  expect(canonicalLegacyResourceNameV1('factory-fan:onsite:drill', {...context, savedResources: resources.slice(1)})).toBeNull();
+  const display = resolveCanonicalLegacyOperationDisplayV1(resources, context);
+  expect(display.map(row => ({...row, operation: resources.find(saved => saved.rowId === row.rowId)!.operation}))).toEqual(resources);
+  expect(display.find(row => row.rowId === 'factory-fan:onsite:duct-interface')?.operation.operationTitleRu)
+    .toBe('Присоединение вентилятора к воздуховоду');
+  expect(JSON.stringify({resources, context})).toBe(stored);
 });
