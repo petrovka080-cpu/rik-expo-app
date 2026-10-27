@@ -103,17 +103,5 @@
   "scripts/estimate/r4a13/prepareMasterOpticalFiberSplicingSuccessor.ts": null,
   "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.ts": null,
   "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts": null,
-  "scripts/estimate/r4a13/prepareFloorCementScreed20mmColumn01AppendR1.ts": null,
-  "src/lib/estimate/v4/skirtingConstructorS2735.test.ts": null,
-  "src/lib/estimate/v4/domains/electricalComplete/productionBinding.ts": null,
-  "tests/estimateDomainFactory/electricalComplete.contract.test.ts": null,
-  "src/lib/estimate/v4/accessControlSystemR1.ts": null,
-  "scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts": null,
-  "tests/estimateNorms/accessControlSystemR1.contract.test.ts": null,
-  "src/lib/estimate/v4/addressableSmokeDetectorR1.ts": null,
-  "tests/estimateNorms/addressableSmokeDetectorR1.contract.test.ts": null,
-  "scripts/estimate/r4a13/prepareS2724AddressableSmokeDetectorBalancedSuccessor.ts": null,
-  "src/lib/estimate/v4/skirtingConstructorS2735.ts": null,
-  "scripts/estimate/r4a13/prepareS2735SkirtingBatchSuccessor.ts": null,
-  "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": null
+  "scripts/estimate/r4a13/prepareFloorCementScreed20mmColumn01AppendR1.ts": null
 }
