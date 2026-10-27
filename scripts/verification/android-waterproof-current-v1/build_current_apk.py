@@ -95,8 +95,42 @@ def drain_owned_phase_job(job,child,owned,psutil,timeout=10):
  except BaseException as e:error=repr(e)
  finally:job.close()
  return dict(remainingOwnedProcesses=remaining,closureError=error,closureElapsedSeconds=time.monotonic()-started)
+
+def restore_verified_precomputed(root,out,prior,contract,s):
+ assert contract['contract']=='gox-existing-precomputed-reuse/r1'
+ assert contract['sourceSnapshotCommit']==s['sourceSnapshotCommit']
+ assert sha(prior/'precomputed-phase-evidence.json')==contract['evidenceSha256']
+ assert sha(prior/'precomputed.json')==contract['precomputedSha256']
+ assert sha(prior/'canonical-client-transport.json')==contract['transportSha256']
+ e=read(prior/'precomputed-phase-evidence.json');pre=read(prior/'precomputed.json')
+ assert e['sourceIdentity']==s['sourceIdentity'] and e['precomputed']==pre
+ expected=dict(sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],capabilityId=s['capabilityId'],definitionReleaseId=s['pair']['definitionReleaseId'],searchReleaseId=s['pair']['searchReleaseId'])
+ assert e['phaseInputs']==expected and all(e[k]['inputs']==expected for k in ['js','hermes','updates'])
+ assert e['publicEnvironmentSha256']==hashlib.sha256(json.dumps(s['publicEnvironment'],sort_keys=True,separators=(',',':')).encode()).hexdigest(),'REUSE_PUBLIC_ENV_CHANGED'
+ assert pre['status']=='PASS_CURRENT_SOURCE_PRECOMPUTED_PHASE_UNION' and pre['sourceHead']==s['canonicalSourceHead'] and pre['sourceTree']==s['sourceIdentity']['sourceTreeHash'] and pre['jsBundleFingerprint']==s['sourceIdentity']['jsBundleFingerprint']
+ for name,digest in contract['receiptSha256'].items():
+  p=prior/(name+'.receipt.json');assert sha(p)==digest;r=read(p)
+  assert r['phase']==name and r['exitCode']==0 and r['error']is None and not r['remainingOwnedProcesses'] and r['closureError']is None
+  shutil.copyfile(p,out/('reused-'+name+'.receipt.json'))
+ dirs=[root/'android/app/build/generated/assets/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/res/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/assets/createWaterProofUpdatesResources']
+ assert all(not p.exists()for p in dirs),'FRESH_REUSE_TARGET_REQUIRED'
+ assert len(pre['files'])==contract['expectedFiles'] and sum(f['bytes']for f in pre['files'])==contract['expectedBytes']<=128*MIB
+ allowed=[d.relative_to(root).as_posix()+'/'for d in dirs]
+ for f in pre['files']:
+  assert any(f['path'].startswith(prefix)for prefix in allowed),'UNAPPROVED_PRECOMPUTED_PATH'
+  src=inside(prior/'precomputed-files',f['path']);dst=inside(root,f['path'])
+  assert src.stat().st_size==f['bytes'] and sha(src)==f['sha256'];dst.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(src,dst)
+ assert inventory(root,dirs)==pre['files'],'RESTORED_PRECOMPUTED_INVENTORY_DIFFERS'
+ bundle=dirs[0]/'index.android.bundle'
+ with bundle.open('rb')as stream:assert stream.read(8).hex()=='c61fbc03c103191f'
+ assert sha(bundle)==e['hermes']['artifact']['bytecodeSha256']
+ assert read(dirs[2]/'app.manifest')['assets'] and (dirs[2]/'fingerprint').read_text().strip()==e['updates']['artifact']['fingerprint']
+ shutil.copyfile(prior/'canonical-client-transport.json',out/'canonical-client-transport.json')
+ write(out/'precomputed-reuse-receipt.json',dict(status='PASS_EXACT_IMMUTABLE_PRECOMPUTED_REUSE_ONLY',sourceRunId=contract['sourceRunId'],sourceWorkflowCommit=contract['sourceWorkflowCommit'],sourceSnapshotCommit=contract['sourceSnapshotCommit'],evidenceSha256=contract['evidenceSha256'],filesVerified=len(pre['files']),bytesVerified=contract['expectedBytes'],sourceIdentity=s['sourceIdentity'],publicEnvironmentUnchanged=True,metroHermesUpdatesReexecuted=False,androidUiAccepted=False))
+ return dirs,bundle,e['js'],e['hermes'],e['updates'],pre
+
 def main():
- ap=argparse.ArgumentParser();ap.add_argument('--root',required=True);ap.add_argument('--spec',required=True);ap.add_argument('--spec-sha256',required=True);ap.add_argument('--source-commit',required=True);ap.add_argument('--output',required=True);ap.add_argument('--contract-only',action='store_true');a=ap.parse_args()
+ ap=argparse.ArgumentParser();ap.add_argument('--root',required=True);ap.add_argument('--spec',required=True);ap.add_argument('--spec-sha256',required=True);ap.add_argument('--source-commit',required=True);ap.add_argument('--output',required=True);ap.add_argument('--contract-only',action='store_true');ap.add_argument('--precomputed-root');ap.add_argument('--reuse-contract');ap.add_argument('--reuse-contract-sha256');a=ap.parse_args()
  root=pathlib.Path(a.root).resolve();out=pathlib.Path(a.output).resolve();assert not out.exists();out.mkdir(parents=True)
  assert sha(a.spec)==a.spec_sha256;s=read(a.spec)
  assert s['sourceSnapshotCommit']==a.source_commit,'WRONG_SNAPSHOT_BEFORE_RAW_RESTORE'
@@ -162,33 +196,38 @@ def main():
  # Existing fingerprint implementation must reproduce the captured canonical tuple.
  text=run('source-identity',[node,'--max-old-space-size=64','--max-semi-space-size=4','--import','tsx','scripts/dev/printLocalDeveloperBuildIdentity.ts'],256)
  assert json.loads(text)==s['sourceIdentity'],'APK_SNAPSHOT_PRODUCT_IDENTITY_DIFFERS_FROM_FRESH_RUNTIME'
- dirs=[root/'android/app/build/generated/assets/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/res/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/assets/createWaterProofUpdatesResources']
- assert all(not p.exists()for p in dirs),'FRESH_GENERATED_DIRECTORIES_REQUIRED'
- for d in dirs:d.mkdir(parents=True)
- bundle=dirs[0]/'index.android.bundle';entry=root/'index.js'
- run('metro-export',[node,'--max-old-space-size=1024','--max-semi-space-size=8',root/'node_modules/expo/node_modules/@expo/cli/build/bin/cli','export:embed','--platform','android','--dev','false','--minify','false','--max-workers','1','--reset-cache','--entry-file',entry,'--bundle-output',bundle,'--assets-dest',dirs[1]],2048,900)
- found=set();carry=b''
- with bundle.open('rb')as stream:
-  while chunk:=stream.read(MIB):
-   block=carry+chunk
-   found.update(k for k,v in identity_literals.items()if str(v).encode()in block)
-   carry=block[-4096:]
- assert found==set(identity_literals),'MISSING_EMBEDDED_RUNTIME_IDENTITY'
- run('canonical-client-transport',[node,'--max-old-space-size=64','--max-semi-space-size=4',HERE/'verify_canonical_client_transport.cjs','--root',root,'--bundle',bundle,'--expected-url','http://10.0.2.2:8765','--report',out/'canonical-client-transport.json'],256)
- phase_inputs=dict(sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],capabilityId=s['capabilityId'],definitionReleaseId=s['pair']['definitionReleaseId'],searchReleaseId=s['pair']['searchReleaseId'])
- js=dict(status='PASS_OFFICIAL_EMBEDDED_JS_EXPORT_ONLY',inputs=phase_inputs,artifact=dict(files=inventory(root,dirs[:2]),bundleSha256=sha(bundle)))
- source_js_bytes=bundle.stat().st_size;source_js_sha=sha(bundle)
- # The source bundle stays in the private CI workspace, not in uploaded artifacts.
- run('hermes',[root/'node_modules/react-native/sdks/hermesc/win64-bin/hermesc.exe','-w','-emit-binary','-max-diagnostic-width=80','-O','-out',str(bundle)+'.hbc',bundle],2304,900)
- os.replace(str(bundle)+'.hbc',bundle)
- with bundle.open('rb')as stream:assert stream.read(8).hex()=='c61fbc03c103191f'
- hermes=dict(status='PASS_HERMES_COMPILE_ONLY',inputs=phase_inputs,artifact=dict(sourceJsSha256=source_js_sha,sourceJsBytes=source_js_bytes,bytecodeSha256=sha(bundle),bytecodeBytes=bundle.stat().st_size))
- scheduler=out/'metro-single-worker.cjs';scheduler.write_text('const canonical=require('+json.dumps(str(root/'metro.config.js'))+');module.exports={...canonical,maxWorkers:1};\n',encoding='utf8')
- env['EXPO_OVERRIDE_METRO_CONFIG']=str(scheduler)
- run('expo-updates',[node,'--max-old-space-size=1024','--max-semi-space-size=8',root/'node_modules/expo-updates/utils/build/createUpdatesResources.js','android',root,dirs[2],'all',entry],2048,900);env.pop('EXPO_OVERRIDE_METRO_CONFIG')
- updates=dict(status='PASS_OFFICIAL_EXPO_UPDATES_RESOURCES_ONLY',inputs=phase_inputs,artifact=dict(files=inventory(root,dirs[2:]),fingerprint=(dirs[2]/'fingerprint').read_text().strip()))
- assert read(dirs[2]/'app.manifest')['assets']and re.fullmatch('[a-f0-9]{40}|[a-f0-9]{64}',updates['artifact']['fingerprint'])
- precomputed=dict(status='PASS_CURRENT_SOURCE_PRECOMPUTED_PHASE_UNION',sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],files=inventory(root,dirs));write(out/'precomputed.json',precomputed)
+ if a.precomputed_root:
+  assert a.reuse_contract and sha(a.reuse_contract)==a.reuse_contract_sha256
+  dirs,bundle,js,hermes,updates,precomputed=restore_verified_precomputed(root,out,pathlib.Path(a.precomputed_root).resolve(),read(a.reuse_contract),s)
+  phase_inputs=js['inputs'];write(out/'precomputed.json',precomputed)
+ else:
+  dirs=[root/'android/app/build/generated/assets/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/res/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/assets/createWaterProofUpdatesResources']
+  assert all(not p.exists()for p in dirs),'FRESH_GENERATED_DIRECTORIES_REQUIRED'
+  for d in dirs:d.mkdir(parents=True)
+  bundle=dirs[0]/'index.android.bundle';entry=root/'index.js'
+  run('metro-export',[node,'--max-old-space-size=1024','--max-semi-space-size=8',root/'node_modules/expo/node_modules/@expo/cli/build/bin/cli','export:embed','--platform','android','--dev','false','--minify','false','--max-workers','1','--reset-cache','--entry-file',entry,'--bundle-output',bundle,'--assets-dest',dirs[1]],2048,900)
+  found=set();carry=b''
+  with bundle.open('rb')as stream:
+   while chunk:=stream.read(MIB):
+    block=carry+chunk
+    found.update(k for k,v in identity_literals.items()if str(v).encode()in block)
+    carry=block[-4096:]
+  assert found==set(identity_literals),'MISSING_EMBEDDED_RUNTIME_IDENTITY'
+  run('canonical-client-transport',[node,'--max-old-space-size=64','--max-semi-space-size=4',HERE/'verify_canonical_client_transport.cjs','--root',root,'--bundle',bundle,'--expected-url','http://10.0.2.2:8765','--report',out/'canonical-client-transport.json'],256)
+  phase_inputs=dict(sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],capabilityId=s['capabilityId'],definitionReleaseId=s['pair']['definitionReleaseId'],searchReleaseId=s['pair']['searchReleaseId'])
+  js=dict(status='PASS_OFFICIAL_EMBEDDED_JS_EXPORT_ONLY',inputs=phase_inputs,artifact=dict(files=inventory(root,dirs[:2]),bundleSha256=sha(bundle)))
+  source_js_bytes=bundle.stat().st_size;source_js_sha=sha(bundle)
+  # The source bundle stays in the private CI workspace, not in uploaded artifacts.
+  run('hermes',[root/'node_modules/react-native/sdks/hermesc/win64-bin/hermesc.exe','-w','-emit-binary','-max-diagnostic-width=80','-O','-out',str(bundle)+'.hbc',bundle],2304,900)
+  os.replace(str(bundle)+'.hbc',bundle)
+  with bundle.open('rb')as stream:assert stream.read(8).hex()=='c61fbc03c103191f'
+  hermes=dict(status='PASS_HERMES_COMPILE_ONLY',inputs=phase_inputs,artifact=dict(sourceJsSha256=source_js_sha,sourceJsBytes=source_js_bytes,bytecodeSha256=sha(bundle),bytecodeBytes=bundle.stat().st_size))
+  scheduler=out/'metro-single-worker.cjs';scheduler.write_text('const canonical=require('+json.dumps(str(root/'metro.config.js'))+');module.exports={...canonical,maxWorkers:1};\n',encoding='utf8')
+  env['EXPO_OVERRIDE_METRO_CONFIG']=str(scheduler)
+  run('expo-updates',[node,'--max-old-space-size=1024','--max-semi-space-size=8',root/'node_modules/expo-updates/utils/build/createUpdatesResources.js','android',root,dirs[2],'all',entry],2048,900);env.pop('EXPO_OVERRIDE_METRO_CONFIG')
+  updates=dict(status='PASS_OFFICIAL_EXPO_UPDATES_RESOURCES_ONLY',inputs=phase_inputs,artifact=dict(files=inventory(root,dirs[2:]),fingerprint=(dirs[2]/'fingerprint').read_text().strip()))
+  assert read(dirs[2]/'app.manifest')['assets']and re.fullmatch('[a-f0-9]{40}|[a-f0-9]{64}',updates['artifact']['fingerprint'])
+  precomputed=dict(status='PASS_CURRENT_SOURCE_PRECOMPUTED_PHASE_UNION',sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],files=inventory(root,dirs));write(out/'precomputed.json',precomputed)
  # Preserve the already built HBC/assets and exact source-bound receipts
  # before packaging. Raw JS stays private; no credential/session is included.
  assert sum(f['bytes']for f in precomputed['files'])<=128*MIB,'PRECOMPUTED_PRESERVATION_SIZE_CAP'
@@ -207,6 +246,8 @@ def main():
  for task in ['createBundleWaterProofJsAndAssets','createWaterProofUpdatesResources']:assert 'VERIFIED_PRECOMPUTED_PHASE :app:'+task+' files='in glog
  assert inventory(root,dirs)==precomputed['files']
  apk=root/'android/app/build/outputs/apk/waterProof/app-waterProof.apk';assert apk.is_file()
+ assert apk.stat().st_size<=256*MIB,'UNACCEPTED_APK_PRESERVATION_SIZE_CAP'
+ shutil.copyfile(apk,out/'UNACCEPTED-app-waterProof.apk')
  aapt=sdk/'build-tools/36.0.0/aapt2.exe';signer=sdk/'build-tools/36.0.0/lib/apksigner.jar';apk_sha=sha(apk)
  badging=run('apk-badging',[aapt,'dump','badging',apk],256);xml=run('apk-manifest',[aapt,'dump','xmltree',apk,'--file','AndroidManifest.xml'],256)
  cert=run('apk-signature',[java,'-Xmx128m','-jar',signer,'verify','--verbose','--print-certs',apk],256)
@@ -230,7 +271,7 @@ def main():
   assert'lib/x86_64/libhermes.so'in z.namelist()
   assert{v.split('/')[1]for v in z.namelist()if v.startswith('lib/')and v.count('/')==2}=={'x86_64'}
  assert sha(apk)==apk_sha and check_source()and utc(s['usableUntil'])>datetime.now(timezone.utc),'END_IDENTITY_OR_INPUT_EXPIRED'
- shutil.copyfile(apk,out/'app-waterProof.apk')
+ os.replace(out/'UNACCEPTED-app-waterProof.apk',out/'app-waterProof.apk')
  write(out/'apk-result.json',dict(status='PASS_EXACT_CURRENT_SNAPSHOT_APK_PACKAGING_ONLY',sourceSnapshotCommit=a.source_commit,canonicalSourceHead=s['canonicalSourceHead'],sourceIdentity=s['sourceIdentity'],pair=s['pair'],buildSpecSha256=a.spec_sha256,apkSha256=apk_sha,
   signatureSha256=CERT,resources=verified,phaseReceipts=receipts,installedOnDevice=False,androidUiAccepted=False,publicationPerformed=False,credentialsPrinted=False))
 if __name__=='__main__':main()
