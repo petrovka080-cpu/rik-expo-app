@@ -1,0 +1,396 @@
+{
+  "provenance": {
+    "status": "SOURCE_DERIVED_RESOURCE_METADATA_ONLY_NOT_ENGINE_OUTPUT",
+    "sourceRole": "Exact subset used by UI contract: row ID/title/unit/section/operation metadata",
+    "sources": [
+      {
+        "path": "src/lib/estimate/v4/roofLanternCfp100100LimitedS2748.ts",
+        "sha256": "8db6a2943c7edf94834b5edbe10179d275d6e3604c97f9f1e53196c9ef7c3e55"
+      },
+      {
+        "path": "src/lib/estimate/v4/roofWindowOperationResourcesS2750.ts",
+        "sha256": "5bf5894953d769b2f62c08e3a83e1d384b059c5ca0a2a91777ffb000550c9d46"
+      },
+      {
+        "path": "data/estimate-benchmarks/source-packs/roof-window-operation-resources-s27-50.json",
+        "sha256": "37a2d107c4902f47ea2f5a651150ba1fdc94d642fc2d9b19bb9b19ba999124ee"
+      }
+    ],
+    "rowCount": 21,
+    "operationCount": 7,
+    "sharedReferenceCount": 1,
+    "compileCoreInvocations": 0,
+    "quantitiesOrPricesInferred": false
+  },
+  "rows": [
+    {
+      "row_id": "roof-cfp100100:base",
+      "title_ru": "Основание VELUX CFP Q 73FQV 100100 со стеклопакетом",
+      "unit_id": "item",
+      "section": "Установка основания окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:base",
+          "operationTitleRu": "Установка основания окна",
+          "completionCriterionRu": "Основание закреплено по совместимому проектному решению. Общий труд установки основания и купола учтён здесь одной позицией.",
+          "processOrdinal": 20
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:dome",
+      "title_ru": "Прозрачный купол VELUX ISD 100100 0010",
+      "unit_id": "item",
+      "section": "Подготовка и установка купола",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:dome",
+          "operationTitleRu": "Подготовка и установка купола",
+          "completionCriterionRu": "Защитная плёнка снята до установки купола; купол соединён с основанием включёнными узлами. Общий труд монтажа не начисляется повторно.",
+          "processOrdinal": 50
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:included-glazing",
+      "title_ru": "Стеклопакет в составе основания CFP — включён",
+      "unit_id": "item",
+      "section": "Установка основания окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:base",
+          "operationTitleRu": "Установка основания окна",
+          "completionCriterionRu": "Основание закреплено по совместимому проектному решению. Общий труд установки основания и купола учтён здесь одной позицией.",
+          "processOrdinal": 20
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:included-dome-fastening",
+      "title_ru": "Встроенные узлы крепления купола ISD — включены в купол",
+      "unit_id": "item",
+      "section": "Подготовка и установка купола",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:dome",
+          "operationTitleRu": "Подготовка и установка купола",
+          "completionCriterionRu": "Защитная плёнка снята до установки купола; купол соединён с основанием включёнными узлами. Общий труд монтажа не начисляется повторно.",
+          "processOrdinal": 50
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:daylight",
+      "title_ru": "Эффективная световая площадь — справочно",
+      "unit_id": "m2",
+      "section": "Характеристики окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:reference",
+          "operationTitleRu": "Характеристики окна",
+          "completionCriterionRu": "Справочные паспортные величины выбранного исполнения; не являются услугами или закупкой.",
+          "processOrdinal": 90,
+          "processRole": "REFERENCE_ONLY"
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:product-net-mass",
+      "title_ru": "Масса оснований и куполов без упаковки — справочно",
+      "unit_id": "kg",
+      "section": "Характеристики окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:reference",
+          "operationTitleRu": "Характеристики окна",
+          "completionCriterionRu": "Справочные паспортные величины выбранного исполнения; не являются услугами или закупкой.",
+          "processOrdinal": 90,
+          "processRole": "REFERENCE_ONLY"
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:fixings",
+      "title_ru": "Крепление основания к несущему основанию — норма не подтверждена",
+      "unit_id": "item",
+      "section": "Установка основания окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:base",
+          "operationTitleRu": "Установка основания окна",
+          "completionCriterionRu": "Основание закреплено по совместимому проектному решению. Общий труд установки основания и купола учтён здесь одной позицией.",
+          "processOrdinal": 20
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:flashing",
+      "title_ru": "Гидроизоляция примыкания — расход не подтверждён",
+      "unit_id": "m2",
+      "section": "Защита стыков от протечек",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:waterproof",
+          "operationTitleRu": "Защита стыков от протечек",
+          "completionCriterionRu": "Примыкание соединено с выбранным кровельным покрытием по совместимому решению.",
+          "processOrdinal": 40
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:vapour-connection",
+      "title_ru": "Пароизоляционное примыкание — комплект и включение в отделку не подтверждены",
+      "unit_id": "item",
+      "section": "Утепление и защита от пара",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:thermal",
+          "operationTitleRu": "Утепление и защита от пара",
+          "completionCriterionRu": "Утепление и пароизоляция соединены с выбранной конструкцией крыши; состав и последовательность узла требуют подтверждения.",
+          "processOrdinal": 30
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:thermal-connection",
+      "title_ru": "Непрерывность утепления примыкания — материал и объём не подтверждены",
+      "unit_id": "m3",
+      "section": "Утепление и защита от пара",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:thermal",
+          "operationTitleRu": "Утепление и защита от пара",
+          "completionCriterionRu": "Утепление и пароизоляция соединены с выбранной конструкцией крыши; состав и последовательность узла требуют подтверждения.",
+          "processOrdinal": 30
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:extension",
+      "title_ru": "Доборное основание — необходимость и исполнение не подтверждены",
+      "unit_id": "item",
+      "section": "Установка основания окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:base",
+          "operationTitleRu": "Установка основания окна",
+          "completionCriterionRu": "Основание закреплено по совместимому проектному решению. Общий труд установки основания и купола учтён здесь одной позицией.",
+          "processOrdinal": 20
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:membrane-termination",
+      "title_ru": "Завершение мембранного примыкания — применимый комплект не подтверждён",
+      "unit_id": "item",
+      "section": "Защита стыков от протечек",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:waterproof",
+          "operationTitleRu": "Защита стыков от протечек",
+          "completionCriterionRu": "Примыкание соединено с выбранным кровельным покрытием по совместимому решению.",
+          "processOrdinal": 40
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:installation",
+      "title_ru": "Монтаж основания и купола — трудозатраты не подтверждены",
+      "unit_id": "man_hour",
+      "section": "Установка основания окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:base",
+          "operationTitleRu": "Установка основания окна",
+          "completionCriterionRu": "Основание закреплено по совместимому проектному решению. Общий труд установки основания и купола учтён здесь одной позицией.",
+          "processOrdinal": 20,
+          "additionalOperations": [
+            {
+              "operationId": "roof-window:dome",
+              "operationTitleRu": "Подготовка и установка купола",
+              "completionCriterionRu": "Защитная плёнка снята до установки купола; купол соединён с основанием включёнными узлами. Общий труд монтажа не начисляется повторно.",
+              "processOrdinal": 50
+            }
+          ]
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:lifting",
+      "title_ru": "Подъём и доступ — схема не подтверждена",
+      "unit_id": "shift",
+      "section": "Доставка и подъём на крышу",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:delivery",
+          "operationTitleRu": "Доставка и подъём на крышу",
+          "completionCriterionRu": "Изделия доставлены и подняты по подтверждённой схеме; условия и объём услуг требуют уточнения.",
+          "processOrdinal": 10
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:delivery",
+      "title_ru": "Доставка фонарей — условия не подтверждены",
+      "unit_id": "trip",
+      "section": "Доставка и подъём на крышу",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:delivery",
+          "operationTitleRu": "Доставка и подъём на крышу",
+          "completionCriterionRu": "Изделия доставлены и подняты по подтверждённой схеме; условия и объём услуг требуют уточнения.",
+          "processOrdinal": 10
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:inspection",
+      "title_ru": "Проверка монтажа — трудозатраты не подтверждены",
+      "unit_id": "man_hour",
+      "section": "Проверка, уборка и вывоз упаковки",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:finish",
+          "operationTitleRu": "Проверка, уборка и вывоз упаковки",
+          "completionCriterionRu": "Монтаж проверен, рабочее место убрано; партия и полный состав услуги вывоза требуют подтверждения.",
+          "processOrdinal": 60
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:opening-width",
+      "title_ru": "Номинальная ширина проёма для одного фонаря — справочно",
+      "unit_id": "mm",
+      "section": "Характеристики окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:reference",
+          "operationTitleRu": "Характеристики окна",
+          "completionCriterionRu": "Справочные паспортные величины выбранного исполнения; не являются услугами или закупкой.",
+          "processOrdinal": 90,
+          "processRole": "REFERENCE_ONLY"
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:opening-height",
+      "title_ru": "Номинальная длина проёма для одного фонаря — справочно",
+      "unit_id": "mm",
+      "section": "Характеристики окна",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:reference",
+          "operationTitleRu": "Характеристики окна",
+          "completionCriterionRu": "Справочные паспортные величины выбранного исполнения; не являются услугами или закупкой.",
+          "processOrdinal": 90,
+          "processRole": "REFERENCE_ONLY"
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:protective-film",
+      "title_ru": "Снятие защитной плёнки — включение в монтаж и труд не подтверждены",
+      "unit_id": "man_hour",
+      "section": "Подготовка и установка купола",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:dome",
+          "operationTitleRu": "Подготовка и установка купола",
+          "completionCriterionRu": "Защитная плёнка снята до установки купола; купол соединён с основанием включёнными узлами. Общий труд монтажа не начисляется повторно.",
+          "processOrdinal": 50
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:final-cleanup",
+      "title_ru": "Финальная уборка и сбор упаковки — граница и труд не подтверждены",
+      "unit_id": "man_hour",
+      "section": "Проверка, уборка и вывоз упаковки",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:finish",
+          "operationTitleRu": "Проверка, уборка и вывоз упаковки",
+          "completionCriterionRu": "Монтаж проверен, рабочее место убрано; партия и полный состав услуги вывоза требуют подтверждения.",
+          "processOrdinal": 60
+        }
+      }
+    },
+    {
+      "row_id": "roof-cfp100100:packaging-waste",
+      "title_ru": "Упаковка: сбор, погрузка, вывоз и приём — партия и состав услуги не подтверждены",
+      "unit_id": "kg",
+      "section": "Проверка, уборка и вывоз упаковки",
+      "resource_graph": {
+        "operationCompositionV1": {
+          "contractVersion": "canonical-operation-resource/v1",
+          "groupId": "roof-window:installation",
+          "groupTitleRu": "Установка окон в крыше",
+          "operationId": "roof-window:finish",
+          "operationTitleRu": "Проверка, уборка и вывоз упаковки",
+          "completionCriterionRu": "Монтаж проверен, рабочее место убрано; партия и полный состав услуги вывоза требуют подтверждения.",
+          "processOrdinal": 60
+        }
+      }
+    }
+  ]
+}

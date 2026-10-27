@@ -4,8 +4,9 @@ import { compactConsumerRepairApprovedHistorySummaryBundleForDurableStorage } fr
 import {
   foundationDraftWithManualCatalogItem,
   foundationViewModel,
-} from "./requestEstimateBoqCatalogTestHelpers";
-import { resourceDefinitions as roofResources } from '../../src/lib/estimate/v4/roofWindowOperationResourcesS2750';
+} from "./requestEstimateViewModelContractFixtures";
+import roofFixture from './fixtures/roof-window-operation-metadata-source-only-r1.json';
+const roofResources = roofFixture.rows;
 
 describe("request estimate view model", () => {
   it('retains unknown unassigned resources beside declared operations in the same resource category', () => {

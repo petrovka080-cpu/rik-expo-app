@@ -2415,7 +2415,7 @@
     "tests/requestEstimate/realNamedBoqGroupedUi.test.ts": "502cbaa7f9ea5a1ce636eed2b71ccd17f8fcb4441926ee3d88bac2b86bbefe8e",
     "tests/requestEstimate/requestEstimateBoqCatalogTestHelpers.ts": "b76f23715292fc9193df5c4bd6585911302bac24ded59d30822a3c8a225fd24d",
     "tests/requestEstimate/requestEstimateCategoryFiltersDurable.contract.test.tsx": "edc6fd71f5f24fc8ffedc9578da4c41395c930fc5cde541c3e3b5b3919de6f8b",
-    "tests/requestEstimate/requestEstimateViewModel.contract.test.ts": "e09a402a2a62a27693717faf52d2763859b801b43d1fb496bf90a56797bd41d6",
+    "tests/requestEstimate/requestEstimateViewModel.contract.test.ts": "46b1dfcb06621fc3d3d78e9879fb5f258adc0e771ee7d57413cc8fd31a198014",
     "tests/requestEstimate/selectedMaterialDeliveryAdmissionR1.contract.test.ts": "e580566250e793cc949b371ed3d5c73e2545bd42fdcdcd641a0b311974b69703",
     "tests/requestEstimate/selectedMaterialDeliveryClientR1.contract.test.ts": "0fad3ffccc66fcd8be4ec0394cf5eb4b4c7a02092fb1d34c90d06e72266410d0",
     "tests/requestEstimate/selectedMaterialDeliveryCommandReceiptR1.contract.test.ts": "aeea6bf09a1fc3589d3f71545fb9f7ac9670e402992a98a3a80222c5d122cb95",
@@ -2431,7 +2431,9 @@
     "types/migrated-external-shims.d.ts": "8812a1348d65e32266682d75d0907627c0976a223db1aff2b973ffcd53df7756",
     "work/stream-c-facade-ct190/prepareFacadeCt190RetainedWorkR1.ts": "d0a590d95b12d64b678209a2c9398df61ac8f0d71e80d8f0e64188b23af245b0",
     "work/stream-c-plumbing-mixer/grohe33265002RegistryDescriptorWorkR1.ts": "43b6650e7158fcd5c200b8ebefda0a5b7f1dc99b0388908eb06b7567dda9d4c0",
-    "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": "b85b7496155f070c836fa08ecc8d25142d41d6ffb56572e8c428774999cc2f88"
+    "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": "b85b7496155f070c836fa08ecc8d25142d41d6ffb56572e8c428774999cc2f88",
+    "tests/requestEstimate/requestEstimateViewModelContractFixtures.ts": "29eeaff34e59f3593b49d1dab790812a72d75151afd86b1a8d1908af247e64f2",
+    "tests/requestEstimate/fixtures/roof-window-operation-metadata-source-only-r1.json": "0ff50e9ac29cd93cceb96855b6275b646ac952e647c5c9c1ff8879afd3c6be11"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3610,12 +3612,12 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2430,
+    "sourceFiles": 2432,
     "dependencyFiles": 1160,
-    "sourceBytes": 132654891
+    "sourceBytes": 132713335
   },
   "candidateSourceComposition": {
-    "contract": "plain-names-operation-link-and-caption-independent-contract/r591",
+    "contract": "common-names-and-exact12-ui-contract-lightweight-inputs/r593",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
@@ -3677,13 +3679,19 @@
         "sha256": "482dd9934d36481310e0dc8a129951a8fb2907bc4984dd47670b758553f068e2"
       },
       "tests/requestEstimate/requestEstimateViewModel.contract.test.ts": {
-        "sha256": "e09a402a2a62a27693717faf52d2763859b801b43d1fb496bf90a56797bd41d6"
+        "sha256": "46b1dfcb06621fc3d3d78e9879fb5f258adc0e771ee7d57413cc8fd31a198014"
       },
       "scripts/estimate/r4a13/prepareCt126PreparedWallBranchesR2.ts": {
         "sha256": "48801fb31039e8bcd2d7eacec8cc8865fc20005ede277f945160e5f50a0b02e3"
       },
       "src/features/consumerRepair/canonicalProcurementPreviewRows.ts": {
         "sha256": "aea0da4c8bab30d0df4d3c5ad6f5be3de9b69178d1832c5749bd2ba7b6fab7a9"
+      },
+      "tests/requestEstimate/requestEstimateViewModelContractFixtures.ts": {
+        "sha256": "29eeaff34e59f3593b49d1dab790812a72d75151afd86b1a8d1908af247e64f2"
+      },
+      "tests/requestEstimate/fixtures/roof-window-operation-metadata-source-only-r1.json": {
+        "sha256": "0ff50e9ac29cd93cceb96855b6275b646ac952e647c5c9c1ff8879afd3c6be11"
       }
     }
   },
