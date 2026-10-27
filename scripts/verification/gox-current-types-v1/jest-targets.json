@@ -25,7 +25,8 @@
       "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts"
     ],
     "ui-contract": [
-      "tests/requestEstimate/requestEstimateViewModel.contract.test.ts"
+      "tests/requestEstimate/requestEstimateViewModel.contract.test.ts",
+      "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx"
     ],
     "ui-procurement": [
       "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx"

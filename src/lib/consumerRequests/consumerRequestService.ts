@@ -1081,6 +1081,43 @@ export function applyConsumerRepairDraftRevisionParamBatchPatch(input: {
   return canonicalBackendRequired("legacy_parameter_batch_recalculate");
 }
 
+/** Notes are request metadata. They never create calculation or procurement rows. */
+export function saveConsumerRepairEstimateNote(input: {
+  requestDraftId: string;
+  ownerUserId: string;
+  revisionId: string | null;
+  text: string;
+  deleteCommentId?: string;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const binding = canonicalBackendBindingForItems(bundle.items);
+  const revisionId = binding?.revisionId ?? bundle.durableHistorySummary?.sourceRevisionId ?? null;
+  if (bundle.draft.consumerUserId !== input.ownerUserId || revisionId !== input.revisionId) {
+    throw new Error("Заметка не сохранена: выбрана другая смета или её версия.");
+  }
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "add_item" });
+  const text = input.text.trim();
+  const comments = bundle.estimateComments ?? [];
+  if (input.deleteCommentId) {
+    const comment = comments.find(candidate => candidate.id === input.deleteCommentId);
+    if (!comment || comment.ownerUserId !== input.ownerUserId || comment.estimateId !== bundle.draft.id
+      || comment.revisionId !== revisionId || comment.deleted) {
+      throw new Error("Заметка не удалена: она не принадлежит выбранной версии сметы.");
+    }
+  } else if (!text || text.length > 4000) {
+    throw new Error("Введите заметку длиной от 1 до 4000 символов.");
+  }
+  const now = new Date().toISOString();
+  const estimateComments = input.deleteCommentId
+    ? comments.map(comment => comment.id === input.deleteCommentId ? { ...comment, deleted: true, updatedAt: now } : comment)
+    : [...comments, { id: id("consumer_estimate_note"), ownerUserId: input.ownerUserId,
+      estimateId: bundle.draft.id, revisionId, rowId: null, text, createdAt: now, updatedAt: now, deleted: false }];
+  return saveConsumerRepairBundle(withEvent({ ...bundle, estimateComments }, createConsumerRepairEvent({
+    requestDraftId: bundle.draft.id, actorType: "consumer", actorUserId: input.ownerUserId,
+    eventType: input.deleteCommentId ? "estimate_note_deleted" : "estimate_note_added",
+  })));
+}
+
 export function addConsumerRepairRequestItem(input: {
   requestDraftId: string;
   titleRu: string;

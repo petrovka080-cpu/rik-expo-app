@@ -27,6 +27,7 @@ import {
   deleteConsumerRepairRequestDraft,
   listConsumerRepairApprovedHistory, listConsumerRepairWorkspaceHistory, removeConsumerRepairRequestItem,
   prepareConsumerRepairRequestItemQuantityUpdate, updateConsumerRepairRequestItemUnitPrice,
+  saveConsumerRepairEstimateNote,
   type ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests/consumerRequestService";
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
@@ -85,10 +86,11 @@ import {
 import { buildConsumerRepairRequestRenderModel } from "./ConsumerRepairRequestScreenRenderModel";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 import { ConsumerRepairRequestScreenView } from "./ConsumerRepairRequestScreenView";
+import { ConsumerRepairEstimateNotes } from "./ConsumerRepairEstimateNotes";
 import { loadConsumerCanonicalProcurementArtifact } from "./consumerCanonicalArtifactHydration";
 import {
   refreshLoadedApprovedHistoryPage,
-  addConsumerRepairCustomNoteItem, addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection,
+  addConsumerRepairPhotoMaterialPlaceholder, applyConsumerRepairCatalogItemSelection,
   buildApprovedConsumerRepairWorkspaceClearedState,
   canonicalBaselineContractMissingStatusMessage,
   buildEstimateDraftSessionTransitionStatusMessage, canonicalSearchItemToConsumerRepairSuggestion,
@@ -3493,8 +3495,24 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
   private addCustomItem = () => {
     const current = this.resolvedDraftBundle(this.ensureDraftBundle({ allowPendingDraftCreation: true }));
     if (!current) return;
-    const bundle = addConsumerRepairCustomNoteItem(current);
-    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено к смете.");
+    this.setState({ estimateNotesVisible: true });
+  };
+  private saveEstimateNote = async (input: { draftId: string; revisionId: string | null; text: string; deleteCommentId?: string }): Promise<boolean> => {
+    const current = this.state.bundle;
+    if (!current || current.draft.id !== input.draftId || current.draft.consumerUserId !== this.props.consumerUserId
+      || (consumerRepairCanonicalBackendBinding(current)?.revisionId ?? null) !== input.revisionId) {
+      throw new Error("Заметка не сохранена: выбрана другая версия сметы.");
+    }
+    const bundle = saveConsumerRepairEstimateNote({ requestDraftId: input.draftId, ownerUserId: this.props.consumerUserId,
+      revisionId: input.revisionId, text: input.text, deleteCommentId: input.deleteCommentId });
+    this.updateCurrentBundle(bundle, "Сохраняем заметки к смете…");
+    await awaitConsumerRepairBundleDurableCommit({ requestDraftId: input.draftId,
+      expectedStatus: bundle.draft.status, expectedRevisionId: bundle.estimateDraftRevisionState?.currentRevisionId ?? null });
+    if (this.state.bundle?.draft.id === input.draftId
+      && (consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId ?? null) === input.revisionId) {
+      this.setState({ statusMessage: input.deleteCommentId ? "Заметка удалена." : "Заметка сохранена в черновике." });
+    }
+    return true;
   };
   private openCatalogForEstimateItem = async (itemId: string) => {
     const current = this.resolvedDraftBundle(this.ensureDraftBundle());
@@ -3893,6 +3911,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     return (
       <>
         {this.renderScreenView(this.state)}
+        {this.state.estimateNotesVisible && this.state.bundle ? <ConsumerRepairEstimateNotes
+          key={`${this.state.bundle.draft.id}/${consumerRepairCanonicalBackendBinding(this.state.bundle)?.revisionId ?? ''}`}
+          bundle={this.state.bundle} busy={this.state.canonicalEstimateMutationBusy === true}
+          onSave={this.saveEstimateNote} onClose={() => this.setState({ estimateNotesVisible: false })} /> : null}
         {runtimeIngressProjection ? (
           <View
             accessibilityLiveRegion="polite"

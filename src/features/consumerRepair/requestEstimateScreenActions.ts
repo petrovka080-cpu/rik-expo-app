@@ -93,6 +93,7 @@ export type ConsumerRepairRequestScreenState = {
   historyLoading?: boolean;
   approvalCommitBusy?: boolean;
   deleteCommitBusy?: boolean;
+  estimateNotesVisible?: boolean;
   canonicalEstimateMutationBusy?: boolean;
   pendingCanonicalRowEditCount?: number;
   bundle: ConsumerRepairDraftBundle | null;
@@ -1034,18 +1035,3 @@ export function addConsumerRepairPhotoMaterialPlaceholder(current: ConsumerRepai
   };
 }
 
-export function addConsumerRepairCustomNoteItem(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-  return addConsumerRepairRequestItem({
-    requestDraftId: current.draft.id,
-    titleRu: "Пользовательское примечание",
-    itemType: "other",
-    quantity: 1,
-    unit: "set",
-    unitLabel: "компл.",
-    unitPrice: null,
-    currency: "KGS",
-    source: "custom",
-    confidence: "low",
-    addedBy: "user",
-  });
-}

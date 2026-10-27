@@ -560,8 +560,8 @@
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
-    "scripts/verification/gox-current-types-v1/guard.py": "30aca0f900750bac9e9d8e663d1b4761f8dff931f75ece3173d59ab6e4a90e1f",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "b7c58599197feedfbce62b302f3a628905511582772320afd09a9f69b947e6f8",
+    "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "455f3ec15e97901656e45824bdce5777d901031df9ca37f2010472650319fa5a",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "455ae114220747ec394a5c6f9cd49b828ae1eb4b808358d285b3cb769a4bd9d4",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
@@ -600,7 +600,7 @@
     "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.tsx": "3dc62b1cc16736e26c7a891b62561426e391532af35e9328cbc84c38caebaf8e",
     "src/features/consumerRepair/ConsumerRepairRequestChrome.tsx": "35cef9db6a5883611ff3de8b117ebf81f7c5ee780c80bc9148c695ec507e47fe",
     "src/features/consumerRepair/ConsumerRepairRequestScreen.styles.ts": "0687fd4813df74f9befa8cebc5684302538c16b31290a25294a16371efca0e7e",
-    "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx": "202b058f9c1f7b81afde6b9c3bff8054e5aabd99a3227501dd222afdeba25e0b",
+    "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx": "1166bd4b132f207229ce723941b259d2f9780ad3a61d3f8479d9144ae3f2ffa8",
     "src/features/consumerRepair/ConsumerRepairRequestScreenContainer.tsx": "497740968da86402d6d4ec1c2f860798fea81de30a361d01cc4bd3ca2a306f0d",
     "src/features/consumerRepair/ConsumerRepairRequestScreenRenderModel.ts": "fa7e462734bf39e560bdbd2a51e7da99e54acf6c3777028e6d6fbeac317e099a",
     "src/features/consumerRepair/ConsumerRepairRequestScreenView.tsx": "1afa841d6060dff1899eb2da47fd3ce5a5ed27312f8dbdc5dc139a09cdfbfbaa",
@@ -642,7 +642,7 @@
     "src/features/consumerRepair/consumerRepairQuantityEditTrace.ts": "15a6b90c36cf2704d9ad0e1afd736446168baa14757deea25520f12718323d8e",
     "src/features/consumerRepair/consumerRepairRowMetadata.ts": "c1bc6bfae092fc3ff6fe8abc61df6e1770964308068ba0b556528a12dc19aad5",
     "src/features/consumerRepair/consumerRepairRowRequirements.test.ts": "f8fa31e29dec8bb7255e414e52d610973c728cbbdb7ebebb1a62d44e573e0f2a",
-    "src/features/consumerRepair/requestEstimateScreenActions.ts": "5c8dd8852b081bf8955fd7798a17fe263e56c6dd1660922740474b1115be2bbf",
+    "src/features/consumerRepair/requestEstimateScreenActions.ts": "37d1d0ec76d6d5fc05c082fa2a99514360a992d3fcf6e74aa9433006daa8c135",
     "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts": "49278866d3e227596630e1d8e793997bb1e50958df40e8b9d63e519b0a3fb887",
     "src/features/consumerRepair/requestEstimateViewModel.ts": "34c6355d212d99da3e52f05eede526e1b1a8b6e4ba1d78cd75d8d2a69e25cef7",
     "src/features/consumerRepair/useCanonicalOperationCompositionDiagnostic.ts": "c897ca92ce1eaae7398b64a0b10edb4a1061eaea935a5a52c83e347950a5abc6",
@@ -1147,7 +1147,7 @@
     "src/lib/consumerRequests/consumerRequestPdfService.ts": "c7f6bfa7c45e2d903a33a78e0b97e31d1df33dfe5ac223d52ac6343dad4cb67c",
     "src/lib/consumerRequests/consumerRequestPdfStorage.ts": "4d59a3d8519d37c33712b6ce0d827c8166acffa6db0977325cebd7da474f4961",
     "src/lib/consumerRequests/consumerRequestRepository.ts": "6969329e92c05b31837540a318708b67a61268f4b1c6875750dfddc8fed5f050",
-    "src/lib/consumerRequests/consumerRequestService.ts": "0b1268fcc3706ed4fd57bc0037645a82813b2bddad7b261b3c2641958f37334e",
+    "src/lib/consumerRequests/consumerRequestService.ts": "7cb2aef50780d88113e78531fd98aef3c36ddedfdf03b5274ac819ad89a0afc3",
     "src/lib/consumerRequests/consumerRequestTypes.ts": "8fa1d8f2f4f4ea2437e2ff603c6393894b8b15e03738f6c369a323b65f4fc499",
     "src/lib/consumerRequests/consumerRequestValidationService.ts": "7a49fa1a0f45083564cffcf6a17b2b6c8569a66995d420de7bbd2cc04c21f101",
     "src/lib/consumerRequests/index.ts": "bfd1e166ab3ae80e5780d2432468a072906e1345b30bc672fd6a217317a7b106",
@@ -2459,7 +2459,9 @@
     "scripts/dev/warmWholeAppDeveloperRuntime.cjs": "dba64055b8dbb34144f713eac6bef69fb21b0fd242982b6e3bfe7eae1b234017",
     "scripts/dev/warmWholeAppDeveloperRuntime.test.ts": "8d0f7f6173deb52b201d0b4d6aad472eb1310d6880b5adde7d64163b257f06ec",
     "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "6adb38bbc7159de59594cdf49d371fe41255c1559606e9ae30f75addeb48dddc",
-    "scripts/dev/wholeAppEmbeddedBuildTarget.test.js": "d06db891ac5b9e8d525042416d8ddb1a48535805ae9bbf2cd4c6c880b0efe307"
+    "scripts/dev/wholeAppEmbeddedBuildTarget.test.js": "d06db891ac5b9e8d525042416d8ddb1a48535805ae9bbf2cd4c6c880b0efe307",
+    "src/features/consumerRepair/ConsumerRepairEstimateNotes.tsx": "4740e1e39093c4297dacc97ee56468a3d01535d0e67c860601663d081094989a",
+    "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx": "2f0f3cd679b46535c9f1a110374d15419bdd0ab715e28a379f9e7c68e4ac32e8"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3638,18 +3640,19 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2458,
+    "sourceFiles": 2460,
     "dependencyFiles": 1160,
-    "sourceBytes": 133338619
+    "sourceBytes": 133352863
   },
   "candidateSourceComposition": {
-    "contract": "common-conditional-operation-and-developer-runtime/r677",
+    "contract": "metadata-notes-preserve-exact-saved-resources/r687",
+    "actualUiDefect": "R681 orphan custom note and lost canonical category admission",
+    "coverage": "Save/reopen/delete note outside resources; exact source/revision/category/quantity preserved; stale owner/revision rejected",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
-    "redLocalCases": 2,
-    "localCommonPdfPassed": 123,
-    "localNewCachePdfPassed": 123,
-    "coverage": "Primary/related applicability in existing Web/PDF sections and scope links; current cache41/89; single canonical resource/owner preserved; actual launcher runtime refinements. Existing7CIgroups affected by changed common UI/PDF mapper, add5devsuites, no guard weakening."
+    "previousRun": 40506922129,
+    "previousRunTypesAndSevenGroupsPassed": true,
+    "previousDevBatchRejectedBeforeExecution": true
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
