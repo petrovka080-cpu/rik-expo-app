@@ -499,7 +499,7 @@ function flattenNormativeSourceMap(value: unknown, code: string): string[] {
 }
 
 export async function resolveCanonicalApprovedBaselineLeaf(
-  client: Client,
+  client: Pick<Client, "query">,
   rootBaselineId: string,
   expectedCatalogId: string,
 ) {

@@ -335,7 +335,7 @@
     "scripts/estimate/r4a13/canonicalDefinitionPublisherConditionalSourceScopeR1.test.ts": "1a35b95ea8c04c9879a91e763209b847ecb3f6787f5d0dec096979a66e3c89a8",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherParameterOrdinalsR1.test.ts": "80d99d70c1b35a864f138b6daf3348331b97ae0b15acdd0975825df9b29366fd",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": "d547140084bfcae2e33a48261a3d3b7dd0b6f105ec4357e3a7ff3344ed92c74e",
-    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "420d4a40ac236dd836bd752bcdc5e416a4512216519e99dabfaa7e2f902905e4",
+    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "591fa0585ee4d6149c78f0f3d6b6702d16e95c04700d3cbe98f1b258764f54ca",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherResourceOrderingR1.test.ts": "b3117f2ccb80b2a8007ba33f95b65bdd14064a59d8b4ac9a9520750093b0ea67",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": "22e0c945a463230bed73e7efed680cf7bbd1547b82348737c620e72756bc6691",
     "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845",
@@ -3634,7 +3634,7 @@
     "sourceBytes": 133227737
   },
   "candidateSourceComposition": {
-    "contract": "existing-owner-composite-source-references-and-unit-rule/r621",
+    "contract": "existing-owner-composite-references-query-api/r622",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
@@ -3645,7 +3645,7 @@
         "sha256": "1559569db12222e8c9a889308c3354b0220b4b7178073ffd2e544d656ddb54fc"
       },
       "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": {
-        "sha256": "420d4a40ac236dd836bd752bcdc5e416a4512216519e99dabfaa7e2f902905e4"
+        "sha256": "591fa0585ee4d6149c78f0f3d6b6702d16e95c04700d3cbe98f1b258764f54ca"
       },
       "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": {
         "sha256": "8b1724d62eba16d8df3c9140ecbf9664dc09dda4c5e81a8567b1f8cd2e86d506"
