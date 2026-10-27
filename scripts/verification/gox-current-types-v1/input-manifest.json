@@ -134,7 +134,7 @@
     "data/estimate-benchmarks/source-packs/ct126-prepared-series-s27-54.json": "46e8608ea504afed98bd8b470454b08a948067abc627f739515eef0e56a4bf49",
     "data/estimate-benchmarks/source-packs/ct126-six-wall-bindings-s27-69.json": "6e49d1502eae01bc57e72b552ef8018722ed8c585a59657369ae642ec13b18fa",
     "data/estimate-benchmarks/source-packs/ct29-ordinary-manual-migration-r1.json": "62dc1717572c31954266ae51b983ebcf6a9c960269194a77d2e1933662faddc9",
-    "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": "3c54b07a2f8f9565d210ec571611f219264e7594837d9efa7146e1ceca5dd92c",
+    "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": "05698bb74b7c16e4ecfe55db323aeecb9ff8b9a69bdd3e0927afaf024db22ede",
     "data/estimate-benchmarks/source-packs/ct54-ready-facade-six-s27-63.json": "5b666ee44e1f127fb786dd759d71859c82aad086ec2df005cb04e1b92df7aae1",
     "data/estimate-benchmarks/source-packs/ct54-simple-ready-cement-facade-s27-54.json": "f3cf5b2045d0995d284dd3e8d0e0c3db764e5a545b197c254d9d2657425558b1",
     "data/estimate-benchmarks/source-packs/curb-base-curing-antisol250w-completion-r1.json": "1de5d9b14d2bfb3633997725ff4fb07d21e4dc18be81ea286cd1c1b820fc1bf8",
@@ -286,7 +286,7 @@
     "data/estimate/professional-nomenclature/materials.json": "f6040620e1b67477d22712e8eb47e9d721ff933c7d431dcdd9ff1770ad49b9ff",
     "data/estimate/professional-nomenclature/services.json": "6ca56c72a5b479ab3c64d3c4415a0c3072d06c2a6090b80ca1bc5c6012ad5397",
     "data/estimate/professional-nomenclature/works.json": "ea3535f73092521c25d9fbd85ceb27c97d7ee5a2da7a89b885068620a1b850ed",
-    "docs/estimate-operation-resource-acceptance.md": "22e35f173b3ffa2c95fc8b06f28f242eaa683bca7df59615a9c5af971c9a5c51",
+    "docs/estimate-operation-resource-acceptance.md": "f39ac19fdb9997f790856f64b46c1315eac1efd064c5c17aa2f44c742d4c7c77",
     "expo-env.d.ts": "6fc02634da46d3edc5a88eec9173ba6bf709726be3cba83c73ebd8e859d5c147",
     "jest.config.js": "e8ec12f711ce53a030fb7e9ac6b51ca3dccf32035357a77de39b7b0632720708",
     "jest.setup.js": "88956f4429b53e19936bb3c0704c524fd097e8a68b457691716c1cd5753ae1c1",
@@ -370,7 +370,7 @@
     "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.test.ts": "5d58415a4ed0341b5bbec3b5ac7f3241c8f5d79d219aa9be8dd31ff51271a864",
     "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts": "bdec313b9b0efbe03f414a5fad94352fb96d0d4d075d1ee5627521ccc6cfcdfe",
     "scripts/estimate/r4a13/masterSingleDefinitionRetainedFormulaExpressionRepairsR1.test.ts": "aaec4b6cf742790aa3152d552d5e7794a0f4638ba5af8e9520e7f6eeeb525603",
-    "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": "c5aed9f0a32a29b7632a928f12e064f37d915095bb7e22aa302133bc72192006",
+    "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": "c3fb9e15a7eb9ae2a7f3dcbd2a653aa2734dbfa1c88b5a10a4da68f4c6208d43",
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts": "8cf5fe6385481c3c9db87e5026f211ded1acd6daa6db30d2418406ed49ba0847",
     "scripts/estimate/r4a13/monolithicRepeatedRetainedContinuationR1.ts": "b4da165a3fcba3d3e227db7191296bb0b5fd48b8290728d79ac83a9c188eb2db",
     "scripts/estimate/r4a13/preflightS2758FusionBench.ts": "e763137583b69984955faa81488c327e9d26881eed5c38362fcd72c05fe63dbd",
@@ -445,7 +445,7 @@
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.test.ts": "16199dd97dad1ae3b541eae2784351143527fde6d1676df03dbcffd22358bd5d",
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.ts": "2549780f9af5d0e6ece5e40683db6ef364f9d263492e2e58c58e59e140017d97",
     "scripts/estimate/r4a13/prepareManufacturerDoorFanFactoryKitsR1.ts": "cf6c305374da8d80c8234d1e28a549490f97a255000eb6e3cd0983930a087a30",
-    "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": "24e6da7d230a7747a7937ae02adb8d6f128cf17dc6a52ea1de073516e5eb240c",
+    "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": "2abe3a0509b5752f4a471a51eb939d3a685cda721b8ebc88c021baa2f3360663",
     "scripts/estimate/r4a13/prepareMasterAsphaltCompactionProfileSuccessor.ts": "1813926b2ec6897a3af1b00740160d0ffa642f6ca76eb1f229f74586123005ed",
     "scripts/estimate/r4a13/prepareMasterAsphaltInstallKrer27Successor.ts": "369e2e86944b95be758f96b4dfe2168079665fb0771d68b0595d26587d24eea7",
     "scripts/estimate/r4a13/prepareMasterBridgeAsphaltCompleteSuccessor.ts": "c7c6b7f8a4040f94ef1aa4374387318d1be576f7882a57e9146ba7650a34de1f",
@@ -1819,7 +1819,7 @@
     "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts": "73244519d0d16e7931c351d34a021431238c5e3eb363042279118af6714f9af8",
     "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.ts": "40fc21e9cab745ac25e7e4192ebe48039876070e79c879267ac2ac4cab691838",
     "src/lib/estimate/v4/masonryBrickWallBiaTn10R1.ts": "1223578c1bfe569bcbc18183f2a81cf204a6359ef26605bd45c0c52b682be8d3",
-    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": "9536eddfc6b1395833da28399d6797afc1d05d7994844307c9a8ea7800958bfa",
+    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": "1f35d3ccd71cf357bea60777320c6faba05ed6d02719aa7229794392d98d5c0b",
     "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": "0a4e8774525c845c845061cd15ebfa316c12f8421e8783f8d92bf85422cdd73f",
     "src/lib/estimate/v4/mineralCeilingThirdPuttyCoatS2754.ts": "150d9985d86076af8540cd29003ed8ab493d2a50c7431b170a0f1e13cb60f0ed",
     "src/lib/estimate/v4/mineralCeilingThirdPuttySupplierGatesS2754.ts": "feea1d25660d74d2d9ad8d718010639ed353e8128e73f2b156857abea9b20986",
@@ -3631,75 +3631,27 @@
   "stats": {
     "sourceFiles": 2449,
     "dependencyFiles": 1160,
-    "sourceBytes": 133227737
+    "sourceBytes": 133232766
   },
   "candidateSourceComposition": {
-    "contract": "existing-owner-composite-references-query-api/r622",
+    "contract": "source-authored-formula-reference-and-existing-Master-guard/r629",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
-      "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": {
-        "sha256": "66eefc0b45c3a77f1af319090eebf792dfd2f5d4235883d613fbde8c1354a919"
-      },
-      "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": {
-        "sha256": "1559569db12222e8c9a889308c3354b0220b4b7178073ffd2e544d656ddb54fc"
-      },
-      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": {
-        "sha256": "591fa0585ee4d6149c78f0f3d6b6702d16e95c04700d3cbe98f1b258764f54ca"
-      },
-      "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": {
-        "sha256": "8b1724d62eba16d8df3c9140ecbf9664dc09dda4c5e81a8567b1f8cd2e86d506"
-      },
-      "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": {
-        "sha256": "72ea41f63fbf5996c3958627ed2aa93f190a6602ee437a0cff699f7e793a9ec8"
-      },
-      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": {
-        "sha256": "6140ac5e5a23068f3354887c1339604ddee02fc93c0262527a0436a0ce1af223"
-      },
-      "docs/estimate-operation-resource-acceptance.md": {
-        "sha256": "22e35f173b3ffa2c95fc8b06f28f242eaa683bca7df59615a9c5af971c9a5c51"
-      },
-      "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": {
-        "sha256": "0a4e8774525c845c845061cd15ebfa316c12f8421e8783f8d92bf85422cdd73f"
-      },
-      "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": {
-        "sha256": "9536eddfc6b1395833da28399d6797afc1d05d7994844307c9a8ea7800958bfa"
-      },
-      "data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json": {
-        "sha256": "79a157a5cc9886fe179413f2840b97689de5ec4912c877ec8d5c9a493c817acd"
-      },
-      "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": {
-        "sha256": "24e6da7d230a7747a7937ae02adb8d6f128cf17dc6a52ea1de073516e5eb240c"
-      },
-      "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": {
-        "sha256": "55d059a0c7e9cf9b033b55d1d89b7efe5ee2079b0a51d1e0c222dfb9e4454551"
-      },
-      "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts": {
-        "sha256": "3fb8efab3994f8353ccfba30bca0a0606f54c3569e32c1df9c89efce4f4c7d44"
+      "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": {
+        "sha256": "05698bb74b7c16e4ecfe55db323aeecb9ff8b9a69bdd3e0927afaf024db22ede"
       },
       "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": {
-        "sha256": "c5aed9f0a32a29b7632a928f12e064f37d915095bb7e22aa302133bc72192006"
+        "sha256": "c3fb9e15a7eb9ae2a7f3dcbd2a653aa2734dbfa1c88b5a10a4da68f4c6208d43"
       },
-      "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.test.ts": {
-        "sha256": "b474f8a12c05b5be97c4ccdc3406b5c5b7d47cbfdb28466bcb7938a3b7930365"
+      "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": {
+        "sha256": "2abe3a0509b5752f4a471a51eb939d3a685cda721b8ebc88c021baa2f3360663"
       },
-      "scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts": {
-        "sha256": "aca89b0dd59d217af83e168b78495c6af42f4f14120901b7297f619b395c5727"
+      "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": {
+        "sha256": "1f35d3ccd71cf357bea60777320c6faba05ed6d02719aa7229794392d98d5c0b"
       },
-      "src/lib/estimate/professionalUnitRegistry.ts": {
-        "sha256": "c3d64a737cfcfb6111b6a376d9c8093f4cb91aef78b7a52bc06c6f0a70c0da55"
-      },
-      "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts": {
-        "sha256": "cbe93ad9fdbed9f59048068ed7ee54ce85934d67017ed34dba93571e1a41f7d6"
-      },
-      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": {
-        "sha256": "7f1b1538e955f6cb03e7cc7e7303af7295c151af1fff54a1a498670d54b3bc9b"
-      },
-      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": {
-        "sha256": "a4d005e02f60ee52cf303a7a795d3c49dc541b3a079a666515077ef7c4c5cf8b"
-      },
-      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": {
-        "sha256": "947232dae57f3d8d8978394e64663583c588ff3aa43b8ccd82daa4f3d3d3f44b"
+      "docs/estimate-operation-resource-acceptance.md": {
+        "sha256": "f39ac19fdb9997f790856f64b46c1315eac1efd064c5c17aa2f44c742d4c7c77"
       }
     }
   },

@@ -195,7 +195,7 @@ test('preserves old missing-application-norm and FULL quantity semantics indepen
 
 
 import {prepareCt54ReferencePublicationR613} from './prepareCt54ReferencePublicationR613';
-import {assembleMasterSingleDefinitionManagedRegistryCandidateR1} from './prepareMasterSingleDefinitionSuccessorR1';
+import {assembleMasterSingleDefinitionManagedRegistryCandidateR1,validateIndependentCompletenessMapReferences,validateMasterFormulaGraphConsistency} from './prepareMasterSingleDefinitionSuccessorR1';
 import {makeMasterScopedNormativeRegistryCaptureR1} from './masterScopedNormativeRegistryPreimageR1';
 function ordinaryCt54TypedView(){
  const config=prepareCt54ReferencePublicationR613({parentReleaseId:'TEST_ONLY_CURRENT_RELEASE',parentSearchReleaseId:'TEST_ONLY_SEARCH_RELEASE',
@@ -210,6 +210,17 @@ function ordinaryCt54TypedView(){
 }
 test('ordinary whole reference admits exact deferred project facts without fake retain and rejects missing raw evidence or missing-norm substitution',()=>{
  const v=ordinaryCt54TypedView();expect(validateMasterTypedPartialQuantityPreparationR1(v)).toEqual([]);
+ // Exercise the exact first Master guard, not only the looser public composition audit.
+ const referenceErrors=(map:unknown)=>validateIndependentCompletenessMapReferences({completenessMap:map,
+  formulaDefinitions:v.formulaDefinitions,resourceDefinitions:v.resourceDefinitions,requireOperationBindings:true});
+ expect(validateMasterFormulaGraphConsistency(v.formulaDefinitions)).toEqual([]);
+ expect(referenceErrors(v.passport.independentCompletenessMap)).toEqual([]);
+ const missingFormula=clone(v.passport.independentCompletenessMap) as Json;
+ delete missingFormula.entries[0].formulaId;
+ expect(referenceErrors(missingFormula)).toContain('ENTRY_0_FORMULA_REFERENCE');
+ const wrongFormula=clone(v.passport.independentCompletenessMap) as Json;
+ wrongFormula.entries[0].formulaId=v.formulaDefinitions[1]!.formula_id;
+ expect(referenceErrors(wrongFormula)).toContain('ENTRY_0_ROW_FORMULA_MISMATCH');
  expect(Object.keys(v.runtimeProfileSourceIds??{}).every(id=>Object.hasOwn(v.runtimeProfileInput??{},id))).toBe(true);
  expect(Object.keys(v.runtimeProfileSourceIds??{})).toEqual(['ct54_reference_method']);
  expect(v.sourcePaths).toContain('scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts');

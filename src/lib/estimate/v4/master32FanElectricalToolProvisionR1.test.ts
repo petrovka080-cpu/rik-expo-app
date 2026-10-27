@@ -228,6 +228,7 @@ it.each(pack.targets.map(t=>t.key))('preserves all arithmetic and need quantitie
 });
 it('builds the flat prepared-opening reference directly from exact sources with all real stages and explicit object choices',()=>{
  const source=referenceMethodR610,input=referenceInputR610(source.catalogId),d=input.model,map=input.independentCompletenessMap;
+ expect(validateIndependentCompletenessMapReferences({completenessMap:map,formulaDefinitions:d.formulas,resourceDefinitions:d.resources,requireOperationBindings:true})).toEqual([]);
  expect(d.resources).toHaveLength(21);expect(map.entries).toHaveLength(21);expect(map.operationRoster).toHaveLength(7);
  expect(d.parameters.some(p=>p.parameter_id==='q'||p.parameter_id===factoryPack.countParameterId)).toBe(false);
  expect(d.resources.some(r=>r.row_id.startsWith('ventilation_interior_fan_install_standard_'))).toBe(false);

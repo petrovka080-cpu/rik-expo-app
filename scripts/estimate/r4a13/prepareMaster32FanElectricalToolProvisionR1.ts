@@ -217,7 +217,12 @@ export function fanReferenceCurrentManagedCandidateR616(ctx:Readonly<{pointer:Fa
    sourceProvenance:{sourceKind:'PROJECT_SYSTEM',sourceArtifactSha256:fanPreparedOpeningReferenceArtifactSha256R610,
     currentDefinitionId:current.definition.id,newRootOnly:true,automaticMigrationAllowed:false,actualProjectAuthenticated:false}},
   forbiddenAdjacentMatchers:[],owner:'ROOT_SINGLE_INTEGRATOR',receiptFileStem:'fan_prepared_opening_reference_r616',
-  verifyTargetPrecondition:async(client)=>{
+  verifyTargetPrecondition:async(client,phase)=>{
+   // Match the existing whole-successor target lock set before the fresh bounded reread.
+   if(phase==='LOCKED_BEFORE')await client.query(`lock table public.estimate_cumulative_manifest_entry,
+    public.estimate_definition_version,public.estimate_approved_template_baseline,public.estimate_parameter_definition,
+    public.estimate_formula_graph,public.estimate_resource_spec,public.estimate_work_normative_binding,
+    public.estimate_normative_locator,public.estimate_normative_source,public.estimate_work_identity in share row exclusive mode`);
    assertSelectedPointer();assertCurrentReadPins();
    // Bounded current header, not old resource/formula/binding arrays.
    const rows=(await client.query(`select m.definition_version_id::text id,m.approved_template_baseline_id::text baseline_id,d.definition_sha256 sha

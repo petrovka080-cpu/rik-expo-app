@@ -596,6 +596,7 @@
     "entries": [
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:ct54",
+        "formulaId": "reference:wall-paint:ct54:ct54:reference-quantity",
         "operationId": "mix-paint",
         "requiredOperationIds": [
           "mix-paint",
@@ -613,6 +614,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:water",
+        "formulaId": "reference:wall-paint:ct54:water:reference-quantity",
         "operationId": "clean-tools",
         "requiredOperationIds": [
           "clean-tools"
@@ -629,6 +631,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:electricity",
+        "formulaId": "reference:wall-paint:ct54:electricity:reference-quantity",
         "operationId": "mix-paint",
         "requiredOperationIds": [
           "mix-paint"
@@ -645,6 +648,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:paint-roller",
+        "formulaId": "material:wall-paint:tool:paint-roller:reference-quantity",
         "operationId": "paint",
         "requiredOperationIds": [
           "paint",
@@ -662,6 +666,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:paint-roller-frame",
+        "formulaId": "material:wall-paint:tool:paint-roller-frame:reference-quantity",
         "operationId": "paint",
         "requiredOperationIds": [
           "paint",
@@ -679,6 +684,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:roller-tray",
+        "formulaId": "material:wall-paint:tool:roller-tray:reference-quantity",
         "operationId": "paint",
         "requiredOperationIds": [
           "paint",
@@ -696,6 +702,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:cut-in-brush",
+        "formulaId": "material:wall-paint:tool:cut-in-brush:reference-quantity",
         "operationId": "paint",
         "requiredOperationIds": [
           "paint",
@@ -713,6 +720,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:telescopic-pole",
+        "formulaId": "material:wall-paint:tool:telescopic-pole:reference-quantity",
         "operationId": "paint",
         "requiredOperationIds": [
           "paint",
@@ -730,6 +738,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:mixing-drill",
+        "formulaId": "material:wall-paint:tool:mixing-drill:reference-quantity",
         "operationId": "mix-paint",
         "requiredOperationIds": [
           "mix-paint"
@@ -746,6 +755,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:mixing-paddle",
+        "formulaId": "material:wall-paint:tool:mixing-paddle:reference-quantity",
         "operationId": "mix-paint",
         "requiredOperationIds": [
           "mix-paint",
@@ -763,6 +773,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:mixing-bucket",
+        "formulaId": "material:wall-paint:tool:mixing-bucket:reference-quantity",
         "operationId": "mix-paint",
         "requiredOperationIds": [
           "mix-paint",
@@ -781,6 +792,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:protection-film",
+        "formulaId": "material:wall-paint:tool:protection-film:reference-quantity",
         "operationId": "protect",
         "requiredOperationIds": [
           "protect",
@@ -799,6 +811,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:masking-tape",
+        "formulaId": "material:wall-paint:tool:masking-tape:reference-quantity",
         "operationId": "protect",
         "requiredOperationIds": [
           "protect",
@@ -817,6 +830,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:wipes",
+        "formulaId": "material:wall-paint:tool:wipes:reference-quantity",
         "operationId": "paint",
         "requiredOperationIds": [
           "paint",
@@ -835,6 +849,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:waste-bags",
+        "formulaId": "material:wall-paint:tool:waste-bags:reference-quantity",
         "operationId": "clean-site",
         "requiredOperationIds": [
           "clean-site"
@@ -851,6 +866,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:gloves",
+        "formulaId": "material:wall-paint:tool:gloves:reference-quantity",
         "operationId": "mix-paint",
         "requiredOperationIds": [
           "mix-paint",
@@ -870,6 +886,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:material:wall-paint:tool:eye-protection",
+        "formulaId": "material:wall-paint:tool:eye-protection:reference-quantity",
         "operationId": "mix-paint",
         "requiredOperationIds": [
           "mix-paint",
@@ -889,6 +906,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:work-clothing",
+        "formulaId": "reference:wall-paint:ct54:work-clothing:reference-quantity",
         "operationId": "prepare",
         "requiredOperationIds": [
           "prepare",
@@ -911,6 +929,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:work-shoes",
+        "formulaId": "reference:wall-paint:ct54:work-shoes:reference-quantity",
         "operationId": "prepare",
         "requiredOperationIds": [
           "prepare",
@@ -933,6 +952,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:clean-water-pail",
+        "formulaId": "reference:wall-paint:ct54:clean-water-pail:reference-quantity",
         "operationId": "clean-tools",
         "requiredOperationIds": [
           "clean-tools"
@@ -949,6 +969,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:wash-pail",
+        "formulaId": "reference:wall-paint:ct54:wash-pail:reference-quantity",
         "operationId": "clean-tools",
         "requiredOperationIds": [
           "clean-tools"
@@ -965,6 +986,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:wash-tray",
+        "formulaId": "reference:wall-paint:ct54:wash-tray:reference-quantity",
         "operationId": "clean-tools",
         "requiredOperationIds": [
           "clean-tools"
@@ -981,6 +1003,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:used-paint-container",
+        "formulaId": "reference:wall-paint:ct54:used-paint-container:reference-quantity",
         "operationId": "clean-tools",
         "requiredOperationIds": [
           "clean-tools",
@@ -998,6 +1021,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:used-paint-container-lid",
+        "formulaId": "reference:wall-paint:ct54:used-paint-container-lid:reference-quantity",
         "operationId": "clean-tools",
         "requiredOperationIds": [
           "clean-tools",
@@ -1015,6 +1039,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:air-thermometer",
+        "formulaId": "reference:wall-paint:ct54:air-thermometer:reference-quantity",
         "operationId": "prepare",
         "requiredOperationIds": [
           "prepare",
@@ -1033,6 +1058,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:surface-thermometer",
+        "formulaId": "reference:wall-paint:ct54:surface-thermometer:reference-quantity",
         "operationId": "prepare",
         "requiredOperationIds": [
           "prepare",
@@ -1051,6 +1077,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:humidity-instrument",
+        "formulaId": "reference:wall-paint:ct54:humidity-instrument:reference-quantity",
         "operationId": "prepare",
         "requiredOperationIds": [
           "prepare",
@@ -1069,6 +1096,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:clock",
+        "formulaId": "reference:wall-paint:ct54:clock:reference-quantity",
         "operationId": "mix-paint",
         "requiredOperationIds": [
           "mix-paint",
@@ -1087,6 +1115,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:record-sheet",
+        "formulaId": "reference:wall-paint:ct54:record-sheet:reference-quantity",
         "operationId": "prepare",
         "requiredOperationIds": [
           "prepare",
@@ -1105,6 +1134,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:record-pen",
+        "formulaId": "reference:wall-paint:ct54:record-pen:reference-quantity",
         "operationId": "prepare",
         "requiredOperationIds": [
           "prepare",
@@ -1123,6 +1153,7 @@
       },
       {
         "expectedResourceId": "project-system:ct54-ready-ground-manual-r608:reference:wall-paint:ct54:whole-cycle-labour",
+        "formulaId": "reference:wall-paint:ct54:whole-cycle-labour:reference-quantity",
         "operationId": "prepare",
         "requiredOperationIds": [
           "prepare",
