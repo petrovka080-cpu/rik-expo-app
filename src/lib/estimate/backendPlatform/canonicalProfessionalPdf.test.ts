@@ -48,7 +48,7 @@ function syntheticIncludedQuantityFixture(): {owner:CanonicalArtifactRow;savedNe
 function assertNativeCeilingStructureHold() {
   const before=JSON.stringify(unresolvedCeiling);
   expect(()=>buildCanonicalProfessionalPdfProjection({revision:revision(1),rows:[unresolvedCeiling.owner],
-    preliminaryNeeds:[unresolvedCeiling.need],workTitleRu:'Потолок ГКЛ П112.1'}))
+    preliminaryNeeds:[{...unresolvedCeiling.need,included_in_estimate:false,included_in_procurement:false,ownership_status:'PRELIMINARY_NEED'}],workTitleRu:'Потолок ГКЛ П112.1'}))
     .toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID',
       operationResourceAcceptanceV1:expect.objectContaining({issues:expect.arrayContaining([{
         code:'RELATED_OPERATION_INVALID_OR_DUPLICATED',rowId:unresolvedCeiling.owner.row_id}])})}));
@@ -914,9 +914,9 @@ describe("R4-A6 canonical professional PDF", () => {
       expect(matches).toHaveLength(1);
       return [...matches[0]!.matchAll(/<td class="money">([^<]*)<\/td>/gu)].map(match=>match[1]);
     };
-    expect(moneyFor(source[0]!.title_ru)).toEqual(['100,00 сом','200,00 сом']);
-    expect(moneyFor(source[1]!.title_ru)).toEqual(['','']);
-    expect(moneyFor(source[2]!.title_ru)).toEqual(['300,00 сом','']);
+    expect(moneyFor(String(source[0]!.title_ru))).toEqual(['100,00 сом','200,00 сом']);
+    expect(moneyFor(String(source[1]!.title_ru))).toEqual(['','']);
+    expect(moneyFor(String(source[2]!.title_ru))).toEqual(['300,00 сом','']);
     expect(result).toMatchObject({pricedRowCount:1,missingPriceRowCount:1,nonPayableRowCount:1});
     expect(JSON.stringify(source)).toBe(saved);
   });

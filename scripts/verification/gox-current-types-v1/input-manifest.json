@@ -1287,7 +1287,7 @@
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.test.ts": "68a81598f210d4e4566e7ff931bcc9328233619d30ca026a9257b9e413544d76",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
     "src/lib/estimate/backendPlatform/canonicalProcurementOperationAllocation.test.ts": "69e677cfdf6fc0106c97436e8433450604cb1e8537847e1e3fe1615ffd878730",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "9a12a0b68b76b13a22b55578c1deeabf932059f3e489eed803d4279a5395fcc3",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "640a6208bf86f2cb5cfcd68bde4e15a0618239f4a20d1edeb6d3bb5f993121c0",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "fac1a17829a9f5fd07ed5f772438d81289d22b5fe405aca1fabf547c33730f45",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.test.ts": "3aa6ed34ddd2b0e7bd35aa67674e5cfed153f1e0802c169a43b180fc1f1a2f3b",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts": "cf73e5767efe06a52a5b54ebbb83124d939fd24237cdf8d811c15ac707cc9931",
@@ -3628,7 +3628,7 @@
     "sourceBytes": 132920335
   },
   "candidateSourceComposition": {
-    "contract": "mandatory-operation-resource-acceptance-and-current-issued-bytes/r600",
+    "contract": "mandatory-operation-resource-acceptance-and-current-issued-bytes/r602",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
@@ -3690,7 +3690,7 @@
         "sha256": "a0a516e782a5ce6665f403479f986aa4b40a4a71f5f4f3843910a5e36df0a39a"
       },
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": {
-        "sha256": "9a12a0b68b76b13a22b55578c1deeabf932059f3e489eed803d4279a5395fcc3"
+        "sha256": "640a6208bf86f2cb5cfcd68bde4e15a0618239f4a20d1edeb6d3bb5f993121c0"
       },
       "src/features/consumerRepair/useCanonicalOperationCompositionDiagnostic.ts": {
         "sha256": "c897ca92ce1eaae7398b64a0b10edb4a1061eaea935a5a52c83e347950a5abc6"
