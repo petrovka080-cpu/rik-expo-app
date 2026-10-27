@@ -21,9 +21,9 @@ import { runMasterSingleDefinitionSuccessorR1 } from "./prepareMasterSingleDefin
 type Json = Record<string, any>;
 
 const variantKey = String(
-  process.env.S273_F09_AGGRESSIVE_ENVIRONMENT_TILE_ON_DIFFERENT_BEDDING_LAYERS_WITH_ARZAMITE_OR_PLASTIC_PUTTY_JOINTS_FLOOR_DEMOLITION_VARIANT ?? "large_area",
+  process.env.S273_F09_AGGRESSIVE_ENVIRONMENT_TILE_ON_DIFFERENT_BEDDING_LAYERS_WITH_ARZAMITE_OR_PLASTIC_PUTTY_JOINTS_FLOOR_DEMOLITION_VARIANT ?? "wet_zone",
 ) as AggressiveEnvironmentTileOnDifferentBeddingLayersWithArzamiteOrPlasticPuttyJointsFloorDemolitionKrer46VariantKey;
-if (!( ["large_area", "small_area", "wet_zone"] as const)
+if (!( [ "wet_zone"] as const)
   .includes(variantKey as never)) {
   throw new Error(
     `STOP_S273_F09_AGGRESSIVE_ENVIRONMENT_TILE_ON_DIFFERENT_BEDDING_LAYERS_WITH_ARZAMITE_OR_PLASTIC_PUTTY_JOINTS_FLOOR_DEMOLITION_VARIANT_UNSUPPORTED:${variantKey}`,
@@ -32,9 +32,7 @@ if (!( ["large_area", "small_area", "wet_zone"] as const)
 const variant = resolveAggressiveEnvironmentTileOnDifferentBeddingLayersWithArzamiteOrPlasticPuttyJointsFloorDemolitionKrer46Variant(variantKey);
 const token = variantKey.toUpperCase();
 const stem = variantKey.replace(/_/gu, "-");
-const contextRu = variantKey === "large_area"
-  ? "большой площади"
-  : variantKey === "small_area" ? "малой площади" : "влажной зоны";
+const contextRu = "влажной зоны";
 
 async function verifyCore(): Promise<Json> {
   const short = await compileAggressiveEnvironmentTileOnDifferentBeddingLayersWithArzamiteOrPlasticPuttyJointsFloorDemolitionKrer46R1(

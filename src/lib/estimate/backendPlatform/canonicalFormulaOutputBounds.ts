@@ -1,6 +1,14 @@
 import { compareFormulaGraphDecimals, evaluateFormulaGraph } from "./formulaGraph";
 
 const limitKeys = ["minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum"] as const;
+
+/** Only an explicitly authored bounds explanation may leave a failed job.
+ * Never expose a general exception message, SQL text, stack or row-id suffix. */
+export function canonicalFormulaOutputBoundsPublicReasonRu(code: unknown, reason: unknown): string | null {
+  if (code !== "FORMULA_OUTPUT_BOUNDS_FAILED" || typeof reason !== "string"
+    || !reason.trim() || reason.length > 2_000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/u.test(reason)) return null;
+  return reason.trim();
+}
 export type CanonicalFormulaOutputBoundsV1 = Readonly<{
   schemaVersion: "canonical_formula_output_bounds_v1";
   unitId: string;
@@ -60,6 +68,7 @@ export function validateCanonicalFormulaOutputBoundsV1(
     || (policy.exclusiveMaximum != null && compareFormulaGraphDecimals(formulaQuantity, policy.exclusiveMaximum) >= 0);
   if (outside) throw Object.assign(new Error(`${policy.reasonRu} (${rowId}: ${formulaQuantity} ${policy.unitId})`), {
     code: "FORMULA_OUTPUT_BOUNDS_FAILED",
+    publicReasonRu: policy.reasonRu,
   });
   return { status: "PASSED", formulaQuantity, unitId: policy.unitId };
 }

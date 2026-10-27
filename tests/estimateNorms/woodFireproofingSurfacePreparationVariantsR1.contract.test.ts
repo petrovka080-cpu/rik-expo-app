@@ -23,10 +23,10 @@ function quantity(compiled: Awaited<ReturnType<
 }
 
 describe("S27.7 F09 wood fireproofing surface preparation variants", () => {
-  test("preserves two exact search identities without a suffix quantity factor", () => {
-    expect(VARIANT_KEYS).toEqual(["small_area", "standard"]);
+  test("preserves the surviving exact identities and source boundary", () => {
+    expect(VARIANT_KEYS).toEqual([ "standard"]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANTS[key].catalogId)).size).toBe(2);
+      WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANTS[key].catalogId)).size).toBe(1);
     for (const key of VARIANT_KEYS) {
       expect(woodFireproofingSurfacePreparationCompletenessMap(key)).toMatchObject({
         generatedFromCurrentRows: false,
@@ -113,9 +113,9 @@ describe("S27.7 F09 wood fireproofing surface preparation variants", () => {
     expect(() => resolveWoodFireproofingSurfacePreparationVariant("large_area"))
       .toThrow("WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANT_UNSUPPORTED");
     await expect(compileWoodFireproofingSurfacePreparationVariantR1(
-      "small_area",
+      "standard",
       { ...WOOD_FIREPROOFING_SURFACE_PREPARATION_SHORT_INPUT },
-      { catalogId: WOOD_FIREPROOFING_SURFACE_PREPARATION_VARIANTS.standard.catalogId },
+      { catalogId: "canonical-work:base:unrelated_work_standard" },
     )).rejects.toThrow("WOOD_FIREPROOFING_SURFACE_PREPARATION_CATALOG_UNSUPPORTED");
   });
 });

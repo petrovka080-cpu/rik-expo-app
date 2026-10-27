@@ -1,6 +1,6 @@
 import React from "react";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 
 import { ConsumerRepairItemRow } from "../../src/features/consumerRepair/ConsumerRepairItemRow";
 import { ConsumerRepairRequestScreenController } from "../../src/features/consumerRepair/ConsumerRepairRequestScreen";
@@ -35,7 +35,7 @@ function stagedEditor(patch: Partial<ConsumerRepairRequestItem> = {}) {
     state: { bundle: ConsumerRepairDraftBundle; pendingCanonicalRowEditCount?: number; statusMessage?: string };
     setState: (update: unknown, callback?: () => void) => void;
     changeItemQuantity: (id: string, value: string) => Promise<void>;
-    changeItemUnitPrice: (id: string, value: string) => Promise<void>;
+    changeItemUnitPrice: (id: string, value: string, phase?: "input") => Promise<void>;
     applyPendingCanonicalRowEdits: () => Promise<boolean>;
     cancelPendingCanonicalRowEdits: () => void;
     canonicalRowEditorResetKeys: Readonly<Record<string, number>>;
@@ -69,33 +69,108 @@ function expectMode(item: ConsumerRepairRequestItem, expected: string) {
 }
 
 describe("canonical pending row quantity provenance", () => {
-  it.each([null,2])("keeps source-owned quantity %s visible but blocks input and steppers until a norm is admitted", quantity => {
+  it.each(['android','ios']as const)('lets the %s native input own its caret while rapid numeric prefixes and focused Apply retain every digit',async os=>{
+    const descriptor=Object.getOwnPropertyDescriptor(Platform,'OS')!;
+    Object.defineProperty(Platform,'OS',{configurable:true,value:os});
+    try{for(const field of ['price','quantity']as const){
+      const editor=stagedEditor({unitPrice:1270.5}),noop=jest.fn();let renderer!:ReactTestRenderer;
+      const view=()=> <ConsumerRepairItemRow item={editor.current()} onDecrease={noop} onIncrease={noop}
+        onQuantityChange={editor.mutable.changeItemQuantity} onUnitPriceChange={editor.mutable.changeItemUnitPrice} onRemove={noop}/>;
+      try{
+        act(()=>{renderer=TestRenderer.create(view());});
+        const id=`consumer-repair-item-${field==='price'?'unit-price':'quantity'}-input-test-owned-row`;
+        act(()=>renderer.root.findByProps({testID:id}).props.onFocus());
+        for(const text of ['', '1','12','128','1280','1280.','1280.7','1280.75']){
+          act(()=>renderer.root.findByProps({testID:id}).props.onChangeText(text));
+          act(()=>renderer.update(view()));
+          const input=renderer.root.findByProps({testID:id});
+          expect(input.props.value).toBe(text);
+          expect(input.props.selectTextOnFocus).toBe(true);
+          // Feeding delayed selection events back into a controlled selection
+          // range replaced each new native keystroke;1280.75 became5 on Android.
+          expect(input.props.selection).toBeUndefined();
+          expect(input.props.onSelectionChange).toBeUndefined();
+        }
+        expect(editor.recalculate).not.toHaveBeenCalled();
+        editor.recalculate.mockRejectedValueOnce(new Error('TEST_BACKEND_STOP'));
+        await editor.mutable.applyPendingCanonicalRowEdits();
+        expect(editor.recalculate).toHaveBeenCalledTimes(1);
+        expect(editor.recalculate.mock.calls[0][0].rowOverrides['test:bedding'][field==='price'?'unitPrice':'quantity']).toBe(1280.75);
+      }finally{act(()=>renderer?.unmount());}
+    }}finally{Object.defineProperty(Platform,'OS',descriptor);}
+  });
+  it.each(['price','quantity'] as const)('includes the focused %s buffer in Apply without requiring blur',async field=>{
+    const editor=stagedEditor(),noop=jest.fn();let renderer!:ReactTestRenderer;
+    const view=()=> <ConsumerRepairItemRow item={editor.current()} onDecrease={noop} onIncrease={noop}
+      onQuantityChange={editor.mutable.changeItemQuantity} onUnitPriceChange={editor.mutable.changeItemUnitPrice} onRemove={noop}/>;
+    act(()=>{renderer=TestRenderer.create(view());});
+    const id=`consumer-repair-item-${field==='price'?'unit-price':'quantity'}-input-test-owned-row`,text=field==='price'?'1300,75':'16,5';
+    act(()=>renderer.root.findByProps({testID:id}).props.onFocus());
+    act(()=>renderer.root.findByProps({testID:id}).props.onChangeText(text));
+    act(()=>renderer.update(view()));
+    expect(renderer.root.findByProps({testID:id}).props.value).toBe(text);
+    expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+    expect(editor.recalculate).not.toHaveBeenCalled();
+    editor.recalculate.mockRejectedValueOnce(new Error('TEST_BACKEND_STOP'));
+    await editor.mutable.applyPendingCanonicalRowEdits();
+    expect(editor.recalculate).toHaveBeenCalledTimes(1);
+    expect(editor.recalculate.mock.calls[0][0].rowOverrides['test:bedding'][field==='price'?'unitPrice':'quantity']).toBe(field==='price'?1300.75:16.5);
+    act(()=>renderer.unmount());
+  });
+  it('blocks Apply of the previous good value while the focused input contains an incomplete number',async()=>{
+    const editor=stagedEditor(),noop=jest.fn();let renderer!:ReactTestRenderer;
+    act(()=>{renderer=TestRenderer.create(<ConsumerRepairItemRow item={editor.current()} onDecrease={noop} onIncrease={noop}
+      onQuantityChange={editor.mutable.changeItemQuantity} onUnitPriceChange={editor.mutable.changeItemUnitPrice} onRemove={noop}/>);});
+    const id='consumer-repair-item-unit-price-input-test-owned-row';
+    act(()=>renderer.root.findByProps({testID:id}).props.onFocus());
+    act(()=>renderer.root.findByProps({testID:id}).props.onChangeText('13'));
+    act(()=>renderer.root.findByProps({testID:id}).props.onChangeText('13..'));
+    expect(await editor.mutable.applyPendingCanonicalRowEdits()).toBe(false);
+    expect(editor.recalculate).not.toHaveBeenCalled();
+    act(()=>renderer.root.findByProps({testID:id}).props.onChangeText('1300.75'));
+    editor.recalculate.mockRejectedValueOnce(new Error('TEST_BACKEND_STOP'));
+    await editor.mutable.applyPendingCanonicalRowEdits();
+    expect(editor.recalculate.mock.calls[0][0].rowOverrides['test:bedding'].unitPrice).toBe(1300.75);
+    act(()=>renderer.unmount());
+  });
+  it('cancels an incomplete first price input without saving a number or losing the saved row',async()=>{
+    const editor=stagedEditor(),alert=jest.spyOn(Alert,'alert').mockImplementation(()=>{});
+    try{
+      await editor.mutable.changeItemUnitPrice('test-owned-row','.', 'input');
+      expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(1);
+      expect(editor.current().unitPrice).toBeNull();
+      editor.mutable.cancelPendingCanonicalRowEdits();
+      expect(alert).toHaveBeenCalledTimes(1);
+      expect(alert.mock.calls[0][1]).toContain('незавершённый ввод');
+      alert.mock.calls[0][2]![1].onPress!();
+      expect(editor.mutable.state.pendingCanonicalRowEditCount).toBe(0);
+      expect(editor.current().unitPrice).toBeNull();
+      expect(await editor.mutable.applyPendingCanonicalRowEdits()).toBe(false);
+      expect(editor.recalculate).not.toHaveBeenCalled();
+    }finally{alert.mockRestore();}
+  });
+  it.each([null,2])("allows editing quantity %s while retaining the unresolved application source", quantity => {
     const item=stagedEditor({quantity,unit:'',unitLabel:'',sourceParameters:{canonicalPreliminaryNeed:true,
       missingParameterRequirements:[{parameterId:'norm_qty',titleRu:'Норма инструмента',valueSourceRole:'UNRESOLVED_APPLICATION_NORM',sourceConfirmationRequired:false}]}}).current();
     const onQuantityChange=jest.fn();let renderer!:ReactTestRenderer;
     act(()=>{renderer=TestRenderer.create(<ConsumerRepairItemRow item={item} onDecrease={jest.fn()} onIncrease={jest.fn()}
       onQuantityChange={onQuantityChange} onUnitPriceChange={jest.fn()} onRemove={jest.fn()}/>);});
-    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.editable).toBe(false);
-    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe(String(quantity??''));
-    for(const step of ['minus','plus'])expect(renderer.root.findByProps({testID:`consumer-repair-item-${step}-${item.id}`}).props.disabled).toBe(true);
-    act(()=>renderer.root.findByProps({testID:`consumer-repair-item-plus-${item.id}`}).props.onPress());
-    expect(onQuantityChange).not.toHaveBeenCalled();
-    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe(String(quantity??''));
-    expect(renderer.root.findByProps({testID:`consumer-repair-item-unit-${item.id}`}).props.children).toBe('');
-    if(quantity===null)expect(renderer.root.findByProps({testID:`consumer-repair-item-source-gated-quantity-${item.id}`}).props.children)
-      .toContain('подтверждения технического источника');
+    const id=`consumer-repair-item-quantity-input-${item.id}`;
+    expect(renderer.root.findByProps({testID:id}).props.value).toBe(String(quantity??''));
+    act(()=>renderer.root.findByProps({testID:id}).props.onFocus());
+    act(()=>renderer.root.findByProps({testID:id}).props.onChangeText('4,5'));
+    act(()=>renderer.root.findByProps({testID:id}).props.onBlur());
+    expect(onQuantityChange.mock.calls[0].slice(0,2)).toEqual([item.id,'4,5']);
+    expect(item.quantity).toBe(quantity);
+    expect(item.sourceParameters?.missingParameterRequirements).toHaveLength(1);
     act(()=>renderer.unmount());
   });
-  it.each(['exact','missing','wrong-release'])('blocks retained handlers and unresolved shared requirements with %s table',mode=>{
+  it.each(['exact','missing','wrong-release'])('permits manual row editing independently of the %s requirements table',mode=>{
     const item=stagedEditor().current(),onQuantityChange=jest.fn();
     const view=(current:ConsumerRepairRequestItem,tables?:React.ComponentProps<typeof ConsumerRepairItemRow>['parameterRequirementTables'])=>(
       <ConsumerRepairItemRow item={current} parameterRequirementTables={tables} onDecrease={jest.fn()} onIncrease={jest.fn()}
         onQuantityChange={onQuantityChange} onUnitPriceChange={jest.fn()} onRemove={jest.fn()}/>);
     let renderer!:ReactTestRenderer;act(()=>{renderer=TestRenderer.create(view(item));});
-    const input=renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`});
-    const change=input.props.onChangeText,blur=input.props.onBlur,focus=input.props.onFocus;
-    const plus=renderer.root.findByProps({testID:`consumer-repair-item-plus-${item.id}`}).props.onPress;
-    act(()=>{focus();change('1');});
     const reference={contractVersion:'canonical-parameter-requirements/v1' as const,revisionId:'test-parent',releaseId:'test-release',parameterSchemaHash:'schema'};
     const blocked={...item,quantity:null,sourceParameters:{...item.sourceParameters,canonicalPreliminaryNeed:true,missingParameterIds:['tool_norm'],
       sourceManagedMissingParameterIds:[],canonicalParameterRequirementReference:reference}};
@@ -103,10 +178,13 @@ describe("canonical pending row quantity provenance", () => {
       requirementsById:{tool_norm:{parameterId:'tool_norm',titleRu:'Норма инструмента',unitId:null,guideShortRu:null,
         sourceConfirmationRequired:false,valueSourceRole:'UNRESOLVED_APPLICATION_NORM' as const}}}};
     act(()=>renderer.update(view(blocked,tables)));
-    act(()=>{focus();change('999');blur();plus();});
-    expect(onQuantityChange).not.toHaveBeenCalled();
-    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe('');
-    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.editable).toBe(false);
+    const id=`consumer-repair-item-quantity-input-${item.id}`;
+    act(()=>renderer.root.findByProps({testID:id}).props.onFocus());
+    act(()=>renderer.root.findByProps({testID:id}).props.onChangeText('999'));
+    act(()=>renderer.root.findByProps({testID:id}).props.onBlur());
+    expect(onQuantityChange.mock.calls[0].slice(0,2)).toEqual([item.id,'999']);
+    expect(blocked.quantity).toBeNull();
+    expect(blocked.sourceParameters.canonicalParameterRequirementReference).toEqual(reference);
     act(()=>renderer.unmount());
   });
   it('allows explicitly clearing a saved manual override while leaving source-owned quantity unconfirmed',()=>{
@@ -116,8 +194,8 @@ describe("canonical pending row quantity provenance", () => {
     act(()=>{renderer=TestRenderer.create(<ConsumerRepairItemRow item={item} onDecrease={jest.fn()} onIncrease={jest.fn()}
       onQuantityChange={onQuantityChange} onUnitPriceChange={jest.fn()} onRemove={jest.fn()}/>);});
     act(()=>renderer.root.findByProps({testID:`consumer-repair-item-restore-calculated-${item.id}`}).props.onPress());
-    expect(onQuantityChange).toHaveBeenCalledWith(item.id,'');
-    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe('2');
+    expect(onQuantityChange.mock.calls[0].slice(0,2)).toEqual([item.id,'']);
+    expect(renderer.root.findByProps({testID:`consumer-repair-item-quantity-input-${item.id}`}).props.value).toBe('1');
     expect(item.quantity).toBe(2);
     act(()=>renderer.unmount());
   });
@@ -279,6 +357,10 @@ describe("canonical pending row quantity provenance", () => {
       expect(renderer.root.findByProps({ testID: inputId }).props.value).toBe(field === "price" ? "" : "14.25");
       expect(renderer.root.findByProps({ testID: "consumer-repair-item-unit-price-input-unrelated-row" }).props.value).toBe("77");
       expect(renderer.root.findByProps({ testID: "consumer-repair-item-specification-input-test-owned-row" }).props.value).toBe("Несохранённое уточнение названия");
+      expect(onPrice).toHaveBeenCalledWith('unrelated-row','77','input');
+      if(field==='price')expect(onPrice).toHaveBeenCalledWith('test-owned-row','222.22','input');
+      else expect(onQuantity).toHaveBeenCalledWith('test-owned-row','17',undefined,'input');
+      onQuantity.mockClear();onPrice.mockClear();
       act(() => { oldChange("999"); oldBlur(); });
       expect(renderer.root.findByProps({ testID: inputId }).props.value).toBe(field === "price" ? "" : "14.25");
       expect(onQuantity).not.toHaveBeenCalled();

@@ -15,16 +15,14 @@ const VARIANT_KEYS = Object.keys(
 ) as AddressableSmokeDetectorClassifiedVariantKey[];
 
 describe("S27.6 F09 classified addressable smoke-detector install identities", () => {
-  test("keeps five catalog identities on one physical profile without hidden factors", () => {
+  test("preserves the surviving exact identities and source boundary", () => {
     expect(VARIANT_KEYS).toEqual([
       "high_load",
-      "large_area",
-      "small_area",
       "technical_room",
       "wet_zone",
     ]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_VARIANTS[key].catalogId)).size).toBe(5);
+      ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_VARIANTS[key].catalogId)).size).toBe(3);
     expect(ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_PARAMETERS).toHaveLength(29);
     expect(ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_FORMULAS).toHaveLength(28);
     expect(ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_RESOURCES).toHaveLength(28);
@@ -78,9 +76,9 @@ describe("S27.6 F09 classified addressable smoke-detector install identities", (
     expect(() => resolveAddressableSmokeDetectorClassifiedVariant("standard"))
       .toThrow("ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_VARIANT_UNSUPPORTED");
     await expect(compileAddressableSmokeDetectorClassifiedVariantR1(
-      "small_area",
+      "high_load",
       { ...ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_ACCEPTANCE_INPUT },
-      { catalogId: ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_VARIANTS.wet_zone.catalogId },
+      { catalogId: "canonical-work:base:unrelated_work_standard" },
     )).rejects.toThrow("ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_CATALOG_UNSUPPORTED");
     await expect(compileAddressableSmokeDetectorClassifiedVariantR1("wet_zone", {
       ...ADDRESSABLE_SMOKE_DETECTOR_CLASSIFIED_ACCEPTANCE_INPUT,

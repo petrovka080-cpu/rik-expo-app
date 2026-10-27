@@ -6,12 +6,13 @@ import { selectCanonicalArtifactRows } from "../../src/lib/estimate/backendPlatf
 import { canonicalApprovedBaselineRuntimeParameters } from "../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline";
 import {
   buildAllBatch003R56CanonicalSuccessorDefinitions,
+  buildBatch003R56CanonicalSuccessorDefinition,
   compileBatch003R56ThroughSharedCore,
 } from "../../scripts/estimate/r5/batch003R56SharedCoreProjection";
 import { batch003R56FixtureValues } from "../../scripts/estimate/r5/batch003R56Fixtures";
 import {
   DRYWALL_CEILING_PREPARE_CONDITIONAL_REQUIRED_ROW_IDS,
-  DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID,
+  DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID,
   DRYWALL_CEILING_PREPARE_PRELIMINARY_CLASSIFICATION_R1,
   DRYWALL_CEILING_PREPARE_PRELIMINARY_SCENARIO_R1,
   DRYWALL_CEILING_PREPARE_SOURCE_PACK_SHA256,
@@ -40,11 +41,11 @@ function readPrepareSourcePack(): { bytes: Buffer; sourcePack: DrywallCeilingPre
 }
 
 describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
-  test("projects the exact 36 legacy identities into unique noise-free REAL_WORK definitions", () => {
+  test("projects the exact 22 surviving identities into unique noise-free REAL_WORK definitions", () => {
     const definitions = buildAllBatch003R56CanonicalSuccessorDefinitions();
-    expect(definitions).toHaveLength(36);
-    expect(new Set(definitions.map((definition) => definition.definitionSha256)).size).toBe(36);
-    expect(new Set(definitions.map((definition) => definition.passport.engineeringSourcePack.sourcePackHash)).size).toBe(36);
+    expect(definitions).toHaveLength(22);
+    expect(new Set(definitions.map((definition) => definition.definitionSha256)).size).toBe(22);
+    expect(new Set(definitions.map((definition) => definition.passport.engineeringSourcePack.sourcePackHash)).size).toBe(22);
     for (const definition of definitions) {
       expect(definition).toMatchObject({
         batchId: "BATCH-003",
@@ -63,7 +64,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
           row.inclusionCondition.includes("frame_quantity_basis=P113_TYPICAL_PRELIMINARY"));
         const projectTakeoffRows = definition.resources.filter((row) =>
           row.inclusionCondition.includes("frame_quantity_basis=PROJECT_TAKEOFF"));
-        if (definition.catalogId === "drywall_ceiling_interior_drywall_ceiling_frame_large_area") {
+        if (definition.catalogId === "drywall_ceiling_interior_drywall_ceiling_frame_standard") {
           expect(p113Rows).toHaveLength(27);
           expect(projectTakeoffRows).toHaveLength(22);
           expect(definition.resources).toHaveLength(projectTakeoffRows.length + p113Rows.length);
@@ -154,7 +155,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
     expect(sourcePack.conditionalRequiredComposition).toHaveLength(6);
 
     const definition = buildAllBatch003R56CanonicalSuccessorDefinitions().find((candidate) =>
-      candidate.catalogId === DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID
+      candidate.catalogId === DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID
     );
     expect(definition).toBeDefined();
     const compiled = await compileBatch003R56ThroughSharedCore({
@@ -165,7 +166,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
       },
     });
     const expectedRowIds = sourcePack.independentRequiredComposition.map(({ rowKey }) =>
-      `${DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID}:successor-r56:row:${rowKey}`
+      `${DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID}:successor-r56:row:${rowKey}`
     );
 
     expect(createHash("sha256").update(bytes).digest("hex"))
@@ -175,7 +176,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
     expect(compiled.rows.map((row) => row.row_id).sort()).toEqual([...expectedRowIds].sort());
   });
 
-  test("compiles 36/36 through the single shared core and selects the exact procurement subset", async () => {
+  test("compiles 22/22 through the single shared core and selects the exact procurement subset", async () => {
     for (const definition of buildAllBatch003R56CanonicalSuccessorDefinitions()) {
       const compiled = await compileBatch003R56ThroughSharedCore({
         definition,
@@ -253,7 +254,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
 
       const withoutPrice = { ...completeValues };
       const genericFrame = definition.operation === "FRAME"
-        && definition.catalogId !== "drywall_ceiling_interior_drywall_ceiling_frame_large_area";
+        && definition.catalogId !== "drywall_ceiling_interior_drywall_ceiling_frame_standard";
       const removedPriceParameterId = genericFrame
         ? "unit_price_successor_frame_setting_out_work_kgs"
         : "unit_price_successor_operation_work_kgs";
@@ -269,7 +270,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
 
   test("applies the selected 0.3 mm finish-paste system without adding primer or repair", async () => {
     const definition = buildAllBatch003R56CanonicalSuccessorDefinitions().find((candidate) =>
-      candidate.catalogId === "drywall_ceiling_interior_drywall_ceiling_prepare_large_area"
+      candidate.catalogId === "drywall_ceiling_interior_drywall_ceiling_prepare_standard"
     );
     expect(definition).toBeDefined();
     const values = {
@@ -322,7 +323,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
 
   test("builds a useful first finish estimate from geometry before voluntary refinements", async () => {
     const definition = buildAllBatch003R56CanonicalSuccessorDefinitions().find((candidate) =>
-      candidate.catalogId === DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID
+      candidate.catalogId === DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID
     );
     expect(definition).toBeDefined();
 
@@ -370,7 +371,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
 
   test("preserves the complete profile through the approved-baseline runtime filter", async () => {
     const definition = buildAllBatch003R56CanonicalSuccessorDefinitions().find((candidate) =>
-      candidate.catalogId === DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID
+      candidate.catalogId === DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID
     );
     expect(definition).toBeDefined();
     const runtimeProfile = canonicalApprovedBaselineRuntimeParameters({
@@ -400,7 +401,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
 
   test("keeps repair conditional until survey and calculates it only from measured defects", async () => {
     const definition = buildAllBatch003R56CanonicalSuccessorDefinitions().find((candidate) =>
-      candidate.catalogId === DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID
+      candidate.catalogId === DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID
     );
     expect(definition).toBeDefined();
 
@@ -443,7 +444,7 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
 
   test("applies the selected P 113 preliminary rates and keeps perimeter geometry independent of area", async () => {
     const definition = buildAllBatch003R56CanonicalSuccessorDefinitions().find((candidate) =>
-      candidate.catalogId === "drywall_ceiling_interior_drywall_ceiling_frame_large_area"
+      candidate.catalogId === "drywall_ceiling_interior_drywall_ceiling_frame_standard"
     );
     expect(definition).toBeDefined();
     const baseValues = {
@@ -499,4 +500,41 @@ describe("BATCH-003 R5.6 canonical successor reconciliation", () => {
     expect(changedPerimeter?.quantity).toBe("73.2");
     expect(Number(changedPerimeter?.quantity) - Number(bySuffix("p113_perimeter_track")?.quantity)).toBeCloseTo(21.6, 8);
   });
+});
+
+
+test('ceiling preparation uses the single standard identity and matching row namespace', () => {
+  expect(DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID).toBe(
+    'drywall_ceiling_interior_drywall_ceiling_prepare_standard',
+  );
+  expect(DRYWALL_CEILING_PREPARE_CONDITIONAL_REQUIRED_ROW_IDS.every(rowId =>
+    rowId.startsWith(DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID + ':successor-r56:row:'))).toBe(true);
+});
+
+
+const RETIRED_BATCH003_AREA_IDS = [
+  "drywall_ceiling_interior_drywall_ceiling_align_large_area",
+  "drywall_ceiling_interior_drywall_ceiling_align_small_area",
+  "drywall_ceiling_interior_drywall_ceiling_clad_large_area",
+  "drywall_ceiling_interior_drywall_ceiling_clad_small_area",
+  "drywall_ceiling_interior_drywall_ceiling_finish_joint_large_area",
+  "drywall_ceiling_interior_drywall_ceiling_finish_joint_small_area",
+  "drywall_ceiling_interior_drywall_ceiling_frame_large_area",
+  "drywall_ceiling_interior_drywall_ceiling_frame_small_area",
+  "drywall_ceiling_interior_drywall_ceiling_insulate_large_area",
+  "drywall_ceiling_interior_drywall_ceiling_insulate_small_area",
+  "drywall_ceiling_interior_drywall_ceiling_prepare_large_area",
+  "drywall_ceiling_interior_drywall_ceiling_prepare_small_area",
+  "drywall_ceiling_interior_drywall_ceiling_repair_large_area",
+  "drywall_ceiling_interior_drywall_ceiling_repair_small_area",
+] as const;
+
+test('all 14 retired area identities are absent and cannot be emitted', () => {
+  const activeIds = new Set(buildAllBatch003R56CanonicalSuccessorDefinitions().map(definition => definition.catalogId));
+  expect(RETIRED_BATCH003_AREA_IDS).toHaveLength(14);
+  for (const catalogId of RETIRED_BATCH003_AREA_IDS) {
+    expect(activeIds.has(catalogId)).toBe(false);
+    expect(() => buildBatch003R56CanonicalSuccessorDefinition(catalogId))
+      .toThrow('BATCH003_R56_DEFINITION_OUTSIDE_SCOPE:' + catalogId);
+  }
 });

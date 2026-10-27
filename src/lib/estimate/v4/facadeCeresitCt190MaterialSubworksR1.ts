@@ -12,6 +12,8 @@ export const facadeCeresitCt190ConditionsR1 = 'Основание и проек�
 export const facadeCeresitCt190ChoiceParameterR1 = 'facade_adhesive_material_choice';
 const p = pack.prefix, id = (suffix: string) => p + ':' + suffix;
 const attach = 'area_m2', base = 'ct190_base_layer_area_m2';
+export const facadeCeresitCt190GeometryR5=[attach,base] as const;
+const publicTitleRu='Приклеивание минераловатных плит и устройство армированного базового слоя';
 const demand = attach + '*5+' + base + '*5.8';
 const scope = ['ct190_product_scope', 'ct190_conditions'];
 const active = {kind: 'formula_greater_than' as const, expression: demand, unitId: 'kg', value: 0};
@@ -75,20 +77,26 @@ export function facadeCeresitCt190MaterialDefinitionR1(): AutomaticOwnerDefiniti
   if (q.parameter_id.startsWith('ct190_application_need_')) return {...q, required: false, truth_metadata:
    unresolvedApplicationNormTruthR1(q.truth_metadata, 'Паспорт не подтверждает единицу и количество. Цена или 0/1/77 не закрывают эту потребность.')};
   if (q.truth_metadata.visibility_role === 'INTERNAL_ONLY') return q;
-  const short = q.parameter_id === attach ? 'Укажите чистую площадь приклеивания по плану фасада или обмеру, например 100 м². Расход около 5 кг/м² берётся из выбранного паспорта; неровность может его изменить.'
-   : q.parameter_id === base ? 'Укажите фактическую площадь защитного слоя, например 100 м² или 0, если эта подработа не нужна. Она не подставляется из площади приклеивания автоматически.'
-   : q.parameter_id === 'ct190_actual_water_l_per_25kg' ? 'Укажите фактически выбранную дозировку из согласованного способа приготовления, например 6 л на 25 кг. Допустимый диапазон паспорта 5,75–6,25 л; без выбора видны только его границы.'
-   : q.parameter_id === 'ct190_usable_stock_kg' ? 'Укажите проверенный пригодный остаток CT 190 исполнения KZ в кг, например 0 при отсутствии. Неизвестный остаток оставьте пустым; предварительный расход всё равно виден.'
-   : q.parameter_id === 'ct190_required_reserve_kg' ? 'Укажите отдельный сохраняемый запас, например 0 без резерва. Дополнительный процент потерь автоматически не добавляется.'
-   : q.parameter_id === 'ct190_stock_reference' ? 'Укажите складскую проверку марки, исполнения, срока и сухого хранения. Непригодный или неподтверждённый остаток не вычитается из заказа.'
-   : q.parameter_id === 'ct190_supply_reference' ? 'Укажите согласованное предложение CT 190 исполнения KZ в мешках 25 кг. Цена за кг относится только к этой поставке; прежняя цена произвольного клея не переносится.'
-   : q.parameter_id === 'ct190_product_scope' ? 'Сверьте паспорт и маркировку поставки с исполнением KZ и системой Ceresit WM. Значения BY, РФ и зимнего продукта могут отличаться; текущая ветвь к ним не применяется.'
-   : 'Прораб сверяет прочность и готовность основания, проектную систему, температуру, влажность и защиту от солнца, ветра и дождя. Если условия неизвестны, оставьте подтверждение пустым.';
-  return {...q, truth_metadata: {...q.truth_metadata, source_confirmation_required: false,
-   value_source_role: q.parameter_id === attach || q.parameter_id === base ? 'USER_INPUT' : 'PROJECT_SPECIFIC_INPUT',
-   provenance: {consumer_input_role_v1: ['ct190_usable_stock_kg', 'ct190_stock_reference', 'ct190_required_reserve_kg'].includes(q.parameter_id) ? 'ADVANCED_OPTION' : 'OBJECT_FACT'},
-   guide: {...q.truth_metadata.guide as Json, guide_short_ru: short, full_condition_ru: pack.scopeRu + ' ' + pack.source.locatorRu,
-    source_snapshot_hash: pack.source.sha256, verified_at: pack.source.reviewedAt}}};
+  const geometry=facadeCeresitCt190GeometryR5.some(id=>id===q.parameter_id);
+  const title=({area_m2:'Площадь приклеивания минераловатных плит',ct190_base_layer_area_m2:'Площадь армированного базового слоя',
+   ct190_product_scope:'Исходное исполнение клеевой смеси',ct190_conditions:'Фактическая готовность основания и условий',
+   ct190_supply_reference:'Согласованная поставка клеевой смеси',ct190_usable_stock_kg:'Подтверждённый пригодный остаток клеевой смеси',
+   ct190_stock_reference:'Документ проверки пригодности остатка',ct190_required_reserve_kg:'Подтверждённый сохраняемый запас',
+   ct190_actual_water_l_per_25kg:'Дозировка воды по принятому способу приготовления'} as Record<string,string>)[q.parameter_id]??q.title_ru;
+  const guide=q.truth_metadata.guide,provenance=q.truth_metadata.provenance;
+  if(!guide||typeof guide!=='object'||Array.isArray(guide))throw Error('FACADE_MATERIAL_EXISTING_GUIDE_REQUIRED');
+  if(provenance!=null&&(typeof provenance!=='object'||Array.isArray(provenance)))throw Error('FACADE_MATERIAL_EXISTING_PROVENANCE_REQUIRED');
+  const help=geometry?(q.parameter_id===attach?'Чистая площадь приклеивания по обмеру или проекту.':'Фактическая площадь армированного слоя; она не выводится из площади приклеивания автоматически.')
+   :'Сведения из точного паспорта, принятого проекта, поставки или складского чтения. Не вопрос потребителю; неизвестное значение не заменяется нулём.';
+  return {...q,title_ru:title,truth_metadata:{...q.truth_metadata,source_confirmation_required:false,
+   visibility_role:geometry?'USER_INPUT':'INTERNAL_ONLY',
+   value_source_role:geometry?'USER_MEASURED':q.parameter_id==='ct190_product_scope'?'MANUFACTURER_CONFIRMED'
+    :q.parameter_id==='ct190_conditions'?'SITE_SURVEY':q.parameter_id==='ct190_actual_water_l_per_25kg'?'ENGINEERING_DESIGN':'PROJECT_DOCUMENTATION',
+   preliminary_compilation_allowed:!geometry,
+   provenance:{...provenance,consumer_input_role_v1:geometry?'OBJECT_FACT':'APPLICATION_TECHNICAL',
+    ...(geometry?{}:{source_readback_only_v1:true,consumer_question_allowed:false})},
+   guide:{...guide,...(geometry?{guide_kind:'MEASUREMENT_RULE',source_role:'USER_MEASURED'}:{}),guide_short_ru:help,
+    full_condition_ru:pack.scopeRu+' '+pack.source.locatorRu,source_snapshot_hash:pack.source.sha256,verified_at:pack.source.reviewedAt}}};
  });
  const operation = (key: string) => {const o = pack.operations.find(o => o.id === key)!; return {operationId: id('operation:' + key),
   operationTitleRu: o.titleRu, processOrdinal: o.ordinal, completionCriterionRu: o.criterionRu, processRole: 'PROCESS' as const};};
@@ -98,11 +106,11 @@ export function facadeCeresitCt190MaterialDefinitionR1(): AutomaticOwnerDefiniti
   const shared = key.startsWith('dry-mix-') || key.startsWith('water-');
   const {row_sha256: _old, ...body} = r;
   const formula = built.formulas.find(f => f.formula_id === r.formula_id)!;
-  const changed = {...body, resource_graph: {...r.resource_graph,
-   operationCompositionV1: {contractVersion: 'canonical-operation-resource/v1', groupId: p, groupTitleRu: pack.titleRu,
+  const changed = {...body,section:publicTitleRu, resource_graph: {...r.resource_graph,
+   operationCompositionV1: {contractVersion: 'canonical-operation-resource/v1', groupId: p, groupTitleRu: publicTitleRu,
     ...operation(need?.operationId ?? (onlyBase ? 'base-layer' : 'attachment')), ...(shared ? {additionalOperations: [operation('base-layer')]} : {})},
    ...(!need && key !== 'dry-mix-order' ? {derivedQuantityEditPolicyV1: {contractVersion: 'canonical-derived-quantity-edit-policy/v1', mode: 'PARAMETERS_ONLY',
-    unitId: r.unit_id, parameterIds: [...formula.input_parameter_ids], reasonRu: 'Измените площадь или исходные условия. Расход паспорта не заменяется прямой правкой строки.'}} : {}),
+    unitId: r.unit_id, parameterIds: [...formula.input_parameter_ids], reasonRu: 'Автоматическое количество следует из площади и подтверждённых условий; явная ручная правка сохраняется отдельно с основанием и исходной формулой.'}} : {}),
    publicResourcePresentationV1: {contractVersion: 'canonical-public-resource-presentation/v1', sourceTitleRu: r.title_ru, nameRu: r.title_ru,
     brandAndModelRu: key.startsWith('dry-mix-') || key.endsWith('-consumed') ? 'Ceresit CT 190, KZ, 25 кг' : null,
     specificationRu: pack.scopeRu, detailsRu: need ? [need.reasonRu, need.nextTaskRu, 'Кто уточняет: ' + need.ownerRu]
@@ -116,7 +124,7 @@ export function facadeCeresitCt190MaterialDefinitionR1(): AutomaticOwnerDefiniti
     publicationAllowed: false, full_technical_acceptance: false}};
   return {...changed, row_sha256: estimateDeterministicHash(changed)};
  });
- return {...built, parameters, resources};
+ return {...built, parameters, resources,ordinaryParameterIds:[...facadeCeresitCt190GeometryR5]};
 }
 
 /** Reviewable successor composition against the exact existing subject arrays.
@@ -134,9 +142,11 @@ export function facadeCeresitCt190SuccessorDefinitionR1(): AutomaticOwnerDefinit
   ordinal: 0, title_ru: 'Какой клеевой материал использовать?', required: true,
   constraints_json: {values: [pack.legacyValueRu, pack.selectedValueRu]}, default_value: null,
   truth_metadata: {...added.parameters.find(q => q.parameter_id === 'ct190_product_scope')!.truth_metadata,
-   semantic_parameter_key: p + ':material-choice'}};
+   semantic_parameter_key: p + ':material-choice',visibility_role:'USER_INPUT',value_source_role:'PROJECT_SPECIFIC_INPUT',
+   provenance:{consumer_input_role_v1:'OBJECT_FACT'}}};
  const parameters = [...FACADE_MINERAL_WOOL_INSTALLATION_PARAMETERS.map(q => [pack.legacyOwner.quantityParameterId, pack.legacyOwner.designationParameterId].includes(q.parameter_id)
-  ? {...q, required: false, constraints_json: {...q.constraints_json, requiredWhen: legacy}} : q), choiceParameter,
+  ? {...q, required: false, constraints_json: {...q.constraints_json, requiredWhen: legacy}} : q).map(q=>q.parameter_id===attach?q:{...q,truth_metadata:{...q.truth_metadata,visibility_role:'INTERNAL_ONLY',value_source_role:'PROJECT_DOCUMENTATION',
+    source_confirmation_required:false,preliminary_compilation_allowed:true,provenance:{...q.truth_metadata.provenance as Json,consumer_input_role_v1:'APPLICATION_TECHNICAL',source_readback_only_v1:true,consumer_question_allowed:false}}}), choiceParameter,
   ...added.parameters.filter(q => !oldIds.has(q.parameter_id)).map(q => ({...q, required: false,
    constraints_json: {...q.constraints_json, ...(q.constraints_json?.requiredWhen ? {requiredWhen: {kind: 'and', operands: [selected, q.constraints_json.requiredWhen]}} : {})}}))]
   .map((q, ordinal) => ({...q, ordinal}));
@@ -156,5 +166,5 @@ export function facadeCeresitCt190SuccessorDefinitionR1(): AutomaticOwnerDefinit
   return {...changed, row_sha256: estimateDeterministicHash(changed)};
  });
  return {...added, parameters, formulas: [...FACADE_MINERAL_WOOL_INSTALLATION_FORMULAS, ...added.formulas], resources,
-  ordinaryParameterIds: ['area_m2', choice]};
+  ordinaryParameterIds: ['area_m2',base,choice]};
 }

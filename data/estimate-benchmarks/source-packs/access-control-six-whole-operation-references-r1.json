@@ -1,0 +1,1875 @@
+{
+  "contract": "existing-acs-six-whole-operation-references/r1",
+  "catalogId": "canonical-work:expanded:access_control_system",
+  "groupId": "access-control:whole-operations:r1",
+  "groupTitleRu": "Монтаж и наладка устройств СКУД",
+  "operations": [
+    {
+      "key": "reader",
+      "titleRu": "Установка и подключение считывателя доступа",
+      "completionCriterionRu": "Устройство закреплено на допустимом основании, подключено к выбранному контроллеру и проверено реальными картами по утверждённой программе; источник сам по себе это не подтверждает.",
+      "preparation": [
+        "Проверить исполнение, интерфейс, карты, основание и размещение.",
+        "Подтвердить питание считывателя и контроллера от одной 12 В цепи и требуемое разделение питания замка."
+      ],
+      "mainProcess": [
+        "Закрепить на допущенном основании и подключить фактический кабель через комплектные колодки.",
+        "Применить требуемую проставку при металлическом основании и настроить поддерживаемый интерфейс."
+      ],
+      "applicability": [
+        "Точное сохранённое исполнение считывателя; карты и протокол требуют отдельного фактического подтверждения.",
+        "8–15 В, не более 0.2 А; интервалы не менее 0.5 м до другого считывателя и 1 м до замка.",
+        "На металле требуется неметаллическая проставка не менее 20 мм; её количество, размеры и поставка не подтверждены."
+      ],
+      "materialOwners": [
+        {
+          "rowId": "rc09:acs_reader",
+          "costOwnerId": "rc09:acs_reader",
+          "unitId": "pcs",
+          "nativeExpression": "acs_reader_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_reader_cable",
+          "costOwnerId": "rc09:acs_reader_cable",
+          "unitId": "m",
+          "nativeExpression": "acs_reader_cable_length_m",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_termination",
+          "costOwnerId": "rc09:acs_termination",
+          "unitId": "pcs",
+          "nativeExpression": "acs_termination_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_fastening",
+          "costOwnerId": "rc09:acs_fastening",
+          "unitId": "set",
+          "nativeExpression": "acs_fastening_quantity_set",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "factoryPerUnit": [
+        {
+          "nameRu": "Руководство по эксплуатации считывателя",
+          "quantity": 1,
+          "unitId": "document",
+          "paymentOwner": "rc09:acs_reader",
+          "separateProcurement": false
+        },
+        {
+          "nameRu": "Съёмная контактная колодка считывателя",
+          "quantity": 2,
+          "unitId": "pcs",
+          "paymentOwner": "rc09:acs_reader",
+          "separateProcurement": false
+        },
+        {
+          "nameRu": "Шуруп 3×30 с дюбелем для считывателя",
+          "quantity": 2,
+          "unitId": "pcs",
+          "paymentOwner": "rc09:acs_reader",
+          "separateProcurement": false
+        },
+        {
+          "nameRu": "Упаковка считывателя",
+          "quantity": 1,
+          "unitId": "package",
+          "paymentOwner": "rc09:acs_reader",
+          "separateProcurement": false
+        }
+      ],
+      "supportOwners": [
+        {
+          "rowId": "rc09:labor:acs-device-install",
+          "costOwnerId": "rc09:labor:acs-device-install",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_device_install_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:labor:acs-cabling-termination",
+          "costOwnerId": "rc09:labor:acs-cabling-termination",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_cabling_termination_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:labor:acs-configuration-commissioning",
+          "costOwnerId": "rc09:labor:acs-configuration-commissioning",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_configuration_commissioning_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-lifting",
+          "costOwnerId": "rc09:equipment:acs-lifting",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_lifting_equipment_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-cable-device-tester",
+          "costOwnerId": "rc09:equipment:acs-cable-device-tester",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_cable_device_tester_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-delivery",
+          "costOwnerId": "rc09:logistics:acs-delivery",
+          "unitId": "trip",
+          "nativeExpression": "acs_delivery_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-packaging-removal",
+          "costOwnerId": "rc09:logistics:acs-packaging-removal",
+          "unitId": "trip",
+          "nativeExpression": "acs_packaging_removal_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "unresolvedResources": [
+        {
+          "nameRu": "Неметаллическая проставка считывателя",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Фактическое металлическое основание, размеры и способ крепления."
+        },
+        {
+          "nameRu": "Ручной монтажный и измерительный инструмент",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Подтверждённый фактический метод, пригодный комплект и количество постов; паспорт не даёт норму количества."
+        }
+      ],
+      "sources": [
+        "reader",
+        "power"
+      ],
+      "specificReturn": "Утверждённые место/основание/контроллер/карты/питание и применимый монтажный норматив; комплект не подтверждает эти факты.",
+      "installationNorm": "HOLD_EXACT_APPLICABLE_SOURCE_OR_APPROVED_METHOD_QUANTITIES",
+      "objectFacts": "HOLD_ACTUAL_APPROVED_PROJECT",
+      "supplierPriceStock": "HOLD_UNKNOWN_NOT_ZERO",
+      "wholeOperationAccepted": false,
+      "numericNormAccepted": false,
+      "sourceAdmission": false,
+      "FULL": false,
+      "operationId": "access-control:whole-operations:r1:reader",
+      "processRole": "PROCESS",
+      "whenResourcePresent": [
+        "rc09:acs_reader"
+      ]
+    },
+    {
+      "key": "lock",
+      "titleRu": "Установка и подключение электромагнитного замка",
+      "completionCriterionRu": "Якорь и замок установлены по допущенному узлу с полным прилеганием, проверены удержание, отпускание, датчики и аварийная логика; фактический результат не заявлен.",
+      "preparation": [
+        "Проверить отдельное исполнение 12 В либо 24 В, открывание двери, толщину и утверждённую логику аварийного открывания.",
+        "Разметить совпадение рабочих поверхностей и проверить целый комплект поставки."
+      ],
+      "mainProcess": [
+        "Выполнить допустимое якорное крепление и соединение точных восьми проводов.",
+        "Предусмотреть защиту винта от отвинчивания по фактическому методу."
+      ],
+      "applicability": [
+        "Стандартный сквозной узел для двери 35–47 мм и открывания наружу в помещении.",
+        "Диаметры отверстий под втулку 10 мм и штифт 6 мм не задают глубину, время сверления или количество инструмента.",
+        "12 В и 24 В — отдельные исполнения. Резерв выбранного 12 В БП до 10 В ниже минимальных 10.8 В замка."
+      ],
+      "materialOwners": [
+        {
+          "rowId": "rc09:acs_lock",
+          "costOwnerId": "rc09:acs_lock",
+          "unitId": "pcs",
+          "nativeExpression": "acs_lock_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_lock_cable",
+          "costOwnerId": "rc09:acs_lock_cable",
+          "unitId": "m",
+          "nativeExpression": "acs_lock_cable_length_m",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_fastening",
+          "costOwnerId": "rc09:acs_fastening",
+          "unitId": "set",
+          "nativeExpression": "acs_fastening_quantity_set",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_consumable",
+          "costOwnerId": "rc09:acs_consumable",
+          "unitId": "kg",
+          "nativeExpression": "acs_consumable_quantity_kg",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "factoryInventory": "Reuse immutable accepted lock factory roster/model under its existing owner; do not re-add or replay lock5.",
+      "supportOwners": [
+        {
+          "rowId": "rc09:labor:acs-device-install",
+          "costOwnerId": "rc09:labor:acs-device-install",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_device_install_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:labor:acs-cabling-termination",
+          "costOwnerId": "rc09:labor:acs-cabling-termination",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_cabling_termination_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:labor:acs-configuration-commissioning",
+          "costOwnerId": "rc09:labor:acs-configuration-commissioning",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_configuration_commissioning_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-lifting",
+          "costOwnerId": "rc09:equipment:acs-lifting",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_lifting_equipment_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-cable-device-tester",
+          "costOwnerId": "rc09:equipment:acs-cable-device-tester",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_cable_device_tester_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-delivery",
+          "costOwnerId": "rc09:logistics:acs-delivery",
+          "unitId": "trip",
+          "nativeExpression": "acs_delivery_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-packaging-removal",
+          "costOwnerId": "rc09:logistics:acs-packaging-removal",
+          "unitId": "trip",
+          "nativeExpression": "acs_packaging_removal_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "unresolvedResources": [
+        {
+          "nameRu": "Дрель и совместимые свёрла 10 мм и 6 мм",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Фактическое допущенное основание, метод, пригодность и число инструментальных постов."
+        },
+        {
+          "nameRu": "Разметочный инструмент и инструмент затяжки",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Фактический узел и пригодный комплект без выдуманного момента затяжки."
+        },
+        {
+          "nameRu": "Средство фиксации резьбы либо защитная краска",
+          "unitId": "kg",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Точный выбранный способ и подтверждённый расход; рекомендация не является нормой массы."
+        }
+      ],
+      "sources": [
+        "lock",
+        "power",
+        "cable"
+      ],
+      "specificReturn": "Узел двери, исполнение напряжения, питание на клеммах во всём резерве, фактическая норма/метод монтажа и программа проверки.",
+      "installationNorm": "HOLD_EXACT_APPLICABLE_SOURCE_OR_APPROVED_METHOD_QUANTITIES",
+      "objectFacts": "HOLD_ACTUAL_APPROVED_PROJECT",
+      "supplierPriceStock": "HOLD_UNKNOWN_NOT_ZERO",
+      "wholeOperationAccepted": false,
+      "numericNormAccepted": false,
+      "sourceAdmission": false,
+      "FULL": false,
+      "operationId": "access-control:whole-operations:r1:lock",
+      "processRole": "PROCESS",
+      "whenResourcePresent": [
+        "rc09:acs_lock"
+      ]
+    },
+    {
+      "key": "psu",
+      "titleRu": "Монтаж и подключение резервированного блока питания",
+      "completionCriterionRu": "Корпус закреплён на допущенном основании, PE/питание/нагрузки подключены по утверждённой схеме, фактические напряжения и переход на резерв проверены; числовой допуск не заявлен.",
+      "preparation": [
+        "Проверить точное исполнение, целую заводскую поставку и фактическое целое число устройств.",
+        "Проверить нагрузку, основание, схему PE, питание и отдельную батарею."
+      ],
+      "mainProcess": [
+        "Закрепить корпус и соединить PE, сеть, нагрузку и отдельную батарею по утверждённой схеме.",
+        "Проверить режимы основной сети и резерва измерением на фактической нагрузке."
+      ],
+      "applicability": [
+        "Только явно выбранный однородный блок 12 В, 5 А для одной 17 А·ч батареи.",
+        "Части комплекта считаются только от фактического положительного целого nativePSUcount; decimal legacy не округляется.",
+        "10–13 В резервного выхода не подтверждают совместимость с замком 10.8–14.4 В или требуемую автономию."
+      ],
+      "materialOwners": [
+        {
+          "rowId": "rc09:acs_power_supply",
+          "costOwnerId": "rc09:acs_power_supply",
+          "unitId": "pcs",
+          "nativeExpression": "acs_power_supply_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_grounding_conductor",
+          "costOwnerId": "rc09:acs_grounding_conductor",
+          "unitId": "m",
+          "nativeExpression": "acs_grounding_conductor_length_m",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_termination",
+          "costOwnerId": "rc09:acs_termination",
+          "unitId": "pcs",
+          "nativeExpression": "acs_termination_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_fastening",
+          "costOwnerId": "rc09:acs_fastening",
+          "unitId": "set",
+          "nativeExpression": "acs_fastening_quantity_set",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "factoryPerUnit": [
+        {
+          "nameRu": "Руководство по эксплуатации блока питания",
+          "quantity": 1,
+          "unitId": "document",
+          "paymentOwner": "rc09:acs_power_supply",
+          "separateProcurement": false
+        },
+        {
+          "nameRu": "Ключ корпуса блока питания",
+          "quantity": 2,
+          "unitId": "pcs",
+          "paymentOwner": "rc09:acs_power_supply",
+          "separateProcurement": false
+        },
+        {
+          "nameRu": "Крепление блока питания: шуруп с дюбелем",
+          "quantity": 3,
+          "unitId": "pcs",
+          "paymentOwner": "rc09:acs_power_supply",
+          "separateProcurement": false
+        },
+        {
+          "nameRu": "Индивидуальная упаковка блока питания",
+          "quantity": 1,
+          "unitId": "package",
+          "paymentOwner": "rc09:acs_power_supply",
+          "separateProcurement": false
+        }
+      ],
+      "supportOwners": [
+        {
+          "rowId": "rc09:labor:acs-device-install",
+          "costOwnerId": "rc09:labor:acs-device-install",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_device_install_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:labor:acs-cabling-termination",
+          "costOwnerId": "rc09:labor:acs-cabling-termination",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_cabling_termination_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:labor:acs-configuration-commissioning",
+          "costOwnerId": "rc09:labor:acs-configuration-commissioning",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_configuration_commissioning_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-lifting",
+          "costOwnerId": "rc09:equipment:acs-lifting",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_lifting_equipment_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-cable-device-tester",
+          "costOwnerId": "rc09:equipment:acs-cable-device-tester",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_cable_device_tester_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-delivery",
+          "costOwnerId": "rc09:logistics:acs-delivery",
+          "unitId": "trip",
+          "nativeExpression": "acs_delivery_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-packaging-removal",
+          "costOwnerId": "rc09:logistics:acs-packaging-removal",
+          "unitId": "trip",
+          "nativeExpression": "acs_packaging_removal_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "unresolvedResources": [
+        {
+          "nameRu": "Цифровой мультиметр",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Пригодность, фактическое наличие, поверка/калибровка по применимому требованию и количество постов."
+        },
+        {
+          "nameRu": "Изолированные отвёртки, бокорезы и пассатижи",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Фактический безопасный метод и пригодный комплект; источник не нормирует количество или часы."
+        }
+      ],
+      "sources": [
+        "power",
+        "cable"
+      ],
+      "specificReturn": "Постоянное условное integer правило, actual source/parent, проект нагрузки/потерь/автономии, основание/монтажный метод и фактическая проверка.",
+      "installationNorm": "HOLD_EXACT_APPLICABLE_SOURCE_OR_APPROVED_METHOD_QUANTITIES",
+      "objectFacts": "HOLD_ACTUAL_APPROVED_PROJECT",
+      "supplierPriceStock": "HOLD_UNKNOWN_NOT_ZERO",
+      "wholeOperationAccepted": false,
+      "numericNormAccepted": false,
+      "sourceAdmission": false,
+      "FULL": false,
+      "operationId": "access-control:whole-operations:r1:psu",
+      "processRole": "PROCESS",
+      "whenResourcePresent": [
+        "rc09:acs_power_supply"
+      ]
+    },
+    {
+      "key": "battery",
+      "titleRu": "Установка и подключение резервной батареи",
+      "completionCriterionRu": "Отдельная совместимая батарея закреплена и подключена правильным фактическим методом, состояние и работа резерва проверены; ёмкость и часы автономии не назначены автоматически.",
+      "preparation": [
+        "Подтвердить совместимость выбранной 12 В, 17 А·ч батареи и реальные требования резервирования.",
+        "Проверить состояние, размеры, клеммы и согласовать исходную суммарную позицию батарей."
+      ],
+      "mainProcess": [
+        "Разместить отдельную батарею и выполнить безопасное подключение фактических клемм.",
+        "Проверить правильность подключения и требуемый резерв по утверждённой программе."
+      ],
+      "applicability": [
+        "Батарея отсутствует в заводской поставке БП и остаётся отдельной оплачиваемой позицией.",
+        "Номинальная ёмкость C20 при 25°C до 10.5 В не является фактической автономией.",
+        "Одна батарея на выбранный БП — требование источника; прежнее суммарное количество не перезаписывается и общий/складской запас не дублируется."
+      ],
+      "materialOwners": [
+        {
+          "rowId": "rc09:acs_standby_battery",
+          "costOwnerId": "rc09:acs_standby_battery",
+          "unitId": "pcs",
+          "nativeExpression": "acs_standby_battery_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_termination",
+          "costOwnerId": "rc09:acs_termination",
+          "unitId": "pcs",
+          "nativeExpression": "acs_termination_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "factoryInventory": "Exact complete battery delivery/terminal consumables roster is not confirmed; do not create an included kit.",
+      "supportOwners": [
+        {
+          "rowId": "rc09:labor:acs-device-install",
+          "costOwnerId": "rc09:labor:acs-device-install",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_device_install_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:labor:acs-cabling-termination",
+          "costOwnerId": "rc09:labor:acs-cabling-termination",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_cabling_termination_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:labor:acs-configuration-commissioning",
+          "costOwnerId": "rc09:labor:acs-configuration-commissioning",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_configuration_commissioning_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-cable-device-tester",
+          "costOwnerId": "rc09:equipment:acs-cable-device-tester",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_cable_device_tester_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-delivery",
+          "costOwnerId": "rc09:logistics:acs-delivery",
+          "unitId": "trip",
+          "nativeExpression": "acs_delivery_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-packaging-removal",
+          "costOwnerId": "rc09:logistics:acs-packaging-removal",
+          "unitId": "trip",
+          "nativeExpression": "acs_packaging_removal_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "unresolvedResources": [
+        {
+          "nameRu": "Инструмент фактического клеммного соединения батареи",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Точное согласованное соединение Н-М5 и требуемый инструмент без предположения, что крепёж входит в поставку."
+        },
+        {
+          "nameRu": "Соединительные элементы батареи",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Фактическая схема, клеммы и целая поставка; не добавлять дубли к существующим окончаниям."
+        }
+      ],
+      "sources": [
+        "power"
+      ],
+      "specificReturn": "Реальная ведомость батарей/запаса, целая поставка и клеммы, расчёт и испытание автономии, норма/метод безопасной установки.",
+      "installationNorm": "HOLD_EXACT_APPLICABLE_SOURCE_OR_APPROVED_METHOD_QUANTITIES",
+      "objectFacts": "HOLD_ACTUAL_APPROVED_PROJECT",
+      "supplierPriceStock": "HOLD_UNKNOWN_NOT_ZERO",
+      "wholeOperationAccepted": false,
+      "numericNormAccepted": false,
+      "sourceAdmission": false,
+      "FULL": false,
+      "operationId": "access-control:whole-operations:r1:battery",
+      "processRole": "PROCESS",
+      "whenResourcePresent": [
+        "rc09:acs_standby_battery"
+      ]
+    },
+    {
+      "key": "cabling",
+      "titleRu": "Прокладка, окончание и защитное соединение кабелей СКУД",
+      "completionCriterionRu": "Фактические различимые трассы проложены и промаркированы, окончания и PE выполнены и проверены по утверждённой схеме; метры, окончания и труд не выведены из числа дверей.",
+      "preparation": [
+        "Утвердить кабельный журнал, спецификации, физические участки трасс, PE и метод окончаний.",
+        "Разделить интегрированный хвост изделия и внешние кабели; согласовать рекомендацию отдельной датчиковой линии."
+      ],
+      "mainProcess": [
+        "Проложить реальные внешние участки, выполнить фактические окончания, маркировку, крепёж и PE.",
+        "Проверить цепи по утверждённому методу без подмены другой технологией окончания."
+      ],
+      "applicability": [
+        "Восьмижильный хвост замка длиной не менее 0.4 м включён в изделие: отдельного заказа и автоматического вычета 0.4 м нет.",
+        "Рекомендован отдельный четырёхжильный кабель датчиков, но длина/сечение/экранирование и число окончаний не заданы.",
+        "Разные кабельные спецификации нельзя слить в один неразличимый оплачиваемый метраж. KG11-08-001 не переносится без подтверждённой юрисдикции и метода."
+      ],
+      "materialOwners": [
+        {
+          "rowId": "rc09:acs_network_cable",
+          "costOwnerId": "rc09:acs_network_cable",
+          "unitId": "m",
+          "nativeExpression": "acs_network_cable_length_m",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_reader_cable",
+          "costOwnerId": "rc09:acs_reader_cable",
+          "unitId": "m",
+          "nativeExpression": "acs_reader_cable_length_m",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_lock_cable",
+          "costOwnerId": "rc09:acs_lock_cable",
+          "unitId": "m",
+          "nativeExpression": "acs_lock_cable_length_m",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_mounting_box",
+          "costOwnerId": "rc09:acs_mounting_box",
+          "unitId": "pcs",
+          "nativeExpression": "acs_mounting_box_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_termination",
+          "costOwnerId": "rc09:acs_termination",
+          "unitId": "pcs",
+          "nativeExpression": "acs_termination_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_label",
+          "costOwnerId": "rc09:acs_label",
+          "unitId": "pcs",
+          "nativeExpression": "acs_label_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_fastening",
+          "costOwnerId": "rc09:acs_fastening",
+          "unitId": "set",
+          "nativeExpression": "acs_fastening_quantity_set",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_consumable",
+          "costOwnerId": "rc09:acs_consumable",
+          "unitId": "kg",
+          "nativeExpression": "acs_consumable_quantity_kg",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_grounding_conductor",
+          "costOwnerId": "rc09:acs_grounding_conductor",
+          "unitId": "m",
+          "nativeExpression": "acs_grounding_conductor_length_m",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "supportOwners": [
+        {
+          "rowId": "rc09:labor:acs-cabling-termination",
+          "costOwnerId": "rc09:labor:acs-cabling-termination",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_cabling_termination_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-lifting",
+          "costOwnerId": "rc09:equipment:acs-lifting",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_lifting_equipment_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-cable-device-tester",
+          "costOwnerId": "rc09:equipment:acs-cable-device-tester",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_cable_device_tester_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-delivery",
+          "costOwnerId": "rc09:logistics:acs-delivery",
+          "unitId": "trip",
+          "nativeExpression": "acs_delivery_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-packaging-removal",
+          "costOwnerId": "rc09:logistics:acs-packaging-removal",
+          "unitId": "trip",
+          "nativeExpression": "acs_packaging_removal_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "unresolvedResources": [
+        {
+          "nameRu": "Инструмент разделки, окончания и изоляции кабеля",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Фактические типы кабелей, жил, наконечников/клемм и допущенный метод; D914/110 не является винтовым окончанием по умолчанию."
+        },
+        {
+          "nameRu": "Маркировочные и изоляционные расходники",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Ведомость концов и фактический комплект; existing quantity/price owners сохраняются."
+        }
+      ],
+      "sources": [
+        "lock",
+        "reader",
+        "power",
+        "cable"
+      ],
+      "specificReturn": "Различимый кабельный журнал, фактические узлы/основания, точная применимая монтажная норма и количества ресурсов.",
+      "installationNorm": "HOLD_EXACT_APPLICABLE_SOURCE_OR_APPROVED_METHOD_QUANTITIES",
+      "objectFacts": "HOLD_ACTUAL_APPROVED_PROJECT",
+      "supplierPriceStock": "HOLD_UNKNOWN_NOT_ZERO",
+      "wholeOperationAccepted": false,
+      "numericNormAccepted": false,
+      "sourceAdmission": false,
+      "FULL": false,
+      "operationId": "access-control:whole-operations:r1:cabling",
+      "processRole": "PROCESS",
+      "whenResourcePresent": [
+        "rc09:acs_network_cable",
+        "rc09:acs_reader_cable",
+        "rc09:acs_lock_cable",
+        "rc09:acs_grounding_conductor"
+      ]
+    },
+    {
+      "key": "commissioning",
+      "titleRu": "Настройка и функциональная проверка контролируемой двери",
+      "completionCriterionRu": "На фактической системе проверены карты, контроллер, индикация, запирание/отпускание, датчики, основное питание/резерв и требуемая аварийная логика; оформлены реальные результаты.",
+      "preparation": [
+        "Утвердить архитектуру, протоколы, карты, сценарии двери, резерв и аварийные связи.",
+        "Подтвердить прибор, метод проверки и фактическую программу приёмки."
+      ],
+      "mainProcess": [
+        "Настроить поддерживаемые функции и выполнить утверждённые реальные сценарии.",
+        "Зафиксировать фактические результаты и комплект документации."
+      ],
+      "applicability": [
+        "Исходное число функциональных проверок связано с количеством дверей, но не является доказательством выполненного испытания.",
+        "Домофонные и пожарные интерфейсы остаются условными проектными ветвями без выдуманного оборудования.",
+        "Ни заполненные числа, ни заводской комплект не дают автоматический допуск питания и автономии."
+      ],
+      "materialOwners": [
+        {
+          "rowId": "rc09:acs_controller",
+          "costOwnerId": "rc09:acs_controller",
+          "unitId": "pcs",
+          "nativeExpression": "ceil((acs_controller_count+acs_controller_retained_spare_piece)/acs_controller_supplier_pack_size_piece)*acs_controller_supplier_pack_size_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_reader",
+          "costOwnerId": "rc09:acs_reader",
+          "unitId": "pcs",
+          "nativeExpression": "acs_reader_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_lock",
+          "costOwnerId": "rc09:acs_lock",
+          "unitId": "pcs",
+          "nativeExpression": "acs_lock_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_exit_device",
+          "costOwnerId": "rc09:acs_exit_device",
+          "unitId": "pcs",
+          "nativeExpression": "acs_exit_device_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_door_contact",
+          "costOwnerId": "rc09:acs_door_contact",
+          "unitId": "pcs",
+          "nativeExpression": "acs_door_contact_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_emergency_release",
+          "costOwnerId": "rc09:acs_emergency_release",
+          "unitId": "pcs",
+          "nativeExpression": "acs_emergency_release_quantity_piece",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_door_functional_test",
+          "costOwnerId": "rc09:acs_door_functional_test",
+          "unitId": "test",
+          "nativeExpression": "acs_controlled_door_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:acs_test_report",
+          "costOwnerId": "rc09:acs_test_report",
+          "unitId": "document",
+          "nativeExpression": "acs_test_report_quantity_document",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "supportOwners": [
+        {
+          "rowId": "rc09:labor:acs-configuration-commissioning",
+          "costOwnerId": "rc09:labor:acs-configuration-commissioning",
+          "unitId": "man_hour",
+          "nativeExpression": "acs_configuration_commissioning_labor_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:equipment:acs-cable-device-tester",
+          "costOwnerId": "rc09:equipment:acs-cable-device-tester",
+          "unitId": "machine_hour",
+          "nativeExpression": "acs_cable_device_tester_machine_h",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-delivery",
+          "costOwnerId": "rc09:logistics:acs-delivery",
+          "unitId": "trip",
+          "nativeExpression": "acs_delivery_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        },
+        {
+          "rowId": "rc09:logistics:acs-packaging-removal",
+          "costOwnerId": "rc09:logistics:acs-packaging-removal",
+          "unitId": "trip",
+          "nativeExpression": "acs_packaging_removal_trip_count",
+          "quantityMode": "EXISTING_CORE_ONLY",
+          "unknownQuantity": "REMAINS_UNKNOWN_IF_NATIVE_INPUT_MISSING",
+          "unknownPrice": "NULL_NOT_ZERO"
+        }
+      ],
+      "unresolvedResources": [
+        {
+          "nameRu": "Приборы проверки фактических цепей и функций",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Утверждённая программа, пригодный прибор и фактический запас; generic tester hour не доказывает конкретный прибор."
+        },
+        {
+          "nameRu": "Согласованные карты и средства конфигурирования",
+          "unitId": "pcs",
+          "quantity": null,
+          "price": null,
+          "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+          "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+          "returnCondition": "Фактический протокол, полномочия и состав программы; не назначать закупку или цену из предположения."
+        }
+      ],
+      "sources": [
+        "lock",
+        "reader",
+        "power"
+      ],
+      "specificReturn": "Фактическая архитектура и программа с правами доступа, корректная аварийная логика и реальные зафиксированные испытания.",
+      "installationNorm": "HOLD_EXACT_APPLICABLE_SOURCE_OR_APPROVED_METHOD_QUANTITIES",
+      "objectFacts": "HOLD_ACTUAL_APPROVED_PROJECT",
+      "supplierPriceStock": "HOLD_UNKNOWN_NOT_ZERO",
+      "wholeOperationAccepted": false,
+      "numericNormAccepted": false,
+      "sourceAdmission": false,
+      "FULL": false,
+      "operationId": "access-control:whole-operations:r1:commissioning",
+      "processRole": "PROCESS",
+      "whenResourcePresent": [
+        "rc09:acs_controller",
+        "rc09:acs_door_functional_test"
+      ]
+    }
+  ],
+  "sharedOwnerOperation": {
+    "key": "shared-payment",
+    "operationId": "access-control:whole-operations:r1:shared-payment",
+    "titleRu": "Единственные исходные владельцы общих ресурсов СКУД",
+    "completionCriterionRu": "Исходная позиция сохраняет количество, цену и оплату; другие операции получают только ссылку на тот же ресурс.",
+    "processRole": "COST_SUMMARY"
+  },
+  "nativeResourceMap": [
+    {
+      "rowId": "rc09:acs_system_install_commission",
+      "expectedRowSha256": "8965b99240a8510c8d583f4a22fb81d44d732a891320201c400b65e3278f6b8e",
+      "formulaId": "acs_system_install_count_v1",
+      "unitId": "system",
+      "costOwnerId": "rc09:acs_system_install_commission",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_controller",
+      "expectedRowSha256": "a91ec7eb86a5117e1c3a4ef13be555319436402bb8c572011700d96170939489",
+      "formulaId": "acs_controller_order_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_controller",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": [
+        "reader"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_reader",
+      "expectedRowSha256": "2b0fec13ff9157c25b2fbf96a24a73a0f772cd04c0850c0158f8931c74197350",
+      "formulaId": "acs_reader_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_reader",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "reader",
+      "relatedOperationKeys": [
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_lock",
+      "expectedRowSha256": "d2757419b5de19f5d54a95cf9f102ad432cde2000fee5489fd7bb527fee3228f",
+      "formulaId": "acs_lock_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_lock",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "lock",
+      "relatedOperationKeys": [
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_exit_device",
+      "expectedRowSha256": "17f4251fb5b7abb2b3925111a854a859ac84eec44c6ad83701c67fd0059f2e1a",
+      "formulaId": "acs_exit_device_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_exit_device",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_door_contact",
+      "expectedRowSha256": "bc31e0b69effe18b6adefd97f6a5e45863ff9e9253013f00ba6067009f6b0963",
+      "formulaId": "acs_door_contact_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_door_contact",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_emergency_release",
+      "expectedRowSha256": "45cd4ec772cf53569f58a1e8a29bc52a14477e1b3523bf834871510a6c285194",
+      "formulaId": "acs_emergency_release_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_emergency_release",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_power_supply",
+      "expectedRowSha256": "86b221096b336118a76bd2d60d466e3364e3f3ea0f2b1ee8a174cd5037a77fe7",
+      "formulaId": "acs_power_supply_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_power_supply",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "psu",
+      "relatedOperationKeys": [
+        "battery",
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_standby_battery",
+      "expectedRowSha256": "5abb67d57e6afafcd6418f07a7be0f7ba6b3fbb0608cb01ba85bb8797f4c99c7",
+      "formulaId": "acs_standby_battery_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_standby_battery",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "battery",
+      "relatedOperationKeys": [
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_network_cable",
+      "expectedRowSha256": "9986d81c6b496b6a8102c502af01ca18e9394240cd2ffeed5b7dd715a3c51c6f",
+      "formulaId": "acs_network_cable_length_v1",
+      "unitId": "m",
+      "costOwnerId": "rc09:acs_network_cable",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": [
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_reader_cable",
+      "expectedRowSha256": "1f4c4df13b0947208fee94c5e9ff5b5c50ae754a6f6c5547bbb9c7010b572ea8",
+      "formulaId": "acs_reader_cable_length_v1",
+      "unitId": "m",
+      "costOwnerId": "rc09:acs_reader_cable",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": [
+        "reader"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_lock_cable",
+      "expectedRowSha256": "2c4bdbc47ad6cf91681c3cc3669b60b4fdd1e82061ea6ef4b47fbff6697b4c62",
+      "formulaId": "acs_lock_cable_length_v1",
+      "unitId": "m",
+      "costOwnerId": "rc09:acs_lock_cable",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": [
+        "lock"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_mounting_box",
+      "expectedRowSha256": "d7b99abee9d63c987d8c50a530471decfb65e6fded4312c2702cf8fe55a094af",
+      "formulaId": "acs_mounting_box_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_mounting_box",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_termination",
+      "expectedRowSha256": "02ceacda4c9abdbabef366ceca2e435db04094c445da7359dcc27f9f0c14ea73",
+      "formulaId": "acs_termination_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_termination",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu",
+        "battery"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_label",
+      "expectedRowSha256": "3392c86b84d1d499390e02c19b2b54ae4e567ee7dd6899942f5eac2328cbbf4d",
+      "formulaId": "acs_label_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_label",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": [
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_fastening",
+      "expectedRowSha256": "2a47842d912e90daac5e24c47a5139f4ccc07f34154bd4bb323622c56c7c3670",
+      "formulaId": "acs_fastening_quantity_v1",
+      "unitId": "set",
+      "costOwnerId": "rc09:acs_fastening",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_consumable",
+      "expectedRowSha256": "61926ba6180298f015be8acafb5576708cd046737319099287dc2595e242cab2",
+      "formulaId": "acs_consumable_quantity_v1",
+      "unitId": "kg",
+      "costOwnerId": "rc09:acs_consumable",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_grounding_conductor",
+      "expectedRowSha256": "c624b06d40178593e7f50154e68e68db7d5918b5c796ce9e3ddb5d173611dcf4",
+      "formulaId": "acs_grounding_conductor_length_v1",
+      "unitId": "m",
+      "costOwnerId": "rc09:acs_grounding_conductor",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "cabling",
+      "relatedOperationKeys": [
+        "psu"
+      ]
+    },
+    {
+      "rowId": "rc09:acs_door_functional_test",
+      "expectedRowSha256": "eebab5b0bf50283c47af49ae42d7487b8cb5ab1659961d139ad4ffcd5083fa52",
+      "formulaId": "acs_door_test_count_v1",
+      "unitId": "test",
+      "costOwnerId": "rc09:acs_door_functional_test",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_door_register",
+      "expectedRowSha256": "0af1c00e717d1edf5c70e6ea1ac06b458e0c4856e174c3657927bf07a8c32ca9",
+      "formulaId": "acs_door_register_count_v1",
+      "unitId": "door",
+      "costOwnerId": "rc09:acs_door_register",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_intercom_gateway",
+      "expectedRowSha256": "4bc7342423841f2940fba7b2470de04326356b07b81554e5a6a9e74a7891e44a",
+      "formulaId": "acs_intercom_gateway_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_intercom_gateway",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_fire_release_interface",
+      "expectedRowSha256": "d1bcf9eb9566fbe24efd0ece3e30f754577116ef3ffe33794cbd898dabe7376e",
+      "formulaId": "acs_fire_release_interface_quantity_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs_fire_release_interface",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs-controller-balance:installed-net",
+      "expectedRowSha256": "c42f3b4b9943600952d35b4e74afea40f47051be5b968b16654b813a296383a1",
+      "formulaId": "acs_controller_installed_net_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs-controller-balance:installed-net",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs-controller-balance:retained-spare",
+      "expectedRowSha256": "90be37449fbe6458b485ba4a5127ebc6728d343a0ad0fbedf3a47e54ddd6e678",
+      "formulaId": "acs_controller_retained_spare_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs-controller-balance:retained-spare",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs-controller-balance:total-need",
+      "expectedRowSha256": "f8531c152d23681dc5febeb1d9f5c6f3d54038d0e8c2a055aa6600b18d7419c0",
+      "formulaId": "acs_controller_total_need_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs-controller-balance:total-need",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs-controller-balance:package-count",
+      "expectedRowSha256": "8bded21dbf96e33e93de8737c4dc0a339424e88207e1b2e27031b6a3fdef014c",
+      "formulaId": "acs_controller_package_count_v1",
+      "unitId": "package",
+      "costOwnerId": "rc09:acs-controller-balance:package-count",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs-controller-balance:remainder",
+      "expectedRowSha256": "8da358b0a93a44f2371172ea386bf8ed08832929c65bd96220e9647e44911268",
+      "formulaId": "acs_controller_remainder_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs-controller-balance:remainder",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs-controller-balance:surplus-beyond-spare",
+      "expectedRowSha256": "796e9ad01eae5570c170be61b0bc1060176b5a29dbf76f493da95e7451330878",
+      "formulaId": "acs_controller_surplus_v1",
+      "unitId": "pcs",
+      "costOwnerId": "rc09:acs-controller-balance:surplus-beyond-spare",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:acs_test_report",
+      "expectedRowSha256": "23ad2d27cb4de8609daa76d28423158676fe10269891fc4cd03cbd87c9e1b91a",
+      "formulaId": "acs_test_report_quantity_v1",
+      "unitId": "document",
+      "costOwnerId": "rc09:acs_test_report",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false,
+      "primaryOperationKey": "commissioning",
+      "relatedOperationKeys": []
+    },
+    {
+      "rowId": "rc09:labor:acs-device-install",
+      "expectedRowSha256": "a3144e1c0739be3be6e16c4a153b18f54b87a98a291acf573442eba83618d371",
+      "formulaId": "acs_device_install_labor_v1",
+      "unitId": "man_hour",
+      "costOwnerId": "rc09:labor:acs-device-install",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu",
+        "battery"
+      ]
+    },
+    {
+      "rowId": "rc09:labor:acs-cabling-termination",
+      "expectedRowSha256": "50f6e98dfe0c0cf9aef3d602b0676b12cf81658307564d697de2c9cdd19e66c4",
+      "formulaId": "acs_cabling_termination_labor_v1",
+      "unitId": "man_hour",
+      "costOwnerId": "rc09:labor:acs-cabling-termination",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu",
+        "battery",
+        "cabling"
+      ]
+    },
+    {
+      "rowId": "rc09:labor:acs-configuration-commissioning",
+      "expectedRowSha256": "0de2081e3fc698d5a58b1cad6f3b5290b98ab59f9344abc4093dfb7cf387083c",
+      "formulaId": "acs_configuration_commissioning_labor_v1",
+      "unitId": "man_hour",
+      "costOwnerId": "rc09:labor:acs-configuration-commissioning",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu",
+        "battery",
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:equipment:acs-lifting",
+      "expectedRowSha256": "b76acd444d1ae920f2d34a594c2df4b62ac1f3ecf92857eef6b6d3e564390eb4",
+      "formulaId": "acs_lifting_equipment_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "rc09:equipment:acs-lifting",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu",
+        "cabling"
+      ]
+    },
+    {
+      "rowId": "rc09:equipment:acs-cable-device-tester",
+      "expectedRowSha256": "86d8b124ccfe4b0d003712c082d9b637c2bdc86b6ebfa49c54df9b1679cca6c1",
+      "formulaId": "acs_cable_device_tester_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "rc09:equipment:acs-cable-device-tester",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu",
+        "battery",
+        "cabling",
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:logistics:acs-delivery",
+      "expectedRowSha256": "9566fe5be92104521eee0325bb5f5ba55f9d013d2ed1d1c6045c6ca1bf8ccebe",
+      "formulaId": "acs_delivery_v1",
+      "unitId": "trip",
+      "costOwnerId": "rc09:logistics:acs-delivery",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu",
+        "battery",
+        "cabling",
+        "commissioning"
+      ]
+    },
+    {
+      "rowId": "rc09:logistics:acs-packaging-removal",
+      "expectedRowSha256": "d721b3f3979f461e0eee81635841f8220f6147c765ed24d0fd0f30d5b8021b66",
+      "formulaId": "acs_packaging_removal_v1",
+      "unitId": "trip",
+      "costOwnerId": "rc09:logistics:acs-packaging-removal",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true,
+      "primaryOperationKey": "shared-payment",
+      "relatedOperationKeys": [
+        "reader",
+        "lock",
+        "psu",
+        "battery",
+        "cabling",
+        "commissioning"
+      ]
+    }
+  ],
+  "optionalIncludedPartPrefixes": [
+    {
+      "prefix": "access-control:electromagnetic-lock:factory-delivery:r24:",
+      "ownerRowId": "rc09:acs_lock",
+      "operationKey": "lock"
+    },
+    {
+      "prefix": "access-control:reader:factory-delivery:r1:",
+      "ownerRowId": "rc09:acs_reader",
+      "operationKey": "reader"
+    },
+    {
+      "prefix": "access-control:power-supply:factory-delivery:r1:",
+      "ownerRowId": "rc09:acs_power_supply",
+      "operationKey": "psu"
+    }
+  ],
+  "sourceEvidence": [
+    {
+      "sha256": "37a262115d8f1e41bcc13e2700653511e25586b3824328f25fe7c9f12130c532",
+      "locator": "Existing immutable R24 manufacturer delivery/method source pack; original primary passport pin retained."
+    },
+    {
+      "sha256": "aaa2ed41bed68270298582025a9b15be4b48727f74c9c0129d3c725640b6074f",
+      "locator": "Manual revision6: section3, table2.1 and section4.4.3."
+    },
+    {
+      "sha256": "7d6638df0034da75103c3f88c92fb85fbf1a65ca2fc1bf8928fb649f0be45796",
+      "locator": "Manual revision5: table2, section1.6 and electrical table1.2.4."
+    },
+    {
+      "sha256": "91c39d1b51b05a64596153e8933ffd72bd33e51a97a77a0655e43061407f70a1",
+      "locator": "Battery manual revision2: sections2.3 and3; nominal capacity basis, not autonomy."
+    }
+  ],
+  "declarationOnly": true,
+  "executionSequenceApproved": false,
+  "quantityAllocationAdded": false,
+  "toolCountsDerived": false,
+  "newPublicCards": 0,
+  "newResourceRows": 0,
+  "newPaidOwners": 0,
+  "newProcurementOwners": 0,
+  "interfaceBranchesNotSourceAdmitted": [
+    "INTERCOM_INTEGRATION",
+    "FIRE_RELEASE_INTERFACE"
+  ],
+  "admissionBoundary": "Operation references are saved relationships, not a source/method/project/safety completion decision. Whole-operation norms and absent resources remain explicit HOLD.",
+  "sourceAdmission": false,
+  "projectApproval": false,
+  "FULL": false,
+  "wholeOperationObjectScopeR5": {
+    "contract": "existing-acs-summary-persisted-whole-operation-object-scope/r5",
+    "rowId": "rc09:acs_system_install_commission",
+    "decisionId": "acs_whole_operation_review_decision_r5",
+    "unknown": "Полнота фактического обеспечения не проверена",
+    "approved": "Фактические методы и обеспечение подтверждены документами",
+    "incompatible": "Обнаружено несоответствие метода или обеспечения",
+    "facts": [
+      {
+        "id": "acs_reader_whole_method_record_r5",
+        "operationKey": "reader",
+        "titleRu": "Документ метода и полного фактического обеспечения: Установка и подключение считывателя доступа",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "acs_reader_count",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:acs_reader"
+        ],
+        "unresolvedResourceGroups": [
+          {
+            "nameRu": "Неметаллическая проставка считывателя",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Фактическое металлическое основание, размеры и способ крепления."
+          },
+          {
+            "nameRu": "Ручной монтажный и измерительный инструмент",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Подтверждённый фактический метод, пригодный комплект и количество постов; паспорт не даёт норму количества."
+          }
+        ],
+        "returnCondition": "Утверждённые место/основание/контроллер/карты/питание и применимый монтажный норматив; комплект не подтверждает эти факты."
+      },
+      {
+        "id": "acs_lock_whole_method_record_r5",
+        "operationKey": "lock",
+        "titleRu": "Документ метода и полного фактического обеспечения: Установка и подключение электромагнитного замка",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "acs_lock_count",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:acs_lock"
+        ],
+        "unresolvedResourceGroups": [
+          {
+            "nameRu": "Дрель и совместимые свёрла 10 мм и 6 мм",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Фактическое допущенное основание, метод, пригодность и число инструментальных постов."
+          },
+          {
+            "nameRu": "Разметочный инструмент и инструмент затяжки",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Фактический узел и пригодный комплект без выдуманного момента затяжки."
+          },
+          {
+            "nameRu": "Средство фиксации резьбы либо защитная краска",
+            "unitId": "kg",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Точный выбранный способ и подтверждённый расход; рекомендация не является нормой массы."
+          }
+        ],
+        "returnCondition": "Узел двери, исполнение напряжения, питание на клеммах во всём резерве, фактическая норма/метод монтажа и программа проверки."
+      },
+      {
+        "id": "acs_psu_whole_method_record_r5",
+        "operationKey": "psu",
+        "titleRu": "Документ метода и полного фактического обеспечения: Монтаж и подключение резервированного блока питания",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "acs_power_supply_quantity_piece",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:acs_power_supply"
+        ],
+        "unresolvedResourceGroups": [
+          {
+            "nameRu": "Цифровой мультиметр",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Пригодность, фактическое наличие, поверка/калибровка по применимому требованию и количество постов."
+          },
+          {
+            "nameRu": "Изолированные отвёртки, бокорезы и пассатижи",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Фактический безопасный метод и пригодный комплект; источник не нормирует количество или часы."
+          }
+        ],
+        "returnCondition": "Постоянное условное integer правило, actual source/parent, проект нагрузки/потерь/автономии, основание/монтажный метод и фактическая проверка."
+      },
+      {
+        "id": "acs_battery_whole_method_record_r5",
+        "operationKey": "battery",
+        "titleRu": "Документ метода и полного фактического обеспечения: Установка и подключение резервной батареи",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "acs_standby_battery_quantity_piece",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:acs_standby_battery"
+        ],
+        "unresolvedResourceGroups": [
+          {
+            "nameRu": "Инструмент фактического клеммного соединения батареи",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Точное согласованное соединение Н-М5 и требуемый инструмент без предположения, что крепёж входит в поставку."
+          },
+          {
+            "nameRu": "Соединительные элементы батареи",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Фактическая схема, клеммы и целая поставка; не добавлять дубли к существующим окончаниям."
+          }
+        ],
+        "returnCondition": "Реальная ведомость батарей/запаса, целая поставка и клеммы, расчёт и испытание автономии, норма/метод безопасной установки."
+      },
+      {
+        "id": "acs_cabling_whole_method_record_r5",
+        "operationKey": "cabling",
+        "titleRu": "Документ метода и полного фактического обеспечения: Прокладка, окончание и защитное соединение кабелей СКУД",
+        "when": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "greater_than",
+              "parameterId": "acs_network_cable_length_m",
+              "value": 0
+            },
+            {
+              "kind": "greater_than",
+              "parameterId": "acs_reader_cable_length_m",
+              "value": 0
+            },
+            {
+              "kind": "greater_than",
+              "parameterId": "acs_lock_cable_length_m",
+              "value": 0
+            },
+            {
+              "kind": "greater_than",
+              "parameterId": "acs_grounding_conductor_length_m",
+              "value": 0
+            }
+          ]
+        },
+        "anchorRowIds": [
+          "rc09:acs_network_cable",
+          "rc09:acs_reader_cable",
+          "rc09:acs_lock_cable",
+          "rc09:acs_grounding_conductor"
+        ],
+        "unresolvedResourceGroups": [
+          {
+            "nameRu": "Инструмент разделки, окончания и изоляции кабеля",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Фактические типы кабелей, жил, наконечников/клемм и допущенный метод; D914/110 не является винтовым окончанием по умолчанию."
+          },
+          {
+            "nameRu": "Маркировочные и изоляционные расходники",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Ведомость концов и фактический комплект; existing quantity/price owners сохраняются."
+          }
+        ],
+        "returnCondition": "Различимый кабельный журнал, фактические узлы/основания, точная применимая монтажная норма и количества ресурсов."
+      },
+      {
+        "id": "acs_commissioning_whole_method_record_r5",
+        "operationKey": "commissioning",
+        "titleRu": "Документ метода и полного фактического обеспечения: Настройка и функциональная проверка контролируемой двери",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "acs_system_count",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:acs_door_functional_test",
+          "rc09:acs_test_report"
+        ],
+        "unresolvedResourceGroups": [
+          {
+            "nameRu": "Приборы проверки фактических цепей и функций",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Утверждённая программа, пригодный прибор и фактический запас; generic tester hour не доказывает конкретный прибор."
+          },
+          {
+            "nameRu": "Согласованные карты и средства конфигурирования",
+            "unitId": "pcs",
+            "quantity": null,
+            "price": null,
+            "quantityAuthority": "MANUFACTURER_TYPE_OR_ACTUAL_METHOD_NOT_COUNT_NORM",
+            "paymentAndStockBinding": "HOLD_RECONCILE_ACTUAL_EXISTING_OWNER_AND_RATE_SCOPE",
+            "returnCondition": "Фактический протокол, полномочия и состав программы; не назначать закупку или цену из предположения."
+          }
+        ],
+        "returnCondition": "Фактическая архитектура и программа с правами доступа, корректная аварийная логика и реальные зафиксированные испытания."
+      },
+      {
+        "id": "acs_controller_compatibility_record_r5",
+        "operationKey": "commissioning",
+        "titleRu": "Документ контроллера и интерфейсов: точное изделие, руководство, питание, совместимость считывателей и логика аварийного освобождения",
+        "when": {
+          "kind": "greater_than",
+          "parameterId": "acs_controller_count",
+          "value": 0
+        },
+        "anchorRowIds": [
+          "rc09:acs_controller"
+        ],
+        "unresolvedResourceGroups": [],
+        "returnCondition": "Фактическое выбранное изделие и официальный паспорт/руководство, проект интерфейсов, питание и безопасная логика. Родовое обозначение ACS-CTRL-4D в проверочном примере не определяет изготовителя или протокол."
+      }
+    ],
+    "nativeContextParameterIds": [
+      "acs_system_count",
+      "acs_reader_count",
+      "acs_lock_count",
+      "acs_power_supply_quantity_piece",
+      "acs_standby_battery_quantity_piece",
+      "acs_network_cable_length_m",
+      "acs_reader_cable_length_m",
+      "acs_lock_cable_length_m",
+      "acs_grounding_conductor_length_m",
+      "acs_controller_count"
+    ],
+    "reasonRu": "Полнота методов и фактического обеспечения шести подработ не подтверждена. В документах нужны совместимые инструменты и принадлежности, расходники, наличие, исправность, метрология, обслуживание и замена. Количество систем, часы, заводской комплект и ручное исключение оплаты не доказывают обеспечение.",
+    "sourceEvidence": [
+      {
+        "sha256": "37a262115d8f1e41bcc13e2700653511e25586b3824328f25fe7c9f12130c532",
+        "locator": "Existing immutable R24 manufacturer delivery/method source pack; original primary passport pin retained."
+      },
+      {
+        "sha256": "aaa2ed41bed68270298582025a9b15be4b48727f74c9c0129d3c725640b6074f",
+        "locator": "Manual revision6: section3, table2.1 and section4.4.3."
+      },
+      {
+        "sha256": "7d6638df0034da75103c3f88c92fb85fbf1a65ca2fc1bf8928fb649f0be45796",
+        "locator": "Manual revision5: table2, section1.6 and electrical table1.2.4."
+      },
+      {
+        "sha256": "91c39d1b51b05a64596153e8933ffd72bd33e51a97a77a0655e43061407f70a1",
+        "locator": "Battery manual revision2: sections2.3 and3; nominal capacity basis, not autonomy."
+      }
+    ],
+    "documentAuthenticityCalculated": false,
+    "newResourceRows": 0,
+    "newPaidOrProcurementOwners": 0,
+    "sourceAdmission": false,
+    "FULL": false,
+    "sourceEvidenceBoundary": "Existing four immutable primaries cover only their stated reader/lock/PSU/battery scope. Actual controller manual, project cable/method/stock records are missing external inputs; a text declaration is not manufacturer source admission."
+  }
+}

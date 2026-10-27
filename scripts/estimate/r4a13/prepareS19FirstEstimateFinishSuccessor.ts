@@ -8,8 +8,8 @@ import { Client } from "pg";
 import { canonicalApprovedBaselineRuntimeParameters } from "../../../src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline";
 import {
   DRYWALL_CEILING_PREPARE_KNAUF_SOURCE_ID,
-  DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
-  DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID,
+  DRYWALL_CEILING_PREPARE_CATALOG_ID,
+  DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID,
   DRYWALL_CEILING_PREPARE_PRELIMINARY_CLASSIFICATION_R1,
   DRYWALL_CEILING_PREPARE_PRELIMINARY_PROVENANCE_RU_R1,
   DRYWALL_CEILING_PREPARE_PRELIMINARY_SCENARIO_R1,
@@ -117,7 +117,7 @@ function exactDatabaseGuard(): void {
 
 async function verifyFirstEstimateScenario(): Promise<Json> {
   const definition = buildBatch003R56CanonicalSuccessorDefinition(
-    DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID,
+    DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID,
   );
   const baseline = {
     input_values: DRYWALL_CEILING_PREPARE_PRELIMINARY_SCENARIO_R1,
@@ -160,7 +160,7 @@ async function verifyFirstEstimateScenario(): Promise<Json> {
   invariant(refinedPaste?.row_id === paste.row_id && refinedPaste.quantity === "252",
     `STOP_S19_FINISH_REFINEMENT:${JSON.stringify(refinedPaste)}`);
   return {
-    catalogId: DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+    catalogId: DRYWALL_CEILING_PREPARE_CATALOG_ID,
     geometryInput: { area_m2: 500 },
     runtimeScenarioParameters: runtimeParameters,
     preliminary: {
@@ -272,7 +272,7 @@ async function cloneSearch(client: Client, input: {
       masterSha256: MASTER_SHA256,
       parentSearchReleaseId: PARENT_SEARCH_RELEASE_ID,
       sourceFingerprint: input.fingerprint,
-      targetCatalogIds: [DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID],
+      targetCatalogIds: [DRYWALL_CEILING_PREPARE_CATALOG_ID],
       firstEstimateThenRefine: true,
     }),
   ]);
@@ -294,7 +294,7 @@ async function auditState(
       encode(extensions.digest(convert_to(string_agg(entry_sha256,'' order by catalog_id),'UTF8'),
         'sha256'),'hex') snapshot
     from public.estimate_cumulative_manifest_entry where release_id=$1`, [
-    releaseId, DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID, definitionId,
+    releaseId, DRYWALL_CEILING_PREPARE_CATALOG_ID, definitionId,
   ])).rows[0] as Json;
   const target = (await client.query(`select definition.id definition_id,definition.catalog_id,
       definition.content_status,definition.content_gate_status,passport.decision,
@@ -318,7 +318,7 @@ async function auditState(
       (select definition_version_id from public.estimate_search_document
         where search_release_id=$1 and catalog_id=$2) target_definition_id
     from public.estimate_search_index_release where id=$1`, [
-    searchReleaseId, DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+    searchReleaseId, DRYWALL_CEILING_PREPARE_CATALOG_ID,
   ])).rows[0] as Json;
   return { release, manifest, target, search };
 }
@@ -346,8 +346,8 @@ async function main(): Promise<void> {
   });
   const releaseId = uuid(`${CONTRACT}:${fingerprint}:definition-release`);
   const searchReleaseId = uuid(`${CONTRACT}:${fingerprint}:search-release`);
-  const definitionId = uuid(`${CONTRACT}:${fingerprint}:${DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID}:definition`);
-  const baselineId = uuid(`${CONTRACT}:${fingerprint}:${DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID}:baseline`);
+  const definitionId = uuid(`${CONTRACT}:${fingerprint}:${DRYWALL_CEILING_PREPARE_CATALOG_ID}:definition`);
+  const baselineId = uuid(`${CONTRACT}:${fingerprint}:${DRYWALL_CEILING_PREPARE_CATALOG_ID}:baseline`);
   const releaseKey = `r4-a13-6-s19-first-estimate-finish-${fingerprint.slice(0, 16)}`;
   const current = JSON.parse(readFileSync(CURRENT_RELEASE_PATH, "utf8")) as Json;
   invariant(current.productionAccessed === false, "STOP_S19_FINISH_CURRENT_PRODUCTION_FLAG");
@@ -452,7 +452,7 @@ async function main(): Promise<void> {
           from public.estimate_cumulative_manifest_entry manifest
           join public.estimate_definition_version definition on definition.id=manifest.definition_version_id
           where manifest.release_id=$1 and manifest.catalog_id=$2`, [
-          PARENT_RELEASE_ID, DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+          PARENT_RELEASE_ID, DRYWALL_CEILING_PREPARE_CATALOG_ID,
         ])).rows[0] as Json;
         invariant(representative, "STOP_S19_FINISH_REPRESENTATIVE_MISSING");
         const parameters = (await client.query(
@@ -487,7 +487,7 @@ async function main(): Promise<void> {
         const lineage = await resolveCanonicalApprovedBaselineLeaf(
           client,
           String(representative.approved_template_baseline_id),
-          DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+          DRYWALL_CEILING_PREPARE_CATALOG_ID,
         );
         invariant(lineage.definitionVersionId === representative.id,
           `STOP_S19_FINISH_BASELINE_LINEAGE_DEFINITION:${lineage.definitionVersionId}`);
@@ -588,7 +588,7 @@ async function main(): Promise<void> {
           definition: {
             id: definitionId,
             releaseId,
-            catalogId: DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+            catalogId: DRYWALL_CEILING_PREPARE_CATALOG_ID,
             definitionVersion: nextDefinitionVersion,
             passport: {
               ...representative.passport,
@@ -625,20 +625,20 @@ async function main(): Promise<void> {
             ...parameter.truth_metadata,
             contract: CONTRACT,
             semantic_parameter_key:
-              `${DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID}:${parameter.parameter_id}`,
+              `${DRYWALL_CEILING_PREPARE_CATALOG_ID}:${parameter.parameter_id}`,
             ...(Object.prototype.hasOwnProperty.call(
               DRYWALL_CEILING_PREPARE_PRELIMINARY_SCENARIO_R1,
               parameter.parameter_id,
             ) ? { first_estimate_scenario_value: true } : {}),
           }),
           resourceId: (resource) => uuid(
-            `${CONTRACT}:${fingerprint}:${DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID}:resource:${resource.row_id}`,
+            `${CONTRACT}:${fingerprint}:${DRYWALL_CEILING_PREPARE_CATALOG_ID}:resource:${resource.row_id}`,
           ),
           resourceSemanticOwner: (resource) => String(resource.semantic_owner),
           resourceSha256: (resource) => sha256({ contract: CONTRACT, resource }),
           baseline: {
             id: baselineId,
-            key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID}`,
+            key: `${CONTRACT}:${fingerprint.slice(0, 16)}:${DRYWALL_CEILING_PREPARE_CATALOG_ID}`,
             sourceDefinitionVersionId: lineage.definitionVersionId,
             validationScenarioRefs,
             acceptanceEvidenceSha256: targetEvidenceSha256,
@@ -734,7 +734,7 @@ async function main(): Promise<void> {
               runtime_publication_state='CANDIDATE'
             where release_id=$1 and catalog_id=$2`, [
             releaseId,
-            DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+            DRYWALL_CEILING_PREPARE_CATALOG_ID,
             definitionId,
             CONTRACT,
             baselineId,
@@ -742,7 +742,7 @@ async function main(): Promise<void> {
             sha256({
               contract: CONTRACT,
               releaseId,
-              catalogId: DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+              catalogId: DRYWALL_CEILING_PREPARE_CATALOG_ID,
               definitionId,
               baselineId,
               targetDefinitionSha256,
@@ -789,7 +789,7 @@ async function main(): Promise<void> {
                 or parent.source_release_id<>successor.source_release_id
                 or parent.approved_template_baseline_id<>successor.approved_template_baseline_id
                 or parent.runtime_publication_state<>successor.runtime_publication_state)`, [
-            PARENT_RELEASE_ID, releaseId, DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+            PARENT_RELEASE_ID, releaseId, DRYWALL_CEILING_PREPARE_CATALOG_ID,
           ])).rows[0] as Json;
           invariant(Number(unrelated.changed) === 0,
             `STOP_S19_FINISH_UNRELATED_MANIFEST_DRIFT:${unrelated.changed}`);
@@ -803,7 +803,7 @@ async function main(): Promise<void> {
               searchReleaseId,
               searchSnapshotSha256: searchSnapshot.snapshot_sha256,
               firstEstimateThenRefine: true,
-              targetCatalogId: DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+              targetCatalogId: DRYWALL_CEILING_PREPARE_CATALOG_ID,
               sourceCoreAcceptanceSha256: coreAcceptance.deterministicSha256,
               priceState: "PARTIAL_NEEDS_PRICE",
             }),
@@ -851,7 +851,7 @@ async function main(): Promise<void> {
     globalStatus: "GLOBAL_STATUS=RED_NOT_PRODUCTION_READY",
     source: { branch: EXPECTED_BRANCH, head, tree, fingerprint, sourceHashes },
     masterSha256: MASTER_SHA256,
-    targetCatalogIds: [DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID],
+    targetCatalogIds: [DRYWALL_CEILING_PREPARE_CATALOG_ID],
     canonicalCompilerOwner: "compileCanonicalEstimateCore",
     canonicalPublisherOwner: "canonicalDefinitionPublisherR1",
     ...receipt!,

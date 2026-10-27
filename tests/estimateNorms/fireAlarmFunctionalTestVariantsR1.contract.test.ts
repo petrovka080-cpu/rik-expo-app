@@ -17,12 +17,12 @@ const VARIANT_KEYS = Object.keys(
 ) as FireAlarmFunctionalTestVariantKey[];
 
 describe("S27.6 F09 fire-alarm functional-test variants", () => {
-  test("uses six exact identities and one current official technical boundary", () => {
+  test("preserves the surviving exact identities and source boundary", () => {
     expect(VARIANT_KEYS).toEqual([
-      "high_load", "large_area", "small_area", "standard", "technical_room", "wet_zone",
+      "high_load", "standard", "technical_room", "wet_zone",
     ]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      FIRE_ALARM_FUNCTIONAL_TEST_VARIANTS[key].catalogId)).size).toBe(6);
+      FIRE_ALARM_FUNCTIONAL_TEST_VARIANTS[key].catalogId)).size).toBe(4);
     expect(FIRE_ALARM_FUNCTIONAL_TEST_SOURCE_METADATA).toMatchObject({
       official_url: "https://minstroy.gov.kg/ru/kyzmat/217/show",
       artifact_sha256:
@@ -95,9 +95,9 @@ describe("S27.6 F09 fire-alarm functional-test variants", () => {
     expect(() => resolveFireAlarmFunctionalTestVariant("expanded"))
       .toThrow("FIRE_ALARM_FUNCTIONAL_TEST_VARIANT_UNSUPPORTED");
     await expect(compileFireAlarmFunctionalTestVariantR1(
-      "small_area",
+      "high_load",
       { ...FIRE_ALARM_FUNCTIONAL_TEST_ACCEPTANCE_INPUT },
-      { catalogId: FIRE_ALARM_FUNCTIONAL_TEST_VARIANTS.wet_zone.catalogId },
+      { catalogId: "canonical-work:base:unrelated_work_standard" },
     )).rejects.toThrow("FIRE_ALARM_FUNCTIONAL_TEST_CATALOG_UNSUPPORTED");
     await expect(compileFireAlarmFunctionalTestVariantR1("wet_zone", {
       ...FIRE_ALARM_FUNCTIONAL_TEST_ACCEPTANCE_INPUT,

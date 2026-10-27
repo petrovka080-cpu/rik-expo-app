@@ -1,1 +1,0 @@
-﻿xcrun is not available on this Windows host; iOS simulator proof cannot run here.

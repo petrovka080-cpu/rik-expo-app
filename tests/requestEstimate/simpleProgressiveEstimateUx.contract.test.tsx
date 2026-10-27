@@ -83,7 +83,7 @@ function renderWaterSupplyPanel(options: { onRefineCanonicalParameters?: () => v
 }
 
 const ASPHALT_DRAIN_CATALOG_ID =
-  "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_large_area_professional_expanded_v1";
+  "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_standard_professional_expanded_v1";
 const ASPHALT_DRAIN_REVISION_ID = "3f697e7c-e53b-45a7-b1cf-1d05680f9cb9";
 
 describe("simple progressive estimate UX", () => {
@@ -101,7 +101,7 @@ describe("simple progressive estimate UX", () => {
     expect(countJsonTestId(initialTree, "request-estimate-items-editor")).toBe(1);
     expect(countJsonTestId(initialTree, "request-estimate-assumptions")).toBe(0);
     expect(countJsonTestId(initialTree, "request-estimate-runtime-details-panel")).toBe(0);
-    expect(initialText).toContain("Уточнить параметры");
+    expect(initialText).toContain("Изменить параметры");
     expect(initialText).not.toMatch(/Assumption|Professional cost breakdown|Material quantity trace|Waste and Packaging|Material formulas/i);
     expect(initialText).not.toMatch(/PRICE_MISSING|source_parameters|template_id|formula_id|inlineWorkPromptTemplateId|expandedComplex|village_water_supply/i);
 
@@ -117,11 +117,11 @@ describe("simple progressive estimate UX", () => {
     expect(countJsonTestId(renderer.toJSON(), "request-estimate-items-editor")).toBe(0);
   });
 
-  it("keeps exact asphalt-drain refinement inline instead of opening the foreman composer", () => {
+  it("loads canonical refinement inline before rendering its parameter session", () => {
     const onRefineCanonicalParameters = jest.fn();
     const renderer = renderWaterSupplyPanel({ onRefineCanonicalParameters });
 
-    expect(ASPHALT_DRAIN_CATALOG_ID).toContain("asphalt_drain_large_area");
+    expect(ASPHALT_DRAIN_CATALOG_ID).toContain("asphalt_drain_standard");
     expect(ASPHALT_DRAIN_REVISION_ID).toMatch(/^[0-9a-f-]{36}$/u);
 
     act(() => {
@@ -129,6 +129,8 @@ describe("simple progressive estimate UX", () => {
     });
 
     expect(onRefineCanonicalParameters).toHaveBeenCalledTimes(1);
-    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(1);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-editor-surface")).toBe(1);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-readiness-pending")).toBe(1);
+    expect(countJsonTestId(renderer.toJSON(), "request-estimate-parameter-panel")).toBe(0);
   });
 });

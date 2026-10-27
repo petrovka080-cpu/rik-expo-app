@@ -22,17 +22,15 @@ type Json = Record<string, any>;
 
 const variantArgument = process.argv.find((argument) => argument.startsWith("--variant="))
   ?.slice("--variant=".length) ?? "standard";
-if (!["standard", "large_area", "small_area", "wet_zone"].includes(variantArgument)) {
+if (!["standard", "wet_zone"].includes(variantArgument)) {
   throw new Error(`STOP_S273_F09_COMPOSITION_FLOOR_DEMOLITION_KRER46_11_VARIANT:${variantArgument}`);
 }
 const variantKey = variantArgument as AggressiveEnvironmentPolymerCementOrEpoxyCompositionFloor5mmDemolitionKrer46VariantKey;
 const variant = resolveAggressiveEnvironmentPolymerCementOrEpoxyCompositionFloor5mmDemolitionKrer46Variant(variantKey);
-const variantOrdinal = { standard: 0, large_area: 1, small_area: 2, wet_zone: 3 }[variantKey];
+const variantOrdinal = { standard: 0, wet_zone: 3 }[variantKey];
 const variantToken = variantKey.toUpperCase();
 const variantContextRu = {
   standard: "стандартный вариант",
-  large_area: "большая площадь",
-  small_area: "малая площадь",
   wet_zone: "влажная зона",
 }[variantKey];
 const groupId = "wg:master:demolition_aggressive_environment_polymer_cement_or_epoxy_composition_floor_5mm";

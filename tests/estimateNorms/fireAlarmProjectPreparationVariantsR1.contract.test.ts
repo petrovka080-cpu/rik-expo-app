@@ -17,16 +17,14 @@ const VARIANT_KEYS = Object.keys(
 ) as FireAlarmProjectPreparationVariantKey[];
 
 describe("S27.6 F09 fire-alarm project preparation variants", () => {
-  test("uses five exact identities and one current official technical boundary", () => {
+  test("preserves the surviving exact identities and source boundary", () => {
     expect(VARIANT_KEYS).toEqual([
-      "large_area",
-      "small_area",
       "standard",
       "technical_room",
       "wet_zone",
     ]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      FIRE_ALARM_PROJECT_PREPARATION_VARIANTS[key].catalogId)).size).toBe(5);
+      FIRE_ALARM_PROJECT_PREPARATION_VARIANTS[key].catalogId)).size).toBe(3);
     expect(FIRE_ALARM_PROJECT_PREPARATION_SOURCE_METADATA).toMatchObject({
       source_title: "СП КР 21-101:2024 «Пожарная автоматика зданий и сооружений»",
       source_authority:
@@ -87,9 +85,9 @@ describe("S27.6 F09 fire-alarm project preparation variants", () => {
     expect(() => resolveFireAlarmProjectPreparationVariant("high_load"))
       .toThrow("FIRE_ALARM_PROJECT_PREPARATION_VARIANT_UNSUPPORTED");
     await expect(compileFireAlarmProjectPreparationVariantR1(
-      "small_area",
+      "standard",
       { ...FIRE_ALARM_PROJECT_PREPARATION_ACCEPTANCE_INPUT },
-      { catalogId: FIRE_ALARM_PROJECT_PREPARATION_VARIANTS.wet_zone.catalogId },
+      { catalogId: "canonical-work:base:unrelated_work_standard" },
     )).rejects.toThrow("FIRE_ALARM_PROJECT_PREPARATION_CATALOG_UNSUPPORTED");
     await expect(compileFireAlarmProjectPreparationVariantR1("standard", {
       ...FIRE_ALARM_PROJECT_PREPARATION_ACCEPTANCE_INPUT,

@@ -13,8 +13,8 @@ import {
   type CanonicalEstimateParameterDefinition,
   type CanonicalEstimateResourceDefinition,
 } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
-import { ASPHALT_COMPACTION_PROFILE_CATALOG_ID } from
-  "../../src/lib/estimate/v4/asphaltCompactionPreliminaryProfileR1";
+
+import {STANDARD_ASPHALT_COMPACTION_R567_CATALOG_ID,STANDARD_ASPHALT_COMPACTION_R567_AREA,STANDARD_ASPHALT_COMPACTION_R567_METHOD,STANDARD_ASPHALT_COMPACTION_R567_PACK as pack} from "../../src/lib/estimate/v4/standardAsphaltCompactionR567";
 
 type Json = Record<string, any>;
 type ParameterRow = CanonicalEstimateParameterDefinition & Json;
@@ -24,7 +24,7 @@ type ResourceRow = CanonicalEstimateResourceDefinition & Json & { _binding_price
 const DATABASE_URL = process.env.R4A13_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const CURRENT_RELEASE_PATH = resolve(
-  "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
+  process.env.R4A13_CURRENT_RELEASE_PATH ?? "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
 );
 
 const sha256 = async (value: unknown): Promise<string> => createHash("sha256")
@@ -62,7 +62,7 @@ describe("S26.4 prepared detailed asphalt-compaction definition from the local d
         join public.estimate_content_passport_r3 content_passport
           on content_passport.definition_version_id=manifest.definition_version_id
         where release.id=$1 and manifest.catalog_id=$2
-      `, [current.definitionReleaseId, ASPHALT_COMPACTION_PROFILE_CATALOG_ID])).rows[0] as Json;
+      `, [current.definitionReleaseId, STANDARD_ASPHALT_COMPACTION_R567_CATALOG_ID])).rows[0] as Json;
       expect(definition).toMatchObject({
         release_status: "prepared",
         activated_at: null,
@@ -70,7 +70,7 @@ describe("S26.4 prepared detailed asphalt-compaction definition from the local d
         scenario_ready: true,
       });
       expect(definition.source_metadata.contract).toBe(
-        "rik-expo-app.s26-4.master-asphalt-compaction-complete-successor.v2",
+        pack.contract,
       );
       expect(definition.content_passport_decision.independentCompletenessMap).toMatchObject({
         contract: "rik-expo-app.s26-3.independent-completeness-map.v1",
@@ -96,16 +96,19 @@ describe("S26.4 prepared detailed asphalt-compaction definition from the local d
         ) binding on true
         where resource.definition_version_id=$1 order by resource.ordinal
       `, [definition.id])).rows as ResourceRow[];
-      expect([parameters.length, formulas.length, resourceRows.length]).toEqual([15, 11, 49]);
+      expect([parameters.length, formulas.length, resourceRows.length]).toEqual([24, 21, 59]);
 
       const runtimeBaseline = canonicalApprovedBaselineRuntimeParameters({
         input_values: definition.input_values,
         input_classification: definition.input_classification,
       });
       expect(runtimeBaseline).not.toHaveProperty("area_m2");
-      expect(Object.keys(runtimeBaseline)).toHaveLength(14);
+      expect(Object.keys(runtimeBaseline)).toHaveLength(15);
+      expect(runtimeBaseline[STANDARD_ASPHALT_COMPACTION_R567_METHOD]).toBe(pack.profileVersion);
+      for(const id of [STANDARD_ASPHALT_COMPACTION_R567_AREA,'r567_compaction_traffic_control_setup_count','r567_compaction_mobilization_count_per_unique_machine'])expect(runtimeBaseline).not.toHaveProperty(id);
+      for(const id of [STANDARD_ASPHALT_COMPACTION_R567_AREA,'r567_compaction_traffic_control_setup_count','r567_compaction_mobilization_count_per_unique_machine'])expect(parameters.find(p=>p.parameter_id===id)?.default_value).toBeNull();
       expect(new Set(Object.values(definition.input_classification))).toEqual(
-        new Set(["VALIDATION_FIXTURE", "NORMATIVE", "ASSUMPTION", "DERIVED"]),
+        new Set(["VALIDATION_FIXTURE", "NORMATIVE", "ASSUMPTION", "DERIVED", "RUNTIME_STRUCTURAL_DEFAULT"]),
       );
 
       const resources = bindCanonicalEstimateResourcePriceKeys(
@@ -118,12 +121,12 @@ describe("S26.4 prepared detailed asphalt-compaction definition from the local d
       const result = await compileCanonicalEstimateCore({
         operation: "compile",
         compilerVersion: "s26-3-asphalt-compaction-prepared-db-driven-contract-test",
-        catalogId: ASPHALT_COMPACTION_PROFILE_CATALOG_ID,
-        primaryMeasureParameterId: "area_m2",
+        catalogId: STANDARD_ASPHALT_COMPACTION_R567_CATALOG_ID,
+        primaryMeasureParameterId: STANDARD_ASPHALT_COMPACTION_R567_AREA,
         parameterDefinitions: parameters,
         formulaDefinitions: formulas,
         resourceDefinitions: resources,
-        submittedParameters: { area_m2: 5_000 },
+        submittedParameters: { [STANDARD_ASPHALT_COMPACTION_R567_AREA]:5_000,r567_compaction_traffic_control_setup_count:1,r567_compaction_mobilization_count_per_unique_machine:1 },
         confirmedParameters: runtimeBaseline,
         currencyCode: "KGS",
         priceSnapshotIds: [],

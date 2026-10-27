@@ -1,0 +1,306 @@
+{
+  "contract": "rik-expo-app.interior-wall-finishing-cement-finish-r502.v3",
+  "titleRu": "Финишная отделка стен: цементная шпаклёвка и акриловая окраска",
+  "namespace": "wall_finish_cement_r502_",
+  "areaId": "net_wall_area_m2",
+  "baseId": "existing_base",
+  "baseReadyRu": "Уже ровная прочная цементная штукатурка, обычная равномерная впитываемость",
+  "baseOtherRu": "Бетон, гипс, кладка, непрочное или неизвестное основание",
+  "siteId": "site_conditions",
+  "siteReadyRu": "Сухое помещение, обычный доступ, без трещин и других дефектов",
+  "siteOtherRu": "Влажная зона, особый доступ, дефекты или условия неизвестны",
+  "puttyThicknessId": "putty_thickness_mm",
+  "ordinaryFactBudget": 4,
+  "selectedExistingCatalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+  "parents": [
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_level_standard",
+      "definitionId": "7ff78f8c-2873-53b8-859a-db8eb23f510a",
+      "version": 4,
+      "capturedParentSha256": "d7b3695738be687fb9de89e49122f9f7f9831f9bd96a08aab93bf68a14896bd1",
+      "shape": [
+        33,
+        89,
+        89,
+        1
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+      "definitionId": "712bf3a8-cd4f-5310-abc6-f93513d2b0bf",
+      "version": 4,
+      "capturedParentSha256": "a255a548b3c42fc9ee9cf4135b414e650d0c41c4e0130067e6f7d61d5ea39abe",
+      "shape": [
+        170,
+        116,
+        116,
+        1
+      ]
+    }
+  ],
+  "parentCaptureEvidence": "work/stream-b-existing-r497/group/finish-current-parents-r506.json",
+  "managedCapturedParentGuardRequired": true,
+  "catalogAppend": false,
+  "physicalScopeRu": "Уже ровная прочная цементная штукатурка с обычной равномерной впитываемостью, плоские участки без проёмов и откосов. Увлажнение, цементное финишное шпаклевание фактическим слоем до3мм, шлифование, одно укрепляющее грунтование и акриловая окраска в два слоя. Повторного оштукатуривания нет; бетон, гипс, кладка и дефектные основания исключены.",
+  "wholeWorkScopeRu": "Одна цена за м² включает подготовку обычной рабочей зоны, обеспыливание, защиту соседних поверхностей, предусмотренное паспортом увлажнение, приготовление и нанесение цементной финишной шпаклёвки, шлифование, выдержки и контроль готовности, одно нанесение выбранного укрепляющего грунта перед окраской, две окраски с межслойной сушкой, подачу упакованных материалов в обычную рабочую зону, промывку инструмента и уборку пыли/упаковки. В цену входят обычный инструмент, нормативные машины/расходники, СИЗ и чистая вода для затворения, увлажнения и промывки без отдельного литрового заказа. Три основных продукта оплачиваются отдельно. Общая старая цена труда автоматически не наследуется: коммерческий состав другой.",
+  "excludedRu": [
+    "Демонтаж, ремонт трещин/пустот/сырости/плесени, замена непрочной штукатурки и усиление основания.",
+    "Бетон/гипс/кладка, сильно или неравномерно впитывающие поверхности и смешанные основания.",
+    "Откосы, криволинейные поверхности, отдельные наружные углы/профили/маяки, сетка и специальный доступ.",
+    "Автоматическое назначение площади проёмов/откосов, толщины, влажности или готовности последующих слоёв.",
+    "Инженерная приёмка фактического объекта и гарантия межбрендовой комплектной системы.",
+    "Повторное оштукатуривание не входит: исходная цементная штукатурка уже ровная и принята."
+  ],
+  "sources": [
+    {
+      "id": "henkel-ct225-ru-kz-r502",
+      "title": "Ceresit CT225 ru_KZ",
+      "edition": "Catalog_CB_MARCH_2018; official manufacturer artifact",
+      "url": "https://dm.henkel-dam.com/is/content/henkel/kz-ru-ceresit-ct225-fasadnaya-shpaklevka-dlya-vnutrennih-rabot-tds-kz-ru",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/ct225-ru-KZ.pdf",
+      "sha256": "a25e53b931b79edd69a86da8b1b3a107b6a0283d1f2ea9c08eafb0fa598df717",
+      "locatorRu": "p1: цементно-песчаные/цементно-известковые основания, прочное чистое сухое основание перед работой обильно увлажнить; один фактический слой≤3мм; шлифование после24ч, окраска после72ч. p2:≈1.8кг/м²/мм,25кг; не переносить1.2кг/м²/мм другой ru_RU версии."
+    },
+    {
+      "id": "henkel-ct42-en-gl-r502",
+      "title": "Ceresit CT42 ACRYLIC ELASTIC en_GL",
+      "edition": "C_CT42_TDS_1_0819",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-42-en_GL.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/ct42-en-GL.pdf",
+      "sha256": "41468353793b9e9aadc283e2e2ab4693a9e28cd8fe08705f6926e2a0e2c9658b",
+      "locatorRu": "p1: сухие прочные минеральные основания, тонкослойные минерально-полимерные покрытия≥7суток; p2:≈0.3л/м² за2слоя, тара15л."
+    },
+    {
+      "id": "henkel-ct42-ru-kz-compatibility-r502",
+      "title": "Ceresit CT42 ru_KZ: compatibility reference",
+      "edition": "ru_KZ; signed2025-11-27",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-42-ru_KZ.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/ct42-ru-KZ.pdf",
+      "sha256": "a81350f7c90998139f9cac139b19a0f26ae5262cd283b1bf910f507d7f9b99c9",
+      "locatorRu": "p1 прямо допускает CT225 с выдержкой≥3суток. Только справочное подтверждение класса перехода: нормы и фасовка10л не переносятся в выбранный en_GL15л.",
+      "compatibilityReferenceOnly": true
+    },
+    {
+      "id": "knauf-tiefengrund-062026-r502",
+      "title": "КНАУФ-Тифенгрунд",
+      "edition": "06/2026",
+      "url": "https://www.knauf.ru/upload/iblock/215/ggu7x06mvv4w1pq8t5w2lw7b2ynkr25y/38-IL-KNAUF_Tifengrund-_23_06_2026_-v02-Preview.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/tiefengrund-06-2026.pdf",
+      "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9",
+      "locatorRu": "p1: цементные штукатурки/шпаклёвки перед тонкослойной цементной штукатуркой/краской; p2:≈0.1кг/м² одно нанесение, готовый состав без разбавления,5/10кг, высыхание≥3ч. В выбранном финишном комплексе применяется одно нанесение перед окраской по нормально впитывающей цементной шпаклёвке."
+    },
+    {
+      "id": "kg-krer15-wall-finishing-r502",
+      "title": "КРЕР2015, сборник15 «Отделочные работы»",
+      "edition": "утверждён приказом28.03.2016 №2-нпа",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/KRER-15.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "locatorRu": "КРЕР15-04-007-01, печатные173–174,100м² оштукатуренных стен: сплошное шпаклевание, шлифование, грунтование, две окраски.43.56чел.-ч рабочих;0.02чел.-ч машинистов;0.02маш.-ч подъёмника;0.15маш.-ч бортового автомобиля;0.84м² шкурки;0.3кг ветоши. Материалы конкретных продуктов берутся отдельно по паспортам, не из стоимости базового года."
+    },
+    {
+      "id": "kg-sp65-101-2025-r502",
+      "title": "СП КР65-101:2025 «Изоляционные и отделочные покрытия»",
+      "edition": "приказ10.02.2025 №51; official stamped p1",
+      "url": "https://minstroy.gov.kg/kg/state_program/download-pdf/obedinennyeizolacionnye-61267ac76cb3f36a0.49346677.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/SP-KR-65-101-2025-official.pdf",
+      "sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1",
+      "locatorRu": "PDFp1: утверждение и отмена СНиП3.04.01-87;§7.2.3–7.2.6,7.3.1–7.3.5,7.5.1–7.5.4: основание/впитываемость/слои/грунтование/выдержки. Annex сохраняет незаполненные editorial даты; используется с утверждённым титульным приказом."
+    }
+  ],
+  "materials": [
+    {
+      "id": "ct225",
+      "nameRu": "Шпаклёвка цементная финишная",
+      "unit": "kg",
+      "package": 25,
+      "sourceIndex": 0,
+      "ratePerM2PerMm": 1.8,
+      "stage": "putty"
+    },
+    {
+      "id": "primer",
+      "nameRu": "Грунтовка укрепляющая глубокого проникновения",
+      "unit": "kg",
+      "package": 5,
+      "sourceIndex": 3,
+      "ratePerApplication": 0.1,
+      "applications": [
+        "before-paint"
+      ],
+      "stage": "before-paint"
+    },
+    {
+      "id": "ct42",
+      "nameRu": "Краска акриловая матовая, два слоя",
+      "unit": "l",
+      "package": 15,
+      "sourceIndex": 1,
+      "rateForTwoCoats": 0.3,
+      "coatCount": 2,
+      "stage": "paint"
+    }
+  ],
+  "labour": {
+    "sourceIndex": 4,
+    "measurementBasisM2": 100,
+    "normId": "15-04-007-01",
+    "workersManH": 43.56,
+    "paintOperatorsManH": 0.02,
+    "liftMachineH": 0.02,
+    "truckMachineH": 0.15,
+    "sandingM2": 0.84,
+    "ragsKg": 0.3,
+    "policyRu": "КРЕР15-04-007-01 по оштукатуренным стенам: сплошное шпаклевание, шлифование, грунтование и две окраски одной цельной нормой43.56чел.-ч/100м². Часы не распределяются произвольно между этапами и не оплачиваются сверх одной цены цельной работы за м². Исходная ровная штукатурка уже выполнена и в эту смету не входит."
+  },
+  "operations": [
+    {
+      "id": "preparation",
+      "titleRu": "Подготовить рабочую зону и обеспылить стену"
+    },
+    {
+      "id": "putty",
+      "titleRu": "Увлажнить, зашпаклевать и шлифовать стену"
+    },
+    {
+      "id": "before-paint",
+      "titleRu": "Грунтовать перед окраской и высушить"
+    },
+    {
+      "id": "paint",
+      "titleRu": "Окрасить стену в два слоя с межслойной сушкой"
+    },
+    {
+      "id": "completion",
+      "titleRu": "Проверить покрытие, промыть инструмент и убрать рабочую зону"
+    }
+  ],
+  "included": [
+    {
+      "id": "water",
+      "titleRu": "Вода для затворения, увлажнения и промывки",
+      "stage": "putty"
+    },
+    {
+      "id": "tools",
+      "titleRu": "Обычный ручной и электрический инструмент",
+      "stage": "putty"
+    },
+    {
+      "id": "protection",
+      "titleRu": "Защита соседних поверхностей, плёнка и лента по месту",
+      "stage": "preparation"
+    },
+    {
+      "id": "ppe",
+      "titleRu": "Средства индивидуальной защиты",
+      "stage": "preparation"
+    },
+    {
+      "id": "local-supply-cleanup",
+      "titleRu": "Подача материалов и уборка пыли и упаковки",
+      "stage": "completion"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "level-sound-cement-plaster",
+      "to": "ct225",
+      "condition": "Сухое прочное обеспыленное цементное основание, без дефектов и сильной/неравномерной впитываемости. Перед нанесением обильно увлажнить. Один фактический слой≤3мм. Дополнительного CT17 нет в выбранном паспорте.",
+      "basis": [
+        0,
+        5
+      ]
+    },
+    {
+      "from": "ct225",
+      "to": "primer",
+      "condition": "Цементная шпаклёвка высохла и выдержана. Принят консервативный срок≥7суток для тонкослойного минерально-полимерного основания по выбранному CT42 en_GL; CT225 ru_KZ допускает окраску после72ч. Шлифование и удаление пыли включены.",
+      "basis": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "from": "primer",
+      "to": "ct42",
+      "condition": "Один слой готового неразбавленного Тифенгрунда по нормально впитывающей цементной шпаклёвке, высыхание≥3ч. CT42 два слоя с интервалом4–6ч; температура+5…+25°C, относительная влажность<80%; покрытие защищено до высыхания.",
+      "basis": [
+        1,
+        3,
+        5
+      ]
+    }
+  ],
+  "compatibilityBasis": "SOURCE_SUPPORTED_CEMENT_PUTTY_SUBSTRATE_CLASSES_AND_EXPLICIT_CT225_REFERENCE; NOT_WRITTEN_CROSS_BRAND_SYSTEM_APPROVAL",
+  "transitionBasisRu": "CT225 ru_KZ p1 допускает цементно-песчаные/цементно-известковые основания и предписывает увлажнение без CT17; КНАУФ-Тифенгрунд06/2026 p1–2 допускает цементные шпаклёвки перед краской,≈0.1кг/м² одно нанесение; СПКР65-101:2025 §7.5.3 требует грунт перед окраской; CT42 en_GL0819 p1–2 допускает прочные сухие минеральные основания и даёт≈0.3л/м² за2слоя. CT42 ru_KZ p1 дополнительно прямо указывает CT225; нормы/тара этого справочного варианта не смешиваются.",
+  "quantityScope": "SELECTED_FINISH_SCOPE_ALL_REQUIRED_QUANTITIES_CALCULATED",
+  "selectedScopeQuantitiesComplete": true,
+  "engineeringAcceptance": false,
+  "publication": false,
+  "fullMasterAcceptance": false,
+  "independentExpected": [
+    {
+      "area": 20.1,
+      "puttyMm": 2,
+      "ct225": [
+        72.36,
+        75,
+        3,
+        2.64
+      ],
+      "primer": [
+        2.01,
+        5,
+        1,
+        2.99
+      ],
+      "ct42": [
+        6.03,
+        15,
+        1,
+        8.97
+      ],
+      "paintWorkersManH": 8.75556,
+      "normIncluded": {
+        "paint-operators": 0.00402,
+        "paint-lift": 0.00402,
+        "paint-truck": 0.03015,
+        "sanding-sheet": 0.16884,
+        "rags": 0.0603
+      }
+    },
+    {
+      "area": 50,
+      "puttyMm": 1,
+      "ct225": [
+        90,
+        100,
+        4,
+        10
+      ],
+      "primer": [
+        5,
+        5,
+        1,
+        0
+      ],
+      "ct42": [
+        15,
+        15,
+        1,
+        0
+      ],
+      "paintWorkersManH": 21.78,
+      "normIncluded": {
+        "paint-operators": 0.01,
+        "paint-lift": 0.01,
+        "paint-truck": 0.075,
+        "sanding-sheet": 0.42,
+        "rags": 0.15
+      }
+    }
+  ],
+  "verifiedAt": "2026-10-20T00:00:00+06:00"
+}

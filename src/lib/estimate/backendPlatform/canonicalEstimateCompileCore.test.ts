@@ -94,6 +94,22 @@ function numericPeerInput(): CanonicalEstimateCompileCoreInput {
 }
 
 describe("purchase consumption requires its original quantity facts", () => {
+  it("saves an explicit manual quantity on an automatically derived row and retains its formula baseline", async () => {
+    const input=baseInput();
+    input.formulaDefinitions[0]!.output_unit_id='m2';
+    input.resourceDefinitions[0]!.resource_graph={derivedQuantityEditPolicyV1:{
+      contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',unitId:'m2',
+      parameterIds:['area_m2'],reasonRu:'Автоматически по площади.'}};
+    input.operation='recalculate';
+    input.rowOverrides={'material:board':{quantity:'16.5',unitPrice:'2',provenance:{kind:'manual',reason:'consumer_estimate_row_batch_edit'}}};
+    const result=await compileCanonicalEstimateCore(input);
+    expect(result.rows[0]).toMatchObject({quantity:'16.5',unit_price:'2',amount:'33',calculation_trace:{
+      manualQuantityOverride:true,calculatedQuantityBeforeOverride:'11',manualAmendment:{kind:'manual'}}});
+    expect(result.parameters.area_m2).toBe(10);
+    const cleared=await compileCanonicalEstimateCore({...input,rowOverrides:{'material:board':{quantity:null,provenance:{kind:'manual'}}}});
+    expect(cleared.rows[0]!.quantity).toBe('11');
+  });
+
   it("retains a known manual supply as a local need while legacy manual rows and independent resources continue", async () => {
     const input = baseInput();
     input.parameterDefinitions.push({ parameter_id: "required_m2", value_type: "decimal", required: false, default_value: null, constraints_json: { min: 0.001 } });

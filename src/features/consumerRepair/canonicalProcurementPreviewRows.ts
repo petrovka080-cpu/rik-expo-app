@@ -1,6 +1,6 @@
 import type { ConsumerRepairRequestItem } from '../../lib/consumerRequests/consumerRequestTypes';
 import type { EstimateDraftRevision } from '../../lib/estimate/estimateDraftRevisionContract';
-import { canonicalPublicEstimateRowNameRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateOperationReferenceRu } from '../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu';
 import { canonicalPublicResourceDisplayPresentationV1 } from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import { canonicalMaterialQuantityBasisFromRow } from '../../lib/estimate/backendPlatform/canonicalMaterialQuantityProjection';
 import { canonicalArtifactPurchaseBalance, canonicalArtifactPurchaseRequirement } from '../../lib/estimate/backendPlatform/canonicalPersistedPurchaseBalance';
@@ -8,6 +8,8 @@ import { formatEstimateQuantityRu } from '../../lib/estimatePresentation/formatE
 import { publicBoqDisplayNameRu } from '../../lib/estimate/publicBoqNaming';
 import { formatEstimateUnitLabel } from '../../lib/ai/globalEstimate/formatEstimateUnitLabel';
 import { canonicalPurchaseSupplyWarningV1, parseCanonicalExactPurchaseQuantityV1 } from '../../lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1';
+import { canonicalEstimateOperationReference, canonicalEstimateResourceOperationSections,
+  type CanonicalEstimateOperationReference } from '../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 
 export type CanonicalProcurementPreviewRow = {
   rowId: string;
@@ -19,7 +21,41 @@ export type CanonicalProcurementPreviewRow = {
   unitPrice: number | null;
   currency: string;
   quantityDetails: string[];
+  operation?: CanonicalEstimateOperationReference;
 };
+
+function operationMetadata(source: Record<string, unknown> | null | undefined) {
+  const operation = canonicalPublicEstimateOperationReferenceRu(canonicalEstimateOperationReference(source?.canonicalOperationComposition));
+  return operation ? { operation } : {};
+}
+
+/** Keep the saved graph's full presence context, then show only purchasing
+ * owners and their references. A shared material never becomes another order. */
+export function buildCanonicalProcurementPreviewSections(
+  revision: EstimateDraftRevision | null,
+  rows: readonly CanonicalProcurementPreviewRow[],
+  items: readonly ConsumerRepairRequestItem[] = [],
+) {
+  const purchasingIds = new Set(rows.map(row => row.rowId));
+  const resources = new Map((revision?.boq.rows ?? []).map(row => [row.rowId, {
+    rowId: row.rowId, titleRu: row.titleRu, operation: row.sourceParameters?.canonicalOperationComposition,
+  }]));
+  for (const item of items) if (revision && item.sourceParameters?.canonicalBackendRevisionId === revision.revisionId) {
+    const rowId = String(item.sourceParameters.rowCode ?? item.id);
+    if (!resources.has(rowId)) resources.set(rowId, {
+      rowId, titleRu: item.titleRu, operation: item.sourceParameters.canonicalOperationComposition,
+    });
+  }
+  for (const row of rows) resources.set(row.rowId, { rowId: row.rowId, titleRu: row.titleRu, operation: row.operation });
+  return canonicalEstimateResourceOperationSections([...resources.values()]).map(section => ({
+    ...section,
+    operation: canonicalPublicEstimateOperationReferenceRu(section.operation),
+    resourceIds: section.resourceIds.filter(id => purchasingIds.has(id)),
+    sharedResources: section.sharedResources.filter(resource => purchasingIds.has(resource.rowId)).map(resource => ({ ...resource,
+      ownerOperationTitleRu: canonicalPublicEstimateWorkTitleRu(resource.ownerOperationTitleRu),
+    })),
+  })).filter(section => section.resourceIds.length > 0 || section.sharedResources.length > 0);
+}
 
 function supplyWarning(rowId: string, unit: unknown, titleRu: string, source: Record<string, unknown> | null | undefined): string | null {
   return canonicalPurchaseSupplyWarningV1({ row_id: rowId, unit_id: unit, title_ru: titleRu,
@@ -47,6 +83,7 @@ export function buildCanonicalProcurementPreviewRows(
           ?? publicBoqDisplayNameRu({ sourceNameRu: row.titleRu, rowType: row.rowType }), manualTitleOverride });
       const warning = supplyWarning(row.rowId, row.unit, titleRu, row.sourceParameters);
       if (warning) return { rowId: row.rowId, titleRu, quantity: null, preliminary: true, supplyBlocked: true,
+        ...operationMetadata(row.sourceParameters),
         unit: formatEstimateUnitLabel(row.unitLabel ?? row.unit), unitPrice: row.unitPrice ?? null,
         currency: row.currency, quantityDetails: [warning] };
       const balance = canonicalArtifactPurchaseBalance({
@@ -70,6 +107,7 @@ export function buildCanonicalProcurementPreviewRows(
       ] : [];
       return {
         rowId: row.rowId,
+        ...operationMetadata(row.sourceParameters),
         titleRu,
         quantity: exactQuantity(row.sourceParameters, balance?.effectiveOrder ?? quantityBasis?.procurementQuantity ?? row.quantity),
         unit,
@@ -89,6 +127,7 @@ export function buildCanonicalProcurementPreviewRows(
     const warning = supplyWarning(rowId, item.unit, titleRu, source);
     if (warning) {
       rows.push({ rowId, titleRu, quantity: null, preliminary: true, supplyBlocked: true,
+        ...operationMetadata(source),
         unit: formatEstimateUnitLabel(item.unit), unitPrice: item.unitPrice ?? null, currency: item.currency,
         quantityDetails: [warning] });
       includedIds.add(rowId);
@@ -99,6 +138,7 @@ export function buildCanonicalProcurementPreviewRows(
       calculation_trace: { purchaseRequirementV1: source.canonicalPurchaseRequirement } });
     rows.push({ rowId, titleRu: canonicalPublicEstimateRowNameRu({ rowId, titleRu: item.titleRu,
       manualTitleOverride: source.canonicalManualTitleOverride === true }), quantity: exactQuantity(source, item.quantity ?? null), preliminary: true,
+      ...operationMetadata(source),
       unit: formatEstimateUnitLabel(item.unit), unitPrice: item.unitPrice ?? null, currency: item.currency,
       quantityDetails: requirement ? [`${requirement.labelRu}: ${formatEstimateQuantityRu(requirement.quantity)} ${formatEstimateUnitLabel(requirement.unitId)}`] : [],
     });

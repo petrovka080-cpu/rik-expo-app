@@ -198,6 +198,8 @@ const APPLY = process.argv.includes("--apply");
 const SOURCE_PATHS = PEDESTAL_MODE
   ? [
       "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1.ts",
       "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
       "tests/estimateNorms/pedestalFormworkR1.contract.test.ts",
       "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
@@ -206,6 +208,8 @@ const SOURCE_PATHS = PEDESTAL_MODE
   : COLUMN_BASE_MODE
   ? [
       "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1.ts",
       "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
       "tests/estimateNorms/columnBaseFormworkR1.contract.test.ts",
       "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
@@ -214,6 +218,8 @@ const SOURCE_PATHS = PEDESTAL_MODE
   : BELT_MODE
   ? [
       "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1.ts",
       "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
       "tests/estimateNorms/beltFormworkR1.contract.test.ts",
       "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
@@ -222,6 +228,8 @@ const SOURCE_PATHS = PEDESTAL_MODE
   : ANCHOR_GROUP_MODE
   ? [
       "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1.ts",
       "src/lib/estimate/ownedDomain/formworkFramiXlifeProductionBindingR1.ts",
       "tests/estimateNorms/anchorGroupFormworkR1.contract.test.ts",
       "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
@@ -229,6 +237,8 @@ const SOURCE_PATHS = PEDESTAL_MODE
     ] as const
   : [
       "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+      "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+      "src/lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1.ts",
       "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
       "scripts/estimate/r4a13/prepareFormworkFramiXlifeGeneralFoundationFamilySuccessor.ts",
     ] as const;
@@ -551,7 +561,7 @@ async function main(): Promise<void> {
         `STOP_FORMWORK_FAMILY_SOURCE_UNCOMMITTED:${path}`);
     }
   }
-  invariant(TARGETS.length === 7, `STOP_FORMWORK_FAMILY_TARGET_COUNT:${TARGETS.length}`);
+  invariant(Number(TARGETS.length) === 7, `STOP_FORMWORK_FAMILY_TARGET_COUNT:${TARGETS.length}`);
   const head = git("rev-parse", "HEAD");
   const tree = git("rev-parse", "HEAD^{tree}");
   const sourceHashes = SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) }));

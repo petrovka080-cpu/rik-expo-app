@@ -21,8 +21,6 @@ describe("S27.3 F09 fire-alarm line-marking variants", () => {
   test("binds six catalog identities without turning clause 12.60 into a fake rate", () => {
     expect(VARIANT_KEYS).toEqual([
       "high_load",
-      "large_area",
-      "small_area",
       "standard",
       "technical_room",
       "wet_zone",
@@ -34,7 +32,7 @@ describe("S27.3 F09 fire-alarm line-marking variants", () => {
     expect(FIRE_ALARM_LINE_MARKING_SOURCE_METADATA.use_restriction)
       .toMatch(/не является универсальной нормой расхода/iu);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      FIRE_ALARM_LINE_MARKING_VARIANTS[key].catalogId)).size).toBe(6);
+      FIRE_ALARM_LINE_MARKING_VARIANTS[key].catalogId)).size).toBe(4);
   });
 
   test.each(VARIANT_KEYS)("%s emits only the confirmed marking operation first", async (key) => {

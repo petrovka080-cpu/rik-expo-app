@@ -2,7 +2,8 @@ import React from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { InlineWorkTemplateCandidate } from "../../../lib/ai/matchWorkTemplateFromPrompt";
-import type { GlobalWorkSmartSearchSuggestion } from "../../../lib/ai/globalEstimate";
+import { resolveGlobalWorkConditionSuggestionV1, type GlobalWorkSmartSearchSuggestion } from "../../../lib/ai/globalEstimate/globalWorkSmartSearch";
+import { CanonicalWorkConditionProfileSelector } from "./CanonicalWorkConditionProfileSelector";
 
 const WORK_TEMPLATE_SUGGESTION_MAX_ITEMS = 12;
 
@@ -59,24 +60,23 @@ export function WorkTemplateSuggestions({
       data={legacyWorkSuggestions}
       keyExtractor={legacyWorkSuggestionKey}
       renderItem={({ item: suggestion, index }) => (
-        <Pressable
-          accessibilityRole="button"
+        <CanonicalWorkConditionProfileSelector
+          profiles={suggestion.conditionProfiles}
+          matchedCatalogId={suggestion.matchedConditionCatalogId}
           accessibilityLabel={suggestion.visibleText}
-          accessibilityState={{ disabled: suggestion.estimateReady !== true }}
-          disabled={suggestion.estimateReady !== true}
-          onPress={() => onSelectLegacyWorkSuggestion?.(suggestion)}
-          style={[styles.button, suggestion.estimateReady !== true && styles.disabledButton]}
-          testID={`consumer-repair-work-suggestion-${index + 1}`}
+          estimateReady={suggestion.estimateReady === true}
+          nonselectableReasonRu={suggestion.nonselectableReasonRu}
+          onSelect={catalogId => {
+            const selected = resolveGlobalWorkConditionSuggestionV1(suggestion, catalogId);
+            if (selected) onSelectLegacyWorkSuggestion?.(selected);
+          }}
+          style={styles.button}
+          disabledStyle={styles.disabledButton}
+          testIDPrefix={`consumer-repair-work-suggestion-${index + 1}`}
         >
           <Text style={styles.title}>{suggestion.titleRu}</Text>
           <Text style={styles.meta}>{suggestion.categoryTitleRu}</Text>
-          {suggestion.estimateReady !== true ? (
-            <Text style={styles.unavailable} testID={`consumer-repair-work-suggestion-unavailable-${index + 1}`}>
-              {suggestion.nonselectableReasonRu
-                || "Эта смета проходит обновление состава и временно недоступна для нового расчёта."}
-            </Text>
-          ) : null}
-        </Pressable>
+        </CanonicalWorkConditionProfileSelector>
       )}
       ListHeaderComponent={(
         <>

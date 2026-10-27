@@ -18,16 +18,6 @@ export const AGGRESSIVE_ENVIRONMENT_TILE_ON_PLASTIC_PUTTY_OR_SULFUR_CEMENT_FLOOR
     catalogVariant: "STANDARD_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
     canonicalNameRu: "Разборка плиточного покрытия на пластзамазке или серном цементе в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:demolition_interior_flooring_strip_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка плиточного покрытия на пластзамазке или серном цементе в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:demolition_interior_flooring_strip_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",
-    canonicalNameRu: "Разборка плиточного покрытия на пластзамазке или серном цементе в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: "canonical-work:base:demolition_interior_flooring_strip_wet_zone",
     catalogVariant: "WET_ZONE_SEARCH_IDENTITY_NARROWED_BY_CONFIRMED_MATERIAL",

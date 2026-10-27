@@ -17,7 +17,7 @@ describe("KRER 46 asphalt floor-covering demolition", () => {
   test("binds the exact official rate and narrow asphalt floor-covering boundary", () => {
     expect(ASPHALT_FLOOR_COVERING_DEMOLITION_KRER46_CATALOG_ID)
       .toBe("canonical-work:base:demolition_interior_flooring_dismantle_standard");
-    expect(ASPHALT_FLOOR_COVERING_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(4);
+    expect(ASPHALT_FLOOR_COVERING_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(2);
     expect(ASPHALT_FLOOR_COVERING_DEMOLITION_KRER46_ARTIFACT_SHA256)
       .toMatch(/^[0-9a-f]{64}$/u);
     expect(ASPHALT_FLOOR_COVERING_DEMOLITION_KRER46_PARAMETERS).toHaveLength(3);

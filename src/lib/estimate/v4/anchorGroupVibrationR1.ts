@@ -20,9 +20,7 @@ type Json = Record<string, unknown>;
 export const ANCHOR_GROUP_VIBRATION_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_vibrate_standard", titleRu: "Виброуплотнение бетона основания анкерной группы в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_vibrate_high_load", titleRu: "Виброуплотнение бетона основания анкерной группы в зоне высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_vibrate_large_area", titleRu: "Виброуплотнение бетона оснований анкерных групп на большом участке", contextRu: "большой участок" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_vibrate_repair", titleRu: "Виброуплотнение бетона основания анкерной группы на ремонтном участке", contextRu: "ремонтный участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_vibrate_small_area", titleRu: "Виброуплотнение бетона основания анкерной группы на малом участке", contextRu: "малый участок" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_vibrate_technical_room", titleRu: "Виброуплотнение бетона основания анкерной группы в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_vibrate_wet_zone", titleRu: "Виброуплотнение бетона основания анкерной группы во влажной зоне", contextRu: "влажная зона" },
 ] as const);

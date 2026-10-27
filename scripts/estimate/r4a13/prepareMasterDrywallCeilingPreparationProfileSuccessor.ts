@@ -5,8 +5,8 @@ import {
   DRYWALL_CEILING_PREPARE_CONDITIONAL_REQUIRED_ROW_IDS,
   DRYWALL_CEILING_PREPARE_DEFAULT_REQUIRED_ROW_IDS,
   DRYWALL_CEILING_PREPARE_INDEPENDENT_COMPLETENESS_MAP,
-  DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
-  DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID,
+  DRYWALL_CEILING_PREPARE_CATALOG_ID,
+  DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID,
   DRYWALL_CEILING_PREPARE_PRELIMINARY_CLASSIFICATION_R1,
   DRYWALL_CEILING_PREPARE_PRELIMINARY_PROVENANCE_RU_R1,
   DRYWALL_CEILING_PREPARE_PRELIMINARY_SCENARIO_R1,
@@ -26,7 +26,7 @@ import { runMasterSingleDefinitionSuccessorR1 } from "./prepareMasterSingleDefin
 type Json = Record<string, any>;
 
 const definition = buildBatch003R56CanonicalSuccessorDefinition(
-  DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID,
+  DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID,
 );
 const projection = projectBatch003R56DefinitionToCanonicalRows(definition, {
   includeRuntimePriceInputs: false,
@@ -54,7 +54,7 @@ const parameterDefinitions = projection.parameterDefinitions.map((parameter) => 
     truth_metadata: {
       ...parameter.truth_metadata,
       contract: "rik-expo-app.s27-21.drywall-ceiling-preparation-profile.v3",
-      semantic_parameter_key: `${DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID}:${parameterId}`,
+      semantic_parameter_key: `${DRYWALL_CEILING_PREPARE_CATALOG_ID}:${parameterId}`,
       visibility_role: "USER_INPUT",
       value_source_role: parameterId === "area_m2"
         ? "USER_MEASURED"
@@ -211,7 +211,7 @@ void runMasterSingleDefinitionSuccessorR1({
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
     "scripts/estimate/r4a13/prepareMasterDrywallCeilingPreparationProfileSuccessor.ts",
   ],
-  catalogId: DRYWALL_CEILING_PREPARE_LARGE_AREA_CATALOG_ID,
+  catalogId: DRYWALL_CEILING_PREPARE_CATALOG_ID,
   sourceId: DRYWALL_CEILING_PREPARE_PROFILE_SOURCE_ID,
   normId: DRYWALL_CEILING_PREPARE_PROFILE_NORM_ID,
   sourceMetadata: DRYWALL_CEILING_PREPARE_PROFILE_SOURCE_METADATA,
@@ -229,7 +229,7 @@ void runMasterSingleDefinitionSuccessorR1({
   validationScenario: "S27_21_EXISTING_DRYWALL_CEILING_500_M2_CONDITIONAL_REPAIR_FIRST_ESTIMATE",
   passport: {
     canonicalRuName: "Подготовка существующего потолка из ГКЛ под финишную отделку",
-    workKey: DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID,
+    workKey: DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID,
     physicalResultRu: "Существующий потолок из ГКЛ обследован и очищен; базовая финишная подготовка рассчитана, а ремонт дефектов и швов локализован до получения обмера",
     includedScopeRu: [
       "укрытие пола и оборудования, малярная лента и мешки для отходов",
@@ -259,7 +259,7 @@ void runMasterSingleDefinitionSuccessorR1({
     projectDataReplacesAssumptionsWhenAvailable: true,
   },
   binding: {
-    rowId: `${DRYWALL_CEILING_PREPARE_LARGE_AREA_SOURCE_CATALOG_ID}:successor-r56:row:finish_paste`,
+    rowId: `${DRYWALL_CEILING_PREPARE_SOURCE_CATALOG_ID}:successor-r56:row:finish_paste`,
     applicability: {
       technology_class: "KNAUF_ROTBAND_PASTA_PROFI_THIN_FINISH_PASTE",
       operation_class: "EXISTING_DRYWALL_CEILING_PREPARATION",

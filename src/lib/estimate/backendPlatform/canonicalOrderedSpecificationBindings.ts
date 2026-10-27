@@ -1,4 +1,5 @@
-import { canonicalEstimateResourceIncludedByDefault, type CanonicalEstimateResourceDefinition } from './canonicalEstimateCompileCore';
+import { canonicalEstimateResourceIncludedByDefault } from './canonicalEstimateResourceInclusionV1';
+import type { CanonicalEstimateResourceDefinition } from './canonicalEstimateCompileCore';
 import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal } from './formulaGraph';
 import { resolveInclusionGraph } from './inclusionGraph';
 import type { CanonicalEstimateRowOverride } from './contracts';

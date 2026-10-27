@@ -5,7 +5,7 @@ import {INTERIOR_FINISHES_DOMAIN_INVENTORY} from './domains/interiorFinishesComp
 import {CERESIT_CT54_INTERIOR_WALL_SOURCE_METADATA as CT54,CERESIT_CT17_PAINT_PRIMER_SOURCE_METADATA as CT17} from './domainFactory/professionalPhysicalNormApplicabilityV1';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 
-export const WALL_PAINT_VARIANTS_S2735=['standard','small_area','large_area','high_load','technical_room','wet_zone'] as const;
+export const WALL_PAINT_VARIANTS_S2735=['standard','high_load','technical_room','wet_zone'] as const;
 export const WALL_PAINT_CATALOGS_S2735=WALL_PAINT_VARIANTS_S2735.map(variant=>'canonical-work:base:plaster_paint_interior_paint_wall_paint_'+variant);
 export const WALL_PAINT_CONTRACT_S2735='wall-paint-constructor:s27-35.v1';
 export const WALL_PAINT_SOURCE_ID_S2735='src_wall_paint_ready_ct54_ct17_s27_35';

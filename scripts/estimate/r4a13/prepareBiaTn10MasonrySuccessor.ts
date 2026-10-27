@@ -38,18 +38,6 @@ const TARGETS = Object.freeze({
     contextRu: "стандартный участок",
     searchAliasesRu: ["кирпичная кладка", "кладка кирпичной стены", "стена из глиняного кирпича"],
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_large_area",
-    titleRu: "Кладка стены большой площади из обожжённого глиняного кирпича по BIA TN 10 Table 4",
-    contextRu: "участок большой площади",
-    searchAliasesRu: ["кирпичная кладка большой площади", "кладка большой кирпичной стены"],
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_small_area",
-    titleRu: "Кладка небольшого участка стены из обожжённого глиняного кирпича по BIA TN 10 Table 4",
-    contextRu: "небольшой участок",
-    searchAliasesRu: ["кирпичная кладка малого объема", "кладка небольшого участка кирпичной стены"],
-  }),
   technical_room: Object.freeze({
     catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
     titleRu: "Кладка стены технического помещения из обожжённого глиняного кирпича по BIA TN 10 Table 4",
@@ -86,6 +74,8 @@ const SOURCE_PATHS = [
   "src/lib/estimate/v4/domainFactory/masonryBiaTn10PhysicalNormV1.ts",
   "src/lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1.ts",
   "src/lib/estimate/v4/masonryBrickWallBiaTn10R1.ts",
+  "src/lib/estimate/contracts/masonryBiaTn10IdentityV1.ts",
+  "src/lib/estimate/ownedDomain/masonryBiaTn10PromptParametersV1.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts",
   "src/lib/estimate/backendPlatform/canonicalMaterialQuantityProjection.ts",

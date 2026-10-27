@@ -1,0 +1,44 @@
+{
+  "contract": "root-reviewed-monolithic-exact-repeated-continuation-anchors/r1",
+  "rawCaptureSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+  "sourceDefinitionReleaseId": "d91453c6-20a0-5b18-9995-cb24731bd72d",
+  "anchors": [
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "definitionId": "e49082df-9ff0-54a1-8a89-c20064e22815",
+      "definitionVersion": 12,
+      "definitionSha256": "0d25c180b85daffba85b4d5be37c399e969192bd90b9b2241caf577f16842127",
+      "baselineId": "950774f9-aebb-5e65-92d6-960000de7a89",
+      "capturedParentSha256": "e0cab2d86e187b97312c549e7b980c0a197c9db4ac66f3041c633ae3469bd36a",
+      "capturedSourceMetadataSha256": "a083c42a24601268af41d0296286e039ad5ffb5a86f8a93acdbfbc8bb9aab043",
+      "latestPreviousSuccessorSha256": "03afd7b750ca031125b75e4386fd9753450fdae7d2b5530f0e618c652e25b846",
+      "previousContinuationSha256": "998afd2ae5c808791aa6dd1d6528048a5cfff5045bdfa6c1dc1eac5163b82a4f",
+      "originalSuccessorSha256": "1e4562f9186d1b7931638c11f5de46ef5efa3f59af9810e6f5d9e52a933d6e3b",
+      "previousDefinitionId": "89addaf7-94fd-5461-8d52-b7ab763fe7d0",
+      "previousBaselineId": "28e2e88c-f4af-5ca2-be9e-3367bdb72026",
+      "originalDefinitionId": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+      "originalBaselineId": "56b75a05-caf6-5564-897f-0c71e69a5498",
+      "originalSourcePrefixPreserved": true
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "definitionId": "1c380012-6b8b-5de5-8e15-35e945dd1a3a",
+      "definitionVersion": 15,
+      "definitionSha256": "552a8173d2800b29d96d7bf94f0b8410b05ecd711ac585183e4f06d8001abe3a",
+      "baselineId": "50564651-12ae-556a-aaed-7830a01cc300",
+      "capturedParentSha256": "55a1bd03fa7be65a6f238659c88dcb3ee08f7d6db0b5524a1830c74eaf828076",
+      "capturedSourceMetadataSha256": "99184da67a0bd1dd1ad8bbc760eaab805b35a93c12124c205db44007633c4591",
+      "latestPreviousSuccessorSha256": "8c589d7cd89d2c5bac031f2fef9b99340edbda957673945ef7771e63d45eea4d",
+      "previousContinuationSha256": "90d795c5c793f7022cb1cfb2f8fd58a1365306e498b55cb3b78293863f9ed0f1",
+      "originalSuccessorSha256": "6aeb4ade9d07eb2eeb33644471835e267feb5369120076b7d759ab4bb050b45b",
+      "previousDefinitionId": "531afe77-8bf5-54df-9771-09301846d029",
+      "previousBaselineId": "c4890ea7-3d2c-5171-b7f2-06bbdf42c516",
+      "originalDefinitionId": "cb970826-ff8b-5919-8434-72f505c9f176",
+      "originalBaselineId": "0d97b56c-1a8d-5b07-841d-983a563bb20d",
+      "originalSourcePrefixPreserved": true
+    }
+  ],
+  "storageKey": "retainedParentBindingContinuationV2",
+  "priorSourceSlotsMustRemainByteIdentical": true,
+  "newQuantityOrPriceTransferPermission": false
+}

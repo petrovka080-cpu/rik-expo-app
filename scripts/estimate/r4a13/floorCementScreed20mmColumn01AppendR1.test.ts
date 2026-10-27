@@ -1,6 +1,7 @@
 import{createHash}from'node:crypto';
 import{mkdtempSync,writeFileSync,readFileSync,unlinkSync,rmdirSync}from'node:fs';
 import{resolve,join}from'node:path';
+import{tmpdir}from'node:os';
 import{assertScreed01101CurrentBaseR1 as check,prepareFloorCementScreed20mmColumn01AppendR1 as prepare,
  prepareScreed01101RegistryCaptureInputR1,screed01101ParentPairR1 as pair,screed01101AppendIdentityR1 as identity,type Screed01101GovernedEvidenceR1}from'./prepareFloorCementScreed20mmColumn01AppendR1';
 import{floorCementScreed20mmPackR1 as pack}from'../../../src/lib/estimate/v4/floorCementScreed20mmKrer11Column01R1';
@@ -33,5 +34,9 @@ it('builds only a narrow ordinary registry-read input from actual fresh A read b
  expect(input.config.normId).toBe('11-01-011-01');expect(input.config).not.toHaveProperty('parameterDefinitions');expect(input.config).not.toHaveProperty('verifyCore');
  expect(input.newSource.source_key).toBe(pack.sourceId);expect(input.newSource.artifact_sha256).toBe(pack.source.sha256);expect(input.newLocators).toHaveLength(1);
  expect(input.newLocators[0]?.locator_key).toBe(identity.locatorKey);
- writeFileSync(join(directory,'ordinary-registry-capture-input-r2.json'),JSON.stringify(input,null,2)+'\n',{flag:'wx'});
+ const outputDirectory=mkdtempSync(join(tmpdir(),'screed01101-registry-input-test-'));
+ const file=join(outputDirectory,'ordinary-registry-capture-input-r2.json'),bytes=Buffer.from(JSON.stringify(input,null,2)+'\n');
+ let created=false;
+ try{writeFileSync(file,bytes,{flag:'wx'});created=true;expect(readFileSync(file)).toEqual(bytes);}
+ finally{if(created&&readFileSync(file).equals(bytes))unlinkSync(file);rmdirSync(outputDirectory);}
 });

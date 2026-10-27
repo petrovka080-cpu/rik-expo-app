@@ -1,0 +1,177 @@
+{
+  "contract": "rik-expo-app.s27-69.pvc-floor-complete-four.v1",
+  "parentSnapshot": "data/estimate-benchmarks/fixtures/pvc-floor-four-parents-s27-69.json",
+  "parentSnapshotSha256": "0ea7328c4754286f615d1e841b3b7b9b42a91feb5037ba6753acab1f83eb8804",
+  "acceptedBarrierFixture": "data/estimate-benchmarks/fixtures/aggressive-floor-four-v4-parents-and-barrier-s27-69.json",
+  "acceptedBarrierFixtureSha256": "1b5a4225c9cbf96f78aee950e4eb4e595a97b20ae61b49f5861c0d9e00146890",
+  "barrierReference": {
+    "catalogId": "canonical-work:master:temporary_vertical_protective_barrier_board_frame_standard",
+    "definitionId": "58440645-124d-5cc1-a360-eb87a7979525",
+    "definitionSha256": "f4935b4df78e6ffd0d284e330bb9e46a4a59374795f5feba4fad4de42708d64f",
+    "source": {
+      "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/459/show",
+      "localArtifact": ".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf",
+      "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+      "edition": "КРЕР46-2015, введён с01.01.2016",
+      "printedAndPdfPages": [
+        5,
+        62,
+        63
+      ],
+      "table": "46-05-001",
+      "columns": [
+        "46-05-001-03"
+      ],
+      "basisM2": 100
+    },
+    "norm": "46-05-001-03",
+    "basisM2": 100,
+    "locatorRu": "КРЕР46, стр62 состав и измеритель, стр63 колонка03; устройство и разборка вертикального деревянного ограждения с одним слоем толя"
+  },
+  "dustSource": {
+    "sourceId": "kg_krer_13_2015_corrosion_official",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/429/show",
+    "downloadUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no13zasitastroitelnyhkonstrukcijioborudovaniaotkorrozii_compressed-1366908360a6e7f78.57138504.pdf",
+    "localArtifact": ".release-runtime/r568/s27-69/aggressive-floor-full-sources/krer13-official-2015.pdf",
+    "sha256": "1b817ee6c8103d57132d40db40427ba4cafb937704e778b0708028b1e11a7a36",
+    "edition": "КРЕР13-2015",
+    "norm": "13-06-004-01",
+    "basisM2": 1,
+    "locatorRu": "Печатная/PDFстр61: измеритель м², труд000-1003-0=0,1чел.-ч/м²; пылесос33-0620=0,10маш.-ч/м². КРЕР46 п1.27 стр7 отсылает к сборнику13.",
+    "workers": {
+      "resourceCode": "000-1003-0",
+      "grade": "3,0",
+      "hoursPerM2": 0.1
+    },
+    "vacuum": {
+      "resourceCode": "33-0620",
+      "titleRu": "Пылесос промышленный",
+      "hoursPerM2": 0.1
+    },
+    "inspectedPages": [
+      5,
+      6,
+      7,
+      61
+    ],
+    "oldBasePricesNotUsed": true,
+    "filtersOrWaterNotInvented": true,
+    "qualityControlIncluded": true
+  },
+  "scopeRu": "Полный выбранный состав разборки листового или рулонного ПВХ по 46-04-011-14 в подтверждённых обычных условиях: прежние труд и разборка; включённые перемещения по п.1.1; собственная площадь вертикального ограждения 46-05-001-03; обеспыливание всей принятой площади 13-06-004-01; явный план отходов. Специальные условия, другой способ подготовки и иной состав сохраняют отдельные незавершённые потребности.",
+  "modeId": "floor_demolition_preparation_composition",
+  "plannedMode": "Состав подготовки выбран для этой сметы; этапы и владельцы стоимости указаны ниже",
+  "legacyMode": "Сохранить прежний состав подготовки; новые этапы автоматически не добавлять",
+  "conditionsId": "floor_demolition_preparation_working_conditions",
+  "conditionsValue": "Работа выполняется с уровня пола в обычных условиях; к началу этапа имеются электроснабжение, освещение и вентиляция; специальные временные системы не требуются",
+  "barrierAreaId": "floor_demolition_protection_vertical_area_m2",
+  "barrierMethodId": "floor_demolition_protection_method",
+  "dustMethodId": "floor_demolition_dedusting_method",
+  "barrierValue": "Вертикальное ограждение: деревянный каркас, доски и один слой толя; устройство и последующая разборка",
+  "otherBarrierValue": "Другая конструкция защиты: нужен отдельный расчёт приложения",
+  "dustValue": "Обеспыливание всей площади после демонтажа промышленным пылесосом",
+  "otherDustValue": "Другой способ обеспыливания: нужен отдельный расчёт приложения",
+  "stages": [
+    {
+      "key": "protection",
+      "id": "floor_demolition_protection_stage",
+      "evidenceId": "floor_demolition_protection_basis",
+      "titleRu": "Защита прилегающих частей",
+      "planned": "Выполнить установку и последующую разборку защиты в этой смете",
+      "provided": "Установка и разборка защиты для этого участка уже полностью выполнены и приняты; повторная оплата не нужна",
+      "covered": "Защита учтена другой сметой или подработой; указан отдельный владелец стоимости",
+      "notRequired": "По условиям участка защита прилегающих частей не требуется"
+    },
+    {
+      "key": "dedusting",
+      "id": "floor_demolition_dedusting_stage",
+      "evidenceId": "floor_demolition_dedusting_basis",
+      "titleRu": "Обеспыливание после демонтажа",
+      "planned": "Выполнить обеспыливание после демонтажа в этой смете",
+      "provided": "Обеспыливание этого этапа уже выполнено и принято; повторная оплата не нужна",
+      "covered": "Обеспыливание этого этапа учтено другой сметой или подработой; указан отдельный владелец стоимости",
+      "notRequired": "По условиям участка обеспыливание этого этапа не требуется"
+    }
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_large_area",
+      "predecessorDefinitionId": "c97f5fbe-f3ef-5498-882b-71331e004788",
+      "parentSha256": "976ece36ea4d654a8a5fb94b97fabceedbd91dbf829e899c2f69dfd1ac0013ac",
+      "predecessorVersion": 1,
+      "parameterCount": 3,
+      "resourceCount": 2,
+      "scopeParameterIds": [
+        "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+        "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_small_area",
+      "predecessorDefinitionId": "755f3fdf-9545-55e7-ab33-3e6518e35484",
+      "parentSha256": "442f57760077dfb4cc124c14a992b02acd02e2a1666d2ae8972e33c59de06d26",
+      "predecessorVersion": 1,
+      "parameterCount": 3,
+      "resourceCount": 2,
+      "scopeParameterIds": [
+        "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+        "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_standard",
+      "predecessorDefinitionId": "d9e33369-48c5-5cb9-8def-cae4cd8c06c9",
+      "parentSha256": "a9ee8aa15bf33bff1cf48a4d836da7e2155a6977fb755dc34b9da45cbc9780ba",
+      "predecessorVersion": 1,
+      "parameterCount": 3,
+      "resourceCount": 2,
+      "scopeParameterIds": [
+        "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+        "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+      ]
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_wet_zone",
+      "predecessorDefinitionId": "5aed2979-42e2-59b7-a05d-4ea5d1bd8d15",
+      "parentSha256": "6d14889e52338c0ce506bb0ba8ad62979b9af5643f4dcf440fc91645204ee942",
+      "predecessorVersion": 1,
+      "parameterCount": 3,
+      "resourceCount": 2,
+      "scopeParameterIds": [
+        "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+        "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed"
+      ]
+    }
+  ],
+  "newPhysicalNormSources": 0,
+  "reusedNumericalNormApplications": 56,
+  "newDistinctCatalogTypes": 0,
+  "legacyAbsenceMeansKeepComposition": true,
+  "productionAccepted": false,
+  "predecessorReleaseId": "6e70faa1-762f-53f1-8351-ecf115bf1097",
+  "predecessorSearchReleaseId": "a0607508-d226-5dd4-8141-6db27dbbd179",
+  "dustAreaId": "floor_covering_area_m2",
+  "profileId": "existing_aggressive_environment_polyvinyl_chloride_sheet_roll_floor_profile",
+  "profileValue": "KRER_46_04_011_14_POLYVINYL_CHLORIDE_SHEET_ROLL_FLOOR_AGGRESSIVE_ENVIRONMENT",
+  "materialId": "existing_polyvinyl_chloride_sheet_roll_floor_aggressive_environment_confirmed",
+  "siteConditionId": "pvc_floor_site_conditions",
+  "siteConditionBasisId": "pvc_floor_site_conditions_basis",
+  "ordinarySiteValue": "По обследованию для этого этапа не требуются специальные меры из-за загрязнений, вредных веществ или особых условий участка",
+  "specialSiteValue": "По обследованию нужны специальные меры и отдельная технология работ",
+  "unknownSiteValue": "Условия участка ещё не обследованы или пока неизвестны",
+  "wasteModeId": "pvc_floor_waste_handling_mode",
+  "mainNorm": {
+    "norm": "46-04-011-14",
+    "unit": "100m2",
+    "workerCode": "000-1002-0",
+    "workerGrade": "2.0",
+    "laborPer100M2": "33",
+    "machines": [],
+    "sha256": "21815737ca4286d31aca56e2361fb1b87451ab16eecd466e2b52d3fd89507471",
+    "localArtifact": ".release-runtime/r568/s27-3/f09-next-current-lineage/official-snapshots/krer_46_2015.pdf",
+    "locatorRu": "КРЕР46-2015, п.1.1,1.20,1.22–1.23,1.27: стр5–7; табл46-04-011, колонка14: стр58–60"
+  },
+  "reusedBarrierResourceApplications": 44,
+  "reusedVacuumResourceApplications": 12,
+  "legacyLimitedNormDoesNotProveWholeProject": true
+}

@@ -9,15 +9,8 @@ import { REINFORCEMENT_BAR_SCHEDULE_PRODUCT_PROFILE_ID } from "./domainFactory/c
 
 type InputValue = string | number | boolean;
 
-export const REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS = Object.freeze([
-  { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_standard", titleRu: "Армирование армокаркаса в стандартной зоне", contextRu: "стандартная зона" },
-  { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_high_load", titleRu: "Армирование армокаркаса в зоне высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_large_area", titleRu: "Армирование армокаркаса на большом участке", contextRu: "большой участок" },
-  { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_repair", titleRu: "Армирование ремонтного участка армокаркаса", contextRu: "ремонтный участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_small_area", titleRu: "Армирование армокаркаса на малом участке", contextRu: "малый участок" },
-  { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_technical_room", titleRu: "Армирование армокаркаса технического помещения", contextRu: "техническое помещение" },
-  { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_reinforce_wet_zone", titleRu: "Армирование армокаркаса во влажной зоне", contextRu: "влажная зона" },
-] as const);
+import { REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS } from "../contracts/reinforcementProductionPromptParametersR1";
+export { REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS } from "../contracts/reinforcementProductionPromptParametersR1";
 
 /**
  * The legacy catalog token `form` means "form/assemble the reinforcement
@@ -25,15 +18,8 @@ export const REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS = Object.freeze([
  * reinforcement, not formwork, so they deliberately share the approved BBS
  * calculation owner with the reinforcement-frame identities above.
  */
-export const REINFORCEMENT_FRAME_ASSEMBLY_TARGETS = Object.freeze([
-  { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_form_standard", titleRu: "Устройство армокаркаса в стандартной зоне", contextRu: "стандартная зона" },
-  { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_form_high_load", titleRu: "Устройство армокаркаса для высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_form_large_area", titleRu: "Устройство армокаркаса на большой площади", contextRu: "большой участок" },
-  { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_form_repair", titleRu: "Устройство армокаркаса с локальным ремонтом основания", contextRu: "ремонтный участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_form_small_area", titleRu: "Устройство армокаркаса на малой площади", contextRu: "малый участок" },
-  { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_form_technical_room", titleRu: "Устройство армокаркаса в техническом помещении", contextRu: "техническое помещение" },
-  { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_reinforcement_frame_form_wet_zone", titleRu: "Устройство армокаркаса во влажной зоне", contextRu: "влажная зона" },
-] as const);
+import { REINFORCEMENT_FRAME_ASSEMBLY_TARGETS } from "../contracts/reinforcementProductionPromptParametersR1";
+export { REINFORCEMENT_FRAME_ASSEMBLY_TARGETS } from "../contracts/reinforcementProductionPromptParametersR1";
 
 export type ReinforcementFrameReinforcementContextKey =
   (typeof REINFORCEMENT_FRAME_REINFORCEMENT_TARGETS)[number]["contextKey"];
@@ -103,9 +89,7 @@ Readonly<Record<string, InputValue>>
 >> = Object.freeze({
   standard: { approved_reinforcement_schedule_weight_kg: 1_500, binding_wire_mass_kg: 21, spacer_chair_designation: "RF-SPACER-50", spacer_chair_quantity_piece: 228, unloading_and_storage_worker_h: 8, installation_worker_h: 49, cover_control_worker_h: 8, reinforcement_inspection_service_h: 4, reinforcement_delivery_distance_km: 19 },
   high_load: { approved_reinforcement_schedule_weight_kg: 5_200, binding_wire_mass_kg: 70, spacer_chair_designation: "RF-HD-SPACER-70", spacer_chair_quantity_piece: 790, fabrication_mode: "SITE_FABRICATED", mechanical_couplers_applicable: true, mechanical_coupler_designation: "RF-HD-COUPLER-NO5", mechanical_coupler_quantity_piece: 118, unloading_and_storage_worker_h: 21, site_cutting_worker_h: 31, site_bending_worker_h: 37, cage_assembly_worker_h: 111, installation_worker_h: 146, cover_control_worker_h: 19, rebar_cutting_machine_h: 12, rebar_bending_machine_h: 14, lifting_equipment_applicable: true, lifting_equipment_designation: "Автокран по ППР RF-HD-LIFT", lifting_machine_h: 11, reinforcement_inspection_service_h: 8, mill_certificate_package_count: 2, reinforcement_delivery_distance_km: 29 },
-  large_area: { approved_reinforcement_schedule_weight_kg: 11_600, binding_wire_mass_kg: 147, spacer_chair_designation: "RF-LA-SPACER-50", spacer_chair_quantity_piece: 1_758, fabrication_mode: "SITE_FABRICATED", unloading_and_storage_worker_h: 41, site_cutting_worker_h: 59, site_bending_worker_h: 71, cage_assembly_worker_h: 231, installation_worker_h: 303, cover_control_worker_h: 33, rebar_cutting_machine_h: 23, rebar_bending_machine_h: 28, lifting_equipment_applicable: true, lifting_equipment_designation: "Автокран по ППР RF-LA-LIFT", lifting_machine_h: 24, reinforcement_inspection_service_h: 15, mill_certificate_package_count: 4, reinforcement_delivery_distance_km: 41 },
   repair: { approved_reinforcement_schedule_weight_kg: 560, binding_wire_mass_kg: 8, spacer_chair_designation: "RF-REPAIR-SPACER-40", spacer_chair_quantity_piece: 91, fabrication_mode: "SITE_FABRICATED", mechanical_couplers_applicable: true, mechanical_coupler_designation: "RF-REPAIR-COUPLER-NO5", mechanical_coupler_quantity_piece: 19, unloading_and_storage_worker_h: 4, site_cutting_worker_h: 8, site_bending_worker_h: 8, cage_assembly_worker_h: 21, installation_worker_h: 29, cover_control_worker_h: 5, rebar_cutting_machine_h: 3, rebar_bending_machine_h: 3, reinforcement_inspection_service_h: 3, reinforcement_delivery_distance_km: 14 },
-  small_area: { approved_reinforcement_schedule_weight_kg: 340, binding_wire_mass_kg: 5, spacer_chair_designation: "RF-SA-SPACER-40", spacer_chair_quantity_piece: 56, unloading_and_storage_worker_h: 3, installation_worker_h: 18, cover_control_worker_h: 3, reinforcement_inspection_service_h: 2, reinforcement_delivery_distance_km: 10 },
   technical_room: { approved_reinforcement_schedule_weight_kg: 1_250, binding_wire_mass_kg: 18, spacer_chair_designation: "RF-TR-SPACER-50", spacer_chair_quantity_piece: 193, fabrication_mode: "SITE_FABRICATED", mechanical_couplers_applicable: true, mechanical_coupler_designation: "RF-TR-COUPLER-NO5", mechanical_coupler_quantity_piece: 31, unloading_and_storage_worker_h: 7, site_cutting_worker_h: 12, site_bending_worker_h: 13, cage_assembly_worker_h: 38, installation_worker_h: 48, cover_control_worker_h: 7, rebar_cutting_machine_h: 5, rebar_bending_machine_h: 5, reinforcement_inspection_service_h: 4, reinforcement_delivery_distance_km: 21 },
   wet_zone: { approved_reinforcement_schedule_weight_kg: 2_600, binding_wire_mass_kg: 36, spacer_chair_designation: "RF-WZ-NONABSORBENT-SPACER-60", spacer_chair_quantity_piece: 410, bar_standard_and_grade: "ASTM A615 Grade 60; wet-zone project protection system", unloading_and_storage_worker_h: 12, installation_worker_h: 80, cover_control_worker_h: 12, lifting_equipment_applicable: true, lifting_equipment_designation: "Кран-манипулятор по ППР RF-WZ-LIFT", lifting_machine_h: 6, reinforcement_inspection_service_h: 7, mill_certificate_package_count: 2, reinforcement_delivery_distance_km: 26 },
 });

@@ -17,17 +17,15 @@ const VARIANT_KEYS = Object.keys(
 ) as FireAlarmDetectorReplacementVariantKey[];
 
 describe("S27.6 F09 fire-alarm detector replacement variants", () => {
-  test("uses six exact identities and the current official technical boundary", () => {
+  test("preserves the surviving exact identities and source boundary", () => {
     expect(VARIANT_KEYS).toEqual([
       "high_load",
-      "large_area",
-      "small_area",
       "standard",
       "technical_room",
       "wet_zone",
     ]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      FIRE_ALARM_DETECTOR_REPLACEMENT_VARIANTS[key].catalogId)).size).toBe(6);
+      FIRE_ALARM_DETECTOR_REPLACEMENT_VARIANTS[key].catalogId)).size).toBe(4);
     expect(FIRE_ALARM_DETECTOR_REPLACEMENT_SOURCE_METADATA).toMatchObject({
       official_url: "https://minstroy.gov.kg/ru/kyzmat/217/show",
       artifact_sha256:
@@ -87,9 +85,9 @@ describe("S27.6 F09 fire-alarm detector replacement variants", () => {
     expect(() => resolveFireAlarmDetectorReplacementVariant("expanded"))
       .toThrow("FIRE_ALARM_DETECTOR_REPLACEMENT_VARIANT_UNSUPPORTED");
     await expect(compileFireAlarmDetectorReplacementVariantR1(
-      "small_area",
+      "high_load",
       { ...FIRE_ALARM_DETECTOR_REPLACEMENT_ACCEPTANCE_INPUT },
-      { catalogId: FIRE_ALARM_DETECTOR_REPLACEMENT_VARIANTS.wet_zone.catalogId },
+      { catalogId: "canonical-work:base:unrelated_work_standard" },
     )).rejects.toThrow("FIRE_ALARM_DETECTOR_REPLACEMENT_CATALOG_UNSUPPORTED");
     await expect(compileFireAlarmDetectorReplacementVariantR1("standard", {
       ...FIRE_ALARM_DETECTOR_REPLACEMENT_ACCEPTANCE_INPUT,

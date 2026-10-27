@@ -3,13 +3,13 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import {
-  ASPHALT_LEVEL_SMALL_AREA_S2716_ACCEPTANCE_INPUT,
-  ASPHALT_LEVEL_SMALL_AREA_S2716_INDEPENDENT_COMPLETENESS_MAP,
-  ASPHALT_LEVEL_SMALL_AREA_S2716_PARAMETERS,
-  ASPHALT_LEVEL_SMALL_AREA_S2716_SOURCE_PACK_SHA256,
+  ASPHALT_LEVEL_S2716_ACCEPTANCE_INPUT,
+  ASPHALT_LEVEL_S2716_INDEPENDENT_COMPLETENESS_MAP,
+  ASPHALT_LEVEL_S2716_PARAMETERS,
+  ASPHALT_LEVEL_S2716_SOURCE_PACK_SHA256,
   asphaltMassFromGeometryS2716,
-  compileAsphaltLevelSmallAreaS2716,
-} from "../../src/lib/estimate/v4/asphaltLevelSmallAreaS2716";
+  compileAsphaltLevelS2716,
+} from "../../src/lib/estimate/v4/asphaltLevelS2716";
 import {
   SLAB_FOUNDATION_LOCAL_REPAIR_S2716_ACCEPTANCE_INPUT,
   SLAB_FOUNDATION_LOCAL_REPAIR_S2716_INDEPENDENT_COMPLETENESS_MAP,
@@ -21,8 +21,8 @@ import {
 
 describe("S27.16 purchasable asphalt and slab examples", () => {
   it("computes 100 m² × 100 mm asphalt without the former 0.5 × 0.5 defect", async () => {
-    const result = await compileAsphaltLevelSmallAreaS2716(
-      ASPHALT_LEVEL_SMALL_AREA_S2716_ACCEPTANCE_INPUT,
+    const result = await compileAsphaltLevelS2716(
+      ASPHALT_LEVEL_S2716_ACCEPTANCE_INPUT,
     );
     const byId = new Map(result.rows.map((row) => [row.row_id, row]));
 
@@ -36,10 +36,10 @@ describe("S27.16 purchasable asphalt and slab examples", () => {
     expect(byId.get("asphalt:material:hot-dense-fine-mix")?.title_ru)
       .toBe("Горячая асфальтобетонная смесь для выравнивающего слоя");
     expect(result.rows.some((row) => row.quantity === "2.5" && row.unit_id === "t")).toBe(false);
-    expect(ASPHALT_LEVEL_SMALL_AREA_S2716_PARAMETERS.map((parameter) => parameter.parameter_id))
+    expect(ASPHALT_LEVEL_S2716_PARAMETERS.map((parameter) => parameter.parameter_id))
       .not.toEqual(expect.arrayContaining(["density", "density_t_m3", "waste_factor"]));
 
-    for (const entry of ASPHALT_LEVEL_SMALL_AREA_S2716_INDEPENDENT_COMPLETENESS_MAP.entries) {
+    for (const entry of ASPHALT_LEVEL_S2716_INDEPENDENT_COMPLETENESS_MAP.entries) {
       expect(byId.has(entry.resolution.rowId)).toBe(true);
     }
     for (const row of result.rows.filter((candidate) =>
@@ -180,6 +180,14 @@ describe("S27.16 purchasable asphalt and slab examples", () => {
       "data/estimate-benchmarks/source-packs/asphalt-level-small-area-s2716.json",
     ));
     expect(createHash("sha256").update(bytes).digest("hex"))
-      .toBe(ASPHALT_LEVEL_SMALL_AREA_S2716_SOURCE_PACK_SHA256);
+      .toBe(ASPHALT_LEVEL_S2716_SOURCE_PACK_SHA256);
   });
+});
+
+
+test("the physical leveling method rejects the retired area catalog", async () => {
+  await expect(compileAsphaltLevelS2716(
+    { ...ASPHALT_LEVEL_S2716_ACCEPTANCE_INPUT },
+    { catalogId: "canonical-work:base:paving_roads_landscape_interior_asphalt_level_small_area" },
+  )).rejects.toThrow("ASPHALT_LEVEL_S2716_CATALOG_UNSUPPORTED");
 });

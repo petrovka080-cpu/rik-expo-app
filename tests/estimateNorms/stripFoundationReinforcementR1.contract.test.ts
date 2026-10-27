@@ -11,7 +11,7 @@ import {
 } from "../../src/lib/estimate/v4/domainFactory";
 
 describe("strip-foundation reinforcement family", () => {
-  test("compiles all seven contexts through the canonical core with explicit project schedules", async () => {
+  test("compiles all five contexts through the canonical core with explicit project schedules", async () => {
     const results = [];
     for (const target of STRIP_FOUNDATION_REINFORCEMENT_TARGETS) {
       const fixture = stripFoundationReinforcementAcceptanceInputR1(target.contextKey);
@@ -45,9 +45,7 @@ describe("strip-foundation reinforcement family", () => {
     expect(results).toEqual([
       { contextKey: "standard", rows: 9, procurementRows: 6 },
       { contextKey: "high_load", rows: 16, procurementRows: 10 },
-      { contextKey: "large_area", rows: 15, procurementRows: 9 },
       { contextKey: "repair", rows: 15, procurementRows: 9 },
-      { contextKey: "small_area", rows: 9, procurementRows: 6 },
       { contextKey: "technical_room", rows: 15, procurementRows: 9 },
       { contextKey: "wet_zone", rows: 10, procurementRows: 7 },
     ]);

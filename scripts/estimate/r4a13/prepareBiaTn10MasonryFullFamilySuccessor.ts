@@ -47,6 +47,8 @@ const APPLY = process.argv.includes("--apply");
 const SOURCE_PATHS = [
   "src/lib/estimate/v4/domainFactory/masonryBiaTn10PhysicalNormV1.ts",
   "src/lib/estimate/v4/masonryBrickWallBiaTn10R1.ts",
+  "src/lib/estimate/contracts/masonryBiaTn10IdentityV1.ts",
+  "src/lib/estimate/ownedDomain/masonryBiaTn10PromptParametersV1.ts",
   "src/lib/estimate/ownedDomain/masonryBiaTn10ProductionBindingV1.ts",
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/backendPlatform/canonicalMaterialQuantityProjection.ts",
@@ -62,20 +64,8 @@ const TARGETS = Object.freeze([
     contextRu: "стандартный участок",
   },
   {
-    key: "large_area",
-    catalogId: MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS[1],
-    titleRu: "Кладка стены большой площади из обожжённого глиняного кирпича по BIA TN 10 Table 4",
-    contextRu: "участок большой площади",
-  },
-  {
-    key: "small_area",
-    catalogId: MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS[2],
-    titleRu: "Кладка небольшого участка стены из обожжённого глиняного кирпича по BIA TN 10 Table 4",
-    contextRu: "небольшой участок",
-  },
-  {
     key: "technical_room",
-    catalogId: MASONRY_BRICK_WALL_BIA_TN10_NEUTRAL_CATALOG_IDS[3],
+    catalogId: "canonical-work:base:masonry_interior_brick_wall_lay_technical_room",
     titleRu: "Кладка стены технического помещения из обожжённого глиняного кирпича по BIA TN 10 Table 4",
     contextRu: "техническое помещение",
   },
@@ -472,7 +462,7 @@ async function main(): Promise<void> {
   invariant(git("branch", "--show-current") === EXPECTED_BRANCH, "STOP_BIA_FULL_FAMILY_BRANCH_DRIFT");
   invariant(existsSync(MASTER_PATH) && sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256,
     "STOP_BIA_FULL_FAMILY_MASTER_SHA256_DRIFT");
-  invariant(TARGETS.length === 4 && new Set(TARGETS.map((target) => target.catalogId)).size === 4,
+  invariant(TARGETS.length === 2 && new Set(TARGETS.map((target) => target.catalogId)).size === 2,
     "STOP_BIA_FULL_FAMILY_TARGET_SET");
   for (const path of SOURCE_PATHS) {
     invariant(existsSync(resolve(path)), `STOP_BIA_FULL_FAMILY_SOURCE_MISSING:${path}`);

@@ -1,0 +1,620 @@
+{
+  "contract": "asphalt-level-existing-standard/r566",
+  "catalogId": "canonical-work:base:paving_roads_landscape_interior_asphalt_level_standard",
+  "methodParameterId": "asphalt_level_method_r566",
+  "legacyMethodRu": "Сохранённый расчёт по ранее заданным параметрам",
+  "methodRu": "Выравнивающий слой асфальтобетона",
+  "siteParameterId": "asphalt_level_r566_accepted_base_and_access",
+  "siteRu": "Основание принято; доступ для механизированной укладки обеспечен",
+  "namespace": "asphalt_level_r566_",
+  "ordinaryFactBudget": 4,
+  "sourceId": "kg_krer_27_06_019_02_2015",
+  "normId": "KRER-27-06-019-02-THICKNESS-INCREMENTS-S27-16",
+  "captureResultSha256": "28cab5823a1e50973401acea907c08463242afaec63b78523067bbf7b36bed58",
+  "parents": {
+    "standard": {
+      "definitionId": "ee0bd5f1-ade0-54af-a4ff-704f4f309cde",
+      "definitionVersion": 9,
+      "definitionSha256": "78b549b7df555ceab17066bdda4192ecc1f14235a90dc69cca1d291b9115d7f2",
+      "capturedParentSha256": "a96e16ec709c791f0abc2a98d749194d2e348d4ac0cd774825df7f96a1454119",
+      "semanticHash": "eh_ec4687da2601c2a8",
+      "shape": [
+        19,
+        24,
+        24
+      ]
+    },
+    "recipeEvidence": {
+      "definitionId": "f076deb7-f6f5-5d5b-a380-c5c64cd6ce97",
+      "definitionVersion": 12,
+      "definitionSha256": "13872dad789cf2a7cb4b335fc3d0d271e251800f9935f0926e65f1ed103254a3",
+      "capturedParentSha256": "d31f23d0b95a4af5928277af0eb72e3e2ea9afb8f4315b4827e0b615c71dbbcd",
+      "semanticHash": "eh_f032274b5fe66490",
+      "shape": [
+        30,
+        24,
+        57
+      ]
+    }
+  },
+  "sourceRegistry": {
+    "id": "bfff5f0a-f2dd-5f49-a852-77ab50398041",
+    "source_key": "kg_krer_27_06_019_02_2015",
+    "title_ru": "КРЕР-2015 № 27, таблица 27-06-019-02: выравнивающий слой из асфальтобетонной смеси",
+    "authority": "Министерство строительства Кыргызской Республики; NAPA/FAA; Asphalt Institute",
+    "official_url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+    "artifact_sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+    "effective_from": "2015-01-01",
+    "effective_to": null,
+    "metadata": {
+      "contract": "rik-expo-app.s27-21.asphalt-level-small-area-independent-owner-successor.v2",
+      "sourceKind": "NORMATIVE_OPERATION_MAP",
+      "useRestriction": "Предварительный профиль применим только к принятому основанию и участку, доступному для механизированной укладки. Общая толщина вводится пользователем; число конструктивных слоёв и максимальная толщина слоя подтверждаются проектом/ППР. Фрезерование, ремонт основания, новый щебёночный слой, водоотвод, бордюры и разметка не включены.",
+      "activationAllowed": false,
+      "universalConsumptionClaimed": false,
+      "universalProductivityClaimed": false
+    },
+    "created_at": "2026-09-22T14:45:12.675484+00:00"
+  },
+  "locatorRegistry": {
+    "id": "b5c78203-ba9a-53df-a0be-94fb1136e8e5",
+    "source_id": "bfff5f0a-f2dd-5f49-a852-77ab50398041",
+    "locator_key": "asphalt-level-small-area-krer27-06-019-02-s27-21-independent-owner",
+    "locator": {
+      "kind": "OFFICIAL_RESOURCE_NORM_WITH_VISIBLE_LOGISTICS_PROFILE",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no27avtomobilnyedorogi_compressed-43769083f584ff787.06841542.pdf",
+      "exactLocator": "КРЕР-2015, сборник 27, таблица 27-06-019-02, PDF pages 91–92: измеритель 1000 м²; базовая толщина 30 мм; отдельная опубликованная поправка на каждые следующие 5 мм.",
+      "quantityModel": "area and thickness -> geometric m3; KRER thickness increments -> procurement tonnes and source-bound labor/machines"
+    },
+    "excerpt_sha256": "6468484474f84dee5e14fb18e1b10ab52276347c31226db0a149ff5f1701dca9"
+  },
+  "historicalBindingEvidence": {
+    "resourceRowId": "asphalt:material:hot-dense-fine-mix",
+    "applicability": {
+      "norm_id": "KRER-27-06-019-02-THICKNESS-INCREMENTS-S27-16",
+      "source_id": "kg_krer_27_06_019_02_2015",
+      "quantity_basis": "KRER_BASE_30_MM_PLUS_PUBLISHED_5_MM_INCREMENTS",
+      "operation_class": "ASPHALT_LEVELING_ON_ACCEPTED_BASE",
+      "geometry_control": "AREA_TIMES_TOTAL_THICKNESS_DIVIDED_BY_1000",
+      "technology_class": "HOT_DENSE_FINE_GRAINED_ASPHALT_KRER_27_06_019_02",
+      "assumption_policy": "VISIBLE_AND_REPLACEABLE_BY_PROJECT_PPR_ROUTE_AND_QUALITY_PLAN",
+      "waste_factor_used": false,
+      "density_factor_used": false
+    }
+  },
+  "normativeConstants": {
+    "krer_base_thickness_mm": 30,
+    "towing_wire_t_per_1000m2": 0.00613,
+    "crane_machine_h_per_1000m2": 0.04,
+    "paver_machine_h_per_1000m2": 3.19,
+    "hardwood_bars_m3_per_1000m2": 0.13,
+    "krer_increment_thickness_mm": 5,
+    "labor_base_man_h_per_1000m2": 50.96,
+    "roller_machine_h_per_1000m2": 2.55,
+    "asphalt_mix_base_t_per_1000m2": 70.6,
+    "road_bitumen_base_t_per_1000m2": 0.06,
+    "technical_kerosene_t_per_1000m2": 0.00054,
+    "labor_increment_man_h_per_1000m2": 1.36,
+    "tar_sprayer_machine_h_per_1000m2": 0.24,
+    "asphalt_mix_increment_t_per_1000m2": 11.8,
+    "tractor_brush_machine_h_per_1000m2": 0.75,
+    "road_bitumen_increment_t_per_1000m2": 0.01,
+    "onboard_vehicle_machine_h_per_1000m2": 0.07,
+    "surface_grinder_increment_machine_h_per_1000m2": 0.04
+  },
+  "normativeConstantsAreUserEditable": false,
+  "selectedPreliminaryProfile": {
+    "version": "asphalt-level-visible-transport-profile/r566.1",
+    "classification": "ASSUMPTION",
+    "declaredValues": {
+      "truck_capacity_t": 20,
+      "truck_average_speed_km_h": 40,
+      "truck_turnaround_h": 0.5
+    },
+    "valueSource": "Exact historical captured selected preliminary logistics profile; no universal truck productivity claimed.",
+    "actualHaulDistanceIncluded": false
+  },
+  "projectFactParameterIds": [
+    "haul_distance_km",
+    "acceptance_lot_m2",
+    "work_journal_count",
+    "material_passport_register_count",
+    "execution_documentation_count",
+    "traffic_control_setup_count",
+    "mobilization_count_per_unique_machine"
+  ],
+  "ordinaryProjectMeasurements": [
+    "area_m2",
+    "layer_thickness_mm",
+    "haul_distance_km"
+  ],
+  "thicknessContract": {
+    "minimumMm": 30,
+    "maximumMm": 200,
+    "incrementMm": 5,
+    "sourceLocator": "КРЕР-2015 №27, 27-06-019-02, PDF pages 91–92: base 30 mm and published 5 mm increments. The 200 mm cap is the captured admitted model guard, not a universal constructible lift thickness; layer design remains project/PPR-owned."
+  },
+  "independentRecipeRows": [
+    {
+      "rowId": "asphalt:control:geometric-compacted-volume",
+      "formulaId": "asphalt_level_geometric_volume_s2716",
+      "unitId": "m3",
+      "costOwnerId": "asphalt:control:geometric-compacted-volume",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:operation:base-acceptance-cleaning",
+      "formulaId": "asphalt_install_area_v1",
+      "unitId": "m2",
+      "costOwnerId": "asphalt:operation:base-acceptance-cleaning",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:operation:side-stop-setting",
+      "formulaId": "asphalt_install_area_v1",
+      "unitId": "m2",
+      "costOwnerId": "asphalt:operation:side-stop-setting",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:operation:bitumen-application",
+      "formulaId": "asphalt_install_area_v1",
+      "unitId": "m2",
+      "costOwnerId": "asphalt:operation:bitumen-application",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:operation:mix-receiving-feed",
+      "formulaId": "asphalt_install_mix_v1",
+      "unitId": "t",
+      "costOwnerId": "asphalt:operation:mix-receiving-feed",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:operation:mechanical-paving",
+      "formulaId": "asphalt_install_area_v1",
+      "unitId": "m2",
+      "costOwnerId": "asphalt:operation:mechanical-paving",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:operation:rolling-compaction",
+      "formulaId": "asphalt_install_area_v1",
+      "unitId": "m2",
+      "costOwnerId": "asphalt:operation:rolling-compaction",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:operation:edge-joint-finishing",
+      "formulaId": "asphalt_install_area_v1",
+      "unitId": "m2",
+      "costOwnerId": "asphalt:operation:edge-joint-finishing",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:operation:final-clean-handover",
+      "formulaId": "asphalt_install_area_v1",
+      "unitId": "m2",
+      "costOwnerId": "asphalt:operation:final-clean-handover",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:material:hot-dense-fine-mix",
+      "formulaId": "asphalt_install_mix_v1",
+      "unitId": "t",
+      "costOwnerId": "asphalt:material:hot-dense-fine-mix",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true
+    },
+    {
+      "rowId": "asphalt:material:road-bitumen",
+      "formulaId": "asphalt_install_road_bitumen_v1",
+      "unitId": "t",
+      "costOwnerId": "asphalt:material:road-bitumen",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true
+    },
+    {
+      "rowId": "asphalt:material:technical-kerosene",
+      "formulaId": "asphalt_install_technical_kerosene_v1",
+      "unitId": "t",
+      "costOwnerId": "asphalt:material:technical-kerosene",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true
+    },
+    {
+      "rowId": "asphalt:material:hardwood-side-stop-bars",
+      "formulaId": "asphalt_install_hardwood_bars_v1",
+      "unitId": "m3",
+      "costOwnerId": "asphalt:material:hardwood-side-stop-bars",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true
+    },
+    {
+      "rowId": "asphalt:material:steel-towing-wire",
+      "formulaId": "asphalt_install_towing_wire_v1",
+      "unitId": "t",
+      "costOwnerId": "asphalt:material:steel-towing-wire",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": true
+    },
+    {
+      "rowId": "asphalt:labor:road-workers",
+      "formulaId": "asphalt_install_labor_v1",
+      "unitId": "man_hour",
+      "costOwnerId": "asphalt:labor:road-workers",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:equipment:crane-10t",
+      "formulaId": "asphalt_install_crane_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:equipment:crane-10t",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:equipment:hand-tar-sprayer",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:equipment:hand-tar-sprayer",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:equipment:smooth-roller-8t",
+      "formulaId": "asphalt_install_roller_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:equipment:smooth-roller-8t",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:equipment:asphalt-paver",
+      "formulaId": "asphalt_install_paver_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:equipment:asphalt-paver",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:equipment:tractor-road-brush",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:equipment:tractor-road-brush",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:equipment:onboard-vehicle-5t",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:equipment:onboard-vehicle-5t",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:equipment:surface-grinder",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:equipment:surface-grinder",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:operator:crane-10t",
+      "formulaId": "asphalt_install_crane_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:operator:crane-10t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:crane-10t",
+      "formulaId": "asphalt_install_crane_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:fuel-energy:crane-10t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:operator:hand-tar-sprayer",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:operator:hand-tar-sprayer",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:hand-tar-sprayer",
+      "formulaId": "asphalt_install_tar_sprayer_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:fuel-energy:hand-tar-sprayer",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:operator:smooth-roller-8t",
+      "formulaId": "asphalt_install_roller_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:operator:smooth-roller-8t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:smooth-roller-8t",
+      "formulaId": "asphalt_install_roller_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:fuel-energy:smooth-roller-8t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:operator:asphalt-paver",
+      "formulaId": "asphalt_install_paver_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:operator:asphalt-paver",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:asphalt-paver",
+      "formulaId": "asphalt_install_paver_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:fuel-energy:asphalt-paver",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:operator:tractor-road-brush",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:operator:tractor-road-brush",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:tractor-road-brush",
+      "formulaId": "asphalt_install_tractor_brush_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:fuel-energy:tractor-road-brush",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:operator:onboard-vehicle-5t",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:operator:onboard-vehicle-5t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:onboard-vehicle-5t",
+      "formulaId": "asphalt_install_onboard_vehicle_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:fuel-energy:onboard-vehicle-5t",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:operator:surface-grinder",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:operator:surface-grinder",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:fuel-energy:surface-grinder",
+      "formulaId": "asphalt_install_surface_grinder_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:fuel-energy:surface-grinder",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:roller-water-scrapers",
+      "formulaId": "asphalt_install_roller_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:roller-water-scrapers",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:included:paver-screed-grade-control",
+      "formulaId": "asphalt_install_paver_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:included:paver-screed-grade-control",
+      "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:delivery:truck-trips",
+      "formulaId": "asphalt_install_truck_trips_v1",
+      "unitId": "trip",
+      "costOwnerId": "asphalt:delivery:truck-trips",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:delivery:ton-km",
+      "formulaId": "asphalt_install_ton_km_v1",
+      "unitId": "t_km",
+      "costOwnerId": "asphalt:delivery:ton-km",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:delivery:truck-machine-hours",
+      "formulaId": "asphalt_install_truck_machine_h_v1",
+      "unitId": "machine_hour",
+      "costOwnerId": "asphalt:delivery:truck-machine-hours",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:mobilization:paver",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "unitId": "service",
+      "costOwnerId": "asphalt:mobilization:paver",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:mobilization:roller",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "unitId": "service",
+      "costOwnerId": "asphalt:mobilization:roller",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:mobilization:tar-sprayer",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "unitId": "service",
+      "costOwnerId": "asphalt:mobilization:tar-sprayer",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:mobilization:tractor-brush",
+      "formulaId": "asphalt_install_mobilization_v1",
+      "unitId": "service",
+      "costOwnerId": "asphalt:mobilization:tractor-brush",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:quality:material-passports",
+      "formulaId": "asphalt_install_material_passports_v1",
+      "unitId": "document",
+      "costOwnerId": "asphalt:quality:material-passports",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:quality:mix-temperature",
+      "formulaId": "asphalt_install_truck_trips_v1",
+      "unitId": "pcs",
+      "costOwnerId": "asphalt:quality:mix-temperature",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:quality:bitumen-application",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "unitId": "pcs",
+      "costOwnerId": "asphalt:quality:bitumen-application",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:quality:layer-thickness",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "unitId": "pcs",
+      "costOwnerId": "asphalt:quality:layer-thickness",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:quality:density",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "unitId": "pcs",
+      "costOwnerId": "asphalt:quality:density",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:quality:smoothness",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "unitId": "pcs",
+      "costOwnerId": "asphalt:quality:smoothness",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:quality:grade-slope",
+      "formulaId": "asphalt_install_acceptance_lots_v1",
+      "unitId": "pcs",
+      "costOwnerId": "asphalt:quality:grade-slope",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:document:work-journal",
+      "formulaId": "asphalt_install_work_journal_v1",
+      "unitId": "document",
+      "costOwnerId": "asphalt:document:work-journal",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:document:execution-set",
+      "formulaId": "asphalt_install_execution_docs_v1",
+      "unitId": "document",
+      "costOwnerId": "asphalt:document:execution-set",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:document:delivery-register",
+      "formulaId": "asphalt_install_material_passports_v1",
+      "unitId": "document",
+      "costOwnerId": "asphalt:document:delivery-register",
+      "costTreatment": "CONTROL_OR_DOCUMENT",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:organization:traffic-control",
+      "formulaId": "asphalt_install_traffic_control_v1",
+      "unitId": "set",
+      "costOwnerId": "asphalt:organization:traffic-control",
+      "costTreatment": "OWN_COST",
+      "procurementEligible": false
+    },
+    {
+      "rowId": "asphalt:organization:continuous-flow",
+      "formulaId": "asphalt_install_area_v1",
+      "unitId": "m2",
+      "costOwnerId": "asphalt:organization:continuous-flow",
+      "costTreatment": "INFORMATIONAL_SCOPE",
+      "procurementEligible": false
+    }
+  ],
+  "publication": {
+    "newCatalogIds": 0,
+    "automaticLegacySwitch": false,
+    "historicalParentEmittedAsActiveWork": false,
+    "registryWrites": false,
+    "sharedPublisherRequired": true,
+    "fullTechnicalAcceptance": false
+  },
+  "remainingNeedsRu": [
+    "Послойная конструкция и максимальная толщина отдельного слоя подтверждаются проектом или ППР.",
+    "Фактический маршрут доставки не назначается автоматически.",
+    "План контроля, документы, организация движения и мобилизация требуют отдельных подтверждённых фактов.",
+    "Цены не назначаются автоматически."
+  ],
+  "freshFlow": {
+    "publicTitleRu": "Выравнивающий слой асфальтобетона",
+    "methodSelection": "APP_OWNED_RUNTIME_STRUCTURAL_DEFAULT",
+    "legacyMethodIsPublic": false,
+    "oldCapturedParameterVisibility": "LITERAL_FALSE",
+    "newMeasuredAreaDefault": null,
+    "ordinaryObjectFactCount": 4,
+    "advancedProjectFactCount": 6,
+    "staticPrimaryMeasureParameterId": "asphalt_level_r566_area_m2",
+    "savedV9DefinitionsImmutable": true
+  }
+}

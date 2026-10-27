@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   extractStripFoundationReinforcementCanonicalParametersR1,
@@ -40,7 +40,7 @@ CanonicalEstimateCatalogItem {
 }
 
 describe("column-base reinforcement family", () => {
-  test("compiles all seven exact identities from distinct approved BBS schedules", async () => {
+  test("compiles all five exact identities from distinct approved BBS schedules", async () => {
     const results = [];
     for (const target of COLUMN_BASE_REINFORCEMENT_TARGETS) {
       const fixture = columnBaseReinforcementAcceptanceInputR1(target.contextKey);
@@ -65,9 +65,7 @@ describe("column-base reinforcement family", () => {
     expect(results).toEqual([
       { contextKey: "standard", steelKg: 1_100, rows: 9, procurementRows: 6 },
       { contextKey: "high_load", steelKg: 3_800, rows: 16, procurementRows: 10 },
-      { contextKey: "large_area", steelKg: 8_500, rows: 15, procurementRows: 9 },
       { contextKey: "repair", steelKg: 400, rows: 15, procurementRows: 9 },
-      { contextKey: "small_area", steelKg: 250, rows: 9, procurementRows: 6 },
       { contextKey: "technical_room", steelKg: 900, rows: 15, procurementRows: 9 },
       { contextKey: "wet_zone", steelKg: 1_800, rows: 10, procurementRows: 7 },
     ]);

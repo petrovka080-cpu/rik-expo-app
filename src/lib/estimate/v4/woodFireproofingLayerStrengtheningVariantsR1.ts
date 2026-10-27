@@ -40,13 +40,6 @@ export const WOOD_FIREPROOFING_LAYER_STRENGTHENING_SOURCE_METADATA = Object.free
 });
 
 export const WOOD_FIREPROOFING_LAYER_STRENGTHENING_VARIANTS = Object.freeze({
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:special_repair_interior_fireproof_strengthen_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu:
-      "Совместимое усиление существующего огнезащитного слоя деревянных конструкций малой площади",
-    aliasesRu: ["усиление огнезащиты малая площадь", "армирование слоя огнезащиты древесины"],
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:special_repair_interior_fireproof_strengthen_standard",
     catalogVariant: "STANDARD_AREA_SEARCH_IDENTITY",

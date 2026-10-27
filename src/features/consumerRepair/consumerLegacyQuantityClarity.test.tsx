@@ -23,7 +23,9 @@ const session=(id:string,q:unknown=8)=>buildConsumerCanonicalPrecompileParameter
 
 test.each(ids)('%s shows the inspected point-model limitation without changing saved quantities',id=>{
  const original=catalog(id),before=JSON.stringify(original);
- const s=session(id),card=buildCanonicalParameterCards({session:s,revision:null})[0]!;
+ const s=buildConsumerCanonicalPrecompileParameterSession({catalog:original,draftId:'TEST_ONLY_clarity',parameters:{q:8},
+  missingParameterIds:[],userExplicitParameterIds:['q'],textExtractedParameterIds:[]});
+ const card=buildCanonicalParameterCards({session:s,revision:null})[0]!;
  expect(card.labelRu).toBe(id.includes('_riser_')?'Количество точек монтажа стояка':'Количество точек монтажа водопровода');
  expect(card.unitRu).toBe('точка');expect(card.value).toBe(8);expect(card.source).toBe('manual_override');
  expect(card.guideShortRu).toContain('например, 4');expect(card.guideShortRu).toContain('ведомость точек');

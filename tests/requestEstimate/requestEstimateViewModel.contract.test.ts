@@ -8,6 +8,32 @@ import {
 import { resourceDefinitions as roofResources } from '../../src/lib/estimate/v4/roofWindowOperationResourcesS2750';
 
 describe("request estimate view model", () => {
+  it('retains unknown unassigned resources beside declared operations in the same resource category', () => {
+    const source = foundationDraftWithManualCatalogItem();
+    const operation = {contractVersion: 'canonical-operation-resource/v1', groupId: 'assembly', groupTitleRu: 'Монтаж',
+      operationId: 'install', operationTitleRu: 'Закрепить изделие', completionCriterionRu: 'Изделие закреплено'};
+    const owner = {...source.items[0]!, id: 'owned-material', titleRu: 'Крепёж', itemType: 'material' as const,
+      category: 'material', quantity: 3, unitPrice: 10, totalPrice: 30,
+      sourceParameters: {canonicalOperationComposition: operation, includedInEstimate: true}};
+    const missing = {...owner, id: 'unknown-unassigned', titleRu: 'Расходный материал', quantity: null,
+      unitPrice: null, totalPrice: null, sourceParameters: {canonicalPreliminaryNeed: true,
+        includedInEstimate: false, includedInProcurement: false}};
+    const bundle = {...source, items: [owner, missing]}, before = JSON.stringify(bundle);
+    const vm = buildRequestEstimateViewModel(bundle)!;
+    expect(vm.sections.find(section => section.operation?.operationId === 'install')!.items.map(item => item.id))
+      .toEqual(['owned-material']);
+    expect(vm.sections.filter(section => !section.operation).flatMap(section => section.items)
+      .map(item => [item.id, item.quantity])).toEqual([['unknown-unassigned', null]]);
+    expect(vm.sections.flatMap(section => section.items).map(item => item.id).sort())
+      .toEqual(['owned-material', 'unknown-unassigned']);
+    const groups = vm.workProcessGroups;
+    if (!groups) throw new Error('Declared work process is required');
+    expect(groups.flatMap(group => group.operations).map(step => step.operationTitleRu))
+      .toEqual(['Закрепить изделие']);
+    expect(vm.preliminaryNeedCount).toBe(1);
+    expect(JSON.stringify(bundle)).toBe(before);
+  });
+
   it('keeps known source materials visible when procurement has not been admitted', () => {
     const source=foundationDraftWithManualCatalogItem();
     const item={...source.items[0]!,itemType:'material' as const,quantity:43.5,unitPrice:null,totalPrice:null,

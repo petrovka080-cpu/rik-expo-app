@@ -4,16 +4,16 @@ import {
   validateReferencePassportCatalogBindingsV4,
 } from "../../src/lib/estimate/v4/catalogProfessionalCoverageLedgerV4";
 
-describe("deterministic professional coverage ledger for all 11 610 catalog IDs", () => {
+describe("deterministic professional coverage ledger for all 7 602 catalog IDs", () => {
   test("classifies every catalog ID exactly once without promoting technical records to passports", () => {
     const ledger = buildCatalogProfessionalCoverageLedgerV4();
 
-    expect(ledger.catalogTotal).toBe(11610);
-    expect(ledger.rows).toHaveLength(11610);
-    expect(new Set(ledger.rows.map((row) => row.catalogId)).size).toBe(11610);
+    expect(ledger.catalogTotal).toBe(7602);
+    expect(ledger.rows).toHaveLength(7602);
+    expect(new Set(ledger.rows.map((row) => row.catalogId)).size).toBe(7602);
     expect(ledger.counts).toEqual({
       DISTINCT_PROFESSIONAL_PASSPORT: 12,
-      SCOPE_PRESET: 7152,
+      SCOPE_PRESET: 3144,
       PARAMETERIZED_VARIANT: 1288,
       SEARCH_ALIAS: 0,
       DOMAIN_REVIEW_REQUIRED: 3158,
@@ -48,11 +48,8 @@ describe("deterministic professional coverage ledger for all 11 610 catalog IDs"
       "expanded-template:private_house_construction_detailed_boq_from_drawings_expanded_complex_v1",
     );
 
-    expect(smallArea).toMatchObject({
-      state: "SCOPE_PRESET",
-      canonicalCatalogId: "earthworks_interior_trench_excavate_standard",
-      resolution: "REQUIRED_INPUT_REQUEST",
-    });
+    expect(smallArea).toBeNull();
+    expect(resolveCatalogProfessionalCoverageV4("earthworks_interior_trench_excavate_large_area")).toBeNull();
     expect(expandedVariant).toMatchObject({
       state: "PARAMETERIZED_VARIANT",
       canonicalCatalogId: "expanded-template:private_house_construction_detailed_boq_from_drawings_expanded_complex_v1",

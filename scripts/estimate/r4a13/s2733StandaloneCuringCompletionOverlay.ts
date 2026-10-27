@@ -5,7 +5,7 @@ import { CONCRETE_SLAB_CURING_SOURCE_ID } from "../../../src/lib/estimate/v4/con
 import type { PurchaseGroupRepresentative } from "./s2732PurchaseGroupOverlay";
 
 export const STANDALONE_CURING_COMPLETION_TARGETS_S2733 = ["anchor_group", "belt", "column_base", "concrete_slab", "pedestal", "pile_cap"]
-  .flatMap(family => ["standard", "high_load", "large_area", "small_area", "technical_room", "wet_zone"]
+  .flatMap(family => ["standard", "high_load", "technical_room", "wet_zone"]
     .map(context => `canonical-work:base:concrete_foundation_interior_${family}_cure_${context}`));
 const hash = (v: unknown) => createHash("sha256").update(stringifyCanonicalEstimateJson(v)).digest("hex");
 function invariant(v: unknown, code: string): asserts v { if (!v) throw Error(`S2733_CURING_COMPLETION:${code}`); }

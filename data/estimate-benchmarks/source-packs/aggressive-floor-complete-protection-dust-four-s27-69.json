@@ -13,20 +13,6 @@
       "publicTitleRu": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде"
     },
     {
-      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
-      "predecessorDefinitionId": "6681c3ed-8cca-57b3-875c-f85b7c8b7a4a",
-      "parentSha256": "1e27af023a5bd3c0b50363d1e4870bdc161bbb2cfa9d26cd0b2f7c4d76c897fa",
-      "parentVersion": 4,
-      "publicTitleRu": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — большая площадь"
-    },
-    {
-      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
-      "predecessorDefinitionId": "966506ea-7a47-5000-89cd-8409e0807ac0",
-      "parentSha256": "a4fa0273002adc04fa3cba7134f49a849f222bfc816a9916f1ace6783bd5c21a",
-      "parentVersion": 4,
-      "publicTitleRu": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — малая площадь"
-    },
-    {
       "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
       "predecessorDefinitionId": "03455595-b281-503b-865a-446be4b7ae90",
       "parentSha256": "060b7656acce4356bdf5563ebd4e8545ad16fe69e01fdfc6442ef2205cb2a745",

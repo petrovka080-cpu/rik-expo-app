@@ -1,5 +1,8 @@
+import legacyDisplayBindings from '../../../../data/estimate-benchmarks/source-packs/legacy-operation-display-five-saved-v1.json';
+import {resolveCanonicalLegacyOperationDisplayV1, canonicalLegacyResourceKindV1, CANONICAL_LEGACY_OPERATION_DISPLAY_VERSION_V1} from './canonicalEstimateOperationComposition';
 import { canonicalEstimateWorkProcess, canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections } from './canonicalEstimateOperationComposition';
 import type {CanonicalScopeRequirementDecisionV1 as Scope} from './canonicalScopeRequirementV1';
+import { canonicalEstimateStableJson } from './canonicalEstimateDeterminism';
 
 const operation = (groupId: string, operationId: string, title: string, ordinal?: number) => ({
   contractVersion: 'canonical-operation-resource/v1', groupId,
@@ -8,6 +11,29 @@ const operation = (groupId: string, operationId: string, title: string, ordinal?
   ...(ordinal == null ? {} : { processOrdinal: ordinal, processRole: 'PROCESS' }),
 });
 const check=(status:Scope['status'],coveringRowIds:string[],kind:Scope['kind']='INCLUDED'):Scope=>({contractVersion:'canonical-scope-requirement-decision/v1',rowId:'check-'+status,groupId:'partition',groupTitleRu:'Монтаж перегородки',titleRu:'Проверка этапа',reasonRu:'Обоснование состава',kind,status,coveringRowIds,originalRowIds:[],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false});
+
+test('shared-operation references remain valid canonical JSON when optional fields were absent', () => {
+ const source={...operation('membrane','order','Общий заказ рулонов',0),additionalOperations:[
+  {operationId:'field',operationTitleRu:'Основное поле',completionCriterionRu:'Поле наплавлено'},
+  {operationId:'details',operationTitleRu:'Детали',completionCriterionRu:'Детали герметичны',processOrdinal:2,
+   processRole:'PROCESS',whenResourcePresent:['membrane-details']},
+ ]};
+ const before=JSON.stringify(source),references=canonicalEstimateOperationReferences(source);
+ const serialized=canonicalEstimateStableJson(references);
+ expect(()=>JSON.parse(serialized)).not.toThrow();
+ expect(JSON.parse(serialized)).toEqual(references);
+ expect(references[1]).not.toHaveProperty('processOrdinal');
+ expect(references[1]).not.toHaveProperty('processRole');
+ expect(references[1]).not.toHaveProperty('whenResourcePresent');
+ expect(references[2]).toMatchObject({processOrdinal:2,processRole:'PROCESS',whenResourcePresent:['membrane-details']});
+ const sections=canonicalEstimateResourceOperationSections([
+  {rowId:'rolls',titleRu:'Рулоны',operation:source},
+  {rowId:'membrane-details',titleRu:'Полосы',operation:operation('membrane','details','Детали',2)},
+ ]);
+ expect(sections.filter(section=>section.resourceIds.includes('rolls'))).toHaveLength(1);
+ expect(sections.filter(section=>section.sharedResources.some(resource=>resource.rowId==='rolls'))).toHaveLength(2);
+ expect(JSON.stringify(source)).toBe(before);
+});
 test('completed applicability and excluded mandatory coverage stay inside their one declared stage',()=>{
  const resources=[{rowId:'labor',titleRu:'Труд',operation:operation('partition','frame','Монтаж каркаса',0)}];
  const sections=canonicalEstimateResourceOperationSections(resources,[check('COMPLETED',[],'OBJECT_SCOPE'),check('REQUIRED_RESOURCE_EXCLUDED',['labor'])]);
@@ -62,18 +88,45 @@ test('reference rows and a single paid complex are retained outside the process,
   ])).toEqual([]);
 });
 
-test('legacy resource buckets expose actual saved work titles and do not pretend their order is a process sequence', () => {
-  const groups = canonicalEstimateWorkProcess([
-    { rowId: 'paint', titleRu: 'Нанесение двух слоёв краски', category: 'labor',
-      operation: operation('partition', 'legacy', 'Готовые операции, граница и контроль') },
-    { rowId: 'primer', titleRu: 'Грунтование основания', category: 'labor', operation: null },
+test('unbound resource rows stay visible without declaring a process or clearing unknown scope', () => {
+  const resources = [
+    { rowId: 'paint', titleRu: 'Нанесение двух слоёв краски', category: 'labor', operation: null },
+    { rowId: 'primer', titleRu: 'Грунтование основания', category: 'construction_work', operation: null },
     { rowId: 'bucket', titleRu: 'Краска', category: 'material', operation: null },
-    { rowId: 'operator', titleRu: 'Машинист: входит в стоимость машины', category: 'labor',
-      costTreatment: 'INCLUDED_IN_RESOURCE_ROWS', operation: null },
-  ], 'Окраска стен');
+    { rowId: 'unknown', titleRu: 'Количество не рассчитано', category: 'work', operation: {} },
+  ];
+  const snapshot = JSON.stringify(resources);
+  expect(canonicalEstimateWorkProcess(resources, 'Окраска стен')).toEqual([]);
+  const sections = canonicalEstimateResourceOperationSections(resources, [check('OBJECT_FACT_REQUIRED', [], 'OBJECT_SCOPE')]);
+  expect(sections.find(section => section.operation == null)?.resourceIds).toEqual(resources.map(row => row.rowId));
+  expect(sections.flatMap(section => section.scopeRequirements ?? []).flatMap(group => group.statuses)).toContain('OBJECT_FACT_REQUIRED');
+  expect(JSON.stringify(resources)).toBe(snapshot);
+});
+
+test('a labor name and category cannot supply a missing or malformed operation declaration', () => {
+  for (const category of ['labor', 'work', 'construction_work']) {
+    for (const titleRu of ['Монтаж оборудования', 'Труд всего комплекса', 'Материалы и оснащение']) {
+      for (const declared of [null, {}, { ...operation('partition', 'mount', 'Монтаж'), contractVersion: 'unsupported' }]) {
+        expect(canonicalEstimateWorkProcess([{ rowId: 'row', category, titleRu, operation: declared }])).toEqual([]);
+      }
+    }
+  }
+});
+
+test('an explicit real process keeps its source title and resources independent of row names', () => {
+  const declared = operation('partition', 'frame', 'Монтаж каркаса', 0);
+  const resources = [
+    { rowId: 'crew', category: 'labor', titleRu: 'Рабочие', operation: declared },
+    { rowId: 'tool', category: 'tool', titleRu: 'Инструмент', operation: declared },
+    { rowId: 'material', category: 'material', titleRu: 'Профиль', operation: declared },
+  ];
+  const snapshot = JSON.stringify(resources);
+  const groups = canonicalEstimateWorkProcess(resources);
   expect(groups).toHaveLength(1);
-  expect(groups[0]?.sequenceUnspecified).toBe(true);
-  expect(groups[0]?.operations.map(step => step.operationTitleRu)).toEqual(['Нанесение двух слоёв краски', 'Грунтование основания']);
+  expect(groups[0]?.operations.map(step => [step.operationId, step.operationTitleRu, step.resourceIds]))
+    .toEqual([['frame', 'Монтаж каркаса', ['crew', 'tool', 'material']]]);
+  expect(groups[0]?.sequenceUnspecified).toBeUndefined();
+  expect(JSON.stringify(resources)).toBe(snapshot);
 });
 
 test('an older operation reference without an explicit process order is not presented as a numbered sequence', () => {
@@ -101,4 +154,114 @@ test('one resource can serve several subworks while malformed, repeated and fore
   }
   expect(JSON.stringify(resources)).toBe(snapshot);
   expect(canonicalEstimateOperationReferences({ additionalOperations: shared.additionalOperations })).toEqual([]);
+});
+
+describe('CE40 actual current one-owner operation-only metadata',()=>{
+ const factory=()=>require('../../../../scripts/estimate/r4a13/prepareS2754Ce40ReadyWallSeries') as typeof import('../../../../scripts/estimate/r4a13/prepareS2754Ce40ReadyWallSeries');
+ const parent=()=>{const r=factory().ce40CurrentOperationRecordS2754();return{releaseId:r.membership.release_id as string,searchReleaseId:r.searchDocument.search_release_id as string,
+  outputRoot:'TEST_ONLY_NO_PUBLICATION',masterPath:'TEST_ONLY_NOT_READ',masterSha256:'TEST_ONLY_NOT_READ',expectedBranch:'TEST_ONLY_NOT_READ'};};
+ test('preserves the actual whole model and one labor owner through real core and TEST_ONLY cold views',async()=>{
+  const f=factory(),r=f.ce40CurrentOperationRecordS2754(),before=JSON.stringify(r),cfg=f.ce40CurrentOperationOnlyConfigS2754(r,parent());
+  expect(cfg).not.toHaveProperty('catalogAppend');expect(cfg.expectedParentShape).toEqual([27,16,16]);
+  expect(cfg.parameterDefinitions).toEqual(r.capture.parameters);expect(cfg.formulaDefinitions).toEqual(r.capture.formulas);expect(cfg.resourceDefinitions).toHaveLength(16);
+  expect(cfg.resourceDefinitions.filter(row=>row.row_id.includes(':physical:'))).toHaveLength(0);
+  const actual=await cfg.verifyCore();expect(actual.status).toBe('PASS_CURRENT_CE40_ONE_LABOR_METADATA_ARITHMETIC_AND_TEST_ONLY_TRANSPORT');
+  expect(actual.currentNeeds).toBe(r.contentPassport.decision.unresolvedResourceRowIds.length);expect(actual.FULL).toBe(false);
+  expect(actual.actualDurableStoreTransaction).toBe(false);expect(JSON.stringify(r)).toBe(before);
+ });
+ test('rejects missing or changed genuine captured passport before core',()=>{
+  const f=factory(),missing=f.ce40CurrentOperationRecordS2754(),changed=f.ce40CurrentOperationRecordS2754();
+  Object.defineProperty(missing,'contentPassport',{value:undefined});changed.contentPassport.decision.quantityScope='FULL';
+  expect(()=>f.ce40CurrentOperationOnlyConfigS2754(missing,parent())).toThrow('EXACT_REVIEWED_CE40_CURRENT_RECORD');
+  expect(()=>f.ce40CurrentOperationOnlyConfigS2754(changed,parent())).toThrow('EXACT_REVIEWED_CE40_CURRENT_RECORD');
+ });
+ test('rejects actual map drift and an attempted quantity-unit change under the same retained guard',()=>{
+  const f=factory(),r=f.ce40CurrentOperationRecordS2754(),cfg=f.ce40CurrentOperationOnlyConfigS2754(r,parent()),retained=cfg.binding.retainParentBindings;
+  if(!retained?.operationCompositionOnly)throw Error('ACTUAL_CURRENT_OPERATION_MODE_REQUIRED');
+  const owner='ceramic:ce40-ready-wall:5x5-2mm:labor',bad=f.ce40CurrentOperationRecordS2754(),operation=bad.operationByRowId[owner];
+  if(!operation)throw Error('ACTUAL_CURRENT_LABOR_OPERATION_REQUIRED');operation.completionCriterionRu='HOSTILE_CHANGED_STAGE';
+  expect(()=>f.ce40CurrentOperationOnlyConfigS2754(bad,parent())).toThrow('EXACT_REVIEWED_CE40_CURRENT_RECORD');
+  const {assertMasterOperationCompositionComputationR1}=require('../../../../scripts/estimate/r4a13/masterOperationCompositionOnlyR1') as typeof import('../../../../scripts/estimate/r4a13/masterOperationCompositionOnlyR1');
+  const changed=cfg.resourceDefinitions.map(row=>row.row_id===owner?{...row,unit_id:'kg'}:row);
+  expect(()=>assertMasterOperationCompositionComputationR1(retained.capturedParent,retained.operationCompositionOnly!,{
+   parameters:cfg.parameterDefinitions,formulas:cfg.formulaDefinitions,resources:changed},'REPRESENTATIVE')).toThrow('REPRESENTATIVE_resources_DRIFT');
+ });
+});
+
+describe('exact saved revision legacy display adapter', () => {
+  const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value));
+  it.each(legacyDisplayBindings.entries)('projects only saved installation links for $revisionId without changing saved fields', binding => {
+    const resources = binding.expectedResources.map(resource => ({ ...clone(resource), quantity: null, unitPrice: null,
+      amount: null, titleRu: 'Сохранённое имя', costOwnerId: resource.rowId, includedInProcurement: false }));
+    const context = { revisionId: binding.revisionId, releaseId: binding.releaseId,
+      checksumSha256: binding.checksumSha256, savedResources: resources };
+    const stored = JSON.stringify({context, resources});
+    const display = resolveCanonicalLegacyOperationDisplayV1(resources, context);
+    expect(display).not.toBe(resources);
+    expect(display).toHaveLength(resources.length);
+    expect(display.filter((row, index) => row.operation !== resources[index]!.operation)).toHaveLength(11);
+    for (const [index, row] of display.entries()) {
+      expect({...row, operation: resources[index]!.operation}).toEqual(resources[index]);
+      expect(row.quantity).toBeNull(); expect(row.unitPrice).toBeNull(); expect(row.amount).toBeNull();
+    }
+    const sections = canonicalEstimateResourceOperationSections(resources, [], [], context);
+    const install = sections.find(section => section.operation?.operationId === 'factory-fan:onsite:operation:installation-labour');
+    expect(install?.resourceIds).toEqual(binding.replacementRowIds);
+    expect(sections.flatMap(section => section.resourceIds).sort()).toEqual(resources.map(row => row.rowId).sort());
+    expect(install?.sharedResources.length).toBeGreaterThan(0);
+    const process = canonicalEstimateWorkProcess(resources, 'Сохранённая работа', context);
+    expect(process.flatMap(group => group.operations).find(operation => operation.operationId === binding.target.operationId)?.resourceIds)
+      .toEqual(expect.arrayContaining(binding.replacementRowIds));
+    expect(JSON.stringify({context, resources})).toBe(stored);
+    expect(CANONICAL_LEGACY_OPERATION_DISPLAY_VERSION_V1).toBe(legacyDisplayBindings.version);
+  });
+
+  it('refuses unlisted identities, incomplete or duplicated membership and changed original relations', () => {
+    const binding = legacyDisplayBindings.entries[0];
+    if (!binding) throw new Error('exact legacy binding required');
+    const resources = clone(binding.expectedResources);
+    const context = { revisionId: binding.revisionId, releaseId: binding.releaseId,
+      checksumSha256: binding.checksumSha256, savedResources: resources };
+    expect(resolveCanonicalLegacyOperationDisplayV1(resources)).toBe(resources);
+    for (const key of ['revisionId', 'releaseId', 'checksumSha256'] as const)
+      expect(resolveCanonicalLegacyOperationDisplayV1(resources, {...context, [key]: 'unlisted'})).toBe(resources);
+    expect(resolveCanonicalLegacyOperationDisplayV1(resources, {...context, savedResources: resources.slice(1)})).toBe(resources);
+    expect(resolveCanonicalLegacyOperationDisplayV1(resources, {...context, savedResources: [...resources.slice(1), resources[1]!]})).toBe(resources);
+    const changed = resources.map((row, index) => index === 0 ? {...row, operation: {...row.operation, operationId: 'foreign'}} : row);
+    expect(resolveCanonicalLegacyOperationDisplayV1(changed, {...context, savedResources: changed})).toBe(changed);
+    expect(resolveCanonicalLegacyOperationDisplayV1(changed, context)).toBe(changed);
+    const duplicate = [...resources, resources[0]!];
+    expect(resolveCanonicalLegacyOperationDisplayV1(duplicate, context)).toBe(duplicate);
+    const filtered = resources.filter(row => binding.replacementRowIds.includes(row.rowId));
+    expect(resolveCanonicalLegacyOperationDisplayV1(filtered, context).every(row => row.operation.operationId === binding.target.operationId)).toBe(true);
+    expect(resolveCanonicalLegacyOperationDisplayV1(filtered, {...context, savedResources: filtered})).toBe(filtered);
+  });
+});
+
+it.each(legacyDisplayBindings.entries)('binds TOOL ACCESSORY and PPE display overrides to the same complete saved revision $revisionId', binding => {
+  const resources = JSON.parse(JSON.stringify(binding.expectedResources)) as typeof binding.expectedResources;
+  const context = { revisionId: binding.revisionId, releaseId: binding.releaseId,
+    checksumSha256: binding.checksumSha256, savedResources: resources };
+  const before = JSON.stringify({resources, context});
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill', context)).toBe('TOOL');
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:screwdriver', context)).toBe('TOOL');
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill-bit', context)).toBe('ACCESSORY');
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:ppe', context)).toBe('PPE');
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:access', context)).toBe('EQUIPMENT');
+  for (const rowId of ['factory-fan:axial-100-timer:setting-screwdriver', 'factory-fan:axial-125-timer:setting-screwdriver']) {
+    expect(canonicalLegacyResourceKindV1(rowId, context))
+      .toBe(binding.expectedResources.some(resource => resource.rowId === rowId) ? 'TOOL' : null);
+  }
+  const malformed = JSON.parse(JSON.stringify(context));
+  malformed.savedResources[0] = null;
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill', malformed)).toBeNull();
+  expect(canonicalLegacyResourceKindV1('unlisted-row', context)).toBeNull();
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill')).toBeNull();
+  for (const key of ['revisionId', 'releaseId', 'checksumSha256'] as const)
+    expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill', {...context, [key]: ''})).toBeNull();
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill', {...context, savedResources: []})).toBeNull();
+  const changed = resources.map(row => row.rowId === 'factory-fan:onsite:drill'
+    ? {...row, operation: {...row.operation, operationId: 'foreign'}} : row);
+  expect(canonicalLegacyResourceKindV1('factory-fan:onsite:drill', {...context, savedResources: changed})).toBeNull();
+  expect(JSON.stringify({resources, context})).toBe(before);
 });

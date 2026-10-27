@@ -210,7 +210,8 @@ export async function resolveConsumerCanonicalRecalculationCatalog(input: {
   if (!quantityClearPreview && !sameImmutableCalculation && !canonicalStoredManualPricesCanMigrate({rowOverrides:input.revision.amendmentContract.rowOverrides,
       currency:input.revision.currencyCode,
       customRows:input.revision.amendmentContract.customRows,fromBindings:parentCatalog.manualPriceMigrationBindings,toBindings:predecessorBindings?.priceBindings??catalog.manualPriceMigrationBindings,
-      fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:predecessorBindings?.exclusionBindings??catalog.manualExclusionMigrationBindings})) {
+      fromExclusionBindings:parentCatalog.manualExclusionMigrationBindings,toExclusionBindings:predecessorBindings?.exclusionBindings??catalog.manualExclusionMigrationBindings,
+      fromQuantityBindings:parentCatalog.manualQuantityMigrationBindings,toQuantityBindings:predecessorBindings?.quantityBindings??catalog.manualQuantityMigrationBindings})) {
     throw new CanonicalEstimateApiError("Переход остановлен: совместимость уже сохранённых ручных количеств, цен и строк ещё не подтверждена. Исходная смета сохранена. Нужна проверка переноса этих правок; отмена новых правок в редакторе не заменяет её.", {
       code: "RELEASE_MIGRATION_ROW_BINDING_REVIEW_REQUIRED", httpStatus: 409,
     });

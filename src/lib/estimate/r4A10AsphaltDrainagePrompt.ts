@@ -1,7 +1,7 @@
 import type { CanonicalEstimateParameterInputValue } from "./backendPlatform/contracts";
 
 export const R4_A10_ASPHALT_DRAINAGE_CATALOG_ID =
-  "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area" as const;
+  "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard" as const;
 export const R4_A10_ASPHALT_DRAINAGE_PRIMARY_MEASURE_PARAMETER_ID = "route_length_m" as const;
 
 function number(prompt: string, pattern: RegExp): string | undefined {

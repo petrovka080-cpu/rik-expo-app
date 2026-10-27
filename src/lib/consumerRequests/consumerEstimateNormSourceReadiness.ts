@@ -1,7 +1,7 @@
 import {
   classifyProfessionalNormSourceAdmission,
   type ProfessionalNormSourceAdmission,
-} from "../estimate/professionalNormSourceAdmission";
+} from "../estimate/professionalNormSourceClientAdmission";
 import type {
   ConsumerRepairDraftBundle,
   ConsumerRepairRequestItem,

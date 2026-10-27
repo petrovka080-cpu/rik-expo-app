@@ -50,9 +50,7 @@ type PublishedCanonicalEstimateParameterDefinition =
 export const CONCRETE_SLAB_COMPLETE_INSTALLATION_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard", titleRu: "Устройство бетонной плиты в стандартной зоне" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_high_load", titleRu: "Устройство бетонной плиты для высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_large_area", titleRu: "Устройство бетонной плиты на большой площади" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_repair", titleRu: "Устройство бетонной плиты с локальным ремонтом основания" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_small_area", titleRu: "Устройство бетонной плиты на малой площади" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_technical_room", titleRu: "Устройство бетонной плиты в техническом помещении" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_form_wet_zone", titleRu: "Устройство бетонной плиты во влажной зоне" },
 ] as const);

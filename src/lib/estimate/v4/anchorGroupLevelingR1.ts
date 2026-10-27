@@ -21,9 +21,7 @@ type Json = Record<string, unknown>;
 export const ANCHOR_GROUP_LEVELING_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_level_standard", titleRu: "Выравнивание бетона основания анкерной группы в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_level_high_load", titleRu: "Выравнивание бетона основания анкерной группы в зоне высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_level_large_area", titleRu: "Выравнивание бетона оснований анкерных групп на большом участке", contextRu: "большой участок" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_level_repair", titleRu: "Выравнивание бетона основания анкерной группы на ремонтном участке", contextRu: "ремонтный участок" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_level_small_area", titleRu: "Выравнивание бетона основания анкерной группы на малом участке", contextRu: "малый участок" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_level_technical_room", titleRu: "Выравнивание бетона основания анкерной группы в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_anchor_group_level_wet_zone", titleRu: "Выравнивание бетона основания анкерной группы во влажной зоне", contextRu: "влажная зона" },
 ] as const);

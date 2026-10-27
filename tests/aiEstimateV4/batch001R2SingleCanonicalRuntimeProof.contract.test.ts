@@ -98,9 +98,9 @@ function durableRowPayload(revision: EstimateDraftRevision) {
 }
 
 describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
-  test("proves one owner and one route across create/edit/recalculate/history/PDF/procurement for 16/16", async () => {
+  test("proves one owner and one route across create/edit/recalculate/history/PDF/procurement for 10/10", async () => {
     const definitions = buildAllBatch001DrywallSuccessorsR3();
-    expect(definitions).toHaveLength(16);
+    expect(definitions).toHaveLength(10);
 
     for (const definition of definitions) {
       const bindings = INTERIOR_FINISHES_DOMAIN_CATALOG_BINDINGS
@@ -172,7 +172,7 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
     }
   });
 
-  test("opens and migrates legacy revisions 16/16 without data loss or a reachable legacy calculation route", async () => {
+  test("opens and migrates legacy revisions 10/10 without data loss or a reachable legacy calculation route", async () => {
     const definitions = new Map(buildAllBatch001DrywallSuccessorsR3()
       .map((definition) => [definition.catalogId, definition] as const));
     for (const catalogId of DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3) {
@@ -205,11 +205,32 @@ describe("BATCH001 R2 SINGLE_CANONICAL_RUNTIME_PROOF", () => {
     }
   });
 
-  test("keeps the remaining 2234 interior records outside the professional overlay and has no batch runtime branch", () => {
+  test("retired bulkhead area identities have no active owner or legacy calculation entry", () => {
+    // The prior 16-owner cohort lost exactly six area identities; ten physical-work owners remain.
+    const standard = INTERIOR_FINISHES_DOMAIN_INVENTORY.find(
+      (item) => item.catalog_id === "drywall_ceiling_interior_bulkhead_frame_standard",
+    )!;
+    const retired = [
+      "drywall_ceiling_interior_bulkhead_frame_large_area",
+      "drywall_ceiling_interior_bulkhead_frame_small_area",
+      "drywall_ceiling_interior_bulkhead_align_large_area",
+      "drywall_ceiling_interior_bulkhead_align_small_area",
+      "drywall_ceiling_interior_bulkhead_clad_large_area",
+      "drywall_ceiling_interior_bulkhead_clad_small_area"
+] as const;
+    for (const catalogId of retired) {
+      expect(INTERIOR_FINISHES_DOMAIN_INVENTORY.some((item) => item.catalog_id === catalogId)).toBe(false);
+      expect(interiorFinishesDomainFactory.binding_by_catalog_id.has(catalogId)).toBe(false);
+      expect(buildDrywallCeilingBulkheadProfessionalPackagePartsV3({ ...standard, catalog_id: catalogId, work_key: catalogId })).toBeNull();
+    }
+  });
+
+  test("keeps the remaining 1472 interior records outside the professional overlay and has no batch runtime branch", () => {
     const authorized = new Set<string>(DRYWALL_CEILING_BULKHEAD_PROFESSIONAL_CATALOG_IDS_V3);
     const unchanged = INTERIOR_FINISHES_DOMAIN_INVENTORY.filter((item) => !authorized.has(item.catalog_id));
-    expect(INTERIOR_FINISHES_COMPLETE_RECORD_COUNT).toBe(2250);
-    expect(unchanged).toHaveLength(2234);
+    // 2250 − 768 retired area records = 1482; 1482 − 10 surviving bulkhead owners = 1472.
+    expect(INTERIOR_FINISHES_COMPLETE_RECORD_COUNT).toBe(1482);
+    expect(unchanged).toHaveLength(1472);
     for (const inventory of unchanged) {
       expect(buildDrywallCeilingBulkheadProfessionalPackagePartsV3(inventory)).toBeNull();
       const technology = interiorFinishesDomainFactory.technology_by_id.get(inventory.canonical_technology_id);

@@ -172,11 +172,17 @@ describe('PVC15 size and object facts instead of a technical questionnaire', () 
     expect(consumerCanonicalExplicitAutomaticParameters(catalog, { ...inherited, pvc15_membrane_consumption_m2: '86.25' }, inherited))
       .not.toHaveProperty('pvc15_membrane_consumption_m2');
   });
-  test.each(['standard', 'small_area', 'large_area'])('preflights the shared %s binding without publishing or treating the fixture as a default', async variant => {
+  test.each(['standard'])('preflights the shared %s binding without publishing or treating the fixture as a default', async variant => {
     const config = pvc15MinimalCustomerInputPublishConfigS2744({ definition: 'current', search: 'current-search' }, variant);
     expect(config.catalogAppend).toBeUndefined();
     expect(config.parameterDefinitions).toBe(definition.parameters);
     expect(config.runtimeProfileInput).toEqual(definition.runtimeInput);
     expect(await config.verifyCore()).toMatchObject({ completeRows: 26, fixturesAreNotDefaults: true, sourceGapsRetained: true, acceptedNewTypeDelta: 0 });
   });
+});
+
+
+test.each(['small_area', 'large_area', '__unsupported_variant__'])('minimal PVC15 factory rejects retired or unsupported selector before config creation: %s', variant => {
+  expect(() => pvc15MinimalCustomerInputPublishConfigS2744({definition:'current', search:'current-search'}, variant))
+    .toThrow('EXISTING_PVC15_MEMBER_REQUIRED');
 });

@@ -92,8 +92,6 @@ const CHOICE_LABELS_RU: Readonly<Record<string, string>> = Object.freeze({
   PRELIMINARY_BOQ: "Предварительная ведомость объёмов",
   ROM_CONCEPT: "Концептуальная оценка состава",
   TENDER_BOQ: "Тендерная ведомость объёмов",
-  large_area: "Большая площадь",
-  small_area: "Малая площадь",
   standard: "Стандартные условия",
   technical_room: "Техническое помещение",
   wet_zone: "Влажная зона",

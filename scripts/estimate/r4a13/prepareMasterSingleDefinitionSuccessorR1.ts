@@ -1,4 +1,12 @@
+import {masterRetainedSourceProfileMetadataCompactR1,masterProjectScopeMetadataCompactR1,assertMasterProjectScopeMetadataDeclarationR1} from './masterSingleDefinitionRetainParentBindingsR1';
+import {assertCanonicalNewWorkCatalogIdV1,canonicalPublicWorkSqlV1,CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1} from '../../../src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1';
 import { createHash } from "node:crypto";
+import { canonicalEstimateOperationReferences } from
+  "../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition";
+import { resolveCanonicalEstimateExplicitRowCategory } from
+  "../../../src/lib/estimate/backendPlatform/canonicalEstimateRowCategory";
+import { resolveProfessionalUnitDefinition } from
+  "../../../src/lib/estimate/professionalUnitRegistry";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -23,6 +31,9 @@ import {
 } from "./canonicalDefinitionPublisherR1";
 import {
   masterRetainParentBindingsOptInR1,
+  masterAdditionalCapturedExistingRegistryV1,
+  masterRetainedParentCaptureSha256R1,
+  isMasterRetainedRetiredUnusedParameterR1,
   prepareMasterRetainedBindingRepresentativeR1,
   assertMasterRetainedBindingPlanR1,
   readMasterRetainedBindingPreconditionsR1,
@@ -31,6 +42,7 @@ import {
   type MasterRetainParentBindingsR1,
   assembleMasterExplicitParameterSourcesR1,
   type MasterExplicitParameterSourcesR1,
+  buildMasterRetainedSparseBaselineMetadataR1,
 } from "./masterSingleDefinitionRetainParentBindingsR1";
 import {
   assertMasterSingleDefinitionAppendParentAnchorR1,
@@ -54,6 +66,11 @@ import {
 import { stringifyCanonicalEstimateJson } from "../../../src/lib/estimate/estimateDeterministicHash";
 import {masterReviewedNormPackRegistryEvidenceR1, type MasterReviewedNormPackProofR1} from './masterReviewedNormPackRegistryReuseR1';
 
+import {masterTypedPartialQuantityCapabilityR1,masterTypedPartialQuantityReadinessR1,
+ validateMasterTypedPartialQuantityBasisR1,assertMasterTypedPartialQuantityRegistryR1,hasMasterTypedPartialQuantityBasisR1,
+ type MasterTypedPartialQuantityBasisR1} from './masterTypedPartialQuantityBasisR1';
+
+import {assertMasterOperationCompositionDeclarationR1} from './masterOperationCompositionOnlyR1';
 type Json = Record<string, any>;
 
 export type MasterSingleDefinitionSuccessorConfig = Readonly<{
@@ -94,6 +111,9 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     "NORMATIVE" | "ASSUMPTION" | "DERIVED" | "RUNTIME_STRUCTURAL_DEFAULT">>;
   runtimeProfileSourceIds?: Readonly<Record<string, readonly string[]>>;
   verifyCore: () => Promise<Json>;
+  /** Optional reviewed target precondition, repeated on the writer connection
+   * under its existing transaction lock before any publication writes. */
+  verifyTargetPrecondition?: (client: Pick<Client, "query">, phase: "PREFLIGHT" | "LOCKED_BEFORE") => Promise<void>;
   expectedParentShape: readonly [number, number, number];
   benchmarkOrdinal: number;
   validationScenario: string;
@@ -107,10 +127,13 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
     /** Explicitly admitted preliminary composition; never mark its unresolved
      * applicable resources as a complete technical scope. */
     unresolvedApplicableResourceRowIds?: readonly string[];
+    partialQuantityBasis?: MasterTypedPartialQuantityBasisR1;
   }>;
   applicability: Json;
   binding: Readonly<{
     rowId: string;
+    /** Exact CT126 prepared-profile proof in the existing retained successor slot. */
+    ct126PreparedWallMigrationR2?: true;
     /** Opt in to multiple resources backed by one composite source locator. */
     additionalRowIds?: readonly string[];
     applicability: Json;
@@ -239,9 +262,23 @@ export function resolveMasterAppendExplicitParameterSourcesR1(
 export type MasterExistingNormativeRegistryReuseR1 = Readonly<{
   contract: "master-existing-normative-registry-reuse/r1";
   /** Preserve the original publisher's excerpt hash algorithm explicitly. */
-  locatorExcerptHashKind: "SOURCE_LOCATOR_TEXT_SHA256" | "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1" | "REVIEWED_NORM_PACK_ITEM_SHA256_R1";
+  locatorExcerptHashKind: "SOURCE_LOCATOR_TEXT_SHA256" | "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1" | "REVIEWED_NORM_PACK_ITEM_SHA256_R1" | "CAPTURED_PARENT_OPERATION_COMPOSITION_ONLY_R1" | "CAPTURED_PARENT_PROJECT_SCOPE_METADATA_ONLY_V1";
   /** Only for an existing reviewed-pack owner whose original metadata has no contract slot. */
   reviewedNormPack?: MasterReviewedNormPackProofR1;
+  /** Explicit immutable historical metadata witness for a registered source
+   * newly reused by a retained replacement. It never grants activation and
+   * never writes consumer metadata over the first publisher's source row. */
+  capturedSourceMetadataV1?: Readonly<{
+    contract: "master-existing-registry-captured-source-metadata/v1";
+    sourceId: string;
+    nativeSourceId: string;
+    sourceKey: string;
+    artifactSha256: string;
+    sourceRowSha256: string;
+    metadataSha256: string;
+    locatorSetSha256: string;
+    generatedMetadataSha256: string;
+  }>;
   /** Exact current row, including the unconverted PostgreSQL created_at text. */
   source: Readonly<Json>;
   /** Complete current locator rows. No locator creation or partial reuse. */
@@ -262,6 +299,25 @@ export function resolveMasterSingleDefinitionLocatorExcerptSha256R1(
   if (!Object.hasOwn(config.binding, "reuseExistingNormativeRegistry"))
     return sha256(config.sourceMetadata.exact_locator);
   const kind = config.binding.reuseExistingNormativeRegistry?.locatorExcerptHashKind;
+  if(kind==='CAPTURED_PARENT_PROJECT_SCOPE_METADATA_ONLY_V1'){
+    const retained=config.binding.retainParentBindings;
+    invariant(retained?.projectScopeMetadataOnlyV1!=null,`STOP_${config.stopCode}_SCOPE_METADATA_REQUIRED`);
+    assertMasterProjectScopeMetadataDeclarationR1({catalogId:retained.capturedParent.definition.catalog_id,capture:retained.capturedParent,
+      captureSha256:retained.capturedParentSha256,mode:retained.projectScopeMetadataOnlyV1,newParameterSources:retained.newParameterSources});
+    const locator=retained.capturedParent.normativeLocators.find(l=>l.locator_key===config.locator.key);
+    invariant(locator&&JSON.stringify(stable(locator.locator))===JSON.stringify(stable(config.locator.payload)),`STOP_${config.stopCode}_SCOPE_METADATA_LOCATOR`);
+    return locator.excerpt_sha256;
+  }
+  if(kind==='CAPTURED_PARENT_OPERATION_COMPOSITION_ONLY_R1'){
+    const retained=config.binding.retainParentBindings;
+    invariant(retained?.operationCompositionOnly!=null,`STOP_${config.stopCode}_OPERATION_ONLY_REQUIRED`);
+    invariant(masterRetainedParentCaptureSha256R1(retained.capturedParent)===retained.capturedParentSha256,`STOP_${config.stopCode}_OPERATION_ONLY_CAPTURE_HASH`);
+    assertMasterOperationCompositionDeclarationR1({catalogId:retained.capturedParent.definition.catalog_id,capture:retained.capturedParent,
+      captureSha256:retained.capturedParentSha256,mode:retained.operationCompositionOnly,newParameterSources:retained.newParameterSources});
+    const locator=retained.capturedParent.normativeLocators.find(l=>l.locator_key===config.locator.key);
+    invariant(locator&&JSON.stringify(stable(locator.locator))===JSON.stringify(stable(config.locator.payload)),`STOP_${config.stopCode}_OPERATION_ONLY_LOCATOR`);
+    return locator.excerpt_sha256;
+  }
   if (kind === "SOURCE_LOCATOR_TEXT_SHA256") return sha256(config.sourceMetadata.exact_locator);
   if (kind === "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1")
     return createHash("sha256").update(stringifyCanonicalEstimateJson(config.locator.payload)).digest("hex");
@@ -279,7 +335,7 @@ export function resolveMasterSingleDefinitionLocatorExcerptSha256R1(
  * retention guard still validates the full parent, reference closure and locks.
  * Omission preserves the historical source/locator identity construction. */
 export function resolveMasterExistingNormativeRegistryReuseR1(input: Readonly<{
-  config: Readonly<{stopCode: string; catalogAppend?: unknown; projectSourcePackagePath?: unknown;
+  config: Readonly<{stopCode: string; catalogId?: string; parentReleaseId?: string; parentSearchReleaseId?: string; catalogAppend?: unknown; projectSourcePackagePath?: unknown;
     binding: Readonly<{retainParentBindings?: unknown;
       reuseExistingNormativeRegistry?: MasterExistingNormativeRegistryReuseR1}>}>;
   newSource: Json; newLocators: readonly Json[];
@@ -296,10 +352,54 @@ export function resolveMasterExistingNormativeRegistryReuseR1(input: Readonly<{
     && Object.hasOwn(input.config.binding, "retainParentBindings")
     && object(input.config.binding.retainParentBindings), "RETAINED_REPLACEMENT_ONLY");
   const value = input.config.binding.reuseExistingNormativeRegistry;
+  const capturedMetadataOptIn = value != null && Object.hasOwn(value, "capturedSourceMetadataV1");
   const reviewedPack = value?.locatorExcerptHashKind === "REVIEWED_NORM_PACK_ITEM_SHA256_R1";
-  requireThat(object(value) && keys(value!, ["contract", "source", "locators", "locatorExcerptHashKind", ...(reviewedPack ? ['reviewedNormPack'] : [])])
+  const operationOnly=value?.locatorExcerptHashKind==='CAPTURED_PARENT_OPERATION_COMPOSITION_ONLY_R1';
+  const projectScopeOnly=value?.locatorExcerptHashKind==='CAPTURED_PARENT_PROJECT_SCOPE_METADATA_ONLY_V1';
+  const authorityRetained=input.config.binding.retainParentBindings as MasterRetainParentBindingsR1|undefined;
+  const authorityOnly=authorityRetained?.truthAuthorityOnlyV1;
+  const repairVisibilityOnly=authorityRetained?.monolithicRepairGeometryVisibilityOnlyR60;
+  if(authorityOnly||repairVisibilityOnly){
+    requireThat(masterRetainedParentCaptureSha256R1(authorityRetained!.capturedParent)===authorityRetained!.capturedParentSha256,
+      'AUTHORITY_CAPTURE');
+    requireThat(value&&object(value.source)&&Array.isArray(value.locators)
+      &&same(authorityRetained!.capturedParent.normativeSources.find(s=>s.id===value.source.id),value.source)
+      &&same(authorityRetained!.capturedParent.normativeLocators.filter(l=>l.source_id===value.source.id)
+        .slice().sort((a,b)=>String(a.id).localeCompare(String(b.id))),
+      value.locators.slice().sort((a,b)=>String(a.id).localeCompare(String(b.id)))),'AUTHORITY_EXISTING_REGISTRY_CAPTURE');
+    // Validate the ordinary captured authority declaration before reusing a
+    // historical registry owner's metadata shape. The generated consumer
+    // metadata is never written over that immutable source row.
+    const {created_at:_capturedCreatedAt,...capturedManagedSource}=value!.source;
+    requireThat(typeof input.config.catalogId==='string'&&input.config.catalogId.length>0
+      &&typeof input.config.parentReleaseId==='string'&&input.config.parentReleaseId.length>0,'AUTHORITY_CONSUMER_CONTEXT');
+    requireThat(masterRetainParentBindingsOptInR1({config:{...input.config,
+      catalogId:String(input.config.catalogId),parentReleaseId:String(input.config.parentReleaseId),
+      binding:{...input.config.binding,retainParentBindings:authorityRetained}},
+      newSource:capturedManagedSource,newLocators:value!.locators})!=null,'AUTHORITY_DECLARATION_REQUIRED');
+  }
+  if(projectScopeOnly){
+    requireThat(authorityRetained?.projectScopeMetadataOnlyV1!=null&&value&&object(value.source)
+      &&typeof input.config.catalogId==='string'&&typeof input.config.parentReleaseId==='string'
+      &&typeof input.config.parentSearchReleaseId==='string','SCOPE_METADATA_EXACT_CONTEXT');
+    const {created_at:_capturedCreatedAt,...capturedManagedSource}=value!.source;
+    requireThat(input.newSource.source_key===value!.source.source_key,'SCOPE_METADATA_SOURCE_KEY');
+    requireThat(masterRetainParentBindingsOptInR1({config:{...input.config,catalogId:String(input.config.catalogId),
+      parentReleaseId:String(input.config.parentReleaseId),parentSearchReleaseId:String(input.config.parentSearchReleaseId),
+      binding:{...input.config.binding,retainParentBindings:authorityRetained}},newSource:capturedManagedSource,newLocators:value!.locators})!=null,
+      'SCOPE_METADATA_DECLARATION_REQUIRED');
+  }
+  if(operationOnly){
+    const retained=input.config.binding.retainParentBindings as MasterRetainParentBindingsR1;
+    requireThat(retained?.operationCompositionOnly!=null&&masterRetainedParentCaptureSha256R1(retained.capturedParent)===retained.capturedParentSha256,'OPERATION_ONLY_CAPTURE');
+    assertMasterOperationCompositionDeclarationR1({catalogId:retained.capturedParent.definition.catalog_id,capture:retained.capturedParent,
+      captureSha256:retained.capturedParentSha256,mode:retained.operationCompositionOnly!,newParameterSources:retained.newParameterSources});
+    requireThat(input.newSource.source_key===value!.source.source_key&&same(retained.capturedParent.normativeSources.find(s=>s.id===value!.source.id),value!.source),'OPERATION_ONLY_SOURCE');
+  }
+  requireThat(object(value) && keys(value!, ["contract", "source", "locators", "locatorExcerptHashKind", ...(reviewedPack ? ['reviewedNormPack'] : []),
+    ...(capturedMetadataOptIn ? ["capturedSourceMetadataV1"] : [])])
     && value!.contract === "master-existing-normative-registry-reuse/r1"
-    && ["SOURCE_LOCATOR_TEXT_SHA256", "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1", "REVIEWED_NORM_PACK_ITEM_SHA256_R1"]
+    && ["SOURCE_LOCATOR_TEXT_SHA256", "CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1", "REVIEWED_NORM_PACK_ITEM_SHA256_R1", "CAPTURED_PARENT_OPERATION_COMPOSITION_ONLY_R1", "CAPTURED_PARENT_PROJECT_SCOPE_METADATA_ONLY_V1"]
       .includes(value!.locatorExcerptHashKind), "EXACT_DECLARATION_REQUIRED");
   const source = value!.source;
   requireThat(object(source) && keys(source, ["id", "source_key", "title_ru", "authority", "official_url",
@@ -310,11 +410,39 @@ export function resolveMasterExistingNormativeRegistryReuseR1(input: Readonly<{
     && typeof source.created_at === "string"
     && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/u.test(source.created_at),
   "COMPLETE_SOURCE_WITH_RAW_TIMESTAMP_REQUIRED");
+  const witness = value!.capturedSourceMetadataV1;
+  if (capturedMetadataOptIn) {
+    invariant(witness && object(witness) && keys(witness, ["contract", "sourceId", "nativeSourceId", "sourceKey",
+      "artifactSha256", "sourceRowSha256", "metadataSha256", "locatorSetSha256", "generatedMetadataSha256"])
+      && witness.contract === "master-existing-registry-captured-source-metadata/v1",
+    prefix + "CAPTURED_METADATA_EXACT_WITNESS_REQUIRED");
+    invariant(!reviewedPack && !operationOnly && !projectScopeOnly && !authorityOnly && !repairVisibilityOnly,
+      prefix + "CAPTURED_METADATA_MODE_CONFLICT");
+    invariant(uuid(witness.sourceId) && typeof witness.nativeSourceId === "string" && witness.nativeSourceId.length > 0
+      && typeof witness.sourceKey === "string" && witness.sourceKey.length > 0
+      && [witness.artifactSha256, witness.sourceRowSha256, witness.metadataSha256,
+        witness.locatorSetSha256, witness.generatedMetadataSha256].every(hash => /^[a-f0-9]{64}$/u.test(hash)),
+    prefix + "CAPTURED_METADATA_WITNESS_SHAPE");
+    invariant(source.metadata.activationAllowed === false && object(input.newSource.metadata)
+      && input.newSource.metadata.activationAllowed === false
+      && input.newSource.metadata.universalProductivityClaimed === false
+      && input.newSource.metadata.universalConsumptionClaimed === false,
+    prefix + "CAPTURED_METADATA_NO_ACTIVATION");
+    invariant(witness.sourceId === source.id && witness.nativeSourceId === source.metadata.sourceId
+      && witness.sourceKey === source.source_key && witness.artifactSha256 === source.artifact_sha256
+      && witness.sourceRowSha256 === sha256(source) && witness.metadataSha256 === sha256(source.metadata),
+    prefix + "CAPTURED_METADATA_SOURCE_DRIFT");
+    invariant(Array.isArray(value!.locators) && value!.locators.length > 0 && value!.locators.length <= 32
+      && witness.locatorSetSha256 === sha256([...value!.locators].sort((a, b) => String(a.id).localeCompare(String(b.id)))),
+    prefix + "CAPTURED_METADATA_LOCATOR_DRIFT");
+    invariant(witness.generatedMetadataSha256 === sha256(input.newSource.metadata),
+      prefix + "CAPTURED_METADATA_CONSUMER_DRIFT");
+  }
   const {created_at: _createdAt, ...managedSource} = source;
   // The original registry contract belongs to its first publisher. Consumer
   // provenance stays in this definition's source envelope; no metadata rewrite.
-  requireThat(same(managedSource, {...input.newSource, id: source.id,
-    metadata: reviewedPack ? source.metadata : {...input.newSource.metadata, contract: source.metadata.contract}}), "SOURCE_FACTS_OR_METADATA_DRIFT");
+  requireThat(operationOnly||projectScopeOnly||same(managedSource, {...input.newSource, id: source.id,
+    metadata: reviewedPack || authorityOnly || repairVisibilityOnly || capturedMetadataOptIn ? source.metadata : {...input.newSource.metadata, contract: source.metadata.contract}}), "SOURCE_FACTS_OR_METADATA_DRIFT");
   requireThat(Array.isArray(value!.locators) && value!.locators.length > 0
     && value!.locators.length === input.newLocators.length && value!.locators.length <= 32,
   "COMPLETE_LOCATOR_SET_REQUIRED");
@@ -334,12 +462,29 @@ export function resolveMasterExistingNormativeRegistryReuseR1(input: Readonly<{
     const row = declared.find(l => l.locator_key === candidate.locator_key);
     requireThat(row != null && same(row, {...candidate, id: row!.id, source_id: source.id}),
       "LOCATOR_FACTS_OR_EXCERPT_DRIFT");
+    if(operationOnly||projectScopeOnly){const retained=input.config.binding.retainParentBindings as MasterRetainParentBindingsR1;
+      requireThat(same(retained.capturedParent.normativeLocators.find(l=>l.id===row!.id),row),'OPERATION_ONLY_LOCATOR_CAPTURE');}
     return row!;
   });
   return {errorPrefix: prefix, declaration: value!, managedSource, locators: ordered};
 }
 /** The same full registry must exist at normal preflight, locked reread and
  * registered-state verification. An absent or partly matching row is refused. */
+/** SOURCE-ONLY R24 prototype. Reuse the existing9ef resolver for the
+ * auxiliary tuple; do not replace the primary generated020source or emit a
+ * second source. The emission below is a metadata witness, never a writer. */
+export function resolveMasterAdditionalCapturedExistingRegistryV1(input:Parameters<typeof masterAdditionalCapturedExistingRegistryV1>[0]){
+ const a=masterAdditionalCapturedExistingRegistryV1(input);if(!a)return null;
+ const source=a.reuse.source,m=a.consumerEmission.sourceMetadata,contract=a.consumerEmission.contract;
+ const metadata={contract,sourceKind:m.source_kind??'PROJECT_DOCUMENTATION_REQUIRED',useRestriction:m.use_restriction,
+  universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false};
+ const result=resolveMasterExistingNormativeRegistryReuseR1({config:{...input.config,binding:{...input.config.binding,
+  reuseExistingNormativeRegistry:a.reuse as MasterExistingNormativeRegistryReuseR1}},
+  newSource:{id:uuid(`${contract}:${source.source_key}:source`),source_key:source.source_key,title_ru:m.source_title,authority:m.source_authority,
+   official_url:m.official_url??null,artifact_sha256:m.artifact_sha256??null,effective_from:m.effective_from??null,effective_to:null,metadata},newLocators:a.reuse.locators});
+ invariant(result,`STOP_${input.config.stopCode}_ADDITIONAL_EXISTING_RESOLVER_REQUIRED`);return result;
+}
+
 export function assertMasterExistingNormativeRegistrySnapshotR1(
   reuse: MasterResolvedExistingRegistryReuseR1 | null,
   actual: Readonly<{newSources: readonly Json[]; newLocators: readonly Json[]}> | null,
@@ -360,6 +505,44 @@ export type MasterSingleDefinitionCountShape = Readonly<{
   formulas: number;
   resources: number;
 }>;
+
+/** Bounded target snapshot for the existing successor precondition. Full raw
+ * database rows are hashed on a stable session timezone; no private rows or
+ * alternate calculation/publication path are introduced. */
+export async function readMasterSuccessorTargetPreimageR1(client:Pick<Client,'query'>,
+ input:{releaseId:string;catalogId:string;sourceId:string;lock?:boolean}):Promise<Json> {
+ if(input.lock)await client.query(`lock table public.estimate_cumulative_manifest_entry,
+  public.estimate_definition_version,public.estimate_approved_template_baseline,public.estimate_parameter_definition,
+  public.estimate_formula_graph,public.estimate_resource_spec,public.estimate_work_normative_binding,
+  public.estimate_normative_locator,public.estimate_normative_source,public.estimate_work_identity in share row exclusive mode`);
+ const zone=(await client.query("select current_setting('TimeZone') zone")).rows[0].zone;
+ await client.query("select set_config('TimeZone','UTC',$1)",[input.lock===true]);
+ try {
+  const headers=(await client.query(`select m.definition_version_id::text,m.approved_template_baseline_id::text,
+   d.definition_version,d.definition_sha256 from public.estimate_cumulative_manifest_entry m
+   join public.estimate_definition_version d on d.id=m.definition_version_id where m.release_id=$1 and m.catalog_id=$2`,
+   [input.releaseId,input.catalogId])).rows;
+  invariant(headers.length===1,'SUCCESSOR_TARGET_PREIMAGE_SINGLE_HEADER');const header=headers[0],id=header.definition_version_id;
+  const table=(name:string,where:string)=>`select row_to_json(t)::text raw from public.${name} t where ${where}`;
+  const queries:[string,string,unknown[]][]=[
+   ['definition',table('estimate_definition_version','t.id=$1'),[id]],
+   ['baseline',table('estimate_approved_template_baseline','t.id=$1'),[header.approved_template_baseline_id]],
+   ['parameters',table('estimate_parameter_definition','t.definition_version_id=$1'),[id]],
+   ['formulas',table('estimate_formula_graph','t.definition_version_id=$1'),[id]],
+   ['resources',table('estimate_resource_spec','t.definition_version_id=$1'),[id]],
+   ['bindings',table('estimate_work_normative_binding','t.definition_version_id=$1'),[id]],
+   ['locators',table('estimate_normative_locator','t.id in(select locator_id from public.estimate_work_normative_binding where definition_version_id=$1)'),[id]],
+   ['sources',table('estimate_normative_source','t.id in(select l.source_id from public.estimate_normative_locator l join public.estimate_work_normative_binding b on b.locator_id=l.id where b.definition_version_id=$1)'),[id]],
+   ['newSource',table('estimate_normative_source','t.source_key=$1'),[input.sourceId]],
+   ['identity',table('estimate_work_identity','t.catalog_id=$1'),[input.catalogId]],
+  ],sets:Json={};
+  for(const [name,sql,values]of queries){const rows=(await client.query(sql,values)).rows.map(r=>r.raw as string);
+   invariant(rows.length<=4096&&rows.every(r=>typeof r==='string'),'SUCCESSOR_TARGET_PREIMAGE_BOUNDED_RAW_ROWS');
+   sets[name]={rowCount:rows.length,sha256:sha256(rows.sort().join('\n'))};
+  }
+  return{contract:'master-successor-target-preimage/r1',catalogId:input.catalogId,sourceId:input.sourceId,header,sets};
+ }finally{await client.query("select set_config('TimeZone',$1,$2)",[zone,input.lock===true]);}
+}
 
 /** Keep the legacy single-resource path intact. A composite source may instead
  * declare each resource independently; count that declaration, not emitted rows. */
@@ -405,6 +588,32 @@ export function resolveMasterSingleDefinitionBindingApplicabilityByRowId(
   return Object.fromEntries(rows.map(id => [id, map[id]]));
 }
 
+/** Remove only retired selection identities from the NEW immutable release.
+ * Definitions, source registry, old manifests and saved revisions are untouched. */
+export function resolveMasterActiveParentCountsR575(parent:MasterSingleDefinitionCountShape,
+  retired:MasterSingleDefinitionCountShape):MasterSingleDefinitionCountShape {
+  const result={} as Record<keyof MasterSingleDefinitionCountShape,number>;
+  for(const key of ['definitions','parameters','formulas','resources'] as const){
+    invariant(Number.isSafeInteger(parent[key]) && Number.isSafeInteger(retired[key])
+      && retired[key]>=0 && retired[key]<=parent[key], 'MASTER_ACTIVE_PARENT_RETIREMENT_COUNTS');
+    result[key]=parent[key]-retired[key];
+  }
+  invariant(result.definitions>0,'MASTER_ACTIVE_PARENT_RETIREMENT_EMPTY');
+  return result;
+}
+export async function readMasterAreaRetirementCountsR575(client:Pick<Client,'query'>,releaseId:string){
+  const result=await client.query(`with retired as materialized(
+    select m.definition_version_id,m.catalog_id,m.entry_sha256
+    from public.estimate_cumulative_manifest_entry m where m.release_id=$1 and not (${canonicalPublicWorkSqlV1('m')})
+  ) select (select count(*)::int from retired) definitions,
+    (select count(*)::int from public.estimate_parameter_definition where definition_version_id in(select definition_version_id from retired)) parameters,
+    (select count(*)::int from public.estimate_formula_graph where definition_version_id in(select definition_version_id from retired)) formulas,
+    (select count(*)::int from public.estimate_resource_spec where definition_version_id in(select definition_version_id from retired)) resources,
+    (select encode(extensions.digest(convert_to(coalesce(string_agg(catalog_id||':'||entry_sha256,'' order by catalog_id),''),'UTF8'),'sha256'),'hex') from retired) snapshot`,[releaseId]);
+  invariant(result.rows.length===1,'MASTER_AREA_RETIREMENT_READ');
+  const row=result.rows[0] as MasterSingleDefinitionCountShape & {snapshot:string};
+  invariant(/^[a-f0-9]{64}$/u.test(row.snapshot),'MASTER_AREA_RETIREMENT_SNAPSHOT');return row;
+}
 export function resolveMasterSingleDefinitionNextCounts(input: Readonly<{
   parent: MasterSingleDefinitionCountShape;
   previousTarget: Readonly<{ parameters: number; formulas: number; resources: number }> | null;
@@ -504,6 +713,31 @@ export function resolveMasterRuntimeAdmissionMetadataR1(
   };
 }
 
+/** Historical baseline provenance stays in the baseline. It must not become a
+ * current runtime default merely to survive a retained publication. The normal
+ * retained guard has already verified the exact capture and declared sources;
+ * the existing registered-source preflight checks the assembled plan again. */
+export function resolveMasterRetainedBaselineInputClassificationR1(
+  parameterId: string,
+  runtimeClassification: Readonly<Record<string, string | undefined>>,
+  retained?: Pick<MasterRetainParentBindingsR1, "capturedParent"
+    | "legacyTemplateAssumptionSources" | "legacyCapturedFixtureSources"> | null,
+): string {
+  const legacy = retained?.legacyTemplateAssumptionSources;
+  const fixture = retained?.legacyCapturedFixtureSources;
+  const provenance = legacy ?? fixture;
+  if (retained && provenance && Object.hasOwn(provenance.parameterSources, parameterId)) {
+    const captured: unknown = retained.capturedParent.baseline.input_classification[parameterId];
+    invariant(typeof captured === "string",
+      `MASTER_RETAINED_BASELINE_CLASSIFICATION_INVALID:${parameterId}`);
+    invariant(legacy ? captured === "ASSUMPTION"
+      : captured === "VALIDATION_FIXTURE" || captured === "DERIVED",
+    `MASTER_RETAINED_BASELINE_CLASSIFICATION_INVALID:${parameterId}`);
+    return captured;
+  }
+  return runtimeClassification[parameterId] ?? "VALIDATION_FIXTURE";
+}
+
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
 }
@@ -527,6 +761,95 @@ function uuid(seed: string): string {
   bytes[8] = (bytes[8]! & 0x3f) | 0x80;
   const hex = bytes.toString("hex");
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+/** Pure registry-row assembly shared by the writer and formal capture callers.
+ * File/package verification belongs to the caller; this is not source admission.
+ * Uses the publisher's existing identity helper, without callbacks, IO or a client.
+ * Pass null package inputs for a config without a package; never bypass its loader.
+ */
+export function assembleMasterSingleDefinitionManagedRegistryCandidateR1<
+  C extends Pick<MasterSingleDefinitionSuccessorConfig,
+    "contract" | "stopCode" | "catalogId" | "parentReleaseId" | "sourceId" | "normId"
+    | "sourceMetadata" | "locator" | "binding" | "catalogAppend" | "projectSourcePackagePath">,
+>(config: C, verified: Readonly<{
+  projectSourcePackage: ReturnType<typeof loadVerifiedProjectSourcePackageBinding> | null;
+  projectSourcePackageSet: ReturnType<typeof verifyS279CompleteProjectSourcePackageSetForSuccessor> | null;
+}>) {
+  const { projectSourcePackage, projectSourcePackageSet } = verified;
+  invariant(Boolean(config.projectSourcePackagePath?.trim()) === (projectSourcePackage != null),
+    `STOP_${config.stopCode}_REGISTRY_CANDIDATE_VERIFIED_PACKAGE_REQUIRED`);
+  invariant(projectSourcePackageSet == null
+    || projectSourcePackage?.packagePayloadSha256 === projectSourcePackageSet.targetPackagePayloadSha256,
+    `STOP_${config.stopCode}_PROJECT_SOURCE_COMPLETE_SET_TARGET_DRIFT`);
+  const resolvedSourceMetadata = {
+    ...config.sourceMetadata,
+    ...(projectSourcePackage == null ? {} : {
+      source_kind: "APPROVED_PROJECT_DOCUMENT_PACKAGE",
+      artifact_sha256: projectSourcePackage.packagePayloadSha256,
+    }),
+  };
+  const resolvedLocators = projectSourcePackage == null
+    ? [{
+      key: config.locator.key,
+      payload: config.locator.payload,
+      excerptSha256: resolveMasterSingleDefinitionLocatorExcerptSha256R1(config),
+    }]
+    : projectSourcePackage.verifiedLocators.map((locator, index) => ({
+      key: `${config.locator.key}:package:${projectSourcePackage.packagePayloadSha256}`
+        + `:excerpt:${index}:${locator.excerptSha256}`,
+      payload: {
+        ...config.locator.payload,
+        kind: "APPROVED_PROJECT_DOCUMENT_PACKAGE_BOUND",
+        projectSourcePackage: {
+          packageId: projectSourcePackage.packageId,
+          packagePayloadSha256: projectSourcePackage.packagePayloadSha256,
+          ...(projectSourcePackageSet == null ? {} : {
+            completePackageSet: projectSourcePackageSet,
+          }),
+          projectMetadata: projectSourcePackage.projectMetadata,
+          catalogMappingIdentity: {
+            catalogId: projectSourcePackage.mapping.catalogId,
+            definitionSha256: projectSourcePackage.mapping.definitionSha256,
+            rowId: projectSourcePackage.mapping.rowId,
+          },
+          documentLocator: locator.documentLocator,
+          verifiedExcerpt: {
+            artifactId: locator.artifactId,
+            fileName: locator.excerptFileName,
+            bytes: locator.excerptBytes,
+            sha256: locator.excerptSha256,
+          },
+        },
+      },
+      excerptSha256: locator.excerptSha256,
+    }));
+  const generatedSourceId = uuid(`${config.contract}:${config.sourceId}:source`);
+  const generatedLocatorIds = resolvedLocators.map((locator) => projectSourcePackage == null
+    ? uuid(`${config.contract}:${config.sourceId}:${locator.key}:locator`)
+    : uuid(`${config.sourceId}:${locator.key}:normative-locator`));
+  const registrySourceMetadata={
+    contract:config.contract,
+    sourceKind:resolvedSourceMetadata.source_kind??"PROJECT_DOCUMENTATION_REQUIRED",
+    useRestriction:resolvedSourceMetadata.use_restriction,
+    universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false,
+    ...(projectSourcePackage==null?{}:{projectSourcePackage:{
+      packageId:projectSourcePackage.packageId,packagePayloadSha256:projectSourcePackage.packagePayloadSha256,
+      ...(projectSourcePackageSet==null?{}:{completePackageSet:projectSourcePackageSet}),
+      artifactReceipts:projectSourcePackage.artifactReceipts,excerptReceipts:projectSourcePackage.excerptReceipts,
+      projectMetadata:projectSourcePackage.projectMetadata,
+    }}),
+  };
+  const generatedRetentionCandidate={config,newSource:{id:generatedSourceId,source_key:config.sourceId,
+    title_ru:resolvedSourceMetadata.source_title,authority:resolvedSourceMetadata.source_authority,
+    official_url:resolvedSourceMetadata.official_url??null,artifact_sha256:resolvedSourceMetadata.artifact_sha256??null,
+    effective_from:resolvedSourceMetadata.effective_from??null,effective_to:null,metadata:registrySourceMetadata},
+    newLocators:resolvedLocators.map((locator,index)=>({id:generatedLocatorIds[index]!,source_id:generatedSourceId,
+      locator_key:locator.key,locator:locator.payload,excerpt_sha256:locator.excerptSha256}))};
+  const existingRegistryReuse=resolveMasterExistingNormativeRegistryReuseR1(generatedRetentionCandidate);
+  const retentionCandidate=existingRegistryReuse==null?generatedRetentionCandidate:{config,
+    newSource:existingRegistryReuse.managedSource,newLocators:existingRegistryReuse.locators};
+  return { resolvedSourceMetadata, resolvedLocators, registrySourceMetadata, existingRegistryReuse, retentionCandidate };
 }
 
 function git(...args: string[]): string {
@@ -558,6 +881,17 @@ function resourceRowType(category: string): string {
   if (category === "service") return "service";
   if (category === "construction_work") return "labor";
   return "other";
+}
+
+/** Exact existing publication preparation, shared with the pure clone rehearsal. */
+export function buildMasterPublicationResourceRowsR1(resourceDefinitions: readonly Json[]): Json[] {
+  return resourceDefinitions.map((resource) => ({
+    ...resource,
+    row_type: ["material", "labor", "equipment", "service", "waste", "other"]
+      .includes(String(resource.row_type))
+      ? resource.row_type
+      : resourceRowType(resource.category),
+  }));
 }
 
 function stop(config: MasterSingleDefinitionSuccessorConfig, suffix: string): string {
@@ -606,6 +940,12 @@ export function validateIndependentCompletenessMapReferences(input: Readonly<{
     nonEmptyText(resource.row_id), resource,
   ]));
   const entryKeys = new Set<string>();
+  // New source maps opt in to physical operation binding. Historical maps keep
+  // their existing contract; a resource title never proves which stage uses it.
+  const requireOperationBindings = completeness.operationResourceBindingRequired === true;
+  if (completeness.operationResourceBindingRequired != null && !requireOperationBindings) {
+    errors.push("OPERATION_RESOURCE_BINDING_POLICY");
+  }
   for (const [index, rawEntry] of entries.entries()) {
     const prefix = `ENTRY_${index}`;
     if (!isJsonRecord(rawEntry) || !isJsonRecord(rawEntry.resolution)) {
@@ -641,6 +981,40 @@ export function validateIndependentCompletenessMapReferences(input: Readonly<{
     const formulaId = nonEmptyText(rawEntry.formulaId);
     const resource = resources.get(rowId);
     if (!resource) errors.push(`${prefix}_ROW_REFERENCE`);
+    if (requireOperationBindings && resource) {
+      // A matching identity is not physical coverage when, for example, the
+      // independent source requires water in litres but the row supplies m3.
+      // Accept registered aliases only; this gate does not convert quantities.
+      const categoryKey = (value: unknown) => resolveCanonicalEstimateExplicitRowCategory(nonEmptyText(value))
+        ?? nonEmptyText(value).toLowerCase();
+      const unitKey = (value: unknown) => resolveProfessionalUnitDefinition(nonEmptyText(value))?.code
+        ?? nonEmptyText(value);
+      if (nonEmptyText(rawEntry.category) && categoryKey(rawEntry.category) !== categoryKey(resource.category)) {
+        errors.push(`${prefix}_RESOURCE_CATEGORY`);
+      }
+      if (nonEmptyText(rawEntry.unitId)) {
+        const expectedUnit = unitKey(rawEntry.unitId);
+        if (expectedUnit !== unitKey(resource.unit_id)) errors.push(`${prefix}_RESOURCE_UNIT`);
+        const formula = formulas.get(formulaId);
+        if (formula && expectedUnit !== unitKey(formula.output_unit_id)) errors.push(`${prefix}_FORMULA_OUTPUT_UNIT`);
+      }
+    }
+    const requiredOperationIds = rawEntry.requiredOperationIds;
+    if (requireOperationBindings || requiredOperationIds != null) {
+      if (!Array.isArray(requiredOperationIds) || requiredOperationIds.length === 0
+        || requiredOperationIds.length > 64
+        || requiredOperationIds.some(id => typeof id !== "string" || !id.trim())
+        || new Set(requiredOperationIds).size !== requiredOperationIds.length) {
+        errors.push(`${prefix}_REQUIRED_OPERATION_IDS`);
+      } else if (resource) {
+        const graph = isJsonRecord(resource.resource_graph) ? resource.resource_graph : {};
+        const actualOperationIds = new Set(canonicalEstimateOperationReferences(graph.operationCompositionV1)
+          .map(reference => reference.operationId));
+        if (requiredOperationIds.some(id => !actualOperationIds.has(id))) {
+          errors.push(`${prefix}_OPERATION_BINDING`);
+        }
+      }
+    }
     if (!formulaId || !formulas.has(formulaId)) errors.push(`${prefix}_FORMULA_REFERENCE`);
     if (resource && formulaId && nonEmptyText(resource.formula_id) !== formulaId) {
       errors.push(`${prefix}_ROW_FORMULA_MISMATCH`);
@@ -756,7 +1130,9 @@ async function cloneSearch(
       answer_type,unit_id,allowed_options,option_to_candidate_partition,source_role,source_locator,required,sequence)
     select $1,question_id,candidate_set_sha256,candidate_ids,discriminator_field,prompt_ru,
       answer_type,unit_id,allowed_options,option_to_candidate_partition,source_role,source_locator,required,sequence
-    from public.estimate_search_clarification_question where search_release_id=$2`, [
+    from public.estimate_search_clarification_question question where search_release_id=$2
+      and not exists(select 1 from unnest(question.candidate_ids) candidate(catalog_id)
+        where not (${canonicalPublicWorkSqlV1('candidate')}))`, [
     input.searchReleaseId, config.parentSearchReleaseId,
   ]);
   await client.query(`insert into public.estimate_search_document(
@@ -784,7 +1160,7 @@ async function cloneSearch(
     from public.estimate_search_document source
     join public.estimate_cumulative_manifest_entry manifest
       on manifest.release_id=$2 and manifest.catalog_id=source.catalog_id
-    where source.search_release_id=$4`, [
+    where source.search_release_id=$4 and ${canonicalPublicWorkSqlV1('source')}`, [
     input.searchReleaseId,
     input.releaseId,
     config.contract,
@@ -924,6 +1300,19 @@ async function cloneSearch(
     ]);
     invariant(updatedGroup.rowCount === 1, stop(config, "SEARCH_APPEND_GROUP_UPDATE"));
   }
+  await client.query(`delete from public.estimate_search_group g where g.search_release_id=$1
+    and not exists(select 1 from public.estimate_search_group_membership m
+      where m.search_release_id=g.search_release_id and m.group_id=g.group_id)`,[input.searchReleaseId]);
+  await client.query(`with actual as (
+      select group_id,count(*)::int member_count,
+        encode(extensions.digest(convert_to(array_to_json(array_agg(catalog_id order by ordinal,catalog_id))::text,'UTF8'),'sha256'),'hex') member_set_sha256
+      from public.estimate_search_group_membership where search_release_id=$1 group by group_id
+    ) update public.estimate_search_group g set member_count=actual.member_count,
+      member_set_sha256=actual.member_set_sha256,
+      oracle_disposition=g.oracle_disposition||jsonb_build_object('measuredGeometryCatalogPolicy',$2::text,
+        'memberCatalogIdsSha256',actual.member_set_sha256)
+    from actual where g.search_release_id=$1 and g.group_id=actual.group_id`,
+    [input.searchReleaseId,CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1]);
   await client.query(`insert into public.estimate_search_typed_relation(
       search_release_id,source_catalog_id,target_catalog_id,relationship_type,direction,source_locator,
       applicability_predicate,required_when,mutually_exclusive_with,explanation_ru,relation_sha256)
@@ -942,7 +1331,18 @@ async function cloneSearch(
     input.searchReleaseId, config.parentSearchReleaseId,
   ]);
 
-  if (append == null) {
+  if(append==null&&(config.binding.retainParentBindings?.operationCompositionOnly||config.binding.retainParentBindings?.projectScopeMetadataOnlyV1)){
+    const updated=await client.query(config.binding.retainParentBindings?.projectScopeMetadataOnlyV1
+      ?`update public.estimate_search_document set definition_release_id=$2,definition_version_id=$3,
+      source_provenance=source_provenance||jsonb_build_object('projectScopeMetadataSuccessorV1',$4::text),
+      document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$4,'UTF8'),'sha256'),'hex')
+      where search_release_id=$1 and catalog_id=$5`
+      :`update public.estimate_search_document set definition_release_id=$2,definition_version_id=$3,
+      source_provenance=source_provenance||jsonb_build_object('operationCompositionSuccessorV1',$4::text),
+      document_sha256=encode(extensions.digest(convert_to(document_sha256||':'||$4,'UTF8'),'sha256'),'hex')
+      where search_release_id=$1 and catalog_id=$5`,[input.searchReleaseId,input.releaseId,input.definitionId,input.fingerprint,config.catalogId]);
+    invariant(updated.rowCount===1,stop(config,'OPERATION_ONLY_SEARCH_TARGET_UPDATE'));
+  }else if (append == null) {
     const aliases = [...config.search.aliases];
     const normalizedAliases = aliases.map(normalizeSearchText);
     const normalizedName = normalizeSearchText(config.search.canonicalNameRu);
@@ -996,7 +1396,7 @@ async function cloneSearch(
       encode(extensions.digest(convert_to(string_agg(document_sha256,'' order by catalog_id),'UTF8'),'sha256'),'hex') snapshot_sha256
     from public.estimate_search_document where search_release_id=$1`, [input.searchReleaseId])).rows[0] as Json;
   await client.query(`update public.estimate_search_index_release set snapshot_sha256=$2,
-    metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [
+    global_count=$4,metadata=metadata||$3::jsonb where id=$1 and status='draft'`, [
     input.searchReleaseId,
     snapshot.snapshot_sha256,
     JSON.stringify({
@@ -1004,7 +1404,9 @@ async function cloneSearch(
       visibleCount: snapshot.visible,
       masterSingleDefinitionTargetCount: 1,
       masterSingleDefinitionCatalogId: config.catalogId,
+      measuredGeometryCatalogPolicy:CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1,
     }),
+    snapshot.documents,
   ]);
   return snapshot;
 }
@@ -1087,7 +1489,12 @@ async function auditState(
   };
 }
 
-export function buildMasterCapabilityMatrix(unresolvedRows: readonly string[] | undefined, resources: readonly Json[]): Json[] {
+export function buildMasterCapabilityMatrix(unresolvedRows: readonly string[] | undefined, resources: readonly Json[], partialBasis?: MasterTypedPartialQuantityBasisR1): Json[] {
+  if(partialBasis!=null){
+    if(unresolvedRows!=null)throw new Error('MASTER_TYPED_QUANTITY_CANNOT_MASK_MISSING_APPLICATION_NORMS');
+    return [{capability:'PARAMETERS',status:'GREEN'},{capability:'FORMULAS_AND_PHYSICAL_PARITY',status:'GREEN'},
+      masterTypedPartialQuantityCapabilityR1(partialBasis,resources),{capability:'PRICE',status:'GREEN_UNKNOWN_IS_NULL'}];
+  }
   if (unresolvedRows != null && (unresolvedRows.length === 0
     || new Set(unresolvedRows).size !== unresolvedRows.length
     || unresolvedRows.some(id => !resources.some(resource => resource.row_id === id)))) {
@@ -1102,7 +1509,11 @@ export function buildMasterCapabilityMatrix(unresolvedRows: readonly string[] | 
   ];
 }
 
-export function buildMasterScopeReadiness(unresolvedRows: readonly string[] | undefined, resources: readonly Json[]): Json {
+export function buildMasterScopeReadiness(unresolvedRows: readonly string[] | undefined, resources: readonly Json[], partialBasis?: MasterTypedPartialQuantityBasisR1): Json {
+  if(partialBasis!=null){
+    if(unresolvedRows!=null)throw new Error('MASTER_TYPED_QUANTITY_CANNOT_MASK_MISSING_APPLICATION_NORMS');
+    return masterTypedPartialQuantityReadinessR1(partialBasis,resources);
+  }
   const scope = buildMasterCapabilityMatrix(unresolvedRows, resources)[2]!;
   return scope.status === 'GREEN' ? { quantityScope: 'FULL' } : {
     quantityScope: 'PARTIAL', technicalScopeStatus: 'NEEDS_SOURCE',
@@ -1110,18 +1521,48 @@ export function buildMasterScopeReadiness(unresolvedRows: readonly string[] | un
   };
 }
 
+/** The same pure validator runs here and on the final publisher plan. */
+export function validateMasterTypedPartialQuantityPreparationR1(config: Pick<MasterSingleDefinitionSuccessorConfig,
+  'binding'|'parameterDefinitions'|'formulaDefinitions'|'resourceDefinitions'|'acceptanceInput'
+  |'runtimeProfileInput'|'runtimeProfileClassification'|'runtimeProfileSourceIds'> & Readonly<{
+    passport:Pick<MasterSingleDefinitionSuccessorConfig['passport'],'partialQuantityBasis'|'unresolvedApplicableResourceRowIds'>;
+  }>): string[] {
+  if(!Object.hasOwn(config.passport,'partialQuantityBasis'))return [];
+  const basis=config.passport.partialQuantityBasis;if(basis==null)return ['TYPED_PARTIAL_QUANTITY_OBJECT'];
+  const mixed=config.passport.unresolvedApplicableResourceRowIds==null?[]:['MASTER_TYPED_QUANTITY_CANNOT_MASK_MISSING_APPLICATION_NORMS'];
+  const retained=config.binding.retainParentBindings,values={...config.acceptanceInput,...config.runtimeProfileInput};
+  const registry=config.binding.reuseExistingNormativeRegistry;
+  if(!retained||!registry)mixed.push('TYPED_QUANTITY_REGISTERED_RETAINED_SOURCE_REQUIRED');
+  else try{assertMasterTypedPartialQuantityRegistryR1(basis,{newSources:[registry.source],newLocators:registry.locators});}
+  catch(error){mixed.push(String((error as Error).message));}
+  const sourceIds=Object.fromEntries(config.parameterDefinitions.map(p=>[p.parameter_id,
+    retained?.newParameterSources[p.parameter_id]?.sourceIds??retained?.capturedParent.baseline.normative_source_ids?.[p.parameter_id]
+      ??config.runtimeProfileSourceIds?.[p.parameter_id]??[]]));
+  return [...mixed,...validateMasterTypedPartialQuantityBasisR1({parameters:config.parameterDefinitions,formulas:config.formulaDefinitions,resources:config.resourceDefinitions,
+    baseline:{input_values:values,input_classification:Object.fromEntries(config.parameterDefinitions.map(p=>[p.parameter_id,
+      config.runtimeProfileClassification?.[p.parameter_id]??'VALIDATION_FIXTURE'])),normative_source_ids:sourceIds},
+    passport:{decision:buildMasterScopeReadiness(undefined,config.resourceDefinitions,basis),
+      capability_matrix:buildMasterCapabilityMatrix(undefined,config.resourceDefinitions,basis)}})];
+}
+
 export async function runMasterSingleDefinitionSuccessorR1(
   config: MasterSingleDefinitionSuccessorConfig,
 ): Promise<void> {
+  assertCanonicalNewWorkCatalogIdV1(config.catalogId);
+  const typedQuantityErrors=validateMasterTypedPartialQuantityPreparationR1(config);
+  invariant(typedQuantityErrors.length===0,`${stop(config,'TYPED_QUANTITY_PREFLIGHT')}:${typedQuantityErrors.join(',')}`);
   const apply = process.argv.includes("--apply");
   const allowHashedDirtySource = process.env.R4A13_ALLOW_HASHED_DIRTY_SOURCE === "true";
   const sourcePathsForIdentity = [...new Set([
     ...config.sourcePaths,
+    ...(config.passport.partialQuantityBasis==null&&!config.binding.retainParentBindings?.operationCompositionOnly?.capturedContentPassport.decision?.partialQuantityBasis?[]:['scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts']),
+    'src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts',
     ...(config.catalogAppend == null && config.binding.additionalRowIds == null ? [] : [
       "scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts",
     ]),
     ...(Object.hasOwn(config.binding,"retainParentBindings")
       ?["scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts"]:[]),
+    ...(config.binding.retainParentBindings?.operationCompositionOnly?['scripts/estimate/r4a13/masterOperationCompositionOnlyR1.ts']:[]),
     ...(Object.hasOwn(config.binding,"reuseExistingNormativeRegistry")
       ?["src/lib/estimate/estimateDeterministicHash.ts"]:[]),
     "scripts/estimate/r4a13/projectSourcePackageBindingR1.ts",
@@ -1169,19 +1610,19 @@ export async function runMasterSingleDefinitionSuccessorR1(
       && Number.isInteger(append.searchPlacement.membershipOrdinal),
     stop(config, "APPEND_SEARCH_PLACEMENT_INCOMPLETE"));
   }
+  const operationOnly=config.binding.retainParentBindings?.operationCompositionOnly;
+  const projectScopeOnly=config.binding.retainParentBindings?.projectScopeMetadataOnlyV1;
+  const authorityOnly=config.binding.retainParentBindings?.truthAuthorityOnlyV1;
+  const repairVisibilityOnly=config.binding.retainParentBindings?.monolithicRepairGeometryVisibilityOnlyR60;
+  const metadataOnlyPassport=operationOnly?.capturedContentPassport??projectScopeOnly?.capturedContentPassport??authorityOnly?.capturedContentPassport??repairVisibilityOnly?.capturedContentPassport;
+  const operationParent=metadataOnlyPassport?config.binding.retainParentBindings!.capturedParent:null;
   const parameterRows: Json[] = config.parameterDefinitions.map((parameter) => ({ ...parameter }));
   const formulaRows: Json[] = config.formulaDefinitions.map((formula) => ({
     ...formula,
     ast_sha256: config.binding.retainParentBindings?.capturedParent.formulas
       .some(row=>row.formula_id===formula.formula_id)?formula.ast_sha256:sha256(formula.ast),
   }));
-  const resourceRows: Json[] = config.resourceDefinitions.map((resource) => ({
-    ...resource,
-    row_type: ["material", "labor", "equipment", "service", "waste", "other"]
-      .includes(String(resource.row_type))
-      ? resource.row_type
-      : resourceRowType(resource.category),
-  }));
+  const resourceRows: Json[] = buildMasterPublicationResourceRowsR1(config.resourceDefinitions);
   const explicitAppendParameterSources = resolveMasterAppendExplicitParameterSourcesR1(config, {
     parameters: parameterRows, formulas: formulaRows, resources: resourceRows,
   });
@@ -1221,48 +1662,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
     || projectSourcePackage?.packagePayloadSha256
       === projectSourcePackageSet.targetPackagePayloadSha256,
   stop(config, "PROJECT_SOURCE_COMPLETE_SET_TARGET_DRIFT"));
-  const resolvedSourceMetadata = {
-    ...config.sourceMetadata,
-    ...(projectSourcePackage == null ? {} : {
-      source_kind: "APPROVED_PROJECT_DOCUMENT_PACKAGE",
-      artifact_sha256: projectSourcePackage.packagePayloadSha256,
-    }),
-  };
-  const resolvedLocators = projectSourcePackage == null
-    ? [{
-      key: config.locator.key,
-      payload: config.locator.payload,
-      excerptSha256: resolveMasterSingleDefinitionLocatorExcerptSha256R1(config),
-    }]
-    : projectSourcePackage.verifiedLocators.map((locator, index) => ({
-      key: `${config.locator.key}:package:${projectSourcePackage.packagePayloadSha256}`
-        + `:excerpt:${index}:${locator.excerptSha256}`,
-      payload: {
-        ...config.locator.payload,
-        kind: "APPROVED_PROJECT_DOCUMENT_PACKAGE_BOUND",
-        projectSourcePackage: {
-          packageId: projectSourcePackage.packageId,
-          packagePayloadSha256: projectSourcePackage.packagePayloadSha256,
-          ...(projectSourcePackageSet == null ? {} : {
-            completePackageSet: projectSourcePackageSet,
-          }),
-          projectMetadata: projectSourcePackage.projectMetadata,
-          catalogMappingIdentity: {
-            catalogId: projectSourcePackage.mapping.catalogId,
-            definitionSha256: projectSourcePackage.mapping.definitionSha256,
-            rowId: projectSourcePackage.mapping.rowId,
-          },
-          documentLocator: locator.documentLocator,
-          verifiedExcerpt: {
-            artifactId: locator.artifactId,
-            fileName: locator.excerptFileName,
-            bytes: locator.excerptBytes,
-            sha256: locator.excerptSha256,
-          },
-        },
-      },
-      excerptSha256: locator.excerptSha256,
-    }));
+  const { resolvedSourceMetadata, resolvedLocators, registrySourceMetadata, existingRegistryReuse, retentionCandidate } =
+    assembleMasterSingleDefinitionManagedRegistryCandidateR1(config, { projectSourcePackage, projectSourcePackageSet });
   const runtimeProfileInput = { ...(config.runtimeProfileInput ?? {}) };
   const runtimeProfileClassification = { ...(config.runtimeProfileClassification ?? {}) };
   const runtimeProfileSourceIds = Object.fromEntries(Object.entries(
@@ -1295,7 +1696,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const { formulaConsumers, resourceConsumers } = buildMasterParameterCalculationConsumers({
     parameters: parameterRows, formulas: formulaRows, resources: resourceRows,
   });
-  invariant(parameterRows.every((parameter) => resourceConsumers[parameter.parameter_id]!.length > 0),
+  invariant(parameterRows.every((parameter) => resourceConsumers[parameter.parameter_id]!.length > 0
+    || isMasterRetainedRetiredUnusedParameterR1(config.binding.retainParentBindings, parameter,
+      {parameters: parameterRows, formulas: formulaRows, resources: resourceRows})),
     stop(config, "PARAMETER_WITHOUT_RESOURCE_CONSUMER"));
 
   const sourceEnvelope = {
@@ -1333,35 +1736,11 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const searchReleaseId = uuid(`${config.contract}:${fingerprint}:search-release`);
   const definitionId = uuid(`${config.contract}:${fingerprint}:definition`);
   const baselineId = uuid(`${config.contract}:${fingerprint}:baseline`);
-  const generatedSourceId = uuid(`${config.contract}:${config.sourceId}:source`);
-  const generatedLocatorIds = resolvedLocators.map((locator) => projectSourcePackage == null
-    ? uuid(`${config.contract}:${config.sourceId}:${locator.key}:locator`)
-    : uuid(`${config.sourceId}:${locator.key}:normative-locator`));
-  const registrySourceMetadata={
-    contract:config.contract,
-    sourceKind:resolvedSourceMetadata.source_kind??"PROJECT_DOCUMENTATION_REQUIRED",
-    useRestriction:resolvedSourceMetadata.use_restriction,
-    universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false,
-    ...(projectSourcePackage==null?{}:{projectSourcePackage:{
-      packageId:projectSourcePackage.packageId,packagePayloadSha256:projectSourcePackage.packagePayloadSha256,
-      ...(projectSourcePackageSet==null?{}:{completePackageSet:projectSourcePackageSet}),
-      artifactReceipts:projectSourcePackage.artifactReceipts,excerptReceipts:projectSourcePackage.excerptReceipts,
-      projectMetadata:projectSourcePackage.projectMetadata,
-    }}),
-  };
-  const generatedRetentionCandidate={config,newSource:{id:generatedSourceId,source_key:config.sourceId,
-    title_ru:resolvedSourceMetadata.source_title,authority:resolvedSourceMetadata.source_authority,
-    official_url:resolvedSourceMetadata.official_url??null,artifact_sha256:resolvedSourceMetadata.artifact_sha256??null,
-    effective_from:resolvedSourceMetadata.effective_from??null,effective_to:null,metadata:registrySourceMetadata},
-    newLocators:resolvedLocators.map((locator,index)=>({id:generatedLocatorIds[index]!,source_id:generatedSourceId,
-      locator_key:locator.key,locator:locator.payload,excerpt_sha256:locator.excerptSha256}))};
-  const existingRegistryReuse=resolveMasterExistingNormativeRegistryReuseR1(generatedRetentionCandidate);
   if(existingRegistryReuse?.declaration.locatorExcerptHashKind==='REVIEWED_NORM_PACK_ITEM_SHA256_R1'){
     for(const p of [existingRegistryReuse.declaration.reviewedNormPack!.artifactPath,'scripts/estimate/r4a13/masterReviewedNormPackRegistryReuseR1.ts'])
       invariant(config.sourcePaths.some(item=>resolve(item)===resolve(p)),stop(config,'REVIEWED_NORM_PACK_PROOF_MUST_BE_FINGERPRINTED'));
   }
-  const retentionCandidate=existingRegistryReuse==null?generatedRetentionCandidate:{config,
-    newSource:existingRegistryReuse.managedSource,newLocators:existingRegistryReuse.locators};
+  const additionalRegistryReuse=resolveMasterAdditionalCapturedExistingRegistryV1(retentionCandidate);
   const sourceId=String(retentionCandidate.newSource.id);
   const locatorIds=retentionCandidate.newLocators.map(locator=>String(locator.id));
   const retentionInput=masterRetainParentBindingsOptInR1(retentionCandidate)==null?null:retentionCandidate;
@@ -1382,6 +1761,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
   const client = new Client({
     connectionString: DATABASE_URL,
     application_name: config.applicationName,
+    options: '-c TimeZone=UTC',
   });
   await client.connect();
   let receipt: Json;
@@ -1417,6 +1797,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
     } else {
       invariant(old == null, `${stop(config, "APPEND_PARENT_ALREADY_HAS_TARGET")}:${config.catalogId}`);
     }
+    await config.verifyTargetPrecondition?.(client, "PREFLIGHT");
     const lineage = append == null
       ? await resolveCanonicalApprovedBaselineLeaf(
         client,
@@ -1442,13 +1823,11 @@ export async function runMasterSingleDefinitionSuccessorR1(
       "select coalesce(max(definition_version),0)::int+1 value from public.estimate_definition_version where catalog_id=$1",
       [config.catalogId],
     )).rows[0].value);
+    const retiredArea = await readMasterAreaRetirementCountsR575(client,config.parentReleaseId);
+    const activeParentCounts=resolveMasterActiveParentCountsR575({definitions:Number(parent.definition_count),
+      parameters:Number(parent.parameter_count),formulas:Number(parent.formula_count),resources:Number(parent.resource_row_count)},retiredArea);
     const nextCounts = resolveMasterSingleDefinitionNextCounts({
-      parent: {
-        definitions: Number(parent.definition_count),
-        parameters: Number(parent.parameter_count),
-        formulas: Number(parent.formula_count),
-        resources: Number(parent.resource_row_count),
-      },
+      parent: activeParentCounts,
       previousTarget: append == null ? {
         parameters: Number(old!.parameters),
         formulas: Number(old!.formulas),
@@ -1501,12 +1880,13 @@ export async function runMasterSingleDefinitionSuccessorR1(
       definitionSchemaSha256,
       lineage,
     });
-    const baselineRepresentative = {
+    const baselineRepresentative = operationParent?{...operationParent.baseline,parameter_schema_sha256:parameterSchemaSha256}:{
       parameter_schema_sha256: parameterSchemaSha256,
       input_values: { ...config.acceptanceInput, ...runtimeProfileInput },
       input_classification: Object.fromEntries(parameterRows.map((parameter) => [
         parameter.parameter_id,
-        runtimeProfileClassification[parameter.parameter_id] ?? "VALIDATION_FIXTURE",
+        resolveMasterRetainedBaselineInputClassificationR1(parameter.parameter_id,
+          runtimeProfileClassification, config.binding.retainParentBindings),
       ])),
       uom_by_parameter: Object.fromEntries(parameterRows.map((parameter) => [
         parameter.parameter_id, parameter.unit_id,
@@ -1538,16 +1918,39 @@ export async function runMasterSingleDefinitionSuccessorR1(
       }],
       contract_version: BASELINE_CONTRACT,
     };
-    const normativeBindingRowIds = resolveMasterSingleDefinitionBindingRowIds(config, resourceRows, locatorIds);
-    const normativeApplicabilityByRowId = resolveMasterSingleDefinitionBindingApplicabilityByRowId(config, resourceRows, locatorIds);
-    const newNormativeBindings=normativeBindingRowIds.flatMap(rowId=>locatorIds.map(locatorId=>({
+    const normativeBindingRowIds = operationOnly||projectScopeOnly||authorityOnly||repairVisibilityOnly?[]:resolveMasterSingleDefinitionBindingRowIds(config, resourceRows, locatorIds);
+    const normativeApplicabilityByRowId = operationOnly||projectScopeOnly||authorityOnly||repairVisibilityOnly?{}:resolveMasterSingleDefinitionBindingApplicabilityByRowId(config, resourceRows, locatorIds);
+    const additionalRowLocatorMap=masterAdditionalCapturedExistingRegistryV1(retentionCandidate)?.rowLocatorIds;
+    const newNormativeBindings=additionalRegistryReuse==null?normativeBindingRowIds.flatMap(rowId=>locatorIds.map(locatorId=>({
       row_id:rowId,locator_id:locatorId,applicability:normativeApplicabilityByRowId[rowId],
-    })));
+    }))):normativeBindingRowIds.map(rowId=>({row_id:rowId,locator_id:additionalRowLocatorMap&&Object.hasOwn(additionalRowLocatorMap,rowId)
+      ?additionalRowLocatorMap[rowId]:locatorIds[0]!,applicability:normativeApplicabilityByRowId[rowId]}));
+    const ct126RetainedMigration=config.binding.ct126PreparedWallMigrationR2===true
+      ?await import('../../../src/lib/estimate/backendPlatform/canonicalCt126SixDryWallMigrationS2769'):null;
+    invariant(config.binding.ct126PreparedWallMigrationR2==null||config.binding.ct126PreparedWallMigrationR2===true,
+      stop(config,'CT126_R2_MIGRATION_OPT_IN'));
+    const ct126Parent=config.binding.retainParentBindings?.capturedParent;
+    invariant(!ct126RetainedMigration||(ct126Parent!=null&&config.contract==='rik-expo-app.s27-69.ct126-four-prepared-wall-branches.r2'),
+      stop(config,'CT126_R2_RETAINED_PARENT_REQUIRED'));
+    const ct126Proof=ct126RetainedMigration&&ct126Parent?ct126RetainedMigration.buildCt126SixDryWallMigrationProofS2769({
+      fromDefinition:{id:ct126Parent.definition.id,catalogId:config.catalogId,sha256:ct126Parent.definition.definition_sha256},
+      toDefinition:{id:definitionId,catalogId:config.catalogId,sha256:targetDefinitionSha256},from:ct126Parent,
+      to:{parameters:parameterRows.map(p=>({...p,truth_metadata:{...p.truth_metadata,contract:config.contract,
+        semantic_parameter_key:`${config.catalogId}:${p.parameter_id}`,formula_consumers:formulaConsumers[p.parameter_id],resource_branch_consumers:resourceConsumers[p.parameter_id]}})),
+        formulas:formulaRows,resources:resourceRows}}):null;
+    invariant(ct126Proof==null||ct126Proof.contractVersion==='canonical-ct126-six-dry-wall-migration/r2',stop(config,'CT126_R2_EXACT_PROOF_REQUIRED'));
     const retainedRepresentative=retentionInput==null?null:prepareMasterRetainedBindingRepresentativeR1(retentionInput,{
       parameters:parameterRows,formulas:formulaRows,resources:resourceRows,newBindings:newNormativeBindings,
       successorProvenance:{contract:config.contract,sourceId:config.sourceId,normId:config.normId,
         parentDefinitionId:old!.definition_version_id,parentBaselineId:old!.approved_template_baseline_id,
-        capturedParentSha256:config.binding.retainParentBindings!.capturedParentSha256,sourceFingerprint:fingerprint},
+        capturedParentSha256:config.binding.retainParentBindings!.capturedParentSha256,sourceFingerprint:fingerprint,
+        ...(projectScopeOnly?{projectScopeMetadataOnlyV1:masterProjectScopeMetadataCompactR1(config.binding.retainParentBindings!)}:{}),
+        ...(authorityOnly?{truthAuthorityOnlyV1:{contract:authorityOnly.contract,changesSha256:authorityOnly.changesSha256,
+          parameterIds:Object.keys(authorityOnly.changes).sort(),
+          ...(authorityOnly.sourceProfileMetadataOnlyV1?{sourceProfileMetadataOnlyV1:masterRetainedSourceProfileMetadataCompactR1(authorityOnly)}:{})}}:{}),
+        ...(repairVisibilityOnly?{monolithicRepairGeometryVisibilityOnlyR60:{contract:repairVisibilityOnly.contract,changesSha256:repairVisibilityOnly.changesSha256,
+          parameterIds:Object.keys(repairVisibilityOnly.changes).sort()}}:{}),
+        ...(ct126Proof?{ct126PreparedWallMigrationR2:ct126Proof}:{})},
       lifecycleMetadata:{contract:config.contract,masterSha256:config.masterSha256,sourceFingerprint:fingerprint},
     });
     if(retainedRepresentative)baselineRepresentative.normative_source_ids=retainedRepresentative.normativeSourceIds;
@@ -1558,7 +1961,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
         releaseId,
         catalogId: config.catalogId,
         definitionVersion: nextDefinitionVersion,
-        passport: {
+        passport: operationParent?operationParent.definition.passport:{
           catalogId: config.catalogId,
           canonicalRuName: config.passport.canonicalRuName,
           workKey: config.passport.workKey,
@@ -1586,13 +1989,13 @@ export async function runMasterSingleDefinitionSuccessorR1(
         resources: resourceRows,
         bindings: retainedRepresentative?[...retainedRepresentative.bindings]:newNormativeBindings,
         baseline: baselineRepresentative,
-        passport: {
+        passport: metadataOnlyPassport??{
           contract_version: CONTENT_PASSPORT_CONTRACT,
           included_scope_ru: config.passport.includedScopeRu,
-          capability_matrix: buildMasterCapabilityMatrix(config.passport.unresolvedApplicableResourceRowIds, resourceRows),
+          capability_matrix: buildMasterCapabilityMatrix(config.passport.unresolvedApplicableResourceRowIds, resourceRows, config.passport.partialQuantityBasis),
         },
       },
-      parameterTruthMetadata: (parameter) => ({
+      parameterTruthMetadata: (parameter) => metadataOnlyPassport?parameter.truth_metadata:({
         ...parameter.truth_metadata,
         contract: config.contract,
         semantic_parameter_key: `${config.catalogId}:${parameter.parameter_id}`,
@@ -1613,7 +2016,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
         id: baselineId,
         key: `${config.contract}:${fingerprint.slice(0, 16)}:${config.catalogId}`,
         sourceDefinitionVersionId: lineage.definitionVersionId,
-        validationScenarioRefs: [{
+        validationScenarioRefs: projectScopeOnly?operationParent!.baseline.validation_scenario_refs:[{
           scenario: config.validationScenario,
           shortInput: config.shortInput,
            fixture: config.acceptanceInput,
@@ -1623,19 +2026,19 @@ export async function runMasterSingleDefinitionSuccessorR1(
            acceptanceEvidenceSha256,
           coreAcceptance,
         }],
-        acceptanceEvidenceSha256,
+        acceptanceEvidenceSha256:projectScopeOnly?operationParent!.baseline.acceptance_evidence_sha256:acceptanceEvidenceSha256,
         acceptedReleaseId: releaseId,
         supersedesBaselineId: append == null ? lineage.baselineId : null,
       },
       passport: {
-        physicalResultRu: config.passport.physicalResultRu,
-        excludedScopeRu: config.passport.excludedScopeRu,
-        decision: {
+        physicalResultRu: metadataOnlyPassport?metadataOnlyPassport.physical_result_ru:config.passport.physicalResultRu,
+        excludedScopeRu: metadataOnlyPassport?metadataOnlyPassport.excluded_scope_ru:config.passport.excludedScopeRu,
+        decision: metadataOnlyPassport?metadataOnlyPassport.decision:{
           contract: CONTENT_PASSPORT_CONTRACT,
           status: "GREEN",
           allowed: true,
           waveContract: config.contract,
-          ...buildMasterScopeReadiness(config.passport.unresolvedApplicableResourceRowIds, resourceRows),
+          ...buildMasterScopeReadiness(config.passport.unresolvedApplicableResourceRowIds, resourceRows, config.passport.partialQuantityBasis),
           priceState: "PARTIAL_NEEDS_PRICE",
           activationAllowed: false,
           productionEligible: false,
@@ -1647,6 +2050,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
           targetDefinitionSha256,
           acceptanceEvidenceSha256,
           independentCompletenessMap: config.passport.independentCompletenessMap,
+          ...(config.passport.partialQuantityBasis==null?{}:{partialQuantityBasis:config.passport.partialQuantityBasis}),
         }),
         sourceHead: head,
         sourceTree: tree,
@@ -1654,7 +2058,19 @@ export async function runMasterSingleDefinitionSuccessorR1(
       bindingApplicability: (binding) => ({ ...binding.applicability }),
       expectedNormativeBindingCount: retainedRepresentative?.expectedNormativeBindingCount??normativeBindingRowIds.length,
     });
+    // New sparse baselines carry exact metadata coverage; historical records
+    // stay untouched. Missing input values are never manufactured from metadata.
+    if(!operationParent&&retainedRepresentative&&config.binding.retainParentBindings?.legacyTemplateAssumptionSources?.approvedSourceEvidence
+      &&sha256(Object.keys(plan.baseline.input_values).sort())!==sha256(Object.keys(plan.baseline.input_classification).sort())){
+      plan.baseline.proposal_source_refs=[...plan.baseline.proposal_source_refs,
+        buildMasterRetainedSparseBaselineMetadataR1(plan,config.binding.retainParentBindings.capturedParentSha256)];
+    }
     if(retentionInput&&retainedRepresentative)assertMasterRetainedBindingPlanR1(retentionInput,plan,retainedRepresentative);
+    if(ct126RetainedMigration&&ct126Parent&&ct126Proof)invariant(ct126RetainedMigration.admitCt126SixDryWallMigrationProofS2769({proof:ct126Proof,
+      fromDefinition:{id:ct126Parent.definition.id,catalogId:config.catalogId,sha256:ct126Parent.definition.definition_sha256},
+      toDefinition:{id:definitionId,catalogId:config.catalogId,sha256:targetDefinitionSha256},from:ct126Parent,to:plan})!=null,
+      stop(config,'CT126_R2_FINAL_PLAN_MIGRATION_NOT_ADMITTED'));
+
 
     const existing = (await client.query(
       "select id,status from public.estimate_definition_release where id=$1",
@@ -1695,13 +2111,15 @@ export async function runMasterSingleDefinitionSuccessorR1(
       };
     } else {
       runtimeAdmissionMetadata = resolveMasterRuntimeAdmissionMetadataR1(
-        current, Number(parent.definition_count), nextCounts.definitions,
+        retiredArea.definitions>0?{...current,currentRuntimeDefinitions:activeParentCounts.definitions}:current,
+        activeParentCounts.definitions, nextCounts.definitions,
       );
-      await client.query(retentionInput||scopedRegistryInput!=null?"begin isolation level read committed":"begin");
+      await client.query(retentionInput||scopedRegistryInput!=null||config.verifyTargetPrecondition?"begin isolation level read committed":"begin");
       await client.query("set local lock_timeout='5s'");
       await client.query("set local statement_timeout='600s'");
       await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [config.contract]);
       try {
+        await config.verifyTargetPrecondition?.(client, "LOCKED_BEFORE");
         let lockedRetention=retentionPreflight;
         if(retentionInput&&retentionPreflight){
           await lockMasterRetainedBindingPreconditionsR1(client,retentionInput);
@@ -1739,6 +2157,15 @@ export async function runMasterSingleDefinitionSuccessorR1(
           const lockedScope=await readMasterScopedNormativeRegistryPreconditionsR1(client,scopedRegistryInput,"LOCKED_BEFORE");
           assertMasterScopedNormativeRegistryUnchangedR1(scopedRegistryInput,scopedRegistryPreflight,lockedScope);
         }
+        if(retiredArea.definitions>0){
+          await client.query(`lock table public.estimate_cumulative_manifest_entry,public.estimate_definition_version,
+            public.estimate_parameter_definition,public.estimate_formula_graph,public.estimate_resource_spec,
+            public.estimate_search_index_release,public.estimate_search_document,public.estimate_search_group,
+            public.estimate_search_group_membership,public.estimate_search_clarification_question,
+            public.estimate_search_typed_relation in share row exclusive mode`);
+        }
+        const lockedRetirement=await readMasterAreaRetirementCountsR575(client,config.parentReleaseId);
+        invariant(sha256(lockedRetirement)===sha256(retiredArea),stop(config,'AREA_RETIREMENT_CHANGED_BEFORE_WRITE'));
         const sourceBefore = (await client.query(`select id::text,artifact_sha256
           from public.estimate_normative_source where source_key=$1`, [config.sourceId]))
           .rows[0] as Json | undefined;
@@ -1811,8 +2238,9 @@ export async function runMasterSingleDefinitionSuccessorR1(
         if(scopedRegistryInput!=null)await readMasterScopedNormativeRegistryPreconditionsR1(
           client,scopedRegistryInput,"REGISTERED");
         const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan],
-          retentionInput?.config.binding.retainParentBindings?.legacyTemplateAssumptionSources
-            ? [retentionInput] : []);
+          retentionInput != null && (retentionInput.config.binding.retainParentBindings?.legacyTemplateAssumptionSources
+            || retentionInput.config.binding.retainParentBindings?.legacyCapturedFixtureSources)
+            ? [retentionInput] : [], hasMasterTypedPartialQuantityBasisR1(plan.passport)&&retentionInput!=null?[retentionInput]:[]);
         await client.query(`insert into public.estimate_definition_release(
             id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,
             definition_count,resource_row_count,metadata,parent_release_id,source_package_sha256,
@@ -1883,7 +2311,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
             publication_state,approved_template_baseline_id,baseline_ready,scenario_ready,definition_hash,
             encode(extensions.digest(convert_to($2||':'||$1::uuid::text||':'||catalog_id||':'||entry_sha256,'UTF8'),'sha256'),'hex'),
             runtime_publication_state
-          from public.estimate_cumulative_manifest_entry where release_id=$3`, [
+          from public.estimate_cumulative_manifest_entry inherited where release_id=$3
+            and ${canonicalPublicWorkSqlV1('inherited')}`, [
           releaseId, config.contract, config.parentReleaseId,
         ]);
         const persisted = await publishCanonicalDefinitionDraft(client, plan);
@@ -1937,7 +2366,16 @@ export async function runMasterSingleDefinitionSuccessorR1(
           fingerprint,
           definitionId,
         });
+        const retiredSelection=(await client.query(`select
+          (select count(*)::int from public.estimate_cumulative_manifest_entry m where release_id=$1 and not (${canonicalPublicWorkSqlV1('m')})) manifest,
+          (select count(*)::int from public.estimate_search_document d where search_release_id=$2 and not (${canonicalPublicWorkSqlV1('d')})) documents,
+          (select count(*)::int from public.estimate_search_group_membership m where search_release_id=$2 and not (${canonicalPublicWorkSqlV1('m')})) memberships,
+          (select count(*)::int from public.estimate_search_clarification_question q where search_release_id=$2
+            and exists(select 1 from unnest(q.candidate_ids) candidate(catalog_id) where not (${canonicalPublicWorkSqlV1('candidate')}))) questions`,[releaseId,searchReleaseId])).rows[0];
+        invariant(retiredSelection && Object.values(retiredSelection).every(count=>Number(count)===0),stop(config,'AREA_SELECTION_SURVIVED_CLONE'));
         const audit = await auditState(client, config, releaseId, searchReleaseId, definitionId);
+        audit.activeAreaRetirement={policy:CANONICAL_PUBLIC_CATALOG_VISIBILITY_V1,parentReleaseId:config.parentReleaseId,
+          retiredCounts:retiredArea,successorRetiredSelectionCounts:retiredSelection,historicalDefinitionsDeleted:false};
         invariant(Number(audit.manifest.identities) === nextCounts.definitions
           && Number(audit.manifest.replaced) === 1,
         `${stop(config, "MANIFEST_AUDIT")}:${JSON.stringify(audit.manifest)}`);
@@ -2020,6 +2458,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
           searchReleaseId,
           definitionId,
         );
+        terminalAudit.activeAreaRetirement=audit.activeAreaRetirement;
         invariant(terminalAudit.release.status === "prepared"
           && terminalAudit.release.activated_at == null,
         `${stop(config, "TERMINAL_LIFECYCLE")}:${JSON.stringify(terminalAudit.release)}`);
@@ -2103,6 +2542,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
       manifestHashChainSha256: receipt!.audit.manifest.snapshot,
       searchHashChainSha256: receipt!.audit.search.snapshot_sha256,
       currentRuntimeDefinitions: receipt!.successor.nextCounts.definitions,
+      activeAreaRetirement:receipt!.audit.activeAreaRetirement,
       owner: config.owner,
       productionAccessed: false,
       fakeGreenClaimed: false,

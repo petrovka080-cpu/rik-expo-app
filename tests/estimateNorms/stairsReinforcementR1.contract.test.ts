@@ -1,4 +1,4 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import { extractStripFoundationReinforcementCanonicalParametersR1, stripFoundationReinforcementPromptDetailsR1 } from "../../src/lib/estimate/ownedDomain/stripFoundationReinforcementProductionBindingR1";
 import { REINFORCEMENT_BAR_SCHEDULE_SOURCE_ID } from "../../src/lib/estimate/v4/domainFactory";
@@ -9,7 +9,7 @@ function catalog(target: (typeof STAIRS_REINFORCEMENT_TARGETS)[number]): Canonic
 }
 
 describe("stairs reinforcement family", () => {
-  test("compiles all seven exact identities from distinct approved BBS schedules", async () => {
+  test("compiles all five exact identities from distinct approved BBS schedules", async () => {
     const results = [];
     for (const target of STAIRS_REINFORCEMENT_TARGETS) {
       const fixture = stairsReinforcementAcceptanceInputR1(target.contextKey);
@@ -24,9 +24,7 @@ describe("stairs reinforcement family", () => {
     expect(results).toEqual([
       { contextKey: "standard", steelKg: 1_200, rows: 9, procurementRows: 6 },
       { contextKey: "high_load", steelKg: 4_200, rows: 16, procurementRows: 10 },
-      { contextKey: "large_area", steelKg: 9_400, rows: 15, procurementRows: 9 },
       { contextKey: "repair", steelKg: 450, rows: 15, procurementRows: 9 },
-      { contextKey: "small_area", steelKg: 280, rows: 9, procurementRows: 6 },
       { contextKey: "technical_room", steelKg: 1_000, rows: 15, procurementRows: 9 },
       { contextKey: "wet_zone", steelKg: 2_100, rows: 10, procurementRows: 7 },
     ]);

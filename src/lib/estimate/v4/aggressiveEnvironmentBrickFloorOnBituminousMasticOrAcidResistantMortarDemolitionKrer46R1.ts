@@ -23,18 +23,6 @@ export const AGGRESSIVE_ENVIRONMENT_BRICK_FLOOR_ON_BITUMINOUS_MASTIC_OR_ACID_RES
     catalogVariant: "STANDARD_CONFIRMED_BRICK_FLOOR",
     canonicalNameRu: "Разборка кирпичного покрытия пола на битумной мастике или кислотоупорном растворе в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId: `${CATALOG_PREFIX}_large_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_BRICK_FLOOR",
-    canonicalNameRu: "Разборка кирпичного покрытия пола на битумной мастике или кислотоупорном растворе в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: `${CATALOG_PREFIX}_small_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_BRICK_FLOOR",
-    canonicalNameRu: "Разборка кирпичного покрытия пола на битумной мастике или кислотоупорном растворе в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: `${CATALOG_PREFIX}_wet_zone`,
     sourceIdentity: `master-work:${FAMILY_KEY}_wet_zone`,
@@ -440,18 +428,6 @@ export const AGGRESSIVE_ENVIRONMENT_BRICK_FLOOR_ON_CEMENT_ACID_RESISTANT_MORTAR_
     catalogVariant: "STANDARD_CONFIRMED_BRICK_FLOOR",
     canonicalNameRu: "Разборка кирпичного покрытия пола на цементном кислотоупорном растворе или кислотоупорных замазках в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId: `${RATE_08_CATALOG_PREFIX}_large_area`,
-    sourceIdentity: `master-work:${RATE_08_FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_BRICK_FLOOR",
-    canonicalNameRu: "Разборка кирпичного покрытия пола на цементном кислотоупорном растворе или кислотоупорных замазках в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: `${RATE_08_CATALOG_PREFIX}_small_area`,
-    sourceIdentity: `master-work:${RATE_08_FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_BRICK_FLOOR",
-    canonicalNameRu: "Разборка кирпичного покрытия пола на цементном кислотоупорном растворе или кислотоупорных замазках в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: `${RATE_08_CATALOG_PREFIX}_wet_zone`,
     sourceIdentity: `master-work:${RATE_08_FAMILY_KEY}_wet_zone`,
@@ -634,18 +610,6 @@ export const AGGRESSIVE_ENVIRONMENT_BRICK_FLOOR_ON_SULFUR_CEMENT_OR_PLASTIC_OR_A
     sourceIdentity: `master-work:${RATE_09_FAMILY_KEY}_standard`,
     catalogVariant: "STANDARD_CONFIRMED_BRICK_FLOOR",
     canonicalNameRu: "Разборка кирпичного покрытия пола на серном цементе, пластзамазках или арзамитзамазках в агрессивной среде",
-  }),
-  large_area: Object.freeze({
-    catalogId: `${RATE_09_CATALOG_PREFIX}_large_area`,
-    sourceIdentity: `master-work:${RATE_09_FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_BRICK_FLOOR",
-    canonicalNameRu: "Разборка кирпичного покрытия пола на серном цементе, пластзамазках или арзамитзамазках в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: `${RATE_09_CATALOG_PREFIX}_small_area`,
-    sourceIdentity: `master-work:${RATE_09_FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_BRICK_FLOOR",
-    canonicalNameRu: "Разборка кирпичного покрытия пола на серном цементе, пластзамазках или арзамитзамазках в агрессивной среде — малая площадь",
   }),
   wet_zone: Object.freeze({
     catalogId: `${RATE_09_CATALOG_PREFIX}_wet_zone`,
@@ -839,18 +803,6 @@ export const AGGRESSIVE_ENVIRONMENT_BRICK_FLOOR_ON_DIFFERENT_BEDDING_LAYERS_WITH
     sourceIdentity: `master-work:${RATE_10_FAMILY_KEY}_standard`,
     catalogVariant: "STANDARD_CONFIRMED_BRICK_FLOOR",
     canonicalNameRu: "Разборка кирпичного покрытия пола на разных подстилающих слоях с расшивкой швов арзамит- или пластзамазками в агрессивной среде",
-  }),
-  large_area: Object.freeze({
-    catalogId: `${RATE_10_CATALOG_PREFIX}_large_area`,
-    sourceIdentity: `master-work:${RATE_10_FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_BRICK_FLOOR",
-    canonicalNameRu: "Разборка кирпичного покрытия пола на разных подстилающих слоях с расшивкой швов арзамит- или пластзамазками в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: `${RATE_10_CATALOG_PREFIX}_small_area`,
-    sourceIdentity: `master-work:${RATE_10_FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_BRICK_FLOOR",
-    canonicalNameRu: "Разборка кирпичного покрытия пола на разных подстилающих слоях с расшивкой швов арзамит- или пластзамазками в агрессивной среде — малая площадь",
   }),
   wet_zone: Object.freeze({
     catalogId: `${RATE_10_CATALOG_PREFIX}_wet_zone`,

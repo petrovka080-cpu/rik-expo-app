@@ -1,0 +1,21 @@
+{
+  "contract": "gox-exact-affected-jest-batches/v1",
+  "batches": {
+    "contracts": [
+      "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts"
+    ],
+    "owners": [
+      "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts",
+      "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts",
+      "src/lib/estimate/v4/ct126PreparedWallBranchesR2.test.ts"
+    ],
+    "ui": [
+      "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx",
+      "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
+      "tests/requestEstimate/requestEstimateViewModel.contract.test.ts"
+    ]
+  }
+}

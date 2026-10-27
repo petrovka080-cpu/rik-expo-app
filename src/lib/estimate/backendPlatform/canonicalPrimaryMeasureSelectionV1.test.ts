@@ -120,4 +120,48 @@ describe('optional conditional primary measure v1', () => {
     expect(result).toEqual({kind: 'RESOLVED', primaryMeasure: {parameterId: 'install_count', unitId: 'item'},
       selectorParameterId: 'composition', selectorValue: 'Complete product'});
   });
+
+  describe('explicit derived physical measure in a selected branch', () => {
+    const areaMetadata = {contract, selectorParameterId:'composition', selections:[
+      metadata.selections[0]!, {selectorValue:'Measured rectangle',primaryMeasureParameterId:'area_m2',unitId:'m2'},
+    ]};
+    const area:PrimaryMeasureSelectionParameterV1 = {
+      parameterId:'area_m2',valueType:'decimal',unitId:'m2',visibilityRole:'INTERNAL_ONLY',
+      valueSourceRole:'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE',runtimeProfileClassification:'PRELIMINARY_SOURCE_FORMULA',
+      provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'},
+      guide:{sourceDocument:'reviewed-geometry',sourceLocator:'Rectangle length multiplied by width',sourceSnapshotHash:'a'.repeat(64)},
+      normativeLinks:[{sourceId:'reviewed-geometry'}],formulaConsumers:['work:area'],
+    };
+    const areaSchema = [schema[0]!, {...schema[1]!,constraints:{values:['Existing assembly','Measured rectangle']}},area];
+    const areaInput = {selectionMetadata:areaMetadata,parameterSchema:areaSchema,
+      submittedParameters:{composition:'Measured rectangle',length_m:'10',width_m:'10',area_m2:'999'}};
+    test('selects the readonly m2 identity without returning a supplied area or converting length',()=>{
+      const before=copy(areaInput);
+      expect(resolve(areaInput)).toEqual({kind:'RESOLVED',primaryMeasure:{parameterId:'area_m2',unitId:'m2'},
+        selectorParameterId:'composition',selectorValue:'Measured rectangle'});
+      expect(areaInput).toEqual(before);
+    });
+    test('accepts an existing compiler-owned effective output identity',()=>{
+      expect(resolve({...areaInput,parameterSchema:areaSchema.map(p=>p.parameterId==='area_m2'
+        ? {...p,valueSourceRole:'COMPILER_DERIVED_RESOURCE_QUANTITY',runtimeProfileClassification:undefined,guide:undefined,normativeLinks:undefined,provenance:undefined}:p)}))
+        .toMatchObject({kind:'RESOLVED',primaryMeasure:{parameterId:'area_m2',unitId:'m2'}});
+    });
+    test.each<Partial<PrimaryMeasureSelectionParameterV1>>([
+      {valueSourceRole:'UNRESOLVED_APPLICATION_NORM'}, {valueSourceRole:'BACKEND_DERIVED'},
+      {runtimeProfileClassification:'ASSUMPTION'}, {provenance:{consumer_input_role_v1:'OBJECT_FACT'}},
+      {guide:undefined}, {guide:{...area.guide!,sourceDocument:''}},
+      {guide:{...area.guide!,sourceLocator:''}}, {guide:{...area.guide!,sourceSnapshotHash:'bad'}},
+      {normativeLinks:[]}, {formulaConsumers:[]}, {unitId:'linear_m'}, {visibilityRole:'USER_DERIVED_READONLY'},
+    ])('rejects an unproved derived identity %p',patch=>{
+      expect(resolve({...areaInput,parameterSchema:areaSchema.map(p=>p.parameterId==='area_m2'?{...p,...patch}:p)}))
+        .toMatchObject({kind:'CLARIFICATION_REQUIRED',reason:'INVALID_PRIMARY_DEFINITION'});
+    });
+    test('requires a fresh root when a saved length identity changes to computed area',()=>{
+      expect(resolve({...areaInput,parentPrimaryMeasure:{parameterId:'length_m',unitId:'linear_m'}}))
+        .toMatchObject({kind:'NEW_ROOT_REQUIRED',primaryMeasure:{parameterId:'area_m2',unitId:'m2'},
+          carryForward:{parameters:false,rowOverrides:false,prices:false}});
+      expect(resolve({...areaInput,explicitPrimaryMeasureParameterId:'length_m'}))
+        .toMatchObject({kind:'CLARIFICATION_REQUIRED',reason:'EXPLICIT_PRIMARY_MISMATCH'});
+    });
+  });
 });

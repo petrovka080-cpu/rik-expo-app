@@ -39,16 +39,6 @@ export const WOOD_FIREPROOFING_SURFACE_CLEANING_SOURCE_METADATA = Object.freeze(
 });
 
 export const WOOD_FIREPROOFING_SURFACE_CLEANING_VARIANTS = Object.freeze({
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:special_repair_interior_fireproof_clean_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu:
-      "Совместимая очистка огнезащищённой деревянной поверхности малой площади",
-    aliasesRu: [
-      "очистка огнезащиты малая площадь",
-      "очистка огнезащищённой древесины небольшой площади",
-    ],
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:special_repair_interior_fireproof_clean_standard",
     catalogVariant: "STANDARD_AREA_SEARCH_IDENTITY",

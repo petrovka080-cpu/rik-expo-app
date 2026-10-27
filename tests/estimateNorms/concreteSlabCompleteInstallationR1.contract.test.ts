@@ -8,11 +8,11 @@ import {
 } from "../../src/lib/estimate/v4/concreteSlabCompleteInstallationR1";
 
 describe("complete concrete slab installation R1", () => {
-  test("owns exactly the seven complete m3 catalog promises", () => {
-    expect(CONCRETE_SLAB_COMPLETE_INSTALLATION_TARGETS).toHaveLength(7);
+  test("owns exactly the five complete m3 catalog promises", () => {
+    expect(CONCRETE_SLAB_COMPLETE_INSTALLATION_TARGETS).toHaveLength(5);
     expect(new Set(CONCRETE_SLAB_COMPLETE_INSTALLATION_TARGETS.map(
       (target) => target.catalogId,
-    )).size).toBe(7);
+    )).size).toBe(5);
     expect(CONCRETE_SLAB_COMPLETE_INSTALLATION_TARGETS.every(
       (target) => target.catalogId.includes("_concrete_slab_form_"),
     )).toBe(true);

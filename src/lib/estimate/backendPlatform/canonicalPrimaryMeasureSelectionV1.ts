@@ -23,6 +23,11 @@ export type PrimaryMeasureSelectionParameterV1 = Readonly<{
   valueType: string;
   unitId?: string | null;
   visibilityRole?: string | null;
+  valueSourceRole?: string | null;
+  runtimeProfileClassification?: string | null;
+  guide?: Readonly<{sourceDocument?: string | null; sourceLocator?: string | null; sourceSnapshotHash?: string}>;
+  normativeLinks?: readonly unknown[];
+  provenance?: Readonly<Record<string, unknown>>;
   constraints?: Readonly<Record<string, unknown>>;
   formulaConsumers?: readonly string[];
 }>;
@@ -35,6 +40,8 @@ export type PrimaryMeasureSelectionIssueV1 =
   | 'INVALID_SELECTOR_DEFINITION'
   | 'INCOMPLETE_SELECTOR_COVERAGE'
   | 'INVALID_PRIMARY_DEFINITION'
+  | 'SOURCE_MANAGED_SELECTOR_SUBMITTED'
+  | 'INVALID_CONFIRMED_PARAMETERS'
   | 'SELECTION_REQUIRED'
   | 'UNKNOWN_SELECTION'
   | 'EXPLICIT_PRIMARY_MISMATCH'
@@ -72,6 +79,41 @@ const id = (x: unknown): x is string =>
 const value = (x: unknown): x is string =>
   typeof x === 'string' && x.trim().length > 0 && x.length <= 1000;
 
+/** The immutable catalogue explicitly owns this selector. This predicate does
+ * not confirm a value: the caller must provide the existing server/readback
+ * channel separately, and the resolver never reads a default or first branch. */
+export function isCanonicalSourceManagedPrimarySelectorV1(p: PrimaryMeasureSelectionParameterV1 | undefined): boolean {
+  return p?.valueType === 'enum' && p.visibilityRole === 'INTERNAL_ONLY'
+    && p.valueSourceRole === 'SOURCE_BACKED_PRELIMINARY_PROFILE'
+    && p.provenance?.consumer_input_role_v1 === 'APPLICATION_TECHNICAL';
+}
+
+/** The same readonly output already supported by the ordinary baseline chooser.
+ * Selecting its identity never accepts a caller's calculated quantity. The
+ * existing compiler owns the source formula and validates its dependencies. */
+export function isCanonicalCompilerDerivedPrimaryMeasureV1(p: PrimaryMeasureSelectionParameterV1 | undefined): boolean {
+  const copy = p?.provenance?.source_geometry_copy_v1;
+  const sourceGeometryCopy = record(copy) && Object.keys(copy).length === 3
+    && copy.contract === 'canonical-source-geometry-copy/v1' && id(copy.fromParameterId)
+    && copy.fromParameterId !== p?.parameterId && copy.unitId === p?.unitId
+    && p?.valueSourceRole === 'BACKEND_DERIVED'
+    && p.provenance?.consumer_input_role_v1 === 'APPLICATION_TECHNICAL';
+  return Boolean(p
+    && (p.valueType === 'decimal' || p.valueType === 'integer')
+    && p.visibilityRole === 'INTERNAL_ONLY'
+    && (sourceGeometryCopy || p.valueSourceRole === 'COMPILER_DERIVED_RESOURCE_QUANTITY'
+      || (p.valueSourceRole === 'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE'
+        && p.runtimeProfileClassification === 'PRELIMINARY_SOURCE_FORMULA'
+        && p.provenance?.consumer_input_role_v1 === 'APPLICATION_TECHNICAL'
+        && typeof p.guide?.sourceDocument === 'string' && p.guide.sourceDocument.trim().length > 0
+        && typeof p.guide.sourceLocator === 'string' && p.guide.sourceLocator.trim().length > 0
+        && /^[a-f0-9]{64}$/iu.test(p.guide.sourceSnapshotHash ?? '')
+        && (p.normativeLinks?.length ?? 0) > 0))
+    && typeof p.unitId === 'string' && p.unitId.trim().length > 0
+    && Array.isArray(p.formulaConsumers) && p.formulaConsumers.length > 0
+    && p.formulaConsumers.every(consumer => typeof consumer === 'string' && consumer.trim().length > 0));
+}
+
 /** Absence is deliberately different from malformed/null metadata. The former
  * returns control to the unchanged legacy chooser; the latter never silently
  * selects ordinal-zero q. Only an explicit finite enum branch is supported by
@@ -81,6 +123,9 @@ export function resolvePrimaryMeasureSelectionV1(input: Readonly<{
   selectionMetadata?: unknown;
   parameterSchema: readonly PrimaryMeasureSelectionParameterV1[];
   submittedParameters: Readonly<Record<string, unknown>>;
+  /** Existing server baseline/readback only. Never copy a request's own field
+   * into this channel. A client projection does not authorize the server. */
+  confirmedParameters?: Readonly<Record<string, unknown>>;
   explicitPrimaryMeasureParameterId?: unknown;
   parentPrimaryMeasure?: unknown;
 }>): PrimaryMeasureSelectionResultV1 {
@@ -118,7 +163,9 @@ export function resolvePrimaryMeasureSelectionV1(input: Readonly<{
     byId.set(p.parameterId, p);
   }
   const selector = byId.get(selectorId), domain = selector?.constraints?.values;
-  if (!selector || selector.valueType !== 'enum' || selector.visibilityRole !== 'USER_INPUT'
+  const sourceManagedSelector = isCanonicalSourceManagedPrimarySelectorV1(selector);
+  if (!selector || selector.valueType !== 'enum'
+      || (selector.visibilityRole !== 'USER_INPUT' && !sourceManagedSelector)
       || !Array.isArray(domain) || domain.length < 1 || domain.length > 64
       || !domain.every(value) || new Set(domain).size !== domain.length) {
     return clarify('INVALID_SELECTOR_DEFINITION', selectorId);
@@ -129,14 +176,22 @@ export function resolvePrimaryMeasureSelectionV1(input: Readonly<{
   for (const s of selections) {
     const p = byId.get(s.primaryMeasureParameterId);
     if (!p || (p.valueType !== 'integer' && p.valueType !== 'decimal')
-        || p.visibilityRole !== 'USER_INPUT' || p.unitId !== s.unitId
+        || (p.visibilityRole !== 'USER_INPUT' && !isCanonicalCompilerDerivedPrimaryMeasureV1(p))
+        || p.unitId !== s.unitId
         || !Array.isArray(p.formulaConsumers) || p.formulaConsumers.length < 1
         || !p.formulaConsumers.every(id)) {
       return clarify('INVALID_PRIMARY_DEFINITION', selectorId);
     }
   }
-  const hasSelection = Object.prototype.hasOwnProperty.call(input.submittedParameters, selectorId);
-  const selectedValue = hasSelection ? input.submittedParameters[selectorId] : undefined;
+  if (sourceManagedSelector && Object.prototype.hasOwnProperty.call(input.submittedParameters, selectorId)) {
+    return clarify('SOURCE_MANAGED_SELECTOR_SUBMITTED', selectorId, domain);
+  }
+  if (sourceManagedSelector && input.confirmedParameters !== undefined && !record(input.confirmedParameters)) {
+    return clarify('INVALID_CONFIRMED_PARAMETERS', selectorId, domain);
+  }
+  const selectionValues = sourceManagedSelector ? input.confirmedParameters ?? {} : input.submittedParameters;
+  const hasSelection = Object.prototype.hasOwnProperty.call(selectionValues, selectorId);
+  const selectedValue = hasSelection ? selectionValues[selectorId] : undefined;
   if (selectedValue === undefined || selectedValue === null || selectedValue === '') {
     return clarify('SELECTION_REQUIRED', selectorId, domain);
   }

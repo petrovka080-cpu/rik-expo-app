@@ -68,6 +68,8 @@ describe("S27.3 F09 fire-alarm system commissioning owner", () => {
     });
     expect(compiled.preliminaryNeeds).toEqual([]);
     expect(compiled.rows).toHaveLength(8);
+    expect(compiled.rows.map((row) => row.quantity))
+      .toEqual(["100", "2", "8", "12", "5", "96", "24", "4"]);
     expect(compiled.rows).toEqual(expect.arrayContaining([
       expect.objectContaining({ row_id: ROW_IDS[1], quantity: "2", unit_id: "pcs" }),
       expect.objectContaining({ row_id: ROW_IDS[2], quantity: "8", unit_id: "test" }),
@@ -112,4 +114,13 @@ describe("S27.3 F09 fire-alarm system commissioning owner", () => {
       { catalogId: `${FIRE_ALARM_COMMISSIONING_STANDARD_CATALOG_ID}:unsupported` },
     )).rejects.toThrow("FIRE_ALARM_COMMISSIONING_STANDARD_CATALOG_UNSUPPORTED");
   });
+});
+
+test("standard commissioning rejects the retired area catalog identity", async () => {
+  await expect(compileFireAlarmCommissioningStandardR1(
+    { ...FIRE_ALARM_COMMISSIONING_STANDARD_ACCEPTANCE_INPUT },
+    { catalogId: "canonical-work:base:electrical_interior_fire_alarm_commission_large_area" },
+  )).rejects.toThrow("FIRE_ALARM_COMMISSIONING_STANDARD_CATALOG_UNSUPPORTED");
+  expect(JSON.stringify(FIRE_ALARM_COMMISSIONING_STANDARD_RESOURCES))
+    .not.toMatch(/boiler|radiator|heating/iu);
 });

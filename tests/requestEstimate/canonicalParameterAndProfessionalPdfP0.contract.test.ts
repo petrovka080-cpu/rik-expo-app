@@ -21,7 +21,7 @@ import {
 } from "../../src/lib/estimate/backendPlatform/contracts";
 
 const ASPHALT_CATALOG_ID =
-  "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_large_area_professional_expanded_v1";
+  "work_catalog_roadworks_paving_roads_landscape_interior_asphalt_drain_standard_professional_expanded_v1";
 const ASPHALT_REVISION_ID = "3f697e7c-e53b-45a7-b1cf-1d05680f9cb9";
 const PIPELINE_REVISION_ID = "36ee30db-f4d9-4ea9-af9c-27b4a8f58179";
 const PIPELINE_ARTIFACT_ID = "0601a039-d897-45dd-b15a-35b379944491";
@@ -68,7 +68,7 @@ const asphaltCatalog: CanonicalEstimateCatalogItem = {
   releaseId: RELEASE_ID,
   namespace: "global",
   domain: "roadworks",
-  workKey: "asphalt_drain_large_area",
+  workKey: "asphalt_drain_standard",
   titleRu: "Водоотвод для асфальтового покрытия на большой площади",
   definitionVersion: 6,
   applicability: {},
@@ -514,11 +514,17 @@ describe("P0 canonical parameter editor and professional PDF", () => {
       parameters: Object.fromEntries(asphaltCatalog.parameterSchema.map((schema) => [schema.parameterId, schema.defaultValue])),
     });
     const session = buildConsumerCanonicalParameterSession({ catalog, revision: root, draftId: "transport-inputs" });
-    const cardKeys = buildCanonicalParameterCards({ session, revision: null }).map((card) => card.key);
-
-    expect(cardKeys).not.toContain("truck_average_speed_km_per_machine_hour");
-    expect(cardKeys).not.toContain("truck_turnaround_machine_hours");
-    expect(cardKeys).toEqual(asphaltCatalog.parameterSchema.map((parameter) => parameter.parameterId));
+    const cards = buildCanonicalParameterCards({ session, revision: null });
+    const technicalIds = ["truck_average_speed_km_per_machine_hour", "truck_turnaround_machine_hours"];
+    for (const key of technicalIds) {
+      expect(cards.some(card => card.key === key)).toBe(false);
+      expect(session.applicationParameters?.find(parameter => parameter.parameterId === key))
+        .toMatchObject({inputOwnership: "APPLICATION", consumerInputRole: "APPLICATION_TECHNICAL", value: null});
+      expect(session.parameters.some(parameter => parameter.parameterId === key)).toBe(false);
+      expect(session.blockingMissingParameterIds).not.toContain(key);
+    }
+    expect(cards.filter(card => card.editable).map(card => card.key))
+      .toEqual(asphaltCatalog.parameterSchema.map((parameter) => parameter.parameterId));
   });
 
   it("preserves the complete public position name and technical designation around a colon", () => {

@@ -61,11 +61,31 @@ function busyCompatibleManifest() {
 }
 
 describe("canonicalEstimateClient access-token refresh", () => {
+  it.each([undefined,'Подтверждённый план целых замесов меньше расчётного минимума.'])
+  ('explains bounds failure from optional authored feedback while old code-only jobs remain supported: %s',async reason=>{
+    mockGetSession.mockResolvedValue({data:{session:{access_token:'token',expires_at:Math.floor(Date.now()/1000)+7200}},error:null});
+    mockFetchWithRequestTimeout.mockResolvedValue(new Response(JSON.stringify({jobId:revisionId,status:'failed',errorCode:'FORMULA_OUTPUT_BOUNDS_FAILED',
+      errorUserMessageRu:reason,resultRevisionId:null}),{status:200,headers:{'Content-Type':'application/json'}}));
+    const error=await waitForCanonicalEstimateJob({jobId:revisionId}).catch(value=>value);
+    expect(error).toMatchObject({code:'FORMULA_OUTPUT_BOUNDS_FAILED',httpStatus:422,retryable:false});
+    expect(error.message).toContain(reason??'согласованность введённых количеств');
+    expect(error.message).not.toContain('FORMULA_OUTPUT_BOUNDS_FAILED');expect(error.message).toContain('Введённые данные сохранены');
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout.mock.calls[0]?.[1]?.method??'GET').toBe('GET');
+  });
   it('explains a rejected composition change without exposing its code or retrying the mutation', async () => {
     mockGetSession.mockResolvedValue({data:{session:{access_token:'token',expires_at:Math.floor(Date.now()/1000)+7200}},error:null});
     mockFetchWithRequestTimeout.mockResolvedValue(new Response(JSON.stringify({jobId:revisionId,status:'failed',errorCode:'COMPOSITION_SELECTION_INVALID',resultRevisionId:null}),{status:200,headers:{'Content-Type':'application/json'}}));
     await expect(waitForCanonicalEstimateJob({jobId:revisionId})).rejects.toMatchObject({code:'COMPOSITION_SELECTION_INVALID',httpStatus:422,retryable:false,
       message:'Изменение состава не выполнено. Для выбранной подработы нужно проверить общие ресурсы и применимость состава. Исходная смета и ручные данные сохранены.'});
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout.mock.calls[0]?.[1]?.method??'GET').toBe('GET');
+  });
+  it('explains an empty composition without technical database text or a second mutation', async () => {
+    mockGetSession.mockResolvedValue({data:{session:{access_token:'token',expires_at:Math.floor(Date.now()/1000)+7200}},error:null});
+    mockFetchWithRequestTimeout.mockResolvedValue(new Response(JSON.stringify({jobId:revisionId,status:'failed',errorCode:'EMPTY_ESTIMATE_COMPOSITION',resultRevisionId:null}),{status:200,headers:{'Content-Type':'application/json'}}));
+    await expect(waitForCanonicalEstimateJob({jobId:revisionId})).rejects.toMatchObject({code:'EMPTY_ESTIMATE_COMPOSITION',httpStatus:422,retryable:false,
+      message:'В смете нет позиций. Укажите объём работ больше нуля и проверьте выбранный состав. Введённые данные сохранены.'});
     expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
     expect(mockFetchWithRequestTimeout.mock.calls[0]?.[1]?.method??'GET').toBe('GET');
   });

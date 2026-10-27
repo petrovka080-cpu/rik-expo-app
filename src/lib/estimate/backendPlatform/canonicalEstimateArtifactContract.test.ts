@@ -9,6 +9,7 @@ import {
   canonicalProfessionalArtifactMetadataIdentityMatches,
   selectCanonicalArtifactRows,
 } from "./canonicalEstimateArtifactContract";
+import { canonicalEstimateStableJson } from "./canonicalEstimateDeterminism";
 
 const revision = {
   id: "revision-1",
@@ -25,6 +26,30 @@ const rows = [
   { row_id: "labor", ordinal: 1, section: "labor", category: "labor", title_ru: "Работа", unit_id: "m2", quantity: "10", unit_price: null, amount: null, currency_code: "KGS", procurement_eligible: false, included_in_estimate: true, included_in_procurement: false, ownership_status: "OWNED", row_sha256: "d".repeat(64) },
   { row_id: "legacy", ordinal: 2, section: "legacy", category: "legacy", title_ru: "Legacy", unit_id: "item", quantity: "999", unit_price: null, amount: null, currency_code: "KGS", procurement_eligible: true, included_in_estimate: false, included_in_procurement: false, ownership_status: "MIGRATED_UNOWNED_EXCLUDED_FROM_TOTAL", row_sha256: "e".repeat(64) },
 ];
+
+it("serializes one purchased resource and its related operations as valid immutable JSON", () => {
+  const material = { ...rows[0], row_id: "membrane-rolls", unit_id: "roll", quantity: "30", calculation_trace: {
+    resourceGraph: { operationCompositionV1: {
+      contractVersion: "canonical-operation-resource/v1", groupId: "bridge", groupTitleRu: "Мостовое покрытие",
+      operationId: "roll-order", operationTitleRu: "Общий заказ рулонов", completionCriterionRu: "Один общий заказ",
+      processOrdinal: 0, processRole: "COST_SUMMARY", additionalOperations: [
+        { operationId: "field", operationTitleRu: "Основное поле", completionCriterionRu: "Поле наплавлено" },
+        { operationId: "details", operationTitleRu: "Детали", completionCriterionRu: "Детали герметичны" },
+      ],
+    } },
+  } };
+  const before = JSON.stringify(material);
+  const projection = buildCanonicalProcurementProjection({ revision: { ...revision, row_count: 1 },
+    procurementRows: [material], sourceRows: [material] });
+  const serialized = canonicalEstimateStableJson(projection);
+  expect(() => JSON.parse(serialized)).not.toThrow();
+  expect(JSON.parse(serialized)).toEqual(projection);
+  expect(projection.rows).toHaveLength(1);
+  expect(projection.rows[0]).toMatchObject({ rowId: "membrane-rolls", quantity: "30" });
+  expect(projection.operationGroups.filter(group => group.rowIds.includes("membrane-rolls"))).toHaveLength(1);
+  expect(projection.operationGroups.filter(group => group.sharedResources?.some(row => row.rowId === "membrane-rolls"))).toHaveLength(2);
+  expect(JSON.stringify(material)).toBe(before);
+});
 
 describe("canonical estimate artifact contract", () => {
   it("keeps small positive source quantities visible instead of displaying zero", () => {
@@ -101,7 +126,7 @@ describe("canonical estimate artifact contract", () => {
     expect(canonicalArtifactSection(kit)).toBe("Материалы");
     const projection = buildCanonicalProcurementProjection({ revision, procurementRows: [kit] });
     expect(projection.rows[0]).toMatchObject({ category: "material", section: "Оборудование армирования", unitId: "set", quantity: "3" });
-    expect(canonicalArtifactSection({ category: "equipment", section: "Оборудование армирования" })).toBe("Механизмы");
+    expect(canonicalArtifactSection({ category: "equipment", section: "Оборудование армирования" })).toBe("Оборудование");
   });
   it.each([
     { titleSpecificationParameterIds: ["selected_vibrator"], titleSpecificationMode: "APPEND" },
@@ -131,7 +156,7 @@ describe("canonical estimate artifact contract", () => {
   it("builds the one canonical procurement projection and artifact provenance", () => {
     const selection = selectCanonicalArtifactRows(rows);
     const projection = buildCanonicalProcurementProjection({ revision, procurementRows: selection.procurementRows });
-    expect(projection.schemaVersion).toBe("canonical_estimate_procurement_r11");
+    expect(projection.schemaVersion).toBe("canonical_estimate_procurement_r12");
     expect(projection.rows).toHaveLength(1);
     expect(projection.rows[0]?.quantity).toBe("12.5");
     expect(buildCanonicalArtifactMetadata({
@@ -204,7 +229,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:19",
+      templateVersion: "professional-estimate-pdf:34",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,

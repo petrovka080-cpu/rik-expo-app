@@ -96,6 +96,13 @@ export type CanonicalParameterDefinition = {
 
 export type CanonicalParameter = {
   parameterId: string;
+  /** Display ownership, preserved from the published schema; never an edit permission. */
+  inputOwnership?: "USER_INPUT" | "APPLICATION";
+  sourceProvenance?: {
+    guideKind?: string; sourceRole?: string; runtimeClassification?: string | null;
+    document?: string | null; locator?: string | null; unitLabel?: string | null;
+    minimum?: string | number | null; maximum?: string | number | null; target?: string | number | null;
+  };
   consumerInputRole?: "OBJECT_FACT" | "ADVANCED_OPTION" | "APPLICATION_TECHNICAL";
   label: string;
   description: string;
@@ -165,6 +172,10 @@ export type CanonicalParameterSession = {
   calculationVersion: string;
   status: CanonicalParameterSessionStatus;
   parameters: readonly CanonicalParameter[];
+  /** Read-only source values; excluded from user questions, readiness and submitted edits. */
+  applicationParameters?: readonly CanonicalParameter[];
+  /** Validated definition closure for presentation only; never a user/source admission. */
+  sourceProfileVisibilityV1?: import('./canonicalParameterSessionConditionValuesV1').CanonicalSourceProfileVisibilityContextV1;
   /** Retained branch values that are hidden from the active editor projection. */
   inactiveConditionalParameters?: readonly CanonicalParameter[];
   blockingMissingParameterIds: readonly string[];

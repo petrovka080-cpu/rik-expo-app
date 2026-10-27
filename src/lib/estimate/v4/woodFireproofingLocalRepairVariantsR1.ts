@@ -39,23 +39,11 @@ export const WOOD_FIREPROOFING_LOCAL_REPAIR_SOURCE_METADATA = Object.freeze({
 });
 
 export const WOOD_FIREPROOFING_LOCAL_REPAIR_VARIANTS = Object.freeze({
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:special_repair_interior_fireproof_repair_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Локальный ремонт существующей огнезащиты деревянных конструкций малой площади",
-    aliasesRu: ["ремонт огнезащиты малая площадь", "локальное восстановление огнезащиты древесины"],
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:special_repair_interior_fireproof_repair_standard",
     catalogVariant: "STANDARD_AREA_SEARCH_IDENTITY",
     canonicalNameRu: "Локальный ремонт существующей огнезащиты деревянных конструкций",
     aliasesRu: ["ремонт огнезащиты", "восстановление повреждённой огнезащиты древесины"],
-  }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:special_repair_interior_fireproof_repair_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Локальный ремонт существующей огнезащиты деревянных конструкций большой площади",
-    aliasesRu: ["ремонт огнезащиты большая площадь", "масштабный локальный ремонт огнезащиты древесины"],
   }),
 });
 

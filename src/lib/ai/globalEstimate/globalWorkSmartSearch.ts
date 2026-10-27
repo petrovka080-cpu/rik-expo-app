@@ -5,6 +5,14 @@ import {
   normalizeGlobalWorkAlias,
 } from "./globalWorkTypeResolver";
 
+import type { CanonicalEstimateConditionProfileGroupingV1 } from "../../estimate/backendPlatform/contracts";
+import {
+  canonicalEstimateSelectedConditionProfileV1,
+  canonicalEstimateConditionProfileReadyV1,
+  canonicalPrimaryUomToGlobalUnitV1,
+  canonicalEstimateConditionProfilePublicTitleRuV1,
+} from "../../estimate/backendPlatform/canonicalEstimateConditionProfilesV1";
+
 export type GlobalWorkSmartSearchMatchKind =
   | "exact_alias"
   | "exact_title"
@@ -13,12 +21,14 @@ export type GlobalWorkSmartSearchMatchKind =
   | "token_overlap"
   | "category_hint";
 
-export type GlobalWorkSmartSearchSuggestion = {
+export type GlobalWorkSmartSearchSuggestion = CanonicalEstimateConditionProfileGroupingV1 & {
   workKey: string;
   titleRu: string;
   categoryKey: GlobalWorkCategory;
   categoryTitleRu: string;
-  defaultMeasureUnit: GlobalWorkTypeDefinition["defaultMeasureUnit"];
+  defaultMeasureUnit: GlobalWorkTypeDefinition["defaultMeasureUnit"] | null;
+  /** Exact server measure, including mixed measures outside the legacy union. */
+  primaryUom?: string;
   score: number;
   matchKind: GlobalWorkSmartSearchMatchKind;
   matchedTokens: string[];
@@ -26,6 +36,26 @@ export type GlobalWorkSmartSearchSuggestion = {
   estimateReady?: boolean;
   nonselectableReasonRu?: string | null;
 };
+
+/** Select object conditions without copying representative units or admission. */
+export function resolveGlobalWorkConditionSuggestionV1(
+  suggestion: GlobalWorkSmartSearchSuggestion, requestedCatalogId?: string,
+): GlobalWorkSmartSearchSuggestion | null {
+  if (!suggestion.conditionProfiles?.length) {
+    if (requestedCatalogId) throw new Error("CANONICAL_CONDITION_PROFILE_NOT_OFFERED");
+    return suggestion;
+  }
+  const profile = canonicalEstimateSelectedConditionProfileV1(suggestion, requestedCatalogId);
+  if (!profile) return null;
+  const titleRu = canonicalEstimateConditionProfilePublicTitleRuV1(suggestion.titleRu, profile);
+  return { ...suggestion, workKey: profile.catalogId, titleRu,
+    primaryUom: profile.primaryUom,
+    defaultMeasureUnit: canonicalPrimaryUomToGlobalUnitV1(profile.primaryUom),
+    visibleText: `${titleRu} · ${suggestion.categoryTitleRu}`,
+    estimateReady: canonicalEstimateConditionProfileReadyV1(profile),
+    nonselectableReasonRu: profile.nonselectableReasonRu,
+    matchedConditionCatalogId: profile.catalogId };
+}
 
 export type GlobalSelectedWorkBinding = {
   selectedWorkKey: string;

@@ -1,3 +1,7 @@
+import {formatEstimateMoney} from '../../lib/ai/globalEstimate/formatEstimateMoney';
+import {formatEstimateQuantityRu} from '../../lib/estimatePresentation/formatEstimateQuantityRu';
+import {canonicalExactPurchaseEditingV1} from './canonicalExactPurchaseEditingV1';
+import {canonicalPublicResourceCategoryTitleRuV1} from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
 import React from "react";
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -15,6 +19,7 @@ import type {
 } from "./requestEstimateViewModel";
 import {
   consumerRepairRowCategorySignals,
+  consumerRepairRowPublicResourcePresentation,
   consumerRepairRowIsCanonicalPreliminaryNeed,
   consumerRepairRowIsTechnicalDetail,
   consumerRepairRowProcessNote,
@@ -36,7 +41,7 @@ export const REQUEST_ESTIMATE_CATEGORY_FILTERS: readonly {
   { id: "all", label: "Все" },
   { id: "materials", label: "Материалы" },
   { id: "labor", label: "Работы" },
-  { id: "machinery", label: "Механизмы" },
+  { id: "machinery", label: "Инструмент и оборудование" },
   { id: "services", label: "Услуги" },
   { id: "delivery", label: "Доставка" },
 ];
@@ -90,6 +95,7 @@ type State = {
   showOnlyUnresolved: boolean;
   showTechnicalDetails: boolean;
   expandedOperationIds: Record<string, boolean>;
+  sharedResourceEditor: { sectionId: string; itemId: string } | null;
   visibleRowLimit: number;
 };
 
@@ -285,6 +291,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
     showOnlyUnresolved: false,
     showTechnicalDetails: false,
     expandedOperationIds: {},
+    sharedResourceEditor: null,
     visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT,
   };
 
@@ -303,6 +310,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           showOnlyUnresolved: false,
           showTechnicalDetails: false,
           expandedOperationIds: {},
+          sharedResourceEditor: null,
           visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT,
         };
   }
@@ -488,6 +496,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       {},
     );
     const operationBySectionId = new Map(filteredSections.filter(section => section.operation != null).map(section => [section.id, section]));
+    const itemsById = new Map(viewModel.sections.flatMap(section => section.items).map(item => [item.id, item]));
     const multipleOperationGroups = new Set(viewModel.sections.flatMap(section => section.operation ? [section.operation.groupId] : [])).size > 1;
     const operationExpanded = (section: RequestEstimateSectionViewModel): boolean => Boolean(normalizedQuery || this.state.showOnlyUnresolved
       || (this.state.expandedOperationIds[section.id] ?? (Boolean(section.scopeRequirements?.length)
@@ -512,11 +521,11 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
         titleRu: item.titleRu,
         categoryFilterId,
       })));
-    const renderItem = (item: RequestEstimateSectionViewModel["items"][number], index: number) => consumerRepairRowProcessNote(item) ? (
-      <Text key={item.id} style={styles.operationSummary} testID={`request-estimate-process-note-${item.id}`}>
-        {consumerRepairRowProcessNote(item)}
-      </Text>
-    ) : (
+    const activeSharedEditor = this.state.sharedResourceEditor;
+    const sharedEditorVisible = activeSharedEditor != null && filteredSections.some(section => section.id === activeSharedEditor.sectionId
+      && operationExpanded(section) && section.sharedResources?.some(shared => shared.rowId === activeSharedEditor.itemId));
+    const renderItem = (item: RequestEstimateSectionViewModel["items"][number], index: number, sharedEditor = false) => consumerRepairRowProcessNote(item)
+      || (!sharedEditor && sharedEditorVisible && activeSharedEditor?.itemId === item.id) ? null : (
       <View focusable key={`${item.id}-${index}`} testID={`request-estimate-item-anchor-${item.id}`}>
         {item.sourceParameters?.canonicalPhysicalScopeExcludedV1 && this.props.onCompositionRowsChange
           ? <Pressable accessibilityRole="button" onPress={() => this.props.onCompositionRowsChange?.([String(item.sourceParameters?.rowCode)],false,
@@ -537,7 +546,7 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
       <View style={styles.wrap} testID="request-estimate-items-editor-content">
         <View style={styles.headingRow}>
           <Text style={styles.heading} testID="request-estimate-composition-heading">
-            {compositionIncomplete ? "Материалы и работы — расчёт не завершён" : "Материалы и работы"}
+            {compositionIncomplete ? "Подработы и ресурсы — расчёт не завершён" : "Подработы и ресурсы"}
           </Text>
           <Text style={styles.rowCount} testID="request-estimate-items-total-count">
             {unresolvedItems.length
@@ -663,9 +672,9 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
           </Text>
         ) : null}
         <View style={styles.section} testID="request-estimate-flat-row-list">
-          {operationBySectionId.size === 0 ? renderedItems.map(renderItem) : filteredSections.map((section, sectionIndex) => {
+          {operationBySectionId.size === 0 ? renderedItems.map((item, index) => renderItem(item, index)) : filteredSections.map((section, sectionIndex) => {
             const operation = section.operation;
-            if (!operation) return section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem);
+            if (!operation) return section.items.filter(item => renderedItemIds.has(item.id)).map((item, index) => renderItem(item, index));
             const resources = section.items.filter(item => !consumerRepairRowIsTechnicalDetail(item)&&!consumerRepairRowProcessNote(item));
             const unresolved = resources.filter(consumerRepairRowIsCanonicalPreliminaryNeed).length;
             const expanded = operationExpanded(section);
@@ -679,12 +688,12 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                     visibleRowLimit: ANDROID_INITIAL_ROW_LIMIT }))} testID={`request-estimate-operation-toggle-${operation.operationId}`}>
                   <Text style={styles.operationTitle}>{`${expanded ? "▾" : "▸"} ${operation.operationTitleRu}`}</Text>
                   <Text style={styles.operationSummary}>{section.physicallyExcluded ? 'Исключена из сметы · ресурсы пересчитаны' : operation.processRole === 'REFERENCE_ONLY'
-                    ? 'Справочные характеристики. Не оплачиваются и не закупаются.'
-                    : operation.processRole === 'COST_SUMMARY' ? 'Сводные данные. Ресурсы учтены в соответствующих разделах.'
+                    ? 'Справочно'
+                    : operation.processRole === 'COST_SUMMARY' ? 'Сводный расчёт'
                     : resources.length ? `${resources.length - unresolved} рассчитано · ${unresolved} пока не рассчитано`
                       : 'Состав и готовность этапа'}</Text>
                 </Pressable>
-                {section.items.filter(item => renderedItemIds.has(item.id)).map(renderItem)}
+                {section.items.filter(item => renderedItemIds.has(item.id)).map((item, index) => renderItem(item, index))}
                 {expanded && section.scopeRequirements?.length ? <RequestEstimateStageRequirements groups={section.scopeRequirements} /> : null}
                 {section.physicallyExcluded ? <Text style={styles.operationSummary}>Подработа исключена пользователем из состава.</Text> : null}
                 {this.props.onCompositionRowsChange && (section.physicallyExcluded || resources.length>0)
@@ -711,11 +720,42 @@ export class RequestEstimateItemsEditor extends React.PureComponent<Props, State
                       ? 'Восстановить подработу' : 'Исключить подработу из этой сметы'}</Text>
                   </Pressable> : null}
                 {expanded && section.scopeRequirements?.some(group => group.groupId === 'primer') ? this.props.primerPrerequisiteNode : null}
-                {expanded ? section.sharedResources?.map(shared => (
-                  <Text key={shared.rowId} style={styles.operationSummary} testID={`request-estimate-shared-resource-${shared.rowId}`}>
-                    {`${shared.titleRu} — общий ресурс, учтён в разделе «${shared.ownerOperationTitleRu}».`}
-                  </Text>
-                )) : null}
+                {expanded && section.sharedResources?.length ? <Text style={styles.sharedResourcesTitle}>Общие ресурсы</Text> : null}
+                {expanded ? section.sharedResources?.map((shared, sharedIndex) => {
+                  const item = itemsById.get(shared.rowId);
+                  if (!item) return null;
+                  const presentation=consumerRepairRowPublicResourcePresentation(item);
+                  const resourceKind=canonicalPublicResourceCategoryTitleRuV1({titleRu:presentation?.sourceTitleRu??item.titleRu,
+                    descriptor:presentation,category:item.category,manualTitleOverride:item.sourceParameters?.canonicalManualTitleOverride===true})??'Категория не определена';
+                  const exact=canonicalExactPurchaseEditingV1(item);
+                  const quantity=exact?exact.quantityText:item.quantity;
+                  const sharedQuantity=quantity==null?'Не рассчитано':formatEstimateQuantityRu(quantity);
+                  const sharedUnit=formatEstimateUnitLabel(item.unitLabel||item.unit);
+                  const sharedPrice=item.unitPrice==null?'':`${formatEstimateQuantityRu(item.unitPrice)} ${formatEstimateMoney(0,item.currency).replace(/^0\s*/u,'')}`;
+                  const editing = sharedEditorVisible && activeSharedEditor?.sectionId === section.id && activeSharedEditor.itemId === item.id;
+                  return <View key={shared.rowId} style={styles.sharedResource}>
+                    <View style={styles.sharedResourceHeading}>
+                      <Text style={[styles.operationSummary, styles.sharedResourceName]} testID={`request-estimate-shared-resource-${shared.rowId}`}>
+                        {shared.titleRu}
+                      </Text>
+                      <Pressable accessibilityRole="button" accessibilityState={{ expanded: editing }}
+                        accessibilityLabel={`${editing ? 'Свернуть редактор' : 'Изменить количество, цену и наименование'} ${shared.titleRu}`}
+                        testID={`request-estimate-shared-edit-${operation.operationId}-${shared.rowId}`}
+                        style={styles.sharedResourceEdit}
+                        onPress={() => this.setState({ sharedResourceEditor: editing ? null : { sectionId: section.id, itemId: item.id } })}>
+                        <Text style={styles.sharedResourceEditText}>{editing ? 'Свернуть' : 'Изменить'}</Text>
+                      </Pressable>
+                    </View>
+                    <View style={styles.sharedResourceFields} testID={`request-estimate-shared-fields-${shared.rowId}`}>
+                      <View><Text style={styles.sharedResourceFieldLabel}>Тип</Text><Text testID={`request-estimate-shared-kind-${shared.rowId}`}>{resourceKind}</Text></View>
+                      <View><Text style={styles.sharedResourceFieldLabel}>Ед.</Text><Text testID={`request-estimate-shared-unit-${shared.rowId}`}>{sharedUnit}</Text></View>
+                      <View><Text style={styles.sharedResourceFieldLabel}>Количество</Text><Text testID={`request-estimate-shared-quantity-${shared.rowId}`}>{sharedQuantity}</Text></View>
+                      <View><Text style={styles.sharedResourceFieldLabel}>Цена</Text><Text testID={`request-estimate-shared-price-${shared.rowId}`}>{sharedPrice}</Text></View>
+                      <View><Text style={styles.sharedResourceFieldLabel}>Сумма</Text><Text testID={`request-estimate-shared-amount-${shared.rowId}`}>{''}</Text></View>
+                    </View>
+                    {editing ? renderItem(item, sharedIndex, true) : null}
+                  </View>;
+                }) : null}
               </View>
             );
           })}
@@ -1028,4 +1068,12 @@ const styles = StyleSheet.create({
   operationGroupTitle: { fontSize: 17, fontWeight: "800", color: "#0F172A", marginBottom: 8 },
   operationTitle: { fontSize: 15, fontWeight: "700", color: "#0F172A" },
   operationSummary: { fontSize: 12, lineHeight: 18, color: "#475569" },
+  sharedResourcesTitle: { fontSize: 13, fontWeight: "700", color: "#334155", marginTop: 8 },
+  sharedResource: { borderTopWidth: 1, borderTopColor: "#E2E8F0" },
+  sharedResourceHeading: { flexDirection: "row", alignItems: "center", gap: 10 },
+  sharedResourceName: { flex: 1 },
+  sharedResourceFields: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, paddingVertical: 8 },
+  sharedResourceFieldLabel: { fontSize: 12, color: '#64748B' },
+  sharedResourceEdit: { minHeight: 44, justifyContent: "center", paddingHorizontal: 10 },
+  sharedResourceEditText: { color: "#1D4ED8", fontSize: 13, fontWeight: "700" },
 });

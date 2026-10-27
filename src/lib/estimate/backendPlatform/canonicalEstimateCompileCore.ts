@@ -1,3 +1,6 @@
+import { canonicalEstimateResourceIncludedByDefault } from './canonicalEstimateResourceInclusionV1';
+export { canonicalEstimateResourceIncludedByDefault } from './canonicalEstimateResourceInclusionV1';
+import {resolveCanonicalSourceProfileSelectionV1,type CanonicalSourceProfileProducerV1} from './canonicalSourceProfileSelectionV1';
 import { buildCanonicalExactPurchaseQuantityV1, buildCanonicalPurchaseSupplyIndexV1, mergeCanonicalPurchaseSupplyBlocksV1, type CanonicalPurchaseSupplyIndexV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { planCanonicalCompositionSelectionV1, type CanonicalEstimateCompositionSelectionV1 } from './canonicalEstimateCompositionSelectionV1';
 import {assertCanonicalMachineHourDefinitionV1,parseCanonicalMachineHourPriceCoverageV1,resolveCanonicalMachineHourPriceCoverageV1,canonicalMachineHourPriceNeedsConfirmationV1} from './canonicalMachineHourPriceCoverageV1';
@@ -9,12 +12,14 @@ import {
   type FormulaParameterValue,
 } from "./formulaGraph";
 import { inclusionGraphEvidenceParameterIds, resolveInclusionGraph } from "./inclusionGraph";
-import { resolveCanonicalScopeRequirementV1 } from './canonicalScopeRequirementV1';
+import { resolveCanonicalScopeRequirementV1, canonicalScopeRequirementDecisionV1, canonicalScopeRequirementDecisionIsOpenV1 } from './canonicalScopeRequirementV1';
 import { bindCanonicalPublicResourceSavedTitleV1 } from './canonicalPublicResourcePresentationV1';
 import {
+  assertCanonicalSubmittedSourceParameterAuthorityV1,
   canonicalNumericRelationDependencies,
   missingCanonicalNumericRelationParameterIds,
   validateCanonicalEstimateParameters,
+  validateCanonicalConditionalWholeIntegerV1,
 } from "./parameterConstraints";
 import { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 import { parseCanonicalFormulaOutputBoundsV1, validateCanonicalFormulaOutputBoundsV1 } from "./canonicalFormulaOutputBounds";
@@ -32,8 +37,10 @@ import { resolveCanonicalManualPurchaseSupplyBlockV1, type CanonicalManualPurcha
 import { resolveCanonicalPreliminaryParameterFormulasV1, canonicalMissingAutomaticParameterSourcesV1, PRELIMINARY_SOURCE_FORMULA } from './canonicalPreliminaryParameterFormulaV1';
 import {
   planCanonicalCommercialCostCoverageV1, canonicalCommercialCoveredResourceGraphV1,
-  assertCanonicalCommercialCoveredQuantityV1, assertCanonicalCommercialCostOwnersV1,
+  assertCanonicalCommercialCostOwnersV1,
 } from './canonicalCommercialCostCoverageV1';
+
+import {classifyProfessionalNormSourceAdmission} from '../professionalNormSourceAdmission';
 
 export { canonicalRoundDecimal } from "./canonicalEstimateDeterminism";
 
@@ -125,20 +132,6 @@ export function bindCanonicalEstimateResourcePriceKeys(
   });
 }
 
-const NON_PAYABLE_COST_TREATMENTS = new Set([
-  "INCLUDED_IN_RESOURCE_ROWS",
-  "INFORMATIONAL_SCOPE",
-  "CONTROL_OR_DOCUMENT",
-]);
-
-export function canonicalEstimateResourceIncludedByDefault(
-  resource: Pick<CanonicalEstimateResourceDefinition, "resource_graph" | "source_metadata">,
-): boolean {
-  const raw = resource.resource_graph?.costTreatment
-    ?? resource.source_metadata?.costTreatment;
-  return !NON_PAYABLE_COST_TREATMENTS.has(String(raw ?? "").trim());
-}
-
 function resolveCanonicalResourceCostInclusion(
   resource: CanonicalEstimateResourceDefinition,
   override: Record<string, unknown> | undefined,
@@ -210,6 +203,8 @@ export type CanonicalEstimateCompileCoreInput = {
   resourceDefinitions: CanonicalEstimateResourceDefinition[];
   submittedParameters: Record<string, unknown>;
   confirmedParameters: Record<string, unknown>;
+  /** Definition-owned producer and full saved+submitted user facts; never raw receipt input. */
+  sourceProfileSelectionV1?: Readonly<{metadata: unknown; effectiveUserParameters: Readonly<Record<string,unknown>>}>;
   currencyCode: string;
   priceSnapshotIds?: string[];
   priceItems?: CanonicalEstimatePriceItem[];
@@ -227,6 +222,7 @@ export type CanonicalEstimateCompileCoreResult = {
   parameters: Record<string, unknown>;
   /** Exact lookup outputs added by the common compiler, excluding explicit/default values. */
   derivedParameters: Record<string, unknown>;
+  sourceProfileProducerV1?: CanonicalSourceProfileProducerV1;
   rows: CanonicalEstimateCompiledRow[];
   preliminaryNeeds: CanonicalEstimateCompiledPreliminaryNeed[];
   totals: {
@@ -240,6 +236,7 @@ export type CanonicalEstimateCompileCoreResult = {
   };
   priceSnapshotIds: string[];
   revisionProjection: {
+    sourceProfileProducerV1?: CanonicalSourceProfileProducerV1;
     purchaseSupplyIndexV1?: CanonicalPurchaseSupplyIndexV1;
     compositionSelectionV1?: CanonicalEstimateCompositionSelectionV1;
     catalogId: string;
@@ -580,7 +577,17 @@ function validateConditionalPositiveQuantityPolicy(
   const errorCodeNamespace = typeof policy.errorCodeNamespace === "string"
     ? policy.errorCodeNamespace.trim()
     : "";
-  const inclusionAst = resource.inclusion_ast as JsonRecord;
+  // A retained legacy/scope gate may restrict the exact applicability leaf.
+  // Only AND ancestry establishes that this boolean remains mandatory.
+  const conjuncts = (value: unknown): JsonRecord[] => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+    const node = value as JsonRecord;
+    return node.kind === "and" && Array.isArray(node.operands)
+      ? node.operands.flatMap(conjuncts) : [node];
+  };
+  const matchingParameter = conjuncts(resource.inclusion_ast).filter(node => node.kind === "parameter"
+    && node.id === applicabilityParameterId);
+  const inclusionAst = matchingParameter.length === 1 ? matchingParameter[0] : null;
   if (!applicabilityParameterId
     || !definitionParameterIds.has(applicabilityParameterId)
     || inclusionAst?.kind !== "parameter"
@@ -666,8 +673,21 @@ function validateConditionalEnumPositiveQuantityPolicy(
   const errorCodeNamespace = typeof policy.errorCodeNamespace === "string"
     ? policy.errorCodeNamespace.trim()
     : "";
-  const inclusionAst = resource.inclusion_ast as JsonRecord;
   const selectorValues = [...applicableValues, ...notApplicableValues];
+  // A composition may restrict this exact selector predicate with additional
+  // AND gates (for example scope selection or zero physical volume). The in
+  // predicate must remain a required conjunct; an occurrence under OR/NOT is
+  // not a policy binding and cannot weaken the selector/quantity contract.
+  const conjuncts = (value: unknown): JsonRecord[] => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+    const node = value as JsonRecord;
+    return node.kind === "and" && Array.isArray(node.operands)
+      ? node.operands.flatMap(conjuncts) : [node];
+  };
+  const matchingIn = conjuncts(resource.inclusion_ast).filter(node => node.kind === "in"
+    && node.parameterId === selectorParameterId
+    && JSON.stringify(node.values) === JSON.stringify(applicableValues));
+  const inclusionAst = matchingIn.length === 1 ? matchingIn[0] : null;
   if (!selectorParameterId
     || !definitionParameterIds.has(selectorParameterId)
     || applicableValues.length === 0 || notApplicableValues.length === 0
@@ -853,12 +873,34 @@ export async function compileCanonicalEstimateCore(
   const compositionPlan = planCanonicalCompositionSelectionV1({selection: input.compositionSelectionV1,
     customRowIds:(input.customRows ?? []).map(row=>`manual:${String(row?.clientRowId ?? '')}`),
     resources: input.resourceDefinitions, formulas: input.formulaDefinitions});
+  assertCanonicalSubmittedSourceParameterAuthorityV1(input.parameterDefinitions, input.submittedParameters);
+  const producerInput=input.sourceProfileSelectionV1;
+  const isProducerRecord=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  if(producerInput!==undefined&&(!isProducerRecord(producerInput)||!isProducerRecord(producerInput.effectiveUserParameters)))
+    throw compilerError('invalid source profile producer input','SOURCE_PROFILE_SELECTION_INVALID');
+  if(producerInput)for(const [id,value] of Object.entries(input.submittedParameters)){
+    if(!Object.hasOwn(producerInput.effectiveUserParameters,id)
+      ||JSON.stringify(producerInput.effectiveUserParameters[id])!==JSON.stringify(value))
+      throw compilerError('source profile full user input mismatch','SOURCE_PROFILE_SELECTION_INVALID');
+  }
+  const sourceProfileResolution=producerInput===undefined?undefined:resolveCanonicalSourceProfileSelectionV1({
+    sourceProfileSelectionMetadata:producerInput.metadata,effectiveUserParameters:producerInput.effectiveUserParameters,
+    confirmedParameters:input.confirmedParameters,
+    parameterSchema:input.parameterDefinitions.map(p=>{
+      const truth=p.truth_metadata??{},provenance=truth.provenance;
+      return{parameterId:p.parameter_id,valueType:p.value_type,unitId:p.unit_id,defaultValue:p.default_value,
+        visibilityRole:typeof truth.visibility_role==='string'?truth.visibility_role:undefined,
+        valueSourceRole:typeof truth.value_source_role==='string'?truth.value_source_role:undefined,
+        provenance:isProducerRecord(provenance)?provenance:undefined,constraints:p.constraints_json??{}};
+    }),
+  });
   const initiallyValidatedParameters = validateCanonicalEstimateParameters(
     input.parameterDefinitions,
     effectiveQuantityPlan.stripIncoming(input.submittedParameters),
     {
-      confirmedParameters: effectiveQuantityPlan.stripIncoming(input.confirmedParameters),
+      confirmedParameters: effectiveQuantityPlan.stripIncoming(sourceProfileResolution?.confirmedParameters??input.confirmedParameters),
       baselineContext: { catalogId: input.catalogId },
+      deferredEffectiveQuantityParameterIds: new Set(effectiveQuantityPlan.owners.keys()),
     },
   );
   const explicitUnknownValues: Record<string, unknown> = {};
@@ -882,12 +924,22 @@ export async function compileCanonicalEstimateCore(
     {
       confirmedParameters: {},
       baselineContext: { catalogId: input.catalogId },
+      deferredEffectiveQuantityParameterIds: new Set(effectiveQuantityPlan.owners.keys()),
     },
   );
   const derivedParameters = Object.fromEntries(Object.entries(parameters).filter(
     ([parameterId, value]) =>
       JSON.stringify(initiallyValidatedParameters[parameterId]) !== JSON.stringify(value),
   ));
+  const sourceProfileProducerV1=sourceProfileResolution?.sourceProfileProducerV1;
+  if(sourceProfileProducerV1){
+    for(const [id,value] of Object.entries(sourceProfileProducerV1.geometry))
+      if(JSON.stringify(parameters[id])!==JSON.stringify(value))throw compilerError('source profile actual geometry mismatch','SOURCE_PROFILE_SELECTION_INVALID');
+    for(const [id,value] of Object.entries(sourceProfileProducerV1.outputs)){
+      if(JSON.stringify(parameters[id])!==JSON.stringify(value))throw compilerError('source profile owned output mismatch','SOURCE_PROFILE_SELECTION_INVALID');
+      derivedParameters[id]=value;
+    }
+  }
   const preliminaryParameterIds = new Set(input.parameterDefinitions.filter(definition =>
     definition.truth_metadata?.runtime_profile_classification === PRELIMINARY_SOURCE_FORMULA
     && Object.hasOwn(derivedParameters, definition.parameter_id)).map(definition => definition.parameter_id));
@@ -935,6 +987,14 @@ export async function compileCanonicalEstimateCore(
   );
   const rows: CanonicalEstimateCompiledRow[] = [];
   const preliminaryNeeds: CanonicalEstimateCompiledPreliminaryNeed[] = [];
+  // Keep only actual resolver outputs required by the explicit factory opt-in.
+  // Legacy compiles retain no additional physical-resolution objects.
+  const factoryComponentIds = new Set(input.parameterDefinitions.flatMap(p=>{
+    const raw=p.constraints_json?.conditionalWholeIntegerV1 as JsonRecord|undefined;
+    const factory=raw?.factorySupplyV1 as JsonRecord|undefined;
+    return typeof factory?.componentRowId==='string'?[factory.componentRowId]:[];
+  }));
+  const factoryPhysicalResolutions = new Map<string,ReturnType<typeof resolveCanonicalEstimatePhysicalNormApplicabilityV1>>();
   const rowIds = new Set<string>();
   let totalAmount = "0";
   const addToTotal = (amount: string | null, included: boolean): void => {
@@ -1012,15 +1072,14 @@ export async function compileCanonicalEstimateCore(
       && inclusion.missingParameterIds.every((parameterId) => formula.input_parameter_ids.includes(parameterId));
     const inclusionResolvedByManualQuantity = effectiveOutput == null && formulaOutputBounds == null && manualQuantity != null
       && inclusionOnlyWaitsForFormulaInputs && !inclusion.missingParameterIds.some(id => effectiveQuantityPlan.owners.has(id));
-    assertCanonicalDerivedQuantityAmendmentV1(derivedQuantityEditPolicy, manualQuantity);
+    assertCanonicalDerivedQuantityAmendmentV1(derivedQuantityEditPolicy, manualQuantity, provenance != null);
     if(manualQuantity != null && compositionPlan.partiallyAllocated(resource.row_id))
       throw compilerError('Сохранённое ручное количество общего ресурса нельзя распределить между изменёнными подработами. Ручные данные сохранены в исходной смете.', 'COMPOSITION_MANUAL_QUANTITY_REVIEW_REQUIRED');
     if (inclusion.value === false) continue;
-    if (manualQuantity != null && originalMissingIds(missingFormulaParameterIds).some(id =>
-      parameterDefinitionsById.get(id)?.truth_metadata?.value_source_role === 'UNRESOLVED_APPLICATION_NORM')) {
-      throw compilerError(`source-owned norm quantity cannot be replaced by a manual row quantity ${resource.row_id}`,
-        'ROW_AMENDMENT_INVALID');
-    }
+    // An explicit row quantity is a user amendment, never an application norm.
+    // Retain the unresolved source requirements even when that value is saved.
+    const unresolvedApplicationNormIds = originalMissingIds(missingFormulaParameterIds).filter(id =>
+      parameterDefinitionsById.get(id)?.truth_metadata?.value_source_role === 'UNRESOLVED_APPLICATION_NORM');
     const commercialOwner = commercialCoverage.members.get(resource.row_id);
     const commercialRate = commercialCoverage.owners.get(resource.row_id);
     const commercialScopeParameterId = commercialRate == null ? null : commercialRate.rateBasis.kind === 'PER_MEASURE'
@@ -1141,6 +1200,7 @@ export async function compileCanonicalEstimateCore(
         );
       }
       appliedPhysicalNorm = physicalNorm;
+      if(factoryComponentIds.has(resource.row_id))factoryPhysicalResolutions.set(resource.row_id,physicalNorm);
     }
 
     const titleSpecification = canonicalTitleSpecification(resource, definitionParameterIds);
@@ -1207,14 +1267,16 @@ export async function compileCanonicalEstimateCore(
     const formulaQuantity = inheritedSupplyBlocks.length === 0 && missingFormulaParameterIds.length === 0
       ? compositionPlan.quantity(resource.row_id, formulaParameters, () => evaluateFormulaGraph(formula.ast, formulaParameters))
       : null;
-    assertCanonicalCommercialCoveredQuantityV1(commercialOwner, manualQuantity, formulaQuantity);
+    // Covered child edits are reference quantities. Their owner remains the
+    // only payable row, independently of a saved child quantity or price.
     const formulaOutputBoundsTrace = formulaOutputBounds != null && inclusion.value === true && formulaQuantity != null
       ? validateCanonicalFormulaOutputBoundsV1(formulaOutputBounds, formulaQuantity, resource.row_id)
       : null;
     const missingEffectiveParameterIds = missingFormulaParameterIds.filter(id => effectiveQuantityPlan.owners.has(id));
     const missingFormulaBlocksQuantity = missingFormulaParameterIds.length > 0
-      && (effectiveOutput != null || manualQuantity == null || formulaOutputBounds != null || missingEffectiveParameterIds.length > 0
+      && (unresolvedApplicationNormIds.length > 0 || effectiveOutput != null || manualQuantity == null || formulaOutputBounds != null || missingEffectiveParameterIds.length > 0
         || resource.resource_graph?.purchaseBalanceV1 != null || resource.resource_graph?.manualTransportQuantityPolicyV1 != null);
+    const unresolvedSourceIds = [...new Set([...unresolvedApplicationNormIds, ...missingPhysicalNormParameterIds])];
 
     const joinedTitleSpecification = normalizedTitleSpecificationValues.join(", ");
     // Several individually validated project facts can exceed one field's 500-character limit.
@@ -1229,7 +1291,7 @@ export async function compileCanonicalEstimateCore(
 
     if ((inclusion.value == null && !inclusionResolvedByManualQuantity)
       || missingFormulaBlocksQuantity
-      || (missingPhysicalNormParameterIds.length > 0 && (manualQuantity == null || effectiveOutput != null))
+      || unresolvedSourceIds.length > 0
       || missingRequiredTitleSpecificationParameterIds.length > 0
       || missingRequiredConsumerParameterIds.length > 0
       || missingNumericRelationParameterIds.length > 0
@@ -1245,7 +1307,7 @@ export async function compileCanonicalEstimateCore(
       let missingParameterIds = originalMissingIds([
         ...(needState === "CONDITION_REQUIRED" ? inclusion.missingParameterIds : []),
         ...(missingFormulaBlocksQuantity ? missingFormulaParameterIds : []),
-        ...(manualQuantity == null || effectiveOutput != null ? missingPhysicalNormParameterIds : []),
+        ...unresolvedSourceIds,
         ...missingRequiredTitleSpecificationParameterIds,
         ...missingRequiredConsumerParameterIds,
         ...missingNumericRelationParameterIds,
@@ -1380,7 +1442,7 @@ export async function compileCanonicalEstimateCore(
           );
         }
         const actualText = outputFormula == null
-          ? quantity
+          ? formulaQuantity ?? quantity
           : evaluateFormulaGraph(outputFormula.ast, formulaParameters);
         const actual = Number(actualText);
         const tolerance = Math.max(1, Math.abs(expected), Math.abs(actual)) * 1e-9;
@@ -1648,6 +1710,54 @@ export async function compileCanonicalEstimateCore(
     throw compilerError(`row override is not reachable: ${[...overrides.keys()][0]}`, "ROW_OVERRIDE_NOT_REACHED");
   }
 
+  // One final ce148 pass over this revision's accepted quantities. The existing
+  // formula plan already ordered native owner -> component; no second evaluator.
+  const factoryObligations = validateCanonicalConditionalWholeIntegerV1(input.parameterDefinitions,
+    {...parameters,...explicitUnknownValues},{finalContext:{effectiveOwners:effectiveQuantityPlan.owners,
+      resources:input.resourceDefinitions,formulaInputs:new Map(input.formulaDefinitions.map(f=>[f.formula_id,f.input_parameter_ids])),
+      acceptedRows:[...rows,...preliminaryNeeds],sourceTraceAdmitted:(rowId,trace)=>classifyProfessionalNormSourceAdmission({
+        normSourceId:String(trace.source_id ?? trace.sourceId ?? trace.document_code ?? ''),
+        normId:String(trace.norm_id ?? trace.normId ?? ''),normVersion:String(trace.source_document_version ?? trace.normVersion ?? ''),
+        sourceParameters:{professionalPhysicalNormApplicabilityV1:factoryPhysicalResolutions.get(rowId) ?? null},
+      }).admitted}});
+  for (const [rowId,children] of factoryObligations) {
+    const needIndex = preliminaryNeeds.findIndex(need=>need.row_id===rowId);
+    const rowIndex = rows.findIndex(row=>row.row_id===rowId);
+    const carrier = needIndex>=0 ? preliminaryNeeds[needIndex]! : rows[rowIndex];
+    const trace = carrier?.calculation_trace as JsonRecord | undefined;
+    const graph = trace?.resourceGraph as JsonRecord | undefined;
+    const primary = canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1);
+    if (!carrier || !trace || !graph || !primary || primary.kind!=='OBJECT_SCOPE' || primary.rowId!==rowId
+      || graph.costTreatment!=='INFORMATIONAL_SCOPE' || carrier.procurement_eligible!==false
+      || (rowIndex>=0 && (rows[rowIndex]!.included_in_estimate || rows[rowIndex]!.included_in_procurement)))
+      throw compilerError(`factory obligation carrier invalid ${rowId}`,'DEFINITION_INTEGRITY_FAILED');
+    const decision = {...primary,additionalObligationsV1:children};
+    const calculationTrace = {...trace,resourceGraph:{...graph,scopeRequirementDecisionV1:decision}};
+    if (needIndex>=0) {
+      const {need_sha256:_old,...body} = preliminaryNeeds[needIndex]!;
+      const next = {...body,calculation_trace:calculationTrace};
+      preliminaryNeeds[needIndex] = {...next,need_sha256:await input.hashJson(next)};
+    } else if (canonicalScopeRequirementDecisionIsOpenV1(decision)) {
+      // Move the same non-payable informational carrier, retaining its known
+      // quantity/null, price and independent OBJECT_SCOPE facts. No missing
+      // project fact or additional paid/resource ID is manufactured here.
+      const {row_sha256:_old,amount:_amount,included_in_estimate:_included,included_in_procurement:_purchase,
+        ownership_status:_ownership,...body} = rows[rowIndex]!;
+      const next: Omit<CanonicalEstimateCompiledPreliminaryNeed,'need_sha256'> = {...body,
+        row_id:rowId,ordinal:carrier.ordinal,section:String(carrier.section),category:String(carrier.category),
+        title_ru:String(carrier.title_ru),unit_id:String(carrier.unit_id),quantity:carrier.quantity,unit_price:carrier.unit_price,
+        need_state:'CONDITION_REQUIRED',missing_parameter_ids:[...primary.missingObjectFactParameterIds],selected:false,procurement_eligible:false,
+        calculation_trace:{...calculationTrace,preliminaryNeed:true,needState:'CONDITION_REQUIRED',
+          missingParameterIds:[...primary.missingObjectFactParameterIds]}};
+      rows.splice(rowIndex,1);
+      preliminaryNeeds.push({...next,need_sha256:await input.hashJson(next)} as CanonicalEstimateCompiledPreliminaryNeed);
+    } else {
+      const {row_sha256:_old,...body} = rows[rowIndex]!;
+      const next = {...body,calculation_trace:calculationTrace};
+      rows[rowIndex] = {...next,row_sha256:await input.hashJson(next)};
+    }
+  }
+
   assertCanonicalCommercialCostOwnersV1(commercialCoverage, parameters, rows, preliminaryNeeds);
   rows.sort((left, right) => left.ordinal - right.ordinal);
   preliminaryNeeds.sort((left, right) => left.ordinal - right.ordinal);
@@ -1671,11 +1781,13 @@ export async function compileCanonicalEstimateCore(
     ...(compositionPlan.selection ? {compositionSelectionV1: compositionPlan.selection} : {}),
     parameters,
     derivedParameters,
+    ...(sourceProfileProducerV1?{sourceProfileProducerV1}:{}),
     rows,
     preliminaryNeeds,
     totals,
     priceSnapshotIds,
     revisionProjection: {
+      ...(sourceProfileProducerV1?{sourceProfileProducerV1}:{}),
       ...(purchaseSupplyIndexV1 ? { purchaseSupplyIndexV1 } : {}),
       ...(compositionPlan.selection ? {compositionSelectionV1: compositionPlan.selection} : {}),
       catalogId: input.catalogId,

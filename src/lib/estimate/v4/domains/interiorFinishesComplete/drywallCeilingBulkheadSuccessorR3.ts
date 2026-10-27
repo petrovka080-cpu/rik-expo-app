@@ -296,8 +296,8 @@ function rowKey(row: ProfessionalAssemblyRowDefinitionV4): string {
 }
 
 function variantLabel(variant: DrywallCeilingBulkheadProfessionalVariantV3): string {
-  if (variant === "large_area") return "большой площади";
-  if (variant === "small_area") return "малой площади";
+  
+  
   if (variant === "technical_room") return "в техническом помещении";
   if (variant === "wet_zone") return "во влажной зоне";
   if (variant === "high_load") return "для повышенной нагрузки";
@@ -571,21 +571,21 @@ function variantUserParameterIds(
   variant: DrywallCeilingBulkheadProfessionalVariantV3,
 ): readonly string[] {
   if (group === "FRAME") {
-    if (variant === "large_area") return ["large_area_control_joint_length_m"];
-    if (variant === "small_area") return ["small_area_self_supporting_profile_length_m", "small_area_self_supporting_stud_length_m"];
+    
+    
     if (variant === "technical_room") return ["technical_service_opening_count"];
     if (variant === "wet_zone") return ["wet_zone_corrosion_fastener_count"];
   }
   if (group === "ALIGN") {
-    if (variant === "large_area") return ["large_area_instrument_zone_count"];
-    if (variant === "small_area") return ["small_area_corner_count"];
+    
+    
     if (variant === "technical_room") return ["technical_obstruction_count"];
     if (variant === "wet_zone") return ["wet_zone_adjustment_point_count"];
   }
   if (group === "CLAD") {
     if (variant === "high_load") return ["design_load_kn_m2"];
-    if (variant === "large_area") return ["large_area_clad_control_joint_length_m"];
-    if (variant === "small_area") return ["small_area_cut_edge_length_m"];
+    
+    
     if (variant === "technical_room") return ["technical_service_opening_count", "technical_opening_perimeter_m_item"];
     if (variant === "wet_zone") return ["wet_zone_penetration_count", "wet_zone_cuff_count"];
   }
@@ -758,12 +758,12 @@ function requiredMaterialKeys(
       "separation_tape",
       "sealing_tape",
     ];
-    if (variant !== "small_area") {
+    {
       keys.push("primary_profiles", "cross_profiles", "suspensions", "suspension_rods", "suspension_anchors");
     }
     if (variant === "standard" || variant === "technical_room" || variant === "wet_zone") keys.push("profile_connectors");
-    if (variant === "large_area") keys.push("large_area_control_joint_profile", "large_area_two_level_connectors");
-    if (variant === "small_area") keys.push("small_area_self_supporting_guide_profiles", "small_area_self_supporting_stud_profiles");
+    
+    
     if (variant === "technical_room") keys.push("technical_opening_profiles", "technical_opening_reinforcement_fasteners");
     if (variant === "wet_zone") keys.push("wet_zone_corrosion_protection", "wet_zone_corrosion_fasteners");
     return keys;
@@ -780,8 +780,8 @@ function requiredMaterialKeys(
     "external_corner_profile",
     "internal_corner_tape",
   ];
-  if (variant === "large_area") keys.push("large_area_clad_control_joint");
-  if (variant === "small_area") keys.push("small_area_edge_screws");
+  
+  
   if (variant === "technical_room") keys.push("technical_opening_screws", "technical_fire_acoustic_sealant");
   if (variant === "wet_zone") {
     keys.push(
@@ -803,13 +803,13 @@ function groupAndVariant(catalogId: string): {
     : catalogId.includes("_align_") ? "ALIGN"
       : catalogId.includes("_clad_") ? "CLAD"
         : null;
-  const variant = (["technical_room", "large_area", "small_area", "wet_zone", "high_load", "standard"] as const)
+  const variant = (["technical_room", "wet_zone", "high_load", "standard"] as const)
     .find((candidate) => catalogId.endsWith(`_${candidate}`)) ?? null;
   return group && variant ? { group, variant } : null;
 }
 
 const ALL_BATCH001_VARIANTS: readonly DrywallCeilingBulkheadProfessionalVariantV3[] = [
-  "standard", "large_area", "small_area", "technical_room", "wet_zone", "high_load",
+  "standard", "technical_room", "wet_zone", "high_load",
 ];
 
 function buildUserParameterContractsR56(input: {
@@ -913,7 +913,7 @@ export function evaluateBatch001DrywallContentPassportR3(
     }
     const workCount = passport.resources.filter((row) => row.group === "construction_work").length;
     const expectedWorkCount = identity.group === "FRAME" ? 1
-      : identity.group === "ALIGN" ? (["small_area", "technical_room"].includes(identity.variant) ? 2 : 1)
+      : identity.group === "ALIGN" ? ([ "technical_room"].includes(identity.variant) ? 2 : 1)
         : (["technical_room", "wet_zone"].includes(identity.variant) ? 4 : 3);
     if (workCount !== expectedWorkCount) errors.push(`DRYWALL_WORK_SEQUENCE_COUNT:${workCount}:${expectedWorkCount}`);
     const deliveryCount = passport.resources.filter((row) => row.group === "delivery").length;
@@ -993,26 +993,7 @@ function buildDefinition(catalogId: string): Batch001DrywallSuccessorDefinitionR
       formula: geometryFormula,
       sourceRows: [geometryRow, ...internalRows],
     }));
-    if (parts.contract.variant === "small_area") {
-      const source = requiredRow("small_area_corner_alignment");
-      const formula = syntheticFormula({
-        catalogId,
-        key: "align-small-area-corners",
-        outputUnitId: "item",
-        expressionSource: "small_area_corner_count",
-        inputParameterIds: ["small_area_corner_count"],
-        calculate: (values) => values.small_area_corner_count,
-        sourcePredecessorFormulaId: source.formula.formula_id,
-      });
-      runtimeFormulas.push(formula);
-      resources.push(workResource({
-        catalogId,
-        key: "align_small_area_corners",
-        titleRu: "Выравнивание коротких граней и углов потолочного короба",
-        formula,
-        sourceRows: [source],
-      }));
-    }
+    
     if (parts.contract.variant === "technical_room") {
       const source = requiredRow("technical_clearance_alignment");
       const formula = syntheticFormula({

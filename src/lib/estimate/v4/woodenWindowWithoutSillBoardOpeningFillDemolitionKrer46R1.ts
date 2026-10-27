@@ -21,22 +21,6 @@ export const WOODEN_WINDOW_WITHOUT_SILL_BOARD_FILL_DEMOLITION_KRER46_VARIANTS = 
     catalogVariant: "STANDARD_CONFIRMED_WOODEN_WINDOW_WITHOUT_SILL_BOARD",
     canonicalNameRu: "Разборка деревянного оконного заполнения проёма без подоконной доски",
   }),
-  large_area: Object.freeze({
-    catalogId:
-      "canonical-work:master:demolition_wooden_window_without_sill_board_opening_fill_large_area",
-    sourceIdentity: `master-work:${FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_WOODEN_WINDOW_WITHOUT_SILL_BOARD",
-    canonicalNameRu:
-      "Разборка деревянного оконного заполнения без подоконной доски — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId:
-      "canonical-work:master:demolition_wooden_window_without_sill_board_opening_fill_small_area",
-    sourceIdentity: `master-work:${FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_WOODEN_WINDOW_WITHOUT_SILL_BOARD",
-    canonicalNameRu:
-      "Разборка деревянного оконного заполнения без подоконной доски — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId:
       "canonical-work:master:demolition_wooden_window_without_sill_board_opening_fill_wet_zone",

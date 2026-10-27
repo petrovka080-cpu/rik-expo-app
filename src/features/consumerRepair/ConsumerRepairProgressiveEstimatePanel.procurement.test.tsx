@@ -5,6 +5,7 @@ import { ConsumerRepairProgressiveEstimatePanel, buildCanonicalProcurementPrevie
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests/consumerRequestTypes";
 import type { EstimateDraftRevision } from "../../lib/estimate/estimateDraftRevisionContract";
 import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
+import { buildCanonicalProcurementPreviewSections } from "./canonicalProcurementPreviewRows";
 
 type ProgressiveEstimateViewModel = React.ComponentProps<
   typeof ConsumerRepairProgressiveEstimatePanel
@@ -92,6 +93,115 @@ function panel(
     />
   );
 }
+
+it("opens an explicit empty purchase list without turning normative demand into an order", () => {
+  const current = revision(false) as unknown as EstimateDraftRevision;
+  current.boq.rows[0].includedInProcurement = false;
+  const before = JSON.stringify(current);
+  const onOpenProcurement = jest.fn();
+  let renderer!: ReactTestRenderer;
+  act(() => { renderer = TestRenderer.create(React.cloneElement(panel(current as never), { onOpenProcurement })); });
+  expect(buildCanonicalProcurementPreviewRows(current)).toEqual([]);
+  expect(renderer.root.findAllByProps({ testID: "consumer-estimate-procurement-list" })).toHaveLength(0);
+  act(() => renderer.root.findByProps({ testID: "consumer-estimate-open-procurement" }).props.onPress());
+  expect(onOpenProcurement).toHaveBeenCalledTimes(1);
+  expect(renderer.root.findByProps({ testID: "consumer-estimate-procurement-list" })).toBeTruthy();
+  expect(JSON.stringify(renderer.root.findByProps({ testID: "consumer-estimate-procurement-empty" }).props.children))
+    .toContain("В этой версии нет рассчитанных позиций к покупке.");
+  expect(renderer.root.findAll(node => typeof node.props.testID === 'string'
+    && node.props.testID.startsWith('consumer-estimate-procurement-row-'))).toHaveLength(0);
+  expect(JSON.stringify(current)).toBe(before);
+  act(() => renderer.unmount());
+});
+
+it("restores a saved empty purchase artifact while preserving its excluded physical demand", () => {
+  const current = revision(true) as unknown as EstimateDraftRevision;
+  current.boq.rows[0].includedInProcurement = false;
+  const before = JSON.stringify(current);
+  let renderer!: ReactTestRenderer;
+  act(() => { renderer = TestRenderer.create(panel(current as never)); });
+  expect(renderer.root.findByProps({ testID: "consumer-estimate-procurement-list" })).toBeTruthy();
+  expect(renderer.root.findByProps({ testID: "consumer-estimate-procurement-empty" })).toBeTruthy();
+  expect(buildCanonicalProcurementPreviewRows(current)).toEqual([]);
+  expect(current.boq.rows[0].quantity).toBe(52);
+  expect(JSON.stringify(current)).toBe(before);
+  act(() => renderer.unmount());
+});
+
+it("shows saved purchasing operations with one order owner and conditional shared references, without changing the revision", () => {
+  const current = revision(true) as unknown as EstimateDraftRevision;
+  const owner = {
+    contractVersion: "canonical-operation-resource/v1", groupId: "asphalt", groupTitleRu: "Асфальтовые работы",
+    operationId: "supply", operationTitleRu: "Поставка материалов", completionCriterionRu: "Материал доставлен",
+    processOrdinal: 1, additionalOperations: [
+      { operationId: "lay", operationTitleRu: "Укладка покрытия", completionCriterionRu: "Слой уложен", processOrdinal: 2,
+        whenResourcePresent: ["machine:paver"] },
+      { operationId: "missing", operationTitleRu: "Неприменимая подработка", completionCriterionRu: "Нет ресурса",
+        whenResourcePresent: ["foreign-revision-machine"] },
+    ],
+  };
+  Object.assign(current.boq.rows[0], { rowId: "material:shared", titleRu: "Общий материал", quantity: 703,
+    unit: "piece", unitPrice: 2, sourceParameters: { canonicalOperationComposition: owner } });
+  current.boq.rows.push({ ...current.boq.rows[0], rowId: "machine:paver", titleRu: "Асфальтоукладчик",
+    quantity: 3.19, includedInProcurement: false, sourceParameters: {} });
+  const foreignItem: ConsumerRepairRequestItem = { id: "foreign-revision-machine", titleRu: "Чужой механизм",
+    requestDraftId: "foreign-draft", itemType: "material", quantity: 1, unit: "piece",
+    unitPrice: null, totalPrice: null, currency: "KGS", source: "ai_suggested",
+    editableByConsumer: true, createdAt: "2026-10-20T00:00:00.000Z",
+    sourceParameters: { rowCode: "foreign-revision-machine", canonicalBackendRevisionId: "another-revision" },
+  };
+  const before = JSON.stringify({ current, foreignItem });
+  const rows = buildCanonicalProcurementPreviewRows(current, [foreignItem]);
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({ rowId: "material:shared", quantity: 703, unitPrice: 2, operation: owner });
+  const sections = buildCanonicalProcurementPreviewSections(current, rows, [foreignItem]);
+  expect(sections.map(section => section.operation?.operationId)).toEqual(["supply", "lay"]);
+  expect(sections[0].resourceIds).toEqual(["material:shared"]);
+  expect(sections[1].resourceIds).toEqual([]);
+  expect(sections[1].sharedResources).toEqual([{ rowId: "material:shared", titleRu: "Общий материал",
+    ownerOperationTitleRu: "Поставка материалов" }]);
+  let renderer!: ReactTestRenderer;
+  act(() => { renderer = TestRenderer.create(panel(current as never)); });
+  const strings = (value: unknown): string[] => typeof value === "string" ? [value]
+    : Array.isArray(value) ? value.flatMap(strings)
+      : value && typeof value === "object" && "children" in value ? strings(value.children) : [];
+  const text = strings(renderer.toJSON());
+  expect(text).toContain("Поставка материалов");
+  expect(text).toContain("Укладка покрытия");
+  expect(text.filter(value => value === "К закупке: 703 шт.")).toHaveLength(1);
+  expect(text.filter(value => value === "2 KGS за шт.")).toHaveLength(1);
+  expect(text).toContain("↳ Общий материал");
+  expect(text.join(' ')).not.toContain('общий ресурс. Учтён');
+  expect(text.join(" ")).not.toContain("Неприменимая подработка");
+  expect(text.join(" ")).not.toContain("Чужой механизм");
+  expect(renderer.root.findAllByProps({ testID: "consumer-estimate-procurement-row-material:shared" }).length).toBeGreaterThan(0);
+  expect(JSON.stringify({ current, foreignItem })).toBe(before);
+  act(() => renderer.unmount());
+});
+
+it("shows functional purchasing operation headings and shared owner titles without rewriting the source revision", () => {
+  const current = revision(true) as unknown as EstimateDraftRevision;
+  const owner = { contractVersion: "canonical-operation-resource/v1", groupId: "wall", operationId: "prime",
+    groupTitleRu: "Грунтование оштукатуренных стен VGT 0301", operationTitleRu: "Загрунтовать VGT0301 перед шпаклёвкой и высушить",
+    completionCriterionRu: "Исходная приёмка", additionalOperations: [{ operationId: "mix",
+      operationTitleRu: "Затворение CT126 целыми последовательными замесами", completionCriterionRu: "Исходная приёмка" }] };
+  current.boq.rows[0].sourceParameters = { canonicalOperationComposition: owner };
+  const before = JSON.stringify(current);
+  const rows = buildCanonicalProcurementPreviewRows(current), sections = buildCanonicalProcurementPreviewSections(current, rows);
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({ rowId: "material:anchor-group:anchor-bolts", quantity: 52, unitPrice: null,
+    operation: { groupId: "wall", operationId: "prime", operationTitleRu: "Грунтование перед шпаклеванием" } });
+  expect(sections.map(section => section.operation?.operationTitleRu)).toEqual(["Грунтование перед шпаклеванием", "Приготовление гипсовой шпаклёвки"]);
+  expect(sections[1].sharedResources[0].ownerOperationTitleRu).toBe("Грунтование перед шпаклеванием");
+  let renderer!: ReactTestRenderer;
+  act(() => { renderer = TestRenderer.create(panel(current as never)); });
+  const visible = JSON.stringify(renderer.toJSON());
+  expect(visible).toContain("Грунтование перед шпаклеванием");
+  expect(visible).toContain("Приготовление гипсовой шпаклёвки");
+  expect(visible).not.toMatch(/VGT0301|CT126/iu);
+  expect(JSON.stringify(current)).toBe(before);
+  act(() => renderer.unmount());
+});
 
 it("preserves the actual tray mortar ratio in Buyer projection and rendered rows without rewriting the saved revision", () => {
   const current = revision(true) as unknown as EstimateDraftRevision;

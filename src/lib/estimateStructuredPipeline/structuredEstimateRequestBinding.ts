@@ -325,10 +325,13 @@ export function buildStructuredEstimateRequestDraft(
               preliminaryNeed: true,
             },
           },
-          priceStatus: need.purchaseSupplyBlocks?.length && need.unitPrice != null ? "USER_ENTERED_PRICE" as const : "PRICE_MISSING" as const,
-          priceSource: need.purchaseSupplyBlocks?.length && need.unitPrice != null ? "user" as const : "missing" as const,
+          // The compiler retains a preliminary need's unit price only from
+          // the explicit amendment. Preserve it across reopen without making
+          // the unresolved resource payable or procurement-ready.
+          priceStatus: need.unitPrice != null ? "USER_ENTERED_PRICE" as const : "PRICE_MISSING" as const,
+          priceSource: need.unitPrice != null ? "user" as const : "missing" as const,
           priceSourceId: null,
-          priceSourceLabel: need.purchaseSupplyBlocks?.length && need.unitPrice != null
+          priceSourceLabel: need.unitPrice != null
             ? "Сохранённая ручная цена (справочно)" : "Цена применяется после уточнения количества и условий",
           confidence: "medium" as const,
           addedBy: "ai" as const,

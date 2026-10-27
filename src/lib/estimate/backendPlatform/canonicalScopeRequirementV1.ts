@@ -7,6 +7,19 @@ export type CanonicalScopeRequirementKindV1 = 'INCLUDED' | 'NOT_APPLICABLE' | 'P
 export type CanonicalScopeRequirementStatusV1 = 'INCLUDED' | 'NOT_APPLICABLE' | 'COMPLETED' | 'USER_EXCLUDED' | 'REQUIRED_RESOURCE_EXCLUDED'
   | 'PARTLY_INCLUDED' | 'PROCESS_REQUIRED' | 'PROJECT_SCOPE_OPEN' | 'FINANCIAL_POLICY'
   | 'OBJECT_FACT_REQUIRED' | 'LEGACY_SOURCE_REQUIRED' | 'SCOPE_UNVERIFIED';
+/** Flat read evidence only; no quantity, source authority or paid resource. */
+export type CanonicalFactorySupplyObligationV1 = {
+  contractVersion: 'canonical-scope-requirement-decision/v1';
+  obligationKey: string;
+  rowId: string; groupId: string; groupTitleRu: string; titleRu: string; reasonRu: string;
+  kind: 'FACTORY_SUPPLY'; status: 'COMPLETED' | 'SCOPE_UNVERIFIED';
+  coveringRowIds: string[]; originalRowIds: string[]; missingObjectFactParameterIds: string[];
+  numericNormAccepted: false; separatePaymentAccepted: false;
+};
+export type CanonicalScopeObligationsReadIssueV1 = {
+  contractVersion: 'canonical-scope-obligations-read-issue/v1';
+  status: 'INVALID_EXPLICIT'; reason: 'INVALID_FLAT_OBLIGATIONS';
+};
 export type CanonicalScopeRequirementDecisionV1 = {
   contractVersion: 'canonical-scope-requirement-decision/v1';
   rowId: string;
@@ -21,6 +34,8 @@ export type CanonicalScopeRequirementDecisionV1 = {
   missingObjectFactParameterIds: string[];
   numericNormAccepted: false;
   separatePaymentAccepted: false;
+  additionalObligationsV1?: readonly CanonicalFactorySupplyObligationV1[];
+  additionalObligationsReadIssueV1?: CanonicalScopeObligationsReadIssueV1;
   /** Read-only recovery metadata for historical invalid exclusions. */
   restoreExcludedSourceCheck?: { operationKeys: string[] };
 };
@@ -64,6 +79,49 @@ const text = (value: unknown): value is string => typeof value === 'string' && v
 const ids = (value: unknown): value is string[] => Array.isArray(value) && value.length <= 128 && value.every(text)
   && new Set(value).size === value.length;
 
+/** Detect the explicit new contract without interpreting raw child evidence. */
+export function canonicalScopeRequirementHasAdditionalObligationsV1(value: unknown): boolean {
+  const d = record(value);
+  return d != null && (Object.hasOwn(d,'additionalObligationsV1') || Object.hasOwn(d,'additionalObligationsReadIssueV1'));
+}
+
+/** Sticky read-only diagnostic: never a source, quantity or acceptance. */
+export function canonicalScopeRequirementWithIntegrityHoldV1(
+  decision: CanonicalScopeRequirementDecisionV1,
+): CanonicalScopeRequirementDecisionV1 {
+  return {...decision,additionalObligationsReadIssueV1:{contractVersion:'canonical-scope-obligations-read-issue/v1',
+    status:'INVALID_EXPLICIT',reason:'INVALID_FLAT_OBLIGATIONS'}};
+}
+
+function readFlatObligations(d: Json): CanonicalFactorySupplyObligationV1[] | null {
+  const raw = d.additionalObligationsV1;
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > 8) return null;
+  const keys = ['contractVersion','obligationKey','rowId','groupId','groupTitleRu','titleRu','reasonRu','kind','status',
+    'coveringRowIds','originalRowIds','missingObjectFactParameterIds','numericNormAccepted','separatePaymentAccepted'];
+  const seen = new Set<string>();
+  const leaves: CanonicalFactorySupplyObligationV1[] = [];
+  for (const value of raw) {
+    const c = record(value);
+    if (!c || Object.keys(c).some(key=>!keys.includes(key))
+      || c.contractVersion !== 'canonical-scope-requirement-decision/v1'
+      || ![c.obligationKey,c.rowId,c.groupId,c.groupTitleRu,c.titleRu,c.reasonRu].every(text)
+      || c.rowId !== d.rowId || c.groupId !== d.groupId || c.groupTitleRu !== d.groupTitleRu
+      || c.kind !== 'FACTORY_SUPPLY' || !['COMPLETED','SCOPE_UNVERIFIED'].includes(String(c.status))
+      || !ids(c.coveringRowIds) || c.coveringRowIds.length !== 0
+      || !ids(c.originalRowIds) || c.originalRowIds.length !== 2 || !c.originalRowIds.includes(String(c.obligationKey))
+      || c.originalRowIds.includes(String(d.rowId))
+      || !ids(c.missingObjectFactParameterIds) || c.missingObjectFactParameterIds.length !== 0
+      || c.numericNormAccepted !== false || c.separatePaymentAccepted !== false || seen.has(String(c.obligationKey))) return null;
+    seen.add(String(c.obligationKey));
+    // Copy only bounded typed fields. Raw objects are never retained as authority.
+    leaves.push({contractVersion:'canonical-scope-requirement-decision/v1',obligationKey:String(c.obligationKey),
+      rowId:String(c.rowId),groupId:String(c.groupId),groupTitleRu:String(c.groupTitleRu),titleRu:String(c.titleRu),reasonRu:String(c.reasonRu),
+      kind:'FACTORY_SUPPLY',status:c.status as CanonicalFactorySupplyObligationV1['status'],
+      coveringRowIds:[],originalRowIds:[...c.originalRowIds],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false});
+  }
+  return leaves;
+}
+
 /** Saved semantic evidence is shared by compact transport, Web and PDF. A
  * quantity gap without this exact contract retains its existing authority. */
 export function canonicalScopeRequirementDecisionV1(value: unknown, compositionDecision?: unknown): CanonicalScopeRequirementDecisionV1 | null {
@@ -77,18 +135,29 @@ export function canonicalScopeRequirementDecisionV1(value: unknown, compositionD
   if(!valid)return null;
   // Older saved revisions could exclude the source/applicability check as an
   // informational row. Read them without treating that as verified scope.
+  let primary = d as CanonicalScopeRequirementDecisionV1;
   if(d!.kind==='OBJECT_SCOPE' && d!.status==='USER_EXCLUDED') {
     const selection=canonicalCompositionSelectionDecisionV1(compositionDecision);
     const operationKeys=selection && selection.rowId===d!.rowId && selection.excluded
       ? selection.excludedOperationKeys.filter(key=>!selection.unallocatedReferenceExclusions.includes(key)) : [];
-    return {...d,status:'SCOPE_UNVERIFIED',
+    primary = {...d,status:'SCOPE_UNVERIFIED',
       reasonRu:'Проверка системы и применимости норм была исключена в прежней версии. Восстановите проверку; приложение затем определит готовность выбранного состава.',
       restoreExcludedSourceCheck:{operationKeys}} as CanonicalScopeRequirementDecisionV1;
   }
-  const restoration=record(d!.restoreExcludedSourceCheck);
-  if(d!.restoreExcludedSourceCheck!=null && (d!.kind!=='OBJECT_SCOPE' || d!.status!=='SCOPE_UNVERIFIED'
+  const restoration=record(primary.restoreExcludedSourceCheck);
+  if(primary.restoreExcludedSourceCheck!=null && (primary.kind!=='OBJECT_SCOPE' || primary.status!=='SCOPE_UNVERIFIED'
     || !restoration || !ids(restoration.operationKeys)))return null;
-  return d as CanonicalScopeRequirementDecisionV1;
+  // Exact legacy return (including historical exclusion recovery) is unchanged.
+  if (!canonicalScopeRequirementHasAdditionalObligationsV1(d)) return primary;
+  const {additionalObligationsV1:_rawChildren,additionalObligationsReadIssueV1:_rawIssue,...base} = primary;
+  const children = Object.hasOwn(d!,'additionalObligationsV1') ? readFlatObligations(d!) : null;
+  const bounded = {...base,...(children ? {additionalObligationsV1:children} : {})};
+  // Presence of an explicit issue is sticky, even after sanitize/compact/reparse.
+  // A forged clear flag cannot close the read gate. Invalid primary still uses
+  // the historical null behavior above; this recovery is only for a valid primary.
+  return Object.hasOwn(d!,'additionalObligationsReadIssueV1') || !children
+    ? canonicalScopeRequirementWithIntegrityHoldV1(bounded) : bounded;
+
 }
 
 /** Classifies an existing informational obligation; it never supplies a
@@ -163,7 +232,10 @@ export function resolveCanonicalScopeRequirementV1(input: {
     else if (value == null || value === '' || scope.unknownObjectValues!.includes(String(value))) {
       status = 'OBJECT_FACT_REQUIRED'; missing = [id];
     } else if (!projectOnly&&value === scope.legacyObjectValue) { status = 'LEGACY_SOURCE_REQUIRED'; missing = []; }
-    else if (exact.value === true) { status = 'COMPLETED'; missing = []; }
+    else if (exact.value === true) {
+      missing = (scope.requiredFactParameterIds ?? []).filter(id => input.parameters[id] == null || input.parameters[id] === '');
+      status = missing.length ? 'OBJECT_FACT_REQUIRED' : 'COMPLETED';
+    }
   } else if(scope.operationExclusionSatisfiesScopeV1!=null
     &&(scope.operationExclusionSatisfiesScopeV1!==true||scope.kind!=='INCLUDED'||scope.coveringRowIds.length===0))return fail();
   else if(scope.contextWhen&&context?.value!==true) {
@@ -200,7 +272,7 @@ export function resolveCanonicalScopeRequirementV1(input: {
 }
 
 export function canonicalScopeRequirementStatusRuV1(status: CanonicalScopeRequirementStatusV1): string {
-  return ({INCLUDED:'Учтено рассчитанными ресурсами в этой смете',NOT_APPLICABLE:'Не относится к выбранному полю кровли',
+  return ({INCLUDED:'Учтено рассчитанными ресурсами в этой смете',NOT_APPLICABLE:'Не требуется для выбранного состава работ',
     COMPLETED:'Подтверждено исходными данными',USER_EXCLUDED:'Исключено пользователем из этой сметы',PARTLY_INCLUDED:'Часть учтена; отдельный остаток зависит от проекта',
     REQUIRED_RESOURCE_EXCLUDED:'Для выполнения этапа нужен исключённый ресурс: восстановите его или измените состав',
     PROCESS_REQUIRED:'Требование к выполнению работ',PROJECT_SCOPE_OPEN:'Отдельный состав зависит от проекта',
@@ -208,9 +280,16 @@ export function canonicalScopeRequirementStatusRuV1(status: CanonicalScopeRequir
     LEGACY_SOURCE_REQUIRED:'Нормы прежнего состава ещё не подтверждены',SCOPE_UNVERIFIED:'Применимость ещё не подтверждена'})[status];
 }
 
+/** Future execution duties stay in the saved ledger without impersonating a
+ * missing calculation input. Actual scope, object and source gaps still block. */
+export function canonicalScopeRequirementStatusIsOpenV1(status: CanonicalScopeRequirementStatusV1): boolean {
+  return ['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','OBJECT_FACT_REQUIRED','LEGACY_SOURCE_REQUIRED',
+    'SCOPE_UNVERIFIED','REQUIRED_RESOURCE_EXCLUDED'].includes(status);
+}
+
 export type CanonicalScopeRequirementGroupV1 = {
   groupId: string; titleRu: string; rowIds: string[]; statuses: CanonicalScopeRequirementStatusV1[]; detailsRu: string[];
-  kinds?: CanonicalScopeRequirementKindV1[];
+  kinds?: (CanonicalScopeRequirementKindV1 | 'FACTORY_SUPPLY')[];
   missingObjectFactParameterIds?: string[];
   sourceCheckRestoration?: { rowIds: string[]; operationKeys: string[] };
 };
@@ -230,7 +309,39 @@ export function groupCanonicalScopeRequirementsV1(decisions: readonly CanonicalS
     group.rowIds.push(d.rowId);
     if (!group.statuses.includes(d.status)) group.statuses.push(d.status);
     if (!group.detailsRu.includes(d.reasonRu)) group.detailsRu.push(d.reasonRu);
+    if (d.additionalObligationsV1 || d.additionalObligationsReadIssueV1) {
+      group.rowIds = [...new Set(group.rowIds)];
+      for (const child of d.additionalObligationsV1 ?? []) {
+        if (!group.kinds!.includes(child.kind)) group.kinds!.push(child.kind);
+        if (!group.statuses.includes(child.status)) group.statuses.push(child.status);
+        if (!group.detailsRu.includes(child.reasonRu)) group.detailsRu.push(child.reasonRu);
+      }
+      if (d.additionalObligationsReadIssueV1) {
+        if (!group.statuses.includes('SCOPE_UNVERIFIED')) group.statuses.push('SCOPE_UNVERIFIED');
+        const reason = 'Сохранённое дополнительное обязательство требует проверки целостности.';
+        if (!group.detailsRu.includes(reason)) group.detailsRu.push(reason);
+      }
+    }
     groups.set(d.groupId,group);
   }
   return [...groups.values()];
+}
+
+/** Shared read predicate; arithmetic/binding remains exclusively in ce148. */
+export function canonicalScopeRequirementDecisionIsOpenV1(decision: CanonicalScopeRequirementDecisionV1): boolean {
+  return canonicalScopeRequirementStatusIsOpenV1(decision.status) || decision.additionalObligationsReadIssueV1 != null
+    || (decision.additionalObligationsV1 ?? []).some(child=>canonicalScopeRequirementStatusIsOpenV1(child.status));
+}
+
+/** Compare only parsed bounded semantics, independent of JSON property order. */
+export function canonicalScopeRequirementDecisionsEqualV1(
+  left: CanonicalScopeRequirementDecisionV1, right: CanonicalScopeRequirementDecisionV1,
+): boolean {
+  const body = (d: CanonicalScopeRequirementDecisionV1) => [d.contractVersion,d.rowId,d.groupId,d.groupTitleRu,d.titleRu,d.reasonRu,
+    d.kind,d.status,d.coveringRowIds,d.originalRowIds,d.missingObjectFactParameterIds,d.numericNormAccepted,d.separatePaymentAccepted,
+    d.restoreExcludedSourceCheck?.operationKeys ?? null,
+    d.additionalObligationsV1?.map(c=>[c.contractVersion,c.obligationKey,c.rowId,c.groupId,c.groupTitleRu,c.titleRu,c.reasonRu,
+      c.kind,c.status,c.coveringRowIds,c.originalRowIds,c.missingObjectFactParameterIds,c.numericNormAccepted,c.separatePaymentAccepted]) ?? null,
+    d.additionalObligationsReadIssueV1 ?? null];
+  return JSON.stringify(body(left)) === JSON.stringify(body(right));
 }

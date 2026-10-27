@@ -17,10 +17,10 @@ const VARIANT_KEYS = Object.keys(
 ) as WoodFireproofingSurfaceCleaningVariantKey[];
 
 describe("S27.6 F09 fireproofed-wood surface-cleaning variants", () => {
-  test("uses two exact identities and the current SP KR 54 artifact boundary", () => {
-    expect(VARIANT_KEYS).toEqual(["small_area", "standard"]);
+  test("preserves the surviving exact identities and source boundary", () => {
+    expect(VARIANT_KEYS).toEqual([ "standard"]);
     expect(new Set(VARIANT_KEYS.map((key) =>
-      WOOD_FIREPROOFING_SURFACE_CLEANING_VARIANTS[key].catalogId)).size).toBe(2);
+      WOOD_FIREPROOFING_SURFACE_CLEANING_VARIANTS[key].catalogId)).size).toBe(1);
     expect(WOOD_FIREPROOFING_SURFACE_CLEANING_ARTIFACT_SHA256)
       .toBe("e28932e7b9f8ed54b6cb2e222ed1e0981db94a885ea2a698e7c7c33ebea87a6c");
     for (const key of VARIANT_KEYS) {
@@ -76,9 +76,9 @@ describe("S27.6 F09 fireproofed-wood surface-cleaning variants", () => {
     expect(() => resolveWoodFireproofingSurfaceCleaningVariant("large_area"))
       .toThrow("WOOD_FIREPROOFING_SURFACE_CLEANING_VARIANT_UNSUPPORTED");
     await expect(compileWoodFireproofingSurfaceCleaningVariantR1(
-      "small_area",
+      "standard",
       { ...WOOD_FIREPROOFING_SURFACE_CLEANING_ACCEPTANCE_INPUT },
-      { catalogId: WOOD_FIREPROOFING_SURFACE_CLEANING_VARIANTS.standard.catalogId },
+      { catalogId: "canonical-work:base:unrelated_work_standard" },
     )).rejects.toThrow("WOOD_FIREPROOFING_SURFACE_CLEANING_CATALOG_UNSUPPORTED");
     await expect(compileWoodFireproofingSurfaceCleaningVariantR1("standard", {
       ...WOOD_FIREPROOFING_SURFACE_CLEANING_SHORT_INPUT,

@@ -1,4 +1,5 @@
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
 import {
   concreteSlabRepairPromptDetailsR1,
@@ -18,7 +19,7 @@ import {
 } from "../../src/lib/estimate/v4/concreteSlabRepairR1";
 
 describe("concrete slab repair canonical family", () => {
-  it("compiles seven distinct project repair schedules through the shared core", async () => {
+  it("compiles five distinct project repair schedules through the shared core", async () => {
     const fixtures = new Set<string>();
     for (const target of CONCRETE_SLAB_REPAIR_TARGETS) {
       const input = concreteSlabRepairAcceptanceInputR1(target.contextKey);
@@ -35,7 +36,7 @@ describe("concrete slab repair canonical family", () => {
       expect(compiled.rows.some((row) => row.row_id.includes("formwork"))).toBe(false);
       fixtures.add(JSON.stringify(input));
     }
-    expect(fixtures.size).toBe(7);
+    expect(fixtures.size).toBe(5);
   });
 
   it("includes only project-selected materials, equipment, testing and waste flows", async () => {
@@ -102,9 +103,9 @@ describe("concrete slab repair canonical family", () => {
       .toContain("approved_repair_design_reference");
 
     const smallTarget = CONCRETE_SLAB_REPAIR_TARGETS.find(
-      (candidate) => candidate.contextKey === "small_area",
+      (candidate) => candidate.contextKey === "standard",
     )!;
-    const smallInput = concreteSlabRepairAcceptanceInputR1(smallTarget.contextKey);
+    const smallInput = measuredConcreteProjectInputR533("concreteSlabRepairAcceptanceInputR1", "compact");
     await expect(compileConcreteSlabRepairR1({
       ...smallInput,
       bonding_agent_quantity_kg: 3,

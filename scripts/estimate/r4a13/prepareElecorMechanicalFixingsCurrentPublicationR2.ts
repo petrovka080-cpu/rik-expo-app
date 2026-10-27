@@ -165,15 +165,40 @@ export function prepareElecorMechanicalFixingsCurrentPublicationR2(parent:Purcha
    const out=await compile(control);assert.equal(out.rows.length,24);assert.equal(out.preliminaryNeeds.length,7);
    const owner=out.rows.find(x=>x.row_id===pack.priceOwnerRowId)!;assert.equal(owner.quantity,'50');assert.equal(owner.unit_id,'pcs');assert.equal(owner.unit_price,null);
    const unknownInput={...parent.baseline.input_values,elecor_fixing_method:pack.unresolvedMethod};const unresolved=await compile(unknownInput);assert.equal(unresolved.preliminaryNeeds.length,8);
+   // A legal manual need quantity is retained without becoming a norm, payment or order.
+   // Use the unresolved method for the negative procurement control: its need is active.
+   const legacyProvenance={kind:'manual',reason:'CONTROL_ONLY retained legacy need quantity; norm remains unknown'};
+   assert.equal(plan.resources.find(row=>row.row_id===pack.existingNeedRowId)?.procurement_eligible,false);
+   assert.equal(unresolved.preliminaryNeeds.filter(need=>need.row_id===pack.existingNeedRowId).length,1);
+   const definitionBefore=hash({parameters:plan.parameters,formulas:plan.formulas,resources:plan.resources});
    for(const v of[0,1,77]){
     await assert.rejects(()=>compile({...control,[pack.legacyUnresolvedQuantityParameterId]:v}),(e:any)=>e.code==='PARAMETER_VALIDATION_FAILED');
-    await assert.rejects(()=>compile(control,{[pack.existingNeedRowId]:{quantity:String(v),unitPrice:'77',provenance:{kind:'manual',reason:'CONTROL_ONLY legacyunknownnorm refusal'}}}),(e:any)=>e.code==='ROW_AMENDMENT_INVALID');
+    const overrides={[pack.existingNeedRowId]:{quantity:String(v),unitPrice:'77',provenance:legacyProvenance}};
+    const active=await compile(control,overrides);
+    assert(![...active.rows,...active.preliminaryNeeds].some(row=>row.row_id===pack.existingNeedRowId));
+    assert.deepEqual(active.rows.find(row=>row.row_id===pack.priceOwnerRowId),owner);
+    assert.deepEqual(active.totals,out.totals);assert(!Object.hasOwn(active.parameters,pack.legacyUnresolvedQuantityParameterId));
+    const legacy=await compile(unknownInput,overrides),needs=legacy.preliminaryNeeds.filter(need=>need.row_id===pack.existingNeedRowId);
+    assert(!legacy.rows.some(row=>row.row_id===pack.existingNeedRowId||row.row_id===pack.priceOwnerRowId));
+    assert.equal(needs.length,1);const need=needs[0]!;
+    assert.equal(need.quantity,String(v));assert.equal(need.unit_price,'77');
+    assert(need.missing_parameter_ids.includes(pack.legacyUnresolvedQuantityParameterId));
+    assert.equal(need.procurement_eligible,false);assert.deepEqual(legacy.totals,unresolved.totals);
+    assert(!Object.hasOwn(legacy.parameters,pack.legacyUnresolvedQuantityParameterId));
+    const trace=need.calculation_trace;assert(trace!==null&&typeof trace==='object'&&!Array.isArray(trace));
+    assert.equal('preliminaryNeed' in trace&&trace.preliminaryNeed,true);
+    assert.equal('manualQuantityOverride' in trace&&trace.manualQuantityOverride,true);
+    assert.equal('calculatedQuantityBeforeOverride' in trace?trace.calculatedQuantityBeforeOverride:undefined,null);
+    assert.deepEqual('manualAmendment' in trace?trace.manualAmendment:undefined,legacyProvenance);
+    await assert.rejects(()=>compile(unknownInput,{[pack.existingNeedRowId]:{...overrides[pack.existingNeedRowId],includedInEstimate:true,includedInProcurement:true}}),
+     (error:unknown)=>error!==null&&typeof error==='object'&&'code' in error&&error.code==='ROW_AMENDMENT_INVALID');
    }
+   assert.equal(hash({parameters:plan.parameters,formulas:plan.formulas,resources:plan.resources}),definitionBefore);
    const manual=await compile(control,{[pack.priceOwnerRowId]:{quantity:'77',unitPrice:'77',titleRu:'Мой крепёж535463',provenance:{kind:'manual',reason:'CONTROL_ONLY raw77 quantumblock'}}});
    assert.equal(manual.rows.find(x=>x.row_id===pack.priceOwnerRowId)?.quantity,'77');assert.equal(manual.rows.find(x=>x.row_id===pack.priceOwnerRowId)?.amount,null);
    assert.equal(manual.rows.find(x=>x.row_id===pack.priceOwnerRowId)?.included_in_procurement,false);
    assert.equal(hash(parent),before);return{status:'PURE_ACTUAL_PARENT_FACTORY_AND_SHARED_COMPILER_CHECKS_COMPLETED_NOT_DB_ACCEPTANCE',
     shape:[39,32,32],bindings:20,oldBindingsPreserved:18,newBindings:2,staticNeeds:8,activeMechanicalNeeds:7,priceBindings:0,
-    noOldUnknownNormPriceOrQuantityCarry:true,registryAdmissionPending:true,manualRightsMigrationAdmissionPending:true,fullTechnicalAcceptance:false};
+    noOldUnknownNormPriceOrQuantityCarry:true,legacyManualNeedCases:3,forbiddenActiveLegacyProcurementCases:3,unresolvedNormInputRejections:3,registryAdmissionPending:true,manualRightsMigrationAdmissionPending:true,fullTechnicalAcceptance:false};
   }};
 }

@@ -140,17 +140,9 @@ const CONTEXT_EVIDENCE_RU = Object.freeze({
     conditions: ["давление свежего бетона", "темп бетонирования", "временные нагрузки"],
     requiredProject: ["расчёт временной опалубочной системы", "раскладка по расчёту"],
   },
-  large_area: {
-    conditions: ["разбивка на захватки", "пиковая потребность комплекта", "перестановки"],
-    requiredProject: ["календарно-захваточный план", "ведомость пикового комплекта", "транспортный план"],
-  },
   repair: {
     conditions: ["существующая конструкция", "узлы сопряжения", "границы демонтажа"],
     requiredProject: ["обследование", "ремонтная раскладка", "узлы крепления"],
-  },
-  small_area: {
-    conditions: ["габариты рабочей зоны", "способ подачи", "минимальный комплект"],
-    requiredProject: ["план доступа", "отдельная раскладка", "условия малой поставки"],
   },
   technical_room: {
     conditions: ["проёмы и габариты доступа", "масса элементов", "способ подачи"],
@@ -200,7 +192,7 @@ export const FORMWORK_REMAINING_FAMILY_APPLICABILITY_MATRIX = Object.freeze(
 
 export function assertFormworkRemainingFamilyApplicabilityMatrix(): void {
   const catalogIds = FORMWORK_REMAINING_FAMILY_APPLICABILITY_MATRIX.map((row) => row.catalogId);
-  if (catalogIds.length !== 21) throw new Error(`FORMWORK_REMAINING_TARGET_COUNT:${catalogIds.length}`);
+  if (catalogIds.length !== 15) throw new Error(`FORMWORK_REMAINING_TARGET_COUNT:${catalogIds.length}`);
   if (new Set(catalogIds).size !== catalogIds.length) throw new Error("FORMWORK_REMAINING_TARGET_DUPLICATE");
   if (catalogIds.some((catalogId) => catalogId.includes("pile_cap"))) {
     throw new Error("FORMWORK_REMAINING_TARGET_PILE_CAP_LEAK");
@@ -209,8 +201,6 @@ export function assertFormworkRemainingFamilyApplicabilityMatrix(): void {
 
 const CONCRETE_SLAB_FULL_WORK_CONTEXTS = Object.freeze([
   ["standard", "устройство бетонной плиты в стандартной зоне"],
-  ["small_area", "устройство бетонной плиты на малой площади"],
-  ["large_area", "устройство бетонной плиты на большой площади"],
   ["wet_zone", "устройство бетонной плиты во влажной зоне"],
   ["technical_room", "устройство бетонной плиты в техническом помещении"],
   ["high_load", "устройство бетонной плиты для высокой нагрузки"],
@@ -257,7 +247,7 @@ export function assertConcreteSlabFullWorkCatalogScopeAudit(): void {
   const componentIds = new Set<string>(
     FORMWORK_DOKAFLEX_FLOOR_SLAB_COMPONENT_TARGETS.map((target) => target.catalogId),
   );
-  if (catalogIds.length !== 7 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 5 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`CONCRETE_SLAB_FULL_WORK_TARGET_SHAPE:${catalogIds.length}`);
   }
   if (catalogIds.some((catalogId) => componentIds.has(catalogId))) {
@@ -313,8 +303,8 @@ export function assertConcreteSlabFullWorkCatalogScopeAgainstManifest(
   }
 }
 
-const sevenContextCatalogIds = (workKey: string) => [
-  "standard", "high_load", "large_area", "repair", "small_area", "technical_room", "wet_zone",
+const survivingContextCatalogIds = (workKey: string) => [
+  "standard", "high_load", "repair", "technical_room", "wet_zone",
 ].map((contextKey) => `canonical-work:base:concrete_foundation_interior_${workKey}_${contextKey}`);
 
 /**
@@ -386,7 +376,7 @@ export function assertRemainingFormTokenFamilySemanticLedger(): void {
   if (REMAINING_FORM_TOKEN_FAMILY_SEMANTIC_LEDGER.length !== 4) {
     throw new Error("REMAINING_FORM_TOKEN_FAMILY_COUNT");
   }
-  if (catalogIds.length !== 28 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 20 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`REMAINING_FORM_TOKEN_CATALOG_SHAPE:${catalogIds.length}`);
   }
 }
@@ -429,7 +419,7 @@ export const ANCHOR_GROUP_CURING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertAnchorGroupCuringCatalogScopeAudit(): void {
   const catalogIds = ANCHOR_GROUP_CURING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 6 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 4 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`ANCHOR_GROUP_CURING_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (ANCHOR_GROUP_CURING_CATALOG_SCOPE_AUDIT.some(
@@ -475,7 +465,7 @@ export const BELT_CURING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertBeltCuringCatalogScopeAudit(): void {
   const catalogIds = BELT_CURING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 6 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 4 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`BELT_CURING_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (BELT_CURING_CATALOG_SCOPE_AUDIT.some(
@@ -520,7 +510,7 @@ export const COLUMN_BASE_CURING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertColumnBaseCuringCatalogScopeAudit(): void {
   const catalogIds = COLUMN_BASE_CURING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 6 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 4 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`COLUMN_BASE_CURING_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (COLUMN_BASE_CURING_CATALOG_SCOPE_AUDIT.some(
@@ -558,7 +548,7 @@ export const ANCHOR_GROUP_LEVELING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertAnchorGroupLevelingCatalogScopeAudit(): void {
   const catalogIds = ANCHOR_GROUP_LEVELING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 7 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 5 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`ANCHOR_GROUP_LEVELING_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (ANCHOR_GROUP_LEVELING_CATALOG_SCOPE_AUDIT.some(
@@ -596,7 +586,7 @@ export const BELT_LEVELING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertBeltLevelingCatalogScopeAudit(): void {
   const catalogIds = BELT_LEVELING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 7 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 5 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`BELT_LEVELING_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (BELT_LEVELING_CATALOG_SCOPE_AUDIT.some(
@@ -620,7 +610,7 @@ export const COLUMN_BASE_LEVELING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertColumnBaseLevelingCatalogScopeAudit(): void {
   const ids = COLUMN_BASE_LEVELING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) {
     throw new Error(`COLUMN_BASE_LEVELING_CATALOG_SHAPE:${ids.length}`);
   }
   if (COLUMN_BASE_LEVELING_CATALOG_SCOPE_AUDIT.some(
@@ -655,7 +645,7 @@ export const PEDESTAL_LEVELING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPedestalLevelingCatalogScopeAudit(): void {
   const ids = PEDESTAL_LEVELING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) {
     throw new Error(`PEDESTAL_LEVELING_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pedestal_level_"))) {
@@ -689,7 +679,7 @@ export const PILE_CAP_LEVELING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPileCapLevelingCatalogScopeAudit(): void {
   const ids = PILE_CAP_LEVELING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) {
     throw new Error(`PILE_CAP_LEVELING_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pile_cap_level_"))) {
@@ -725,7 +715,7 @@ export const ANCHOR_GROUP_VIBRATION_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertAnchorGroupVibrationCatalogScopeAudit(): void {
   const catalogIds = ANCHOR_GROUP_VIBRATION_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 7 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 5 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`ANCHOR_GROUP_VIBRATION_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (ANCHOR_GROUP_VIBRATION_CATALOG_SCOPE_AUDIT.some(
@@ -750,7 +740,7 @@ export const BELT_VIBRATION_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertBeltVibrationCatalogScopeAudit(): void {
   const ids = BELT_VIBRATION_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) throw new Error(`BELT_VIBRATION_CATALOG_SHAPE:${ids.length}`);
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) throw new Error(`BELT_VIBRATION_CATALOG_SHAPE:${ids.length}`);
   if (ids.some((id) => !id.includes("_belt_vibrate_"))) throw new Error("BELT_VIBRATION_CATALOG_SCOPE_LEAK");
 }
 
@@ -765,7 +755,7 @@ export const COLUMN_BASE_VIBRATION_CATALOG_SCOPE_AUDIT = Object.freeze(
 );
 export function assertColumnBaseVibrationCatalogScopeAudit(): void {
   const ids = COLUMN_BASE_VIBRATION_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) throw new Error(`COLUMN_BASE_VIBRATION_CATALOG_SHAPE:${ids.length}`);
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) throw new Error(`COLUMN_BASE_VIBRATION_CATALOG_SHAPE:${ids.length}`);
   if (ids.some((id) => !id.includes("_column_base_vibrate_"))) throw new Error("COLUMN_BASE_VIBRATION_CATALOG_SCOPE_LEAK");
 }
 
@@ -796,7 +786,7 @@ export const PEDESTAL_VIBRATION_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPedestalVibrationCatalogScopeAudit(): void {
   const ids = PEDESTAL_VIBRATION_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) {
     throw new Error(`PEDESTAL_VIBRATION_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pedestal_vibrate_"))) {
@@ -830,7 +820,7 @@ export const PILE_CAP_VIBRATION_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPileCapVibrationCatalogScopeAudit(): void {
   const ids = PILE_CAP_VIBRATION_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) {
     throw new Error(`PILE_CAP_VIBRATION_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pile_cap_vibrate_"))) {
@@ -880,7 +870,7 @@ export const ANCHOR_GROUP_REPAIR_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertAnchorGroupRepairCatalogScopeAudit(): void {
   const catalogIds = ANCHOR_GROUP_REPAIR_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 7 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 5 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`ANCHOR_GROUP_REPAIR_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (ANCHOR_GROUP_REPAIR_CATALOG_SCOPE_AUDIT.some(
@@ -921,7 +911,7 @@ export const BELT_REPAIR_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertBeltRepairCatalogScopeAudit(): void {
   const catalogIds = BELT_REPAIR_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 7 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 5 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`BELT_REPAIR_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (BELT_REPAIR_CATALOG_SCOPE_AUDIT.some(
@@ -945,7 +935,7 @@ export const COLUMN_BASE_REPAIR_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertColumnBaseRepairCatalogScopeAudit(): void {
   const ids = COLUMN_BASE_REPAIR_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) {
     throw new Error(`COLUMN_BASE_REPAIR_CATALOG_SHAPE:${ids.length}`);
   }
   if (COLUMN_BASE_REPAIR_CATALOG_SCOPE_AUDIT.some(
@@ -982,7 +972,7 @@ export const PEDESTAL_REPAIR_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPedestalRepairCatalogScopeAudit(): void {
   const ids = PEDESTAL_REPAIR_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) {
     throw new Error(`PEDESTAL_REPAIR_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pedestal_repair_"))) {
@@ -1016,7 +1006,7 @@ export const PILE_CAP_REPAIR_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPileCapRepairCatalogScopeAudit(): void {
   const ids = PILE_CAP_REPAIR_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 7 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 5 || new Set(ids).size !== ids.length) {
     throw new Error(`PILE_CAP_REPAIR_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pile_cap_repair_"))) {
@@ -1052,7 +1042,7 @@ export const BELT_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertBeltEmbeddedItemsCatalogScopeAudit(): void {
   const catalogIds = BELT_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (catalogIds.length !== 6 || new Set(catalogIds).size !== catalogIds.length) {
+  if (catalogIds.length !== 4 || new Set(catalogIds).size !== catalogIds.length) {
     throw new Error(`BELT_EMBEDDED_ITEMS_CATALOG_SHAPE:${catalogIds.length}`);
   }
   if (BELT_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT.some(
@@ -1088,7 +1078,7 @@ export const COLUMN_BASE_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertColumnBaseEmbeddedItemsCatalogScopeAudit(): void {
   const ids = COLUMN_BASE_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 6 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 4 || new Set(ids).size !== ids.length) {
     throw new Error(`COLUMN_BASE_EMBEDDED_ITEMS_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_column_base_anchor_"))) {
@@ -1107,7 +1097,7 @@ export const PEDESTAL_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT = Object.freeze(
 );
 export function assertPedestalEmbeddedItemsCatalogScopeAudit(): void {
   const ids = PEDESTAL_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 6 || new Set(ids).size !== ids.length) throw new Error(`PEDESTAL_EMBEDDED_ITEMS_CATALOG_SHAPE:${ids.length}`);
+  if (ids.length !== 4 || new Set(ids).size !== ids.length) throw new Error(`PEDESTAL_EMBEDDED_ITEMS_CATALOG_SHAPE:${ids.length}`);
   if (ids.some((id) => !id.includes("_pedestal_anchor_"))) throw new Error("PEDESTAL_EMBEDDED_ITEMS_CATALOG_SCOPE_LEAK");
 }
 
@@ -1138,7 +1128,7 @@ export const PILE_CAP_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPileCapEmbeddedItemsCatalogScopeAudit(): void {
   const ids = PILE_CAP_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 6 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 4 || new Set(ids).size !== ids.length) {
     throw new Error(`PILE_CAP_EMBEDDED_ITEMS_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pile_cap_anchor_"))) {
@@ -1178,7 +1168,7 @@ export const FORMWORK_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertFormworkEmbeddedItemsCatalogScopeAudit(): void {
   const ids = FORMWORK_EMBEDDED_ITEMS_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 6 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 4 || new Set(ids).size !== ids.length) {
     throw new Error(`FORMWORK_EMBEDDED_ITEMS_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_formwork_anchor_"))) {
@@ -1213,7 +1203,7 @@ export const PILE_CAP_CURING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPileCapCuringCatalogScopeAudit(): void {
   const ids = PILE_CAP_CURING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 6 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 4 || new Set(ids).size !== ids.length) {
     throw new Error(`PILE_CAP_CURING_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pile_cap_cure_"))) {
@@ -1248,7 +1238,7 @@ export const PEDESTAL_CURING_CATALOG_SCOPE_AUDIT = Object.freeze(
 
 export function assertPedestalCuringCatalogScopeAudit(): void {
   const ids = PEDESTAL_CURING_CATALOG_SCOPE_AUDIT.map((row) => row.catalogId);
-  if (ids.length !== 6 || new Set(ids).size !== ids.length) {
+  if (ids.length !== 4 || new Set(ids).size !== ids.length) {
     throw new Error(`PEDESTAL_CURING_CATALOG_SHAPE:${ids.length}`);
   }
   if (ids.some((id) => !id.includes("_pedestal_cure_"))) {

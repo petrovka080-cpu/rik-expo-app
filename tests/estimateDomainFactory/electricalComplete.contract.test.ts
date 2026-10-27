@@ -106,29 +106,51 @@ function compile(catalogId: string, scope: Scope) {
 }
 
 describe("Full Electrical professional domain", () => {
-  test("freezes exact E605 / 107 groups / excluded405 with no aliases", () => {
-    expect(ELECTRICAL_COMPLETE_RECORD_COUNT).toBe(605);
-    expect(ELECTRICAL_COMPLETE_TECHNOLOGY_COUNT).toBe(605);
+  test("freezes exact E445 / 107 groups / excluded309 with no aliases", () => {
+    // Exactly 160 owned and 96 excluded area identities were retired: 605→445 and 405→309.
+    expect(ELECTRICAL_COMPLETE_RECORD_COUNT).toBe(445);
+    expect(ELECTRICAL_COMPLETE_TECHNOLOGY_COUNT).toBe(445);
     expect(ELECTRICAL_COMPLETE_ALIAS_COUNT).toBe(0);
-    expect(ELECTRICAL_DOMAIN_INVENTORY).toHaveLength(605);
-    expect(ELECTRICAL_REVIEWED_EXCLUSIONS).toHaveLength(405);
-    expect(ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS).toHaveLength(605);
-    expect(electricalCompleteDomainFactory.binding_by_catalog_id.size).toBe(605);
-    expect(electricalCompleteDomainFactory.package_hash).toBe("eh_58ff6f5b1ebbfbe4");
+    expect(ELECTRICAL_DOMAIN_INVENTORY).toHaveLength(445);
+    expect(ELECTRICAL_REVIEWED_EXCLUSIONS).toHaveLength(309);
+    expect(ELECTRICAL_CANONICAL_PARAMETER_SCHEMAS).toHaveLength(445);
+    expect(electricalCompleteDomainFactory.binding_by_catalog_id.size).toBe(445);
+    expect(electricalCompleteDomainFactory.package_hash).toBe("eh_734606360cef2658");
     expect(ELECTRICAL_COMPLETE_DOMAIN_PACKAGE_BUILD_TIME_HASH_V1).toEqual(expect.objectContaining({
       hash_contract: "canonical-domain-package-content:v1",
       domain_id: "electrical_complete",
-      catalog_record_count: 605,
+      catalog_record_count: 445,
     }));
     expect(() => createProfessionalEstimateDomainFactoryV1(
       electricalCompleteDomainFactory.package,
       { ...ELECTRICAL_COMPLETE_DOMAIN_PACKAGE_BUILD_TIME_HASH_V1, domain_version: "tampered-version" },
     )).toThrow("DOMAIN_BUILD_TIME_PACKAGE_HASH_IDENTITY_MISMATCH");
     expect(new Set(ELECTRICAL_DOMAIN_INVENTORY.map((row) => row.candidate_canonical_technology_id)).size).toBe(107);
-    expect(new Set(ELECTRICAL_DOMAIN_INVENTORY.map((row) => row.canonical_technology_id)).size).toBe(605);
+    expect(new Set(ELECTRICAL_DOMAIN_INVENTORY.map((row) => row.canonical_technology_id)).size).toBe(445);
   });
 
-  test("compiles all 605 individual estimates in minimal and full scopes without hidden quantities", () => {
+  test("retired area identities cannot enter the domain compiler", () => {
+    const standard = ELECTRICAL_DOMAIN_INVENTORY.find((row) => row.work_key.endsWith("_standard"))!;
+    expect(standard).toBeDefined();
+    expect(ELECTRICAL_DOMAIN_INVENTORY.filter((row) => /_(?:small|medium|large)_area$/u.test(row.work_key))).toEqual([]);
+    for (const size of ["small", "medium", "large"]) {
+      const retired = standard.work_key.replace(/_standard$/u, `_${size}_area`);
+      expect(electricalCompleteDomainFactory.binding_by_catalog_id.has(retired)).toBe(false);
+      expect(() => compileProfessionalEstimateDomainV1(electricalCompleteDomainFactory, constructionNormativeRegistryV1, {
+        catalog_id: retired,
+        work_key: retired,
+        scope_mode: "MINIMAL_EXPLICIT_SCOPE",
+        parent_revision_id: null,
+        parameter_values: {},
+        normative_request: { country: "KG", region: "Bishkek", funding_source: "PRIVATE_RECOMMENDED",
+          operation_class: electricalCompleteDomainFactory.technology_by_id.get(standard.canonical_technology_id)!.operation_class,
+          material_system: electricalCompleteDomainFactory.technology_by_id.get(standard.canonical_technology_id)!.material_system,
+          project_type: "RESIDENTIAL_INTERIOR", construction_state: "NEW", contract_basis: [], effective_date: "2026-08-11" },
+      })).toThrow(`DOMAIN_EXACT_BINDING_NOT_FOUND:${retired}`);
+    }
+  });
+
+  test("compiles all 445 individual estimates in minimal and full scopes without hidden quantities", () => {
     for (const inventory of TEST_INVENTORY) {
       for (const scope of ["MINIMAL_EXPLICIT_SCOPE", "FULL_APPLICABLE_SCOPE"] as const) {
         const result = compile(inventory.catalog_id, scope);
@@ -158,7 +180,7 @@ describe("Full Electrical professional domain", () => {
 
   test("records 36 independent completeness decisions per catalog ID and rejects generic bundles", () => {
     expect(ELECTRICAL_COMPLETENESS_SLOTS_V2).toHaveLength(36);
-    expect(ELECTRICAL_COMPLETENESS_SLOTS_V2.length * ELECTRICAL_DOMAIN_INVENTORY.length).toBe(21_780);
+    expect(ELECTRICAL_COMPLETENESS_SLOTS_V2.length * ELECTRICAL_DOMAIN_INVENTORY.length).toBe(16_020);
     const forbidden = /^(комплект|прочие материалы|кабель и комплектующие|щит в комплекте|электроизмерения)$/iu;
     for (const inventory of TEST_INVENTORY) {
       const candidates = electricalMaximumResourceCandidatesForV2(inventory);

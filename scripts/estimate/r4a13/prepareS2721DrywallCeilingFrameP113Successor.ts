@@ -12,7 +12,7 @@ import { runMasterSingleDefinitionSuccessorR1 } from "./prepareMasterSingleDefin
 
 type Json = Record<string, any>;
 
-const SOURCE_CATALOG_ID = "drywall_ceiling_interior_drywall_ceiling_frame_large_area";
+const SOURCE_CATALOG_ID = "drywall_ceiling_interior_drywall_ceiling_frame_standard";
 const CATALOG_ID = `canonical-work:base:${SOURCE_CATALOG_ID}`;
 const SOURCE_ID = "drywall_ceiling_frame_p113_preliminary_profile_r1";
 const NORM_ID = "profile:drywall-ceiling-frame:p113-preliminary:r1";

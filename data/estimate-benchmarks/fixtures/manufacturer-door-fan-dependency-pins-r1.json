@@ -1,0 +1,67 @@
+{
+  "contract": "master30-c-immutable-common-dependencies/r1",
+  "canonicalHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+  "copyDependencies": false,
+  "pins": [
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "sha256": "56ffadc92ec669df51ab0f94a5bfc1d8f25a12b9eb9121f4c6323ea30a40cfc0"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+      "sha256": "85dfc9527926034ac2c02b3d84cb30be752c1ed2d7ac451502b5e5cccf8c9fd2"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts",
+      "sha256": "49c4e729df611a646bcf9c732a816d63a9847151350a2fb65672af470897bc7b"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
+      "sha256": "f40e1f5cf38d85485e1d4bf43b78874d3d8e6ad577740560b5b55021f83a5f6e"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts",
+      "sha256": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts",
+      "sha256": "c38a7f07bf7cc4a8f2c30908ea9bf426ba7553b40efbaa709676026a2fbaf67b"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts",
+      "sha256": "544d561544bf476be60a6de7a9fba207e2c7fb258b44d09458fefd76e9844bfc"
+    },
+    {
+      "path": "src/lib/estimate/estimateDeterministicHash.ts",
+      "sha256": "5a53bea2ea6e1cc5f3f22c95e4463c89a3d97a74c95856dde9d2670b3e5c096f"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/parameterConstraints.ts",
+      "sha256": "17a721beee759c945188b1ca9cfc7002857cd84a585dd9d43c9cc5446c6c27af"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+      "sha256": "fc246ea7012eb78ffb50283442bb192d6ff20cbce6fdae2cf35a1eb287a7f933"
+    },
+    {
+      "path": "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+      "sha256": "3437f63dbfc2e1f261d761cbb82da58093d23cbe95ecc61c52ccac5bb8f50031"
+    },
+    {
+      "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "sha256": "05ceed2fe266d0bb9de4f6fb2ffb60c98dfcac97c61935ab27557248fe329b5d"
+    },
+    {
+      "path": "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts",
+      "sha256": "a5df8be85820b8d90eca3408c66930554c262df2a2bd36863145c35290bf0af9"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalDefinitionParameterConsumersR1.ts",
+      "sha256": "1078cf8b1fb9841c40ae22ad16a1e6b737a71d9c1ff8d8d75e70c754c93a15aa"
+    },
+    {
+      "path": "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts",
+      "sha256": "9446aa5731d80ca4fc47e307bd13c440a9a713b72200cb84e41f24502b85bc7f"
+    }
+  ]
+}

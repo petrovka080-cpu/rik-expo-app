@@ -84,6 +84,10 @@ type StickyActionsProps = {
   approvalMissingObjectParameterCount?: number | null;
   contentWithdrawalReasonRu?: string | null;
   approvalUnresolvedRowCount?: number;
+  approvalManualQuantityCount?: number;
+  approvalManualUnresolvedRowCount?: number;
+  manualQuantityApprovalAvailable?: boolean;
+  onApproveManualQuantities?: () => void;
   approvalIncompleteStages?: readonly CanonicalScopeRequirementGroupV1[];
   approvalMissingPriceCount?: number;
   approvalPendingRowEditCount?: number;
@@ -114,6 +118,10 @@ export function ConsumerRepairRequestStickyActions({
   approvalMissingObjectParameterCount = null,
   contentWithdrawalReasonRu,
   approvalUnresolvedRowCount = 0,
+  approvalManualQuantityCount = 0,
+  approvalManualUnresolvedRowCount = 0,
+  manualQuantityApprovalAvailable = false,
+  onApproveManualQuantities,
   approvalIncompleteStages = [],
   approvalMissingPriceCount = 0,
   approvalPendingRowEditCount = 0,
@@ -131,11 +139,13 @@ export function ConsumerRepairRequestStickyActions({
   onPrepareDraft,
 }: StickyActionsProps) {
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = React.useState(false);
+  const [manualConfirmationVisible, setManualConfirmationVisible] = React.useState(false);
   const finalized = (sent || approved) && !needsFreshApproval;
   const shouldPrepareEstimate =
     !parameterCollectionRequired && (hasPendingPrompt || (!finalized && estimateRequiresRebuild));
   const canDeleteDraft = hasBundle && !approved && !sent;
-  const approvalActionLabel = "Подтвердить смету";
+  const manualApproval = manualQuantityApprovalAvailable && Boolean(onApproveManualQuantities);
+  const approvalActionLabel = manualApproval ? 'Подтвердить вручную' : "Подтвердить смету";
   const canApplyAndApprove = approvalPendingRowEditCount > 0
     && approvalBlockedBeyondPendingEdits === false
     && approvalUnresolvedRowCount === 0 && !approvalBlockedByParameters;
@@ -151,6 +161,8 @@ export function ConsumerRepairRequestStickyActions({
     ? "Подтверждаем смету…"
     : approvalBlockedByParameters && approvalMissingObjectParameterCount !== 0
       ? "Укажите необходимые данные объекта"
+      : approvalBlockedByParameters && approvalMissingObjectParameterCount === 0 && approvalUnresolvedRowCount === 0
+        ? 'Приложение ещё не завершило расчёт'
       : approvalUnresolvedRowCount > 0
         ? allIncompleteStagesNeedApplication
           ? `Приложению нужно дополнить этапы: ${approvalIncompleteStages.length}`
@@ -171,6 +183,7 @@ export function ConsumerRepairRequestStickyActions({
   React.useEffect(() => {
     if (!canDeleteDraft) setDeleteConfirmationVisible(false);
   }, [canDeleteDraft]);
+  React.useEffect(() => { setManualConfirmationVisible(false); }, [manualApproval, approvalPendingRowEditCount, finalized]);
   return (
     <View
       accessibilityLabel="Действия со сметой"
@@ -178,13 +191,33 @@ export function ConsumerRepairRequestStickyActions({
       testID="consumer-repair-bottom-actions"
     >
       <Text style={styles.bottomActionsTitle}>Действия со сметой</Text>
-      {!finalized && approvalUnresolvedRowCount>0 ? <View style={styles.approvalBlockedNotice}
+      {manualApproval && !finalized ? <Text style={styles.approvalBlockedNoticeText}>
+        {approvalManualUnresolvedRowCount > 0
+          ? `Сохранена предварительная версия. Не рассчитаны количества в ${approvalManualUnresolvedRowCount} поз.; вы можете подтвердить эту версию вручную.`
+          : 'Количества сохранены. Вы можете подтвердить их как введённые вручную. Автоматическая проверка этих позиций ещё не завершена.'}
+      </Text> : null}
+      {manualConfirmationVisible && manualApproval && !approvalDisabled ? <View style={styles.approvalBlockedNotice}
+        testID="consumer-repair-manual-quantity-confirmation">
+        <Text style={styles.approvalBlockedNoticeTitle}>{approvalManualUnresolvedRowCount > 0 ? 'Подтвердить предварительную версию вручную?' : 'Подтвердить введённые количества?'}</Text>
+        <Text style={styles.approvalBlockedNoticeText}>{approvalManualUnresolvedRowCount > 0
+          ? `Не рассчитаны количества в ${approvalManualUnresolvedRowCount} поз. Они останутся видимыми и не войдут в итог, оплату или закупку. Сохранится ручное подтверждение предварительной версии; автоматическая проверка не завершена.`
+          : 'Будет сохранена текущая версия с вашими количествами. Неподтверждённые нормы останутся отмечены в сведениях о расчёте; эти позиции не добавятся автоматически в оплату или закупку.'}</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Подтвердить вручную"
+          testID="consumer-repair-manual-quantity-confirm" onPress={() => { setManualConfirmationVisible(false); onApproveManualQuantities?.(); }}>
+          <Text style={styles.bottomActionSecondaryText}>Подтвердить вручную</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Вернуться к смете"
+          onPress={() => setManualConfirmationVisible(false)}><Text>Вернуться к смете</Text></Pressable>
+      </View> : null}
+      {!finalized && !manualApproval && (approvalUnresolvedRowCount>0 || (approvalBlockedByParameters && approvalMissingObjectParameterCount===0)) ? <View style={styles.approvalBlockedNotice}
         accessibilityRole="alert" testID="consumer-repair-approval-block-reason">
         <Text style={styles.approvalBlockedNoticeTitle}>{firstIncompleteStage
           ? approvalIncompleteStages.length===1 ? `Не завершён этап «${firstIncompleteStage.titleRu}»`
             : `Не завершены ${approvalIncompleteStages.length} этапов. Первый: «${firstIncompleteStage.titleRu}»`
           : approvalMissingObjectParameterCount === 0 ? 'Приложение ещё не рассчитало весь состав' : 'В смете есть позиции с неизвестными исходными данными'}</Text>
-        <Text style={styles.approvalBlockedNoticeText}>{firstIncompleteStage ? incompleteReason
+        <Text style={styles.approvalBlockedNoticeText}>{approvalManualQuantityCount>0
+          ? 'Введённые количества сохранены. Приложение ещё не завершило проверку состава. Повторный ввод не требуется.'
+          : firstIncompleteStage ? incompleteReason
           : approvalMissingObjectParameterCount === 0 ? 'Нормы и коэффициенты вводить не требуется. Нерассчитанные позиции пока не входят в стоимость.' : 'В составе сметы показано, какие данные ещё нужны для расчёта.'}</Text>
       </View> : null}
       {hasBundle && (hasSnapshot || finalized) ? (
@@ -240,7 +273,7 @@ export function ConsumerRepairRequestStickyActions({
           disabled={approvalDisabled}
           onPress={canApplyAndApprove
             ? (onApplyAndApproveDraft ?? onApproveDraft)
-            : onApproveDraft}
+            : manualApproval ? () => setManualConfirmationVisible(true) : onApproveDraft}
           style={[
             styles.bottomActionButton,
             styles.bottomActionPrimary,

@@ -5,6 +5,8 @@ import {
 } from "./prepareMasterSingleDefinitionSuccessorR1";
 
 import { createHash } from "node:crypto";
+import {readFileSync} from 'node:fs';
+import {masterRetainedParentCaptureSha256R1,masterRetainedLineageValueSha256V1 as retainedHash} from './masterSingleDefinitionRetainParentBindingsR1';
 import sikaPack from "../../../data/estimate-benchmarks/source-packs/sika-antisol250w-us-curing-series-s27-63.json";
 
 type Row = Record<string, any>;
@@ -153,4 +155,64 @@ describe("original publisher excerpt algorithm", () => {
       expect(() => excerptHash(config(value))).toThrow("EXCERPT_HASH_KIND_REQUIRED");
       expect(() => run(value)).toThrow("EXACT_DECLARATION_REQUIRED");
     });
+});
+
+describe('captured authority successor keeps its historical registry metadata shape',()=>{
+  function authorityInput():Row{
+    const fixture=JSON.parse(readFileSync('data/estimate-benchmarks/fixtures/master-retained-first-authority-parent-r26.json','utf8'));
+    const capture=fixture.capture;
+    const source=capture.normativeSources.find((row:Row)=>row.source_key==='rik-expo-app.s27-63.bitumen-tile-soft-roof-six.v1:roof');
+    const locators=capture.normativeLocators.filter((row:Row)=>row.source_id===source.id);
+    const changes=Object.fromEntries(['bitumen_roof_system','bitumen_roof_conditions','bitumen_roof_area_scope'].map(id=>{
+      const before=capture.parameters.find((row:Row)=>row.parameter_id===id).truth_metadata;
+      const after={...clone(before),visibility_role:'INTERNAL_ONLY',value_source_role:'PROJECT_DOCUMENTATION',
+        source_confirmation_required:true,provenance:{...before.provenance,consumer_input_role_v1:'APPLICATION_TECHNICAL'}};
+      return[id,{capturedTruthMetadata:clone(before),capturedTruthMetadataSha256:retainedHash(before),afterTruthMetadataSha256:retainedHash(after)}];
+    }));
+    const {created_at:_createdAt,...managed}=source;
+    return{config:{stopCode:'TEST_AUTHORITY_REGISTRY_R27',catalogId:capture.definition.catalog_id,parentReleaseId:fixture.definitionReleaseId,
+      binding:{retainParentBindings:{capturedParent:capture,capturedParentSha256:masterRetainedParentCaptureSha256R1(capture),newParameterSources:{},
+        truthAuthorityOnlyV1:{contract:'master-retained-truth-authority-only/v1',capturedContentPassport:capture.contentPassport,
+          capturedContentPassportSha256:retainedHash(capture.contentPassport),changes,changesSha256:retainedHash(changes)}},
+        reuseExistingNormativeRegistry:{contract:'master-existing-normative-registry-reuse/r1',source:clone(source),locators:clone(locators),
+          locatorExcerptHashKind:'CANONICAL_ESTIMATE_LOCATOR_JSON_SHA256_R1'}}},
+      newSource:{...managed,id:'11111111-1111-1111-1111-111111111111',metadata:{contract:'new-consumer/v1',sourceKind:'CONDITIONAL_SOURCE',
+        useRestriction:'The same captured source only',universalProductivityClaimed:false,universalConsumptionClaimed:false,activationAllowed:false}},
+      newLocators:locators.map((row:Row)=>({...clone(row),id:'22222222-2222-2222-2222-222222222222',source_id:'11111111-1111-1111-1111-111111111111'}))};
+  }
+  it('retains every captured source field and microsecond timestamp, without writing generated metadata',()=>{
+    const value=authorityInput(),before=clone(value),reused=run(value)!;
+    const {created_at:_createdAt,...managed}=declaration(value).source;
+    expect(reused.managedSource).toEqual(managed);
+    expect(reused.managedSource.metadata).not.toEqual(value.newSource.metadata);
+    expect(reused.locators).toEqual(declaration(value).locators);
+    expect(value).toEqual(before);
+    expect(()=>assertSnapshot(reused,{newSources:[declaration(value).source],newLocators:declaration(value).locators})).not.toThrow();
+  });
+  it.each(['source_key','title_ru','authority','official_url','artifact_sha256','effective_from','effective_to'])(
+    'still rejects a changed source fact: %s',field=>{
+      const value=authorityInput();value.newSource[field]='changed';
+      expect(()=>run(value)).toThrow('SOURCE_FACTS_OR_METADATA_DRIFT');
+    });
+  it.each(['source-metadata','source-id','locator-payload','locator-id'])(
+    'rejects a declaration that is not its captured historical row: %s',field=>{
+      const value=authorityInput(),d=declaration(value);
+      if(field==='source-metadata')d.source.metadata={...d.source.metadata,activationAllowed:true};
+      if(field==='source-id')d.source.id='33333333-3333-3333-3333-333333333333';
+      if(field==='locator-payload')d.locators[0].locator.changed=true;
+      if(field==='locator-id')d.locators[0].id='33333333-3333-3333-3333-333333333333';
+      expect(()=>run(value)).toThrow('AUTHORITY_EXISTING_REGISTRY_CAPTURE');
+    });
+  it.each(['capture-sha','passport-sha','wrong-contract'])(
+    'requires a valid existing authority declaration: %s',field=>{
+      const value=authorityInput(),retained=value.config.binding.retainParentBindings;
+      if(field==='capture-sha')retained.capturedParentSha256='0'.repeat(64);
+      if(field==='passport-sha')retained.truthAuthorityOnlyV1.capturedContentPassportSha256='0'.repeat(64);
+      if(field==='wrong-contract')retained.truthAuthorityOnlyV1.contract='wrong';
+      expect(()=>run(value)).toThrow(/AUTHORITY_/u);
+    });
+  it('does not extend the ordinary non-authority reuse path',()=>{
+    const value=authorityInput();delete value.config.binding.retainParentBindings.truthAuthorityOnlyV1;
+    expect(()=>run(value)).toThrow('SOURCE_FACTS_OR_METADATA_DRIFT');
+  });
 });

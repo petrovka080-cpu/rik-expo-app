@@ -17,16 +17,6 @@ export const FIRE_ALARM_CABLE_LAYING_VARIANTS = Object.freeze({
     catalogVariant: "HIGH_LOAD_SEARCH_IDENTITY",
     canonicalNameRu: "Прокладка линии пожарной сигнализации — высокая нагрузка",
   }),
-  large_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_lay_large_area",
-    catalogVariant: "LARGE_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Прокладка линии пожарной сигнализации — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_lay_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Прокладка линии пожарной сигнализации — небольшая площадь",
-  }),
   standard: Object.freeze({
     catalogId: "canonical-work:base:electrical_interior_fire_alarm_lay_standard",
     catalogVariant: "STANDARD_SEARCH_IDENTITY",

@@ -122,3 +122,39 @@ describe("automatic owner uses existing numeric peer contract", () => {
     })).toThrow("AUTOMATIC_NUMERIC_PEER_CONSTRAINT_INVALID:left.greaterThanParameter=right");
   });
 });
+
+
+test("the old public owner API retains the exact shared definition functions", () => {
+  const oldApi = require("./automaticConstructionOwnerR1");
+  const definitions = require("./automaticConstructionDefinitionR1");
+  expect(Object.keys(oldApi).sort()).toEqual([
+    "buildAutomaticConstructionOwnerR1", "compileAutomaticConstructionOwnerR1", "unresolvedApplicationNormTruthR1",
+  ]);
+  expect(oldApi.buildAutomaticConstructionOwnerR1).toBe(definitions.buildAutomaticConstructionOwnerR1);
+  expect(oldApi.unresolvedApplicationNormTruthR1).toBe(definitions.unresolvedApplicationNormTruthR1);
+  expect(oldApi.buildAutomaticConstructionOwnerR1({...config, ordinary:[left]}))
+    .toEqual(definitions.buildAutomaticConstructionOwnerR1({...config, ordinary:[left]}));
+});
+
+test("roof definition validation loads with the canonical compiler runtime blocked", () => {
+  jest.resetModules();
+  jest.doMock("../backendPlatform/canonicalEstimateCompileCore", () => {throw new Error("COMPILER_MUST_STAY_ON_SERVER");});
+  try {
+    jest.isolateModules(() => {
+      expect(() => require("../backendPlatform/canonicalEstimateCompileCore")).toThrow("COMPILER_MUST_STAY_ON_SERVER");
+    });
+    jest.isolateModules(() => {
+      const definitions = require("./automaticConstructionDefinitionR1");
+      const roof = require("./sourcePinnedRoofNormOwnerR1");
+      const pack = require("../../../../data/estimate-benchmarks/source-packs/roof-valley-torch-two-companion-s27-67.json");
+      const model = roof.sourcePinnedRoofNormOwnerR1(pack);
+      expect(model.resources).toHaveLength(pack.rates.length);
+      expect(model.resources.every((row: {row_sha256:string}) => /^eh_[a-f0-9]{16}$/u.test(row.row_sha256))).toBe(true);
+      expect(model.runtimeInput).toEqual({});
+      expect(definitions.buildAutomaticConstructionOwnerR1({...config, ordinary:[left]}).resources).toHaveLength(1);
+    });
+  } finally {
+    jest.dontMock("../backendPlatform/canonicalEstimateCompileCore");
+    jest.resetModules();
+  }
+});

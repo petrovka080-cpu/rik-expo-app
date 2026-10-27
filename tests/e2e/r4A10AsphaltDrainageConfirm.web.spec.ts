@@ -8,7 +8,7 @@ import { BASE_URL, ensureLiveWebApp } from "./liveEstimateReality.shared";
 
 const STORE_KEY = "rik.consumer_repair.request_bundles.v1";
 const BACKEND_ORIGIN = "http://127.0.0.1:8765";
-const CATALOG_ID = "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_large_area";
+const CATALOG_ID = "canonical-work:base:paving_roads_landscape_interior_asphalt_drain_standard";
 const MASTER_SHA256 = "9262479c9c9fb3107c4541046c367db7934c875ea8354cc472a7529788635d1b";
 const EVIDENCE_ROOT = path.resolve(
   ".release-runtime/r568/rc09-r4-production-closeout/r4-a10-asphalt-drainage/02_WEB",

@@ -22,9 +22,9 @@ const variants = Object.keys(WOOD_FIREPROOFING_LOCAL_REPAIR_VARIANTS) as
 
 describe("S27.7 F09 wood fireproofing local repair variants", () => {
   it("keeps three distinct searchable identities without a hidden suffix factor", () => {
-    expect(variants).toEqual(["small_area", "standard", "large_area"]);
+    expect(variants).toEqual([ "standard",]);
     expect(new Set(variants.map((key) => WOOD_FIREPROOFING_LOCAL_REPAIR_VARIANTS[key].catalogId)).size)
-      .toBe(3);
+      .toBe(1);
     for (const variantKey of variants) {
       expect(woodFireproofingLocalRepairCompletenessMap(variantKey).catalogVariant)
         .toContain("NO_HIDDEN_QUANTITY_FACTOR");

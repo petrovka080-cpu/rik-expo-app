@@ -31,18 +31,6 @@ export const AGGRESSIVE_ENVIRONMENT_CEMENT_OR_CONCRETE_FLOOR_25MM_DEMOLITION_KRE
     catalogVariant: "STANDARD_CONFIRMED_CEMENT_OR_CONCRETE_FLOOR_25MM",
     canonicalNameRu: "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде",
   }),
-  large_area: Object.freeze({
-    catalogId: `${CATALOG_PREFIX}_large_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_CEMENT_OR_CONCRETE_FLOOR_25MM",
-    canonicalNameRu: "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — большая площадь",
-  }),
-  small_area: Object.freeze({
-    catalogId: `${CATALOG_PREFIX}_small_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_CEMENT_OR_CONCRETE_FLOOR_25MM",
-    canonicalNameRu: "Разборка цементного или бетонного покрытия пола толщиной 25 мм в агрессивной среде — малая площадь",
-  }),
   wet_zone: Object.freeze({
     catalogId: `${CATALOG_PREFIX}_wet_zone`,
     sourceIdentity: `master-work:${FAMILY_KEY}_wet_zone`,

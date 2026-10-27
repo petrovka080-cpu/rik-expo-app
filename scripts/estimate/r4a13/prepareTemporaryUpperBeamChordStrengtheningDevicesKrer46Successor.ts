@@ -27,17 +27,15 @@ if (replaceExisting && (!process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
 }
 const variantArgument = process.argv.find((argument) => argument.startsWith("--variant="))
   ?.slice("--variant=".length) ?? "standard";
-if (!["standard", "large_area", "small_area", "wet_zone"].includes(variantArgument)) {
+if (!["standard", "wet_zone"].includes(variantArgument)) {
   throw new Error(`STOP_S273_F09_TEMPORARY_UPPER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_05_01_VARIANT:${variantArgument}`);
 }
 const variantKey = variantArgument as TemporaryUpperBeamChordStrengtheningDevicesKrer46VariantKey;
 const variant = resolveTemporaryUpperBeamChordStrengtheningDevicesKrer46Variant(variantKey);
-const variantOrdinal = { standard: 0, large_area: 1, small_area: 2, wet_zone: 3 }[variantKey];
+const variantOrdinal = { standard: 0, wet_zone: 3 }[variantKey];
 const variantToken = variantKey.toUpperCase();
 const variantContextRu = {
   standard: "стандартный вариант",
-  large_area: "большая длина",
-  small_area: "локальный объём",
   wet_zone: "влажная зона",
 }[variantKey];
 const groupId = "wg:master:temporary_upper_beam_chord_strengthening_devices";

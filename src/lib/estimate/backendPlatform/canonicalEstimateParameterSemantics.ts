@@ -3,7 +3,28 @@ import { hasHumanReadableAiEstimateParameterPassport, isAiEstimateTechnicalHidde
 import { waterMaterialVariantLabelRuR542 } from "./russianTechnologyTitleR542";
 import { evaluateInclusionGraph } from "./inclusionGraph";
 import { canonicalPublicEstimateChoiceLabelRu } from './canonicalPublicEstimateLanguageRu';
-import knaufOptionalScope from '../../../../data/estimate-benchmarks/source-packs/knauf-interior-plaster-conditional-composition-five-s27-63.json';
+// Immutable passport identity projection. Quantities and source evidence stay in the normative pack.
+// A different source version/hash fails this existing identity gate until explicitly reviewed.
+const knaufOptionalScope = {
+  "contract": "rik-expo-app.s27-63.knauf-interior-plaster-conditional-composition-five.v1",
+  "source": {
+    "sha256": "7d5f2b7883b765ba0e88b528f487472e1eb61fad2a5b602641fee6ad438a72b4"
+  },
+  "facts": [
+    {
+      "parameterId": "knauf_scope_beacon_method"
+    },
+    {
+      "parameterId": "knauf_scope_external_corner_scope"
+    },
+    {
+      "parameterId": "knauf_scope_reinforcement_scope"
+    },
+    {
+      "parameterId": "knauf_scope_additional_abrasive_process"
+    }
+  ]
+} as const;
 
 type ParameterSchema = CanonicalEstimateCatalogItem["parameterSchema"][number];
 
@@ -241,6 +262,7 @@ const CONSTRUCTION_CHOICE_LABELS_RU: Readonly<Record<string, string>> = Object.f
  */
 export function isCanonicalEstimateUserEditableParameter(schema: ParameterSchema): boolean {
   if (hasProtectedParameterOwnership(schema)) return false;
+  if (isApplicationSuppliedTechnicalProfile(schema)) return false;
   if (!hasSchemaOwnedUserFact(schema) && !hasOptionalProjectNumericOwnership(schema)) {
     if (!hasHumanReadableAiEstimateParameterPassport(schema.parameterId, schema.titleRu)) return false;
     if (DERIVED_OR_INTERNAL_TITLE.test(schema.titleRu)) return false;
@@ -270,6 +292,7 @@ export function canonicalEstimateParameterHasCalculationConsumer(
 export function isCanonicalEstimateVisibleReplaceableProfile(
   schema: ParameterSchema,
 ): boolean {
+  if (isApplicationSuppliedTechnicalProfile(schema)) return false;
   if (canonicalEstimateConsumerInputRole(schema) === "APPLICATION_TECHNICAL") return false;
   if (schema.visibilityRole !== "USER_INPUT") return false;
   if (!canonicalEstimateParameterHasCalculationConsumer(schema)) return false;
@@ -279,6 +302,15 @@ export function isCanonicalEstimateVisibleReplaceableProfile(
   const sourceRole = String(schema.valueSourceRole ?? "").trim().toUpperCase();
   return VISIBLE_REPLACEABLE_PROFILE_CLASSIFICATIONS.has(classification)
     || VISIBLE_REPLACEABLE_PROFILE_SOURCE_ROLES.has(sourceRole);
+}
+
+/** An old replaceable-profile tag cannot reopen consumption, productivity or
+ * labor norms in the consumer form. Geometry and source quantities are kept;
+ * source preparation remains the application's responsibility. */
+function isApplicationSuppliedTechnicalProfile(schema: ParameterSchema): boolean {
+  return (VISIBLE_REPLACEABLE_PROFILE_CLASSIFICATIONS.has(String(schema.runtimeProfileClassification ?? "").trim().toUpperCase())
+    || VISIBLE_REPLACEABLE_PROFILE_SOURCE_ROLES.has(String(schema.valueSourceRole ?? "").trim().toUpperCase()))
+    && canonicalEstimateParameterRequiresManagedProfessionalSource(schema);
 }
 
 function hasDeclaredConditionalRequirement(schema: ParameterSchema): boolean {
@@ -331,9 +363,16 @@ function hasSchemaOwnedUserFact(schema: ParameterSchema): boolean {
   if (!guide || guide.guideValidationPolicy !== "MANDATORY_BLOCK"
     || !guide.sourceDocument?.trim() || !guide.sourceLocator?.trim()
     || !/^[a-f0-9]{64}$/iu.test(guide.sourceSnapshotHash ?? "")) return false;
+  // An authored finite work-scope choice selects already bound source branches;
+  // it does not let the user provide a norm. Keep its selector available so
+  // dependent measured object facts can resolve their visibility after save.
+  const declaredScopeChoice = schema.valueType === "enum"
+    && canonicalEstimateConsumerInputRole(schema) === "OBJECT_FACT"
+    // Published guide source-role labels can predate the narrower value-role type.
+    && String(guide.sourceRole) === "DECLARED_WORK_SCOPE";
   const projectFact = ["PROJECT_SPECIFIC_INPUT", "CONDITIONAL_PROJECT_FACT"].includes(String(schema.valueSourceRole))
     && guide.guideKind === "PROJECT_DEFINED"
-    && ["PROJECT_DOCUMENTATION", "USER_SUPPLIED_OBJECT_FACT"].includes(String(guide.sourceRole));
+    && (["PROJECT_DOCUMENTATION", "USER_SUPPLIED_OBJECT_FACT"].includes(String(guide.sourceRole)) || declaredScopeChoice);
   // A project-owned observation/choice can use a measurement guide. The bound
   // guide, consumers and protected-source checks still establish ownership;
   // the OBJECT_FACT tag alone does not.
@@ -442,6 +481,11 @@ export function canonicalEstimateParameterChangesPreliminaryEstimate(
 ): boolean {
   if ((schema.formulaConsumers?.length ?? 0) > 0) return true;
   if ((schema.resourceBranchConsumers?.length ?? 0) === 0) return false;
+  // A measured dimension can reach resources through definition-owned derived
+  // formulas. Its bound measurement passport and real resource consumers still
+  // establish user ownership; a professional source value does not qualify.
+  if (hasSchemaOwnedUserFact(schema) && ['decimal','integer'].includes(schema.valueType)
+    && schema.guide?.guideKind === 'MEASUREMENT_RULE') return true;
   // A declared actual numeric compatibility gate can affect a resource without
   // being an arithmetic multiplier (e.g. the permitted transported length).
   if (isMandatoryProjectNumericResourceFact(schema)) return true;
@@ -596,6 +640,10 @@ function canonicalEstimateSourceParameterChoiceLabelRu(
   fallback?: string,
 ): string {
   const normalized = String(value);
+  // Exact existing product choice only. Saved SKU and custom labels stay independent.
+  if (parameterId === "elecor_fixing_product_sku" && normalized === "535463"
+    && (fallback == null || fallback === normalized || fallback === "Вариант по проектной документации"))
+    return "Комплект крепежа: дюбель 6 × 30 и винт 4,5 × 40 мм";
   if(parameterId==='selected_delivery_selection'){
     if(normalized==='NOT_SELECTED')return 'Не добавлять отдельную доставку';
     if(normalized==='SEPARATE_CONFIRMED')return 'Отдельная доставка по документу партии';

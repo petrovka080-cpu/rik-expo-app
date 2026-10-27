@@ -3,6 +3,7 @@ import {basinMixerGrohe33265002PackR1 as pack} from '../v4/basinMixerGrohe332650
 import {canonicalPublicResourceDisplayPresentationV1 as display, canonicalPublicResourceRowKindV1 as kind} from './canonicalPublicResourcePresentationV1';
 import {canonicalEstimateResourceOperationSections as sections} from './canonicalEstimateOperationComposition';
 import {canonicalArtifactPublicResourcePresentationV1 as artifact} from './canonicalEstimateArtifactContract';
+import {consumerRepairRowProcessNote} from '../../../features/consumerRepair/consumerRepairRowMetadata';
 
 const resources=basinMixerGroheProjectResourcesR2().resources;
 const get=(key:string)=>resources.find(row=>row.row_id===pack.prefix+':'+key)!;
@@ -60,5 +61,23 @@ it('uses the same concise projection in documents and keeps unresolved work expl
   expect(value.detailsRu).toHaveLength(1);expect(value.detailsRu[0]!.length).toBeLessThan(90);
   expect(kind(input('open-'+need.id))).toBe('PROCESS_NOTE');
   expect(get('open-'+need.id).source_metadata?.missingFact).toBe(need.reasonRu);
+ }
+});
+
+it('reopens saved GROHE process notes without a transient registered presentation',()=>{
+ for(const need of pack.needs){
+  const row=get('open-'+need.id);
+  const item={id:row.row_id,titleRu:row.title_ru,unitPrice:null,
+   sourceParameters:{rowCode:row.row_id,canonicalCostTreatment:row.resource_graph.costTreatment}};
+  const reopened=JSON.parse(JSON.stringify(item));
+  const before=JSON.stringify(reopened);
+  expect(consumerRepairRowProcessNote(reopened)).toBe(display(input('open-'+need.id))!.detailsRu.join(' '));
+  expect(JSON.stringify(reopened)).toBe(before);
+  for(const changed of [{unitPrice:0},{titleRu:'Другой ресурс'},
+   {sourceParameters:{...reopened.sourceParameters,includedInEstimate:true}},
+   {sourceParameters:{...reopened.sourceParameters,includedInProcurement:true}},
+   {sourceParameters:{...reopened.sourceParameters,canonicalManualTitleOverride:true}}]){
+   expect(consumerRepairRowProcessNote({...reopened,...changed})).toBeNull();
+  }
  }
 });

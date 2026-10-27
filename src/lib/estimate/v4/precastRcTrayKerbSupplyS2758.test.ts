@@ -5,7 +5,8 @@ import {trayControlS2758,traySupplyControlS2758,kerbSupplyControlS2758,verifyTra
 import {precastRcTrayPackS2758 as pack,precastRcTrayDefinitionS2758,compilePrecastRcTrayS2758,ownTrayMachinesS2758,hiredTrayMachinesS2758} from './precastRcEmbankmentRunoffTrayS2758';
 import {kerbSupplyIdentityDefinitionS2758,kerbSupplyMaterialKeysS2758} from './concreteKerbSupplyIdentityS2758';
 import {concreteKerbSourcePackS2754,ownKerbMachinesS2754,hiredKerbMachinesS2754} from './concreteKerbInstallationS2754';
-import {buildCanonicalBaselinePlan,extractPromptOwnedProfessionalParameters} from '../../../features/consumerRepair/consumerCanonicalBaselineCompile';
+import {extractPromptOwnedProfessionalParameters} from '../../../features/consumerRepair/consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {buildConsumerCanonicalPrecompileParameterSession,consumerCanonicalPrecompileParameterOverrides} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
 import {consumerCanonicalMigrationUserParameters} from '../../../features/consumerRepair/consumerCanonicalReleaseMigration';
 import {buildCanonicalParameterCards} from '../../estimatePresentation/buildCanonicalParameterCards';

@@ -48,6 +48,8 @@ const TARGET_GROUP_NAME_RU = "опалубка свайного ростверк
 const SOURCE_PATHS = [
   "data/estimate-norms/professional/formwork.json",
   "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+  "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+  "src/lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1.ts",
   "scripts/estimate/r4a13/prepareFormworkFramiXlifeSuccessor.ts",
 ] as const;
 

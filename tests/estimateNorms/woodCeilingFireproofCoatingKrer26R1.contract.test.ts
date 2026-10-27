@@ -91,3 +91,16 @@ describe("S27.3 F09 exact KRER 26 wooden-ceiling fireproof coating owner", () =>
     );
   });
 });
+
+test("the standard coating method rejects retired area identities without hidden factors", async () => {
+  expect(JSON.stringify(WOOD_CEILING_FIREPROOF_COATING_KRER26_RESOURCES))
+    .not.toMatch(/small_area_factor|minimum_area|mobilization_surcharge/iu);
+  for (const catalogId of [
+    "canonical-work:base:special_repair_interior_fireproof_protect_small_area",
+    "canonical-work:base:special_repair_interior_fireproof_repair_small_area",
+  ]) {
+    await expect(compileWoodCeilingFireproofCoatingKrer26R1(
+      { ...WOOD_CEILING_FIREPROOF_COATING_KRER26_ACCEPTANCE_INPUT }, { catalogId },
+    )).rejects.toThrow("WOOD_CEILING_FIREPROOF_COATING_KRER26_CATALOG_UNSUPPORTED");
+  }
+});

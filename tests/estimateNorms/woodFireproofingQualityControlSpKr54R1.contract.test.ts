@@ -115,3 +115,12 @@ describe("S27.3 F09 wood-fireproofing quality-control owner", () => {
       .toMatch(/не задаёт универсальное число проверок/iu);
   });
 });
+
+test("the standard control method rejects retired area repair identities and invented sampling", async () => {
+  expect(JSON.stringify(WOOD_FIREPROOFING_QUALITY_CONTROL_SP_KR54_RESOURCES))
+    .not.toMatch(/small_area_factor|minimum_area|sampling_density|mobilization_surcharge/iu);
+  await expect(compileWoodFireproofingQualityControlSpKr54R1(
+    { ...WOOD_FIREPROOFING_QUALITY_CONTROL_SP_KR54_ACCEPTANCE_INPUT },
+    { catalogId: "canonical-work:base:special_repair_interior_fireproof_repair_small_area" },
+  )).rejects.toThrow("WOOD_FIREPROOFING_QUALITY_CONTROL_SP_KR54_CATALOG_UNSUPPORTED");
+});

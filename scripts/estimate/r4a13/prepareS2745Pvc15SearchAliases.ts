@@ -33,6 +33,7 @@ export function pvc15OrdinaryQueryAliasesS2745(document: SearchDocument) {
 }
 
 async function run() {
+  const activeMembers = pack.members.filter(member => member.variant === 'standard');
   assert.equal(process.cwd().replaceAll('\\', '/'), 'C:/dev/rik-expo-app-r4a5-dc4f0ce7');
   const git = (...args: string[]) => execFileSync('git', args, { encoding: 'utf8', windowsHide: true }).trim();
   assert.equal(git('branch', '--show-current'), 'codex/r4-a5-clean-08b18902');
@@ -68,8 +69,8 @@ async function run() {
     if (!existing) {
       await cloneCanonicalPreparedSearchR1(client, { contract, releaseId: definitionRelease, searchReleaseId: successor,
         parentSearchReleaseId: parentSearch, releaseKey: contract + '-' + fingerprint.slice(0, 12),
-        head: git('rev-parse', 'HEAD'), tree: git('rev-parse', 'HEAD^{tree}'), fingerprint, targetCount: 3 });
-      for (const member of pack.members) {
+        head: git('rev-parse', 'HEAD'), tree: git('rev-parse', 'HEAD^{tree}'), fingerprint, targetCount: activeMembers.length });
+      for (const member of activeMembers) {
         const document = (await client.query('select * from public.estimate_search_document where search_release_id=$1 and catalog_id=$2', [successor, member.catalogId])).rows[0];
         assert(document && document.definition_release_id === definitionRelease);
         const patch = pvc15OrdinaryQueryAliasesS2745(document);
@@ -86,11 +87,11 @@ async function run() {
       full join public.estimate_search_document b on b.search_release_id=$2 and a.catalog_id=b.catalog_id
       where a.search_release_id=$1 and not(a.catalog_id=any($3::text[]))
         and (b.catalog_id is null or a.aliases<>b.aliases or a.normalized_search_blob<>b.normalized_search_blob
-          or a.definition_version_id<>b.definition_version_id or a.selectable<>b.selectable)`, [parentSearch, successor, pack.members.map(m => m.catalogId)])).rows[0].count;
+          or a.definition_version_id<>b.definition_version_id or a.selectable<>b.selectable)`, [parentSearch, successor, activeMembers.map(m => m.catalogId)])).rows[0].count;
     assert.equal(unrelatedChanges, 0);
     const after = (await client.query('select * from public.estimate_search_index_release where id=$1', [successor])).rows[0];
     const matched = (await client.query(`select catalog_id from public.estimate_search_document
-      where search_release_id=$1 and catalog_id=any($2::text[]) and normalized_search_blob like '%пвх кровля%'`, [successor, pack.members.map(m => m.catalogId)])).rows;
+      where search_release_id=$1 and catalog_id=any($2::text[]) and normalized_search_blob like '%пвх кровля%'`, [successor, activeMembers.map(m => m.catalogId)])).rows;
     assert.equal(matched.length, 3);
     const receipt = { status: apply ? 'GREEN_SEARCH_ONLY_LOCAL_APPLY' : 'GREEN_SEARCH_ONLY_ROLLBACK',
       fingerprint, parentSearch, successor, definitionRelease, definitionChanged: false, unrelatedChanges,

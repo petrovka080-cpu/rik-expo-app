@@ -1,3 +1,15 @@
+
+import currentCe40Record from '../../../data/estimate-benchmarks/fixtures/ce40-current-one-operation-metadata-r501.json';
+import {isDeepStrictEqual} from 'node:util';
+import type {CanonicalPublisherJson as Json} from './canonicalDefinitionPublisherR1';
+import {masterRetainedParentCaptureSha256R1,type MasterRetainedParentCaptureR1} from './masterSingleDefinitionRetainParentBindingsR1';
+import {assertMasterOperationCompositionDeclarationR1,assertMasterOperationCompositionComputationR1,masterOperationValueSha256R1,type MasterOperationCompositionOnlyR1} from './masterOperationCompositionOnlyR1';
+import {compileCanonicalEstimateCore} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
+import {canonicalEstimateStableJson} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism';
+import {buildCanonicalRevisionCommitPayload} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
+import {canonicalEstimateRevisionDetailFromStorage,canonicalEstimateRevisionRowFromStorage} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper';
+import {projectCanonicalEstimatePreliminaryNeedTransport} from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport';
+import {canonicalEstimateOperationReferences,canonicalEstimateResourceOperationSections,canonicalEstimateWorkProcess} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import {readFileSync} from 'node:fs';import {resolve} from 'node:path';import {createHash} from 'node:crypto';import {strict as assert} from 'node:assert';
 import {runMasterSingleDefinitionSuccessorR1,type MasterSingleDefinitionSuccessorConfig,validateIndependentCompletenessMapReferences} from './prepareMasterSingleDefinitionSuccessorR1';
 import {ce40ReadyCeramicConfigS2754,ce40ExplicitControlS2754} from './prepareS2754Ce40ReadyCeramicSeries';
@@ -68,4 +80,145 @@ if(process.argv[1]?.replaceAll('\\','/').endsWith('/prepareS2754Ce40ReadyWallSer
   const current=JSON.parse(readFileSync(resolve('data/estimate-benchmarks/r568-local-developer-canonical-release.json'),'utf8'));
   void runMasterSingleDefinitionSuccessorR1(ce40ReadyWallConfigS2754(index,{releaseId:current.definitionReleaseId,searchReleaseId:current.searchReleaseId}))
     .catch(error=>{process.stderr.write(String(error.stack??error)+'\n');process.exitCode=1;});
+}
+
+export type Ce40CurrentOperationRecordS2754={catalogId:string;sourceKey:string;profileIndex:number;capture:MasterRetainedParentCaptureR1;
+ contentPassport:MasterOperationCompositionOnlyR1['capturedContentPassport'];membership:Json;publicIdentity:Json;searchDocument:Json;
+ operationByRowId:MasterOperationCompositionOnlyR1['operationByRowId'];changedRowIds:string[];capturedOriginWholeParentSha256:string};
+/** Portable immutable data, not a fresh DB authority or a new admitted work. */
+export function ce40CurrentOperationRecordS2754():Ce40CurrentOperationRecordS2754{
+ return structuredClone(currentCe40Record) as Ce40CurrentOperationRecordS2754;
+}
+/** Same existing wall preparer and Master writer. This route changes one saved
+ * labor operation field; the source-only +3 physical branch is not selected. */
+export function ce40CurrentOperationOnlyConfigS2754(record:Ce40CurrentOperationRecordS2754,
+ parent:{releaseId:string;searchReleaseId:string;outputRoot:string;masterPath:string;masterSha256:string;expectedBranch:string}):MasterSingleDefinitionSuccessorConfig{
+ assert(isDeepStrictEqual(record,currentCe40Record),'EXACT_REVIEWED_CE40_CURRENT_RECORD');
+ const raw=record.capture,p=record.contentPassport,s=record.searchDocument,m=record.membership;
+ assert.equal(record.profileIndex,0);assert.equal(record.catalogId,'canonical-work:master:ce40_glazed_ceramic_ready_wall_5x5cm_2mm_standard');
+ assert.equal(raw.definition.id,'142305a1-5be0-5c8c-a6c6-c1f78377c2e5');assert.equal(raw.definition.definition_version,1);
+ assert.equal(raw.baseline.id,'83877aba-1237-5250-a2f3-c871719f5070');assert.deepEqual([raw.parameters.length,raw.formulas.length,raw.resources.length],[27,16,16]);
+ assert.equal(raw.bindings.length,1);assert.equal(raw.normativeSources.length,1);assert.equal(raw.normativeLocators.length,6);
+ assert.equal(raw.definition.id,m.definition_version_id);assert.equal(raw.baseline.id,m.approved_template_baseline_id);
+ assert.equal(raw.definition.release_id,m.source_release_id);assert.equal(m.release_id,s.definition_release_id);assert.equal(p.definition_version_id,raw.definition.id);
+ assert.equal(s.definition_version_id,raw.definition.id);assert.equal(p.catalog_id,record.catalogId);
+ const selected=raw.normativeLocators.filter(row=>row.id===raw.bindings[0]!.locator_id),siblings=raw.normativeLocators.filter(row=>row.id!==raw.bindings[0]!.locator_id);
+ assert.equal(selected.length,1);assert.equal(siblings.length,5);assert.equal(selected[0]!.locator_key,'s2754-ce40-wall-5x5-2mm');
+ const c:MasterRetainedParentCaptureR1={...raw,normativeLocators:selected},map=record.operationByRowId;
+ const contracts=[...new Set(c.parameters.map(row=>row.truth_metadata?.contract))];assert.equal(contracts.length,1);
+ const contract=contracts[0];assert(typeof contract==='string'&&contract.trim().length>0);assert.equal(contract,c.definition.source_metadata.contract);
+ const mode:MasterOperationCompositionOnlyR1={contract:'master-operation-composition-only/r1',capturedContentPassport:p,
+  capturedContentPassportSha256:masterOperationValueSha256R1(p),operationByRowId:map,operationMapSha256:masterOperationValueSha256R1(map)};
+ const captureSha=masterRetainedParentCaptureSha256R1(c);
+ assertMasterOperationCompositionDeclarationR1({catalogId:record.catalogId,capture:c,captureSha256:captureSha,mode,newParameterSources:{}});
+ const resources=c.resources.map(row=>({...row,resource_graph:{...row.resource_graph,operationCompositionV1:map[row.row_id]}}));
+ assertMasterOperationCompositionComputationR1(c,mode,{parameters:c.parameters,formulas:c.formulas,resources},'REPRESENTATIVE');
+ const source=c.normativeSources[0]!,locator=selected[0]!,binding=c.bindings[0]!,boundRow=c.resources.find(row=>row.id===binding.resource_spec_id);assert(boundRow);
+ const sourceKeys=c.normativeSources.map(row=>row.source_key),fixtureSources=Object.fromEntries(Object.entries(c.baseline.normative_source_ids).map(([id,keys])=>[id,(keys as string[]).filter(key=>!sourceKeys.includes(key))]).filter(([,keys])=>(keys as string[]).length));
+ const compileCurrent=(rows:readonly Json[],input:Record<string,unknown>=c.baseline.input_values)=>compileCanonicalEstimateCore({operation:'recalculate',
+  compilerVersion:'finishing-current-operation-only/r411',catalogId:record.catalogId,primaryMeasureParameterId:'grout_area_m2',
+  parameterDefinitions:[...c.parameters] as Parameters<typeof compileCanonicalEstimateCore>[0]['parameterDefinitions'],
+  formulaDefinitions:[...c.formulas] as Parameters<typeof compileCanonicalEstimateCore>[0]['formulaDefinitions'],
+  resourceDefinitions:[...rows] as Parameters<typeof compileCanonicalEstimateCore>[0]['resourceDefinitions'],submittedParameters:input,confirmedParameters:{},currencyCode:'KGS',maximumResourceRows:rows.length,
+  hashJson:(value:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex')});
+ const native=ce40ReadyWallConfigS2754(0,parent),{catalogAppend:_append,binding:_oldBinding,...ordinary}=native;
+ const currentSources=[
+  "data/estimate-benchmarks/fixtures/ce40-current-one-operation-metadata-r501.json",
+  "data/estimate-benchmarks/fixtures/current-finishing-reviewed-operation-maps-r414.json",
+  "data/estimate-benchmarks/source-packs/aggressive-floor-actual-thickness-four-s27-69.json",
+  "data/estimate-benchmarks/source-packs/concrete-floor-base-demolition-s27-54.json",
+  "data/estimate-benchmarks/source-packs/public-calculation-detail-roles-r1.json",
+  "data/estimate-benchmarks/source-packs/public-estimate-language-s27-50.json",
+  "data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json",
+  "data/estimate-benchmarks/source-packs/roof-screed25-five-bindings-s27-69.json",
+  "scripts/estimate/r4a13/masterOperationCompositionOnlyR1.ts",
+  "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts",
+  "scripts/estimate/r4a13/prepareS2754Ce40ReadyWallSeries.ts",
+  "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateDeterminism.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts",
+  "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts",
+  "src/lib/estimate/backendPlatform/canonicalFormulaOutputBounds.ts",
+  "src/lib/estimate/backendPlatform/canonicalMachineHourPriceCoverageV1.ts",
+  "src/lib/estimate/backendPlatform/canonicalManualPriceReleaseMigration.ts",
+  "src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts",
+  "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts",
+  "src/lib/estimate/backendPlatform/canonicalPublicSelectedSpecificationV1.ts",
+  "src/lib/estimate/backendPlatform/canonicalScopeRequirementV1.ts",
+  "src/lib/estimate/backendPlatform/canonicalSourceProfileSelectionV1.ts",
+  "src/lib/estimate/backendPlatform/formulaGraph.ts",
+  "src/lib/estimate/backendPlatform/inclusionGraph.ts",
+  "src/lib/estimate/backendPlatform/numericParameterRelations.ts",
+  "src/lib/estimate/v4/automaticConstructionDefinitionR1.ts"
+];
+ return {...ordinary,contract,masterPath:parent.masterPath,masterSha256:parent.masterSha256,expectedBranch:parent.expectedBranch,
+  stopCode:'S2754_CE40_CURRENT_OPERATION_ONLY',applicationName:'ce40-current-operation-only',outputRoot:parent.outputRoot,
+  expectedParentShape:[27,16,16],sourcePaths:[...new Set([...native.sourcePaths,...currentSources])],
+  sourceId:record.sourceKey,normId:String(c.definition.source_metadata.normId),
+  parameterDefinitions:c.parameters,formulaDefinitions:c.formulas,resourceDefinitions:resources,
+  shortInput:c.baseline.input_values,acceptanceInput:c.baseline.input_values,runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},
+  validationScenario:'EXACT_CURRENT_CE40_ONE_LABOR_OPERATION_METADATA_ONLY',
+  passport:{canonicalRuName:c.definition.passport.canonicalRuName,workKey:c.definition.passport.workKey,physicalResultRu:c.definition.passport.physicalResultRu,
+   includedScopeRu:p.included_scope_ru,excludedScopeRu:p.excluded_scope_ru,
+   ...(p.decision.independentCompletenessMap?{independentCompletenessMap:p.decision.independentCompletenessMap}:{}),
+   ...(p.decision.unresolvedResourceRowIds?{unresolvedApplicableResourceRowIds:p.decision.unresolvedResourceRowIds}:{})},
+  applicability:c.definition.applicability,
+  binding:{rowId:boundRow.row_id,applicability:binding.applicability,applicabilityByRowId:{[boundRow.row_id]:binding.applicability},
+   retainParentBindings:{capturedParent:c,capturedParentSha256:captureSha,newParameterSources:{},operationCompositionOnly:mode,
+    ...(Object.keys(fixtureSources).length?{legacyCapturedFixtureSources:{contract:'master-retained-captured-fixture-provenance/r1',parameterSources:fixtureSources}}:{})},
+   reuseExistingNormativeRegistry:{contract:'master-existing-normative-registry-reuse/r1',locatorExcerptHashKind:'CAPTURED_PARENT_OPERATION_COMPOSITION_ONLY_R1',source,locators:selected}},
+  locator:{key:locator.locator_key,payload:locator.locator},
+  search:{primaryUom:s.primary_uom,canonicalNameRu:s.canonical_name_ru,aliases:s.aliases,shortScopeRu:s.short_scope_ru,keyDistinguishingParameters:s.key_distinguishing_parameters,
+   clarificationFields:s.clarification_fields,includedBoundaries:s.included_boundaries,excludedBoundaries:s.excluded_boundaries,extraSearchTermsRu:'',sourceProvenance:s.source_provenance},
+  receiptFileStem:'ce40-current-one-labor-operation-only',verifyCore:async()=>{
+   const before=await compileCurrent(c.resources),after=await compileCurrent(resources);
+   const arithmetic=(result:typeof before)=>({parameters:result.parameters,rows:result.rows.map(row=>({id:row.row_id,quantity:row.quantity,unit:row.unit_id,
+    included:row.included_in_estimate,procurement:row.included_in_procurement,eligible:row.procurement_eligible,ownership:row.ownership_status,price:row.unit_price,amount:row.amount})),
+    needs:JSON.parse(JSON.stringify(result.preliminaryNeeds,(key,value)=>key==='operationCompositionV1'||key==='need_sha256'?undefined:value)),totals:result.totals});
+   assert.deepEqual(arithmetic(after),arithmetic(before));
+
+   const hashJson=(value:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex');
+   const durable=(result:typeof after,input:Record<string,unknown>,requiredIds:readonly string[])=>{
+    const commit=buildCanonicalRevisionCommitPayload({rowCount:result.rows.length,currencyCode:'KGS',totals:result.totals,
+     checksumSha256:hashJson(result.revisionProjection),compilerVersion:'finishing-current-operation-only/r411',parameters:result.parameters,
+     approvedTemplateBaselineId:c.baseline.id,baselineAssumptions:{},effectiveUserParameters:input,parentRevisionId:null,
+     derivedParameters:result.derivedParameters,identityContract:{},preliminaryNeeds:result.preliminaryNeeds,purchaseSupplyIndexV1:result.purchaseSupplyIndexV1});
+    const stored={id:'11111111-1111-4111-8111-111111111111',release_id:parent.releaseId,definition_version_id:c.definition.id,catalog_id:record.catalogId,
+     price_snapshot_ids:result.priceSnapshotIds,input_parameters:commit.resolvedParameters,totals:commit.totals,row_count:commit.rowCount,revision_number:1,status:'ready',currency_code:'KGS',
+     compiler_version:'finishing-current-operation-only/r411',created_at:'2026-10-26T00:00:00Z',checksum_sha256:commit.checksumSha256,amendment_contract:{parameterSources:commit.parameterSources}};
+    const bytes=JSON.stringify(stored),transport=projectCanonicalEstimatePreliminaryNeedTransport(stored),detail=canonicalEstimateRevisionDetailFromStorage(stored);
+    assert.deepEqual(detail.preliminaryNeeds,transport.preliminaryNeeds);assert.deepEqual(transport.preliminaryNeeds.map(need=>need.rowId),result.preliminaryNeeds.map(need=>need.row_id));
+    const reopened=JSON.parse(JSON.stringify(detail)) as typeof detail;
+    const known=JSON.parse(JSON.stringify(result.rows)).map((row:Json)=>canonicalEstimateRevisionRowFromStorage(row,null,null,stored.amendment_contract));
+    const coldResources=[...known.map((row:ReturnType<typeof canonicalEstimateRevisionRowFromStorage>)=>({rowId:row.rowId,titleRu:row.titleRu,category:row.category,
+     operation:(row.calculationTrace.resourceGraph as Json).operationCompositionV1})),...reopened.preliminaryNeeds!.map(need=>({rowId:need.rowId,titleRu:need.titleRu,category:need.category,operation:need.operation}))];
+    const sections=canonicalEstimateResourceOperationSections(coldResources),process=canonicalEstimateWorkProcess(coldResources);
+    for(const id of requiredIds){const resource=coldResources.find(row=>row.rowId===id);assert(resource,'ACTUAL_CORE_ROW_OR_NEED_FOR_OPERATION:'+id);
+     assert.deepEqual(canonicalEstimateOperationReferences(resource.operation),canonicalEstimateOperationReferences(map[id]));
+     const operation=map[id]!;
+     for(const related of operation.additionalOperations??[]){
+      assert.equal(sections.filter(section=>section.resourceIds.includes(id)).length,1);
+      const section=sections.find(section=>section.operation?.operationId===related.operationId);assert(section);
+      assert.equal(section.resourceIds.includes(id),false);assert.equal(section.sharedResources.filter(row=>row.rowId===id).length,1);
+      assert.equal(process.flatMap(group=>group.operations).find(step=>step.operationId===related.operationId)!.resourceIds.filter(rowId=>rowId===id).length,1);
+     }
+    }
+    const firstNeed=result.preliminaryNeeds.find(need=>requiredIds.includes(need.row_id));
+    if(firstNeed){assert.match(firstNeed.need_sha256,/^[0-9a-f]{64}$/);const {need_sha256:_hash,...basis}=firstNeed;assert.equal(hashJson(basis),firstNeed.need_sha256);
+     const invalid=structuredClone(stored);(invalid.amendment_contract.parameterSources as {preliminaryNeeds:Json[]}).preliminaryNeeds.find(need=>need.row_id===firstNeed.row_id)!.need_sha256='eh_'+'0'.repeat(16);
+     assert.equal(projectCanonicalEstimatePreliminaryNeedTransport(invalid).preliminaryNeeds.some(need=>need.rowId===firstNeed.row_id),false);}
+    assert.equal(JSON.stringify(stored),bytes);return{known:known.length,needs:reopened.preliminaryNeeds!.length,assertedRows:requiredIds.length};
+   };
+   const actualBaselineDurable=durable(after,c.baseline.input_values,record.changedRowIds);
+   return{status:'PASS_CURRENT_CE40_ONE_LABOR_METADATA_ARITHMETIC_AND_TEST_ONLY_TRANSPORT',catalogId:record.catalogId,capturedResources:c.resources.length,
+    changedOperationRows:record.changedRowIds,currentKnownRows:after.rows.length,currentNeeds:after.preliminaryNeeds.length,
+    currentProcurementRows:after.rows.filter(row=>row.included_in_procurement).length,actualBaselineDurable,
+    sourceQuantityNormsChanged:false,actualObjectFactsAccepted:false,TEST_ONLYStoredRow:true,actualDurableStoreTransaction:false,FULL:false};
+  }};
 }

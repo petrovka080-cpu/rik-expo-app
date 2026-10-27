@@ -9,6 +9,7 @@ import {
 } from "../backendPlatform/canonicalEstimateCompileCore";
 import { compileFormulaGraph } from "../backendPlatform/formulaGraph";
 import { estimateDeterministicHash } from "../estimateDeterministicHash";
+import { canonicalEstimateOperationReference } from '../backendPlatform/canonicalEstimateOperationComposition';
 import {
   ASPHALT_INSTALL_KRER27_FORMULAS,
   ASPHALT_INSTALL_KRER27_INDEPENDENT_COMPLETENESS_MAP,
@@ -18,7 +19,7 @@ import {
   ASPHALT_INSTALL_KRER27_RUNTIME_INPUT,
   ASPHALT_INSTALL_KRER27_SOURCE_ID,
   ASPHALT_EFFECTIVE_MIX_ORDER_PARAMETER_ID,
-} from "./asphaltInstallLargeAreaKrer27ProfileR1";
+} from "./asphaltInstallKrer27ProfileR1";
 import {
   STRIP_POUR_INDEPENDENT_COMPLETENESS_MAP,
   STRIP_POUR_PROFILE_FORMULAS,
@@ -482,6 +483,82 @@ export const BRIDGE_ASPHALT_COMPLETE_FORMULAS: readonly CanonicalEstimateFormula
   ...localFormulas,
 ]);
 
+const bridgeOperationTitles = [
+  ['bridge:deck-acceptance', 'Приёмка мостовой плиты', 1],
+  ['bridge:deck-readiness', 'Проверка необходимости выравнивания', 2],
+  ['bridge:deck-preparation', 'Очистка и подготовка мостовой плиты', 3],
+  ['bridge:deck-leveling', 'Выравнивание плиты и формирование уклонов', 4],
+  ['bridge:priming', 'Грунтование мостовой плиты', 5],
+  ['bridge:membrane', 'Наплавление основного поля гидроизоляции', 6],
+  ['bridge:membrane-details', 'Гидроизоляция сопряжений и деталей', 7],
+  ['bridge:drainage-details', 'Устройство водоотводных деталей', 8],
+  ['bridge:screed-reinforcement', 'Армирование защитной стяжки', 10],
+  ['bridge:screed-edge', 'Бортовая опалубка защитной стяжки', 11],
+  ['bridge:screed:receive', 'Приёмка и подача бетона стяжки', 12],
+  ['bridge:screed:place', 'Укладка бетона защитной стяжки', 13],
+  ['bridge:screed:consolidate', 'Виброуплотнение бетона стяжки', 14],
+  ['bridge:screed:finish', 'Выравнивание поверхности стяжки', 15],
+  ['bridge:screed:curing', 'Укрытие и уход за бетоном стяжки', 16],
+  ['bridge:screed:joint', 'Рабочий шов бетонирования по выбранному узлу', 17],
+  ['bridge:screed-logistics', 'Доставка армирования и техники стяжки', 18],
+  ['bridge:screed-quality', 'Контроль и приёмка стяжки', 19],
+  ['bridge:asphalt-layer-bonding', 'Сплошное межслойное сцепление', 20],
+  ['bridge:joint', 'Сопряжения деформационных швов', 70],
+  ['bridge:quality', 'Приёмка системы мостового покрытия', 80],
+  ['bridge:records', 'Исполнительная документация системы', 81],
+  ['bridge:membrane-procurement', 'Общий заказ рулонов гидроизоляции', 90],
+] as const;
+const bridgeStage = (operationId: string) => {
+  const value = bridgeOperationTitles.find(([id]) => id === operationId);
+  if (!value) throw new Error('BRIDGE_SOURCE_OPERATION_UNMAPPED:' + operationId);
+  return { operationId, operationTitleRu: value[1], processOrdinal: value[2],
+    processRole: operationId === 'bridge:membrane-procurement' ? 'COST_SUMMARY' as const : 'PROCESS' as const,
+    completionCriterionRu: 'Показан связанный состав выбранной подработы; общий ресурс учитывается и оплачивается у одного владельца.' };
+};
+const bridgeComposition = (operationId: string, shared: readonly string[] = []) => ({
+  contractVersion: 'canonical-operation-resource/v1', groupId: 'bridge:complete-pavement',
+  groupTitleRu: 'Полная система покрытия мостового полотна', ...bridgeStage(operationId),
+  ...(shared.length ? { additionalOperations: shared.map(bridgeStage) } : {}),
+});
+function bridgeCourseOperation(course: CourseKey, source: CanonicalEstimateResourceDefinition) {
+  const declared = canonicalEstimateOperationReference(source.resource_graph.operationCompositionV1);
+  if (!declared) throw new Error('BRIDGE_ASPHALT_SOURCE_OPERATION_REQUIRED:' + source.row_id);
+  const prefix = course === 'binder' ? 'Нижний слой: ' : 'Верхний слой: ';
+  const rename = (value: typeof declared) => {
+    const { groupId: _sourceGroup, groupTitleRu: _sourceTitle, additionalOperations: _related, ...stage } = value;
+    return { ...stage, operationId: `bridge:${course}:${value.operationId}`,
+      operationTitleRu: prefix + value.operationTitleRu,
+      processOrdinal: (course === 'binder' ? 30 : 50) + (value.processOrdinal ?? 0) };
+  };
+  return { ...rename(declared), groupId: 'bridge:complete-pavement',
+    groupTitleRu: 'Полная система покрытия мостового полотна',
+    ...(declared.additionalOperations ? { additionalOperations: declared.additionalOperations.map(value =>
+      rename({ ...declared, ...value, additionalOperations: undefined })) } : {}) };
+}
+const screedStageRows: Record<string, readonly string[]> = {
+  receive: ['work:receive', 'delivery:mixer-trips', 'quality:delivery-acceptance', 'document:delivery-tickets'],
+  place: ['material:ready-mix', 'work:place', 'equipment:pump', 'included:pump-operator', 'included:pump-pipeline',
+    'included:pump-consumables', 'logistics:pump-setup', 'organization:work-zone'],
+  consolidate: ['work:consolidate', 'equipment:vibrator', 'included:vibrator-operator', 'included:vibrator-consumables',
+    'equipment:reserve-vibrator', 'quality:consolidation'],
+  finish: ['work:finish-surface', 'quality:geometry'],
+  curing: ['material:curing-sheet', 'work:install-curing', 'work:maintain-curing', 'work:remove-curing', 'document:pour-log'],
+  joint: ['joint:waterstop', 'joint:install-waterstop'],
+  logistics: ['logistics:pump-mobilization', 'logistics:vibrator-mobilization'],
+  quality: ['quality:pre-pour', 'quality:sampling', 'quality:slump', 'quality:temperature', 'quality:specimens',
+    'quality:specimen-care', 'quality:compression', 'document:lab-protocols', 'document:execution-set'],
+};
+function bridgeScreedOperation(sourceRowId: string) {
+  const suffix = sourceRowId.replace(/^strip-pour:/u, '');
+  const stage = Object.entries(screedStageRows).find(([, ids]) => ids.includes(suffix))?.[0];
+  if (!stage) throw new Error('BRIDGE_SCREED_RESOURCE_UNMAPPED:' + sourceRowId);
+  const operationId = stage === 'logistics' ? 'bridge:screed-logistics'
+    : stage === 'quality' ? 'bridge:screed-quality' : 'bridge:screed:' + stage;
+  const shared = suffix === 'material:ready-mix' ? ['bridge:screed:receive', 'bridge:screed:consolidate']
+    : suffix === 'equipment:pump' ? ['bridge:screed:receive'] : [];
+  return bridgeComposition(operationId, shared);
+}
+
 function prefixedAsphaltResource(
   course: CourseKey,
   source: CanonicalEstimateResourceDefinition,
@@ -501,6 +578,7 @@ function prefixedAsphaltResource(
   const sourceBalance = source.resource_graph?.purchaseBalanceV1 as Json | undefined;
   const resourceGraph = {
     ...(source.resource_graph as Json),
+    operationCompositionV1: bridgeCourseOperation(course, source),
     formulaId: `bridge_${course}_${source.formula_id}`,
     semanticOwnerId: rowId,
     primaryMeasureParameterId: "area_m2",
@@ -567,6 +645,7 @@ function prefixedScreedResource(
   const parent = String((source.resource_graph as Json)?.parentCostOwnerId ?? "");
   const resourceGraph = renameAst({
     ...(source.resource_graph as Json),
+    operationCompositionV1: bridgeScreedOperation(source.row_id),
     formulaId: `bridge_screed_${source.formula_id}`,
     semanticOwnerId: rowId,
     primaryMeasureParameterId: "area_m2",
@@ -670,6 +749,12 @@ function localResource(component: Json, ordinal: number): CanonicalEstimateResou
   };
   const source = bridgeSourcePack.sources.find((candidate) => candidate.sourceId === component.sourceId);
   const resourceGraph = {
+    operationCompositionV1: bridgeComposition(component.operationId,
+      ['bridge:waterproofing:membrane-rolls', 'bridge:waterproofing:membrane-purchased-area'].includes(rowId)
+        ? ['bridge:membrane', 'bridge:membrane-details', 'bridge:drainage-details']
+        : ['bridge:waterproofing:lpg', 'bridge:waterproofing:labor', 'bridge:waterproofing:torch-equipment'].includes(rowId)
+          ? ['bridge:membrane-details', 'bridge:drainage-details']
+          : rowId === 'bridge:waterproofing:hand-roller' ? ['bridge:membrane', 'bridge:drainage-details'] : []),
     formulaId: component.formulaId,
     normalizedUom: component.unitId,
     semanticOwnerId: rowId,

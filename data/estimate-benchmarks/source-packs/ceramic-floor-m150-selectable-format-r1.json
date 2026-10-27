@@ -1,0 +1,88 @@
+{
+  "contract": "gox-build.ceramic-m150-selectable-format.r1",
+  "namespace": "ceramic-floor:cement-mortar:krer11-01-027-03:format-choice:r1",
+  "publicationSourceId": "ceramic_m150_same_catalog_format_choice_r1",
+  "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "parentFactory": "ceramicFloorM150WholeProvisionDefinitionR4",
+  "primaryParameterId": "net_ceramic_floor_area_m2",
+  "skirtingParameterId": "ceramic_m150_skirting_length_m",
+  "selectorId": "ceramic_m150_r2_technology_profile",
+  "specificationParameterId": "ceramic_m150_selected_tile_format_ru",
+  "legacyCombinedValue": "Ручная поштучная укладка 100/150 мм на готовом М150; одна бригада 6 человек; сетевой водяной пост 20–25 м",
+  "choices": [
+    {
+      "value": "Ручная поштучная укладка 100/150 мм на готовом М150; одна бригада 6 человек; сетевой водяной пост 20–25 м",
+      "specificationRu": "100/150 мм",
+      "role": "LEGACY_COMBINED_PROFILE"
+    },
+    {
+      "value": "100 × 100 мм",
+      "specificationRu": "100 × 100 мм",
+      "role": "EXACT_FORMAT_GEOMETRY"
+    },
+    {
+      "value": "150 × 150 мм",
+      "specificationRu": "150 × 150 мм",
+      "role": "EXACT_FORMAT_GEOMETRY"
+    }
+  ],
+  "tileSpecificationRowIds": [
+    "ceramic-floor:cement-mortar:krer11-01-027-03:ceramic-tile-consumed",
+    "ceramic-floor:cement-mortar:krer11-01-027-03:ceramic-tile-order"
+  ],
+  "source": {
+    "path": "data/estimate-benchmarks/source-packs/ceramic-floor-m150-exact-format-branches-r1.json",
+    "sha256": "a56a2e126aea94917a0600f7b9d1e66aefbb136af1a1fe01cadf59c4d54c3352",
+    "locatorRu": "Existing exact-format pack:KRER11-01-027-03 same column;TK36-03§1.1 supports100/150mm unglazed single-colour tile on10–15mm M150."
+  },
+  "parentPins": [
+    {
+      "path": "src/lib/estimate/v4/ceramicFloorCementMortarWholeProvisionR4.ts",
+      "sha256": "0d0cd923a3598ac5aea481faa8736056b1e4b55e784de50ff3f1e6a36845c88b",
+      "immutable": true
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-whole-provision-r4.json",
+      "sha256": "e2e44080008d6c26d6b659e0675704a03363a68d629b9db6fdcb066c7e5c01dd",
+      "immutable": true
+    },
+    {
+      "path": "src/lib/estimate/v4/ceramicFloorM150ExactFormatBranchesR2.ts",
+      "sha256": "f9c8aed7348ed18b53934151d80fe36d5dee067091cf56e7b612cf68eef75783",
+      "immutable": true
+    }
+  ],
+  "remaining": [
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:deformation-junctions",
+      "resourceRu": "Деформационные сопряжения",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Для применимых узлов нужны самостоятельная геометрия и выбранная совместимая система. Обычныецементныемежплиточныешвы уже включены."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:additional-logistics-waste",
+      "resourceRu": "Обращение с внешними отходами",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "ТК§4.15требует удаленияотходов; не установлены количество/тара/масса и внешниймаршрут внеисходныхмашин/очистки. Покупкаилипоездка1штнеподставляется."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:handwash-water",
+      "resourceRu": "Вода для мытья рук перед нанесением защиты кожи",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Производитель требует мыть руки перед применением. Число нанесений известно, применимый расход воды не подтверждён; исходная вода для пола не присваивается мытью рук."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels",
+      "resourceRu": "Одноразовые салфетки для сушки рук перед нанесением защиты кожи",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Производитель требует тщательно высушить руки. Выбрана одноразовая сушка; достаточное число и подходящая спецификация салфеток не подтверждены."
+    }
+  ],
+  "fullTechnicalAcceptance": false,
+  "noNewCatalogIdentity": true,
+  "noNewRequiredParameters": true,
+  "newNorms": 0,
+  "newResourceRows": 0,
+  "sameCostAndProcurementOwners": true,
+  "published": false
+}

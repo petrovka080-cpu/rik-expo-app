@@ -1,0 +1,216 @@
+{
+  "contractVersion": "master24-pdf-unresolved-included-quantity-fixture/v1",
+  "sourceRevisionId": "4d849913-112a-4bc5-9fa9-7bf0cca617f9",
+  "sourceRevisionChecksum": "f0ad7be1fbf5a19dde279379b4b07548fb0f34bf3d95f63b08ab4146156028ed",
+  "owner": {
+    "row_id": "ceiling:p1121:high-load:work:whole",
+    "ordinal": 16,
+    "section": "Потолок ГКЛ высокой нагрузки: каркас КНАУФ П112.1 500/500/800 мм + сухой шов EMAC NDP",
+    "category": "work",
+    "title_ru": "Полный монтаж каркаса П112.1 и сухих швов EMAC: все стадии и оснащение",
+    "unit_id": "m2",
+    "quantity": "300.000000000",
+    "unit_price": null,
+    "amount": null,
+    "currency_code": null,
+    "procurement_eligible": false,
+    "calculation_trace": {
+      "formulaId": "ceiling:p1121:high-load:formula:work:whole",
+      "resourceGraph": {
+        "costOwner": "resource",
+        "formulaId": "ceiling:p1121:high-load:formula:work:whole",
+        "costTreatment": "OWN_COST",
+        "normalizedUom": "m2",
+        "semanticOwnerId": "ceiling:p1121:high-load:ceiling:p1121:high-load:work:whole",
+        "inputParameterIds": [
+          "area_m2",
+          "ceiling_height_m",
+          "ceiling_drop_m",
+          "room_length_m",
+          "room_width_m"
+        ],
+        "operationCompositionV1": {
+          "groupId": "ceiling:p1121:high-load",
+          "operationId": "ceiling:p1121:high-load:operation:setout",
+          "processRole": "COST_SUMMARY",
+          "groupTitleRu": "Потолок ГКЛ высокой нагрузки: каркас КНАУФ П112.1 500/500/800 мм + сухой шов EMAC NDP",
+          "processOrdinal": 0,
+          "contractVersion": "canonical-operation-resource/v1",
+          "operationTitleRu": "Разметка уровня, профилей и мест подвесов",
+          "additionalOperations": [
+            {
+              "operationId": "ceiling:p1121:high-load:operation:setout",
+              "processRole": "PROCESS",
+              "processOrdinal": 1,
+              "operationTitleRu": "Разметка уровня, профилей и мест подвесов",
+              "completionCriterionRu": "Количество рассчитано из геометрии выбранной системы; монтаж, пригодность основания и приёмка проверяются отдельно."
+            },
+            {
+              "operationId": "ceiling:p1121:high-load:operation:suspend",
+              "processRole": "PROCESS",
+              "processOrdinal": 2,
+              "operationTitleRu": "Металлические анкеры и подвесы 40 кг",
+              "completionCriterionRu": "Количество рассчитано из геометрии выбранной системы; монтаж, пригодность основания и приёмка проверяются отдельно."
+            },
+            {
+              "operationId": "ceiling:p1121:high-load:operation:frame",
+              "processRole": "PROCESS",
+              "processOrdinal": 3,
+              "operationTitleRu": "Монтаж и выравнивание двухуровневого каркаса",
+              "completionCriterionRu": "Количество рассчитано из геометрии выбранной системы; монтаж, пригодность основания и приёмка проверяются отдельно."
+            },
+            {
+              "operationId": "ceiling:p1121:high-load:operation:clad",
+              "processRole": "PROCESS",
+              "processOrdinal": 4,
+              "operationTitleRu": "Однослойная обшивка ГСП-А 12.5 мм с разбежкой стыков",
+              "completionCriterionRu": "Количество рассчитано из геометрии выбранной системы; монтаж, пригодность основания и приёмка проверяются отдельно."
+            },
+            {
+              "operationId": "ceiling:p1121:high-load:operation:expansion",
+              "processRole": "PROCESS",
+              "processOrdinal": 5,
+              "operationTitleRu": "Деформационные швы независимых полей",
+              "completionCriterionRu": "Установлены свободно подвижные EMAC NDP, комплектные клипсы чередуются; оба поля каркаса независимы, шов не заполнен шпаклёвкой."
+            },
+            {
+              "operationId": "ceiling:p1121:high-load:operation:joint",
+              "processRole": "PROCESS",
+              "processOrdinal": 6,
+              "operationTitleRu": "Заделка стыков Q1, примыканий и головок TN",
+              "completionCriterionRu": "Количество рассчитано из геометрии выбранной системы; монтаж, пригодность основания и приёмка проверяются отдельно."
+            },
+            {
+              "operationId": "ceiling:p1121:high-load:operation:prime",
+              "processRole": "PROCESS",
+              "processOrdinal": 7,
+              "operationTitleRu": "Грунтование обшивки перед последующей отделкой",
+              "completionCriterionRu": "Количество рассчитано из геометрии выбранной системы; монтаж, пригодность основания и приёмка проверяются отдельно."
+            },
+            {
+              "operationId": "ceiling:p1121:high-load:operation:accept",
+              "processRole": "PROCESS",
+              "processOrdinal": 8,
+              "operationTitleRu": "Уборка рабочего места и поэтапная приёмка",
+              "completionCriterionRu": "Количество рассчитано из геометрии выбранной системы; монтаж, пригодность основания и приёмка проверяются отдельно."
+            }
+          ],
+          "completionCriterionRu": "Количество рассчитано из геометрии выбранной системы; монтаж, пригодность основания и приёмка проверяются отдельно."
+        },
+        "scopeContextParameterIds": [
+          "room_length_m",
+          "room_width_m",
+          "ceiling_height_m",
+          "ceiling_drop_m"
+        ],
+        "publicResourcePresentationV1": {
+          "nameRu": "Полный монтаж каркаса П112.1 и сухих швов EMAC: все стадии и оснащение",
+          "detailsRu": [
+            "Одна цена полного монтажа П112.1 на измеренный м² включает труд всех названных стадий и предоставление исполнителем исправного инструмента, подъёмника листов, инвентарных подмостей для заявленной геометрии,ограждений,СИЗ,локального пылеудаления и уборки рабочего места до сдачи. Материалы рассчитаны и оплачиваются отдельными владельцами. Применимые внутренние базовые часыКРЕРП112 включены в эту же оплату и не оплачиваются повторно. При наличииEMAC совмещение этих часов и собственный труд шва остаются открытой нормой источника. Цена не наследуется от иной системы и не подтверждает часы всей смешанной сборки. Внешняя доставка,аренда отдельным сроком,вывоз отходов и независимые крепления приборов не включены."
+          ],
+          "sourceTitleRu": "Полный монтаж каркаса П112.1 и сухих швов EMAC: все стадии и оснащение",
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1"
+        }
+      },
+      "compilerVersion": "canonical-estimate-local-runtime.r6",
+      "formulaAstSha256": "ca02fe8e37afc21cd5ae24b166a194a6810408f463d25b3ffa280c6ebf375f68",
+      "inputParameterIds": [
+        "area_m2"
+      ]
+    },
+    "ownership_status": "OWNED",
+    "included_in_estimate": true,
+    "included_in_procurement": false
+  },
+  "need": {
+    "row_id": "ceiling:p1121:high-load:labor:emac-joint-source-gap",
+    "ordinal": 25,
+    "section": "Потолок ГКЛ высокой нагрузки: каркас КНАУФ П112.1 500/500/800 мм + сухой шов EMAC NDP",
+    "unit_id": "man_hour",
+    "category": "labor",
+    "quantity": null,
+    "selected": false,
+    "title_ru": "Труд монтажа сухого шва и его совмещение с монтажом потолка",
+    "formula_id": "ceiling:p1121:high-load:formula:labor:emac-joint-source-gap",
+    "need_state": "QUANTITY_REQUIRED",
+    "unit_price": null,
+    "need_sha256": "c386af3b11c7a6e34f1ff1f51e08fde8623d8dd72425f606065a33586f5c0723",
+    "normative_trace": [
+      {
+        "normId": "drywall-ceiling-high-load-geometry:r1:expansion",
+        "sourceId": "EMAC_NDP_TDS_R03_001",
+        "source_url": "https://emac.es/public/Attachment/2021/7/ficha-tecnica-novotapajuntas-ndp-emac.pdf",
+        "exact_locator": "PDF стр. 1: NTDPP50, 3 м, ширина 50 мм, клипсы S по 5 шт.; стр. 2: сухая установка комплектных клипс с чередованием направления, без клея/шурупов. Старая TDS описывает стены/фасады; допуск потолков независимо подтверждён текущей карточкой и каталогом.",
+        "source_definition_hash": "cec784b72b91057a64bf3493fbc295b20f13087f4cf03d89073ce5792bd04305"
+      }
+    ],
+    "resource_spec_id": "5b041f70-dde7-5a5c-8877-97b4547ddaff",
+    "calculation_trace": {
+      "formulaId": "ceiling:p1121:high-load:formula:labor:emac-joint-source-gap",
+      "needState": "QUANTITY_REQUIRED",
+      "resourceGraph": {
+        "costOwner": "resource",
+        "formulaId": "ceiling:p1121:high-load:formula:labor:emac-joint-source-gap",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "normalizedUom": "man_hour",
+        "semanticOwnerId": "ceiling:p1121:high-load:ceiling:p1121:high-load:labor:emac-joint-source-gap",
+        "inputParameterIds": [
+          "p112_emac_joint_labor_hours",
+          "ceiling_height_m",
+          "ceiling_drop_m"
+        ],
+        "parentCostOwnerId": "ceiling:p1121:high-load:work:whole",
+        "operationCompositionV1": {
+          "groupId": "ceiling:p1121:high-load",
+          "operationId": "ceiling:p1121:high-load:operation:expansion",
+          "processRole": "PROCESS",
+          "groupTitleRu": "Потолок ГКЛ высокой нагрузки: каркас КНАУФ П112.1 500/500/800 мм + сухой шов EMAC NDP",
+          "processOrdinal": 5,
+          "contractVersion": "canonical-operation-resource/v1",
+          "operationTitleRu": "Деформационные швы независимых полей",
+          "completionCriterionRu": "Установлены свободно подвижные EMAC NDP, комплектные клипсы чередуются; оба поля каркаса независимы, шов не заполнен шпаклёвкой."
+        },
+        "scopeContextParameterIds": [
+          "room_length_m",
+          "room_width_m",
+          "ceiling_height_m",
+          "ceiling_drop_m"
+        ],
+        "includedInResourceOwnerRowId": "ceiling:p1121:high-load:work:whole",
+        "publicResourcePresentationV1": {
+          "nameRu": "Труд монтажа сухого шва и его совмещение с монтажом потолка",
+          "rowKind": "PROCESS_NOTE",
+          "detailsRu": [
+            "Ресурс входит в общую оплату монтажа; применимое количество требует подтверждения источником приложения."
+          ],
+          "sourceTitleRu": "Труд монтажа сухого шва и его совмещение с монтажом потолка",
+          "brandAndModelRu": null,
+          "contractVersion": "canonical-public-resource-presentation/v1"
+        }
+      },
+      "compilerVersion": "canonical-estimate-local-runtime.r6",
+      "preliminaryNeed": true,
+      "formulaAstSha256": "71241a41795270fd4341ccfc2f8a16651f1d6ac6b713ff309cd8a03346966e0a",
+      "inclusionDecision": {
+        "source": "definition_cost_treatment",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "costTreatmentSource": "resource_graph",
+        "effectiveIncludedInEstimate": false,
+        "requestedIncludedInEstimate": null,
+        "effectiveIncludedInProcurement": false,
+        "requestedIncludedInProcurement": null
+      },
+      "inputParameterIds": [
+        "p112_emac_joint_labor_hours"
+      ],
+      "missingParameterIds": [
+        "p112_emac_joint_labor_hours"
+      ]
+    },
+    "procurement_eligible": false,
+    "missing_parameter_ids": [
+      "p112_emac_joint_labor_hours"
+    ]
+  }
+}

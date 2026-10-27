@@ -45,6 +45,8 @@ const APPLY = process.argv.includes("--apply");
 const SOURCE_PATHS = [
   "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
   "src/lib/estimate/v4/formworkFramiXlifeProjectKitR1.ts",
+  "src/lib/estimate/contracts/formworkFramiXlifeIdentityR1.ts",
+  "src/lib/estimate/ownedDomain/formworkFramiXlifePromptParametersR1.ts",
   "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
   "scripts/estimate/r4a13/prepareFormworkFramiXlifeStripFoundationFamilySuccessor.ts",
 ] as const;
@@ -334,7 +336,7 @@ async function main(): Promise<void> {
     invariant(git("diff", "--name-only", "HEAD", "--", path) === "",
       `STOP_FORMWORK_FAMILY_SOURCE_UNCOMMITTED:${path}`);
   }
-  invariant(TARGETS.length === 7, `STOP_FORMWORK_FAMILY_TARGET_COUNT:${TARGETS.length}`);
+  invariant(Number(TARGETS.length) === 7, `STOP_FORMWORK_FAMILY_TARGET_COUNT:${TARGETS.length}`);
   const head = git("rev-parse", "HEAD");
   const tree = git("rev-parse", "HEAD^{tree}");
   const sourceHashes = SOURCE_PATHS.map((path) => ({ path, sha256: sha256(readFileSync(resolve(path))) }));

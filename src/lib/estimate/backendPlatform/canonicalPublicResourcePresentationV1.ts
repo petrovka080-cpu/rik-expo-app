@@ -1,5 +1,10 @@
 import { canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu } from './canonicalPublicEstimateLanguageRu';
 import simpleBindings from '../../../../data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json';
+import calculationDetailRoles from '../../../../data/estimate-benchmarks/source-packs/public-calculation-detail-roles-r1.json';
+import {canonicalPublicSelectedSpecificationV1} from './canonicalPublicSelectedSpecificationV1';
+
+export const CANONICAL_PUBLIC_RESOURCE_KINDS_V1 = ['MATERIAL','CONSUMABLE','TOOL','ACCESSORY','EQUIPMENT','MECHANISM','LABOR','SERVICE','TRANSPORT','PPE'] as const;
+export type CanonicalPublicResourceKindV1 = (typeof CANONICAL_PUBLIC_RESOURCE_KINDS_V1)[number];
 
 /** An authored display projection of a saved resource. It changes no identity,
  * specification, quantity, price or owner and never guesses a generic name. */
@@ -11,15 +16,17 @@ export type CanonicalPublicResourcePresentationV1 = Readonly<{
   specificationRu: string | null;
   detailsRu: readonly string[];
   rowKind?: 'CALCULATION_DETAIL' | 'PROCESS_NOTE';
+  resourceKind?: CanonicalPublicResourceKindV1;
 }>;
 
 export function parseCanonicalPublicResourcePresentationV1(value: unknown): CanonicalPublicResourcePresentationV1 | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const candidate = value as Record<string, unknown>;
-  const allowed = ['contractVersion', 'sourceTitleRu', 'nameRu', 'brandAndModelRu', 'specificationRu', 'detailsRu', 'rowKind'];
+  const allowed = ['contractVersion', 'sourceTitleRu', 'nameRu', 'brandAndModelRu', 'specificationRu', 'detailsRu', 'rowKind', 'resourceKind'];
   const text = (v: unknown, max: number): v is string => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
-  if (Object.keys(candidate).length !== (candidate.rowKind == null ? 6 : 7) || Object.keys(candidate).some(key => !allowed.includes(key))
-    || (Object.hasOwn(candidate, 'rowKind') && !['CALCULATION_DETAIL', 'PROCESS_NOTE'].includes(String(candidate.rowKind)))
+  if (Object.keys(candidate).length !== (6 + Number(Object.hasOwn(candidate, 'rowKind')) + Number(Object.hasOwn(candidate, 'resourceKind'))) || Object.keys(candidate).some(key => !allowed.includes(key))
+    || (Object.hasOwn(candidate, 'rowKind') && !(['CALCULATION_DETAIL', 'PROCESS_NOTE'] as readonly unknown[]).includes(candidate.rowKind))
+    || (Object.hasOwn(candidate, 'resourceKind') && !(CANONICAL_PUBLIC_RESOURCE_KINDS_V1 as readonly unknown[]).includes(candidate.resourceKind))
     || candidate.contractVersion !== 'canonical-public-resource-presentation/v1'
     || !text(candidate.sourceTitleRu, 2000) || !text(candidate.nameRu, 180) || !/[А-Яа-яЁё]/u.test(candidate.nameRu)
     || (candidate.brandAndModelRu !== null && !text(candidate.brandAndModelRu, 300))
@@ -41,7 +48,9 @@ export function canonicalPublicResourcePresentationV1(input: {
 
 /** Brand-free display is separate from authored identity validation and saved
  * title binding, so public wording never rewrites the source descriptor. */
-export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<typeof canonicalPublicResourcePresentationV1>[0] & { rowId?: string }): CanonicalPublicResourcePresentationV1 | null {
+export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<typeof canonicalPublicResourcePresentationV1>[0] & {
+  rowId?: string; graph?: unknown; parameters?: Readonly<Record<string,unknown>>;compactPreliminaryNeed?:boolean;
+}): CanonicalPublicResourcePresentationV1 | null {
   if (input.manualTitleOverride) return null;
   // A complete authored binding is an independent display authority for an
   // exact saved row. Never repair or borrow a malformed source descriptor.
@@ -51,7 +60,16 @@ export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<t
     && (binding.sourceTitleRu===input.titleRu || (saved!=null&&input.titleRu.startsWith(binding.sourceTitleRu+' — '))));
   const {rowId:_bindingRow,...boundDescriptor}=binding??{};
   const presentation = binding ? parseCanonicalPublicResourcePresentationV1({...boundDescriptor,sourceTitleRu:input.titleRu,
+    ...(saved?.rowKind?{rowKind:saved.rowKind}:{}),
+    ...(saved?.resourceKind?{resourceKind:saved.resourceKind}:{}),
     specificationRu:saved&&saved.sourceTitleRu!==binding.sourceTitleRu?saved.specificationRu:binding.specificationRu}) : saved;
+  const selected=canonicalPublicSelectedSpecificationV1({...input,graph:input.graph});
+  if(selected)return{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:input.titleRu,
+    nameRu:selected.nameRu,brandAndModelRu:null,specificationRu:selected.specificationRu,
+    detailsRu:[...new Set([...(presentation?.detailsRu??[]),...selected.detailsRu,
+      ...canonicalPublicEstimateRowDetailsRu({rowId:input.rowId,sourceTitleRu:input.titleRu,titleRu:selected.nameRu})])],
+    ...(presentation?.rowKind?{rowKind:presentation.rowKind}:{}),
+    ...(presentation?.resourceKind?{resourceKind:presentation.resourceKind}:{})};
   const details = canonicalPublicEstimateRowDetailsRu({ rowId: input.rowId, sourceTitleRu: input.titleRu,
     titleRu: presentation?.nameRu ?? input.titleRu });
   if (!presentation) return details.length ? {
@@ -59,7 +77,8 @@ export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<t
     nameRu: canonicalPublicEstimateRowNameRu({ rowId: input.rowId, titleRu: input.titleRu }),
     brandAndModelRu: null, specificationRu: null, detailsRu: details,
   } : null;
-  return { ...presentation, nameRu: canonicalPublicEstimateRowNameRu({ rowId: input.rowId,
+  const authoredRole=calculationDetailRoles.bindings.find(role=>role.rowId===input.rowId&&role.sourceTitleRu===input.titleRu);
+  return { ...presentation, ...(authoredRole?.rowKind==='CALCULATION_DETAIL'?{rowKind:'CALCULATION_DETAIL' as const}:{}), nameRu: canonicalPublicEstimateRowNameRu({ rowId: input.rowId,
     sourceTitleRu: input.titleRu, titleRu: presentation.nameRu }), brandAndModelRu: null,
     specificationRu: presentation.specificationRu == null ? null : canonicalPublicEstimateChoiceLabelRu(presentation.specificationRu),
     detailsRu: [...new Set([...presentation.detailsRu, ...details].map(canonicalPublicEstimateChoiceLabelRu).filter(Boolean))] };
@@ -69,11 +88,11 @@ export function canonicalPublicResourcePresentationMatchesV1(actual: unknown, ex
   if (actual == null && expected == null) return true;
   const a = parseCanonicalPublicResourcePresentationV1(actual), b = parseCanonicalPublicResourcePresentationV1(expected);
   return Boolean(a && b && a.sourceTitleRu === b.sourceTitleRu && a.nameRu === b.nameRu
-    && a.rowKind === b.rowKind && a.brandAndModelRu === b.brandAndModelRu && a.specificationRu === b.specificationRu && a.detailsRu.length === b.detailsRu.length
+    && a.rowKind === b.rowKind && a.resourceKind === b.resourceKind && a.brandAndModelRu === b.brandAndModelRu && a.specificationRu === b.specificationRu && a.detailsRu.length === b.detailsRu.length
     && a.detailsRu.every((detail, index) => detail === b.detailsRu[index]));
 }
 
-/** An authored display role never suppresses a priced or purchased resource.
+/** An authored display role never suppresses a payable or purchased resource.
  * Invalid/stale descriptors and manual changes keep the ordinary resource row. */
 export function canonicalPublicResourceRowKindV1(input: {
   titleRu: string; descriptor: unknown; manualTitleOverride?: boolean;
@@ -81,15 +100,25 @@ export function canonicalPublicResourceRowKindV1(input: {
   unitPrice?: unknown; amount?: unknown;
   rowId?: string; graph?: Readonly<Record<string,unknown>>; category?: string;
 }): 'RESOURCE' | 'CALCULATION_DETAIL' | 'PROCESS_NOTE' {
+  // A saved reference price does not turn an explicitly linked consumption
+  // counter into a second supply. Keep its value in the calculation details.
+  const presentation=canonicalPublicResourceDisplayPresentationV1(input);
+  if (input.includedInEstimate === false && input.includedInProcurement === false
+    && !input.manualTitleOverride && input.costTreatment === 'INFORMATIONAL_SCOPE'
+    && presentation?.rowKind === 'CALCULATION_DETAIL' && input.rowId
+    && typeof input.graph?.purchaseBalanceOwnerRowId === 'string'
+    && input.graph.purchaseBalanceOwnerRowId.trim().length > 0
+    && input.graph.purchaseBalanceOwnerRowId !== input.rowId) return 'CALCULATION_DETAIL';
   if (input.includedInEstimate === true || input.includedInProcurement === true
     || input.unitPrice != null || input.amount != null
     || input.manualTitleOverride
     || !['INFORMATIONAL_SCOPE', 'CONTROL_OR_DOCUMENT', 'INCLUDED_IN_RESOURCE_ROWS'].includes(String(input.costTreatment))) return 'RESOURCE';
-  const presentation=canonicalPublicResourceDisplayPresentationV1(input);
   if(presentation?.rowKind)return presentation.rowKind;
   // Included physical items remain visible. A balance counter instead has
   // the explicit source role above or the structural identity below.
-  const physicalCategory=['material','tool','equipment','service','transport','delivery'].includes(input.category??'');
+  // The request adapter names its material section `materials`; that section
+  // still contains physical supplies, including supplies covered by work cost.
+  const physicalCategory=['material','materials','tool','equipment','labor','service','transport','delivery'].includes(input.category??'');
   // Existing immutable definitions already identify their balance counters and
   // duplicate physical machine-hour counters structurally. Do not inspect a
   // Russian name, hide an unresolved real need, or change any stored row.
@@ -114,4 +143,29 @@ export function bindCanonicalPublicResourceSavedTitleV1(input: {
   if (!input.appendedSpecificationRu) return input.graph; // REPLACE remains the selected specification.
   return { ...input.graph, publicResourcePresentationV1: { ...presentation, sourceTitleRu: input.savedTitleRu,
     specificationRu: input.appendedSpecificationRu } };
+}
+
+const PUBLIC_RESOURCE_KIND_TITLES_V1:Readonly<Record<CanonicalPublicResourceKindV1,string>>={
+  MATERIAL:'Материалы',CONSUMABLE:'Расходники',TOOL:'Инструмент',ACCESSORY:'Оснастка',
+  EQUIPMENT:'Оборудование',MECHANISM:'Механизмы',LABOR:'Труд',SERVICE:'Услуги',TRANSPORT:'Доставка',PPE:'Средства защиты',
+};
+export function canonicalPublicResourceKindTitleRuV1(kind:CanonicalPublicResourceKindV1|null|undefined):string|null {
+  return kind!=null&&Object.hasOwn(PUBLIC_RESOURCE_KIND_TITLES_V1,kind)?PUBLIC_RESOURCE_KIND_TITLES_V1[kind]:null;
+}
+
+/** Source-bound public taxonomy; five financial buckets remain independent.
+ * A stale/malformed/manual descriptor cannot classify the saved resource. */
+export function canonicalPublicResourceCategoryTitleRuV1(input: {
+  titleRu: string; descriptor?: unknown; graph?: Readonly<Record<string,unknown>>;
+  category?: string | null; manualTitleOverride?: boolean;
+}): string | null {
+  const presentation=canonicalPublicResourcePresentationV1({titleRu:input.titleRu,
+    descriptor:input.descriptor===undefined?input.graph?.publicResourcePresentationV1:input.descriptor,
+    manualTitleOverride:input.manualTitleOverride});
+  if(presentation?.resourceKind)return canonicalPublicResourceKindTitleRuV1(presentation.resourceKind);
+  const raw:Readonly<Record<string,string>>={material:'Материалы',materials:'Материалы',
+    tool:'Инструмент',equipment:'Оборудование',machinery:'Механизмы',mechanism:'Механизмы',
+    labor:'Труд',work:'Работы',service:'Услуги',transport:'Доставка',delivery:'Доставка'};
+  const category=(input.category??'').trim().toLocaleLowerCase('ru-RU');
+  return Object.hasOwn(raw,category)?raw[category]:null;
 }

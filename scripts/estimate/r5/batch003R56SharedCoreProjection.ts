@@ -908,7 +908,7 @@ function buildDefinitionWithoutHash(catalogId: string) {
   const prepare = parts.contract.operation === "PREPARE";
   const frame = parts.contract.operation === "FRAME";
   const p113Frame = frame
-    && catalogId === "drywall_ceiling_interior_drywall_ceiling_frame_large_area";
+    && catalogId === "drywall_ceiling_interior_drywall_ceiling_frame_standard";
   const preparationScope = prepare
     ? buildDrywallPreparationScopeR4A13({ catalogId, ownerId })
     : null;

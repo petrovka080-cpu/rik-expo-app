@@ -1,4 +1,5 @@
 import React from "react";
+import { consumerEstimateHasConfirmedManualQuantities, consumerEstimateManualApprovalStatusRu } from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type {
@@ -6,7 +7,7 @@ import type {
   ConsumerRepairDraftRevisionParamBatchPatch,
 } from "../../lib/consumerRequests";
 import type { UserParamPatchOperation } from "../../lib/estimate/validateUserParamPatch";
-import { asphaltScopeSelectionQuestionForIntentV5 } from "../../lib/estimate/v4/asphalt";
+import { asphaltScopeSelectionQuestionForIntentV5 } from "../../lib/estimate/v4/asphalt/roadScopeTruthV4";
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalogItemPickerTypes";
 import { getConsumerRepairCalculationStateForReadOnlyDisplay } from "../../lib/consumerRequests/consumerRequestExactRoadworksCalculationStateMigration";
 import { createConsumerEstimatePresentationTrace, type ConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
@@ -213,7 +214,7 @@ export function ConsumerRepairDraftPanel({
         <Text style={styles.title}>Черновик</Text>
         <Text style={styles.status}>
           {bundle
-            ? statusLabel(bundle.draft.status)
+            ? consumerEstimateHasConfirmedManualQuantities(bundle) ? consumerEstimateManualApprovalStatusRu(bundle) : statusLabel(bundle.draft.status)
             : hasSelectedApprovedHistory
               ? "Утвержденная смета ниже"
               : "Позиции пока пустые"}

@@ -17,7 +17,7 @@ describe("KRER 46 asbestos-cement suspended-ceiling demolition", () => {
   test("binds the exact official rate and narrow suspended-ceiling boundary", () => {
     expect(ASBESTOS_CEMENT_SUSPENDED_CEILING_DEMOLITION_KRER46_CATALOG_ID)
       .toBe("canonical-work:base:demolition_interior_ceiling_remove_standard");
-    expect(ASBESTOS_CEMENT_SUSPENDED_CEILING_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(4);
+    expect(ASBESTOS_CEMENT_SUSPENDED_CEILING_DEMOLITION_KRER46_CATALOG_IDS).toHaveLength(2);
     expect(ASBESTOS_CEMENT_SUSPENDED_CEILING_DEMOLITION_KRER46_ARTIFACT_SHA256)
       .toMatch(/^[0-9a-f]{64}$/u);
     expect(ASBESTOS_CEMENT_SUSPENDED_CEILING_DEMOLITION_KRER46_PARAMETERS).toHaveLength(3);

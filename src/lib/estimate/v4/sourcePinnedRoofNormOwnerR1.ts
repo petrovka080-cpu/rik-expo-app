@@ -1,4 +1,4 @@
-import {buildAutomaticConstructionOwnerR1,type AutomaticInclusionCondition,type AutomaticOwnerDefinition,type AutomaticRowSpec} from './automaticConstructionOwnerR1';
+import {buildAutomaticConstructionOwnerR1,type AutomaticInclusionCondition,type AutomaticOwnerDefinition,type AutomaticRowSpec} from './automaticConstructionDefinitionR1';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 
 export type SourcePinnedRoofNormSourceR1={kind:string;id:string;titleRu:string;printedEdition:string;sha256:string;locators:string;reviewedAt:string};

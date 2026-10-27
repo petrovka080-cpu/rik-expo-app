@@ -1,3 +1,6 @@
+import { KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID } from "../../contracts/krer2706020AsphaltProfileIdentityV1";
+export { KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID } from "../../contracts/krer2706020AsphaltProfileIdentityV1";
+import { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../contracts/nrmcaReadyMixProfileIdentityV1";
 import airConditioningNormPack from "../../../../../data/estimate-norms/professional/air_conditioning.json";
 import baseboardsNormPack from "../../../../../data/estimate-norms/professional/baseboards.json";
 import ceilingsNormPack from "../../../../../data/estimate-norms/professional/ceilings.json";
@@ -104,8 +107,6 @@ import type {
 export const PROFESSIONAL_PHYSICAL_NORM_APPLICABILITY_VERSION_V1 =
   "professional-physical-norm-applicability:v1" as const;
 
-export const KRER27_06_020_HOT_ASPHALT_40MM_PRODUCT_PROFILE_ID =
-  "normative-profile:kg-krer27-06-020:hot-asphalt-40mm-single-layer:v1" as const;
 
 export const KRER27_06_020_HOT_ASPHALT_40MM_NORM_ID =
   "roadworks_krer27_06_020_norm_unit_per_m2_v1" as const;
@@ -726,8 +727,7 @@ export const CERESIT_CT17_PAINT_PRIMER_NORM_ID =
 export const CERESIT_CT17_PAINT_PRIMER_SOURCE_ID =
   `src_professional_norm_pack_${CERESIT_CT17_PAINT_PRIMER_NORM_ID}` as const;
 
-export const NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID =
-  "method-profile:nrmca-cip31:ready-mix-order:v1" as const;
+export { NRMCA_CIP31_READY_MIX_ORDER_PRODUCT_PROFILE_ID } from "../../contracts/nrmcaReadyMixProfileIdentityV1";
 
 export const NRMCA_CIP31_SELECTED_CONTINGENCY_NORM_ID =
   "concrete_nrmca_cip31_selected_contingency_m3_m3_v1" as const;

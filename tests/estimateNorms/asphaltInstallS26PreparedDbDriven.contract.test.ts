@@ -16,7 +16,9 @@ import {
   type CanonicalEstimateResourceDefinition,
 } from "../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore";
 import { ASPHALT_INSTALL_KRER27_CATALOG_ID } from
-  "../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+  "../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1";
+
+import {asphaltInstallExistingStandardPackR564 as pack} from "../../src/lib/estimate/v4/asphaltInstallExistingStandardR564";
 
 type Json = Record<string, any>;
 type ParameterRow = CanonicalEstimateParameterDefinition & Json;
@@ -26,7 +28,7 @@ type ResourceRow = CanonicalEstimateResourceDefinition & Json & { _binding_price
 const DATABASE_URL = process.env.R4A13_DATABASE_URL
   ?? "postgresql://postgres@127.0.0.1:55432/rik_r4_runtime_b5_v2";
 const CURRENT_RELEASE_PATH = resolve(
-  "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
+  process.env.R4A13_CURRENT_RELEASE_PATH ?? "data/estimate-benchmarks/r568-local-developer-canonical-release.json",
 );
 
 const sha256 = async (value: unknown): Promise<string> => createHash("sha256")
@@ -73,7 +75,7 @@ describe("current prepared full asphalt-install definition from the local databa
       expect(Number.isInteger(Number(definition.definition_version))).toBe(true);
       expect(Number(definition.definition_version)).toBeGreaterThanOrEqual(10);
       expect(definition.source_metadata.contract).toBe(
-        "rik-expo-app.s27-21.master-asphalt-install-hot-krer27-successor.v4",
+        pack.contract,
       );
       const independentMap = definition.content_passport_decision.independentCompletenessMap;
       expect(independentMap).toMatchObject({
@@ -101,7 +103,7 @@ describe("current prepared full asphalt-install definition from the local databa
         ) binding on true
         where resource.definition_version_id=$1 order by resource.ordinal
       `, [definition.id])).rows as ResourceRow[];
-      expect([parameters.length, formulas.length, resourceRows.length]).toEqual([30, 22, 56]);
+      expect([parameters.length, formulas.length, resourceRows.length]).toEqual([58, 50, 84]);
       expect(validateIndependentCompletenessMapReferences({
         completenessMap: independentMap,
         formulaDefinitions: formulas,
@@ -111,7 +113,7 @@ describe("current prepared full asphalt-install definition from the local databa
         completenessMap: independentMap,
         formulaDefinitions: formulas,
         resourceDefinitions: resourceRows.filter((resource) =>
-          resource.row_id !== "asphalt:material:hot-dense-fine-mix"),
+          resource.row_id !== pack.prefix+"asphalt:material:hot-dense-fine-mix"),
       });
       expect(deletedMixErrors).toContain("ENTRY_8_ROW_REFERENCE");
 
@@ -120,9 +122,13 @@ describe("current prepared full asphalt-install definition from the local databa
         input_classification: definition.input_classification,
       });
       expect(runtimeBaseline).not.toHaveProperty("area_m2");
-      expect(Object.keys(runtimeBaseline)).toHaveLength(29);
-      expect(definition.normative_source_ids.layer_thickness_mm).toEqual([]);
-      expect(definition.normative_source_ids.asphalt_mix_base_t_per_1000m2)
+      expect(runtimeBaseline).not.toHaveProperty(pack.areaId);
+      expect(runtimeBaseline).not.toHaveProperty(pack.haulId);
+      expect(runtimeBaseline).toHaveProperty(pack.selectorId, pack.selectedValueRu);
+      expect(parameters.find(p=>p.parameter_id===pack.areaId)?.default_value).toBeNull();
+      expect(parameters.find(p=>p.parameter_id===pack.selectorId)?.truth_metadata?.visibility_role).toBe("INTERNAL_ONLY");
+      expect(definition.normative_source_ids[pack.prefix+"layer_thickness_mm"]).toEqual([pack.source.key]);
+      expect(definition.normative_source_ids[pack.prefix+"asphalt_mix_base_t_per_1000m2"])
         .toEqual(["kg_krer_27_06_020_01_021_01_2015"]);
 
       const resources = bindCanonicalEstimateResourcePriceKeys(
@@ -138,11 +144,11 @@ describe("current prepared full asphalt-install definition from the local databa
         operation: "compile",
         compilerVersion: "s26-4-asphalt-install-prepared-db-driven-contract-test",
         catalogId: ASPHALT_INSTALL_KRER27_CATALOG_ID,
-        primaryMeasureParameterId: "area_m2",
+        primaryMeasureParameterId: pack.areaId,
         parameterDefinitions: parameters,
         formulaDefinitions: formulas,
         resourceDefinitions: resources,
-        submittedParameters: { area_m2: 5_000 },
+        submittedParameters: { [pack.areaId]: 5_000, [pack.siteId]: pack.siteReadyRu, [pack.haulId]:20 },
         confirmedParameters: runtimeBaseline,
         currencyCode: "KGS",
         priceSnapshotIds: [],
@@ -153,32 +159,34 @@ describe("current prepared full asphalt-install definition from the local databa
         hashJson: sha256,
       });
 
-      expect(result.preliminaryNeeds).toEqual([]);
+      expect(result.preliminaryNeeds.map(need=>need.row_id).sort())
+        .toEqual(pack.gaps.map(gap=>pack.prefix+"open:"+gap.id).sort());
+      expect(result.rows.every(row=>row.row_id.startsWith(pack.prefix))).toBe(true);
       expect(result.rows).toHaveLength(56);
       expect(result.rows.every((row) => Number(row.quantity) > 0)).toBe(true);
       expect(result.rows).toEqual(expect.arrayContaining([
         expect.objectContaining({
-          row_id: "asphalt:material:hot-dense-fine-mix",
+          row_id: pack.prefix+"asphalt:material:hot-dense-fine-mix",
           quantity: "604",
           unit_id: "t",
         }),
         expect.objectContaining({
-          row_id: "asphalt:labor:road-workers",
+          row_id: pack.prefix+"asphalt:labor:road-workers",
           quantity: "192.4",
           unit_id: "man_hour",
         }),
         expect.objectContaining({
-          row_id: "asphalt:equipment:asphalt-paver",
+          row_id: pack.prefix+"asphalt:equipment:asphalt-paver",
           quantity: "15.95",
           unit_id: "machine_hour",
         }),
         expect.objectContaining({
-          row_id: "asphalt:delivery:truck-machine-hours",
+          row_id: pack.prefix+"asphalt:delivery:truck-machine-hours",
           quantity: "46.5",
           included_in_estimate: true,
         }),
         expect.objectContaining({
-          row_id: "asphalt:delivery:truck-trips",
+          row_id: pack.prefix+"asphalt:delivery:truck-trips",
           quantity: "31",
           included_in_estimate: false,
         }),

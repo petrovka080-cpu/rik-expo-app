@@ -4,6 +4,7 @@ import {
   encodeConsumerRepairBundleForDurableStorage,
 } from "../../src/lib/platform/compactConsumerRepairDurableState";
 import { AsyncStorageEstimateRevisionDurableStore, type AsyncKeyValueStorage } from "../../src/lib/platform/estimateRevisionDurableStore.asyncStorage";
+import { decodeEstimateRevisionAsyncStorageRecord } from "../../src/lib/platform/estimateRevisionAsyncStorageRecordCodec";
 import {
   createDurableEnvelope, durablePointerRecordKey, durableRevisionRecordKey,
   readCommittedEstimateRevisionBundleVersion, serializeRevisionBundle, stableEstimateRevisionChecksum,
@@ -37,10 +38,12 @@ class QuotaStorage implements AsyncKeyValueStorage {
   values = new Map<string, string>();
   capacityBytes = Number.POSITIVE_INFINITY;
   writes = 0;
+  writeAttempts: string[] = [];
   get bytes(): number { return [...this.values.values()].reduce((n, v) => n + Buffer.byteLength(v), 0); }
   async getItem(key: string) { return this.values.get(key) ?? null; }
   async setItem(key: string, value: string) {
     this.writes += 1;
+    this.writeAttempts.push(key);
     const after = this.bytes - Buffer.byteLength(this.values.get(key) ?? "") + Buffer.byteLength(value);
     if (after > this.capacityBytes) throw new Error("database or disk is full");
     this.values.set(key, value);
@@ -101,7 +104,7 @@ describe("medium canonical histories within the existing native quota", () => {
     expect(decodeConsumerRepairBundleFromDurableStorage(encodeConsumerRepairBundleForDurableStorage(decoded))).toEqual(decoded);
   });
 
-  it("commits one compressed child alongside unchanged RAW current/previous within a quota that rejects its raw size", async () => {
+  it("commits a compressed child with byte-exact logical legacy envelopes within the native quota", async () => {
     const storage = new QuotaStorage(), seeded = seedLegacyRaw(storage), store = new AsyncStorageEstimateRevisionDurableStore(storage);
     const parent = (await store.readBundle(seeded.key))!;
     expect(readCommittedEstimateRevisionBundleVersion(parent, seeded.key)).toBe(seeded.currentVersion);
@@ -112,7 +115,17 @@ describe("medium canonical histories within the existing native quota", () => {
     const before = storage.values.get(prefix + durableRevisionRecordKey(seeded.key, seeded.currentVersion));
     const result = await store.writeBundleAtomically(seeded.key, seeded.currentVersion, child);
     expect(result).toMatchObject({ status: "WRITTEN", previousVersion: seeded.currentVersion });
-    expect(storage.values.get(prefix + durableRevisionRecordKey(seeded.key, seeded.currentVersion))).toBe(before);
+    const physicalAfter = storage.values.get(prefix + durableRevisionRecordKey(seeded.key, seeded.currentVersion));
+    expect(typeof before).toBe("string");
+    expect(typeof physicalAfter).toBe("string");
+    // The existing physical-record codec may compress the representation. The
+    // complete decoded envelope, including its snapshot, checksum, timestamp
+    // and CAS version, must remain byte-exact.
+    const logicalAfter = decodeEstimateRevisionAsyncStorageRecord(physicalAfter!);
+    expect(logicalAfter === before).toBe(true);
+    expect(JSON.parse(logicalAfter).version).toBe(seeded.currentVersion);
+    expect(JSON.parse(logicalAfter).checksum).toBe(JSON.parse(before!).checksum);
+    expect(JSON.parse(logicalAfter).serializedBundle === JSON.parse(before!).serializedBundle).toBe(true);
     const reopened = (await new AsyncStorageEstimateRevisionDurableStore(storage).recoverLastValid(seeded.key))!;
     expect(reopened.estimateDraftRevisionState).toEqual(child.estimateDraftRevisionState);
     expect(reopened.items[0]).toMatchObject({ quantity: 35.5, unitPrice: 123.45, quantityEditedByConsumer: true, priceEditedByConsumer: true });
@@ -125,9 +138,20 @@ describe("medium canonical histories within the existing native quota", () => {
 
   it("keeps a permanent quota refusal as failure with the exact previous commit and no automatic retry", async () => {
     const storage = new QuotaStorage(), seeded = seedLegacyRaw(storage), store = new AsyncStorageEstimateRevisionDurableStore(storage);
-    storage.capacityBytes = storage.bytes;
+    const originalRecords = new Map(storage.values);
+    // Refuse every physical write, including a smaller compressed replacement.
+    // A quota equal to the old RAW size is recoverable by the existing codec.
+    storage.capacityBytes = 0;
     expect(await store.writeBundleAtomically(seeded.key, seeded.currentVersion, input("r2"))).toMatchObject({ status: "FAILED", error: { code: "TRANSACTION_FAILED" } });
-    expect(storage.writes).toBe(1);
+    // One failed index write and one failed reclaim attempt; the original
+    // write is never retried when no representation space was reclaimed.
+    expect(storage.writeAttempts).toEqual([
+      prefix + "__revision_index__:" + encodeURIComponent(seeded.key),
+      prefix + durableRevisionRecordKey(seeded.key, seeded.currentVersion),
+    ]);
+    expect(storage.writes).toBe(2);
+    expect(storage.values.size).toBe(originalRecords.size);
+    expect([...originalRecords].every(([key, value]) => storage.values.get(key) === value)).toBe(true);
     expect(readCommittedEstimateRevisionBundleVersion((await store.recoverLastValid(seeded.key))!, seeded.key)).toBe(seeded.currentVersion);
   });
 

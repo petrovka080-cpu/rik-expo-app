@@ -56,7 +56,7 @@ describe("MASTER cement-sand screed demolition owner", () => {
   });
 
   test("reuses the exact composition for neutral context identities without area-class factors", async () => {
-    expect(CEMENT_SAND_SCREED_DEMOLITION_CATALOG_IDS).toHaveLength(4);
+    expect(CEMENT_SAND_SCREED_DEMOLITION_CATALOG_IDS).toHaveLength(2);
     expect(validateCementSandScreedDemolitionCompleteness()).toBe(true);
     expect(CEMENT_SAND_SCREED_DEMOLITION_INDEPENDENT_COMPLETENESS_MAP.entries)
       .toHaveLength(CEMENT_SAND_SCREED_DEMOLITION_RESOURCES.length);

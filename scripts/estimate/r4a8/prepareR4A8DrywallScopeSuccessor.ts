@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, resolve } from "node:path";
 
 import { Client } from "pg";
+import {assertCanonicalNewWorkCatalogIdV1} from "../../../src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1";
 
 import {
   buildAllBatch003R56CanonicalSuccessorDefinitions,
@@ -566,6 +567,7 @@ async function audit(client: Client, releaseId: string, searchReleaseId: string)
 }
 
 async function main(): Promise<void> {
+  assertCanonicalNewWorkCatalogIdV1(ASPHALT_DRAIN_CATALOG_ID);
   exactDatabaseGuard();
   invariant(existsSync(MASTER_PATH) && sha256(readFileSync(MASTER_PATH)) === MASTER_SHA256,
     "STOP_R4_A8_DRYWALL_MASTER_SHA256_DRIFT");

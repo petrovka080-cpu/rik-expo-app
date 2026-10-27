@@ -15,12 +15,6 @@ import {
 } from "./fireAlarmCommissioningStandardR1";
 
 export const FIRE_ALARM_COMMISSIONING_CLASSIFIED_VARIANTS = Object.freeze({
-  small_area: Object.freeze({
-    catalogId: "canonical-work:base:electrical_interior_fire_alarm_commission_small_area",
-    catalogVariant: "SMALL_AREA_SEARCH_IDENTITY",
-    canonicalNameRu: "Системная пусконаладка пожарной сигнализации небольшой площади",
-    aliasesRu: ["пусконаладка АПС небольшой площади", "ПНР пожарной сигнализации малого объекта"],
-  }),
   technical_room: Object.freeze({
     catalogId: "canonical-work:base:electrical_interior_fire_alarm_commission_technical_room",
     catalogVariant: "TECHNICAL_ROOM_SEARCH_IDENTITY",

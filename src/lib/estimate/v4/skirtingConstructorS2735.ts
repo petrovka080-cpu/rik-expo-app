@@ -7,7 +7,7 @@ import {INTERIOR_FINISHES_DOMAIN_INVENTORY} from './domains/interiorFinishesComp
 import {compileFormulaGraph} from '../backendPlatform/formulaGraph';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 
-export const SKIRTING_VARIANTS_S2735=['standard','small_area','large_area','high_load','technical_room','wet_zone'] as const;
+export const SKIRTING_VARIANTS_S2735=['standard','high_load','technical_room','wet_zone'] as const;
 export const SKIRTING_TARGETS_S2735=(['install','glue'] as const).flatMap(operation=>SKIRTING_VARIANTS_S2735.map(variant=>({operation,variant,
   catalogId:'canonical-work:base:flooring_interior_baseboard_'+operation+'_'+variant})));
 export const SKIRTING_CONTRACT_S2735='skirting-constructor:s27-35.v1';
@@ -165,8 +165,14 @@ export function buildSkirtingDefinitionS2735(operation:'install'|'glue'):Automat
     excludedUnownedAssumptions:['готовность стены/совместимость конкретной партии','норма раскроя и подтверждённые углы','нормы труда по названию зоны','автоматические саморезы/подложка/напольное покрытие','цены и утверждение проекта']});
   return Object.freeze({...definition,ordinaryParameterIds:['length_m'],resources:definition.resources.map(row=>{
     const sourceId=provenance.get(row.row_id),sourceRow=sourceId?readyRowsById.get(sourceId):null;
+    const operationId=row.row_id.includes('end-cap')?'end-caps':row.row_id.includes('junction')?'junction':row.category==='material'?'supply':row.category==='labor'?'single-installation':row.category==='equipment'?'cutting-equipment':'scope-logistics';
+    const useTitles:Record<string,string>={'end-caps':'Установка торцевых вставок','junction':'Герметизация подтверждённого примыкания'};
     const output={...row,resource_graph:{...row.resource_graph,operationCompositionV1:{contractVersion:'canonical-operation-resource/v1',groupId:'skirting-'+operation,groupTitleRu:operation==='install'?'Монтаж плинтуса с поставкой и готовым приклеиванием':'Приклеивание предоставленного совместимого плинтуса',
-      operationId:row.row_id.includes('end-cap')?'end-caps':row.row_id.includes('junction')?'junction':row.category==='material'?'supply':row.category==='labor'?'single-installation':row.category==='equipment'?'cutting-equipment':'scope-logistics',operationTitleRu:row.category==='material'?'Материалы и оснащение':row.category==='labor'?'Единый монтаж и применимая подготовка':row.category==='equipment'?'Раскройное оборудование':'Граница, контроль и доставка',completionCriterionRu:'Подтвердить выбранную систему, раскрой, состояние линии и фактические оплачиваемые ресурсы'},
+      operationId,operationTitleRu:useTitles[operationId]??(row.category==='material'?'Материалы и оснащение':row.category==='labor'?'Единый монтаж и применимая подготовка':row.category==='equipment'?'Раскройное оборудование':'Граница, контроль и доставка'),completionCriterionRu:'Подтвердить выбранную систему, раскрой, состояние линии и фактические оплачиваемые ресурсы',
+      // Existing compatible batch is one stock/order/cost owner. The two
+      // source-declared uses display references to that same physical row.
+      ...(row.row_id===sharedSealantId?{additionalOperations:['end-caps','junction'].map(stage=>({operationId:stage,operationTitleRu:useTitles[stage],
+        completionCriterionRu:'Одна подтверждённая совместимая партия обеспечивает узел; её расход входит в общий заказ и оплачивается у одного владельца.'}))}:{})},
       ...(row.row_id.startsWith('allocation:')?{includedInResourceOwnerRowId:sharedSealantId,purchaseConsumptionAllocationV1:{contractVersion:'canonical-purchase-consumption-allocation/v1',ownerRowId:sharedSealantId}}:{})},
       source_metadata:{...row.source_metadata,projectApprovalClaimed:false,universal_productivity_claimed:false,preliminaryProfileWithoutHiddenDemo:true,
         reusedOperation:sourceRow?{sourceRowId:sourceRow.row_id,sourceFormulaId:sourceRow.formula.formula_id,sourceVersion:'professional-baseboard-assembly-v1',parameterBindings,consumptionNumeratorLifted:row.row_id==='material:skirting:adhesive'}:null}};

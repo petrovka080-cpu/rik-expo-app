@@ -7,7 +7,7 @@ import { chromium, type Page, type Response } from "playwright";
 import { Client } from "pg";
 
 import { ensureProductionGradeWebServer } from "../../e2e/runProductionGradeEstimateWebSmoke";
-import { ASPHALT_INSTALL_KRER27_CATALOG_ID } from "../../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1";
+import { ASPHALT_INSTALL_KRER27_CATALOG_ID } from "../../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1";
 
 type Json = Record<string, any>;
 

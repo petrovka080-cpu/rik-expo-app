@@ -1,7 +1,7 @@
 import {buildAutomaticConstructionOwnerR1,compileAutomaticConstructionOwnerR1} from './automaticConstructionOwnerR1';
 import {SINGLE_PIPE_TRENCH_DEFINITION_S2735 as ready} from './singlePipeTrenchConstructorS2735';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
-export const GRANULAR_BACKFILL_VARIANTS_S2735=['standard','small_area','large_area','high_load','technical_room','wet_zone'] as const;
+export const GRANULAR_BACKFILL_VARIANTS_S2735=['standard','high_load','technical_room','wet_zone'] as const;
 export const GRANULAR_BACKFILL_CATALOG_IDS_S2735=GRANULAR_BACKFILL_VARIANTS_S2735.map(v=>'canonical-work:base:earthworks_interior_trench_backfill_'+v);
 export const GRANULAR_BACKFILL_SOURCE_ID_S2735='project_granular_backfill_actual_volume_s27_35';
 export const GRANULAR_BACKFILL_NORM_ID_S2735='project:granular-backfill:actual-volume-and-supply:s27-35.v1';

@@ -45,5 +45,14 @@
   "tests/requestEstimate/selectedMaterialDeliveryTestContextR1.ts": null,
   "app/_layout.tsx": null,
   "tests/entry/rootLayoutOfficeWarmup.contract.test.ts": null,
-  "src/lib/estimate/backendPlatform/canonicalGrohePublicResourcePresentation.test.ts": null
+  "src/lib/estimate/backendPlatform/canonicalGrohePublicResourcePresentation.test.ts": null,
+  "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": null,
+  "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": null,
+  "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": null,
+  "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts": null,
+  "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": null,
+  "src/lib/estimate/v4/ct126PreparedWallBranchesR2.test.ts": null,
+  "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx": null,
+  "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts": null,
+  "tests/requestEstimate/requestEstimateViewModel.contract.test.ts": null
 }

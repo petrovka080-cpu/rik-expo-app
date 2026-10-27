@@ -27,17 +27,15 @@ if (replaceExisting && (!process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
 }
 const variantArgument = process.argv.find((argument) => argument.startsWith("--variant="))
   ?.slice("--variant=".length) ?? "standard";
-if (!["standard", "large_area", "small_area", "wet_zone"].includes(variantArgument)) {
+if (!["standard", "wet_zone"].includes(variantArgument)) {
   throw new Error(`STOP_S273_F09_CEMENT_OR_CONCRETE_FLOOR_25MM_DEMOLITION_KRER46_12_VARIANT:${variantArgument}`);
 }
 const variantKey = variantArgument as AggressiveEnvironmentCementOrConcreteFloor25mmDemolitionKrer46VariantKey;
 const variant = resolveAggressiveEnvironmentCementOrConcreteFloor25mmDemolitionKrer46Variant(variantKey);
-const variantOrdinal = { standard: 0, large_area: 1, small_area: 2, wet_zone: 3 }[variantKey];
+const variantOrdinal = { standard: 0, wet_zone: 3 }[variantKey];
 const variantToken = variantKey.toUpperCase();
 const variantContextRu = {
   standard: "стандартный вариант",
-  large_area: "большая площадь",
-  small_area: "малая площадь",
   wet_zone: "влажная зона",
 }[variantKey];
 const groupId = "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm";

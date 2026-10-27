@@ -39,9 +39,7 @@ export const CONCRETE_SLAB_VIBRATION_SOURCE_METADATA = Object.freeze({
 export const CONCRETE_SLAB_VIBRATION_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_vibrate_standard", titleRu: "Вибрирование бетонной плиты в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_vibrate_high_load", titleRu: "Вибрирование бетонной плиты для высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_vibrate_large_area", titleRu: "Вибрирование бетонной плиты на большой площади", contextRu: "большая площадь" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_vibrate_repair", titleRu: "Вибрирование бетонной плиты с локальным ремонтом основания", contextRu: "локальный ремонт основания" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_vibrate_small_area", titleRu: "Вибрирование бетонной плиты на малой площади", contextRu: "малая площадь" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_vibrate_technical_room", titleRu: "Вибрирование бетонной плиты в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_concrete_slab_vibrate_wet_zone", titleRu: "Вибрирование бетонной плиты во влажной зоне", contextRu: "влажная зона" },
 ] as const);
@@ -55,9 +53,7 @@ export const CONCRETE_SLAB_VIBRATION_TARGETS = Object.freeze([
 export const SLAB_FOUNDATION_VIBRATION_TARGETS = Object.freeze([
   { contextKey: "standard", catalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_vibrate_standard", titleRu: "Вибрирование плитного фундамента в стандартной зоне", contextRu: "стандартная зона" },
   { contextKey: "high_load", catalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_vibrate_high_load", titleRu: "Вибрирование плитного фундамента для высокой нагрузки", contextRu: "зона высокой нагрузки" },
-  { contextKey: "large_area", catalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_vibrate_large_area", titleRu: "Вибрирование плитного фундамента на большой площади", contextRu: "большая площадь" },
   { contextKey: "repair", catalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_vibrate_repair", titleRu: "Вибрирование плитного фундамента с локальным ремонтом основания", contextRu: "локальный ремонт основания" },
-  { contextKey: "small_area", catalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_vibrate_small_area", titleRu: "Вибрирование плитного фундамента на малой площади", contextRu: "малая площадь" },
   { contextKey: "technical_room", catalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_vibrate_technical_room", titleRu: "Вибрирование плитного фундамента в техническом помещении", contextRu: "техническое помещение" },
   { contextKey: "wet_zone", catalogId: "canonical-work:base:concrete_foundation_interior_slab_foundation_vibrate_wet_zone", titleRu: "Вибрирование плитного фундамента во влажной зоне", contextRu: "влажная зона" },
 ] as const);
@@ -288,9 +284,7 @@ Readonly<Record<string, ConcreteSlabVibrationInputValueR1>>
 >> = Object.freeze({
   standard: { consolidated_concrete_volume_m3: 12, vibration_worker_h: 14, internal_vibrator_machine_h: 4, quality_control_document_count: 1, equipment_mobilization_trip_count: 2 },
   high_load: { consolidated_concrete_volume_m3: 26, vibration_worker_h: 32, internal_vibrator_machine_h: 9, quality_control_document_count: 2, equipment_mobilization_trip_count: 2 },
-  large_area: { consolidated_concrete_volume_m3: 54, vibration_worker_h: 62, internal_vibrator_machine_h: 18, quality_control_document_count: 2, equipment_mobilization_trip_count: 2 },
   repair: { consolidated_concrete_volume_m3: 4, vibration_worker_h: 8, internal_vibrator_machine_h: 2, quality_control_document_count: 1, equipment_mobilization_trip_count: 2 },
-  small_area: { consolidated_concrete_volume_m3: 3, vibration_worker_h: 6, internal_vibrator_machine_h: 2, quality_control_document_count: 1, equipment_mobilization_trip_count: 0, equipment_mobilization_pricing_mode: "INCLUDED_IN_EQUIPMENT_RATE" },
   technical_room: { consolidated_concrete_volume_m3: 8, vibration_worker_h: 13, internal_vibrator_machine_h: 4, quality_control_document_count: 1, equipment_mobilization_trip_count: 2 },
   wet_zone: { consolidated_concrete_volume_m3: 15, vibration_worker_h: 20, internal_vibrator_machine_h: 6, quality_control_document_count: 2, equipment_mobilization_trip_count: 2 },
 });

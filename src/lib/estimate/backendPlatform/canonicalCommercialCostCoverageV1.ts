@@ -166,7 +166,7 @@ export function planCanonicalCommercialCostCoverageV1(
       if (members.has(member.rowId)) fail('Одна составляющая покрыта двумя расценками.', 'COMMERCIAL_COST_COVERAGE_CONFLICT');
       members.set(member.rowId, owner);
       const override = overrides[member.rowId];
-      if (override && (override.unitPrice != null || override.includedInEstimate === true || override.includedInProcurement === true)) {
+      if (override && (override.includedInEstimate === true || override.includedInProcurement === true)) {
         fail(`Стоимость уже включена в «${row.title_ru}». Уточните покрытие перед отдельной оплатой; введённые значения не применены.`, 'COMMERCIAL_COST_COVERAGE_CONFLICT');
       }
     }

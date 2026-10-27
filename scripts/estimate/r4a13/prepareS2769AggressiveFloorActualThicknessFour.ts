@@ -69,7 +69,7 @@ async function main() {
   const masterSha256 = hash(readFileSync(MASTER));
   const sourceHashes = SOURCES.map(path => ({ path, sha256: hash(readFileSync(path)) }));
   const catalogIds = pack.targets.map(t=>t.catalogId).sort();
-  invariant(pack.targets.length===4 && catalogIds.length===4, "FINITE_SCOPE_DRIFT");
+  invariant(pack.targets.length===2 && catalogIds.length===2, "FINITE_SCOPE_DRIFT");
   for(const s of [source.source])invariant(hash(readFileSync(s.localArtifact))===s.sha256,'PRIMARY_SOURCE_ARTIFACT_DRIFT');
   invariant(hash(readFileSync(source.sourcePack))===source.sourcePackSha256,'ACCEPTED_SERVICE_SOURCE_PACK_DRIFT');
   invariant(hash(readFileSync(SNAPSHOT))===pack.parentSnapshotSha256,'EXACT_PARENT_SNAPSHOT_DRIFT');

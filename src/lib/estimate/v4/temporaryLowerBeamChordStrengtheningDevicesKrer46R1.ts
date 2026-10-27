@@ -20,8 +20,6 @@ export const TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_ID 
   `canonical-work:master:${FAMILY_KEY}_standard` as const;
 export const TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_VARIANTS = Object.freeze({
   standard: Object.freeze({ catalogId: TEMPORARY_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES_KRER46_CATALOG_ID, sourceIdentity: `master-work:${FAMILY_KEY}_standard`, catalogVariant: "STANDARD_CONFIRMED_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES", canonicalNameRu: "Установка устройств при усилении нижних поясов балок" }),
-  large_area: Object.freeze({ catalogId: `canonical-work:master:${FAMILY_KEY}_large_area`, sourceIdentity: `master-work:${FAMILY_KEY}_large_area`, catalogVariant: "LARGE_AREA_CONFIRMED_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES", canonicalNameRu: "Установка устройств при усилении нижних поясов балок — большая длина" }),
-  small_area: Object.freeze({ catalogId: `canonical-work:master:${FAMILY_KEY}_small_area`, sourceIdentity: `master-work:${FAMILY_KEY}_small_area`, catalogVariant: "SMALL_AREA_CONFIRMED_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES", canonicalNameRu: "Установка устройств при усилении нижних поясов балок — локальный объём" }),
   wet_zone: Object.freeze({ catalogId: `canonical-work:master:${FAMILY_KEY}_wet_zone`, sourceIdentity: `master-work:${FAMILY_KEY}_wet_zone`, catalogVariant: "WET_ZONE_CONFIRMED_LOWER_BEAM_CHORD_STRENGTHENING_DEVICES", canonicalNameRu: "Установка устройств при усилении нижних поясов балок — влажная зона" }),
 } as const);
 export type TemporaryLowerBeamChordStrengtheningDevicesKrer46VariantKey =

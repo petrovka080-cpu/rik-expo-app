@@ -1,5 +1,5 @@
 import type { CanonicalEstimateCatalogItem } from "../../src/lib/estimate/backendPlatform/contracts";
-import { buildCanonicalBaselinePlan } from "../../src/features/consumerRepair/consumerCanonicalBaselineCompile";
+import {buildCanonicalBaselinePlan} from "../../src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1";
 import {
   ANCHOR_GROUP_CONCRETE_PLACEMENT_PARAMETERS,
   ANCHOR_GROUP_CONCRETE_PLACEMENT_FORMULAS,
@@ -63,7 +63,7 @@ describe("anchor group concrete placement professional profile", () => {
       sourceRowId: "anchor-group-pour:material:ready-mix", unitId: "m3" } });
     expect(derived.truth_metadata).not.toHaveProperty("guide");
   });
-  it("compiles all seven contexts as complete, calculated concrete-placement estimates", async () => {
+  it("compiles all five contexts as complete, calculated concrete-placement estimates", async () => {
     const fixtures = new Set<string>();
     for (const target of ANCHOR_GROUP_CONCRETE_PLACEMENT_TARGETS) {
       const input = anchorGroupConcretePlacementAcceptanceInputR1(target.contextKey);
@@ -93,7 +93,7 @@ describe("anchor group concrete placement professional profile", () => {
         .toEqual(expect.objectContaining({ unit_id: "document" }));
       fixtures.add(JSON.stringify(input));
     }
-    expect(fixtures.size).toBe(7);
+    expect(fixtures.size).toBe(5);
   });
 
   it("calculates the reported 20 m3 high-load case without one-hour placeholders", async () => {

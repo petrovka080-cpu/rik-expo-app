@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import fixture from '../../../../data/estimate-benchmarks/fixtures/facade-ceresit-ct190-kz-material-subworks-r1.json';
 import {facadeCeresitCt190PackR1 as pack, facadeCeresitCt190MaterialDefinitionR1 as materialDefinition,
- facadeCeresitCt190SuccessorDefinitionR1 as successor, facadeCeresitCt190ChoiceParameterR1 as choice} from './facadeCeresitCt190MaterialSubworksR1';
+ facadeCeresitCt190SuccessorDefinitionR1 as successor, facadeCeresitCt190ChoiceParameterR1 as choice,facadeCeresitCt190GeometryR5 as geometryIds} from './facadeCeresitCt190MaterialSubworksR1';
 import {FACADE_MINERAL_WOOL_INSTALLATION_ACCEPTANCE_INPUT as legacyFacts,
  FACADE_MINERAL_WOOL_INSTALLATION_PARAMETERS as legacyParameters, FACADE_MINERAL_WOOL_INSTALLATION_FORMULAS as legacyFormulas,
  FACADE_MINERAL_WOOL_INSTALLATION_RESOURCES as legacyResources} from './facadeMineralWoolInstallationR1';
@@ -11,16 +11,27 @@ import {compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput} fr
 import type {AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
 import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import {canonicalEstimateOperationReferences} from '../backendPlatform/canonicalEstimateOperationComposition';
+import {canonicalPublicResourceDisplayPresentationV1 as publicDisplay} from '../backendPlatform/canonicalPublicResourcePresentationV1';
 
 const d = materialDefinition(), p = pack.prefix, id = (key: string) => p + ':' + key;
 const provenance = {kind: 'manual', reason: 'TEST_ONLY explicit saved edit, not an actual offer'};
 const facts = () => ({...fixture.facts}) as Record<string, unknown>;
 const compile = (input: Record<string, unknown>, overrides: CanonicalEstimateCompileCoreInput['rowOverrides'] = {},
- priceItems: CanonicalEstimateCompileCoreInput['priceItems'] = [], definition: Pick<AutomaticOwnerDefinition, 'parameters' | 'formulas' | 'resources'> = d) => compileCanonicalEstimateCore({
+ priceItems: CanonicalEstimateCompileCoreInput['priceItems'] = [], definition: Pick<AutomaticOwnerDefinition, 'parameters' | 'formulas' | 'resources'> = d) => {
+ const managed=new Set(definition.parameters.filter(parameter=>{
+  const provenance=parameter.truth_metadata?.provenance;
+  return parameter.truth_metadata?.visibility_role==='INTERNAL_ONLY'&&parameter.truth_metadata?.value_source_role!=='UNRESOLVED_APPLICATION_NORM'
+   &&provenance!==null&&typeof provenance==='object'&&!Array.isArray(provenance)
+   &&(provenance as Record<string,unknown>).consumer_input_role_v1==='APPLICATION_TECHNICAL';
+ }).map(parameter=>parameter.parameter_id));
+ // TEST_ONLY exact fixtures use the trusted channel. Unknown/protected norm
+ // keys remain raw; raw authority rejection is exercised separately below.
+ return compileCanonicalEstimateCore({
   operation: 'recalculate', catalogId: pack.catalogId, compilerVersion: pack.contract, primaryMeasureParameterId: 'area_m2',
   parameterDefinitions: [...definition.parameters], formulaDefinitions: [...definition.formulas], resourceDefinitions: [...definition.resources],
-  submittedParameters: input, confirmedParameters: {}, rowOverrides: overrides, priceItems, currencyCode: 'KGS', maximumResourceRows: definition.resources.length,
+  submittedParameters:Object.fromEntries(Object.entries(input).filter(([id])=>!managed.has(id))),confirmedParameters:Object.fromEntries(Object.entries(input).filter(([id])=>managed.has(id))), rowOverrides: overrides, priceItems, currencyCode: 'KGS', maximumResourceRows: definition.resources.length,
   hashJson: async value => estimateDeterministicHash(value)});
+};
 const row = (r: Awaited<ReturnType<typeof compile>>, key: string) => r.rows.find(r => r.row_id === id(key));
 
 it('pins fetched primary KZ source bytes, approximate rates and original range without mixing BY/RU editions', () => {
@@ -93,8 +104,16 @@ it.each([{ct190_actual_water_l_per_25kg: '5.74'}, {ct190_actual_water_l_per_25kg
 });
 
 it.each(['attachment-consumed', 'base-layer-consumed', 'dry-mix-consumed', 'water-min', 'water-max', 'water-used', 'dry-mix-remaining'])
- ('protects physical/source quantity%s from direct saved replacement', async key => {
-  await expect(compile({...facts(), ct190_actual_water_l_per_25kg: '6'}, {[id(key)]: {quantity: '77', provenance}})).rejects.toMatchObject({code: 'ROW_AMENDMENT_INVALID'});
+ ('keeps explicit manual quantity%s separate from source norm and rejects an unprovenanced replacement', async key => {
+  const input={...facts(),ct190_actual_water_l_per_25kg:'6'},automatic=await compile(input);
+  await expect(compile(input,{[id(key)]:{quantity:'77'}})).rejects.toMatchObject({code:'ROW_AMENDMENT_INVALID'});
+  const result=await compile(input,{[id(key)]:{quantity:'77',provenance}}),original=row(automatic,key),changed=row(result,key);
+  expect(original).toBeDefined();expect(changed).toBeDefined();if(!original||!changed)throw Error('ACTUAL_AUTOMATIC_AND_MANUAL_RESOURCE_REQUIRED');
+  expect(changed.quantity).toBe('77');expect(changed.calculation_trace).toMatchObject({manualQuantityOverride:true,calculatedQuantityBeforeOverride:original.quantity,manualAmendment:provenance,derivedQuantityEditPolicy:{mode:'PARAMETERS_ONLY'}});
+  expect(result.parameters).toEqual(automatic.parameters);expect(result.preliminaryNeeds.map(need=>need.row_id)).toEqual(automatic.preliminaryNeeds.map(need=>need.row_id));
+  expect([changed.included_in_estimate,changed.included_in_procurement]).toEqual([original.included_in_estimate,original.included_in_procurement]);
+  expect(result.rows.filter(resource=>resource.included_in_procurement).map(resource=>resource.row_id)).toEqual([id('dry-mix-order')]);
+  expect(row(result,'dry-mix-order')?.quantity).toBe(row(automatic,'dry-mix-order')?.quantity);
  });
 
 it('preserves valid manual order/price/title/exclusion and exposes underordering deficit', async () => {
@@ -166,11 +185,28 @@ it('unknown/missing new choice never silently selects an incompatible source or 
  expect(r.preliminaryNeeds.some(n => n.missing_parameter_ids.includes(choice))).toBe(true);
 });
 
-it('public new questions have concise help; unresolved source quantities stay internal', () => {
- for (const q of d.parameters) {
-  if (q.parameter_id.startsWith('ct190_application_need_') || q.parameter_id.startsWith('effective_resource_quantity_')) {expect(q.truth_metadata.visibility_role).toBe('INTERNAL_ONLY'); continue;}
-  expect(q.title_ru.endsWith('?')).toBe(true);
-  const guide = q.truth_metadata.guide as Record<string, unknown>;
-  expect(String(guide.guide_short_ru).length).toBeLessThan(330); expect(guide.full_condition_ru).toContain(pack.source.locatorRu);
+it('existing material subset exposes only two measured areas and retains technical readback outside the form',()=>{
+ expect(d.parameters.filter(parameter=>parameter.truth_metadata.visibility_role==='USER_INPUT').map(parameter=>parameter.parameter_id)).toEqual([...geometryIds]);
+ expect(successor().parameters.filter(parameter=>parameter.truth_metadata.visibility_role==='USER_INPUT').map(parameter=>parameter.parameter_id).sort()).toEqual(['area_m2','ct190_base_layer_area_m2',choice].sort());
+ for(const parameter of d.parameters.filter(parameter=>!geometryIds.some(id=>id===parameter.parameter_id)&&parameter.truth_metadata.value_source_role!=='UNRESOLVED_APPLICATION_NORM'&&parameter.truth_metadata.value_source_role!=='COMPILER_DERIVED_RESOURCE_QUANTITY')){
+  expect(parameter.truth_metadata.visibility_role).toBe('INTERNAL_ONLY');
+  expect(parameter.truth_metadata.provenance).toMatchObject({consumer_input_role_v1:'APPLICATION_TECHNICAL',source_readback_only_v1:true,consumer_question_allowed:false});
  }
+});
+it('raw source fact echoes cannot enter direct core even with equal trusted readback',async()=>{
+ const confirmedParameters=Object.fromEntries(Object.entries(facts()).filter(([id])=>!geometryIds.some(geometry=>geometry===id)));
+ for(const key of ['ct190_product_scope','ct190_usable_stock_kg','ct190_required_reserve_kg','ct190_actual_water_l_per_25kg'])for(const value of [facts()[key],null,undefined])
+  await expect(compileCanonicalEstimateCore({operation:'compile',catalogId:pack.catalogId,compilerVersion:pack.contract,primaryMeasureParameterId:'area_m2',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:{area_m2:'100',ct190_base_layer_area_m2:'100',[key]:value},confirmedParameters,priceItems:[],currencyCode:'KGS',maximumResourceRows:d.resources.length,hashJson:async value=>estimateDeterministicHash(value)})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
+});
+it('functional public names retain exact source identity internally without changing shared owners',()=>{
+ for(const resource of d.resources){
+  const display=publicDisplay({rowId:resource.row_id,titleRu:resource.title_ru,descriptor:resource.resource_graph.publicResourcePresentationV1,graph:resource.resource_graph});
+  expect(display?.nameRu??resource.title_ru).not.toMatch(/Ceresit|CT\s*190|\bKZ\b/i);expect(resource.section).not.toMatch(/Ceresit|CT\s*190/i);
+ }
+ expect(d.resources.find(resource=>resource.row_id===id('dry-mix-order'))?.resource_graph.publicResourcePresentationV1).toMatchObject({brandAndModelRu:'Ceresit CT 190, KZ, 25 кг'});
+ const order=d.resources.find(resource=>resource.row_id===id('dry-mix-order'));expect(order).toBeDefined();if(!order)throw Error('ACTUAL_SHARED_ORDER_REQUIRED');
+ expect(order.title_ru).toBe('CT 190 исполнения KZ, мешки 25 кг');
+ expect(publicDisplay({rowId:order.row_id,titleRu:order.title_ru,descriptor:order.resource_graph.publicResourcePresentationV1,graph:order.resource_graph})?.nameRu).toBe('Клеевая и армирующая смесь для фасадного утеплителя, мешок 25 кг');
+ expect(d.resources.filter(resource=>resource.resource_graph.costTreatment==='OWN_COST').map(resource=>resource.row_id)).toEqual([id('dry-mix-order'),id('water-used')]);
+ expect(d.runtimeInput).toEqual({});expect(d.parameters.every(parameter=>parameter.default_value===null)).toBe(true);
 });

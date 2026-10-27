@@ -10,7 +10,7 @@ import {
   resolveRoadSurfaceTechnologyV4,
   ROAD_SCOPE_RESOLVER_VERSION_V4,
   type AsphaltScopeSelectionIdV5,
-} from "../../lib/estimate/v4/asphalt";
+} from "../../lib/estimate/v4/asphalt/roadScopeTruthV4";
 import { isConsumerCanonicalBroadAsphaltIdentity } from "./consumerCanonicalBaselineCompile";
 
 export type ConsumerCanonicalScopeSelectionId = AsphaltScopeSelectionIdV5;

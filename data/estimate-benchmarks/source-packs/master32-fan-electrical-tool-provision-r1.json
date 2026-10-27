@@ -1,0 +1,491 @@
+{
+  "contract": "gox-build.master32.fan-electrical-tool-provision/r1",
+  "normId": "ORGANISATIONAL_ELECTRICAL_TOOL_PROVISION_NOT_INSTALLATION_NORM_R1",
+  "parentFixturePath": "data/estimate-benchmarks/fixtures/master32-fan-electrical-current-parents-r1.json",
+  "parentFixtureSha256": "48678db08bc162993ea938fb6c86de9bde514e005448629c380c893e612ad2cf",
+  "rawCaptureSha256": "d88628687da1380443200a13d4c425d2a25e65b0ea01d1710b37a7263ee52796",
+  "sourceReleaseId": "e09f8912-8ed0-51f8-9fdb-3703d5bf08e8",
+  "searchReleaseId": "2e09aba5-416e-53ac-af19-d2fc019a6de9",
+  "targets": [
+    {
+      "key": "fan-standard",
+      "catalogId": "canonical-work:base:ventilation_interior_fan_install_standard",
+      "parentDefinitionId": "7b2477f7-5c7e-595d-914e-abb6dce80803",
+      "parentDefinitionSha256": "7e428a49a15dadb062d83be5edf874f50f315ad5d673e45d4b8f30b9bdfdc53d",
+      "parentComputationSha256": "160aab30b4d343616f63daa111d6314f8c682bd30f2f8d434fb7476571c94e62",
+      "parentDefinitionVersion": 4,
+      "parentShape": [
+        17,
+        99,
+        99
+      ],
+      "sourceId": "master32_fan_standard_electrical_tool_provision_r1",
+      "groupId": "manufacturer-factory:fan-standard",
+      "groupTitleRu": "монтаж вентилятора в стандартной зоне"
+    },
+    {
+      "key": "fan-wet",
+      "catalogId": "canonical-work:base:ventilation_interior_fan_install_wet_zone",
+      "parentDefinitionId": "fedeed20-e0a7-5112-badf-360793ac8d59",
+      "parentDefinitionSha256": "8ece011cca3c94602a8cfeb26f6a0565862bfa3898e30ef03d23a7f7b0f32b00",
+      "parentComputationSha256": "cbaf1526a26df618506478688e7516749e9eb585ce8ab7f0d8418dd8f021f082",
+      "parentDefinitionVersion": 4,
+      "parentShape": [
+        17,
+        99,
+        99
+      ],
+      "sourceId": "master32_fan_wet_electrical_tool_provision_r1",
+      "groupId": "manufacturer-factory:fan-wet",
+      "groupTitleRu": "монтаж вентилятора во влажной зоне"
+    }
+  ],
+  "factorySelectorId": "factory_product_calculation_profile",
+  "factoryCountId": "factory_unit_count",
+  "factoryChoices": [
+    "Заводской вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, без таймера",
+    "Заводской вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, с таймером",
+    "Заводской вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, без таймера",
+    "Заводской вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, с таймером"
+  ],
+  "selectorId": "fan_electrical_tool_method",
+  "selectedMethod": "Целый инструментальный пост электрического подключения с двухполюсной проверкой",
+  "unresolvedMethod": "Инструментарий электрического подключения не определён",
+  "compatibilityId": "fan_electrical_tool_object_fit",
+  "compatibleChoice": "Совместимость кабеля, клемм и сухого рабочего поста подтверждена",
+  "unconfirmedChoice": "Совместимость не подтверждена",
+  "frontCountId": "fan_electrical_active_workfront_count",
+  "prefix": "fan-electrical:station-r1",
+  "ownerRowId": "fan-electrical:station-r1:provision",
+  "ownerTitleRu": "Инструментальный пост электрического подключения вентилятора",
+  "closedOldNeedRowId": "factory-fan:onsite:electrical-tools",
+  "actualUseOperationId": "factory-fan:onsite:operation:installation-labour",
+  "existingToolOperationId": "factory-fan:onsite:operation:electrical-tools",
+  "oldNeedRowIds": [
+    "factory-fan:onsite:site-fixings",
+    "factory-fan:onsite:duct-interface",
+    "factory-fan:onsite:electrical-cable",
+    "factory-fan:onsite:isolator",
+    "factory-fan:onsite:installation-labour",
+    "factory-fan:onsite:drill",
+    "factory-fan:onsite:drill-bit",
+    "factory-fan:onsite:marking-pencil",
+    "factory-fan:onsite:screwdriver",
+    "factory-fan:onsite:electrical-tools",
+    "factory-fan:onsite:access",
+    "factory-fan:onsite:ppe",
+    "factory-fan:onsite:delivery-handling",
+    "factory-fan:onsite:cleanup-waste"
+  ],
+  "engineeringMethod": {
+    "version": "fan-electrical-serial-station/r1",
+    "basis": "One initially usable wholetoolstation per simultaneously active serial electrical workfront F. Not N fans, hours, wear, new purchases, crewheadcount or a manufacturer consumption norm.",
+    "priceScope": "One separate provisionowner for exactly the listed initialstation inventory; no factoryproduct, cable, isolator/LOTO, installationlabour, PPE, access,mechanicalfixings,logistics,actualelectricaltests or periodicservice paid by it.",
+    "manufacturerQuantityNormClaimed": false,
+    "stockOrPurchasesInferred": false,
+    "actualTestResultsAccepted": false,
+    "provingCycle": "Visuallead/case/prod inspection, correctbatterycondition, cableflex+allVIexpectedLEDs on matchedPD690SRD before use; actualboth-prods verification under approved safeisolation; repeatproving+cableflexafter. Preserve VI8:1ON/OFF30smax and PD10scycle/3sbetween. Failure rejectsuse; kitselectionneverrecordsaproved-deadresult."
+  },
+  "compatibilityObjectFactsRu": [
+    "Квалифицированный электрик подтверждает фактическую совместимость выбранного кабеля с изделием, клеммами и инструментом: цельные медные жилы с одинарной ПВХ-изоляцией 0,75–1,5 мм² и диаметром до 2 мм; круглая наружная оболочка Ø4–28 мм.",
+    "Фактическая допустимая длина зачистки 5–12 мм и посадка штатных винтов/клемм подходят хотя бы одному из перечисленных рабочих наконечников без деформации. Длина зачистки и момент затяжки не назначаются этим профилем; пайка/обжим и подключение нескольких жил в одну клемму не подразумеваются.",
+    "Рабочий пост сухой, приборы чистые и исправные; условия одновременно отвечают инструкциям приборов: −10…+40 °C, влажность до 70%, высота до 2000 м, загрязнение 2. Влажная зона каталога сама по себе не доказывает допустимую среду инструмента.",
+    "Доступ для двухщуповой проверки всех относящихся к работе проводников и соответствующих пар/опорной точки обеспечен утверждённым безопасным методом. У вентилятора класса II не создаётся клемма PE. Источники/результаты изоляции всех питающих/управляющих цепей, СИЗ и допуск работ этим выбором не подтверждаются."
+  ],
+  "parts": [
+    {
+      "key": "stripper",
+      "rowId": "fan-electrical:station-r1:stripper",
+      "formulaId": "fan-electrical:station-r1:formula:stripper",
+      "titleRu": "Инструмент зачистки жил 0,2–6 мм² с ограничителем 5–12 мм",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "stripper",
+      "sourceBoundary": "Wiha44617; integrated copper wire cutter, actual fit required; no strip-length norm inferred."
+    },
+    {
+      "key": "jacket-tool",
+      "rowId": "fan-electrical:station-r1:jacket-tool",
+      "formulaId": "fan-electrical:station-r1:formula:jacket-tool",
+      "titleRu": "Инструмент снятия оболочки круглого кабеля Ø4–28 мм",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "jacket",
+      "sourceBoundary": "Wiha44618 complete initially usable tool; adjusted depth and suitability checked on actual cable."
+    },
+    {
+      "key": "jacket-cap",
+      "rowId": "fan-electrical:station-r1:jacket-cap",
+      "formulaId": "fan-electrical:station-r1:formula:jacket-cap",
+      "titleRu": "Защитный колпачок инструмента снятия оболочки",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "jacket",
+      "sourceBoundary": "Integral supplied safetycap; not another tool or purchase."
+    },
+    {
+      "key": "jacket-spare-blade",
+      "rowId": "fan-electrical:station-r1:jacket-spare-blade",
+      "formulaId": "fan-electrical:station-r1:formula:jacket-spare-blade",
+      "titleRu": "Запасное лезвие в рукоятке инструмента снятия оболочки",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "jacket",
+      "sourceBoundary": "One supplied spare blade; initial stock included in same owner, not lifecycle consumption."
+    },
+    {
+      "key": "needle-pliers",
+      "rowId": "fan-electrical:station-r1:needle-pliers",
+      "formulaId": "fan-electrical:station-r1:formula:needle-pliers",
+      "titleRu": "Изолированные тонкогубцы прямые 200 мм",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "pliers",
+      "sourceBoundary": "Wiha26727 for feeding/gripping/placement, not a claim of live work permission."
+    },
+    {
+      "key": "driver-slot15",
+      "rowId": "fan-electrical:station-r1:driver-slot15",
+      "formulaId": "fan-electrical:station-r1:formula:driver-slot15",
+      "titleRu": "Изолированная точная отвёртка шлицевая 1,5 мм",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "drivers",
+      "sourceBoundary": "Wiha42374 from42989, actual screwslot fit required."
+    },
+    {
+      "key": "driver-slot20",
+      "rowId": "fan-electrical:station-r1:driver-slot20",
+      "formulaId": "fan-electrical:station-r1:formula:driver-slot20",
+      "titleRu": "Изолированная точная отвёртка шлицевая 2 мм",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "drivers",
+      "sourceBoundary": "Wiha42375 from42989, actual screwslot fit required."
+    },
+    {
+      "key": "driver-slot25",
+      "rowId": "fan-electrical:station-r1:driver-slot25",
+      "formulaId": "fan-electrical:station-r1:formula:driver-slot25",
+      "titleRu": "Изолированная точная отвёртка шлицевая 2,5 мм",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "drivers",
+      "sourceBoundary": "Wiha42376 from42989, actual screwslot fit required."
+    },
+    {
+      "key": "driver-slot30",
+      "rowId": "fan-electrical:station-r1:driver-slot30",
+      "formulaId": "fan-electrical:station-r1:formula:driver-slot30",
+      "titleRu": "Изолированная точная отвёртка шлицевая 3 мм",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "drivers",
+      "sourceBoundary": "Wiha42377 from42989, actual screwslot fit required."
+    },
+    {
+      "key": "driver-ph0",
+      "rowId": "fan-electrical:station-r1:driver-ph0",
+      "formulaId": "fan-electrical:station-r1:formula:driver-ph0",
+      "titleRu": "Изолированная точная отвёртка PH0",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "drivers",
+      "sourceBoundary": "Wiha42378 from42989; not timer-potentiometer adjustment."
+    },
+    {
+      "key": "driver-ph00",
+      "rowId": "fan-electrical:station-r1:driver-ph00",
+      "formulaId": "fan-electrical:station-r1:formula:driver-ph00",
+      "titleRu": "Изолированная точная отвёртка PH00",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "drivers",
+      "sourceBoundary": "Wiha42379 from42989; not timer-potentiometer adjustment."
+    },
+    {
+      "key": "driver-holder",
+      "rowId": "fan-electrical:station-r1:driver-holder",
+      "formulaId": "fan-electrical:station-r1:formula:driver-holder",
+      "titleRu": "Держатель набора точных отвёрток",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "drivers",
+      "sourceBoundary": "One supplied holder in42989; source roster has6drivers+holder, not7drivers."
+    },
+    {
+      "key": "driver-ph1",
+      "rowId": "fan-electrical:station-r1:driver-ph1",
+      "formulaId": "fan-electrical:station-r1:formula:driver-ph1",
+      "titleRu": "Изолированная отвёртка PH1",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "cover-drivers",
+      "sourceBoundary": "Wiha10136; actual cover/terminal drive fit only, no mountingfastener norm."
+    },
+    {
+      "key": "driver-ph2",
+      "rowId": "fan-electrical:station-r1:driver-ph2",
+      "formulaId": "fan-electrical:station-r1:formula:driver-ph2",
+      "titleRu": "Изолированная отвёртка PH2",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "cover-drivers",
+      "sourceBoundary": "Wiha35394; actual cover/terminal drive fit only, no mountingfastener norm."
+    },
+    {
+      "key": "voltage-indicator",
+      "rowId": "fan-electrical:station-r1:voltage-indicator",
+      "formulaId": "fan-electrical:station-r1:formula:voltage-indicator",
+      "titleRu": "Двухполюсный указатель напряжения 50–1000 В",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "vi",
+      "sourceBoundary": "VI15000 Rev2©2025 battery-free assembled instrument; not a single-pole screwdriver."
+    },
+    {
+      "key": "indicator-prods",
+      "rowId": "fan-electrical:station-r1:indicator-prods",
+      "formulaId": "fan-electrical:station-r1:formula:indicator-prods",
+      "titleRu": "Штатные контактные щупы двухполюсного указателя",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "2",
+      "sourceKey": "vi",
+      "sourceBoundary": "Two integral prods in one VI15000 assembly; not two spare instruments."
+    },
+    {
+      "key": "indicator-lead",
+      "rowId": "fan-electrical:station-r1:indicator-lead",
+      "formulaId": "fan-electrical:station-r1:formula:indicator-lead",
+      "titleRu": "Штатный соединительный провод указателя с двойной изоляцией",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "vi",
+      "sourceBoundary": "One fixed lead; cableflex check before and after each use; no replacement/wear norm."
+    },
+    {
+      "key": "prod-shrouds",
+      "rowId": "fan-electrical:station-r1:prod-shrouds",
+      "formulaId": "fan-electrical:station-r1:formula:prod-shrouds",
+      "titleRu": "Штатные выдвижные защитные кожухи контактных щупов",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "2",
+      "sourceKey": "vi",
+      "sourceBoundary": "Two integral spring-loaded lockableGS38shrouds,3±0.5mm exposed in locked position; not Fluke removable adapters."
+    },
+    {
+      "key": "prover",
+      "rowId": "fan-electrical:station-r1:prover",
+      "formulaId": "fan-electrical:station-r1:formula:prover",
+      "titleRu": "Устройство функциональной проверки двухполюсного указателя",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "matched-kit",
+      "sourceBoundary": "PD690SRD in exact currentVIPD150-S; AC/DC stepping50/120/230/440/690V, notoldPD690S."
+    },
+    {
+      "key": "prover-cells",
+      "rowId": "fan-electrical:station-r1:prover-cells",
+      "formulaId": "fan-electrical:station-r1:formula:prover-cells",
+      "titleRu": "Батареи устройства функциональной проверки, AA 1,5 В",
+      "category": "material",
+      "unitId": "item",
+      "perFront": "6",
+      "sourceKey": "prover",
+      "sourceBoundary": "6AA alkaline IEC LR6 NEDA15A; initially fitted usable set only. VI15000 has no batteries."
+    },
+    {
+      "key": "prover-hanger",
+      "rowId": "fan-electrical:station-r1:prover-hanger",
+      "formulaId": "fan-electrical:station-r1:formula:prover-hanger",
+      "titleRu": "Штатный магнитный подвес устройства функциональной проверки",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "prover-accessory",
+      "sourceBoundary": "MG3 supplied accessory; safe placement actual fact, not site lifting/access."
+    },
+    {
+      "key": "instrument-case",
+      "rowId": "fan-electrical:station-r1:instrument-case",
+      "formulaId": "fan-electrical:station-r1:formula:instrument-case",
+      "titleRu": "Защитный футляр указателя и устройства его проверки",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "matched-kit",
+      "sourceBoundary": "TC71 matched carryingcase; protects instruments separately from cutting tools as manuals require."
+    },
+    {
+      "key": "tool-case",
+      "rowId": "fan-electrical:station-r1:tool-case",
+      "formulaId": "fan-electrical:station-r1:formula:tool-case",
+      "titleRu": "Футляр ручного электрического инструмента",
+      "category": "equipment",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "method",
+      "sourceBoundary": "One organisational protective carrier per front for cutting/driver tools, separate from instrumentTC71."
+    },
+    {
+      "key": "clean-cloth",
+      "rowId": "fan-electrical:station-r1:clean-cloth",
+      "formulaId": "fan-electrical:station-r1:formula:clean-cloth",
+      "titleRu": "Салфетка ухода за измерительным инструментом",
+      "category": "material",
+      "unitId": "item",
+      "perFront": "1",
+      "sourceKey": "method",
+      "sourceBoundary": "One initially usable cloth per front; inspection/cleaning and renewal are not completed by availability."
+    }
+  ],
+  "additionalNeeds": [
+    {
+      "key": "battery-renewal",
+      "rowId": "fan-electrical:station-r1:need:battery-renewal",
+      "formulaId": "fan-electrical:station-r1:formula:need:battery-renewal",
+      "parameterId": "fan_electrical_unresolved_battery_renewal",
+      "titleRu": "Замена батарей устройства проверки указателя",
+      "unitId": "item",
+      "category": "material",
+      "sourceKey": "prover",
+      "reasonRu": "Future replacement depends on battery condition;6AA initial inventory is not a per-fan or per-test consumption rate. Do not mix old/new cells.",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "key": "tool-maintenance",
+      "rowId": "fan-electrical:station-r1:need:tool-maintenance",
+      "formulaId": "fan-electrical:station-r1:formula:need:tool-maintenance",
+      "parameterId": "fan_electrical_unresolved_tool_maintenance",
+      "titleRu": "Возобновление режущей оснастки и материалов ухода",
+      "unitId": "set",
+      "category": "material",
+      "sourceKey": "jacket",
+      "reasonRu": "Blade wear, cleaning-water/detergent and other upkeep depend on actual condition/method; the supplied spareblade and initialcloth do not prove unlimited use.",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    },
+    {
+      "key": "periodic-testing",
+      "rowId": "fan-electrical:station-r1:need:periodic-testing",
+      "formulaId": "fan-electrical:station-r1:formula:need:periodic-testing",
+      "parameterId": "fan_electrical_unresolved_periodic_testing",
+      "titleRu": "Периодическая техническая проверка указателя напряжения",
+      "unitId": "test",
+      "category": "service",
+      "sourceKey": "vi",
+      "reasonRu": "VI manual p12 recommends return at least annually for integrity/specification. Project timing, actual service quantity and commercial owner are unresolved; no1test/F or per-fan rate.",
+      "costTreatment": "INFORMATIONAL_SCOPE"
+    }
+  ],
+  "sources": [
+    {
+      "key": "v233",
+      "artifactName": "vents-quiet-manual-20492.pdf",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/vents-quiet-manual-20492.pdf",
+      "sha256": "ada45cc4e9a23788e56f6983689ae499542a267461b7b3bd9d8799279fd8e595",
+      "officialUrl": "https://ventilation-system.com/download/quiet-manual-20492.pdf",
+      "locator": "V233-1EN-01 PDF3–8,14–16; qualified disconnect/verification; ClassII; plain L/N and T L/N/LT; timer plasticdriver adjustment only."
+    },
+    {
+      "key": "stripper",
+      "artifactName": "wiha-44617.html",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/wiha-44617.html",
+      "sha256": "7c85bbc44c0e96bf7550e21fff8884bab2f91bf7b6274c94691887669b52f78e",
+      "officialUrl": "https://wiha.com/tools/stripping-tools/stripping-tool-automatic/44617",
+      "locator": "Wiha44617 manufacturer application/table:0.2–6mm² stripping; adjustable5–12mm stop; cutting Cu/Al diameter≤2mm. Conservative profile uses Cu0.75–1.5mm² and diameter≤2mm."
+    },
+    {
+      "key": "jacket",
+      "artifactName": "wiha-44618.html",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/wiha-44618.html",
+      "sha256": "388dc489b823a3c3f27a9a30da60c6b57157e18a56bbb485cb1371d58ec22d66",
+      "officialUrl": "https://digicat.wiha.com/tools/highlights/all-top-sellers/stripping-tool-with-self-rotating-drag-blade/44618",
+      "locator": "Wiha44618 table/product: common round cable OD4–28mm; adjustable cutting depth; safetycap and one spareblade in handle."
+    },
+    {
+      "key": "pliers",
+      "artifactName": "wiha-26727.html",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/wiha-26727.html",
+      "sha256": "bf401e6ed60d9c67471fff8ca67bd0c03e4a6e2f0fdaaf0456813fc161ee95ce",
+      "officialUrl": "https://digicat.wiha.com/nz/en/tools/highlights/all-top-sellers/needle-nose-pliers-professional-electric/26727",
+      "locator": "Wiha26727 manufacturer:200mm straight needle-nose pliers, gripping/feeding/adjusting; IEC60900 individually tested1000VAC."
+    },
+    {
+      "key": "drivers",
+      "artifactName": "driver-set-42989.html",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/driver-set-42989.html",
+      "sha256": "b4e40292cbcadb8a29e881a5d8747e315cebf52db8c9724afee9f080e8e708a6",
+      "officialUrl": "https://digicat.wiha.com/tools/screwdrivers/precision-screwdrivers/picofinish-electric/sets/fine-screwdriver-set-picofinish-electric/42989",
+      "locator": "Wiha42989 whole6-driver set+holder:42374/42375/42376/42377 slotted1.5/2/2.5/3mm,42378PH0,42379PH00; IEC60900 insulated electric. Not a voltage indicator."
+    },
+    {
+      "key": "cover-drivers",
+      "artifactName": "service-kit-scope-43879.html",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/service-kit-scope-43879.html",
+      "sha256": "2752922f6a2b5ef771e0fdde63ecce8e916d017d1b3dc1f75f411a3e80e62323",
+      "officialUrl": "https://wiha.com/tools/tool-sets/tool-bags/tool-set-service-technician/43879",
+      "locator": "Exact components only: insulated PH1 10136 and PH2 35394. The service-kit single-pole tester is not included/used as proof. No full service-kit price/BOM reused."
+    },
+    {
+      "key": "vi",
+      "artifactName": "VI-15000-instructions-VerF1.0.pdf",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/VI-15000-instructions-VerF1.0.pdf",
+      "sha256": "0b7781d2313142b10f0de0eb6929881899b91aadeb7ff302890d4b5f93a887c6",
+      "officialUrl": "https://martindale-electric.co.uk/wp-content/uploads/2018/12/VI-15000-instructions-VerF1.0.pdf",
+      "locator": "Actual PDF Rev2©2025 (filenameVerF1.0):p4–5dry/competence/inspection;p8–11two-prods,retractableGS38shrouds,30s/240s8:1duty,provebefore/after+cableflex;p12periodiccheck;p15battery-free50–1000AC/DC,50/120/230/400/690thresholds."
+    },
+    {
+      "key": "prover",
+      "artifactName": "manPDS.pdf",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/manPDS.pdf",
+      "sha256": "17a8e645e9067b9590e426b6692d68026c09990b63ab10b0ce15a13c07b61c20",
+      "officialUrl": "https://martindale-electric.co.uk/wp-content/uploads/2024/03/manPDS.pdf",
+      "locator": "Actual VerD1.0:PDS/PD690SRD PDF3–5precautions;PDF7–11AC/DCstepcycle,10soutput,3sbetween,probeorder/cableflex;PDF12sixAAreplacement;PDF17indoor/dry,-10..40C,≤70%RH,≤2000m;no CALCHECK claim on SRD."
+    },
+    {
+      "key": "matched-kit",
+      "artifactName": "vipd150-srd-datasheet.pdf",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/vipd150-srd-datasheet.pdf",
+      "sha256": "60b9b93f3637f13fb21696f57848dbe94f7c846aae62da8708fbca04c63eea9a",
+      "officialUrl": "https://martindale-electric.co.uk/wp-content/uploads/2021/04/specVIPD150-S.pdf",
+      "locator": "Actual VerE1.0©2026 PDF1–2: manufacturer-matched VI15000+PD690SRD+TC71; provebefore/after; sixAA inPD; no lockoutkit inVIPD150-S."
+    },
+    {
+      "key": "prover-accessory",
+      "artifactName": "pds-srd-datasheet-c15.pdf",
+      "path": ".release-runtime/r568/master32-fan-electrical/sources/pds-srd-datasheet-c15.pdf",
+      "sha256": "8b70a5a7e2f2f314eda1a989a07926a171378810e5aedc2a0540644ae9fd74f9",
+      "officialUrl": "https://martindale-electric.co.uk/wp-content/uploads/2024/03/specPDS_PDSX_series.pdf",
+      "locator": "VerC1.5 includesMG3 magnetic hanger,6AA and manual. SamePD690SRD,notoldPD690S. Fixedbatterycount is initial power availability,notconsumption/testcount."
+    }
+  ],
+  "newPublicCards": 0,
+  "fullTechnicalAcceptance": false,
+  "completeInstallation": false,
+  "newInstallationNormClosures": 0,
+  "physicalProvisionOnly": true,
+  "actualMeasurementsOrSafetyAcceptanceProved": false,
+  "excludedInvestigatedSources": {
+    "FlukeT150_PRV240": "Not used: PRV240manual explicitly business-only/not homes. No T150/VDE2/PRV240 accessory,battery or capability imported.",
+    "Knipex": "Not used: raw source downloads403; no incompletepins in admitted roster."
+  }
+}

@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {compileRoadPlatform150Plus50S2736 as compile,ROAD_PLATFORM_DEFINITION_S2736 as definition,ROAD_PLATFORM_SOURCE_METADATA_S2736 as source,ROAD_PLATFORM_SOURCE_ID_S2736 as combinedSourceId} from '../../src/lib/estimate/v4/roadPlatform150Plus50ConstructorS2736';
-import {compileAsphaltInstallLargeAreaKrer27ProfileR1 as asphalt,ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,ASPHALT_INSTALL_KRER27_PARAMETERS,ASPHALT_INSTALL_KRER27_RESOURCES,ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,ASPHALT_INSTALL_KRER27_SOURCE_METADATA} from '../../src/lib/estimate/v4/asphaltInstallLargeAreaKrer27ProfileR1';
+import {compileAsphaltInstallKrer27ProfileR1 as asphalt,ASPHALT_INSTALL_KRER27_RUNTIME_CLASSIFICATION,ASPHALT_INSTALL_KRER27_PARAMETERS,ASPHALT_INSTALL_KRER27_RESOURCES,ASPHALT_INSTALL_KRER27_RUNTIME_SOURCE_IDS,ASPHALT_INSTALL_KRER27_SOURCE_METADATA} from '../../src/lib/estimate/v4/asphaltInstallKrer27ProfileR1';
 import {buildMasterParameterCalculationConsumers} from '../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import {canonicalEstimateRevisionRowFromStorage} from '../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper';
 import {canonicalEstimateParameterChoiceLabelRu} from '../../src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics';

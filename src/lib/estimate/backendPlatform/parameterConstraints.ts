@@ -1,8 +1,11 @@
-import { evaluateInclusionGraph } from "./inclusionGraph";
+import { evaluateInclusionGraph, inclusionGraphEvidenceParameterIds } from "./inclusionGraph";
 import { NUMERIC_PARAMETER_RELATIONS } from "./numericParameterRelations";
+import { compareFormulaGraphDecimals, isFormulaGraphExactDecimal, isFormulaGraphDecimalMultiple } from './formulaGraph';
+import { canonicalScopeRequirementDecisionV1, type CanonicalFactorySupplyObligationV1 } from './canonicalScopeRequirementV1';
 
 export type CanonicalParameterDefinitionRecord = {
   parameter_id?: unknown;
+  unit_id?: unknown;
   value_type?: unknown;
   required?: unknown;
   default_value?: unknown;
@@ -15,6 +18,8 @@ type JsonRecord = Record<string, unknown>;
 
 export type CanonicalParameterResolutionOptions = {
   confirmedParameters?: JsonRecord;
+  /** Compiler-owned IDs from the verified effective-quantity plan, never request metadata. */
+  deferredEffectiveQuantityParameterIds?: ReadonlySet<string>;
   baselineContext?: {
     catalogId: string;
   };
@@ -57,6 +62,59 @@ function finiteNumber(value: unknown, field: string): number {
 
 function isRecord(value: unknown): value is JsonRecord {
   return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+const INTERNAL_SOURCE_PARAMETER_ROLES = new Set([
+  'PROJECT_DOCUMENTATION', 'ENGINEERING_DESIGN', 'SITE_SURVEY',
+  'MANDATORY_NORM_VALUE', 'MANUFACTURER_CONFIRMED', 'SELECTED_EQUIPMENT_PASSPORT',
+  'SOURCE_BACKED_PRELIMINARY_PROFILE', 'NORM_REQUIRED_BUT_PROJECT_SELECTED', 'BACKEND_DERIVED',
+]);
+
+/** A classification label alone is not a formula producer. Keep this narrow
+ * wire predicate tied to the existing preliminary source contract; the normal
+ * formula resolver still validates expressions, dependencies and branches. */
+function hasCanonicalPreliminarySourceFormulaProducerV1(
+  definition: CanonicalParameterDefinitionRecord, truth: JsonRecord,
+): boolean {
+  const producer = truth.preliminary_value_formula_v1;
+  const guide = truth.guide;
+  if (truth.value_source_role !== 'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE'
+    || truth.runtime_profile_classification !== 'PRELIMINARY_SOURCE_FORMULA'
+    || !['decimal', 'integer'].includes(String(definition.value_type))
+    || definition.default_value != null || !isRecord(producer) || !isRecord(guide)
+    || producer.version !== 'canonical-preliminary-parameter-formula:v1'
+    || typeof guide.source_document !== 'string' || !guide.source_document.trim()
+    || typeof guide.source_locator !== 'string' || !guide.source_locator.trim()
+    || !/^[a-f0-9]{64}$/iu.test(String(guide.source_snapshot_hash ?? ''))) return false;
+  const branched = Object.hasOwn(producer, 'branches');
+  if (Object.keys(producer).some(key => !(branched ? ['version', 'branches']
+    : ['version', 'expression', 'when', 'explicitValuePolicy']).includes(key))) return false;
+  const branches = branched ? producer.branches : [producer];
+  return Array.isArray(branches) && branches.length > 0 && branches.every(branch => isRecord(branch)
+    && (!branched || Object.keys(branch).every(key => ['expression', 'when', 'explicitValuePolicy'].includes(key)))
+    && typeof branch.expression === 'string' && !!branch.expression.trim() && isRecord(branch.when)
+    && (branch.explicitValuePolicy == null || branch.explicitValuePolicy === 'REQUIRE_MATCH'));
+}
+
+/** Apply only to the untrusted submitted channel, before merging server facts.
+ * Visibility alone does not change a legacy project's input authority. The
+ * immutable passport must also assign the fact to the application and source.
+ * Unresolved norms and compiler-derived values retain their own stricter rules.
+ */
+export function assertCanonicalSubmittedSourceParameterAuthorityV1(
+  definitions: readonly CanonicalParameterDefinitionRecord[], input: JsonRecord,
+): void {
+  if (!isRecord(input)) return fail('parameters must be an object');
+  for (const definition of definitions) {
+    const truth = isRecord(definition.truth_metadata) ? definition.truth_metadata : {};
+    const provenance = isRecord(truth.provenance) ? truth.provenance : {};
+    if (truth.visibility_role !== 'INTERNAL_ONLY'
+      || provenance.consumer_input_role_v1 !== 'APPLICATION_TECHNICAL'
+      || (!INTERNAL_SOURCE_PARAMETER_ROLES.has(String(truth.value_source_role))
+        && !hasCanonicalPreliminarySourceFormulaProducerV1(definition, truth))) continue;
+    const id = String(definition.parameter_id);
+    if (Object.hasOwn(input, id)) return fail(`source-managed parameter cannot be submitted ${id}`);
+  }
 }
 
 function definitionAllowsPreliminaryCompilation(
@@ -206,6 +264,151 @@ function acceptedBaselineDefault(
   return value;
 }
 
+
+type CanonicalWholeIntegerFinalContextV1 = {
+  effectiveOwners: ReadonlyMap<string,string>;
+  resources: readonly {row_id:string;unit_id:string;formula_id:string;cost_owner_id:string|null;
+    procurement_eligible:boolean;inclusion_ast:JsonRecord;resource_graph:JsonRecord;source_metadata:JsonRecord|null}[];
+  formulaInputs: ReadonlyMap<string,readonly string[]>;
+  acceptedRows: readonly JsonRecord[];
+  /** Existing backend admission owner, bound to this compile's actual resolver output. Never request evidence. */
+  sourceTraceAdmitted: (rowId:string,trace:Readonly<JsonRecord>)=>boolean;
+};
+
+/** ce148's single conditional-domain seam. Input validation defers only verified
+ * internal outputs. Its one final call reads accepted rows after manual edits;
+ * it neither rounds nor repairs raw quantities or historic approvals. */
+export function validateCanonicalConditionalWholeIntegerV1(
+  definitions: readonly CanonicalParameterDefinitionRecord[], values: Readonly<JsonRecord>,
+  options: {deferredEffectiveQuantityParameterIds?:ReadonlySet<string>;finalContext?:CanonicalWholeIntegerFinalContextV1} = {},
+): Map<string,CanonicalFactorySupplyObligationV1[]> {
+  const declarations = definitions.filter(d=>isRecord(d.constraints_json) && Object.hasOwn(d.constraints_json,'conditionalWholeIntegerV1'));
+  const obligations = new Map<string,CanonicalFactorySupplyObligationV1[]>();
+  if (declarations.length===0) return obligations;
+  const byId = new Map(definitions.map(d=>[String(d.parameter_id ?? ''),d]));
+  const final = options.finalContext;
+  const resources = new Map(final?.resources.map(r=>[r.row_id,r]));
+  const accepted = new Map(final?.acceptedRows.map(r=>[String(r.row_id),r]));
+  const claimedComponents = new Set<string>();
+  const bindingFail = (id:string):never => {throw Object.assign(new Error(`conditional factory supply binding invalid ${id}`),
+    {code:'DEFINITION_INTEGRITY_FAILED'});};
+  const boundedId = (value:unknown):value is string => typeof value==='string' && value.trim().length>0 && value.length<=4000;
+  for (const definition of declarations) {
+    const constraints = isRecord(definition.constraints_json) ? definition.constraints_json : {};
+    if (!Object.hasOwn(constraints,'conditionalWholeIntegerV1')) continue;
+    const id = String(definition.parameter_id ?? ''), raw = constraints.conditionalWholeIntegerV1;
+    if (!id || !['decimal','integer'].includes(String(definition.value_type)) || definition.default_value != null
+      || !isRecord(raw) || Object.keys(raw).some(key=>!['contractVersion','when','factorySupplyV1'].includes(key))
+      || raw.contractVersion!=='canonical-conditional-whole-integer/v1' || !isRecord(raw.when))
+      return fail(`invalid conditional whole-integer declaration ${id}`);
+    const when = raw.when;
+    const targets = when.kind==='equals' ? [when.value] : when.values;
+    if (!['equals','in'].includes(String(when.kind))
+      || Object.keys(when).some(key=>!(when.kind==='equals'?['kind','parameterId','value']:['kind','parameterId','values']).includes(key))
+      || !boundedId(when.parameterId) || when.parameterId===id || !Array.isArray(targets)
+      || targets.length!==(when.kind==='equals'?1:2) || targets.some(value=>!boundedId(value))
+      || new Set(targets).size!==targets.length) return fail(`invalid conditional whole-integer declaration ${id}`);
+    const selector = byId.get(when.parameterId);
+    const choices = isRecord(selector?.constraints_json) ? selector.constraints_json.values : undefined;
+    if (!selector || selector.value_type!=='enum' || selector.default_value!=null || !Array.isArray(choices)
+      || choices.length===0 || choices.some(value=>!boundedId(value)) || new Set(choices).size!==choices.length
+      || targets.some(value=>!choices.includes(value))) return fail(`invalid conditional whole-integer selector definition ${id}`);
+    const rawUnknown = isRecord(selector.truth_metadata) ? selector.truth_metadata.unknown_enum_values : undefined;
+    const unknownChoices = Array.isArray(rawUnknown) ? rawUnknown : [];
+    if (rawUnknown!=null && (!Array.isArray(rawUnknown) || unknownChoices.length>8
+      || unknownChoices.some(value=>!boundedId(value)||!choices.includes(value)))
+      || targets.some(value=>unknownChoices.includes(value))) return fail(`invalid conditional whole-integer selector definition ${id}`);
+    const selected = values[when.parameterId];
+    if (selected==null || selected==='' || unknownChoices.includes(selected))
+      return fail(`conditional whole-integer condition unresolved ${id}`);
+    if (!choices.includes(selected)) return fail(`conditional whole-integer selector invalid ${id}`);
+    const active = targets.includes(selected);
+    const deferred = options.deferredEffectiveQuantityParameterIds?.has(id)===true;
+    const value = values[id];
+    const effectiveOwner = final?.effectiveOwners.get(id);
+    if (active && !deferred) {
+      // An unresolved verified effective owner remains an honest need. Ordinary
+      // submitted domain values still require a value as in the original ce148.
+      if (value==null || value==='') {
+        if (!final || !effectiveOwner) return fail(`conditional whole-integer value required ${id}`);
+      } else if ((typeof value!=='string' && typeof value!=='number') || !isFormulaGraphExactDecimal(value)
+        || !isFormulaGraphDecimalMultiple(value,'1')) return fail(`conditional whole-integer value invalid ${id}`);
+    }
+    if (!Object.hasOwn(raw,'factorySupplyV1')) continue;
+    const descriptor = raw.factorySupplyV1;
+    if (!isRecord(descriptor) || Object.keys(descriptor).some(key=>!['componentRowId','obligationOwnerRowId','sourceArtifactSha256','sourceCountPerFactoryUnit'].includes(key))
+      || !boundedId(descriptor.componentRowId) || !boundedId(descriptor.obligationOwnerRowId)
+      || descriptor.componentRowId===descriptor.obligationOwnerRowId
+      || typeof descriptor.sourceArtifactSha256!=='string' || !/^[0-9a-f]{64}$/u.test(descriptor.sourceArtifactSha256)
+      || descriptor.sourceCountPerFactoryUnit!==1) return bindingFail(id);
+    if (!final) {
+      if (!deferred) return bindingFail(id);
+      continue;
+    }
+    const owner = effectiveOwner ? resources.get(effectiveOwner) : undefined;
+    const component = resources.get(descriptor.componentRowId), carrier = resources.get(descriptor.obligationOwnerRowId);
+    const output = owner?.resource_graph.effectiveQuantityOutputV1;
+    const source = component?.source_metadata, delivery = component?.resource_graph.sourceFactoryDeliveryV1;
+    if (!owner || !component || !carrier || owner===component || owner===carrier
+      || owner.resource_graph.costTreatment!=='OWN_COST' || owner.cost_owner_id!==owner.row_id
+      || owner.unit_id!=='pcs' || component.unit_id!==owner.unit_id || definition.unit_id!==owner.unit_id
+      || definition.required===true || !isRecord(definition.truth_metadata) || definition.truth_metadata.visibility_role!=='INTERNAL_ONLY'
+      || !isRecord(output) || output.parameterId!==id || output.unitId!==owner.unit_id
+      || component.resource_graph.costTreatment!=='INCLUDED_IN_RESOURCE_ROWS' || component.cost_owner_id!==owner.row_id
+      || component.procurement_eligible!==false || component.resource_graph.parentCostOwnerId!==owner.row_id
+      || component.resource_graph.includedInResourceOwnerRowId!==owner.row_id || component.resource_graph.purchaseBalanceOwnerRowId!==owner.row_id
+      || !final.formulaInputs.get(component.formula_id)?.includes(id)
+      || !inclusionGraphEvidenceParameterIds(component.inclusion_ast,{}).includes(when.parameterId)
+      || !isRecord(delivery) || delivery.sourceCountPerFactoryUnit!==1 || delivery.orderQuantityOwnerRowId!==owner.row_id
+      || delivery.notAnAdditionalOrder!==true || !boundedId(delivery.installedQuantityOwnerRowId)
+      || !resources.has(delivery.installedQuantityOwnerRowId)
+      || !source || source.sourceRole!=='MANUFACTURER_INCLUDED_FACTORY_COMPONENT_NOT_INSTALLATION_RATE'
+      || !boundedId(source.sourceKey) || !boundedId(source.factoryDeliveryRegistryNormId) || !boundedId(source.sourceLocator)
+      || source.source_artifact_sha256!==descriptor.sourceArtifactSha256 || source.sourceCountPerFactoryUnit!==1
+      || carrier.resource_graph.costTreatment!=='INFORMATIONAL_SCOPE'
+      || !isRecord(carrier.resource_graph.scopeRequirementV1) || carrier.resource_graph.scopeRequirementV1.kind!=='OBJECT_SCOPE'
+      || claimedComponents.has(component.row_id)) return bindingFail(id);
+    claimedComponents.add(component.row_id);
+    if (!active) continue;
+    const savedCarrier = accepted.get(carrier.row_id);
+    const graph = savedCarrier && isRecord(savedCarrier.calculation_trace) && isRecord(savedCarrier.calculation_trace.resourceGraph)
+      ? savedCarrier.calculation_trace.resourceGraph : null;
+    const primary = canonicalScopeRequirementDecisionV1(graph?.scopeRequirementDecisionV1);
+    if (!primary || primary.rowId!==carrier.row_id || primary.kind!=='OBJECT_SCOPE') return bindingFail(id);
+    const ownerRow = accepted.get(owner.row_id), componentRow = accepted.get(component.row_id);
+    const ownerQuantity = ownerRow?.quantity, componentQuantity = componentRow?.quantity;
+    const known = (v:unknown):v is string|number => (typeof v==='string'||typeof v==='number') && isFormulaGraphExactDecimal(v)
+      && compareFormulaGraphDecimals(v,'0')>=0;
+    const bothKnown = known(ownerQuantity) && known(componentQuantity);
+    const parity = known(ownerQuantity) && known(componentQuantity) ? compareFormulaGraphDecimals(componentQuantity,ownerQuantity) : null;
+    // The existing immutable component trace, not three arbitrary strings,
+    // must identify the very same source/norm/locator/artifact and be admitted
+    // by the existing backend owner. Empty/unmapped/source-only trace is open.
+    const traces = source.normativeTrace;
+    const matchingTraces = Array.isArray(traces) && traces.length<=32 ? traces.filter((t):t is JsonRecord=>isRecord(t)
+      && String(t.source_id ?? t.sourceId ?? t.document_code ?? '').trim()===source.sourceKey
+      && String(t.norm_id ?? t.normId ?? '').trim()===source.factoryDeliveryRegistryNormId
+      && String(t.exact_locator ?? t.exactLocator ?? '').trim()===source.sourceLocator
+      && t.source_artifact_sha256===descriptor.sourceArtifactSha256) : [];
+    const sourceIdentityVerified = source.sourceAdmission!==false && matchingTraces.length===1
+      && final.sourceTraceAdmitted(component.row_id,matchingTraces[0]!);
+    const complete = parity===0 && sourceIdentityVerified;
+    const quantityReasonRu = !bothKnown ? 'Для проверки заводского состава нужны сохранённые количества исходной поставки и комплектующего.'
+      : parity===-1 ? 'Количество включённого заводского комплектующего меньше количества исходной поставки.'
+      : parity===1 ? 'Количество включённого заводского комплектующего не совпадает с подтверждённым составом поставки.'
+      : 'Количество включённого заводского комплектующего соответствует исходной поставке.';
+    const reasonRu = (sourceIdentityVerified ? '' : 'Связь заводского состава с допущенным нормативным источником не подтверждена. ')+quantityReasonRu;
+    const children = obligations.get(carrier.row_id) ?? [];
+    if (children.length>=8) return bindingFail(id);
+    children.push({contractVersion:'canonical-scope-requirement-decision/v1',obligationKey:component.row_id,
+      rowId:primary.rowId,groupId:primary.groupId,groupTitleRu:primary.groupTitleRu,titleRu:'Полнота заводского состава поставки',reasonRu,
+      kind:'FACTORY_SUPPLY',status:complete?'COMPLETED':'SCOPE_UNVERIFIED',coveringRowIds:[],
+      originalRowIds:[owner.row_id,component.row_id],missingObjectFactParameterIds:[],numericNormAccepted:false,separatePaymentAccepted:false});
+    obligations.set(carrier.row_id,children);
+  }
+  return obligations;
+}
+
 export function validateCanonicalEstimateParameters(
   definitions: readonly CanonicalParameterDefinitionRecord[],
   input: JsonRecord,
@@ -233,6 +436,10 @@ export function validateCanonicalEstimateParameters(
     if (definition.default_value != null) return fail(`unresolved application norm cannot have a default ${id}`);
     if (input[id] != null || confirmed[id] != null) return fail(`unresolved application norm cannot be supplied ${id}`);
   }
+
+  validateCanonicalConditionalWholeIntegerV1(definitions,values,{
+    deferredEffectiveQuantityParameterIds:options.deferredEffectiveQuantityParameterIds,
+  });
 
   // Declared defaults are resolved before conditional rules. Numeric project
   // quantities in canonical content intentionally have no hidden defaults.

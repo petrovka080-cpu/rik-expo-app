@@ -21,8 +21,8 @@ import type { AiEstimateNormativeParameterRequirement } from "./aiEstimateNormat
 import {
   ASPHALT_V4_RUNTIME_TEMPLATE_ID,
   ASPHALT_WORK_ID_V4,
-  ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4,
-} from "./v4/asphalt";
+} from "./v4/asphalt/asphaltV4Constants";
+import { ASPHALT_WORK_SPECIFIC_PARAMETER_SCHEMA_V4 } from "./v4/asphalt/asphaltWorkSpecificParameterSchemaV4";
 import type { ParameterInputKindV4 } from "./v4/professionalEstimateV4Contract";
 import type {
   AiEstimateParameterCard,

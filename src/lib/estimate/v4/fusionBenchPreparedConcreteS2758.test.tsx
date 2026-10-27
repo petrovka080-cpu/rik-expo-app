@@ -6,7 +6,7 @@ import {fusionBenchControlS2758,verifyFusionBenchS2758} from '../../../../script
 import {buildMasterParameterCalculationConsumers} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import type {CanonicalEstimateCatalogItem} from '../backendPlatform/contracts';
 import {buildConsumerCanonicalPrecompileParameterSession,consumerCanonicalPrecompileParameterOverrides} from '../../../features/consumerRepair/consumerCanonicalParameterEditor';
-import {buildCanonicalBaselinePlan} from '../../../features/consumerRepair/consumerCanonicalBaselineCompile';
+import {buildCanonicalBaselinePlan} from '../backendPlatform/canonicalConsumerPromptPlanServerR1';
 import {buildCanonicalParameterCards} from '../../estimatePresentation/buildCanonicalParameterCards';
 import {ParameterDisclosurePanel} from '../../../features/consumerRepair/ConsumerRepairProgressiveEstimatePanel';
 import {compileCanonicalEstimateCore} from '../backendPlatform/canonicalEstimateCompileCore';

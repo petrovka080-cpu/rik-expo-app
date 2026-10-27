@@ -4,6 +4,7 @@ import type {
   CanonicalParameterValue,
 } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
 import { resolveCanonicalParameterVisibility } from "../../lib/estimate/canonicalParameters/canonicalParameterCore";
+import { canonicalParameterSessionConditionValuesV1 } from '../../lib/estimate/canonicalParameters/canonicalParameterSessionConditionValuesV1';
 
 /** Requiredness follows the selected branch both after hydration and while
  * editing. Keep the condition so a later choice can activate it again. */
@@ -136,7 +137,7 @@ export function buildConsumerRepairCanonicalSessionPreview(input: {
   });
   if (!changed) return input.session;
 
-  const values = new Map(updatedParameters.filter(p => p.value != null).map(p => [p.parameterId, p.value!] as const));
+  const values = canonicalParameterSessionConditionValuesV1(input.session, updatedParameters);
   const backendBlocking = new Set(input.session.blockingMissingParameterIds);
   const parameters = updatedParameters.filter(parameter => {
     const visible = resolveCanonicalParameterVisibility(parameter.visibilityCondition, values);

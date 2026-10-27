@@ -37,7 +37,7 @@ const currentRelease = JSON.parse(readFileSync(currentReleasePath, "utf8")) as {
   searchReleaseId?: unknown;
 };
 const variantKey = String(
-  process.env.S278_F09_FIREPROOF_INJECT_VARIANT ?? "small_area",
+  process.env.S278_F09_FIREPROOF_INJECT_VARIANT ?? "standard",
 ) as FireproofZoneInjectionRepairVariantKey;
 const variant = resolveFireproofZoneInjectionRepairVariant(variantKey);
 const variantToken = variantKey.toUpperCase();

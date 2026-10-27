@@ -27,18 +27,6 @@ export const TEMPORARY_TRUSS_CHORD_STRENGTHENING_DEVICES_KRER46_VARIANTS = Objec
     catalogVariant: "STANDARD_CONFIRMED_TRUSS_CHORD_STRENGTHENING_DEVICES",
     canonicalNameRu: "Установка устройств при усилении поясов ферм",
   }),
-  large_area: Object.freeze({
-    catalogId: `canonical-work:master:${FAMILY_KEY}_large_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_large_area`,
-    catalogVariant: "LARGE_AREA_CONFIRMED_TRUSS_CHORD_STRENGTHENING_DEVICES",
-    canonicalNameRu: "Установка устройств при усилении поясов ферм — большая протяжённость",
-  }),
-  small_area: Object.freeze({
-    catalogId: `canonical-work:master:${FAMILY_KEY}_small_area`,
-    sourceIdentity: `master-work:${FAMILY_KEY}_small_area`,
-    catalogVariant: "SMALL_AREA_CONFIRMED_TRUSS_CHORD_STRENGTHENING_DEVICES",
-    canonicalNameRu: "Установка устройств при усилении поясов ферм — локальный участок",
-  }),
   wet_zone: Object.freeze({
     catalogId: `canonical-work:master:${FAMILY_KEY}_wet_zone`,
     sourceIdentity: `master-work:${FAMILY_KEY}_wet_zone`,

@@ -1,3 +1,6 @@
+import type {CanonicalPublicResourceKindV1} from './canonicalPublicResourcePresentationV1';
+import legacyDisplayBindings from '../../../../data/estimate-benchmarks/source-packs/legacy-operation-display-five-saved-v1.json';
+import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 import { groupCanonicalScopeRequirementsV1, type CanonicalScopeRequirementDecisionV1,
   type CanonicalScopeRequirementGroupV1 } from './canonicalScopeRequirementV1';
 export type CanonicalEstimateOperationReference = {
@@ -49,13 +52,82 @@ export function canonicalEstimateOperationReferences(value: unknown): CanonicalE
       contractVersion: primary.contractVersion, groupId: primary.groupId, groupTitleRu: primary.groupTitleRu,
       operationId: related.operationId, operationTitleRu: related.operationTitleRu,
       completionCriterionRu: related.completionCriterionRu,
-      processOrdinal: related.processOrdinal, processRole: related.processRole,
-      whenResourcePresent: related.whenResourcePresent,
+      ...(related.processOrdinal !== undefined ? { processOrdinal: related.processOrdinal } : {}),
+      ...(related.processRole !== undefined ? { processRole: related.processRole } : {}),
+      ...(related.whenResourcePresent !== undefined ? { whenResourcePresent: related.whenResourcePresent } : {}),
     });
     if (!reference || seen.has(reference.operationId)) continue;
     references.push(reference); seen.add(reference.operationId);
   }
   return references;
+}
+
+export type CanonicalLegacyOperationDisplayResourceV1 = {
+  rowId: string; sourceRowId?: string; operation: unknown;
+};
+export type CanonicalLegacyOperationDisplayContextV1 = {
+  revisionId: string;
+  releaseId: string;
+  checksumSha256: string;
+  /** Complete immutable saved rows plus preliminary needs, before display filters. */
+  savedResources: readonly CanonicalLegacyOperationDisplayResourceV1[];
+};
+export const CANONICAL_LEGACY_OPERATION_DISPLAY_VERSION_V1 = 'fan-five-saved-v2';
+
+/** Exact historical display links only. The saved graph and all row fields stay
+ * untouched. Missing identity, membership or source relation returns the input. */
+export function resolveCanonicalLegacyOperationDisplayV1<T extends CanonicalLegacyOperationDisplayResourceV1>(
+  resources: readonly T[], context?: CanonicalLegacyOperationDisplayContextV1,
+): readonly T[] {
+  if (!context || !Array.isArray(context.savedResources) || legacyDisplayBindings.contractVersion !== 'canonical-legacy-operation-display/v1'
+    || legacyDisplayBindings.version !== CANONICAL_LEGACY_OPERATION_DISPLAY_VERSION_V1) return resources;
+  const binding = legacyDisplayBindings.entries.find(entry => entry.revisionId === context.revisionId
+    && entry.releaseId === context.releaseId && entry.checksumSha256 === context.checksumSha256);
+  if (!binding || context.savedResources.length !== binding.expectedResources.length
+    || resources.length > binding.expectedResources.length) return resources;
+  const validResource = (resource: CanonicalLegacyOperationDisplayResourceV1) => resource != null
+    && typeof resource === 'object' && !Array.isArray(resource) && typeof resource.rowId === 'string'
+    && resource.rowId.length > 0 && (resource.sourceRowId === undefined
+      || typeof resource.sourceRowId === 'string' && resource.sourceRowId.length > 0);
+  if (!context.savedResources.every(validResource) || !resources.every(validResource)) return resources;
+  const id = (resource: CanonicalLegacyOperationDisplayResourceV1) => resource.sourceRowId ?? resource.rowId;
+  const saved = new Map(context.savedResources.map(resource => [id(resource), resource]));
+  if (saved.size !== context.savedResources.length) return resources;
+  const same = (a: unknown, b: unknown) => canonicalEstimateStableJson(a ?? null) === canonicalEstimateStableJson(b ?? null);
+  for (const expected of binding.expectedResources) {
+    const resource = saved.get(expected.rowId);
+    if (!resource || !same(resource.operation, expected.operation)) return resources;
+  }
+  const target = canonicalEstimateOperationReference(binding.target);
+  if (!target || !context.savedResources.some(resource => canonicalEstimateOperationReferences(resource.operation)
+    .some(reference => same(reference, target)))) return resources;
+  // Also bind every requested display record to its verified original relation.
+  // A filtered view may omit rows, but may not substitute or duplicate them.
+  if (new Set(resources.map(id)).size !== resources.length
+    || resources.some(resource => !saved.has(id(resource))
+      || !same(resource.operation, saved.get(id(resource))?.operation))) return resources;
+  const replacements = new Set<string>(binding.replacementRowIds);
+  return resources.map(resource => replacements.has(id(resource)) ? { ...resource, operation: { ...target } } : resource);
+}
+
+/** Optional display-only kind override; the original descriptor is never edited.
+ * Reuse the operation resolver's complete identity and membership admission. */
+export function canonicalLegacyResourceKindV1(
+  rowId: string, context?: CanonicalLegacyOperationDisplayContextV1,
+): CanonicalPublicResourceKindV1 | null {
+  if (!context || !Array.isArray(context.savedResources)) return null;
+  const resources = context.savedResources;
+  if (resolveCanonicalLegacyOperationDisplayV1(resources, context) === resources) return null;
+  const binding = legacyDisplayBindings.entries.find(entry => entry.revisionId === context.revisionId
+    && entry.releaseId === context.releaseId && entry.checksumSha256 === context.checksumSha256);
+  if (!binding || !Object.hasOwn(binding.resourceKindsByRowId, rowId)) return null;
+  const kinds: Readonly<Record<string, unknown>> = binding.resourceKindsByRowId;
+  const kind = kinds[rowId];
+  switch (kind) {
+    case 'MATERIAL': case 'CONSUMABLE': case 'TOOL': case 'ACCESSORY': case 'EQUIPMENT':
+    case 'MECHANISM': case 'LABOR': case 'SERVICE': case 'TRANSPORT': case 'PPE': return kind;
+    default: return null;
+  }
 }
 
 export type CanonicalEstimateResourceOperationSection = {
@@ -73,7 +145,9 @@ export function canonicalEstimateResourceOperationSections(
   resources: readonly { rowId: string; sourceRowId?: string; operation: unknown; titleRu: string; sourceOperation?: unknown; excludedOperationKeys?: readonly string[] }[],
   scopeDecisions: readonly CanonicalScopeRequirementDecisionV1[] = [],
   scopeResourceOperations: readonly {rowId:string;operation:unknown}[] = [],
+  legacyDisplayContext?: CanonicalLegacyOperationDisplayContextV1,
 ): CanonicalEstimateResourceOperationSection[] {
+  resources = resolveCanonicalLegacyOperationDisplayV1(resources, legacyDisplayContext);
   const sections = new Map<string, CanonicalEstimateResourceOperationSection>();
   const presentResourceIds = new Set(resources.flatMap(resource => [resource.rowId,...(resource.sourceRowId?[resource.sourceRowId]:[])]));
   const keyOf = (reference: CanonicalEstimateOperationReference | null) => reference
@@ -195,43 +269,23 @@ export type CanonicalEstimateWorkProcessGroup = {
 /** A presentation of saved operation ownership, with no new rows or costs. */
 export function canonicalEstimateWorkProcess(
   resources: readonly { rowId: string; sourceRowId?: string; operation: unknown; titleRu?: string; category?: string; costTreatment?: string }[],
-  mainWorkTitleRu = "Основная работа",
+  _mainWorkTitleRu = "Основная работа",
+  legacyDisplayContext?: CanonicalLegacyOperationDisplayContextV1,
 ): CanonicalEstimateWorkProcessGroup[] {
+  resources = resolveCanonicalLegacyOperationDisplayV1(resources, legacyDisplayContext);
   const presentResourceIds = new Set(resources.flatMap(resource => [resource.rowId,...(resource.sourceRowId?[resource.sourceRowId]:[])]));
-  const resourceBucketTitles = new Set([
-    'Материалы, оснащение и совместимая поставка',
-    'Готовые операции, граница и контроль',
-    'Готовая применимая операция и её раскрытые ресурсы',
-    'Поставка и оснащение',
-    'Фактические механизмы',
-    'Объём, контроль и логистика',
-    'Материалы и оснащение',
-    'Раскройное оборудование',
-    'Граница, контроль и доставка',
-  ]);
   const groups = new Map<string, {
     group: CanonicalEstimateWorkProcessGroup;
     operations: Map<string, { value: CanonicalEstimateWorkProcessGroup["operations"][number]; ordinal: number; firstSeen: number }>;
   }>();
   for (const resource of resources) {
-    const declaredReferences = canonicalEstimateOperationReferences(resource.operation);
-    for (let reference of declaredReferences.length ? declaredReferences : [null]) {
-      if (reference?.whenResourcePresent && !reference.whenResourcePresent.some(id => presentResourceIds.has(id))) continue;
-      if (reference?.processRole === "REFERENCE_ONLY" || reference?.processRole === "COST_SUMMARY") continue;
-      // Legacy buckets describe resource categories, not an execution step.
-      if (reference && resourceBucketTitles.has(reference.operationTitleRu)) reference = null;
-      const fallback = reference == null;
-      if (!reference) {
-        if (!['construction_work', 'work', 'labor'].includes(resource.category ?? '')
-          || ['INFORMATIONAL_SCOPE', 'INCLUDED_IN_RESOURCE_ROWS', 'CONTROL_OR_DOCUMENT'].includes(resource.costTreatment ?? '')
-          || !resource.titleRu?.trim()) continue;
-        reference = { contractVersion: 'canonical-operation-resource/v1', groupId: 'saved-work-items',
-          groupTitleRu: mainWorkTitleRu, operationId: resource.rowId,
-          operationTitleRu: resource.titleRu.trim(), completionCriterionRu: 'Порядок выполнения следует уточнить по составу работ',
-        };
-      }
+    // Only the saved source relationship declares a process step. An unbound
+    // work row remains a resource in the general section, not a new operation.
+    for (const reference of canonicalEstimateOperationReferences(resource.operation)) {
+      if (reference.whenResourcePresent && !reference.whenResourcePresent.some(id => presentResourceIds.has(id))) continue;
+      if (reference.processRole === "REFERENCE_ONLY" || reference.processRole === "COST_SUMMARY") continue;
       let entry = groups.get(reference.groupId);
-      const sequenceUnspecified = fallback || reference.processRole !== 'PROCESS'
+      const sequenceUnspecified = reference.processRole !== 'PROCESS'
         || typeof reference.processOrdinal !== 'number' || !Number.isFinite(reference.processOrdinal);
       if (!entry) {
         entry = { group: { groupId: reference.groupId, groupTitleRu: reference.groupTitleRu,

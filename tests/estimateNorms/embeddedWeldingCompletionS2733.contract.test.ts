@@ -1,3 +1,4 @@
+import { measuredConcreteProjectInputR533 } from "./fixtures/concreteMeasuredProjectInputsR533";
 import { buildEmbeddedWeldingCompletionS2733, EMBEDDED_WELDING_COMPLETION_ROWS_S2733 as ids } from "../../src/lib/estimate/v4/embeddedWeldingCompletionS2733";
 import { CONCRETE_SLAB_EMBEDDED_ITEMS_PARAMETERS as parameters, CONCRETE_SLAB_EMBEDDED_ITEMS_FORMULAS as formulas,
   CONCRETE_SLAB_EMBEDDED_ITEMS_RESOURCES as resources, concreteSlabEmbeddedItemsAcceptanceInputR1 } from "../../src/lib/estimate/v4/concreteSlabEmbeddedItemsR1";
@@ -46,7 +47,7 @@ describe("S27.33 actual embedded welding post and counted tool kits", () => {
     }
   });
   it("adds no post or questions when project welding is explicitly off", async () => {
-    const result = await compile(concreteSlabEmbeddedItemsAcceptanceInputR1("small_area")); expect(result.preliminaryNeeds).toEqual([]);
+    const result = await compile(measuredConcreteProjectInputR533("concreteSlabEmbeddedItemsAcceptanceInputR1", "compact")); expect(result.preliminaryNeeds).toEqual([]);
     expect(result.rows.some(row => Object.values(ids).includes(row.row_id as typeof ids[keyof typeof ids]))).toBe(false);
     expect(addition.parameters.every(p => p.default_value == null)).toBe(true);
   });
