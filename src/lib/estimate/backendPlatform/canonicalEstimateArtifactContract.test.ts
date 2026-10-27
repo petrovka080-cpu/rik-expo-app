@@ -237,7 +237,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:38",
+      templateVersion: "professional-estimate-pdf:39",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,
