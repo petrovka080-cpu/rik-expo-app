@@ -309,7 +309,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:40",
+      templateVersion: "professional-estimate-pdf:41",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,
@@ -479,7 +479,7 @@ test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
   });
 
 it('separates archived metadata identity from current PDF issuance and preserves old bytes/source',()=>{
-  const renderer='canonical-professional-pdf.r4-a13-verified-operation-composition-template88';
+  const renderer='canonical-professional-pdf.r4-a13-verified-operation-composition-template89';
   const saved={...revision,definition_version_id:'definition-version-1'};
   const current=buildCanonicalArtifactMetadata({operation:'professional_pdf',renderer,revision:saved,
     sourceRowCount:3,projectedRowCount:3,selectedProcurementRowCount:0,definitionVersionId:'definition-version-1',
@@ -490,7 +490,11 @@ it('separates archived metadata identity from current PDF issuance and preserves
   const before=JSON.stringify({saved,current,archived});
   expect(canonicalProfessionalArtifactMetadataIdentityMatches({metadata:archived,revision:saved})).toBe(true);
   expect(()=>assertCanonicalProfessionalArtifactCurrentPresentationV1({metadata:current,revision:saved,rendererVersion:renderer})).not.toThrow();
-  for(const metadata of [archived,{...current,renderer:'old'},{...current,generatorVersion:'old'},
+  const previous={...current,templateVersion:'professional-estimate-pdf:40',
+    renderer:'canonical-professional-pdf.r4-a13-verified-operation-composition-template88',
+    generatorVersion:'canonical-professional-pdf.r4-a13-verified-operation-composition-template88'};
+  expect(canonicalProfessionalArtifactMetadataIdentityMatches({metadata:previous,revision:saved})).toBe(true);
+  for(const metadata of [archived,previous,{...current,renderer:'old'},{...current,generatorVersion:'old'},
     {...current,pageCount:null},{...current,definitionVersionId:'other'},
     {...current,sourceRevisionChecksumSha256:'0'.repeat(64)},{...current,sourceReleaseId:'other'},
     {...current,sourceRowCount:2},{...current,sourceCatalogId:'other'}])

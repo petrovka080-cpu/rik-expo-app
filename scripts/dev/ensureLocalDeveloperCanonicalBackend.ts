@@ -53,6 +53,8 @@ const EVIDENCE_ROOT = resolve(
 );
 const OUTPUT = resolve(EVIDENCE_ROOT, "backend.json");
 const PREFLIGHT_ONLY = process.argv.includes("--preflight");
+const PREPARE_ONLY = process.argv.includes("--prepare-only");
+invariant(!(PREFLIGHT_ONLY && PREPARE_ONLY), "R568_MANAGER_MODE_CONFLICT");
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -343,6 +345,9 @@ async function main(): Promise<void> {
   const credentials = JSON.parse(readFileSync(CREDENTIALS, "utf8")) as Json;
   const tenantId = String(credentials.test_tenant_id ?? "");
   invariant(tenantId, "R568_TENANT_ID_MISSING");
+  if (PREPARE_ONLY) {
+    invariant(!await portOpen(), "R568_PREPARE_REQUIRES_BACKEND_PORT_QUIESCENT");
+  }
 
   const client = new Client({ connectionString: DATABASE_URL, application_name: "r568-local-backend-manager" });
   await client.connect();
@@ -353,6 +358,13 @@ async function main(): Promise<void> {
   try {
     await client.query("begin");
     await client.query("select pg_advisory_xact_lock(hashtextextended('r568-local-backend-manager',0))");
+    if (PREPARE_ONLY) {
+      activeJobs = Number((await client.query(`
+        select count(*)::integer count from public.estimate_compile_job
+        where upper(status) in ('QUEUED','RUNNING','CLAIMED','RETRY_WAIT')
+      `)).rows[0]?.count ?? 0);
+      invariant(activeJobs === 0, `R568_ACTIVE_COMPILE_JOBS_${activeJobs}`);
+    }
     basis = (await client.query(`
       select definition.id::text release_id,search.id::text search_release_id
       from public.estimate_definition_release definition
@@ -430,6 +442,30 @@ async function main(): Promise<void> {
     authProviderUrlSha256: createHash("sha256").update(authProviderUrl).digest("hex"),
     authPublicKeySha256: createHash("sha256").update(authPublicKey).digest("hex"),
   };
+  // Cold frontend compilation does not need a running calculation process.
+  // Provision the same real capability now; the launcher starts this manager
+  // normally after bundling and must verify that the exact tuple is reused.
+  if (PREPARE_ONLY) {
+    invariant(activeJobs === 0, `R568_ACTIVE_COMPILE_JOBS_${activeJobs}`);
+    process.stdout.write(`${JSON.stringify({
+      status: "R568_BACKEND_INPUTS_PREPARED_PROCESS_NOT_STARTED",
+      auth_profile: BACKEND_AUTH_PROFILE,
+      backend_action: "NOT_STARTED_PREPARE_ONLY",
+      capability_action: capabilityAction,
+      backend_pid: 0,
+      active_compile_jobs: activeJobs,
+      definition_release_id: desired.releaseId,
+      search_release_id: desired.searchReleaseId,
+      master_sha256: desired.masterSha256,
+      capability_id: desired.capabilityId,
+      capability_expires_at: new Date(capability!.expires_at).toISOString(),
+      runtime_identity_verified: false,
+      authenticated_runtime_manifest_verified: false,
+      evidence_root: EVIDENCE_ROOT,
+      production_requests: 0,
+    })}\n`);
+    return;
+  }
   const ownerBefore = portOwner();
   if (ownerBefore && !isOwnedBackend(ownerBefore)) throw new Error(`R568_BACKEND_FOREIGN_OWNER_PID_${ownerBefore.pid}`);
   const identityBefore = ownerBefore ? await runtimeIdentity() : null;

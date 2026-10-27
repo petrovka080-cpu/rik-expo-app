@@ -104,6 +104,15 @@ jobs:
           $taskStageOutput = Join-Path $env:GOX_TYPES_OUTPUT_ROOT 'jest-ui-procurement'
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-procurement
+      - name: Exact affected Jest - developer-runtime
+        shell: pwsh
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
+        run: |
+          $taskStageOutput = Join-Path $env:GOX_TYPES_OUTPUT_ROOT 'jest-developer-runtime'
+          New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
+          python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch developer-runtime
       - uses: actions/upload-artifact@v4
         if: always()
         with:

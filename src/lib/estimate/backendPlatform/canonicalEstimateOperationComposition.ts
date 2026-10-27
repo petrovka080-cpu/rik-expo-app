@@ -168,6 +168,11 @@ export function canonicalEstimateResourceOperationSections(
   resources = resolveCanonicalLegacyOperationDisplayV1(resources, legacyDisplayContext);
   const sections = new Map<string, CanonicalEstimateResourceOperationSection>();
   const presentResourceIds = new Set(resources.flatMap(resource => [resource.rowId,...(resource.sourceRowId?[resource.sourceRowId]:[])]));
+  // The first applicable consumer owns the one visible resource row.
+  // An inactive primary must not leave an empty process header behind.
+  const applicableReferences = (value: unknown) => canonicalEstimateOperationReferences(value)
+    .filter(reference => !reference.whenResourcePresent
+      || reference.whenResourcePresent.some(id => presentResourceIds.has(id)));
   const keyOf = (reference: CanonicalEstimateOperationReference | null) => reference
     ? JSON.stringify([reference.groupId, reference.operationId]) : 'general';
   const obtain = (operation: CanonicalEstimateOperationReference | null) => {
@@ -180,11 +185,10 @@ export function canonicalEstimateResourceOperationSections(
     return section;
   };
   for (const resource of resources) {
-    const [primary, ...related] = canonicalEstimateOperationReferences(resource.operation);
+    const [primary, ...related] = applicableReferences(resource.operation);
     const owner = obtain(primary ?? null);
     if (!owner.resourceIds.includes(resource.rowId)) owner.resourceIds.push(resource.rowId);
     for (const reference of related) {
-      if (reference.whenResourcePresent && !reference.whenResourcePresent.some(id => presentResourceIds.has(id))) continue;
       const section = obtain(reference);
       if (!section.sharedResources.some(shared => shared.rowId === resource.rowId)) {
         section.sharedResources.push({ rowId: resource.rowId, titleRu: resource.titleRu,
@@ -199,9 +203,9 @@ export function canonicalEstimateResourceOperationSections(
   // become quantity rows or new cost owners. Completed preparation remains
   // visible at its own stage, with no repeated execution charge.
   const resourceOwner = new Map(resources.map(resource => [resource.rowId,
-    canonicalEstimateOperationReference(resource.operation)]));
+    applicableReferences(resource.operation)[0] ?? null]));
   const scopeSourceOwners=new Map(scopeResourceOperations.map(resource=>[resource.rowId,
-    canonicalEstimateOperationReference(resource.operation)]));
+    applicableReferences(resource.operation)[0] ?? null]));
   for (const group of groupCanonicalScopeRequirementsV1(scopeDecisions)) {
     if (group.statuses.every(status => status === 'NOT_APPLICABLE')) continue;
     const decisions = scopeDecisions.filter(decision => decision.groupId === group.groupId);

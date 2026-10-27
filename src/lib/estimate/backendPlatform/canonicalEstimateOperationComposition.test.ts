@@ -359,3 +359,57 @@ it.each(legacyDisplayBindings.entries)('R589 names the exact saved fan and every
  expect(canonicalLegacyResourceNameV1(known[0]!.rowId,{...context,savedResources:resources.slice(1)})).toBeNull();
  expect(JSON.stringify({resources,context})).toBe(stored);
 });
+
+
+test('conditional primary operation keeps one resource at its actual remaining consumer without a phantom stage', () => {
+  const mount = { ...operation('facade', 'mount', 'Крепление плит', 0), whenResourcePresent: ['adhesive'] };
+  const base = operation('facade', 'base', 'Устройство базового слоя', 1);
+  const finish = { ...operation('facade', 'finish', 'Отделка поверхности', 2), whenResourcePresent: ['finish-coat'] };
+  const tool = { rowId: 'saved-shared-float', sourceRowId: 'float', titleRu: 'Тёрка',
+    quantity: 3, manualQuantity: true, unitPrice: 150, costOwnerRowId: 'one-tool-owner',
+    operation: { ...mount, additionalOperations: [base, finish] } };
+  const resources = [tool];
+  const before = JSON.stringify(resources);
+  const sections = canonicalEstimateResourceOperationSections(resources);
+  expect(sections.map(section => section.operation?.operationId)).toEqual(['base']);
+  expect(sections[0]!.resourceIds).toEqual(['saved-shared-float']);
+  expect(sections[0]!.sharedResources).toEqual([]);
+  expect(canonicalEstimateWorkProcess(resources)[0]!.operations.map(value => value.operationId)).toEqual(['base']);
+  expect(JSON.stringify(resources)).toBe(before);
+});
+
+test('conditional primary and shared consumers return only with their saved source anchors', () => {
+  const mount = { ...operation('facade', 'mount', 'Крепление плит', 0), whenResourcePresent: ['adhesive'] };
+  const base = operation('facade', 'base', 'Устройство базового слоя', 1);
+  const finish = { ...operation('facade', 'finish', 'Отделка поверхности', 2), whenResourcePresent: ['finish-coat'] };
+  const tool = { rowId: 'float', titleRu: 'Тёрка', operation: { ...mount, additionalOperations: [base, finish] } };
+  const resources = [tool,
+    { rowId: 'saved-adhesive', sourceRowId: 'adhesive', titleRu: 'Клеевой раствор', operation: mount },
+    { rowId: 'saved-finish', sourceRowId: 'finish-coat', titleRu: 'Штукатурный состав', operation: finish }];
+  const before = JSON.stringify(resources), sections = canonicalEstimateResourceOperationSections(resources);
+  expect(sections.map(section => section.operation?.operationId)).toEqual(['mount', 'base', 'finish']);
+  expect(sections.filter(section => section.resourceIds.includes('float'))).toHaveLength(1);
+  expect(sections.find(section => section.operation?.operationId === 'mount')!.resourceIds).toEqual(['float', 'saved-adhesive']);
+  for (const operationId of ['base', 'finish']) {
+    expect(sections.find(section => section.operation?.operationId === operationId)!.sharedResources)
+      .toContainEqual({ rowId: 'float', titleRu: 'Тёрка', ownerOperationTitleRu: 'Крепление плит' });
+  }
+  expect(JSON.stringify(resources)).toBe(before);
+});
+
+test('scope coverage follows an active conditional consumer while a resource with no active consumer stays visible', () => {
+  const absent = { ...operation('partition', 'lining', 'Обшивка', 1), whenResourcePresent: ['lining-material'] };
+  const frame = operation('partition', 'frame', 'Монтаж каркаса', 0);
+  const tool = { rowId: 'tool', titleRu: 'Инструмент', operation: { ...absent, additionalOperations: [frame] } };
+  const scope = check('INCLUDED', ['tool']);
+  const sections = canonicalEstimateResourceOperationSections([tool], [scope], [{ rowId: scope.rowId, operation: tool.operation }]);
+  expect(sections).toHaveLength(1);
+  expect(sections[0]!.operation?.operationId).toBe('frame');
+  expect(sections[0]!.scopeRequirements?.[0]!.statuses).toEqual(['INCLUDED']);
+  const unbound = { ...tool, operation: absent };
+  const noConsumer = canonicalEstimateResourceOperationSections([unbound]);
+  expect(noConsumer).toHaveLength(1);
+  expect(noConsumer[0]!.operation).toBeNull();
+  expect(noConsumer[0]!.resourceIds).toEqual(['tool']);
+  expect(canonicalEstimateWorkProcess([unbound])).toEqual([]);
+});

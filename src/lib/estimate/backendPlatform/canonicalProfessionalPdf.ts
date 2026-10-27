@@ -28,7 +28,7 @@ import {isCanonicalEstimateConsumerSuppliedParameter,isCanonicalEstimateUserEdit
 import type {CanonicalEstimateCatalogItem} from './contracts';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-verified-operation-composition-template88" as const;
+  "canonical-professional-pdf.r4-a13-verified-operation-composition-template89" as const;
 
 /** All catalogs use the same money-cell contract; status text belongs outside
  * the resource table. Reject a regression before a worker creates the PDF. */

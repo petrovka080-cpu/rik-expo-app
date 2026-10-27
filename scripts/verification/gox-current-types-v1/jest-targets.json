@@ -38,6 +38,13 @@
       "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts",
       "scripts/estimate/r4a13/canonicalDefinitionPublisherResourceOrderingR1.test.ts",
       "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts"
+    ],
+    "developer-runtime": [
+      "scripts/dev/metroGeneratedRuntimeExclusion.test.js",
+      "scripts/dev/wholeAppDevelopmentAsyncRoutes.test.js",
+      "scripts/dev/warmWholeAppDeveloperRuntime.test.ts",
+      "scripts/dev/wholeAppDeveloperReview.contract.test.ts",
+      "scripts/dev/wholeAppEmbeddedBuildTarget.test.js"
     ]
   }
 }
