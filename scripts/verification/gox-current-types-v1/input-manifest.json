@@ -2463,7 +2463,8 @@
     "src/features/consumerRepair/ConsumerRepairEstimateNotes.tsx": "4740e1e39093c4297dacc97ee56468a3d01535d0e67c860601663d081094989a",
     "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx": "2f0f3cd679b46535c9f1a110374d15419bdd0ab715e28a379f9e7c68e4ac32e8",
     "scripts/release/computeReleaseFingerprints.ts": "4ac1915c343f0d6b9efe96ddabd0ee097506c96d78415927891e251952c72b7c",
-    "android/app/src/main/res/xml/network_security_config.xml": "c18af8f6bc8bce27c4bd5b904697ae834f7977e70d2937e6f26a6c559331209a"
+    "android/app/src/main/res/xml/network_security_config.xml": "c18af8f6bc8bce27c4bd5b904697ae834f7977e70d2937e6f26a6c559331209a",
+    "scripts/dev/printLocalDeveloperBuildIdentity.ts": "42942a12cc952bc4506b217b4d6e327bc85129cb85136b114577873d72bf6f38"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3642,19 +3643,22 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2462,
+    "sourceFiles": 2463,
     "dependencyFiles": 1160,
-    "sourceBytes": 133366030
+    "sourceBytes": 133366380
   },
   "candidateSourceComposition": {
-    "contract": "existing-current-types-and-developer-runtime-only-followup/r698",
+    "contract": "exact-existing-runtime-loader-input-completion/r702",
     "referenceCommonCommit": "20e3f94234317f64afd5eb1ef7da536d8bb614d2",
     "referenceCommonRun": 40513302536,
     "referenceCommonTestsPassed": 609,
     "commonSourcePinsUnchanged": true,
-    "runtimeOnly": true,
-    "actualApplicationAcceptance": false,
-    "reason": "Actual previous developer batch33pass2fail because exact loader/XML inputs absent; add pinned closure, actual startup scheduling and exact streaming hash/owner tests; preserve all guards and limits"
+    "previousRuntimeCommit": "2438db93f9039d686de171851c51ef9a6dee7a6b",
+    "previousRuntimeRun": 40517394862,
+    "previousRuntimeTestsPassed": 36,
+    "previousRuntimeTestsFailed": 1,
+    "failure": "Exact direct-loader entrypoint itself absent from prior source snapshot; now include its original canonical bytes and already-pinned fingerprint dependency",
+    "actualApplicationAcceptance": false
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
