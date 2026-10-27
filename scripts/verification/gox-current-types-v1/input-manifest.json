@@ -1203,7 +1203,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "cf03d098e3b5de93ab043445a5e270b75bfc4f3e1bfa10293af2306e099237b0",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "62252424d09e5c20042586a36f4e7a562239b6ddaf7ac3e08a3d61b9e7e76dc0",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "a4ebefe06c6db7e2079a3fb4eb9daa8ebf4b2010ab086bf9cdb1821fb0eb606c",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -3615,7 +3615,7 @@
     "sourceBytes": 132654891
   },
   "candidateSourceComposition": {
-    "contract": "global-operation-resource-source-candidate/r580",
+    "contract": "global-operation-resource-source-candidate/r582",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
@@ -3638,7 +3638,7 @@
         "sha256": "ed6dc770d969a689ec7e005c5046683c32a3ce4a1fb66fd30fb4ab180d871727"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": {
-        "sha256": "cf03d098e3b5de93ab043445a5e270b75bfc4f3e1bfa10293af2306e099237b0"
+        "sha256": "62252424d09e5c20042586a36f4e7a562239b6ddaf7ac3e08a3d61b9e7e76dc0"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": {
         "sha256": "a4ebefe06c6db7e2079a3fb4eb9daa8ebf4b2010ab086bf9cdb1821fb0eb606c"
