@@ -399,7 +399,7 @@ describe('ACS R4 exact persisted mandatory reader-power condition source residua
  test('explicit TEST_ONLY reviewed external-power record clears only that condition in the immutable saved revision',async()=>{
   const input=accessControlWholeDoorValidationFixtureR3();input[fact]='TEST_ONLY reviewed Proxy3M external source/GND route; not actual design or autonomy proof';
   const r=await persist(input),carrier=r.resources.find((x:{row_id:string})=>x.row_id===s.scopeRowId)!;
-  expect(acsPassageRecordR5(acsPassageRecordR5(carrier.calculation_trace).resourceGraph).scopeRequirementDecisionV1.missingObjectFactParameterIds).not.toContain(fact);
+  expect(acsPassageRecordR5(acsPassageRecordR5(acsPassageRecordR5(carrier.calculation_trace).resourceGraph).scopeRequirementDecisionV1).missingObjectFactParameterIds).not.toContain(fact);
   expect(carrier.calculation_trace.unresolvedConditionParameterIds??[]).not.toContain(fact);
   expect(r.saved.input_parameters[fact]).toBe(input[fact]);expect(s.factorySupplyGuardPassed).toBe(false);
   expect(r.gate.pdfAllowed).toBe(false); // unrelated source/class/factory holds remain; positive power evidence is not whole PASS.

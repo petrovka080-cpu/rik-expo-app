@@ -2482,7 +2482,7 @@
     "data/estimate-benchmarks/source-packs/access-control-single-door-method-r1.json": "f885c16b6fa6d6db29a935dba99b94f4790765e4d6f105893fb8a8e5a8708194",
     "src/lib/estimate/v4/accessControlSystemR1.ts": "0879b3fc7babb17065cc2f607f064974c9e24b20ae3e2b9c13cedc98052696da",
     "scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts": "1134c105afa363a28343e01fdffe95559b032aa51e1ee60b0e609251a58be361",
-    "tests/estimateNorms/accessControlSystemR1.contract.test.ts": "64406886378cd76ee0169552da4a11dd7d77ca6baaeef36f3ba575b34284a1bc",
+    "tests/estimateNorms/accessControlSystemR1.contract.test.ts": "0a870131c4250971c8311c9e4208ed33c591a450ac21ee4f15dd2952ff3e7ba2",
     "data/estimate-benchmarks/source-packs/acs-whole-passage-measured-balance-r5.txt": "6ae58c91ec2ce428ddc65877ac777ee1621d0e41e931a071bec10a772ad25d7f",
     "data/estimate-benchmarks/source-packs/addressable-smoke-detector-balanced-s27-24.json": "2a2de9e22d44a196e8fb4982b608a7974e8ce142310a7c4162a745a8677cc6ab",
     "tests/estimateNorms/addressableSmokeDetectorR1.contract.test.ts": "8477ae894c0a4502bab611618596be3e50fbdb4a8fe09bf2a7d819fbc5a156a9",
@@ -3693,7 +3693,7 @@
     "findings": [],
     "patternScanFromPredecessorSourcePlan": "81f630f069c9e53edb8a6faea5d370a0f1ad019dab5b333752352983ecd0fb18",
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 142164737
+    "sourceBytes": 142164757
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
@@ -3701,7 +3701,7 @@
   "stats": {
     "sourceFiles": 2519,
     "dependencyFiles": 1160,
-    "sourceBytes": 142164737
+    "sourceBytes": 142164757
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -4070,6 +4070,16 @@
       "actualFamilyDbSavePdfAccepted": false,
       "newProductCandidate": false,
       "canonicalProductUnchanged": true
+    },
+    "singleNestedRecordTypeForwardR931": {
+      "parent": "adbb61e4a09de2b9dfdbb5732333d00fc4a829d2",
+      "path": "tests/estimateNorms/accessControlSystemR1.contract.test.ts",
+      "beforeSha256": "64406886378cd76ee0169552da4a11dd7d77ca6baaeef36f3ba575b34284a1bc",
+      "afterSha256": "0a870131c4250971c8311c9e4208ed33c591a450ac21ee4f15dd2952ff3e7ba2",
+      "actualDiagnostic": "TS2571line402char10",
+      "oneExpressionOnly": true,
+      "priorRuntimePassesNotRerun": true,
+      "sourceOnly": true
     }
   },
   "existingCiTypesStageBudget": {
