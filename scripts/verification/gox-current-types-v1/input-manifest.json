@@ -3,7 +3,7 @@
   "snapshotKind": "CURRENT_FULL_AFFECTED_TYPES_AND_EXACT_OPERATION_RESOURCE_JEST_SOURCE_ONLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
-    ".github/workflows/gox-current-core-types-v1.yml": "cf618278ec7d69d7fdd37f2305d09283184fe6432d4f6a9543f260b591eb8d39",
+    ".github/workflows/gox-current-core-types-v1.yml": "6e5b9739e1c45651daea44adbd8acd40b41e76000ad19823d533ee63251ddc76",
     "AGENTS.md": "66eb1253ef479a135ceb44d7e6d7bd71676e9bbef999ac0cccbb67008c935040",
     "app/(tabs)/office/index.tsx": "4773281a7daac103265ce6a5d28828f22b7cc1f733cece454dbc4105634d3e8f",
     "app/_layout.tsx": "db6e356a662020d15c8e9dcbde423fefb8dd2bb861e3f240d4434ce69d5f7be8",
@@ -318,7 +318,7 @@
     "scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryReadSetR1.ts": "520d80b9c68bfa42894bcddce6be5c4d3ac1f506486d55ad851d909b46fe71a5",
     "scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryServerR1.ts": "3622f74a8c3a67db56d5da91287de9ad95d63b69cf7a6a1ba05ddc533f8f68b2",
     "scripts/estimate/backendMigration/roofRetainedHistoryContextR1.ts": "aa338df982d127439f35ab6d4e120ae49ca4e534ac75dcf15c9010b444e711ee",
-    "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": "299311ad1072e046fad83c5b2a836a934efa712f94f6f3b6e34ecdc8f4c2dfca",
+    "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": "b14b068ff68ec56976afd59c2b83ee0c0f3e056e206947febd438b56964cece7",
     "scripts/estimate/batch001008R3/batch001DrywallGoldFixtureR3.ts": "a72df97a02221e699380c6b15ca17f1d62b2dc58eb25460ef1e956e2b57952e6",
     "scripts/estimate/buildAsphaltRelatedR8Inventory.ts": "c384816684ae0b6f3e68f47ffd385923a38c0a4558401630b046fe66719de270",
     "scripts/estimate/buildControlledPilotHealthDashboard.ts": "11eb9952703e60b0794ea3f2052022f9624f6ab8c4fd770539aec47c6e4d43b2",
@@ -3645,21 +3645,24 @@
   "stats": {
     "sourceFiles": 2463,
     "dependencyFiles": 1160,
-    "sourceBytes": 133374767
+    "sourceBytes": 133382120
   },
   "candidateSourceComposition": {
-    "contract": "existing-startup-manager-handoff/r709",
+    "contract": "existing-resource-search-projection-current-types/r716",
     "referenceCommonCommit": "20e3f94234317f64afd5eb1ef7da536d8bb614d2",
     "referenceCommonRun": 40513302536,
     "referenceCommonTestsPassed": 609,
-    "commonSourcePinsUnchanged": true,
-    "previousRuntimeCommit": "21a0d5a6fc9c2432a639aa812c184f399698d263",
-    "previousRuntimeRun": 40518829476,
-    "previousRuntimeTestsPassed": 37,
-    "runtimeOnly": true,
-    "localAffectedTestsPassed": 16,
-    "actualApplicationAcceptance": false,
-    "reason": "Manager releases its graph before backend startup; sole launcher retains exact final PID/source/runtime/provider/release readiness barrier. Limits unchanged."
+    "referenceRuntimeCommit": "cb4ab997f4251d0ef4d7fc5998e1011a4c8f4cbc",
+    "referenceRuntimeRun": 40522178810,
+    "referenceRuntimeTestsPassed": 39,
+    "unchangedTestsNotRerun": true,
+    "actualResourceIndexEquivalence": {
+      "proofSha256": "7cb05a79826b9bc38a30e6602e5f4d1384367511511b617727a4b59cf58302f5",
+      "publicRows": 19313,
+      "publicIndexSha256": "74cbdefa2077f8becc54bb95cfc26ddf7ce9ba99c86828f5adf381001fc414f7",
+      "wireBytesSaved": 50047353
+    },
+    "actualApplicationAcceptance": false
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",

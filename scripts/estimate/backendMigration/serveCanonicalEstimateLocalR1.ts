@@ -4048,7 +4048,10 @@ function localCanonicalResourceIndex(): Promise<LocalCanonicalResourceSearchRow[
     withClient(async (client) => (await client.query(`
       select distinct on(lower(title_ru),row_type,unit_id)
         id::text resource_id,definition_version_id::text,row_id,title_ru,row_type,unit_id,
-        semantic_owner,procurement_eligible,resource_graph,source_metadata
+        semantic_owner,procurement_eligible,
+        jsonb_build_object('costTreatment',resource_graph->'costTreatment',
+          'publicResourcePresentationV1',resource_graph->'publicResourcePresentationV1') resource_graph,
+        jsonb_build_object('costTreatment',source_metadata->'costTreatment') source_metadata
       from public.estimate_resource_spec
       where definition_version_id=any($1::uuid[]) and trim(title_ru)<>''
         and trim(coalesce(unit_id,''))<>''
