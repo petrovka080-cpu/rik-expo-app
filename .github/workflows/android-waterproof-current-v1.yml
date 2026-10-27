@@ -1,6 +1,9 @@
 name: Current canonical WaterProof APK V1
-run-name: WaterProof fresh current source APK ${{ inputs.source_commit }}
+run-name: WaterProof APK ${{ inputs.source_commit || 'a008de11c558d68b4c487d845a38538435d8707c' }}
 on:
+  push:
+    branches: ['codex/gox-types-operations-resources-r580']
+    paths: ['.github/workflows/android-waterproof-current-v1.yml', 'scripts/verification/android-waterproof-current-v1/inputs/current-build-r750.json']
   workflow_dispatch:
     inputs:
       source_commit:
@@ -17,7 +20,6 @@ on:
         type: string
 permissions:
   contents: read
-  actions: read
 concurrency:
   group: canonical-current-waterproof-apk
   cancel-in-progress: false
@@ -33,24 +35,18 @@ jobs:
       EXPO_NO_DOTENV: '1'
       SENTRY_DISABLE_AUTO_UPLOAD: 'true'
     steps:
-      - name: Preserve exact source bytes before checkout
-        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
         with:
           path: ci
           persist-credentials: false
-          filter: blob:none
-          sparse-checkout: |
-            .github/workflows
-            scripts/verification/android-waterproof-current-v1
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
       - name: Validate dispatch paths and hashes
         env:
-          SOURCE_COMMIT: ${{ inputs.source_commit }}
-          BUILD_SPEC_PATH: ${{ inputs.build_spec_path }}
-          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 }}
+          SOURCE_COMMIT: ${{ inputs.source_commit || 'a008de11c558d68b4c487d845a38538435d8707c' }}
+          BUILD_SPEC_PATH: ${{ inputs.build_spec_path || 'scripts/verification/android-waterproof-current-v1/inputs/current-build-r750.json' }}
+          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 || '72a76647964d68e7115156538d1a553d143200902d226dd7a51d13bed85193e6' }}
         run: |
           if ($env:SOURCE_COMMIT -notmatch '^[a-f0-9]{40}$') { throw 'Exact commit required' }
           if ($env:BUILD_SPEC_SHA -notmatch '^[a-f0-9]{64}$') { throw 'Exact build contract hash required' }
@@ -62,7 +58,7 @@ jobs:
           if ((Get-FileHash -LiteralPath $spec -Algorithm SHA256).Hash.ToLowerInvariant() -ne $env:BUILD_SPEC_SHA) { throw 'Input hash changed' }
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source_commit }}
+          ref: ${{ inputs.source_commit || 'a008de11c558d68b4c487d845a38538435d8707c' }}
           path: r
           persist-credentials: false
       - uses: actions/setup-node@v4
@@ -84,9 +80,9 @@ jobs:
         run: python -m pip install psutil==7.1.0
       - name: Build and verify exact embedded APK
         env:
-          SOURCE_COMMIT: ${{ inputs.source_commit }}
-          BUILD_SPEC_PATH: ${{ inputs.build_spec_path }}
-          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 }}
+          SOURCE_COMMIT: ${{ inputs.source_commit || 'a008de11c558d68b4c487d845a38538435d8707c' }}
+          BUILD_SPEC_PATH: ${{ inputs.build_spec_path || 'scripts/verification/android-waterproof-current-v1/inputs/current-build-r750.json' }}
+          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 || '72a76647964d68e7115156538d1a553d143200902d226dd7a51d13bed85193e6' }}
         run: |
           $driver = Join-Path $env:GITHUB_WORKSPACE 'ci/scripts/verification/android-waterproof-current-v1/build_current_apk.py'
           $spec = Join-Path (Join-Path $env:GITHUB_WORKSPACE 'ci') $env:BUILD_SPEC_PATH

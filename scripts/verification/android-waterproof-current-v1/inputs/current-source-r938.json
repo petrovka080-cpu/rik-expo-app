@@ -4526,7 +4526,7 @@
     "src/features/consumerRepair/buildRequestEstimatePayload.ts": "443594fbdb74007cf8e714dfd0063fb7a726b2c3c634c3af5d2cc96d1453a0a2",
     "src/features/consumerRepair/consumerAggressiveFloorPublicFactsS2769.test.ts": "033e12aefba7c8e1543b48b7d36ebc0419ea4e385d5eb621668379d8bb99a2d5",
     "src/features/consumerRepair/consumerCanonicalArtifactCacheCommit.test.ts": "ffe89a12ca1b21cd9d1d2f75b6872c94f57a016db4b86fb38be651eac0ba5c09",
-    "src/features/consumerRepair/consumerCanonicalParameterEditor.finiteMembershipR53.test.ts": "fab7d35cd69952856e64fc300bfd9ee2dbe755740eb7555ddacca2a7f0442d46",
+    "src/features/consumerRepair/consumerCanonicalParameterEditor.finiteMembershipR53.test.ts": "ce2a3613e262009f80f317c07d4446b47e7654d0a2cdcdf19d69a4a8fc69ecc7",
     "src/features/consumerRepair/consumerCanonicalParameterEditor.profileVisibility.test.ts": "7c2fa0228880f5d7b8bac675ce155bf765053bf8eaffd95824cb9a3c5a6c223b",
     "src/features/consumerRepair/consumerConcreteBasePreparationS2769.test.ts": "baf96c07723e552a17906f55d6ed323f58c8bad631ae8101f1bd1878eb6974bd",
     "src/features/consumerRepair/consumerCt29DeliveryPromptR2.test.ts": "70986549b1bc2c32bfab2102e0dccaafd205043e20bd13b314b8d9aae56a387e",
@@ -7488,6 +7488,11 @@
       "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts",
       "beforeSha256": "76d345c6cdf0ecbbf335aa51dce6a6b546bd904e2951a53a70ca5b167f0e5f7e",
       "afterSha256": "873d3f568af85010f81322ea53470ba32010818dd1f5f02ac5c4a2cdc43c4182"
+    },
+    {
+      "path": "src/features/consumerRepair/consumerCanonicalParameterEditor.finiteMembershipR53.test.ts",
+      "beforeSha256": "fab7d35cd69952856e64fc300bfd9ee2dbe755740eb7555ddacca2a7f0442d46",
+      "afterSha256": "ce2a3613e262009f80f317c07d4446b47e7654d0a2cdcdf19d69a4a8fc69ecc7"
     }
   ]
 }
