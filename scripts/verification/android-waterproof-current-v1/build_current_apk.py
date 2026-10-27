@@ -142,7 +142,7 @@ def main():
  npm_cli=pathlib.Path(node).parent/'node_modules/npm/bin/npm-cli.js';assert npm_cli.is_file()
  run('npm-ci',[node,npm_cli,'ci'],1536,900)
  # Existing fingerprint implementation must reproduce the captured canonical tuple.
- text=run('source-identity',[node,'--import','tsx','scripts/dev/printLocalDeveloperBuildIdentity.ts'],256)
+ text=run('source-identity',[node,'--max-old-space-size=64','--max-semi-space-size=4','--import','tsx','scripts/dev/printLocalDeveloperBuildIdentity.ts'],256)
  assert json.loads(text)==s['sourceIdentity'],'APK_SNAPSHOT_PRODUCT_IDENTITY_DIFFERS_FROM_FRESH_RUNTIME'
  dirs=[root/'android/app/build/generated/assets/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/res/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/assets/createWaterProofUpdatesResources']
  assert all(not p.exists()for p in dirs),'FRESH_GENERATED_DIRECTORIES_REQUIRED'
