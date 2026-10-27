@@ -3,7 +3,7 @@
   "snapshotKind": "CURRENT_FULL_AFFECTED_TYPES_AND_EXACT_OPERATION_RESOURCE_JEST_SOURCE_ONLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
-    ".github/workflows/gox-current-core-types-v1.yml": "3fb8a8c21c0c29e8f5fc47464769837aeb2f37dd5031743b0530d63445a1b678",
+    ".github/workflows/gox-current-core-types-v1.yml": "1a6519cf7fede8374f6934ec4634853972a6cac752a6a6258bdb230fc96aa591",
     "AGENTS.md": "66eb1253ef479a135ceb44d7e6d7bd71676e9bbef999ac0cccbb67008c935040",
     "app/(tabs)/office/index.tsx": "4773281a7daac103265ce6a5d28828f22b7cc1f733cece454dbc4105634d3e8f",
     "app/_layout.tsx": "db6e356a662020d15c8e9dcbde423fefb8dd2bb861e3f240d4434ce69d5f7be8",
@@ -1249,7 +1249,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "a0a61d3e702b8a57c5a98f77d1306170dfcf34700a34ab506c9a7b7d8c6622d1",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "4a7842d0b776ede16a3157af6a39e8a61cbf534aef96de9b05b4a97dec2a76f9",
+    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "d602cdfdc6a8a4744bb13083cad859a810b1d7fa4e9c5141d906c4d55f64d6f4",
     "src/lib/estimate/backendPlatform/canonicalEstimateSearchInput.ts": "8db129b35d8f80b05a79376336fdfa4222a9dcb7c51288f1eae3d24403d62139",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
     "src/lib/estimate/backendPlatform/canonicalExactConditionalSuccessorMigrationV1.ts": "914d3aaf669a97e2f11231c887272a0e4c49206c22782d732ff840c55731d47e",
@@ -1294,9 +1294,9 @@
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts": "d083dab58274d98404d95407cd25bedb688d140b843ed5397ac45dbb315dc6c1",
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts": "59dbd892ef60bd7495b85b2508db64e5cc07a2b380f2cc7894d969e6a5c3dc9c",
     "src/lib/estimate/backendPlatform/canonicalPublicResourceAlternativesV1.ts": "ed5da8cbe6d58095be01861a4f9dd027ef7e3fb9790109d0ced15cd4b5e9026c",
-    "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": "3890d420cf40fc52527848ee8cb75a98a1f6d79debbb2c44c641f462fe0744cd",
+    "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": "79147fe6ae1075f1949cb422464bf391f2d4216ae2b5721e64debe795586078e",
     "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts": "45c1b61d50e8f02b2290d9db9c8ebb7abd2652bade5bdfe88afa3e3104359bea",
-    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": "ea62066892e3160c8ae44fe85e936be5b18a1087a18e1408a047ca08f9ed8de8",
+    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": "57e0be99ace2b1625dc95418519fa4d76841a307212b3e1fb8e4dec9fd5e3010",
     "src/lib/estimate/backendPlatform/canonicalPublicSelectedSpecificationV1.ts": "a4003d21680e0ea82d7bfac1a3a60ed0748f4a5e1a2dde47263524a3b072a30b",
     "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts": "1a563f44d0987d3cbd30efea1659d2a9ba066b1fdea77780f76163e53dedbcfa",
     "src/lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1.ts": "c8abe10b60679371d137c5a790592474f3bf317ae75d390be26f7c3ef32f4448",
@@ -3625,18 +3625,18 @@
   "stats": {
     "sourceFiles": 2443,
     "dependencyFiles": 1160,
-    "sourceBytes": 132943332
+    "sourceBytes": 132945754
   },
   "candidateSourceComposition": {
-    "contract": "mandatory-operation-resource-acceptance-saved-evidence/r604",
+    "contract": "mandatory-operation-resource-acceptance-saved-manual-kind/r605",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
       "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": {
-        "sha256": "ea62066892e3160c8ae44fe85e936be5b18a1087a18e1408a047ca08f9ed8de8"
+        "sha256": "57e0be99ace2b1625dc95418519fa4d76841a307212b3e1fb8e4dec9fd5e3010"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": {
-        "sha256": "4a7842d0b776ede16a3157af6a39e8a61cbf534aef96de9b05b4a97dec2a76f9"
+        "sha256": "d602cdfdc6a8a4744bb13083cad859a810b1d7fa4e9c5141d906c4d55f64d6f4"
       },
       "src/lib/estimate/backendPlatform/contracts.ts": {
         "sha256": "f80447ecee674f2dc3bcc24ed63f0465a0d972512aa6bdd8502227784bb62456"
@@ -3654,7 +3654,7 @@
         "sha256": "7a62502caa5b5888d17bcb0be78d306935b49825e19bb27cac718841e9ae4fcf"
       },
       "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": {
-        "sha256": "3890d420cf40fc52527848ee8cb75a98a1f6d79debbb2c44c641f462fe0744cd"
+        "sha256": "79147fe6ae1075f1949cb422464bf391f2d4216ae2b5721e64debe795586078e"
       },
       "src/lib/estimate/backendPlatform/fixtures/saved-operation-acceptance-native-fan-source-r1.json": {
         "sha256": "c8d91de0e247117496d15aed9c8b7df9da176ecb9d1dee2915bf59ed4d30611e"

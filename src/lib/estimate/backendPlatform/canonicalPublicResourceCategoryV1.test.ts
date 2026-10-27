@@ -1,6 +1,6 @@
 import {canonicalPublicResourceKindFromCategoryV1 as financialKind} from './canonicalPublicResourcePresentationV1';
 import {
-  CANONICAL_PUBLIC_RESOURCE_KINDS_V1,parseCanonicalPublicResourcePresentationV1 as parse,
+  CANONICAL_PUBLIC_RESOURCE_KINDS_V1,canonicalPublicResourcePresentationKindV1 as kind,parseCanonicalPublicResourcePresentationV1 as parse,
   canonicalPublicResourcePresentationMatchesV1 as matches,
   canonicalPublicResourceCategoryTitleRuV1 as label,
   canonicalPublicResourceDisplayPresentationV1 as display,
@@ -21,11 +21,11 @@ it('accepts legacy six/seven keys and optional kind alone or with role, rejects 
   expect(parse({...old,resourceKind:'TOOL',quantity:2})).toBeNull();
   const {detailsRu:_details,...missing}=old;expect(parse({...missing,resourceKind:'TOOL'})).toBeNull();
 });
-it('requires exact saved title and rejects stale/manual taxonomy without name heuristics',()=>{
+it('requires exact ordinary saved title and retains authored taxonomy through manual renaming',()=>{
   const descriptor={...old,resourceKind:'TOOL'};
   expect(label({titleRu:old.sourceTitleRu,descriptor,category:'equipment'})).toBe('Инструмент');
   expect(label({titleRu:'Другая дрель',descriptor,category:'equipment'})).toBe('Оборудование');
-  expect(label({titleRu:old.sourceTitleRu,descriptor,manualTitleOverride:true,category:'equipment'})).toBe('Оборудование');
+  expect(label({titleRu:old.sourceTitleRu,descriptor,manualTitleOverride:true,category:'equipment'})).toBe('Инструмент');
   expect(label({titleRu:'Сверло карандаш механизм',category:''})).toBeNull();
   expect(label({titleRu:old.sourceTitleRu,descriptor:{...descriptor,resourceKind:'bad'},category:'tool'})).toBe('Инструмент');
   expect(label({titleRu:old.sourceTitleRu,graph:{publicResourcePresentationV1:descriptor},category:'equipment'})).toBe('Инструмент');
@@ -61,4 +61,26 @@ it('uses only exact persisted financial category tokens for the kind fallback',(
   expect(financialKind('tool')).toBe('TOOL');expect(financialKind('equipment')).toBe('EQUIPMENT');
   for(const category of ['',null,undefined,'LABOR',' labor ','construction_work','Дрель','materials'])
     expect(financialKind(category)).toBeNull();
+});
+
+it('preserves all ten source kinds after a manual rename without restoring source names or details',()=>{
+  const labels=['Материалы','Расходники','Инструмент','Оснастка','Оборудование','Механизмы','Труд','Услуги','Доставка','Средства защиты'];
+  CANONICAL_PUBLIC_RESOURCE_KINDS_V1.forEach((resourceKind,index)=>{
+    const descriptor={...old,resourceKind};
+    const manual={titleRu:'Моё название',descriptor,manualTitleOverride:true};
+    const before=JSON.stringify(manual);
+    expect(kind(manual)).toBe(resourceKind);
+    expect(label({...manual,category:'equipment'})).toBe(labels[index]);
+    expect(label({titleRu:manual.titleRu,graph:{publicResourcePresentationV1:descriptor},
+      manualTitleOverride:true,category:'equipment'})).toBe(labels[index]);
+    expect(display(manual)).toBeNull();
+    expect(kind({...manual,manualTitleOverride:false})).toBeNull();
+    expect(kind({...manual,titleRu:old.sourceTitleRu,manualTitleOverride:false})).toBe(resourceKind);
+    expect(JSON.stringify(manual)).toBe(before);
+  });
+  for(const descriptor of [null,{...old,resourceKind:'bad'},{...old,resourceKind:'TOOL',extra:true},
+    {...old,resourceKind:'TOOL',detailsRu:null},{...old,resourceKind:'TOOL',sourceTitleRu:''}]){
+    expect(kind({titleRu:'Моё название',descriptor,manualTitleOverride:true})).toBeNull();
+    expect(label({titleRu:'Моё название',descriptor,manualTitleOverride:true,category:'equipment'})).toBe('Оборудование');
+  }
 });

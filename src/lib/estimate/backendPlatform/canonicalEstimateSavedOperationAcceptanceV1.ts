@@ -6,7 +6,7 @@ import {
   canonicalLegacyResourceNameV1, resolveCanonicalLegacyOperationDisplayV1,
   type CanonicalEstimateOperationResourceAcceptanceV1,
 } from './canonicalEstimateOperationComposition';
-import {canonicalPublicResourceDisplayPresentationV1,canonicalPublicResourceKindFromCategoryV1,
+import {canonicalPublicResourceDisplayPresentationV1,canonicalPublicResourceKindFromCategoryV1,canonicalPublicResourcePresentationKindV1,
   parseCanonicalPublicResourcePresentationV1,canonicalPublicSavedResourceRowKindV1} from './canonicalPublicResourcePresentationV1';
 
 type Storage = Readonly<Record<string, unknown>>;
@@ -95,6 +95,8 @@ export function canonicalEstimateSavedOperationAcceptanceV1(input: {
     return [{rowId, sourceNameRu, nameRu: manualTitleOverride ? String(row.title_ru ?? '')
         : legacyName ?? presentation?.nameRu ?? String(row.title_ru ?? ''),
       resourceKind: canonicalLegacyResourceKindV1(rowId, context) ?? presentation?.resourceKind
+        ?? canonicalPublicResourcePresentationKindV1({titleRu:String(row.title_ru ?? ''),
+          descriptor:graph.publicResourcePresentationV1,manualTitleOverride})
         ?? canonicalPublicResourceKindFromCategoryV1(row.category),
       operation: display[index].operation, manualTitleOverride,
       publicNameVerified: manualTitleOverride || legacyName != null || presentation != null,

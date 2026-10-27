@@ -46,6 +46,18 @@ export function canonicalPublicResourcePresentationV1(input: {
   return presentation?.sourceTitleRu === input.titleRu ? presentation : null;
 }
 
+/** Resource type survives an explicit saved manual rename. This getter supplies
+ * taxonomy only: it never returns or rewrites the user's name or details.
+ * Ordinary source rows retain the exact source-title binding requirement. */
+export function canonicalPublicResourcePresentationKindV1(input: {
+  titleRu: string; descriptor: unknown; manualTitleOverride?: boolean;
+}): CanonicalPublicResourceKindV1 | null {
+  const source = input.manualTitleOverride
+    ? parseCanonicalPublicResourcePresentationV1(input.descriptor)
+    : canonicalPublicResourcePresentationV1(input);
+  return source?.resourceKind ?? null;
+}
+
 /** Brand-free display is separate from authored identity validation and saved
  * title binding, so public wording never rewrites the source descriptor. */
 export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<typeof canonicalPublicResourcePresentationV1>[0] & {
@@ -154,15 +166,15 @@ export function canonicalPublicResourceKindTitleRuV1(kind:CanonicalPublicResourc
 }
 
 /** Source-bound public taxonomy; five financial buckets remain independent.
- * A stale/malformed/manual descriptor cannot classify the saved resource. */
+ * A stale nonmanual or malformed descriptor cannot classify the saved resource. */
 export function canonicalPublicResourceCategoryTitleRuV1(input: {
   titleRu: string; descriptor?: unknown; graph?: Readonly<Record<string,unknown>>;
   category?: string | null; manualTitleOverride?: boolean;
 }): string | null {
-  const presentation=canonicalPublicResourcePresentationV1({titleRu:input.titleRu,
+  const kind=canonicalPublicResourcePresentationKindV1({titleRu:input.titleRu,
     descriptor:input.descriptor===undefined?input.graph?.publicResourcePresentationV1:input.descriptor,
     manualTitleOverride:input.manualTitleOverride});
-  if(presentation?.resourceKind)return canonicalPublicResourceKindTitleRuV1(presentation.resourceKind);
+  if(kind)return canonicalPublicResourceKindTitleRuV1(kind);
   const raw:Readonly<Record<string,string>>={material:'Материалы',materials:'Материалы',
     tool:'Инструмент',equipment:'Оборудование',machinery:'Механизмы',mechanism:'Механизмы',
     labor:'Труд',work:'Работы',service:'Услуги',transport:'Доставка',delivery:'Доставка'};
