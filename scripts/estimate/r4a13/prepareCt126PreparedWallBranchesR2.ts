@@ -139,7 +139,7 @@ export function ct126PreparedWallMasterConfigR2(parent:{releaseId:string;searchR
   // and historical rows stay frozen; no other source pin is relaxed.
   const expected=pin.path==='src/lib/estimate/v4/ct126DryWallS2754.ts'
    &&pin.sha256==='0388b23ef901934aec2789d076c508c509b1915a61a8969f0e96cae611b577cc'
-   ?'893ece9192c28594814a7123325c86cf634d27bb091ae89bb9d44a772eb68fd7':pin.sha256;
+   ?'14f290a79f4ab34e9b781fbbf6901d424679d0844b097af2d6e6ee429ec9dea6':pin.sha256;
   assert.equal(sha(pin.path),expected,'CT126_R2_SOURCE_PIN:'+pin.path);
  }
  // Raw historical formula records retain PG microseconds for the strict retained guard.
