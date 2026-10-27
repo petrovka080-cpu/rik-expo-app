@@ -1,0 +1,11 @@
+{
+  "schema": "professional_boq_material_completeness_family_slots_v1",
+  "strategy": "derive_required_slots_from_professional_work_passport_procurement_rows",
+  "serviceOnlyExemptions": [],
+  "policy": {
+    "allConstructionTemplatesMaterialRequired": true,
+    "all11610TemplatesHaveMaterialRows": true,
+    "broadGenericMaterialAllowlist": false,
+    "fakeMaterialsForMinCountAllowed": false
+  }
+}
