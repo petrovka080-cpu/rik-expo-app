@@ -36,7 +36,7 @@ def batch(root,commit,paths,temporary):
  job=OwnedLauncherJob();child=None;start=time.monotonic();peak=0
  try:
   with request.open('rb')as stdin,output.open('wb')as stdout,error.open('wb')as stderr:
-   child=subprocess.Popen(['git','-C',str(root),'cat-file','--batch'],stdin=stdin,stdout=stdout,stderr=stderr,creationflags=subprocess.CREATE_NO_WINDOW|0x00000004)
+   child=subprocess.Popen(['git','-c','core.packedGitLimit=16m','-c','core.packedGitWindowSize=4m','-c','core.deltaBaseCacheLimit=8m','-C',str(root),'cat-file','--batch'],stdin=stdin,stdout=stdout,stderr=stderr,creationflags=subprocess.CREATE_NO_WINDOW|0x00000004)
    job.assign_and_resume_suspended(child)
    while True:
     peak=max(peak,rss(os.getpid())+sum(rss(p)for p in job.pids()));free,commit_free=available()
