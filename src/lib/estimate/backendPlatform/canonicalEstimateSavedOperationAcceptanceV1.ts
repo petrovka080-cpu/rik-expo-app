@@ -110,6 +110,12 @@ export function canonicalEstimateSavedOperationAcceptanceV1(input: {
 
 /** Reads expose diagnostics; artifact issuance asserts the same common result. */
 export function assertCanonicalEstimateSavedArtifactStructureV1(acceptance: CanonicalEstimateOperationResourceAcceptanceV1): void {
-  if (!acceptance.pdfAllowed) throw Object.assign(new Error('saved operation/resource structure invalid'), {
-    code: 'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID', httpStatus: 409, operationResourceAcceptanceV1: acceptance});
+  if (!acceptance.pdfAllowed) {
+    const unverified = acceptance.status === 'COMPOSITION_UNVERIFIED';
+    throw Object.assign(new Error(unverified
+      ? 'Состав подработ не проверен. PDF пока недоступен.'
+      : 'В составе подработ обнаружены ошибки. PDF пока недоступен.'), {
+      code: unverified ? 'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED' : 'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID',
+      httpStatus:409,operationResourceAcceptanceV1:acceptance});
+  }
 }

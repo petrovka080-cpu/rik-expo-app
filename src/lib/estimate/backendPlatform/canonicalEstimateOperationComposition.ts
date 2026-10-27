@@ -510,7 +510,10 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
   const unresolvedOnly=(issue:Issue)=>issue.code==='RESOURCE_QUANTITY_UNRESOLVED'
     ||issue.code.startsWith('OPERATION_RESOURCE_CLASS_UNRESOLVED_');
   return{contractVersion:'canonical-operation-resource-acceptance/v1',status,issues:[...errors,...unverified],
-    pdfAllowed:errors.length===0,
+    // A partial definition may remain visible for authoring, but issuing a PDF
+    // requires reviewed operation composition. Unknown numeric quantities are
+    // the sole permitted unresolved condition; they never imply completeness.
+    pdfAllowed:errors.length===0&&unverified.every(issue=>issue.code==='RESOURCE_QUANTITY_UNRESOLVED'),
     definitionAdmissionAllowed:errors.length===0&&unverified.every(unresolvedOnly),
     // This is a necessary composition condition. Existing source, quantity,
     // engineering and money acceptance remain mandatory for a complete estimate.

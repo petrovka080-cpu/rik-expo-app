@@ -199,7 +199,9 @@ export function ConsumerRepairRequestStickyActions({
         accessibilityRole="alert" testID="consumer-repair-operation-composition-diagnostic">
         {operationCompositionDiagnostic.state==='PENDING'?'Проверяем состав сохранённой сметы…'
           :operationCompositionDiagnostic.state==='UNAVAILABLE'?'Проверка состава этой версии пока недоступна. Перед выдачей PDF и списка закупки приложение проверит состав.'
-          :compositionPdfBlocked?'Состав сметы требует исправления. PDF и список закупки пока недоступны; сохранённые позиции, количества и цены не изменены.'
+          :compositionPdfBlocked?(operationCompositionDiagnostic.acceptance?.status==='COMPOSITION_UNVERIFIED'
+            ?'Состав подработ не проверен. PDF пока недоступен. Список закупки также недоступен; смету можно просматривать и подтвердить вручную как предварительную.'
+            :'Состав сметы требует исправления. PDF и список закупки пока недоступны; сохранённые позиции, количества и цены не изменены.')
           :operationCompositionDiagnostic.acceptance?.status==='COMPOSITION_UNVERIFIED'
             ?'Состав подработ ещё не подтверждён полностью. Можно вручную подтвердить предварительную версию; это не означает, что все необходимые ресурсы проверены.'
             :'Состав подработ и ресурсов проверен.'}

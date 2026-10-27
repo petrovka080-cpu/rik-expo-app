@@ -212,7 +212,10 @@ export function ConsumerRepairRequestScreenView({
     // A diagnostic for the open editor is never authority for another draft.
     const targetsCurrent=!targetRequestDraftId||targetRequestDraftId===renderModel.bundle?.draft.id;
     if(targetsCurrent&&operationDiagnostic?.acceptance?.pdfAllowed===false){
-      Alert.alert('Состав сметы требует исправления','PDF и список закупки пока недоступны. Сохранённая смета остаётся доступной для просмотра и исправления.');
+      const unverified=operationDiagnostic.acceptance.status==='COMPOSITION_UNVERIFIED';
+      Alert.alert(unverified?'Состав подработ не проверен':'Состав сметы требует исправления',
+        unverified?'Состав подработ не проверен. PDF пока недоступен. Список закупки также недоступен. Сохранённую версию можно просматривать и подтвердить вручную как предварительную.'
+          :'PDF и список закупки пока недоступны. Сохранённая смета остаётся доступной для просмотра и исправления.');
       return;
     }
     action();

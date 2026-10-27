@@ -44,6 +44,8 @@ it('requires independently declared operation/resource/name/kind evidence at bot
  const partialAdmission=admit({resourceDefinitions:resources,independentComposition:map});
  expect(partialAdmission.definitionAdmissionAllowed).toBe(true);expect(partialAdmission.completeClaimAllowed).toBe(false);
  expect(partialAdmission.status).toBe('COMPOSITION_UNVERIFIED');
+ // Visible source-reviewed but unresolved composition can be authored, never issued as a PDF.
+ expect(partialAdmission.pdfAllowed).toBe(false);
  const noReview={...map,operationRequirements:undefined};expect(()=>admit({resourceDefinitions:resources,independentComposition:noReview})).toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');
  const incompleteClasses={...reviewedClasses,PPE:undefined};
  expect(()=>admit({resourceDefinitions:resources,independentComposition:{...map,operationRequirements:[{operationId:operation.operationId,sourceId:'TEST_ONLY_SOURCE',requirements:incompleteClasses}]}})).toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');

@@ -237,7 +237,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:37",
+      templateVersion: "professional-estimate-pdf:38",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,
@@ -303,9 +303,10 @@ describe('full saved-row operation acceptance before artifact filtering', () => 
     const saved={...revision,input_parameters:{},amendment_contract:{parameterSources:{}}};
     const resources=[resource('fixings',null)];const before=JSON.stringify({saved,resources});
     const result=canonicalEstimateSavedOperationAcceptanceV1({revision:saved,resources});
-    expect(result.status).toBe('COMPOSITION_UNVERIFIED');expect(result.pdfAllowed).toBe(true);
+    expect(result.status).toBe('COMPOSITION_UNVERIFIED');expect(result.pdfAllowed).toBe(false);
     expect(result.completeClaimAllowed).toBe(false);expect(result.issues).toContainEqual({code:'RESOURCE_QUANTITY_UNRESOLVED'});
-    expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(result)).not.toThrow();
+    expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(result)).toThrow(expect.objectContaining({
+      code:'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED',httpStatus:409,message:'Состав подработ не проверен. PDF пока недоступен.'}));
     expect(JSON.stringify({saved,resources})).toBe(before);
   });
   it('does not lose an invalid excluded row before the common structure guard',()=>{
@@ -313,7 +314,7 @@ describe('full saved-row operation acceptance before artifact filtering', () => 
     const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
     expect(result.status).toBe('STRUCTURE_INVALID');
     expect(result.issues).toContainEqual({code:'RESOURCE_OPERATION_MISSING',rowId:'unassigned'});
-    expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(result)).toThrow('saved operation/resource structure invalid');
+    expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(result)).toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID',httpStatus:409}));
   });
   it('keeps explicit manual names and shared operation identities without creating a second row',()=>{
     const first=resource('fixings','1');
@@ -322,7 +323,7 @@ describe('full saved-row operation acceptance before artifact filtering', () => 
         additionalOperations:[{operationId:'check',operationTitleRu:'Проверить крепление',completionCriterionRu:'Крепление проверено'}]}}}};
     const resources=[first,related];const before=JSON.stringify(resources);
     const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
-    expect(result.pdfAllowed).toBe(true);expect(result.completeClaimAllowed).toBe(false);
+    expect(result.pdfAllowed).toBe(false);expect(result.completeClaimAllowed).toBe(false);
     expect(result.issues.some(issue=>issue.code==='PUBLIC_RESOURCE_NAME_UNVERIFIED')).toBe(false);
     expect(resources).toHaveLength(2);expect(JSON.stringify(resources)).toBe(before);
   });
@@ -335,7 +336,7 @@ it('does not call an explicit labor/work row physical when its generic operation
     const resources=[{row_id:'labor',title_ru:'Монтаж',quantity:null,category,
       calculation_trace:{resourceGraph:{operationCompositionV1:operation}}}];
     const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
-    expect(result.pdfAllowed).toBe(true);expect(result.completeClaimAllowed).toBe(false);
+    expect(result.pdfAllowed).toBe(false);expect(result.completeClaimAllowed).toBe(false);
     expect(result.issues.some(issue=>issue.code==='RESOURCE_USED_AS_OPERATION')).toBe(false);
   }
   const unresolved=[{row_id:'resource',title_ru:'Монтаж',quantity:null,category:'unclassified',
@@ -344,12 +345,14 @@ it('does not call an explicit labor/work row physical when its generic operation
     .toContainEqual({code:'RESOURCE_USED_AS_OPERATION',rowId:'resource',operationId:'mount'});
 });
 
-it('admits exact native saved5 membership as a draft and blocks checksum drift without substituting current source',()=>{
+it('retains exact native saved5 membership as a readable draft while holding new PDF and blocks checksum drift without substituting current source',()=>{
   const fixture=JSON.parse(JSON.stringify(savedFanAcceptanceFixture));const before=JSON.stringify(fixture);
   expect(fixture.resources).toHaveLength(19);
   const result=canonicalEstimateSavedOperationAcceptanceV1(fixture);
-  expect(result.status).toBe('COMPOSITION_UNVERIFIED');expect(result.pdfAllowed).toBe(true);
+  expect(result.status).toBe('COMPOSITION_UNVERIFIED');expect(result.pdfAllowed).toBe(false);
   expect(result.completeClaimAllowed).toBe(false);expect(result.definitionAdmissionAllowed).toBe(false);
+  expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(result)).toThrow(expect.objectContaining({
+    code:'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED',httpStatus:409}));
   const drift=canonicalEstimateSavedOperationAcceptanceV1({...fixture,
     revision:{...fixture.revision,checksum_sha256:'0'.repeat(64)}});
   expect(drift.pdfAllowed).toBe(false);expect(drift.status).toBe('STRUCTURE_INVALID');
@@ -369,7 +372,7 @@ it('retains original source-title parity across public and manual aliases withou
   const manual={...source,title_ru:'Мой крепёж',calculation_trace:{...source.calculation_trace,manualTitleOverride:true}};
   expect(audit(manual).issues).toContainEqual({code:'RESOURCE_USED_AS_OPERATION',rowId:'source',operationId:'bad-heading'});
   const noSavedSource={...manual,calculation_trace:{manualTitleOverride:true,resourceGraph:{operationCompositionV1:operation}}};
-  expect(audit(noSavedSource).pdfAllowed).toBe(true);expect(audit(noSavedSource).completeClaimAllowed).toBe(false);
+  expect(audit(noSavedSource).pdfAllowed).toBe(false);expect(audit(noSavedSource).completeClaimAllowed).toBe(false);
 });
 
 test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
@@ -403,7 +406,7 @@ test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
   });
 
 it('separates archived metadata identity from current PDF issuance and preserves old bytes/source',()=>{
-  const renderer='canonical-professional-pdf.r4-a13-operation-resource-acceptance-template85';
+  const renderer='canonical-professional-pdf.r4-a13-verified-operation-composition-template86';
   const saved={...revision,definition_version_id:'definition-version-1'};
   const current=buildCanonicalArtifactMetadata({operation:'professional_pdf',renderer,revision:saved,
     sourceRowCount:3,projectedRowCount:3,selectedProcurementRowCount:0,definitionVersionId:'definition-version-1',
@@ -465,7 +468,9 @@ it('cold-reads the exact server passport snapshot, rejects drift and never upgra
   const manual=resources.map(row=>({...row,title_ru:'Моё название',calculation_trace:{...row.calculation_trace,manualTitleOverride:true}}));
   expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources:manual}).status).toBe('ACCEPTED');
   const unknown=resources.map((row,index)=>index?row:{...row,quantity:null});
-  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources:unknown})).toMatchObject({status:'COMPOSITION_UNVERIFIED',pdfAllowed:true,completeClaimAllowed:false});
+  const quantityOnly=canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources:unknown});
+  expect(quantityOnly).toMatchObject({status:'COMPOSITION_UNVERIFIED',pdfAllowed:true,completeClaimAllowed:false});
+  expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(quantityOnly)).not.toThrow();
   const legacy={...saved,amendment_contract:{}};
   expect(canonicalEstimateSavedOperationAcceptanceV1({revision:legacy,resources}).status).toBe('COMPOSITION_UNVERIFIED');
   expect(canonicalEstimateSavedOperationAcceptanceV1({revision:legacy,resources,savedIndependentComposition:map}).pdfAllowed).toBe(false);

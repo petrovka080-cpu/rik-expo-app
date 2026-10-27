@@ -248,15 +248,16 @@ test('public row taxonomy uses only verified presentation even when public name 
  expect(r.root.findByProps({testID:'consumer-repair-item-resource-kind-unverified-kind'}).props.children).toBe('Оборудование');
  act(()=>r.unmount());
 });
-test('unverified composition is visible before manual preliminary approval without disabling that explicit path',()=>{
+test.each([true,false])('unverified composition keeps explicit manual approval while PDF follows common pdfAllowed=%s',pdfAllowed=>{
  const manual=jest.fn(),result={contractVersion:'canonical-operation-resource-acceptance/v1' as const,
-  status:'COMPOSITION_UNVERIFIED' as const,issues:[{code:'RESOURCE_QUANTITY_UNRESOLVED'}],pdfAllowed:true,
+  status:'COMPOSITION_UNVERIFIED' as const,issues:[{code:pdfAllowed?'RESOURCE_QUANTITY_UNRESOLVED':'INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED'}],pdfAllowed,
   definitionAdmissionAllowed:false,completeClaimAllowed:false};
  const before=JSON.stringify(result),r=render(<ConsumerRepairRequestStickyActions approved={false} sent={false} hasBundle hasSnapshot
   operationCompositionDiagnostic={{state:'AVAILABLE',acceptance:result}} manualQuantityApprovalAvailable
   approvalManualUnresolvedRowCount={1} onOpenPdf={noop} onMakePdf={noop} onCreateNew={noop} onDeleteDraft={noop}
   onApproveDraft={noop} onApproveManualQuantities={manual} onPrepareDraft={noop}/>);
- expect(JSON.stringify(r.toJSON())).toContain('Состав подработ ещё не подтверждён полностью');
+ expect(JSON.stringify(r.toJSON())).toContain(pdfAllowed?'Состав подработ ещё не подтверждён полностью':'Состав подработ не проверен. PDF пока недоступен.');
+ expect(r.root.findByProps({testID:'consumer-estimate-make-pdf'}).props.disabled).toBe(!pdfAllowed);
  const approve=r.root.findByProps({testID:'consumer-repair-approve'});expect(approve.props.disabled).toBe(false);
  act(()=>approve.props.onPress());expect(manual).not.toHaveBeenCalled();
  act(()=>r.root.findByProps({testID:'consumer-repair-manual-quantity-confirm'}).props.onPress());

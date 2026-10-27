@@ -15,6 +15,17 @@ import unresolvedCeiling from '../../../../data/estimate-benchmarks/fixtures/mas
 import geometryCatalogs from '../../../../data/estimate-benchmarks/fixtures/master24-ordinary-geometry-current-catalogs-r1.json';
 import type {CanonicalEstimateCatalogItem} from './contracts';
 
+// This unit suite isolates HTML layout/money from artifact admission. It does
+// not admit its synthetic rows as a real technology. Actual saved composition
+// refusal and quantity-only approval run without mocks in artifact/owner suites.
+// Production build keeps the strict assert; structural defects remain real here.
+jest.mock('./canonicalEstimateSavedOperationAcceptanceV1',()=>{
+  const actual=jest.requireActual<typeof import('./canonicalEstimateSavedOperationAcceptanceV1')>('./canonicalEstimateSavedOperationAcceptanceV1');
+  return {...actual,assertCanonicalEstimateSavedArtifactStructureV1:(acceptance:Parameters<typeof actual.assertCanonicalEstimateSavedArtifactStructureV1>[0])=>{
+    if(acceptance.status==='STRUCTURE_INVALID')actual.assertCanonicalEstimateSavedArtifactStructureV1(acceptance);
+  }};
+});
+
 // Synthetic layout/money fixtures declare one real test process. This does
 // not enrich producer output or saved captures and proves no independent kit.
 const syntheticPdfOperation={contractVersion:'canonical-operation-resource/v1',groupId:'test-layout',
@@ -533,7 +544,7 @@ describe("R4-A6 canonical professional PDF", () => {
       definitionVersionId: "99999999-8888-7777-6666-555555555555",
     });
 
-    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-operation-resource-acceptance-template85");
+    expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe("canonical-professional-pdf.r4-a13-verified-operation-composition-template86");
     expect(projection).toMatchObject({
       rowCount: 45,
       pricedRowCount: 44,
