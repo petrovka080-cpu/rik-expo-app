@@ -174,6 +174,8 @@ export type CanonicalParameterSession = {
   parameters: readonly CanonicalParameter[];
   /** Read-only source values; excluded from user questions, readiness and submitted edits. */
   applicationParameters?: readonly CanonicalParameter[];
+  /** Saved source readbacks for visibility only. Never questions, user inputs or new source confirmation. */
+  sourceReadbackConditionValuesV1?: Readonly<Record<string, CanonicalParameterValue>>;
   /** Validated definition closure for presentation only; never a user/source admission. */
   sourceProfileVisibilityV1?: import('./canonicalParameterSessionConditionValuesV1').CanonicalSourceProfileVisibilityContextV1;
   /** Retained branch values that are hidden from the active editor projection. */

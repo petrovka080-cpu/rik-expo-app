@@ -29,8 +29,10 @@ export function projectCanonicalSourceProfileVisibilityContextV1(
 export function canonicalParameterSessionConditionValuesV1(
   session: CanonicalParameterSession, parameters: readonly CanonicalParameter[] = session.parameters,
 ): Map<string, CanonicalParameterValue> {
-  const values = new Map([...parameters, ...(session.applicationParameters ?? [])]
-    .filter(p => p.value != null).map(p => [p.parameterId, p.value!] as const));
+  const values = new Map<string, CanonicalParameterValue>(Object.entries(session.sourceReadbackConditionValuesV1 ?? {}));
+  for (const parameter of [...parameters, ...(session.applicationParameters ?? [])]) {
+    if (parameter.value != null) values.set(parameter.parameterId, parameter.value);
+  }
   const context = session.sourceProfileVisibilityV1;
   if (!context) return values;
   const ownedIds = [context.metadata.selectorParameterId,

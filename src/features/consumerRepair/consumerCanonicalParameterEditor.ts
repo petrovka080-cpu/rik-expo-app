@@ -496,6 +496,17 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
     input.catalog.parameterSchema,input.catalog.applicability.sourceProfileSelectionV1)}};
   if(!input.revisionId.startsWith('precompile:')&&input.catalog.parameterSchema.some(p=>p.parameterId===floorPreparationIntentBindingS2769.modeId))input={...input,
     parameters:floorPreparationEditingParametersS2769(input.catalog.catalogId,input.parameters)};
+  // Only immutable saved values marked as source readbacks supply this hidden
+  // condition context. Baselines/defaults and raw precompile text are not facts.
+  const sourceReadbackConditionValuesV1: Record<string, CanonicalParameterValue> = {};
+  if (!input.revisionId.startsWith('precompile:')) for (const schema of input.catalog.parameterSchema) {
+    if (schema.visibilityRole !== 'INTERNAL_ONLY' || schema.provenance?.source_readback_only_v1 !== true
+      || !isCanonicalEstimateSourceManagedParameter(schema)
+      || !Object.prototype.hasOwnProperty.call(input.parameters, schema.parameterId)) continue;
+    const value = scalarValue(schema, input.parameters[schema.parameterId]);
+    if (value == null || (schema.valueType === 'enum' && !allowedValues(schema).some(choice => choice === value))) continue;
+    sourceReadbackConditionValuesV1[schema.parameterId] = value;
+  }
   const allParameters = input.catalog.parameterSchema
     .filter((schema) => isConsumerMeaningfulCanonicalParameter(schema)
       || (input.parameters[schema.parameterId] != null
@@ -541,6 +552,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   const values = new Map(allParameters
     .filter((parameter) => parameter.value != null)
     .map((parameter) => [parameter.parameterId, parameter.value!] as const));
+  for (const [id, value] of Object.entries(sourceReadbackConditionValuesV1)) values.set(id, value);
   if (input.catalog.applicability.sourceProfileSelectionV1 !== undefined) {
     const editableIds = new Set(input.catalog.parameterSchema
       .filter(isCanonicalEstimateUserEditableParameter).map(parameter => parameter.parameterId));
@@ -654,6 +666,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
   const fingerprint = estimateDeterministicHash({
     revisionId: input.revisionId,
     checksum: input.checksum,
+    ...(Object.keys(sourceReadbackConditionValuesV1).length ? {sourceReadbackConditionValuesV1} : {}),
     parameters: allParameters.map((parameter) => ({
       id: parameter.parameterId,
       value: parameter.value,
@@ -683,6 +696,7 @@ function buildConsumerCanonicalParameterSessionFromValues(input: {
     status,
     parameters: visibleParameters,
     ...(applicationParameters.length ? { applicationParameters } : {}),
+    ...(Object.keys(sourceReadbackConditionValuesV1).length ? {sourceReadbackConditionValuesV1} : {}),
     ...(input.catalog.applicability.sourceProfileSelectionV1 === undefined ? {} : {
       sourceProfileVisibilityV1: projectCanonicalSourceProfileVisibilityContextV1(
         input.catalog.parameterSchema, input.catalog.applicability.sourceProfileSelectionV1),

@@ -91,5 +91,17 @@
   "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.test.ts": null,
   "scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts": null,
   "src/lib/estimate/professionalUnitRegistry.ts": null,
-  "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts": null
+  "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts": null,
+  "src/lib/estimate/canonicalParameters/canonicalParameterCore.ts": null,
+  "src/lib/estimate/canonicalParameters/canonicalParameterSessionConditionValuesV1.ts": null,
+  "src/features/consumerRepair/consumerCanonicalParameterEditor.finiteMembershipR53.test.ts": null,
+  "src/lib/estimate/v4/ledLuminaireInstallationR1.ts": null,
+  "tests/estimateNorms/ledLuminaireInstallationR1.contract.test.ts": null,
+  "scripts/estimate/r4a13/prepareMasterLedLuminaireInstallationSuccessor.ts": null,
+  "src/lib/estimate/v4/opticalFiberSplicingR1.ts": null,
+  "tests/estimateNorms/opticalFiberSplicingR1.contract.test.ts": null,
+  "scripts/estimate/r4a13/prepareMasterOpticalFiberSplicingSuccessor.ts": null,
+  "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.ts": null,
+  "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts": null,
+  "scripts/estimate/r4a13/prepareFloorCementScreed20mmColumn01AppendR1.ts": null
 }

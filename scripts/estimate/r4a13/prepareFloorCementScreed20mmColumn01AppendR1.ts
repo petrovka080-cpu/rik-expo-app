@@ -3,7 +3,9 @@ import{strict as assert}from'node:assert';
 import{createHash}from'node:crypto';
 import{readFileSync}from'node:fs';
 import{resolve}from'node:path';
-import type{MasterSingleDefinitionSuccessorConfig}from'./prepareMasterSingleDefinitionSuccessorR1';
+import{readMasterSuccessorTargetPreimageR1,validateIndependentCompletenessMapReferences,type MasterSingleDefinitionSuccessorConfig}from'./prepareMasterSingleDefinitionSuccessorR1';
+import{floorScreedPhysicalCycleDefinitionR1,floorScreedPhysicalCycleCompletenessR1,floorScreedPhysicalCyclePackR1 as cycle}from'../../../src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3';
+import type{AutomaticOwnerDefinition}from'../../../src/lib/estimate/v4/automaticConstructionOwnerR1';
 import type{MasterCapturedScopedNormativeRegistryR1,MasterScopedNormativeRegistryInputR1}from'./masterScopedNormativeRegistryPreimageR1';
 import{floorCementScreed20mmPackR1 as pack,floorCementScreed20mmDefinitionR1 as factory,
  floorCementScreed20mmCompletenessMapR1 as completeness,floorCementScreed20mmScenarioFactsR1 as facts,
@@ -48,7 +50,68 @@ export function assertScreed01101CurrentBaseR1(read:Json,guard:Json,review:Json)
   assert(r&&r.unchanged===true,'SCREED01101_PREVIOUS_BODY_NOT_PRESERVED');assert.equal(r.actual_definition_id,old.definitionId);assert.equal(r.actual_definition_hash,old.definitionHash);}
  return b;
 }
-export function prepareFloorCementScreed20mmColumn01AppendR1(e:Screed01101GovernedEvidenceR1):MasterSingleDefinitionSuccessorConfig{
+export type Screed01101CurrentPhysicalContextR1=Readonly<{currentPhysicalCycle:Readonly<{
+ releaseId:string;searchReleaseId:string;outputRoot:string;actualBodyProof:Screed01101PinR1;targetPreimage:Screed01101PinR1;
+ master:Screed01101PinR1;currentRelease:Screed01101PinR1;physicalSourcePack:Screed01101PinR1;formalScopedCapture?:Screed01101PinR1;
+}>}>;
+export function prepareFloorCementScreed20mmColumn01AppendR1(e:Screed01101GovernedEvidenceR1|Screed01101CurrentPhysicalContextR1):MasterSingleDefinitionSuccessorConfig{
+ if('currentPhysicalCycle' in e){
+  const c=e.currentPhysicalCycle,p=cycle,moduleSourceRoot=resolve(__dirname,'../../..');
+  for(const pin of [c.actualBodyProof,c.targetPreimage,c.master,c.currentRelease,c.physicalSourcePack,...(c.formalScopedCapture?[c.formalScopedCapture]:[])])
+   assert.equal(sha(readFileSync(pin.path)),pin.sha256,'SCREED_CURRENT_CONTEXT_BYTES:'+pin.path);
+  assert.equal(c.master.sha256,'92c04a456ecd85afcc699e7da5e6cf97114db1a74019fd203f1816c2b81ca08f','SCREED_CURRENT_MASTER_224');
+  assert.equal(c.actualBodyProof.sha256,p.actualCurrent.proofSha256,'SCREED_R833_PROOF');
+  assert.equal(resolve(c.physicalSourcePack.path),resolve(moduleSourceRoot,'data/estimate-benchmarks/source-packs/cement-screed20mm-current-physical-cycle-r1.json'),'SCREED_SOURCE_PIN_MUST_BE_IMPORTED_MODULE_JSON');
+  assert.deepEqual(JSON.parse(readFileSync(c.physicalSourcePack.path,'utf8')),p,'SCREED_MATERIALIZED_SOURCE_IDENTITY');
+  const proof=load(c.actualBodyProof),pointer=load(c.currentRelease),actual=proof.results.find((x:Json)=>x.target?.catalogId===p.catalogId&&x.target?.sourceId===p.contract),captured=load(c.targetPreimage);
+  assert.equal(c.releaseId,proof.selectedReleaseId,'SCREED_SELECTED_PARENT_R833_REQUIRED');
+  assert.equal(pointer.definitionReleaseId,c.releaseId,'SCREED_CURRENT_DEFINITION_POINTER');assert.equal(pointer.searchReleaseId,c.searchReleaseId,'SCREED_CURRENT_SEARCH_POINTER');
+  assert(actual?.current,'SCREED_ACTUAL_REQUESTED_TARGET_MISSING');
+  assert.equal(proof.transactionRolledBack,true);assert.equal(proof.connectionClosed,true);
+  assert.deepEqual(captured,actual.current,'SCREED_ACTUAL_REQUESTED_TARGET');assert.deepEqual(captured.header,p.actualCurrent.header,'SCREED_CURRENT_HEADER');
+  assert.equal(captured.sourceId,p.contract,'SCREED_NEW_SOURCE_KEY');assert.equal(captured.sets.newSource.rowCount,0,'SCREED_NEW_SOURCE_ABSENCE');
+  for(const source of p.sources)assert.equal(sha(readFileSync(source.path)),source.sha256,'SCREED_PRIMARY_SOURCE:'+source.path);
+  // The historical baseline is VALIDATION_FIXTURE, never runtime/object evidence.
+  const snapshot=JSON.parse(JSON.stringify(p.actualCurrent.retainedBody)),base:AutomaticOwnerDefinition={...snapshot,
+   runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:snapshot.parameters.filter((x:Json)=>x.required).map((x:Json)=>x.parameter_id)},
+   d=floorScreedPhysicalCycleDefinitionR1(base,'ACTUAL_MEASURES_R1'),map=floorScreedPhysicalCycleCompletenessR1('ACTUAL_MEASURES_R1'),
+   holds=new Set(d.parameters.filter(x=>x.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM').map(x=>x.parameter_id)),
+   open=d.resources.filter(r=>d.formulas.find(f=>f.formula_id===r.formula_id)!.input_parameter_ids.some(id=>holds.has(id))).map(r=>r.row_id),
+   bound=d.resources.filter(r=>!open.includes(r.row_id)).map(r=>r.row_id),input={[pack.measurement.parameterId]:'125'},
+   {retainedBody:_body,...compactCurrent}=p.actualCurrent,compactPack={...p,actualCurrent:compactCurrent},
+   formal=c.formalScopedCapture?load(c.formalScopedCapture)as MasterCapturedScopedNormativeRegistryR1:undefined;
+  assert.equal(open.length,18,'SCREED_DECLARED_18_SOURCE_HOLDS_INCLUDES_TWO_RETAINED_INACTIVE');
+  return{contract:p.contract,stopCode:'SCREED_CURRENT_MEASURED_PHYSICAL_R1',applicationName:'screed-current-measured-physical-r1',expectedBranch:'codex/r4-a5-clean-08b18902',
+   masterPath:c.master.path,masterSha256:c.master.sha256,parentReleaseId:c.releaseId,parentSearchReleaseId:c.searchReleaseId,
+   currentReleasePath:c.currentRelease.path,outputRoot:c.outputRoot,catalogId:p.catalogId,sourceId:p.contract,normId:'PROJECT_SYSTEM:SCREED_CURRENT_MEASURED_PHYSICAL_R1',
+   sourcePaths:[c.physicalSourcePack.path,...[selfPath,factoryPath,'src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.ts',
+    'src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts','data/estimate-benchmarks/source-packs/three-subwork-physical-resource-completion-r3.json',packPath].map(path=>resolve(moduleSourceRoot,path)),
+    c.actualBodyProof.path,c.targetPreimage.path,c.master.path,c.currentRelease.path,...p.sources.map(x=>x.path),...(c.formalScopedCapture?[c.formalScopedCapture.path]:[])],
+   sourceMetadata:{source_title:'Цементная стяжка 20 мм: текущий целый состав и измерительное обеспечение',source_authority:'КРЕР11-01-011-01; СПКР65-101:2025; фактические измерительные балансы',
+    source_kind:'PROJECT_SYSTEM',artifact_sha256:c.physicalSourcePack.sha256,official_url:null,exact_locator:'Exact011-01; SPfloor8.1/8.4/8.7; currentR833 retained128/91/91;4measuredrules, no newnorm',
+    use_restriction:'SOURCE_ONLY NEEDS_SOURCE:18declaredsourceholds include2retainedinactive.21technicalconditions and actualstock/order/price unconfirmed. ReadyM15020mm only.'},
+   ...(formal?{capturedScopedNormativeRegistry:formal}:{}),parameterDefinitions:d.parameters,formulaDefinitions:d.formulas,resourceDefinitions:d.resources,
+   shortInput:input,acceptanceInput:input,runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},
+   expectedParentShape:[128,91,91],benchmarkOrdinal:0,validationScenario:'R833_READY_M150_CEMENT20_WHOLE_WITH_FOUR_MEASURED_RULES_AND_18_DECLARED_SOURCE_HOLDS',
+   passport:{canonicalRuName:pack.titleRu,workKey:pack.proposedIdentity.workKey,physicalResultRu:'Цементная стяжка 20 мм из готового раствора М150; неизвестные количества и условия сохранены.',
+    includedScopeRu:p.operations.map(x=>x.nameRu),excludedScopeRu:[...pack.exclusionsRu],independentCompletenessMap:map,unresolvedApplicableResourceRowIds:open},
+   applicability:{exactTargetPreimage:c.targetPreimage,actualBodyProof:c.actualBodyProof,fullTechnicalAcceptance:false,physicalResourceCoverageComplete:false,
+    newNorms:0,actualObjectClosures:0,retainedSourceNormParams:5,retainedInactiveSourceRows:2,remainingNewSourceNormRows:13,protectedConditions:21,
+    baselineValidationFixtureNotRuntimeEvidence:true,consumptionIsNotOrder:true},
+   binding:{rowId:bound[0]!,additionalRowIds:bound.slice(1),ordinaryCompositeSourceV1:{contract:'master-ordinary-composite-source/v1',capturedSourcePreimage:{sourceKey:p.contract,expected:null}},
+    applicability:{actualParentSha256:p.actualCurrent.header.definition_sha256,fullTechnicalAcceptance:false}},
+   locator:{key:'screed20-current-measured-physical-r1:114-resources:v1',payload:{sourcePack:compactPack,actualBodyProof:c.actualBodyProof,
+    independentCompletenessMap:map,fullTechnicalAcceptance:false}},
+   search:{primaryUom:'m2',canonicalNameRu:pack.titleRu,aliases:['Цементная стяжка 20 мм из готового раствора М150'],shortScopeRu:pack.selectionRestrictionRu,
+    keyDistinguishingParameters:[pack.measurement.parameterId,pack.scopeFact.id],clarificationFields:[pack.measurement.parameterId,...p.measuredQuantityPlan.drivers.map(x=>'floor_cement_screed20mm_measure_'+x.key)],
+    includedBoundaries:p.operations.map(x=>x.nameRu),excludedBoundaries:pack.exclusionsRu,extraSearchTermsRu:'пол стяжка цементная20мм готовыйМ150 уход контроль очистка',
+    sourceProvenance:{actualBodyProof:c.actualBodyProof,sourcePack:c.physicalSourcePack,fullTechnicalAcceptance:false}},
+   forbiddenAdjacentMatchers:[/roof|cn87|cn69|demolition|ceramic-floor|concrete-underlayer/iu],owner:'ROOT_SINGLE_WRITER',receiptFileStem:'screed_current_measured_physical_r1',
+   verifyTargetPrecondition:async(client,phase)=>assert.deepEqual(await readMasterSuccessorTargetPreimageR1(client,{releaseId:c.releaseId,catalogId:p.catalogId,sourceId:p.contract,lock:phase==='LOCKED_BEFORE'}),captured,'SCREED_CURRENT_TARGET_CHANGED'),
+   verifyCore:async()=>{assert.deepEqual(validateIndependentCompletenessMapReferences({completenessMap:map,formulaDefinitions:d.formulas,resourceDefinitions:d.resources}),[]);
+    return{status:'SOURCE_ONLY_MISSING_PROJECT_SOURCE_INPUTS',shape:[d.parameters.length,d.formulas.length,d.resources.length],sourceHolds:open,actualObjectClosures:0,fullTechnicalAcceptance:false};}};
+ }
+
  const decision=load(e.rootDecision);assert.equal(decision.status,'ROOT_REVIEWED_CEMENT_SCREED01101_PARTIAL_APPEND','SCREED01101_ROOT_REVIEW_REQUIRED');
  const review=load(e.semanticReview),base=assertScreed01101CurrentBaseR1(load(e.currentIntake),load(e.currentReadGuard),review);
  const headers=load(e.current45Headers),bodies=load(e.threeBodies),tested=load(e.targeted41Acceptance),types=load(e.fullTypeAcceptance);
