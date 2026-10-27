@@ -1,9 +1,10 @@
+import ct54ActualQuantityPlan from '../../../data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.json';
 import {readFileSync,statSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import type {Client} from 'pg';
 import {captureMasterScopedNormativeRegistryPreimageR1} from './masterScopedNormativeRegistryPreimageR1';
 import {resolve} from 'node:path';
-import {buildWallPaintReferenceProjectSystemS2735} from '../../../src/lib/estimate/v4/wallPaintConstructorS2735';
+import {buildWallPaintReferenceProjectSystemS2735,withWallPaintCt54ActualQuantityPlanR1} from '../../../src/lib/estimate/v4/wallPaintConstructorS2735';
 import reference from '../../../data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json';
 import type {AutomaticOwnerDefinition} from '../../../src/lib/estimate/v4/automaticConstructionOwnerR1';
 import {assembleMasterSingleDefinitionManagedRegistryCandidateR1,type MasterSingleDefinitionSuccessorConfig} from './prepareMasterSingleDefinitionSuccessorR1';
@@ -18,17 +19,20 @@ export type Ct54ReferencePublicationContextR613=Readonly<{
   expectedBranch:string;masterPath:string;masterSha256:string;
   currentDefinitionVersionId:string;currentDefinitionSha256:string;approvedTemplateBaselineId:string;
   capturedParentPath:string;capturedParentByteSha256:string;expectedParentShape:readonly[number,number,number];
+  quantityPlan?:'ACTUAL_PROJECT_PLAN_R1';
+  actualReferenceReadback?:Readonly<{path:string;sha256:string}>;
+  quantityTargetObservation?:Readonly<{path:string;sha256:string}>;
   // ROOT resolves the fresh target under existing normal/locked guards.
   verifyTargetPrecondition:NonNullable<MasterSingleDefinitionSuccessorConfig['verifyTargetPrecondition']>;
   verifyCore:MasterSingleDefinitionSuccessorConfig['verifyCore'];
   capturedScopedNormativeRegistry?:MasterSingleDefinitionSuccessorConfig['capturedScopedNormativeRegistry'];
 }>;
 /** Metadata-only binding of already authored counts; no formulas or values change. */
-export function ct54ReferencePublicationModelR613():AutomaticOwnerDefinition{
+export function ct54ReferencePublicationModelR613(quantityPlan?:'ACTUAL_PROJECT_PLAN_R1'):AutomaticOwnerDefinition{
  const base=buildWallPaintReferenceProjectSystemS2735();
  const quantityIds=new Set(reference.resources.slice(1).map(r=>r.quantityParameterId));
  const byQuantity=new Map(reference.resources.map(r=>[r.quantityParameterId,r]));
- return {...base,ordinaryParameterIds:base.ordinaryParameterIds.filter(id=>id!==method),
+ const ordinaryModel:AutomaticOwnerDefinition={...base,ordinaryParameterIds:base.ordinaryParameterIds.filter(id=>id!==method),
   parameters:base.parameters.map(p=>{
    const t=p.truth_metadata,guide={...(t.guide as Json),guide_version:reference.contract,
     source_document:reference.sourceId,source_snapshot_hash:reference.projectSystemDocumentSha256,
@@ -50,6 +54,7 @@ export function ct54ReferencePublicationModelR613():AutomaticOwnerDefinition{
      guide:{...guide,guide_kind:'PROJECT_DEFINED',source_role:'USER_SUPPLIED_OBJECT_FACT',guide_validation_policy:'MANDATORY_BLOCK',
       guide_short_ru:quantity?'Укажите фактическое необходимое количество; неизвестное остаётся нерассчитанным.':'Подтвердите только фактическое условие выбранного объекта; демонстрационный пример не является фактом старой сметы.'}}};
   })};
+ return quantityPlan==='ACTUAL_PROJECT_PLAN_R1'?withWallPaintCt54ActualQuantityPlanR1(ordinaryModel):ordinaryModel;
 }
 export function prepareCt54ReferencePublicationR613(ctx:Ct54ReferencePublicationContextR613|null):MasterSingleDefinitionSuccessorConfig{
  if(!ctx||[ctx.parentReleaseId,ctx.parentSearchReleaseId,ctx.currentReleasePath,ctx.currentDefinitionVersionId,
@@ -58,10 +63,15 @@ export function prepareCt54ReferencePublicationR613(ctx:Ct54ReferencePublication
  if(ctx.referencePointerMode!=='PREPARED_NOT_ACTIVE_COPY'||!ctx.selectedCurrentReleasePath
   ||resolve(ctx.currentReleasePath).toLowerCase()===resolve(ctx.selectedCurrentReleasePath).toLowerCase())
   throw Error('STOP_CT54_REFERENCE_SELECTED_POINTER_MUST_BE_PRESERVED');
- const model=ct54ReferencePublicationModelR613(),rows=model.resources;
- const sourceId=reference.sourceId,methodValue=reference.conditions.ct54_reference_method;
+ if(ctx.actualReferenceReadback||ctx.quantityTargetObservation){
+  if(ctx.quantityPlan!=='ACTUAL_PROJECT_PLAN_R1'||!ctx.actualReferenceReadback||!ctx.quantityTargetObservation)throw Error('STOP_CT54_MEASURED_REFERENCE_COMPLETE_CONTEXT_REQUIRED');
+  assertCt54MeasuredCurrentContextR930({...ctx,quantityPlan:'ACTUAL_PROJECT_PLAN_R1',actualReferenceReadback:ctx.actualReferenceReadback,quantityTargetObservation:ctx.quantityTargetObservation});
+ }
+ const model=ctx.actualReferenceReadback?ct54MeasuredModelFromActualReferenceR930(ctx.actualReferenceReadback):ct54ReferencePublicationModelR613(ctx.quantityPlan),rows=model.resources;
+ const actualPlan=ctx.quantityPlan==='ACTUAL_PROJECT_PLAN_R1';
+ const sourceId=actualPlan?ct54ActualQuantityPlan.sourceId:reference.sourceId,methodValue=reference.conditions.ct54_reference_method;
  const acceptanceInput={area_m2:20,...reference.conditions}; // explicitly DEMO validation fixture, never defaults
- const sourcePaths=['src/lib/estimate/v4/wallPaintConstructorS2735.ts',
+ const sourcePaths=[...(ctx.actualReferenceReadback?[ctx.actualReferenceReadback.path]:[]),...(ctx.quantityTargetObservation?[ctx.quantityTargetObservation.path]:[]),...(actualPlan?['data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.json',ct54ActualQuantityPlan.sourceDocumentPath]:[]),'src/lib/estimate/v4/wallPaintConstructorS2735.ts',
   'data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json',
   'scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts','scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts',
   'scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts','scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts',
@@ -69,25 +79,25 @@ export function prepareCt54ReferencePublicationR613(ctx:Ct54ReferencePublication
  const config:MasterSingleDefinitionSuccessorConfig={contract,stopCode:'CT54_REFERENCE_PROJECT_SYSTEM',applicationName:'CT54 source reference',
   expectedBranch:ctx.expectedBranch,masterPath:ctx.masterPath,masterSha256:ctx.masterSha256,
   parentReleaseId:ctx.parentReleaseId,parentSearchReleaseId:ctx.parentSearchReleaseId,currentReleasePath:ctx.currentReleasePath,outputRoot:ctx.outputRoot,
-  sourcePaths,catalogId:'canonical-work:base:plaster_paint_interior_paint_wall_paint_standard',sourceId,normId:'PROJECT_SYSTEM:CT54_READY_GROUND_MANUAL_R608',
-  sourceMetadata:{source_title:'Ручная окраска готовой минеральной стены',source_authority:'Авторский PROJECT_SYSTEM + adopted CT54 TDS; DEMO interfaces only',
-   source_kind:'PROJECT_SYSTEM',artifact_sha256:reference.projectSystemDocumentSha256,official_url:null,
-   exact_locator:'PROJECT_SYSTEM_METHOD.md; CT54 C_CT54_TDS_1_0819 pp1–2; retained STORCH cover/frame/tray evidence',
+  sourcePaths,catalogId:'canonical-work:base:plaster_paint_interior_paint_wall_paint_standard',sourceId,normId:actualPlan?'PROJECT_SYSTEM:CT54_ACTUAL_QUANTITY_PLAN_R1':'PROJECT_SYSTEM:CT54_READY_GROUND_MANUAL_R608',
+  sourceMetadata:{source_title:'Ручная окраска готовой минеральной стены',source_authority:actualPlan?'Документированные физические измерители/распределение фактического плана + retainedCT54norm; no realobjectclaim':'Авторский PROJECT_SYSTEM + adopted CT54 TDS; DEMO interfaces only',
+   source_kind:'PROJECT_SYSTEM',artifact_sha256:actualPlan?ct54ActualQuantityPlan.sourceDocumentSha256:reference.projectSystemDocumentSha256,official_url:null,
+   exact_locator:actualPlan?ct54ActualQuantityPlan.sourceDocumentPath:'PROJECT_SYSTEM_METHOD.md; CT54 C_CT54_TDS_1_0819 pp1–2; retained STORCH cover/frame/tray evidence',
    use_restriction:'Только явно выбранные условия reference; не автоматически применимо к старой смете, акриловой краске или реальному неподтверждённому объекту.'},
   ...(ctx.capturedScopedNormativeRegistry===undefined?{}:{capturedScopedNormativeRegistry:ctx.capturedScopedNormativeRegistry}),
   parameterDefinitions:model.parameters,formulaDefinitions:model.formulas,resourceDefinitions:rows,
   shortInput:acceptanceInput,acceptanceInput,runtimeProfileInput:{[method]:methodValue},runtimeProfileClassification:{[method]:'RUNTIME_STRUCTURAL_DEFAULT'},
   runtimeProfileSourceIds:{[method]:[sourceId]},
-  verifyCore:async()=>{const before=verifyCt54ReferencePhysicalEvidenceR619();const result=await ctx.verifyCore();
-    const after=verifyCt54ReferencePhysicalEvidenceR619();if(JSON.stringify(before)!==JSON.stringify(after))throw Error('STOP_CT54_REFERENCE_DOCUMENT_DRIFT');
+  verifyCore:async()=>{const before=verifyCt54ReferencePhysicalEvidenceR619(ctx.quantityPlan);const result=await ctx.verifyCore();
+    const after=verifyCt54ReferencePhysicalEvidenceR619(ctx.quantityPlan);if(JSON.stringify(before)!==JSON.stringify(after))throw Error('STOP_CT54_REFERENCE_DOCUMENT_DRIFT');
     return {...result,ct54ReferencePhysicalSourcePins:after};},
-  verifyTargetPrecondition:async(client,phase)=>{const before=verifyCt54ReferencePhysicalEvidenceR619();await ctx.verifyTargetPrecondition(client,phase);
-    const after=verifyCt54ReferencePhysicalEvidenceR619();if(JSON.stringify(before)!==JSON.stringify(after))throw Error('STOP_CT54_REFERENCE_DOCUMENT_DRIFT');},
+  verifyTargetPrecondition:async(client,phase)=>{const before=verifyCt54ReferencePhysicalEvidenceR619(ctx.quantityPlan);await ctx.verifyTargetPrecondition(client,phase);
+    const after=verifyCt54ReferencePhysicalEvidenceR619(ctx.quantityPlan);if(JSON.stringify(before)!==JSON.stringify(after))throw Error('STOP_CT54_REFERENCE_DOCUMENT_DRIFT');},
   expectedParentShape:ctx.expectedParentShape,
   benchmarkOrdinal:1,validationScenario:'EXPLICIT_DEMO_CT54_REFERENCE_COMPOSITION_WITH_30_DEFERRED_PROJECT_QUANTITIES',
   passport:{canonicalRuName:'Окраска внутренних стен',workKey:'plaster_paint_interior_paint_wall_paint_standard',
    physicalResultRu:'Готовая минеральная стена окрашена вручную в два слоя.',
-   includedScopeRu:['7 конкретных операций,31 ресурс,70 проверок классов PROJECT_SYSTEM.','Все количества оснащения, воды, энергии и труда остаются нерассчитанными до фактического ввода.'],
+   includedScopeRu:['7 конкретных операций,31 ресурс,70 проверок классов PROJECT_SYSTEM.',actualPlan?'27количеств производны от19физических/организационных измерителей;3прямых количества и8документальныхtrace остаются фактическими входами безdefault.':'Все количества оснащения, воды, энергии и труда остаются нерассчитанными до фактического ввода.'],
    excludedScopeRu:['Новая подготовка основания,ремонт,грунтование,распыление,работа на высоте.','Подача на объект/этаж и окончательная внешняя обработка отходов — заданные интерфейсы.'],
    independentCompletenessMap:reference.independentComposition},
   applicability:{referenceProjectSystem:reference.contract,demoOnly:true,activationAllowed:false,productionEligible:false,fullTechnicalAcceptance:false,
@@ -97,11 +107,12 @@ export function prepareCt54ReferencePublicationR613(ctx:Ct54ReferencePublication
    ordinaryCompositeSourceV1:{contract:'master-ordinary-composite-source/v1',capturedSourcePreimage:{sourceKey:sourceId,expected:null}},
    applicability:{projectSystem:reference.contract,quantityNormAdded:false,countsAreDeferredObjectFacts:true,fullTechnicalAcceptance:false},
    applicabilityByRowId:Object.fromEntries(rows.map(r=>[r.row_id,{sourceRole:'SOURCE_REVIEWED_COMPOSITION_NOT_ADMITTED_NEW_NORM',fullTechnicalAcceptance:false}]))},
-  locator:{key:'ct54-manual-reference-project-system-r608:31-resources-70-class-reviews:v1',payload:{
+  locator:{key:actualPlan?'ct54-actual-project-quantity-plan-r1:31-resources-27-derived-rules:v1':'ct54-manual-reference-project-system-r608:31-resources-70-class-reviews:v1',payload:{
    contract:reference.contract,projectSystemDocumentSha256:reference.projectSystemDocumentSha256,
    sourceOwnedResourceRoster:reference.resources,independentCompletenessMap:reference.independentComposition,
+   ...(actualPlan?{actualProjectQuantityRules:ct54ActualQuantityPlan,actualQuantityClaims:false}:{}),
    conditions:reference.conditions,conditionTitlesRu:reference.conditionTitlesRu,
-   sourceEvidence:ct54ReferencePhysicalEvidenceR619,
+   sourceEvidence:[...ct54ReferencePhysicalEvidenceR619,...(actualPlan?[{path:resolve(__dirname,'../../..',ct54ActualQuantityPlan.sourceDocumentPath),kind:'PROJECT_QUANTITY_RULES',locatorKey:ct54ActualQuantityPlan.contract,byteSha256:ct54ActualQuantityPlan.sourceDocumentSha256,bytes:ct54ActualQuantityPlan.sourceDocumentBytes}]:[])],
    demoOnly:true,sourceAdmissionGranted:false}},
   search:{primaryUom:'m2',canonicalNameRu:'Окраска внутренних стен',aliases:['Окраска внутренних стен'],shortScopeRu:'Ручная окраска готовой минеральной стены по явно выбранному проектному методу.',
    keyDistinguishingParameters:[method],clarificationFields:Object.keys(reference.conditions).filter(id=>id!==method),
@@ -111,7 +122,7 @@ export function prepareCt54ReferencePublicationR613(ctx:Ct54ReferencePublication
  const candidate=assembleMasterSingleDefinitionManagedRegistryCandidateR1(config,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate;
  const source=candidate.newSource,locator=candidate.newLocators[0]!;
  const partialQuantityBasis=makeMasterDeferredProjectQuantityBasisR1({parameters:model.parameters,formulas:model.formulas,resources:model.resources,
-  parameterIds:reference.resources.slice(1).map(r=>r.quantityParameterId),
+  parameterIds:actualPlan?[...ct54ActualQuantityPlan.parameters.filter(p=>p.valueType!=='text').map(p=>p.id),...ct54ActualQuantityPlan.rules.filter(r=>r.after==='DIRECT_MANUAL_UNCHANGED').map(r=>r.quantityParameterId)]:reference.resources.slice(1).map(r=>r.quantityParameterId),
   source:{sourceId:source.id,sourceKey:source.source_key,artifactSha256:String(source.artifact_sha256),locatorId:locator.id,
    locatorExcerptSha256:locator.excerpt_sha256,locatorPayload:locator.locator},
   method:{parameterId:method,value:methodValue,version:reference.contract}});
@@ -120,9 +131,10 @@ export function prepareCt54ReferencePublicationR613(ctx:Ct54ReferencePublication
 
 /** ROOT calls this before/after its governed prepare/apply. Local pinned files,
  * not a self-described locator, establish the source byte witness. No DB IO. */
-export function verifyCt54ReferencePhysicalEvidenceR619(){
+export function verifyCt54ReferencePhysicalEvidenceR619(quantityPlan?:'ACTUAL_PROJECT_PLAN_R1'){
  let total=0;
- return ct54ReferencePhysicalEvidenceR619.map(pin=>{
+ const pins=[...ct54ReferencePhysicalEvidenceR619,...(quantityPlan==='ACTUAL_PROJECT_PLAN_R1'?[{path:resolve(__dirname,'../../..',ct54ActualQuantityPlan.sourceDocumentPath),kind:'PROJECT_QUANTITY_RULES',locatorKey:ct54ActualQuantityPlan.contract,byteSha256:ct54ActualQuantityPlan.sourceDocumentSha256,bytes:ct54ActualQuantityPlan.sourceDocumentBytes}]:[])];
+ return pins.map(pin=>{
   if(pin.bytes<=0||pin.bytes>2*1024*1024)throw Error('STOP_CT54_REFERENCE_DOCUMENT_ROW_CAP');
   const before=statSync(pin.path);total+=before.size;
   if(!before.isFile()||before.size!==pin.bytes||before.size>2*1024*1024||total>3*1024*1024)
@@ -168,7 +180,9 @@ function ct54CurrentR619(){
 type Ct54R619RootContext=Omit<Ct54ReferencePublicationContextR613,'parentReleaseId'|'parentSearchReleaseId'|'currentDefinitionVersionId'
  |'currentDefinitionSha256'|'approvedTemplateBaselineId'|'capturedParentPath'|'capturedParentByteSha256'|'expectedParentShape'|'selectedCurrentReleasePath'>;
 /** Fresh actual R619 headers, not a fabricated retained full-parent capture. */
-export function prepareCt54ReferencePublicationFromReadR619(root:Ct54R619RootContext){
+export function prepareCt54ReferencePublicationFromReadR619(root:Ct54R619RootContext|Ct54ReferencePublicationContextR613){
+ if('currentDefinitionVersionId' in root)return prepareCt54ReferencePublicationR613(root);
+ if(root.quantityPlan==='ACTUAL_PROJECT_PLAN_R1')throw Error('STOP_CT54_QUANTITY_PLAN_FRESH_COMPLETE_CONTEXT_REQUIRED');
  const {target,selectedPointer}=ct54CurrentR619();
  return prepareCt54ReferencePublicationR613({...root,parentReleaseId:target.selectedReleaseId,parentSearchReleaseId:target.selectedSearchReleaseId,
   currentDefinitionVersionId:target.definition.id,currentDefinitionSha256:target.definition.definition_sha256,
@@ -182,9 +196,10 @@ export function prepareCt54ReferencePublicationFromReadR619(root:Ct54R619RootCon
 export type Ct54ReviewedCapturePinsR619=Readonly<{
  expectedSourcePins:Readonly<Record<string,string>>;
  expectedReferencePointerSha256:string;
+ expectedSelectedPointerSha256?:string;
 }>;
 /** Expected hashes come from ROOT's reviewed frozen candidate, never from this reader. */
-function verifyCt54CaptureSourcePinsR619(config:MasterSingleDefinitionSuccessorConfig,pins:Ct54ReviewedCapturePinsR619){
+function verifyCt54CaptureSourcePinsR619(config:MasterSingleDefinitionSuccessorConfig,pins:Ct54ReviewedCapturePinsR619,selectedCurrentReleasePath?:string){
  const paths=config.sourcePaths,keys=Object.keys(pins.expectedSourcePins).sort();
  if(JSON.stringify(keys)!==JSON.stringify([...paths].sort())||!/^([a-f0-9]{64})$/.test(pins.expectedReferencePointerSha256))
   throw Error('STOP_CT54_REVIEWED_SOURCE_PIN_CLOSURE');
@@ -197,20 +212,97 @@ function verifyCt54CaptureSourcePinsR619(config:MasterSingleDefinitionSuccessorC
   if(bytes.length!==before.size||after.size!==before.size||after.mtimeMs!==before.mtimeMs
    ||createHash('sha256').update(bytes).digest('hex')!==expected)throw Error('STOP_CT54_CAPTURE_SOURCE_DRIFT:'+path);
  };
- for(const path of paths)check(resolve('C:/dev/rik-expo-app-r4a5-dc4f0ce7',path),pins.expectedSourcePins[path]!);
+ for(const path of paths)check(resolve(__dirname,'../../..',path),pins.expectedSourcePins[path]!);
  check(config.currentReleasePath,pins.expectedReferencePointerSha256);
+ if(selectedCurrentReleasePath){
+  if(!pins.expectedSelectedPointerSha256)throw Error('STOP_CT54_FRESH_SELECTED_POINTER_PIN_REQUIRED');
+  check(selectedCurrentReleasePath,pins.expectedSelectedPointerSha256);
+ }
 }
-export async function captureCt54ReferenceFormalRegistryR619(client:Pick<Client,'query'>,root:Ct54R619RootContext,pins:Ct54ReviewedCapturePinsR619){
+/** A complete ROOT-supplied context uses the same materializer with fresh
+ * parent/selected guards. Legacy calls keep their original R619 path. Neither
+ * a source-key absence nor a historical callback is fresh source admission. */
+export async function captureCt54ReferenceFormalRegistryR619(client:Pick<Client,'query'>,
+ root:Ct54R619RootContext|Ct54ReferencePublicationContextR613,pins:Ct54ReviewedCapturePinsR619){
  if(Object.hasOwn(root,'capturedScopedNormativeRegistry'))throw Error('STOP_CT54_FORMAL_CAPTURE_MUST_NOT_REPLACE_DECLARATION');
- const before=verifyCt54ReferencePhysicalEvidenceR619(),config=prepareCt54ReferencePublicationFromReadR619(root);
- verifyCt54CaptureSourcePinsR619(config,pins);
+ const fresh='currentDefinitionVersionId' in root?root:undefined;
+ if(root.quantityPlan==='ACTUAL_PROJECT_PLAN_R1'&&!fresh)throw Error('STOP_CT54_QUANTITY_PLAN_FRESH_COMPLETE_CONTEXT_REQUIRED');
+ const before=verifyCt54ReferencePhysicalEvidenceR619(root.quantityPlan),config=fresh
+  ?prepareCt54ReferencePublicationR613(fresh):prepareCt54ReferencePublicationFromReadR619(root);
+ const check=()=>verifyCt54CaptureSourcePinsR619(config,pins,fresh?.selectedCurrentReleasePath);
+ check();
  const candidate=assembleMasterSingleDefinitionManagedRegistryCandidateR1(config,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate;
- await root.verifyTargetPrecondition(client,'PREFLIGHT');
+ await config.verifyTargetPrecondition!(client,'PREFLIGHT');
  const capturedScopedNormativeRegistry=await captureMasterScopedNormativeRegistryPreimageR1(client,candidate);
- await root.verifyTargetPrecondition(client,'PREFLIGHT');
- const after=verifyCt54ReferencePhysicalEvidenceR619();ct54CurrentR619();verifyCt54CaptureSourcePinsR619(config,pins);
+ await config.verifyTargetPrecondition!(client,'PREFLIGHT');
+ const after=verifyCt54ReferencePhysicalEvidenceR619(root.quantityPlan);if(!fresh)ct54CurrentR619();check();
  if(JSON.stringify(before)!==JSON.stringify(after))throw Error('STOP_CT54_REFERENCE_DOCUMENT_DRIFT');
  return {contract:'ct54-reference-formal-registry-materialization/r619',capturedScopedNormativeRegistry,
   managedSource:candidate.newSource,managedLocators:candidate.newLocators,physicalDocumentPins:after,
+  ...(fresh?{freshParentBinding:{parentReleaseId:fresh.parentReleaseId,
+    currentDefinitionVersionId:fresh.currentDefinitionVersionId,currentDefinitionSha256:fresh.currentDefinitionSha256,
+    approvedTemplateBaselineId:fresh.approvedTemplateBaselineId,expectedParentShape:fresh.expectedParentShape,
+    capturedParentPath:fresh.capturedParentPath,capturedParentByteSha256:fresh.capturedParentByteSha256,
+    selectedCurrentReleasePath:fresh.selectedCurrentReleasePath,
+    expectedSelectedPointerSha256:pins.expectedSelectedPointerSha256,
+    expectedReferencePointerSha256:pins.expectedReferencePointerSha256,quantityPlan:fresh.quantityPlan}}:{}),
   aggregateRawScopeCapBytes:3145728,sourceAdmissionGranted:false,definitionPublished:false};
 }
+
+export type Ct54MeasuredReferencePinR930=Readonly<{path:string;sha256:string}>;
+type Ct54ActualReferenceR930=Readonly<{
+ contract:string;originProof:Readonly<{sha256:string;resultIndex:number;bodySide:string}>;
+ referenceReleaseId:string;selectedReleaseId:string;referenceHeader:Readonly<{definition_version_id:string;approved_template_baseline_id:string;definition_version:number;definition_sha256:string}>;
+ body:Readonly<{parameters:AutomaticOwnerDefinition['parameters'];formulas:AutomaticOwnerDefinition['formulas'];resources:AutomaticOwnerDefinition['resources'];bindings:readonly Json[];sources:readonly Json[];locators:readonly Json[]}>;
+ formalRegistryCapture:false;
+}>;
+function ct54ActualReferenceReadbackR930(pin:Ct54MeasuredReferencePinR930):Ct54ActualReferenceR930{
+ if(pin.sha256!=='e4f8534c4ba883d8d0e4414e0fe6a3bd389a29a6997d675825af303bd9db634c')throw Error('STOP_CT54_ACTUAL_R930_REFERENCE_BYTE_PIN_REQUIRED');
+ // A specific typed view only AFTER the complete raw/parsed ROOT-origin fixture
+ // byte digest is fixed; it is neither a request payload nor a fabricated capture.
+ const actual=readPinnedCt54JsonR619<Ct54ActualReferenceR930>(pin),h=actual.referenceHeader;
+ if(actual.contract!=='ACTUAL_R930_CT54_USER_REFERENCE_READBACK_NOT_FORMAL_CAPTURE'
+  ||actual.originProof.sha256!=='bbb852c6045067e6b5484e386dacb6115c5ad5cd6bc30a971745dac18ecf746d'
+  ||actual.originProof.resultIndex!==0||actual.originProof.bodySide!=='referenceBody'||actual.formalRegistryCapture!==false
+  ||actual.referenceReleaseId!=='514af229-9dbd-5c45-9383-6d21fe2b9f21'||actual.selectedReleaseId===actual.referenceReleaseId
+  ||h.definition_version_id!=='0a31889f-6085-550b-9c74-dbbbc7cb9555'||h.approved_template_baseline_id!=='2348f432-87d8-5058-8f65-a2539cba7b32'
+  ||h.definition_version!==10||h.definition_sha256!=='696c0a974e9e16b82862ef76eba4b44913a0b2c45dff0cef711a9168f635d58b'
+  ||actual.body.parameters.length!==39||actual.body.formulas.length!==31||actual.body.resources.length!==31||actual.body.bindings.length!==31
+  ||actual.body.locators.length!==1||actual.body.sources.length!==1)throw Error('STOP_CT54_ACTUAL_REFERENCE_NOT_SELECTED_VGT_REQUIRED');
+ return actual;
+}
+/** The same27 existing formula rules, now applied to the exact published user
+ * reference body. No oldselected VGT graph or baseline values cross this path. */
+export function ct54MeasuredModelFromActualReferenceR930(pin:Ct54MeasuredReferencePinR930):AutomaticOwnerDefinition{
+ const a=ct54ActualReferenceReadbackR930(pin),base:AutomaticOwnerDefinition={parameters:a.body.parameters,formulas:a.body.formulas,resources:a.body.resources,
+  runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['area_m2',...Object.keys(reference.conditions).filter(id=>id!==method)]};
+ return withWallPaintCt54ActualQuantityPlanR1(base);
+}
+export type Ct54MeasuredCurrentContextR930=Ct54ReferencePublicationContextR613&Readonly<{
+ quantityPlan:'ACTUAL_PROJECT_PLAN_R1';actualReferenceReadback:Ct54MeasuredReferencePinR930;quantityTargetObservation:Ct54MeasuredReferencePinR930;
+}>;
+/** A finite explicit context through the EXISTING producer/materializer. The
+ * requested-key absence remains an observation; normal scoped capture is still
+ * required by ordinaryCompositeSourceV1 and the typed/publication contracts. */
+function assertCt54MeasuredCurrentContextR930(ctx:Ct54MeasuredCurrentContextR930):void{
+ const actual=ct54ActualReferenceReadbackR930(ctx.actualReferenceReadback),h=actual.referenceHeader;
+ if(ctx.quantityPlan!=='ACTUAL_PROJECT_PLAN_R1'||ctx.parentReleaseId!==actual.referenceReleaseId
+  ||ctx.currentDefinitionVersionId!==h.definition_version_id||ctx.currentDefinitionSha256!==h.definition_sha256
+  ||ctx.approvedTemplateBaselineId!==h.approved_template_baseline_id||JSON.stringify(ctx.expectedParentShape)!=='[39,31,31]'
+  ||resolve(ctx.capturedParentPath)!==resolve(ctx.actualReferenceReadback.path)||ctx.capturedParentByteSha256!==ctx.actualReferenceReadback.sha256)
+  throw Error('STOP_CT54_CURRENT_REFERENCE_PARENT_CONTEXT_REQUIRED');
+ const targetPin=ctx.quantityTargetObservation;
+ if(targetPin.sha256!=='8d3c3c7a8f65734c8173890f2d993193ae26822c7849839130a515d68f2e3c27')throw Error('STOP_CT54_FRESH_R934_QUANTITY_SOURCE_OBSERVATION_REQUIRED');
+ const observed=readPinnedCt54JsonR619<Readonly<{referenceReleaseId:string;selectedReleaseId:string;newSourceAbsentBoth:boolean;
+  referenceTarget:Readonly<{catalogId:string;sourceId:string;header:typeof h;sets:Readonly<{newSource:Readonly<{rowCount:number}>}>}>}>>(targetPin);
+ if(observed.referenceReleaseId!==actual.referenceReleaseId||observed.selectedReleaseId!==actual.selectedReleaseId||!observed.newSourceAbsentBoth
+  ||observed.referenceTarget.catalogId!=='canonical-work:base:plaster_paint_interior_paint_wall_paint_standard'
+  ||observed.referenceTarget.sourceId!==ct54ActualQuantityPlan.sourceId
+  ||observed.referenceTarget.header.definition_version_id!==h.definition_version_id||observed.referenceTarget.header.definition_sha256!==h.definition_sha256
+  ||observed.referenceTarget.header.approved_template_baseline_id!==h.approved_template_baseline_id||observed.referenceTarget.header.definition_version!==h.definition_version
+  ||observed.referenceTarget.sets.newSource.rowCount!==0)throw Error('STOP_CT54_R934_REFERENCE_NEW_QUANTITY_SOURCE_CONTEXT_REQUIRED');
+}
+export function prepareCt54MeasuredCurrentReferenceR930(ctx:Ct54MeasuredCurrentContextR930):MasterSingleDefinitionSuccessorConfig{
+ return prepareCt54ReferencePublicationR613(ctx);
+}
+

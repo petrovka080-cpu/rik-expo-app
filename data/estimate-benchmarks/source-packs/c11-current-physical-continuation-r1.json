@@ -1,0 +1,3274 @@
+{
+  "contract": "gox-build.c11-current-physical-continuation/r1",
+  "status": "MUTABLE_SOURCE_ONLY_BLOCKED_PARTIAL_UNRUN_NO_SEAL",
+  "catalogId": "canonical-work:base:drywall_ceiling_interior_drywall_partition_install_standard",
+  "current": {
+    "definitionId": "17979e9a-5642-5e3d-8ea2-5e3a24a4036a",
+    "version": 7,
+    "definitionSha256": "56a322b35648d7b638edccf3570d4664068c3c2505c9fc63f0be5d1cecd5adea",
+    "baselineId": "8d95c754-cb96-5d48-b27e-09b0d03feac4",
+    "shape": [
+      181,
+      212,
+      212
+    ],
+    "proofPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\current-family-bodies-r919\\ACTUAL_CURRENT_FAMILY_PARENT_PROOF.json",
+    "proofSha256": "3f85529e7520ccfd3dda347d5d40f5ec507b7f345228eb5ce2397d99fab54299",
+    "sourceId": "drywall_c11_layered_geometry_r1",
+    "actualBodyFixturePath": "data/estimate-benchmarks/fixtures/c11-current-parent-r919.json",
+    "currentMembershipObserved": true,
+    "newPayloadAdmission": false,
+    "bodyTextHash": "eh_899894effbaa497d",
+    "bodyTextHashDomain": "estimateDeterministicHash(canonicalEstimateStableJson({parameters,formulas,resources})); exact raw arrays/order; unrounded numeric string"
+  },
+  "selectorId": "c11_partition_calculation_profile",
+  "profiles": [
+    {
+      "key": "c111",
+      "value": "Прежний расчёт однослойной перегородки",
+      "groupId": "drywall-partition-c111",
+      "wholeOwnerRowId": "work:c111:worker",
+      "waterOwnerRowId": "material:c111:water",
+      "waterIncludesWash": true,
+      "primaryMeasureId": "area_m2",
+      "waterEffectiveParameterId": "effective_resource_quantity_material_c111_water",
+      "waterUnit": "l"
+    },
+    {
+      "key": "two-layer",
+      "value": "Два слоя гипсокартона с каждой стороны",
+      "groupId": "drywall:c11:two-layer",
+      "wholeOwnerRowId": "drywall:c11:two-layer:whole-work",
+      "waterOwnerRowId": "drywall:c11:two-layer:mixing-water-order",
+      "waterIncludesWash": false,
+      "primaryMeasureId": "partition_area_m2",
+      "waterEffectiveParameterId": "effective_resource_quantity_drywall_c11_two_layer_mixing_water_order",
+      "waterUnit": "l"
+    },
+    {
+      "key": "three-layer",
+      "value": "Три слоя гипсокартона с каждой стороны",
+      "groupId": "drywall:c11:three-layer",
+      "wholeOwnerRowId": "drywall:c11:three-layer:whole-work",
+      "waterOwnerRowId": "drywall:c11:three-layer:mixing-water-order",
+      "waterIncludesWash": false,
+      "primaryMeasureId": "partition_area_m2",
+      "waterEffectiveParameterId": "effective_resource_quantity_drywall_c11_three_layer_mixing_water_order",
+      "waterUnit": "l"
+    }
+  ],
+  "operations": [
+    {
+      "key": "preparation",
+      "nameRu": "Проверить фронт, основание, проектные узлы и коммуникации",
+      "ordinal": 10
+    },
+    {
+      "key": "setout",
+      "nameRu": "Разметить ось, положение стоек и перенос на потолок",
+      "ordinal": 20
+    },
+    {
+      "key": "access",
+      "nameRu": "Подготовить и проверить безопасное подмащивание",
+      "ordinal": 30
+    },
+    {
+      "key": "frame",
+      "nameRu": "Закрепить направляющие, примыкания и собрать стойки",
+      "ordinal": 40
+    },
+    {
+      "key": "clad-first",
+      "nameRu": "Раскроить и закрепить обшивку первой стороны",
+      "ordinal": 50
+    },
+    {
+      "key": "insulate",
+      "nameRu": "Проверить скрытые коммуникации и уложить предусмотренное заполнение",
+      "ordinal": 60
+    },
+    {
+      "key": "clad-second",
+      "nameRu": "Закрыть вторую сторону со смещением стыков",
+      "ordinal": 70
+    },
+    {
+      "key": "joints",
+      "nameRu": "Подготовить кромки, замешать гипсовую смесь и заделать стыки по слоям",
+      "ordinal": 80
+    },
+    {
+      "key": "surface",
+      "nameRu": "Довести Q1, обеспылить и загрунтовать допустимую поверхность",
+      "ordinal": 90
+    },
+    {
+      "key": "control",
+      "nameRu": "Проверить скрытые работы, крепёж, геометрию и готовность",
+      "ordinal": 100
+    },
+    {
+      "key": "handling",
+      "nameRu": "Переместить и подать материалы в пределах принятой логистики",
+      "ordinal": 110
+    },
+    {
+      "key": "cleanup",
+      "nameRu": "Очистить инструмент, собрать отходы и принять моечную воду",
+      "ordinal": 120
+    }
+  ],
+  "newFunctions": [
+    {
+      "key": "marking-cord",
+      "nameRu": "Разметочный шнур",
+      "unit": "piece",
+      "ops": [
+        "setout"
+      ],
+      "source": "c11",
+      "kind": "TOOL",
+      "returnWhen": "Фактические пригодные шнуры и одновременные размечающие звенья; повторное использование по графику, без нормы на площадь.",
+      "requiredConditionKeys": [
+        "system_reference",
+        "geometry_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "laser-mount",
+      "nameRu": "Совместимое крепление/штатив нивелира",
+      "unit": "piece",
+      "ops": [
+        "setout",
+        "frame",
+        "control"
+      ],
+      "source": "c11",
+      "kind": "ACCESSORY",
+      "returnWhen": "Точный нивелир/резьба/штатная комплектация и выделенные одновременно приборы; включённый штатив не новая покупка.",
+      "requiredConditionKeys": [
+        "geometry_reference",
+        "control_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "punch-die",
+      "nameRu": "Совместимая рабочая оснастка просекателя ПН/ПС",
+      "unit": "piece",
+      "ops": [
+        "frame"
+      ],
+      "source": "c11",
+      "kind": "ACCESSORY",
+      "returnWhen": "Точная модель просекателя и профиль0.6мм; совместимая штатная матрица и реальные замены, без нормы износа на м².",
+      "requiredConditionKeys": [
+        "system_reference",
+        "substrate_anchor_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "depth-stop",
+      "nameRu": "Ограничитель глубины крепления листа",
+      "unit": "piece",
+      "ops": [
+        "clad-first",
+        "clad-second"
+      ],
+      "source": "c11",
+      "kind": "ACCESSORY",
+      "returnWhen": "Совместимый ограничитель шуруповёрта/TN, поставка и замены; глубина головки около1мм не норма расхода насадок.",
+      "requiredConditionKeys": [
+        "system_reference",
+        "opening_scope"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "board-knife-blades",
+      "nameRu": "Сменные лезвия ножа ГСП",
+      "unit": "piece",
+      "ops": [
+        "clad-first",
+        "clad-second"
+      ],
+      "source": "c11",
+      "kind": "CONSUMABLE",
+      "returnWhen": "Модель ножа, принятая карта резов и замены по износу; штатное лезвие не дублируется. Нет подтверждённого м/лезвие.",
+      "requiredConditionKeys": [
+        "system_reference",
+        "opening_scope",
+        "services_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "edge-plane-blade",
+      "nameRu": "Режущая оснастка рубанка резаной кромки",
+      "unit": "piece",
+      "ops": [
+        "clad-first",
+        "clad-second",
+        "joints"
+      ],
+      "source": "c11",
+      "kind": "CONSUMABLE",
+      "returnWhen": "Совместимый рубанок для22.5° на2/3 толщины12.5мм и фактический износ; штатное лезвие отдельно от запаса.",
+      "requiredConditionKeys": [
+        "system_reference",
+        "opening_scope"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "insulation-knife-blade",
+      "nameRu": "Режущая оснастка ножа минерального заполнения",
+      "unit": "piece",
+      "ops": [
+        "insulate"
+      ],
+      "source": "c11",
+      "kind": "CONSUMABLE",
+      "returnWhen": "Только предусмотренная изоляция; цельное штатное лезвие не отдельный новый расходник. Замена по фактическому инструменту/износу.",
+      "requiredConditionKeys": [
+        "system_reference",
+        "services_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "water-measure",
+      "nameRu": "Мерная ёмкость рецептурной воды",
+      "unit": "piece",
+      "ops": [
+        "joints"
+      ],
+      "source": "fugen",
+      "kind": "TOOL",
+      "returnWhen": "Диапазон/точность дозатора под фактические .6–.7л/кг и график замесов; литры дозы не число приборов.",
+      "requiredConditionKeys": [
+        "fugen_reference",
+        "water_temperature_c"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "wide-spatula",
+      "nameRu": "Широкий нержавеющий шпатель доводки стыка",
+      "unit": "piece",
+      "ops": [
+        "joints"
+      ],
+      "source": "fugen",
+      "kind": "TOOL",
+      "returnWhen": "Ширина/тип для выбранного Q1/стыка и фактический бригадный инвентарь; повторное использование, без второго труда.",
+      "requiredConditionKeys": [
+        "fugen_reference",
+        "ambient_temperature_c"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "roller-handle",
+      "nameRu": "Совместимая рукоятка/держатель выбранного валика",
+      "unit": "piece",
+      "ops": [
+        "surface"
+      ],
+      "source": "tiefengrund",
+      "kind": "ACCESSORY",
+      "returnWhen": "Точные совместимые рукоятка и ролик с фактической комплектностью; штатный бюгель не новая отдельная покупка.",
+      "requiredConditionKeys": [
+        "system_reference",
+        "ambient_temperature_c"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "primer-tray",
+      "nameRu": "Ёмкость подачи выбранной грунтовки",
+      "unit": "piece",
+      "ops": [
+        "surface",
+        "cleanup"
+      ],
+      "source": "tiefengrund",
+      "kind": "ACCESSORY",
+      "returnWhen": "Совместимость с неразбавленным грунтом, полезная вместимость, мойка/повторное использование по графику; нет нормы ванночек на кг.",
+      "requiredConditionKeys": [
+        "system_reference",
+        "waste_receiver"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "dust-filter",
+      "nameRu": "Совместимый фильтр принятого пылесоса",
+      "unit": "piece",
+      "ops": [
+        "frame",
+        "surface",
+        "cleanup"
+      ],
+      "source": "tiefengrund",
+      "kind": "CONSUMABLE",
+      "returnWhen": "Точный пылесос/кассета и фактический пылевой режим/износ; площадь обрезков не масса улавливаемой пыли.",
+      "requiredConditionKeys": [
+        "control_reference",
+        "waste_receiver"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "temperature-meter",
+      "nameRu": "Измерение условий воздуха, основания и затворения",
+      "unit": "piece",
+      "ops": [
+        "preparation",
+        "joints",
+        "surface",
+        "control"
+      ],
+      "source": "fugen",
+      "kind": "TOOL",
+      "returnWhen": "Пригодный прибор с диапазоном для воды5–30°C и воздуха≥10°C, точность и график контроля; предел температуры не число приборов.",
+      "requiredConditionKeys": [
+        "control_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "wash-water-receiver",
+      "nameRu": "Приёмник воды с остатками гипса/грунта вне канализации и грунта",
+      "unit": "piece",
+      "ops": [
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "source": "tiefengrund",
+      "kind": "EQUIPMENT",
+      "returnWhen": "Утверждённый получатель/маршрут и полезная вместимость. N=ceil(Vpeak/Cusable) допустимо только для подтверждённого пикового удержания без освобождения; весь расход мойки не принимается за пик.",
+      "requiredConditionKeys": [
+        "waste_receiver"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "helmet",
+      "nameRu": "Защитная каска по оценке условий ППР",
+      "unit": "piece",
+      "ops": [
+        "handling",
+        "frame",
+        "clad-first",
+        "clad-second"
+      ],
+      "source": "ppr",
+      "kind": "PPE",
+      "returnWhen": "Фактические персональные назначения/размеры, риски подачи/монтажа, пригодное наличие и замены; не количество из площади.",
+      "requiredConditionKeys": [
+        "access_reference",
+        "logistics_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "boots",
+      "nameRu": "Защитная обувь по оценке условий ППР",
+      "unit": "pair",
+      "ops": [
+        "handling",
+        "frame",
+        "clad-first",
+        "clad-second",
+        "cleanup"
+      ],
+      "source": "ppr",
+      "kind": "PPE",
+      "returnWhen": "Персональные пары, размеры, риски и выдача/сменность/состояние. Пара не равна старой штуке перчатки.",
+      "requiredConditionKeys": [
+        "access_reference",
+        "logistics_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "barrier",
+      "nameRu": "Ограждение зоны сверления, раскроя и работы на подмостях",
+      "unit": "m",
+      "ops": [
+        "access",
+        "frame",
+        "clad-first",
+        "clad-second",
+        "cleanup"
+      ],
+      "source": "ppr",
+      "kind": "ACCESSORY",
+      "returnWhen": "Сумма фактически принятой уникальной линии ограждения и проходов/подачи; общие границы один раз. Периметр перегородки не маршрут ограждения.",
+      "requiredConditionKeys": [
+        "access_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "electrical-protection",
+      "nameRu": "Устройство защитного отключения выбранного питания инструмента",
+      "unit": "piece",
+      "ops": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "surface",
+        "cleanup"
+      ],
+      "source": "ppr",
+      "kind": "EQUIPMENT",
+      "returnWhen": "Подтверждённые цепи/нагрузки/сеть, защитные устройства и фактическая штатность. Встроенное УЗО распределения не второй платный прибор.",
+      "requiredConditionKeys": [
+        "electrical_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "marking-medium",
+      "nameRu": "Состав отметок или иной выбранный расходник разметки",
+      "unit": "",
+      "kind": "CONSUMABLE",
+      "ops": [
+        "setout"
+      ],
+      "source": "ppr",
+      "returnWhen": "Точный состав/поставка и единица выдачи/расхода; unit held. Шнур/карандаш/порошок нельзя свести к универсальной штуке или кг.",
+      "requiredConditionKeys": [
+        "system_reference",
+        "geometry_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "power-cable",
+      "nameRu": "Кабель безопасного подвода питания к принятому инструменту",
+      "unit": "m",
+      "kind": "ACCESSORY",
+      "ops": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "surface",
+        "cleanup"
+      ],
+      "source": "ppr",
+      "returnWhen": "Принятая трасса, длина, сечение/защита и штатные кабели инструмента; кабель машины не новый удлинитель.",
+      "requiredConditionKeys": [
+        "electrical_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    },
+    {
+      "key": "power-distribution",
+      "nameRu": "Совместимый распределительный узел питания инструмента",
+      "unit": "piece",
+      "kind": "EQUIPMENT",
+      "ops": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "surface",
+        "cleanup"
+      ],
+      "source": "ppr",
+      "returnWhen": "Фактические цепи/пиковые нагрузки/проверенная комплектация/наличие; встроенное УЗО имеет одного owner вместе с electrical-protection.",
+      "requiredConditionKeys": [
+        "electrical_reference"
+      ],
+      "quantityState": "SOURCE_OR_ACTUAL_PROVISION_HELD",
+      "supplyState": "UNKNOWN_NOT_NEW_ORDER",
+      "soleOwner": "EXISTING_SELECTED_WHOLE_SCOPE_NO_NEW_PAID_OWNER",
+      "quantityAuthority": "EXACT_COMPATIBLE_PASSPORT_AND_ACTUAL_ALLOCATED_PROVISION",
+      "sourceScope": "MANUFACTURER_METHOD_ONLY_NOT_A_DURABLE_TOOL_COUNT_OR_REPLACEMENT_RATE"
+    }
+  ],
+  "facts": [
+    {
+      "key": "system_reference",
+      "nameRu": "Точная ревизия выбранной системы, паспорта и области применения",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "geometry_reference",
+      "nameRu": "Фактическая геометрия, раскрой и расположение стыков сторон/слоёв",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "opening_scope",
+      "nameRu": "Условия проёмов и горизонтальных стыков",
+      "type": "enum",
+      "unit": null,
+      "values": [
+        "STRAIGHT_NO_OPENINGS_NO_HORIZONTAL_JOINTS"
+      ]
+    },
+    {
+      "key": "junction_reference",
+      "nameRu": "Примыкания, движение здания и предусмотренные швы",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "substrate_anchor_reference",
+      "nameRu": "Фактическое основание, крепёж и раскладка креплений",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "services_reference",
+      "nameRu": "Скрытые коммуникации/закладные и разрешение закрытия второй стороны",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "inventory_reference",
+      "nameRu": "Ведомость комплектности, совместимого наличия и износа оснащения",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "contractor_scope_reference",
+      "nameRu": "Один владелец включённого труда/машин/оснащения/расходников",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "access_reference",
+      "nameRu": "ППР подмостей, высоты, ограждений, осмотра и операторов",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "logistics_reference",
+      "nameRu": "Граница доставки, подачи и внешнего вывоза",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "quality_reference",
+      "nameRu": "Принятая Q1, стыки по слоям и последующий непокрасочный финиш",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "waste_receiver",
+      "nameRu": "Реальный получатель твёрдых отходов и моечной воды",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "electrical_reference",
+      "nameRu": "Подтверждённая схема питания и защиты",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "control_reference",
+      "nameRu": "Документы контроля скрытых работ и результата",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "fugen_reference",
+      "nameRu": "Фуген, точная совместимая лента, слои и партия",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "batch_reference",
+      "nameRu": "Журнал фактических частичных замесов без повторного разведения",
+      "type": "text",
+      "unit": null
+    },
+    {
+      "key": "mixed_dry_kg",
+      "nameRu": "Фактически замешанная сухая масса Фугена, не заказ мешков",
+      "type": "decimal",
+      "unit": "kg",
+      "min": 0
+    },
+    {
+      "key": "mix_water_l",
+      "nameRu": "Фактическая рецептурная вода этих замесов",
+      "type": "decimal",
+      "unit": "l",
+      "min": 0
+    },
+    {
+      "key": "wash_water_l",
+      "nameRu": "Фактическая вода очистки принятого оснащения",
+      "type": "decimal",
+      "unit": "l",
+      "min": 0
+    },
+    {
+      "key": "water_temperature_c",
+      "nameRu": "Подтверждённая температура воды",
+      "type": "decimal",
+      "unit": "celsius",
+      "min": 5,
+      "max": 30
+    },
+    {
+      "key": "ambient_temperature_c",
+      "nameRu": "Подтверждённые условия воздуха/основания",
+      "type": "decimal",
+      "unit": "celsius",
+      "min": 10,
+      "max": 30
+    }
+  ],
+  "retainedLayeredNeeds": [
+    {
+      "key": "labour",
+      "nameRu": "Труд монтажа многослойной перегородки",
+      "category": "labor",
+      "unitId": "man_hour",
+      "operations": [
+        "setout",
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "prime",
+        "cleanup",
+        "handling"
+      ],
+      "reason": "No exact applicable C112/C113 labour norm admitted; C11198hours is not transferred."
+    },
+    {
+      "key": "shears",
+      "nameRu": "Электроножницы для раскроя профиля",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "frame"
+      ],
+      "reason": "Actual applicable machine time not established for the layered profile."
+    },
+    {
+      "key": "perforator",
+      "nameRu": "Электроперфоратор для крепления каркаса",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "frame"
+      ],
+      "reason": "Actual applicable machine time not established for the layered profile."
+    },
+    {
+      "key": "driver",
+      "nameRu": "Шуруповёрт для многослойной обшивки",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "clad"
+      ],
+      "reason": "C1112.9machine-hours not transferred to two/three layers."
+    },
+    {
+      "key": "laser",
+      "nameRu": "Лазерный построитель осей",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "setout",
+        "frame"
+      ],
+      "reason": "No finite source-supported whole-work provision established."
+    },
+    {
+      "key": "measure",
+      "nameRu": "Рулетка для обмера",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "setout",
+        "frame",
+        "clad"
+      ],
+      "reason": "No finite source-supported whole-work provision established."
+    },
+    {
+      "key": "level",
+      "nameRu": "Уровень для проверки каркаса",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame"
+      ],
+      "reason": "No finite source-supported whole-work provision established."
+    },
+    {
+      "key": "drill-bit",
+      "nameRu": "Сверло по минеральному основанию",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame"
+      ],
+      "reason": "Wear and sufficient stock are not established by the original tool=1 plan."
+    },
+    {
+      "key": "access",
+      "nameRu": "Средства подмащивания для монтажа перегородки",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame",
+        "clad",
+        "joint",
+        "prime"
+      ],
+      "reason": "Height does not establish safe complete access assembly or duration."
+    },
+    {
+      "key": "punch",
+      "nameRu": "Просекатель металлического профиля",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame"
+      ],
+      "reason": "Whole-work durable provision not established."
+    },
+    {
+      "key": "bit",
+      "nameRu": "Бита для шурупов по гипсокартону",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "clad"
+      ],
+      "reason": "Wear and renewal not established."
+    },
+    {
+      "key": "knife",
+      "nameRu": "Нож для раскроя гипсового листа",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "clad"
+      ],
+      "reason": "Whole-work blades and renewal not established."
+    },
+    {
+      "key": "plane",
+      "nameRu": "Рубанок для фаски резаной кромки",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "clad",
+        "joint"
+      ],
+      "reason": "Whole-work blade provision not established."
+    },
+    {
+      "key": "insulation-knife",
+      "nameRu": "Нож для резки минеральной ваты",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "insulate"
+      ],
+      "reason": "Whole-work blade provision not established."
+    },
+    {
+      "key": "mix-vessel",
+      "nameRu": "Чистая ёмкость ручного замеса гипсовой смеси",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Compatible finite mixing station and cleaning/reuse have not been established."
+    },
+    {
+      "key": "mix-spatula",
+      "nameRu": "Шпатель для ручного перемешивания гипсовой смеси",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Whole-work provision and cleaning not established."
+    },
+    {
+      "key": "joint-spatula",
+      "nameRu": "Шпатель для заполнения стыков и вдавливания ленты",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Whole-work provision and cleaning not established."
+    },
+    {
+      "key": "sanding-holder",
+      "nameRu": "Тёрка доводки высохших стыков",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Whole-work provision not established."
+    },
+    {
+      "key": "abrasive",
+      "nameRu": "Шлифовальная сетка для гипсовой шпаклёвки",
+      "category": "material",
+      "unitId": "piece",
+      "operations": [
+        "joint"
+      ],
+      "reason": "Wear norm and sufficient renewal not established."
+    },
+    {
+      "key": "cut-primer-brush",
+      "nameRu": "Кисть для грунтования резаных кромок",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "prime"
+      ],
+      "reason": "Whole-work provision and cleaning not established."
+    },
+    {
+      "key": "primer-roller",
+      "nameRu": "Валик для грунтования поверхности",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "prime"
+      ],
+      "reason": "Whole-work provision and cleaning not established."
+    },
+    {
+      "key": "gloves",
+      "nameRu": "Защитные перчатки для выбранных материалов",
+      "category": "material",
+      "unitId": "pair",
+      "operations": [
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Material compatibility, sizes and sufficient replacement not established."
+    },
+    {
+      "key": "eye-protection",
+      "nameRu": "Защита глаз при монтаже и отделке",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Whole-work PPE provision not established."
+    },
+    {
+      "key": "dust-protection",
+      "nameRu": "Защита дыхания от пыли",
+      "category": "material",
+      "unitId": "piece",
+      "operations": [
+        "frame",
+        "clad",
+        "insulate",
+        "joint",
+        "cleanup"
+      ],
+      "reason": "Exposure, type and renewal not established; one mask is not a volume norm."
+    },
+    {
+      "key": "vacuum",
+      "nameRu": "Строительный пылесос для сухой очистки",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Complete compatible dust-removal provision and performance not established."
+    },
+    {
+      "key": "dust-bag",
+      "nameRu": "Пылесборный мешок для строительного пылесоса",
+      "category": "material",
+      "unitId": "piece",
+      "operations": [
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Capacity, dust quantity and sufficient renewal not established."
+    },
+    {
+      "key": "washing-water",
+      "nameRu": "Вода для очистки инструмента",
+      "category": "material",
+      "unitId": "l",
+      "operations": [
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "The old .1l/m2 plan is not a source norm and is not reused."
+    },
+    {
+      "key": "wash-vessel",
+      "nameRu": "Ёмкость для очистки инструмента",
+      "category": "equipment",
+      "unitId": "piece",
+      "operations": [
+        "joint",
+        "prime",
+        "cleanup"
+      ],
+      "reason": "Capacity, renewal and wastewater handling not established."
+    },
+    {
+      "key": "electricity",
+      "nameRu": "Электроэнергия для монтажа перегородки",
+      "category": "equipment",
+      "unitId": "kWh",
+      "operations": [
+        "frame",
+        "clad",
+        "joint",
+        "cleanup"
+      ],
+      "reason": "Machine energy input and duration not established."
+    },
+    {
+      "key": "waste-container",
+      "nameRu": "Тара для раздельного сбора отходов",
+      "category": "material",
+      "unitId": "piece",
+      "operations": [
+        "cleanup"
+      ],
+      "reason": "Volume and sufficient count not established; one bag is not a norm."
+    },
+    {
+      "key": "waste-loading",
+      "nameRu": "Труд сбора и погрузки отходов",
+      "category": "labor",
+      "unitId": "man_hour",
+      "operations": [
+        "cleanup"
+      ],
+      "reason": "Board/profile offcut geometry does not establish handling time."
+    },
+    {
+      "key": "waste-transport",
+      "nameRu": "Транспорт для вывоза отходов",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "cleanup"
+      ],
+      "reason": "Actual vehicle, distance, loads and recipient route not established."
+    },
+    {
+      "key": "waste-recipient",
+      "nameRu": "Приём отходов уполномоченным получателем",
+      "category": "service",
+      "unitId": "",
+      "operations": [
+        "cleanup"
+      ],
+      "reason": "Recipient acceptance, waste class and physical quantity not established."
+    },
+    {
+      "key": "delivery-vehicle",
+      "nameRu": "Транспорт доставки материалов",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "handling"
+      ],
+      "reason": "Actual vehicle, distance and loading scheme not established."
+    },
+    {
+      "key": "handling-labour",
+      "nameRu": "Труд разгрузки и перемещения материалов",
+      "category": "labor",
+      "unitId": "man_hour",
+      "operations": [
+        "handling"
+      ],
+      "reason": "No applicable complete handling profile admitted."
+    },
+    {
+      "key": "material-lift",
+      "nameRu": "Средство подъёма материалов к рабочему месту",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "operations": [
+        "handling"
+      ],
+      "reason": "Geometry alone does not establish access, assembly or duration."
+    },
+    {
+      "key": "inner-tape",
+      "nameRu": "Лента армирования стыков внутренних слоёв трёхслойной обшивки",
+      "category": "material",
+      "unitId": "m",
+      "operations": [
+        "joint"
+      ],
+      "reason": "C11 explicitly omits tape for the two-layer inner layer; the exact three-layer inner-joint rule is not established by this packet."
+    }
+  ],
+  "retainedLayeredNeedsCount": 73,
+  "retainedLegacyToolsCount": 23,
+  "legacyToolsRemainVisiblePreliminaryNotActualCounts": true,
+  "newPaidOwners": 0,
+  "scope": "Whole C11 current retains C111/C112/C113 separately. PN50/PS50 straight dry non-opening, non-horizontal-joint source scope only; certified acoustics/fire/wet/openings/otherprofiles not inferred. Existing owner/primarymeasure selection unchanged. New quantities and approval facts never supplied by consumer or inferred from area.",
+  "sources": [
+    {
+      "id": "c11",
+      "path": ".release-runtime/r568/s27-35/g2-sources/knauf-c11-2025.pdf",
+      "sha256": "b811497cee980d793565aad404c03e66e8c7f09dd4d7a4fabeb97b955867e290",
+      "url": "https://www.knauf.ru/upload/iblock/9c0/uzpe7j9kucbu8olnefu2ygtqgygfjrsa/22-IL-C11-Peregorodki-iz-KNAUF_listov-_08_04_2025_-v01-Preview.pdf",
+      "locator": "PDF2 C111 definition,PDF3 partition sequence/anchors≤1000mm and≥3/profile,TN250mm singlelayer,PDF4 exactseparatecolumns reference11m², ambiguousfillerunit NOTkg"
+    },
+    {
+      "id": "fugen",
+      "path": ".release-runtime/r568/ceiling-high-load-geometry-r1/sources/KNAUF_FUGEN_2025_07.pdf",
+      "sha256": "3a6e5980c1e3009793f5b490f68ce80a80b675cb4c903d6725d907075455fdc6",
+      "url": "https://www.knauf.ru/upload/iblock/d54/s3vq1z4wsuh4e3a81gtzl5pp15z2gv2a/07-IL-KNAUF_Fugen-_02_09_2025_-v04-Preview.pdf",
+      "locator": "PDF2–4 exact Fugen Q1 scope, recipe .6..7L/kg actualdrymix,temperature,clean tools/handmethod/cleanup; no labour norm"
+    },
+    {
+      "id": "tiefengrund",
+      "path": ".release-runtime/r568/ceiling-high-load-geometry-r1/sources/KNAUF_TIEFENGRUND_2026_06.pdf",
+      "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9",
+      "url": "https://www.knauf.ru/upload/iblock/215/ggu7x06mvv4w1pq8t5w2lw7b2ynkr25y/38-IL-KNAUF_Tifengrund-_23_06_2026_-v02-Preview.pdf",
+      "locator": "PDF2 selectedmethod kg/supply/tools/cleaning; no sewer/soil discharge; no exactdensityconversion"
+    },
+    {
+      "id": "krer",
+      "path": ".release-runtime/r568/ceiling-high-load-geometry-r1/sources/KG_KRER10_2015.pdf",
+      "sha256": "f2565dfea716722cf94fa1b151ca245c31f72ee4b8e105d2a0df520b4cc90a0e",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no10derevannyekonstrukcii_compressed-6196908347ccd3433.17740211.pdf",
+      "locator": "PDF123–124 table10-05-001-01 onlyC111whole100m²,98h/.36/.6/2.9 source intact; C112/C113 not imported"
+    },
+    {
+      "id": "ppr",
+      "path": null,
+      "sha256": null,
+      "url": null,
+      "locator": "ACTUAL_PROJECT_PPR_REQUIRED_NO_RATE_OR_OBJECTFACT_ASSERTED"
+    }
+  ],
+  "retainedRowRoster": [
+    {
+      "rowId": "scope:c111:area",
+      "formulaId": "c111_scope_area_v1",
+      "unit": "m2",
+      "costOwnerId": "scope:c111:area",
+      "rowSha256": "cb347343e724fe490a21a4ba7d6bc9497f0c88fb6551db8a56215ff955abdb52"
+    },
+    {
+      "rowId": "scope:c111:length",
+      "formulaId": "c111_scope_length_v1",
+      "unit": "m",
+      "costOwnerId": "scope:c111:length",
+      "rowSha256": "dc6b1e0c2977b1a41098873bed9d0bae8efc6577ec8fbfb852eba745122feb66"
+    },
+    {
+      "rowId": "scope:c111:sheet-net",
+      "formulaId": "c111_scope_sheet_net_v1",
+      "unit": "m2",
+      "costOwnerId": "scope:c111:sheet-net",
+      "rowSha256": "c7cac654c88df864a2a90858dbbe1c3b213af0d5f04ddbf56ad255b6dda25df8"
+    },
+    {
+      "rowId": "scope:c111:sheet-cut",
+      "formulaId": "c111_scope_sheet_cut_v1",
+      "unit": "m2",
+      "costOwnerId": "scope:c111:sheet-cut",
+      "rowSha256": "e2091d29c75cd41093c2ac6ced8c4aa0c9f2479e4c44adf1afa78f18bc7da57a"
+    },
+    {
+      "rowId": "scope:c111:stud-cut",
+      "formulaId": "c111_scope_stud_cut_v1",
+      "unit": "m",
+      "costOwnerId": "scope:c111:stud-cut",
+      "rowSha256": "f432d2cad1fe0076c2d1454d48183f0ab8900da6921b5b5af0d3bddc52ecef43"
+    },
+    {
+      "rowId": "scope:c111:cut-prime",
+      "formulaId": "c111_scope_cut_prime_v1",
+      "unit": "m2",
+      "costOwnerId": "scope:c111:cut-prime",
+      "rowSha256": "ea26ef7f862d0c1d90780fb857f96e61bcc0cac941c5e3fd27e8de8e5481543f"
+    },
+    {
+      "rowId": "scope:c111:joint-length",
+      "formulaId": "c111_scope_joint_length_v1",
+      "unit": "m",
+      "costOwnerId": "scope:c111:joint-length",
+      "rowSha256": "73e1f59ec2ec89b2c804b916c7d6baf2d570243ec381e8de99031caed9698eea"
+    },
+    {
+      "rowId": "scope:c111:tn25-norm",
+      "formulaId": "c111_scope_tn25_norm_v1",
+      "unit": "piece",
+      "costOwnerId": "scope:c111:tn25-norm",
+      "rowSha256": "81e6329e9c0e3c4c07b49006a2b50ffc3ad98e46d5f41902457bb50b50597eb7"
+    },
+    {
+      "rowId": "scope:c111:dowel-norm",
+      "formulaId": "c111_scope_dowel_norm_v1",
+      "unit": "piece",
+      "costOwnerId": "scope:c111:dowel-norm",
+      "rowSha256": "988bb78c7a9f7d47b3cbe815bab7697fd4753396665b0f1f9b45b33657303c05"
+    },
+    {
+      "rowId": "material:c111:pn50",
+      "formulaId": "c111_pn50_order_v1",
+      "unit": "piece",
+      "costOwnerId": "material:c111:pn50",
+      "rowSha256": "31218ae898d2f9d804495ec83688fed6578ceba8e63e1a42936c0127caf3dbed"
+    },
+    {
+      "rowId": "material:c111:ps50",
+      "formulaId": "c111_ps50_order_v1",
+      "unit": "piece",
+      "costOwnerId": "material:c111:ps50",
+      "rowSha256": "99167badc4d5fbd5afcf043522cfe3b77d6393eb5b0b6f8e0d2ead0a4141147f"
+    },
+    {
+      "rowId": "material:c111:dowel",
+      "formulaId": "c111_dowel_order_v1",
+      "unit": "piece",
+      "costOwnerId": "material:c111:dowel",
+      "rowSha256": "f21fb90f5584fc9861e790b07e3aad2e0bdd89e3f96b91112f6c373bc7ecede2"
+    },
+    {
+      "rowId": "material:c111:sealing-tape",
+      "formulaId": "c111_sealing_tape_order_v1",
+      "unit": "m",
+      "costOwnerId": "material:c111:sealing-tape",
+      "rowSha256": "06e25b691e532202d15a00396c0832507b5ac7a5c61c5ea72753ee8c245da93f"
+    },
+    {
+      "rowId": "material:c111:board",
+      "formulaId": "c111_board_order_v1",
+      "unit": "piece",
+      "costOwnerId": "material:c111:board",
+      "rowSha256": "f17806493e0dc40a12d21d3610b08c261e79469a3beb4a6967d2bae987c98fad"
+    },
+    {
+      "rowId": "material:c111:tn25",
+      "formulaId": "c111_tn25_order_v1",
+      "unit": "piece",
+      "costOwnerId": "material:c111:tn25",
+      "rowSha256": "3661c94b64b8dd519927fcd8a77a63a83f9b9be33d0d022e70d23dac99b86877"
+    },
+    {
+      "rowId": "material:c111:insulation",
+      "formulaId": "c111_insulation_order_v1",
+      "unit": "m2",
+      "costOwnerId": "material:c111:insulation",
+      "rowSha256": "77f22509535b41c8ae40fde08bff004524ec083288c4389f3e4b2122b1d0618d"
+    },
+    {
+      "rowId": "material:c111:fugen",
+      "formulaId": "c111_fugen_order_v1",
+      "unit": "kg",
+      "costOwnerId": "material:c111:fugen",
+      "rowSha256": "6cfb65bec9e94cf44d1c849f652ecd167239744ccb9082527c7e472261b7e428"
+    },
+    {
+      "rowId": "material:c111:joint-tape",
+      "formulaId": "c111_joint_tape_order_v1",
+      "unit": "m",
+      "costOwnerId": "material:c111:joint-tape",
+      "rowSha256": "65a52054d9b9c306080540d02129b544b1f43511e6165c6a567ca52df4540ec3"
+    },
+    {
+      "rowId": "material:c111:separation-tape",
+      "formulaId": "c111_separation_tape_order_v1",
+      "unit": "m",
+      "costOwnerId": "material:c111:separation-tape",
+      "rowSha256": "34168d0c2bdae860fe078bb6aa1dac71e309df8355d740b56c2e9d97415d227c"
+    },
+    {
+      "rowId": "material:c111:tiefengrund",
+      "formulaId": "c111_tiefengrund_order_v1",
+      "unit": "kg",
+      "costOwnerId": "material:c111:tiefengrund",
+      "rowSha256": "8afe1dda616bd377ee88f102ff40cd854956d466fda081bd03209bf9477c411c"
+    },
+    {
+      "rowId": "material:c111:water",
+      "formulaId": "c111_water_order_v1",
+      "unit": "l",
+      "costOwnerId": "material:c111:water",
+      "rowSha256": "dd35d88a9b2ac2e032402c3e0021aecbfc89383c949b878d8f66add738d4d837"
+    },
+    {
+      "rowId": "allocation:c111:water:mixing",
+      "formulaId": "c111_water_mixing_v1",
+      "unit": "l",
+      "costOwnerId": "allocation:c111:water:mixing",
+      "rowSha256": "65a8bde41dfd4450b0bd3e7bc5cac0c3e197ca20fcb5e51b2f9ef047cff99d37"
+    },
+    {
+      "rowId": "allocation:c111:water:cleaning",
+      "formulaId": "c111_water_cleaning_v1",
+      "unit": "l",
+      "costOwnerId": "allocation:c111:water:cleaning",
+      "rowSha256": "b70057e480f21c4940dcba119f35fbfe9604dd7fd047fd163c695aa58cf84e81"
+    },
+    {
+      "rowId": "work:c111:worker",
+      "formulaId": "c111_krer_worker_v1",
+      "unit": "man_hour",
+      "costOwnerId": "work:c111:worker",
+      "rowSha256": "7c165e0bca3226edda4ede7d283ab140058b8b35929a03710607802ef5a13ef1"
+    },
+    {
+      "rowId": "work:c111:shears",
+      "formulaId": "c111_krer_shears_v1",
+      "unit": "machine_hour",
+      "costOwnerId": "work:c111:shears",
+      "rowSha256": "dc2f6d843af297d3d8d52ab5879c1aaf881ba29a0b207b90dbe18d5ebca99202"
+    },
+    {
+      "rowId": "work:c111:perforator",
+      "formulaId": "c111_krer_perforator_v1",
+      "unit": "machine_hour",
+      "costOwnerId": "work:c111:perforator",
+      "rowSha256": "b843a0321164b255f7f8814bcafe7b59af8bfb904d6efa1b8e91f792786e7814"
+    },
+    {
+      "rowId": "work:c111:driver",
+      "formulaId": "c111_krer_driver_v1",
+      "unit": "machine_hour",
+      "costOwnerId": "work:c111:driver",
+      "rowSha256": "e86915032a91e19a3f28a8792455faed5b010acef13ccce63bc809578d3d7547"
+    },
+    {
+      "rowId": "tool:c111:laser",
+      "formulaId": "c111_tool_laser_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:laser",
+      "rowSha256": "255b09fbd5b503435040da8abcc2a3eac7f85875453f6755f5184160b04b774d"
+    },
+    {
+      "rowId": "tool:c111:measure",
+      "formulaId": "c111_tool_measure_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:measure",
+      "rowSha256": "d7be57cf6e1b6b44c0e1e9d57d1068bf17ae1defa69d346364427a2feb02b52e"
+    },
+    {
+      "rowId": "tool:c111:level",
+      "formulaId": "c111_tool_level_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:level",
+      "rowSha256": "6d0aba281a19e8d9b223b3c863b64e2ce104392bbe46b9442b4ac892c4f1f604"
+    },
+    {
+      "rowId": "tool:c111:drill-bit",
+      "formulaId": "c111_tool_drill_bit_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:drill-bit",
+      "rowSha256": "19ad5ef3b2e059b6d4af19f47da557897a0ebe03901d2bb897521f5aef205cdd"
+    },
+    {
+      "rowId": "tool:c111:access",
+      "formulaId": "c111_tool_access_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:access",
+      "rowSha256": "4050d32440196da2caef38eafbe3ea22645e1dd79323a434bf66e930673f433b"
+    },
+    {
+      "rowId": "tool:c111:punch",
+      "formulaId": "c111_tool_punch_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:punch",
+      "rowSha256": "c22a1e116860f2dad7b7c31d7b2038ecd599a4ea6dab1c3a465d6ca9da454988"
+    },
+    {
+      "rowId": "tool:c111:ph2",
+      "formulaId": "c111_tool_ph2_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:ph2",
+      "rowSha256": "144a3c601490e55dad925adae41e7757d16265fd3970a622b98e3d66fef97c31"
+    },
+    {
+      "rowId": "tool:c111:knife",
+      "formulaId": "c111_tool_knife_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:knife",
+      "rowSha256": "f26ca6ce6d941be8ef30ef1d387f8bceb9433ccf1dede44f08aa8fc1b0afe29d"
+    },
+    {
+      "rowId": "tool:c111:plane",
+      "formulaId": "c111_tool_plane_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:plane",
+      "rowSha256": "dfb31a10aeb0a29ec64414fd70ef3a4946841349f62fd3df8c1b73d1707b57e5"
+    },
+    {
+      "rowId": "tool:c111:insulation-knife",
+      "formulaId": "c111_tool_insulation_knife_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:insulation-knife",
+      "rowSha256": "2deab445f508a71325acff080cd81ae7a1714f4aaa77feb2d5089608361f185f"
+    },
+    {
+      "rowId": "tool:c111:bucket",
+      "formulaId": "c111_tool_bucket_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:bucket",
+      "rowSha256": "d255e4bea823fdc08e73e27d851b26dbb68c84ff5fb16ef6e16558d0b670c15c"
+    },
+    {
+      "rowId": "tool:c111:spatula",
+      "formulaId": "c111_tool_spatula_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:spatula",
+      "rowSha256": "255e538ce38dfdfa5c8ee78d774182c4dc0086338406c3a737395e0adaaa0f19"
+    },
+    {
+      "rowId": "tool:c111:joint-spatula",
+      "formulaId": "c111_tool_joint_spatula_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:joint-spatula",
+      "rowSha256": "c8f73852c0103b55bad302d86f679bfd95dda48c80d7e61f3e33b9bc5d717c19"
+    },
+    {
+      "rowId": "tool:c111:sanding-holder",
+      "formulaId": "c111_tool_sanding_holder_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:sanding-holder",
+      "rowSha256": "1f1faa5e997155b0ddde875187b68da8b78251ebda07700d4b823ad2bd9a6357"
+    },
+    {
+      "rowId": "tool:c111:abrasive",
+      "formulaId": "c111_tool_abrasive_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:abrasive",
+      "rowSha256": "6558369d463475ecc299f55d520ed9e640e6bbd7c197607565f1c04de6b025e8"
+    },
+    {
+      "rowId": "tool:c111:brush",
+      "formulaId": "c111_tool_brush_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:brush",
+      "rowSha256": "fb9ba781d1e2544bd754e123fcc8b4b7c0ab1898b6f7366d2a8503eafa9abeaa"
+    },
+    {
+      "rowId": "tool:c111:roller",
+      "formulaId": "c111_tool_roller_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:roller",
+      "rowSha256": "c42f112453cc4afa2b21f81b5fb4146c2439b6dba5d1ab3dfd97ae3afe9d0cd8"
+    },
+    {
+      "rowId": "tool:c111:gloves",
+      "formulaId": "c111_tool_gloves_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:gloves",
+      "rowSha256": "e0032f05ebac509a7fa3b4b6189a078388af94c39d3b09d6cd20f06c68c73eef"
+    },
+    {
+      "rowId": "tool:c111:eye-protection",
+      "formulaId": "c111_tool_eye_protection_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:eye-protection",
+      "rowSha256": "de4be312e10d477a626d6a13d48f93ca0d1d96a350a1e2a733143306ad8ed996"
+    },
+    {
+      "rowId": "tool:c111:dust-protection",
+      "formulaId": "c111_tool_dust_protection_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:dust-protection",
+      "rowSha256": "acf02204e29dc61ab76ba16b5048be7279eb0c368eaaec54d4f2f127cd8159e6"
+    },
+    {
+      "rowId": "tool:c111:vacuum",
+      "formulaId": "c111_tool_vacuum_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:vacuum",
+      "rowSha256": "46917fb20272ae5df8ef4efe14b2f69e9806da79f395cf30dcfbd6d7421335d3"
+    },
+    {
+      "rowId": "tool:c111:dust-bag",
+      "formulaId": "c111_tool_dust_bag_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:dust-bag",
+      "rowSha256": "000f5aef611a5ffca78a049f9fcbd83b6c20a9895e376204631b2ef8e46e6a02"
+    },
+    {
+      "rowId": "tool:c111:waste-bag",
+      "formulaId": "c111_tool_waste_bag_required_v1",
+      "unit": "piece",
+      "costOwnerId": "tool:c111:waste-bag",
+      "rowSha256": "3310522d078a043079abbddb89519558f89f1cd2a497f205aeaa9807c3f6b7ed"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:track-order",
+      "formulaId": "drywall:c11:two-layer:formula:track-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:track-order",
+      "rowSha256": "51ac46d7beb62c1453d67d74738ad1217ebb677a126fe21e1eace39493fa43e2"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:track-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:track-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:track-consumed",
+      "rowSha256": "eedcc6c5575f8f47445b7835cb3ad35fee3462bdb043abaa497eed7157e9df2e"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:track-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:track-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:track-remaining",
+      "rowSha256": "350a5a2d54343957b3fdcbf36d148191759087e25794ba9127377e1fe7570ddf"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:stud-order",
+      "formulaId": "drywall:c11:two-layer:formula:stud-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:stud-order",
+      "rowSha256": "6d4626b326c5583bf590ff4c1a4b1245bf9761b2d7f07cf9e9cd588748650145"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:stud-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:stud-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:stud-consumed",
+      "rowSha256": "674ac80ee4565e6565fd6db01ff46d6714210552905008930a632aa6d0c25143"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:stud-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:stud-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:stud-remaining",
+      "rowSha256": "ccbf27fb0c3f81f8563bb7fc4579dd52cf2880bc4e2f1cee73461773a688a5e5"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:anchor-order",
+      "formulaId": "drywall:c11:two-layer:formula:anchor-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:anchor-order",
+      "rowSha256": "aa277e99f303b52e35b6ee846881aa6959c006d643540696beb574fa8adbdf25"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:anchor-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:anchor-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:anchor-consumed",
+      "rowSha256": "186dcf25d36c04bac4ade1303cf745a0cc1c6094dc98237c7551528a2a577593"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:anchor-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:anchor-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:anchor-remaining",
+      "rowSha256": "0c0139b8644b167051ea46ae8d7f1b28c7617ced68d06633940b2f66d8505b33"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:sealing-tape-order",
+      "formulaId": "drywall:c11:two-layer:formula:sealing-tape-order",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:sealing-tape-order",
+      "rowSha256": "6ed254580663df44b3e0996584a5e1c25920fe7661df65e5bc353aef5bf5ff2c"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:sealing-tape-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:sealing-tape-consumed",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:sealing-tape-consumed",
+      "rowSha256": "5cbe9aeb9963c58a25354f89c30603d3178c7b4c3d4edec0fd1c9c064f5e2f2f"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:sealing-tape-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:sealing-tape-remaining",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:sealing-tape-remaining",
+      "rowSha256": "9a5427710fb730afa2e85ba59a1fb12bbd4c9bf3bda41ad9bb437a15d7587d14"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:board-order",
+      "formulaId": "drywall:c11:two-layer:formula:board-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:board-order",
+      "rowSha256": "f42a245b24024a86b1aa9ddd10393f4f1badf0c6df994d58a7d050f15b2edee7"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:board-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:board-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:board-consumed",
+      "rowSha256": "a1634defadc62ea29da715da9c52baebb7ad0ada6a59a64002a7f3c946d24552"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:board-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:board-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:board-remaining",
+      "rowSha256": "05f942bc1fe0b897c5245a31d83de1dbe5fd2821dcfc46dd438f21cd135587ba"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:screw25-order",
+      "formulaId": "drywall:c11:two-layer:formula:screw25-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:screw25-order",
+      "rowSha256": "54aae92babbcb3bd3beb2c3ba1a662bf1125e45b68f8bd633ab321cbf3c461fd"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:screw25-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:screw25-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:screw25-consumed",
+      "rowSha256": "376ea89d25f94a53b3498afc5ae471ce5a9e3b9958e1d852b5c2c5f05ff3ebbe"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:screw25-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:screw25-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:screw25-remaining",
+      "rowSha256": "076d82d5451bc6c5e6bd46306b80f612ad36d8c170576b7d5ad8ccbbc9ab0232"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:screw35-order",
+      "formulaId": "drywall:c11:two-layer:formula:screw35-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:screw35-order",
+      "rowSha256": "5bf4ca0e20cf3f1dc17966a099f1a3b778439a39f7310aa9be6d0d58d3e77126"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:screw35-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:screw35-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:screw35-consumed",
+      "rowSha256": "53a5794b8bf4afedbd630b3e5ddc5099d4ac312bc9dd76fa750e8231ba46e507"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:screw35-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:screw35-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:screw35-remaining",
+      "rowSha256": "da98bf6669acea408d01e40956ee4b31137de6adf06429873f2a715244197c80"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:insulation-order",
+      "formulaId": "drywall:c11:two-layer:formula:insulation-order",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:two-layer:insulation-order",
+      "rowSha256": "0e48798e63dfc4d1368f99e8234ac9ec65412eb1382314eb3997bac607d37dc5"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:insulation-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:insulation-consumed",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:two-layer:insulation-consumed",
+      "rowSha256": "304ceb29872ab3c6114a18a3342edb7d74502512b5b59b1a56ae3536b0dfe744"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:insulation-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:insulation-remaining",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:two-layer:insulation-remaining",
+      "rowSha256": "6d6462e8364edee77f2e325079e52b75a457c07d61ed6a742d6e667d15c2c454"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:joint-compound-order",
+      "formulaId": "drywall:c11:two-layer:formula:joint-compound-order",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:two-layer:joint-compound-order",
+      "rowSha256": "c7820cfbc43f5267ceb0c321c9a778ee5cd323d38c3c92b74dbe279130a85f42"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:joint-compound-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:joint-compound-consumed",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:two-layer:joint-compound-consumed",
+      "rowSha256": "1b4bfe6e0a73dc3ad609e0fb61cadb6c83a30664fb8177e5b239ea484da972b7"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:joint-compound-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:joint-compound-remaining",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:two-layer:joint-compound-remaining",
+      "rowSha256": "fc9a17e6c6b615f66322c8d2a45a3e09c253251d4bd997f76a34a11f993b3455"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:outer-joint-tape-order",
+      "formulaId": "drywall:c11:two-layer:formula:outer-joint-tape-order",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:outer-joint-tape-order",
+      "rowSha256": "0059b279d38fbd3986a8295cbd17fbcb0ef840210eb500129a78b19830d83926"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:outer-joint-tape-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:outer-joint-tape-consumed",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:outer-joint-tape-consumed",
+      "rowSha256": "58ee2557cab6e50d23ca1f65eb0c5b7b13e00c9b013ac3e66c9fadc236601c39"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:outer-joint-tape-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:outer-joint-tape-remaining",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:outer-joint-tape-remaining",
+      "rowSha256": "6616ddfd7d6c5d82a2553119b239f3d2bc70be0e1e850775338d685e6efbf9d7"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:separation-tape-order",
+      "formulaId": "drywall:c11:two-layer:formula:separation-tape-order",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:separation-tape-order",
+      "rowSha256": "522dd095296ee4b5d8f97b724697979130ebb171d95d067f95de6c8ebb49d038"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:separation-tape-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:separation-tape-consumed",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:separation-tape-consumed",
+      "rowSha256": "b4904ae48e77055740b1b463613a4732445d42f5f0ef4b0e8893f74d3d0f948e"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:separation-tape-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:separation-tape-remaining",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:separation-tape-remaining",
+      "rowSha256": "33ec6b23cd61a7b75e939ad0dcedeb77a3942cd0ac87f04efeb6a02cd564f1e6"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:primer-order",
+      "formulaId": "drywall:c11:two-layer:formula:primer-order",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:two-layer:primer-order",
+      "rowSha256": "aadb76b95e2064fa8b6fe72ac5bee33717eccbd706f51d120a58b22daf887912"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:primer-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:primer-consumed",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:two-layer:primer-consumed",
+      "rowSha256": "68aaf8c69fb993597146f344f8c0eba38caa9b1df57beeba3239263d416957b0"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:primer-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:primer-remaining",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:two-layer:primer-remaining",
+      "rowSha256": "9bbd1c5b738dea365e022e62fb4d65e2d8cd885b115652f8b6fa4cf4d85154b8"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:mixing-water-order",
+      "formulaId": "drywall:c11:two-layer:formula:mixing-water-order",
+      "unit": "l",
+      "costOwnerId": "drywall:c11:two-layer:mixing-water-order",
+      "rowSha256": "bdd8f72e51986c3e17d77bb5a826609b22369546e03d489b40377c13dd17fd75"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:mixing-water-consumed",
+      "formulaId": "drywall:c11:two-layer:formula:mixing-water-consumed",
+      "unit": "l",
+      "costOwnerId": "drywall:c11:two-layer:mixing-water-consumed",
+      "rowSha256": "96280fb9464965087504c319abe98e209791b2d45689310b3f0c3b386f5dd895"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:mixing-water-remaining",
+      "formulaId": "drywall:c11:two-layer:formula:mixing-water-remaining",
+      "unit": "l",
+      "costOwnerId": "drywall:c11:two-layer:mixing-water-remaining",
+      "rowSha256": "1b6feb5f6cd20ca0db134f91372897845d19e588c70716cffd2ca823ed80baf4"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:whole-work",
+      "formulaId": "drywall:c11:two-layer:formula:whole-work",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "ceb439dc4e813fee339d41fd8ad390993b68c2c7210214f6bc6d29b1e7858f3d"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:board-offcuts",
+      "formulaId": "drywall:c11:two-layer:formula:board-offcuts",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "4d8c1172ee29c9e1358a0d695e67fe8f82df0fa53fd6db30e859bfaf839d5b04"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:track-offcuts",
+      "formulaId": "drywall:c11:two-layer:formula:track-offcuts",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "9a5f371c79d5e96a1c0f0e257f9576c9caadfcfc1f23b4875b803f5fc27d621b"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:stud-offcuts",
+      "formulaId": "drywall:c11:two-layer:formula:stud-offcuts",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "e57458f40d9b6bacc2357a1d33c28589aac5dde4de9dbb94d11a26712da4e0d0"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-labour",
+      "formulaId": "drywall:c11:two-layer:formula:open-labour",
+      "unit": "man_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "c027162c401de07f485a60c61b9c3864bbd4296679cd0c3d4cf3dcc59d5b6aca"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-shears",
+      "formulaId": "drywall:c11:two-layer:formula:open-shears",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "f45f5315b4d21b33cfaacb40b17ad7b9fbd0dd21edbc97d3c716c9853a8a6f7d"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-perforator",
+      "formulaId": "drywall:c11:two-layer:formula:open-perforator",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "f0fc430dbd2de3257ab68e77b2fa78e52a1b6e73accfeb317e9abba0883513c5"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-driver",
+      "formulaId": "drywall:c11:two-layer:formula:open-driver",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "75079f714061e81a51a8d395f39c6e375d605612fa55bc67fbe992f48797c6e4"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-laser",
+      "formulaId": "drywall:c11:two-layer:formula:open-laser",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "3d11dde0132aa3df3df1ca9f2bfd4d9986214907058499840e2d3e6496417aef"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-measure",
+      "formulaId": "drywall:c11:two-layer:formula:open-measure",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "911589b809b4140947ebef59450a2e15ee4ea79fa3f217f70169e84befef7442"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-level",
+      "formulaId": "drywall:c11:two-layer:formula:open-level",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "adf02e0ff2cbe8bd5de5709f90797453f3611d2eca6f3f5a8480735d09e28fe1"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-drill-bit",
+      "formulaId": "drywall:c11:two-layer:formula:open-drill-bit",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "892659d2804fce85d9eb7061e907ac70dc221f3b8cfa04e7256ccca1c189b912"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-access",
+      "formulaId": "drywall:c11:two-layer:formula:open-access",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "7567a14cc192640d6fa917fdb3ea9ba737e66e28d4825b40f98210387aa48cde"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-punch",
+      "formulaId": "drywall:c11:two-layer:formula:open-punch",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "d3d07d854060cad40e4ee37658051c5480fecbeee0bd17822727bcef69a965ba"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-bit",
+      "formulaId": "drywall:c11:two-layer:formula:open-bit",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "1416167bf0974d3cf508d15ad03b1f9ef54481c11ad9d8bcff9817561838bde5"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-knife",
+      "formulaId": "drywall:c11:two-layer:formula:open-knife",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "f9b53ef1f50562c27084a0139bcbca656c015057046eb383ce3ec8a0f0ffced5"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-plane",
+      "formulaId": "drywall:c11:two-layer:formula:open-plane",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "c034eeab240cec4d96c2fff70d95d8f3c095473b4d73663e4721fd56351b5521"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-insulation-knife",
+      "formulaId": "drywall:c11:two-layer:formula:open-insulation-knife",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "ba055ed2e07db866056442073c202841c13bde96ffa17292452a148cbd41000d"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-mix-vessel",
+      "formulaId": "drywall:c11:two-layer:formula:open-mix-vessel",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "a53cdb5da365a07dca7cb042506da5e4349909f4c12fc8f518ca8d17ed673c4f"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-mix-spatula",
+      "formulaId": "drywall:c11:two-layer:formula:open-mix-spatula",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "521db425e5fc49a55af11dd889dff272cd712cf4189e6a701737c74e5532a08d"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-joint-spatula",
+      "formulaId": "drywall:c11:two-layer:formula:open-joint-spatula",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "3aea72e05860ad48d6b6e2ada2e0ce937196ec1dd1ed85438e10ff7a37f0d38a"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-sanding-holder",
+      "formulaId": "drywall:c11:two-layer:formula:open-sanding-holder",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "3fb6fcb3e9611dbed3f9932303128bd4c01e49e396c29c8fe245924fa47ce45e"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-abrasive",
+      "formulaId": "drywall:c11:two-layer:formula:open-abrasive",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "8adde90fad885c680054f2d266aab44f0bdc39dc03c994855bc6af50773d5ad4"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-cut-primer-brush",
+      "formulaId": "drywall:c11:two-layer:formula:open-cut-primer-brush",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "05db48c27799cdf3d147d8b639c7e18cfb30dcda2579486cee396a9b240b3029"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-primer-roller",
+      "formulaId": "drywall:c11:two-layer:formula:open-primer-roller",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "045fdc40e0e2c6935b3f2ebd57de6d5e1938ae68a314680ef062140d1506d202"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-gloves",
+      "formulaId": "drywall:c11:two-layer:formula:open-gloves",
+      "unit": "pair",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "65c7a171dcdbbc4f104a554c199a9b553648b500bbe70f6b0289a8b0008235ee"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-eye-protection",
+      "formulaId": "drywall:c11:two-layer:formula:open-eye-protection",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "8eb7d750e9c61c3fff4f6c8f06938aba826eb675615a936fd660060a749d41ae"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-dust-protection",
+      "formulaId": "drywall:c11:two-layer:formula:open-dust-protection",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "79e0b89168daf70e0ffb04dccca510635ff3a9ef1fb1b86601fd38d5f4265b93"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-vacuum",
+      "formulaId": "drywall:c11:two-layer:formula:open-vacuum",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "8b5bb09c77f0fb8d845bbc052a98a0b5de7dde2f29e28dc14ffe928031674a16"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-dust-bag",
+      "formulaId": "drywall:c11:two-layer:formula:open-dust-bag",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "1cb597af5d6bfe5a690ebe93c4c9ca44adfee9f5f33f4f586142db4f913573db"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-washing-water",
+      "formulaId": "drywall:c11:two-layer:formula:open-washing-water",
+      "unit": "l",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "0d84cd6c0d776f44f4bb16ec7a443deed008db5dcc8db1063eff6a9c4023741c"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-wash-vessel",
+      "formulaId": "drywall:c11:two-layer:formula:open-wash-vessel",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "039045dc6fc6d8560a8da782dca56acd9eacd1f04f2a1ea7f9ebdfed5b9cd3fd"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-electricity",
+      "formulaId": "drywall:c11:two-layer:formula:open-electricity",
+      "unit": "kWh",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "f0ba06c377291b1c0d3d413562483c819b927a3192624cc8d58e724e6381fcbd"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-waste-container",
+      "formulaId": "drywall:c11:two-layer:formula:open-waste-container",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "56048a4f9cacfe6eec551a4fb42a62d903c1b1af13cd6d55c68225ec9e1833de"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-waste-loading",
+      "formulaId": "drywall:c11:two-layer:formula:open-waste-loading",
+      "unit": "man_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "1994c2f9fde1dc5c4d1bc9f8d7c197486457d5f2fca52951e7875173ab6015af"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-waste-transport",
+      "formulaId": "drywall:c11:two-layer:formula:open-waste-transport",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "fe36fe8ec17b0716b555ffd29947a7cf4c0f505ea57556d69ed3ac4629e88567"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-waste-recipient",
+      "formulaId": "drywall:c11:two-layer:formula:open-waste-recipient",
+      "unit": "",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "2fcffdf189b7594ce4722c4a3d24c013b02facc3ba8d8def00a8b6a3b46ef756"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-delivery-vehicle",
+      "formulaId": "drywall:c11:two-layer:formula:open-delivery-vehicle",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "7a92ff67def11802b2a47e7d757ccee05f18e47ea9686655ef2fbe4a9eb1eb3d"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-handling-labour",
+      "formulaId": "drywall:c11:two-layer:formula:open-handling-labour",
+      "unit": "man_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "1b6349b69f7898f7754b35dae88f9d6aebdc1724b96eb59415b44b5986e9ca40"
+    },
+    {
+      "rowId": "drywall:c11:two-layer:open-material-lift",
+      "formulaId": "drywall:c11:two-layer:formula:open-material-lift",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:two-layer:whole-work",
+      "rowSha256": "694cacf744bedf4bd95d13da9e6f550da09d9351596f21147f731ae4c0eb6393"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:track-order",
+      "formulaId": "drywall:c11:three-layer:formula:track-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:track-order",
+      "rowSha256": "a33a18eed63098990cb02e0b84439cf993133513844903143c285d2c9f29881c"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:track-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:track-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:track-consumed",
+      "rowSha256": "aa5724da9bb0108c917fb5504a81907a7a4ebed0e581b85530d4ce6a58089313"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:track-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:track-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:track-remaining",
+      "rowSha256": "9cfa580fae9e3e2220732f593eece32983b035381875bdab978c8c3a2c8862c3"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:stud-order",
+      "formulaId": "drywall:c11:three-layer:formula:stud-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:stud-order",
+      "rowSha256": "b58115c4f2f7185c4409429d88f228f4b8b26b73b46d6d6dcf08438c862d1fb4"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:stud-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:stud-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:stud-consumed",
+      "rowSha256": "002b93a644ec81de95280c6177d66b70c36a55df8025f07c46646af5b637af6f"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:stud-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:stud-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:stud-remaining",
+      "rowSha256": "132791108514d054ce6cea593c9d115148f447f446c63246708c41e424f4c818"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:anchor-order",
+      "formulaId": "drywall:c11:three-layer:formula:anchor-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:anchor-order",
+      "rowSha256": "7b0f37f484a53dfc9fa9869fdc3137720ed86146590c4facbf1ba17d85f324af"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:anchor-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:anchor-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:anchor-consumed",
+      "rowSha256": "18cc08e3eb257497b3324d5ba7a7cf01855a8dd7a0594cab05c48fd8ed834715"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:anchor-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:anchor-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:anchor-remaining",
+      "rowSha256": "68fe3d4013dd268e0ad5e47703d479b2a320a39f92dce9bf47df587e74cf3dd4"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:sealing-tape-order",
+      "formulaId": "drywall:c11:three-layer:formula:sealing-tape-order",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:sealing-tape-order",
+      "rowSha256": "add414449b663cddeb4b9b2439b2863f346b5da5d589983750dde513bfc0f984"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:sealing-tape-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:sealing-tape-consumed",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:sealing-tape-consumed",
+      "rowSha256": "be7906decd7f813b0b148f042b6448ec157cc455df9531325397c41b7910be6b"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:sealing-tape-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:sealing-tape-remaining",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:sealing-tape-remaining",
+      "rowSha256": "a9adaeba95cbb7d384c87ca45cfba390c1a29a6a88af2ace3cd1fb9623979b9b"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:board-order",
+      "formulaId": "drywall:c11:three-layer:formula:board-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:board-order",
+      "rowSha256": "0b545abaeac7fa7eb4fa149a48228f537f886fedffdfe2f8c68dcc330c0377a1"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:board-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:board-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:board-consumed",
+      "rowSha256": "b08e1b4823a125848436deb8622ebbf6905f28ca6da4459c86b29881c85be7bd"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:board-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:board-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:board-remaining",
+      "rowSha256": "64544bead3aaadd5c07b7d095ff1f08cab88298e5d29ff2a44cd327d1b4d4132"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw25-order",
+      "formulaId": "drywall:c11:three-layer:formula:screw25-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw25-order",
+      "rowSha256": "a1cc5c4504c31de739fbfee6f62b13f4501fff17ec1bc2bc27b2437154d87ae7"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw25-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:screw25-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw25-consumed",
+      "rowSha256": "cbc35e87d7b3d6adef3a9cdcb9b6b80d4d97fbc80f386c9417b291ef4d7aa986"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw25-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:screw25-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw25-remaining",
+      "rowSha256": "8e9d21c43ec2d7ae57939a43aea7451a62e32ca2085293cfa387c7921f4eb37b"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw35-order",
+      "formulaId": "drywall:c11:three-layer:formula:screw35-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw35-order",
+      "rowSha256": "26957e2f6e8582fa3b117b7c953dbc26fd49ac969c49e97ce1a86a160b71e05d"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw35-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:screw35-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw35-consumed",
+      "rowSha256": "fac00e22b7bab892efe9c5aa5e86c41ccdb8c39998b45faa8257c8e4f645ea9a"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw35-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:screw35-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw35-remaining",
+      "rowSha256": "c5719d19712b10d5b62f265290236cf27f9e0668a2633a8d65421bb81d3950ce"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw55-order",
+      "formulaId": "drywall:c11:three-layer:formula:screw55-order",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw55-order",
+      "rowSha256": "ca0fad56c3ad3853f061882a0e524591075e6b4ac4b99b0980b0c0620b91822c"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw55-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:screw55-consumed",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw55-consumed",
+      "rowSha256": "07ffc81484040e6b3b9b4ea01d7db82cedb0f9af8aff4c15e940240bc8600ffa"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:screw55-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:screw55-remaining",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:screw55-remaining",
+      "rowSha256": "13364c3d9b8972bfb3993f95542bcfe81fe3e90dd07bb3870c64997deb620d1e"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:insulation-order",
+      "formulaId": "drywall:c11:three-layer:formula:insulation-order",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:three-layer:insulation-order",
+      "rowSha256": "d959cc24b7960a069017705a250f155e15963085f25abf791d82c8a807b92754"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:insulation-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:insulation-consumed",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:three-layer:insulation-consumed",
+      "rowSha256": "237d8e5e9185c4de7f12d110d9e664c2d3072257f7fb07da5f959706936706d7"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:insulation-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:insulation-remaining",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:three-layer:insulation-remaining",
+      "rowSha256": "7f492294e0e148cd6ecbd21ab988bf9c6070f0496d8c1207dad2c60dc91efdeb"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:joint-compound-order",
+      "formulaId": "drywall:c11:three-layer:formula:joint-compound-order",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:three-layer:joint-compound-order",
+      "rowSha256": "e43924ea902d1aa5c6d867b0529cdec3a3fb432b8686f84eca5b807bb152dea9"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:joint-compound-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:joint-compound-consumed",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:three-layer:joint-compound-consumed",
+      "rowSha256": "48f00ce1b2b173dced955e7458c426af9c1b452007cd015102e047e7d505b9fb"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:joint-compound-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:joint-compound-remaining",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:three-layer:joint-compound-remaining",
+      "rowSha256": "ef53b044c5687a81a97d7864b4699e47575c8dbe6d9866399ddb4c9b9b97d3e2"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:outer-joint-tape-order",
+      "formulaId": "drywall:c11:three-layer:formula:outer-joint-tape-order",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:outer-joint-tape-order",
+      "rowSha256": "708eff50b3ab87797b7689b0415774db677ac5d301eedc16cc1a21e5e5d8457d"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:outer-joint-tape-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:outer-joint-tape-consumed",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:outer-joint-tape-consumed",
+      "rowSha256": "140ce7152122e3d6cb3d79b8d8210dd105f2cef8028f646894ee9a57e4b5a57c"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:outer-joint-tape-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:outer-joint-tape-remaining",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:outer-joint-tape-remaining",
+      "rowSha256": "030dc89f175976e23e7773b98d0c7c47a3361bf98caeeb943329a57ef1a36df8"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:separation-tape-order",
+      "formulaId": "drywall:c11:three-layer:formula:separation-tape-order",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:separation-tape-order",
+      "rowSha256": "f603cb3bd2ee3fd7b7f842c364241015594d58956776871bfd08150075bc7bc5"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:separation-tape-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:separation-tape-consumed",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:separation-tape-consumed",
+      "rowSha256": "91fdc5f33b19df14e15d1aac1fbb4ddef1a10d4e38d0d81429f509b2a0738ea0"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:separation-tape-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:separation-tape-remaining",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:separation-tape-remaining",
+      "rowSha256": "978addf6e5426afb2f397891e52f4579357c8041452c3fedd9923dfe78059324"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:primer-order",
+      "formulaId": "drywall:c11:three-layer:formula:primer-order",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:three-layer:primer-order",
+      "rowSha256": "106ed48f74b356a43c868f6c92c1a85f638b18ea5bf2deae0e00b9cb73f2f99a"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:primer-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:primer-consumed",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:three-layer:primer-consumed",
+      "rowSha256": "dd87bbbcf542fb3cc0fd6637456b39ca8d808c7151e0fd5db41da36b230ab991"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:primer-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:primer-remaining",
+      "unit": "kg",
+      "costOwnerId": "drywall:c11:three-layer:primer-remaining",
+      "rowSha256": "f4e5871b9c4a28f1dfecd800861585d2ccb8b1ef23319b537c6b93e2846c8ac6"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:mixing-water-order",
+      "formulaId": "drywall:c11:three-layer:formula:mixing-water-order",
+      "unit": "l",
+      "costOwnerId": "drywall:c11:three-layer:mixing-water-order",
+      "rowSha256": "e40f23ab115c264eaebfa7e33ac5282dbb7d12e5858963d349dcf756fcda45a7"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:mixing-water-consumed",
+      "formulaId": "drywall:c11:three-layer:formula:mixing-water-consumed",
+      "unit": "l",
+      "costOwnerId": "drywall:c11:three-layer:mixing-water-consumed",
+      "rowSha256": "12ac7fed15dbe01700c731b734572d4afa8ee23e9f6195fb24a78244ae4cf377"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:mixing-water-remaining",
+      "formulaId": "drywall:c11:three-layer:formula:mixing-water-remaining",
+      "unit": "l",
+      "costOwnerId": "drywall:c11:three-layer:mixing-water-remaining",
+      "rowSha256": "81db3fcd35f647ce3a1d0f3fac4e02e047f8247cc75d6ff9f569e8a89aca3137"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:whole-work",
+      "formulaId": "drywall:c11:three-layer:formula:whole-work",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "bcbccbcd970fa9a53f8c3deb0cdd87bfcbfc82d9d942f0d01e43d045ef2ec073"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:board-offcuts",
+      "formulaId": "drywall:c11:three-layer:formula:board-offcuts",
+      "unit": "m2",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "1d096f0b1d8e81e163ad763430d22f163f3c1598d82232c798d9ed96b3150da9"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:track-offcuts",
+      "formulaId": "drywall:c11:three-layer:formula:track-offcuts",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "2df794aadd7c394eb579e06697e6487409fecdcf584548178f9d46ab9bbc45ca"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:stud-offcuts",
+      "formulaId": "drywall:c11:three-layer:formula:stud-offcuts",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "e0b6ce6da54886a005bb1957b62c80935bf1bab126db46d09942534c47e5c2b4"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-labour",
+      "formulaId": "drywall:c11:three-layer:formula:open-labour",
+      "unit": "man_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "8bf84a67988e9613ce0703681a912ecd9e45390ae9a9ea8fe2cea1b05c41d625"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-shears",
+      "formulaId": "drywall:c11:three-layer:formula:open-shears",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "855a323ad259a30b940c2365a6d2f5a8ee7d5f68fb23ca3c3c04ea1e20602dd4"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-perforator",
+      "formulaId": "drywall:c11:three-layer:formula:open-perforator",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "5093d9500ce0e675641ff78909c4488f9139ef06703de76fca4938cfd71e3ea7"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-driver",
+      "formulaId": "drywall:c11:three-layer:formula:open-driver",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "166a14f26ca98cf2a767118b9e8cbae11babdf0923acaae42d4def3dfde968c1"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-laser",
+      "formulaId": "drywall:c11:three-layer:formula:open-laser",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "5f10cf6f242e6605b90d6f618d1f5be39fb7e5b881bd7b9e8df9ea4f15cf703a"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-measure",
+      "formulaId": "drywall:c11:three-layer:formula:open-measure",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "50f78564b7d132bc7015795fe73266a2f5a9d91914c6157b01f63c5c3d43c1ff"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-level",
+      "formulaId": "drywall:c11:three-layer:formula:open-level",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "2640976812c53d552ee6a6c2f2475f67247bcfcf29d1dff7b078b56b85ca3bb6"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-drill-bit",
+      "formulaId": "drywall:c11:three-layer:formula:open-drill-bit",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "94e3f6eda256915c0c3a49c2bee57b3937a69c586f136c7264868f3e13afc5bf"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-access",
+      "formulaId": "drywall:c11:three-layer:formula:open-access",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "64e6df8a280340f0685accd89ed4f3bc077c06394160585209ca5a93df1fd646"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-punch",
+      "formulaId": "drywall:c11:three-layer:formula:open-punch",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "c6f87caa480c0ebb634fd515cf819de3b9758527499a1cb74c5049ae1d6ea4f6"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-bit",
+      "formulaId": "drywall:c11:three-layer:formula:open-bit",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "230c2939b29579eafa33fbf702e150dd324342f854f72c46d2be5017630f090e"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-knife",
+      "formulaId": "drywall:c11:three-layer:formula:open-knife",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "8341492f758e416a78ad62e6b0de3290faadc937eef8927fa4a3206d8bdfde8c"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-plane",
+      "formulaId": "drywall:c11:three-layer:formula:open-plane",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "a2d17a4b7be0ce384202d4272cf1720830b4182d104b7364b5ab651f01937fcd"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-insulation-knife",
+      "formulaId": "drywall:c11:three-layer:formula:open-insulation-knife",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "9bf31d1b9c921624f4b6e0a94d3930329d97ad65814a015efbf72f72c966cd2e"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-mix-vessel",
+      "formulaId": "drywall:c11:three-layer:formula:open-mix-vessel",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "3307550e81a8bec9404e9eeaf1275727853bc19f3981a4055447247a73a11ddb"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-mix-spatula",
+      "formulaId": "drywall:c11:three-layer:formula:open-mix-spatula",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "edf8a3b985a859c0d9556e9014b3533e33964211ab6f56c172bf225b72af4e87"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-joint-spatula",
+      "formulaId": "drywall:c11:three-layer:formula:open-joint-spatula",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "a1cb42bc3f3a05b455013bb33354c7deac613caace46434a545f29a3d134d853"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-sanding-holder",
+      "formulaId": "drywall:c11:three-layer:formula:open-sanding-holder",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "3fd497fb922d336789d1198b0537022c2741954dadf434f757d31a6dcb0392bb"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-abrasive",
+      "formulaId": "drywall:c11:three-layer:formula:open-abrasive",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "d39277c5f3fec2acafb9a393c194c5f68d4f99003f0c2bbb63f681e71deb49a1"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-cut-primer-brush",
+      "formulaId": "drywall:c11:three-layer:formula:open-cut-primer-brush",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "a44498ce72aa8e3929c8adf7231a134e79d913f41e9fbd9dad200e2758f4e340"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-primer-roller",
+      "formulaId": "drywall:c11:three-layer:formula:open-primer-roller",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "8a51a8962bacbe3a245a08f2e034cd0b436887489e4ae34a5656a840ad53f21f"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-gloves",
+      "formulaId": "drywall:c11:three-layer:formula:open-gloves",
+      "unit": "pair",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "36c9274ae3052b28bc30a599d7e45895fe452cc2c63847b401e11103bb87f1ec"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-eye-protection",
+      "formulaId": "drywall:c11:three-layer:formula:open-eye-protection",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "d32f81af9df42606d1c55248f6dada22b9b0095374df8878d7cecd3ccab4b7e6"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-dust-protection",
+      "formulaId": "drywall:c11:three-layer:formula:open-dust-protection",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "90388671a8911e31a2aa50d6326305d472b665aeb96fa87d1e663263353448f7"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-vacuum",
+      "formulaId": "drywall:c11:three-layer:formula:open-vacuum",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "cbf2f980d4e1ad4f734645cf9be20730d2e09206b50f347b9d715c93115ae9e1"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-dust-bag",
+      "formulaId": "drywall:c11:three-layer:formula:open-dust-bag",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "7e4c62b4253b844bf5fc16d36a9564bbe7290bd9c1acdb8b5945c8ae9c75f6e8"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-washing-water",
+      "formulaId": "drywall:c11:three-layer:formula:open-washing-water",
+      "unit": "l",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "481a97242049bb16b10d663f8983a2015bfc53a0aabe2f4edea5818ce97ff791"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-wash-vessel",
+      "formulaId": "drywall:c11:three-layer:formula:open-wash-vessel",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "324f94a21d807b958667e338304a0b6f3cc90d6461dea34b6537878c63665085"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-electricity",
+      "formulaId": "drywall:c11:three-layer:formula:open-electricity",
+      "unit": "kWh",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "28d480b65cd7d751b4305f9205be8c4f7dacd6a08513382d3945ca20903bef83"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-waste-container",
+      "formulaId": "drywall:c11:three-layer:formula:open-waste-container",
+      "unit": "piece",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "f6b4a98ff85e1db0fd0433a4c2ea716e8fafe48512cc0d4d34e2bc6b49dec94c"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-waste-loading",
+      "formulaId": "drywall:c11:three-layer:formula:open-waste-loading",
+      "unit": "man_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "e351a535970e90a2c20021f2bba10ba944227d7e3b4220f677aa0622b12cd997"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-waste-transport",
+      "formulaId": "drywall:c11:three-layer:formula:open-waste-transport",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "d4d8e66cd235f90c50020557dcfd8af3dffa799343520edee216ba69da22e964"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-waste-recipient",
+      "formulaId": "drywall:c11:three-layer:formula:open-waste-recipient",
+      "unit": "",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "6b5b1f46cb793fcd1934c2ecca6c5c9b32b669c7c6ba937d88be70e9881797b5"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-delivery-vehicle",
+      "formulaId": "drywall:c11:three-layer:formula:open-delivery-vehicle",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "278a71e5d5dc0248a54baf5ed3d6925a80655ddb1793c33fe0ceb7de563fe18e"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-handling-labour",
+      "formulaId": "drywall:c11:three-layer:formula:open-handling-labour",
+      "unit": "man_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "21a905879c37aad9774ef697707ef22218332f8f5f89f0cabedf51781f2c7312"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-material-lift",
+      "formulaId": "drywall:c11:three-layer:formula:open-material-lift",
+      "unit": "machine_hour",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "07242dac8daf39f19bf9afc9a3d3f3538ef2198b203e123f09b64773686a2b7a"
+    },
+    {
+      "rowId": "drywall:c11:three-layer:open-inner-tape",
+      "formulaId": "drywall:c11:three-layer:formula:open-inner-tape",
+      "unit": "m",
+      "costOwnerId": "drywall:c11:three-layer:whole-work",
+      "rowSha256": "786485b0b0644d7a06e3a59cc78f8defd664727967bcd376f0b68517c4e75109"
+    }
+  ],
+  "plannedSourceShapeNotRuntimeVerified": {
+    "parameters": 227,
+    "formulas": 305,
+    "resources": 305,
+    "status": "UNRUN"
+  },
+  "physicalFunctionQuantityNeeds": 21,
+  "newScopeAndRecipeChecks": 24,
+  "requiredTechnologyFactKeys": [
+    "system_reference",
+    "geometry_reference",
+    "opening_scope",
+    "junction_reference",
+    "substrate_anchor_reference",
+    "services_reference",
+    "access_reference",
+    "logistics_reference",
+    "quality_reference",
+    "waste_receiver",
+    "electrical_reference",
+    "control_reference",
+    "fugen_reference",
+    "water_temperature_c",
+    "ambient_temperature_c"
+  ],
+  "quantityEvidenceFactKeys": [
+    "inventory_reference",
+    "contractor_scope_reference",
+    "batch_reference",
+    "mixed_dry_kg",
+    "mix_water_l",
+    "wash_water_l"
+  ],
+  "measurementInputs": [
+    {
+      "id": "c11_current_wash_meter_before_l",
+      "titleRu": "Начальное показание отдельного счётчика моечной воды",
+      "unitId": "l"
+    },
+    {
+      "id": "c11_current_wash_meter_after_l",
+      "titleRu": "Конечное показание того же счётчика моечной воды",
+      "unitId": "l"
+    },
+    {
+      "id": "c11_current_energy_meter_before_kwh",
+      "titleRu": "Начальное показание выделенного электросчётчика",
+      "unitId": "kWh"
+    },
+    {
+      "id": "c11_current_energy_meter_after_kwh",
+      "titleRu": "Конечное показание того же электросчётчика",
+      "unitId": "kWh"
+    }
+  ],
+  "measuredBalanceRule": {
+    "text": "Dedicated whole-work wash-water and electrical-energy meter deltas equal final minus initial readings on the same meter, same allocation interval, consistent units, no rollover/reset and no other consumers. A negative delta is invalid; no unknown is zero. This measured engineering balance is not a manufacturer consumption norm, supplier order or accepted object fact. Trace requires actual meter ID, readings, allocation and interval document; contractor inclusion and receivers remain independently required.",
+    "sha256": "741f6ad6e5ad41609af88dca19d64baa8eeeb64efcc67ab4ca5960186c128937",
+    "locator": "c11-current-physical-continuation-r1.json#/measuredBalanceRule",
+    "sourceDocument": "gox-build.c11-current-physical-continuation/r1",
+    "rules": [
+      {
+        "key": "observed-wash-water",
+        "nameRu": "Измеренный расход воды на мойку по отдельному счётчику",
+        "unitId": "l",
+        "expression": "c11_current_wash_meter_after_l-c11_current_wash_meter_before_l",
+        "ops": [
+          "joints",
+          "surface",
+          "cleanup"
+        ]
+      },
+      {
+        "key": "observed-electricity",
+        "nameRu": "Измеренная электроэнергия по выделенному счётчику",
+        "unitId": "kWh",
+        "expression": "c11_current_energy_meter_after_kwh-c11_current_energy_meter_before_kwh",
+        "ops": [
+          "frame",
+          "clad-first",
+          "clad-second",
+          "surface",
+          "cleanup"
+        ]
+      }
+    ],
+    "sourceQuantityNormClosed": false,
+    "actualClosures": 0,
+    "fourIndependentReadingsForTwoDerivedObservations": true,
+    "inputReductionClaimed": false,
+    "doesNotResolveLegacySupplyWithoutAllocation": true,
+    "traceHeldBy": [
+      "inventory_reference",
+      "contractor_scope_reference",
+      "batch_reference",
+      "electrical_reference"
+    ]
+  },
+  "currentSourceRetention": {
+    "retainedRows": 212,
+    "retainedBindings": 90,
+    "retainedLocators": 2,
+    "retainedSources": 2,
+    "sourceMetadataExactlyUnchanged": true,
+    "newWholeSourceOnlyNewMethodCheckRow": true,
+    "formerPhysicalAuditFlagsNotWrittenIntoRetainedSourceMetadata": true
+  },
+  "retainedConsumerFunctionRules": {
+    "legacyC111": {
+      "worker": [
+        "preparation",
+        "setout",
+        "access",
+        "frame",
+        "clad-first",
+        "insulate",
+        "clad-second",
+        "joints",
+        "surface",
+        "control",
+        "handling",
+        "cleanup"
+      ],
+      "shears": [
+        "frame"
+      ],
+      "perforator": [
+        "frame"
+      ],
+      "driver": [
+        "clad-first",
+        "clad-second"
+      ],
+      "laser": [
+        "setout",
+        "frame",
+        "control"
+      ],
+      "measure": [
+        "setout",
+        "frame",
+        "clad-first",
+        "clad-second",
+        "control"
+      ],
+      "level": [
+        "frame",
+        "control"
+      ],
+      "drill-bit": [
+        "frame"
+      ],
+      "access": [
+        "access",
+        "frame",
+        "clad-first",
+        "clad-second",
+        "joints",
+        "surface"
+      ],
+      "punch": [
+        "frame"
+      ],
+      "ph2": [
+        "clad-first",
+        "clad-second"
+      ],
+      "knife": [
+        "clad-first",
+        "clad-second"
+      ],
+      "plane": [
+        "clad-first",
+        "clad-second",
+        "joints"
+      ],
+      "insulation-knife": [
+        "insulate"
+      ],
+      "bucket": [
+        "joints",
+        "cleanup"
+      ],
+      "spatula": [
+        "joints",
+        "cleanup"
+      ],
+      "joint-spatula": [
+        "joints"
+      ],
+      "sanding-holder": [
+        "joints",
+        "surface"
+      ],
+      "abrasive": [
+        "joints",
+        "surface"
+      ],
+      "brush": [
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "roller": [
+        "surface",
+        "cleanup"
+      ],
+      "gloves": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "insulate",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "eye-protection": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "insulate",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "dust-protection": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "insulate",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "vacuum": [
+        "frame",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "dust-bag": [
+        "frame",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "waste-bag": [
+        "cleanup"
+      ],
+      "pn50": [
+        "frame"
+      ],
+      "ps50": [
+        "frame"
+      ],
+      "dowel": [
+        "frame"
+      ],
+      "sealing-tape": [
+        "frame"
+      ],
+      "board": [
+        "clad-first",
+        "clad-second"
+      ],
+      "tn25": [
+        "clad-first",
+        "clad-second"
+      ],
+      "insulation": [
+        "insulate"
+      ],
+      "fugen": [
+        "joints"
+      ],
+      "joint-tape": [
+        "joints"
+      ],
+      "separation-tape": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "joints"
+      ],
+      "tiefengrund": [
+        "joints",
+        "surface"
+      ],
+      "water": [
+        "joints",
+        "cleanup"
+      ]
+    },
+    "layered": {
+      "worker": [
+        "preparation",
+        "setout",
+        "access",
+        "frame",
+        "clad-first",
+        "insulate",
+        "clad-second",
+        "joints",
+        "surface",
+        "control",
+        "handling",
+        "cleanup"
+      ],
+      "shears": [
+        "frame"
+      ],
+      "perforator": [
+        "frame"
+      ],
+      "driver": [
+        "clad-first",
+        "clad-second"
+      ],
+      "laser": [
+        "setout",
+        "frame",
+        "control"
+      ],
+      "measure": [
+        "setout",
+        "frame",
+        "clad-first",
+        "clad-second",
+        "control"
+      ],
+      "level": [
+        "frame",
+        "control"
+      ],
+      "drill-bit": [
+        "frame"
+      ],
+      "access": [
+        "access",
+        "frame",
+        "clad-first",
+        "clad-second",
+        "joints",
+        "surface"
+      ],
+      "punch": [
+        "frame"
+      ],
+      "ph2": [
+        "clad-first",
+        "clad-second"
+      ],
+      "knife": [
+        "clad-first",
+        "clad-second"
+      ],
+      "plane": [
+        "clad-first",
+        "clad-second",
+        "joints"
+      ],
+      "insulation-knife": [
+        "insulate"
+      ],
+      "bucket": [
+        "joints",
+        "cleanup"
+      ],
+      "spatula": [
+        "joints",
+        "cleanup"
+      ],
+      "joint-spatula": [
+        "joints"
+      ],
+      "sanding-holder": [
+        "joints",
+        "surface"
+      ],
+      "abrasive": [
+        "joints",
+        "surface"
+      ],
+      "brush": [
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "roller": [
+        "surface",
+        "cleanup"
+      ],
+      "gloves": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "insulate",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "eye-protection": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "insulate",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "dust-protection": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "insulate",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "vacuum": [
+        "frame",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "dust-bag": [
+        "frame",
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "waste-bag": [
+        "cleanup"
+      ],
+      "pn50": [
+        "frame"
+      ],
+      "ps50": [
+        "frame"
+      ],
+      "dowel": [
+        "frame"
+      ],
+      "sealing-tape": [
+        "frame"
+      ],
+      "board": [
+        "clad-first",
+        "clad-second"
+      ],
+      "tn25": [
+        "clad-first",
+        "clad-second"
+      ],
+      "insulation": [
+        "insulate"
+      ],
+      "fugen": [
+        "joints"
+      ],
+      "joint-tape": [
+        "joints"
+      ],
+      "separation-tape": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "joints"
+      ],
+      "tiefengrund": [
+        "joints",
+        "surface"
+      ],
+      "water": [
+        "joints",
+        "cleanup"
+      ],
+      "labour": [
+        "preparation",
+        "setout",
+        "access",
+        "frame",
+        "clad-first",
+        "insulate",
+        "clad-second",
+        "joints",
+        "surface",
+        "control",
+        "handling",
+        "cleanup"
+      ],
+      "bit": [
+        "clad-first",
+        "clad-second"
+      ],
+      "mix-vessel": [
+        "joints",
+        "cleanup"
+      ],
+      "mix-spatula": [
+        "joints",
+        "cleanup"
+      ],
+      "cut-primer-brush": [
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "primer-roller": [
+        "surface",
+        "cleanup"
+      ],
+      "washing-water": [
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "wash-vessel": [
+        "joints",
+        "surface",
+        "cleanup"
+      ],
+      "electricity": [
+        "frame",
+        "clad-first",
+        "clad-second",
+        "surface",
+        "cleanup"
+      ],
+      "waste-container": [
+        "cleanup"
+      ],
+      "waste-loading": [
+        "cleanup"
+      ],
+      "waste-transport": [
+        "cleanup"
+      ],
+      "waste-recipient": [
+        "cleanup"
+      ],
+      "delivery-vehicle": [
+        "handling"
+      ],
+      "handling-labour": [
+        "handling"
+      ],
+      "material-lift": [
+        "handling"
+      ],
+      "inner-tape": [
+        "joints"
+      ],
+      "track": [
+        "frame"
+      ],
+      "stud": [
+        "frame"
+      ],
+      "anchor": [
+        "frame"
+      ],
+      "screw25": [
+        "clad-first",
+        "clad-second"
+      ],
+      "screw35": [
+        "clad-first",
+        "clad-second"
+      ],
+      "screw55": [
+        "clad-first",
+        "clad-second"
+      ],
+      "joint-compound": [
+        "joints"
+      ],
+      "outer-joint-tape": [
+        "joints"
+      ],
+      "primer": [
+        "joints",
+        "surface"
+      ],
+      "mixing-water": [
+        "joints"
+      ]
+    },
+    "oldOriginalOperationReferencesRemain": true,
+    "gloveCompatibility": "Legacy chemicalglove title with piece unit is not an automatic mechanicalglove pair; confirm hazard/material/model/unit and issue records; generic layered glove requires its own compatibility proof."
+  },
+  "retainedSourcePackOrigins": [
+    {
+      "path": "data/estimate-benchmarks/source-packs/drywall-c11-layered-geometry-r1.json",
+      "sha256": "8a86474300d290cf9aa8cd2f27827be9799f86a0a523474aca54d1b749c98590"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/drywall-partition-c111-s27-36.json",
+      "sha256": "b981d031cc05ca11e41bc6800afb0fc9f6f482110e7befb67fc4d20612f3e107"
+    }
+  ],
+  "primarySourceOrigins": {
+    "c11": {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\.release-runtime\\r568\\s27-35\\g2-sources\\knauf-c11-2025.pdf",
+      "sha256": "b811497cee980d793565aad404c03e66e8c7f09dd4d7a4fabeb97b955867e290"
+    },
+    "fugen": {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\.release-runtime\\r568\\ceiling-high-load-geometry-r1\\sources\\KNAUF_FUGEN_2025_07.pdf",
+      "sha256": "3a6e5980c1e3009793f5b490f68ce80a80b675cb4c903d6725d907075455fdc6"
+    },
+    "tiefengrund": {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\.release-runtime\\r568\\ceiling-high-load-geometry-r1\\sources\\KNAUF_TIEFENGRUND_2026_06.pdf",
+      "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9"
+    },
+    "krer": {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\.release-runtime\\r568\\ceiling-high-load-geometry-r1\\sources\\KG_KRER10_2015.pdf",
+      "sha256": "f2565dfea716722cf94fa1b151ca245c31f72ee4b8e105d2a0df520b4cc90a0e"
+    }
+  },
+  "sourceKind": "PROJECT_SYSTEM",
+  "sourceKindBasis": "Authored compatible whole C11 physical operation map using retained actual R919 parent plus separately identified C11/Fugen/Tiefengrund primary documents; not a single manufacturer whole quantity norm or actual object approval."
+}

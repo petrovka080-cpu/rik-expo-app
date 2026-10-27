@@ -1,0 +1,119 @@
+{
+  "contract": "ACTUAL_R934_REQUESTED_QUANTITY_KEY_OBSERVATION_NOT_FORMAL_CAPTURE",
+  "originProof": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\current-fan-ct54-quantity-bodies-r934\\ACTUAL_CURRENT_FAMILY_PARENT_PROOF.json",
+    "sha256": "81868dd123e2c42e94d3084ae5757f8f19b1bcc34f558dc4f24751249a4203f5",
+    "resultIndex": 0,
+    "bodySide": "referenceBody"
+  },
+  "selectedReleaseId": "01417cef-3091-5012-844d-1bbd9e75cee1",
+  "referenceReleaseId": "514af229-9dbd-5c45-9383-6d21fe2b9f21",
+  "referenceTarget": {
+    "contract": "master-successor-target-preimage/r1",
+    "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+    "sourceId": "project-system:ct54-measured-organizational-quantity-plan-r1",
+    "header": {
+      "definition_version_id": "0a31889f-6085-550b-9c74-dbbbc7cb9555",
+      "approved_template_baseline_id": "2348f432-87d8-5058-8f65-a2539cba7b32",
+      "definition_version": 10,
+      "definition_sha256": "696c0a974e9e16b82862ef76eba4b44913a0b2c45dff0cef711a9168f635d58b"
+    },
+    "sets": {
+      "definition": {
+        "rowCount": 1,
+        "sha256": "355b2d5f7270174a583c6d2a5b5979fde80bf40f92f8ae075488c8d779f0666b"
+      },
+      "baseline": {
+        "rowCount": 1,
+        "sha256": "f449642d319283b19663571085cadfdcdd092c803869c7a10107928310495cfe"
+      },
+      "parameters": {
+        "rowCount": 39,
+        "sha256": "92b7f8db36ce4b7d826496139ab617e652eaa5727a0c55355757d4f148ebfa73"
+      },
+      "formulas": {
+        "rowCount": 31,
+        "sha256": "df74becfdeddd8c608b40eea1dc89072772f4728011a93d234a58e84e48aa028"
+      },
+      "resources": {
+        "rowCount": 31,
+        "sha256": "3453ebd89ebd7b6403858ce3e0b78b60c222c3d21d7c6736f756f3926cb6e3c2"
+      },
+      "bindings": {
+        "rowCount": 31,
+        "sha256": "2e598e8eb9e89432a55b9d810e15887acb8fdec280f686a6c7dab671ef38adb7"
+      },
+      "locators": {
+        "rowCount": 1,
+        "sha256": "74af0fe03a3120272ef11bf1affcb930e021199d38ad2b0e13955d1fd00b5ec6"
+      },
+      "sources": {
+        "rowCount": 1,
+        "sha256": "c60094517c27cd17849f0299976ac64eeb39b94a60bdb17f4d76132c334d29fb"
+      },
+      "newSource": {
+        "rowCount": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "identity": {
+        "rowCount": 1,
+        "sha256": "474e06c5a4188167f7906bfaed0f4a6273e1596a34dbea260ed64594d8a7913a"
+      }
+    }
+  },
+  "selectedTarget": {
+    "contract": "master-successor-target-preimage/r1",
+    "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+    "sourceId": "project-system:ct54-measured-organizational-quantity-plan-r1",
+    "header": {
+      "definition_version_id": "789494af-ef14-5592-9f00-139276aaf0b5",
+      "approved_template_baseline_id": "d16d8edf-fd93-5959-98f6-78a596e02147",
+      "definition_version": 9,
+      "definition_sha256": "2193a1705d19e1135d5bb5294862c2b2b783976eba5d89cde43bc535fe341002"
+    },
+    "sets": {
+      "definition": {
+        "rowCount": 1,
+        "sha256": "a6fee9f17eea1ddd36601899c124327279fa4869d4769b1843310b4a12d457e3"
+      },
+      "baseline": {
+        "rowCount": 1,
+        "sha256": "069ee073dc055a92e26532e631b861d29064f3992674383fee9861203c7cce5e"
+      },
+      "parameters": {
+        "rowCount": 19,
+        "sha256": "00597e5723e8a1f2f8218449a66149326b2bc0db563273162504e8cacc666d0e"
+      },
+      "formulas": {
+        "rowCount": 91,
+        "sha256": "0b6fca8f1be5e626a5bc4e4aa6a6e34e84b45920539f469a782db13773cd902e"
+      },
+      "resources": {
+        "rowCount": 91,
+        "sha256": "a68a7fb73f6e6e3055a83e8a239743c28a612d3f7cc882b54dd039fe7515e72a"
+      },
+      "bindings": {
+        "rowCount": 11,
+        "sha256": "063007a68998bf64674dfcabadfbcf9ff4f0f67ac833d408eb8a9ac5f9e95363"
+      },
+      "locators": {
+        "rowCount": 1,
+        "sha256": "c26973664d46f15d0da698e3c0a25901093e285e4d5265d90732cbb5a063feb4"
+      },
+      "sources": {
+        "rowCount": 1,
+        "sha256": "2f2efc0ce0d6d5657c9e96cd5df13f36c7d5e13c57afb6075e4b163abde8f951"
+      },
+      "newSource": {
+        "rowCount": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "identity": {
+        "rowCount": 1,
+        "sha256": "474e06c5a4188167f7906bfaed0f4a6273e1596a34dbea260ed64594d8a7913a"
+      }
+    }
+  },
+  "newSourceAbsentBoth": true,
+  "sameSelectedAndReferenceHeader": false
+}

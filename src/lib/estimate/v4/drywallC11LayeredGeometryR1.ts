@@ -1,3 +1,9 @@
+import {compileFormulaGraph} from '../backendPlatform/formulaGraph';
+import physicalC11 from '../../../../data/estimate-benchmarks/source-packs/c11-current-physical-continuation-r1.json';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
+import {canonicalEstimateOperationReferences} from '../backendPlatform/canonicalEstimateOperationComposition';
+import {buildMasterParameterCalculationConsumers} from '../backendPlatform/canonicalDefinitionParameterConsumersR1';
+import type {AutomaticParameterSpec} from './automaticConstructionOwnerR1';
 import pack from '../../../../data/estimate-benchmarks/source-packs/drywall-c11-layered-geometry-r1.json';
 import {buildAutomaticConstructionOwnerR1,compileAutomaticConstructionOwnerR1,unresolvedApplicationNormTruthR1,
  type AutomaticOwnerDefinition,type AutomaticRowSpec} from './automaticConstructionOwnerR1';
@@ -124,4 +130,197 @@ export function drywallC11LayeredCompletenessR1(){
  return{contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PRODUCT_SYSTEM_TDS',generatedFromCurrentRows:false,operationResourceBindingRequired:true,
   evidenceSha256:pack.sources[0]!.sha256,entries,fullTechnicalAcceptance:false,coverage:'NEW_C112_C113_GEOMETRY_BRANCHES_LEGACY_C111_RETAINED',
   newFullTechnologies:0,physicalResourcesAndCalculationDetailsIndependentlyDeclared:true};
+}
+
+
+export const drywallC11CurrentPhysicalPackR1=physicalC11;
+export const drywallC11PhysicalFactR1=(key:string)=>'c11_current_fact_'+key;
+export const drywallC11PhysicalUnknownR1=(key:string)=>'c11_current_unknown_'+key.replaceAll('-','_');
+export type DrywallC11CurrentReadbackR1=Readonly<{definitionId:string;definitionSha256:string;catalogId:string;body:Parent}>;
+/** Optional whole-current continuation. It never calls append(old50), creates a
+ * second layered graph, hydrates an unknown quantity or widens a selected norm.
+ * The exact approved R694 body is a required preimage argument from the existing
+ * publisher/readback path. New facts are source readback, not consumer prompts. */
+export function drywallC11CurrentPhysicalContinuationR1(base:AutomaticOwnerDefinition,readback:DrywallC11CurrentReadbackR1):AutomaticOwnerDefinition{
+ const p=physicalC11,fact=drywallC11PhysicalFactR1,unknown=drywallC11PhysicalUnknownR1,id=(profile:string,key:string)=>'c11-current-physical:'+profile+':'+key;
+ if(readback.catalogId!==p.catalogId||readback.definitionId!==p.current.definitionId||readback.definitionSha256!==p.current.definitionSha256
+  ||hash(canonicalEstimateStableJson({parameters:readback.body.parameters,formulas:readback.body.formulas,resources:readback.body.resources}))!==p.current.bodyTextHash
+  ||base.parameters.length!==181||base.formulas.length!==212||base.resources.length!==212
+  ||readback.body.parameters.length!==181||readback.body.formulas.length!==212||readback.body.resources.length!==212)
+  throw Error('C11_ACTUAL_CURRENT_WHOLE_R919_REQUIRED');
+ const signature=(row:unknown,keys:readonly string[])=>canonicalEstimateStableJson(Object.fromEntries(keys.map(key=>[key,(row as Json)[key]??null]))),
+  verify=(kind:string,rows:readonly unknown[],expected:readonly unknown[],key:string,fields:readonly string[])=>{
+   for(const original of expected){const identity=(original as Json)[key],row=rows.find(value=>(value as Json)[key]===identity);
+    if(!row||signature(row,fields)!==signature(original,fields))throw Error('C11_CURRENT_SEMANTIC_PREIMAGE_REQUIRED:'+kind+':'+identity);
+   }
+  };
+ verify('parameter',base.parameters,readback.body.parameters,'parameter_id',['parameter_id','ordinal','value_type','unit_id','title_ru','required','default_value','constraints_json','truth_metadata']);
+ verify('formula',base.formulas,readback.body.formulas,'formula_id',['formula_id','output_unit_id','expression_source','ast','input_parameter_ids','ast_sha256']);
+ verify('resource',base.resources,readback.body.resources,'row_id',['row_id','ordinal','section','category','title_ru','unit_id','formula_id','inclusion_ast','resource_graph','cost_owner_id','procurement_eligible','source_metadata','row_sha256']);
+ for(const old of p.retainedRowRoster){const row=base.resources.find(row=>row.row_id===old.rowId);
+  if(!row||row.row_sha256!==old.rowSha256||row.formula_id!==old.formulaId||row.unit_id!==old.unit||row.cost_owner_id!==old.costOwnerId)
+   throw Error('C11_CURRENT_ROW_ID_OWNER_OR_SOURCE_PREIMAGE_DRIFT:'+old.rowId);
+ }
+ const selected={kind:'or',operands:p.profiles.map(profile=>({kind:'equals',parameterId:p.selectorId,value:profile.value}))},
+  allFacts=p.requiredTechnologyFactKeys.map(fact),factSpecs:AutomaticParameterSpec[]=p.facts.map(item=>({id:fact(item.key),title:item.nameRu,unitId:item.unit,
+   valueType:item.type as AutomaticParameterSpec['valueType'],kind:'internal',...('values' in item?{values:item.values}:{}),
+   ...('min' in item?{min:item.min}:{}),...('max' in item?{max:item.max}:{})})),
+  primary=p.sources.find(source=>source.id==='c11')!,recipe=p.sources.find(source=>source.id==='fugen')!;
+ const definitions=p.profiles.map(profile=>{
+  const branch={kind:'equals',parameterId:p.selectorId,value:profile.value},
+   extra=buildAutomaticConstructionOwnerR1({contract:p.contract,semanticOwner:id(profile.key,'source'),sourceId:p.contract,normId:'C11_PHYSICAL_METHOD_AND_ACTUAL_FUGEN_RECIPE_NOT_NEW_LABOUR_OR_TOOL_NORM',
+    sourceMetadata:{source_title:'Физическое обеспечение выбранной перегородки',source_document_version:'R919_SOURCE_ONLY_UNRUN',definition_hash:hash(p),
+     artifact_sha256:primary.sha256!,exact_locator:primary.locator+'; '+recipe.locator},applicabilityRu:p.scope,ordinary:profile.key==='c111'?p.measurementInputs.map(item=>({id:item.id,title:item.titleRu,unitId:item.unitId,valueType:'decimal' as const,kind:'ordinary' as const,min:0})):[],profile:[],
+    conditional:profile.key==='c111'?[...factSpecs,...p.newFunctions.map(item=>({id:unknown(item.key),title:item.nameRu,unitId:item.unit||null,
+     valueType:item.unit==='piece'||item.unit==='pair'?'integer' as const:'decimal' as const,kind:'internal' as const,min:0}))]:[],
+    rows:[...p.newFunctions.map(item=>({rowId:id(profile.key,'function:'+item.key),formulaId:id(profile.key,'formula:function:'+item.key),title:item.nameRu,
+     section:'Физическое обеспечение выбранной перегородки',category:item.kind==='SERVICE'?'service':['MATERIAL','CONSUMABLE'].includes(item.kind)?'material':['TOOL','PPE','ACCESSORY'].includes(item.kind)?'tool':'equipment',unitId:item.unit,
+     expression:unknown(item.key),procurement:false,costTreatment:'INFORMATIONAL_SCOPE' as const})),
+     ...p.measuredBalanceRule.rules.map(item=>({rowId:id(profile.key,'control:'+item.key),formulaId:id(profile.key,'formula:control:'+item.key),title:item.nameRu,unitId:item.unitId,expression:item.expression,section:'Измеренные фактические расходы, не второй заказ',category:'service',procurement:false,costTreatment:'INFORMATIONAL_SCOPE' as const,formulaOutputBounds:{schemaVersion:'canonical_formula_output_bounds_v1' as const,unitId:item.unitId,minimum:0,reasonRu:'Конечное показание не меньше начального; сброс/оборот/другие потребители требуют иной подтверждённый баланс.'}})),
+     ...[
+      {key:'water-lower',title:'Нижняя рецептурная граница воды по реально замешанной сухой массе гипсовой смеси',unit:'l',expression:'0.6*'+fact('mixed_dry_kg')},
+      {key:'water-upper',title:'Верхняя рецептурная граница воды по реально замешанной сухой массе гипсовой смеси',unit:'l',expression:'0.7*'+fact('mixed_dry_kg')},
+      {key:'water-under-recipe',title:'Фактическая вода ниже рецептурной границы гипсовой смеси',unit:'l',expression:'max(0,0.6*'+fact('mixed_dry_kg')+'-'+fact('mix_water_l')+')'},
+      {key:'water-over-recipe',title:'Фактическая вода выше рецептурной границы гипсовой смеси',unit:'l',expression:'max(0,'+fact('mix_water_l')+'-0.7*'+fact('mixed_dry_kg')+')'},
+      {key:'water-supply-shortage',title:'Недостаток принятой поставки воды для фактического замеса'+(profile.waterIncludesWash?' и мойки':''),unit:'l',
+       expression:'max(0,'+fact('mix_water_l')+(profile.waterIncludesWash?'+'+fact('wash_water_l'):'')+'-'+profile.waterEffectiveParameterId+')'},
+      {key:'method-facts',title:'Подтверждение применимости и организации выбранного монтажа перегородки',unit:'m2',expression:profile.primaryMeasureId},
+      {key:'whole-coverage',title:'Обязательный каркас, листы, крепёж, стыки и общий труд выбранного whole scope сохранены',unit:'m2',expression:profile.primaryMeasureId},
+      {key:'physical-source-scope',title:'Открытые количество, комплектность и границы оплаты физического обеспечения',unit:'m2',expression:profile.primaryMeasureId}
+     ].map(item=>({rowId:id(profile.key,'control:'+item.key),formulaId:id(profile.key,'formula:control:'+item.key),title:item.title,unitId:item.unit,expression:item.expression,
+      section:'Рецептура и комплектность выбранной перегородки',category:'service',procurement:false,costTreatment:'INFORMATIONAL_SCOPE' as const}))],
+    excludedUnownedAssumptions:['CeilingP113 norms and C11198h are not transferred to layered profiles.',
+     'Existing current212 rows and73 layered source needs retained. No automatic opening/wet/fire/acoustic scope; no new paid INFOowner.']});
+  return{profile,branch,extra};
+ });
+ const extras=definitions.flatMap(item=>item.extra.parameters),parameters=[...base.parameters,...extras.map(parameter=>{
+  const measured=p.measurementInputs.find(item=>item.id===parameter.parameter_id);
+  if(measured)return{...parameter,truth_metadata:{...parameter.truth_metadata,value_source_role:'MEASUREMENT_RULE',visibility_role:'USER_INPUT',source_confirmation_required:false,provenance:{consumer_input_role_v1:'OBJECT_FACT'},guide:{...(parameter.truth_metadata.guide as Record<string,unknown>),guide_kind:'MEASUREMENT_RULE',source_role:'USER_MEASURED',source_document:p.contract,source_locator:p.measuredBalanceRule.locator,source_snapshot_hash:p.measuredBalanceRule.sha256}},constraints_json:{...parameter.constraints_json}}; // Pure balance operands, not a method/coherence prerequisite; existing formula minimum0 rejects negative complete deltas.
+  const item=p.newFunctions.find(item=>unknown(item.key)===parameter.parameter_id);
+  if(item)return{...parameter,truth_metadata:unresolvedApplicationNormTruthR1(parameter.truth_metadata,item.returnWhen)};
+  return{...parameter,required:false,default_value:null,constraints_json:{...parameter.constraints_json,...(allFacts.includes(parameter.parameter_id)?{requiredWhen:selected}:{}),...(parameter.parameter_id===fact('mixed_dry_kg')?{exclusiveMin:0}:{})},truth_metadata:{...parameter.truth_metadata,
+   value_source_role:'PROJECT_DOCUMENTATION',visibility_role:'INTERNAL_ONLY',source_confirmation_required:true,
+   provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL',source_readback_only_v1:true,consumer_question_allowed:false}}};
+ })].map((parameter,index)=>index<base.parameters.length?parameter:{...parameter,ordinal:index}),
+  rehash=(row:typeof base.resources[number])=>{const{row_sha256:_old,...body}=row;return{...body,row_sha256:hash(body)};};
+ const op=(profile:typeof p.profiles[number],key:string)=>{
+  const stage=p.operations.find(item=>item.key===key);if(!stage)throw Error('C11_PHYSICAL_OPERATION_REQUIRED:'+key);
+  return{operationId:id(profile.key,'operation:'+key),operationTitleRu:stage.nameRu,processOrdinal:stage.ordinal,processRole:'PROCESS' as const,
+   completionCriterionRu:'Выбранная система, проектные узлы, фактическое оснащение и его единственный владелец подтверждены; исполнение удостоверяется отдельно.',
+   ...(key==='insulate'?{whenResourcePresent:[profile.key==='c111'?'material:c111:insulation':'drywall:c11:'+profile.key+':insulation-order']}:{})};
+ },composition=(profile:typeof p.profiles[number],keys:readonly string[])=>{
+  const[first,...rest]=[...new Set(keys)].map(key=>op(profile,key));if(!first)throw Error('C11_PHYSICAL_EMPTY_CONSUMER');
+  const original=base.resources.find(row=>row.row_id===profile.wholeOwnerRowId)!.resource_graph.operationCompositionV1 as Json;
+  return{contractVersion:'canonical-operation-resource/v1',groupId:profile.groupId,groupTitleRu:String(original.groupTitleRu),...first,...(rest.length?{additionalOperations:rest}:{})};
+ };
+ // Existing original operation references and COST_SUMMARY roles stay intact.
+ // Additional physical consumers share the same row/quantity and group.
+ const physicalKeys=(row:typeof base.resources[number]):string[]=>{
+  const text=row.row_id;
+  const c111=/^(?:material|work|tool):c111:(.+)$/u.exec(text),open=/^drywall:c11:(?:two|three)-layer:open-(.+)$/u.exec(text),material=/^drywall:c11:(?:two|three)-layer:(.+)-(?:order|consumed|remaining)$/u.exec(text),
+   exact=c111?(p.retainedConsumerFunctionRules.legacyC111 as Record<string,readonly string[]>)[c111[1]!]:(open||material)?(p.retainedConsumerFunctionRules.layered as Record<string,readonly string[]>)[(open||material)![1]!]:undefined;
+  if(exact)return[...exact];
+  if(text.endsWith('whole-work')||text==='work:c111:worker')return p.operations.map(item=>item.key);
+  if(/separation-tape/.test(text))return ['frame','clad-first','clad-second','joints'];
+  if(/sealing-tape/.test(text))return ['frame'];
+  if(/washing-water|wash-vessel|waste-recipient/.test(text))return ['joints','surface','cleanup'];
+  if(/mixing-water/.test(text))return ['joints'];
+  if(/water|vessel|bucket|spatula/.test(text))return ['joints','cleanup'];
+  if(/fugen|compound|joint|tape/.test(text))return ['joints'];
+  if(/sheet-cut|stud-cut|offcuts/.test(text))return ['clad-first','clad-second','cleanup'];
+  if(/board|tn25|screw|knife|plane|driver/.test(text))return ['clad-first','clad-second',...(text.includes('plane')?['joints']:[])];
+  if(/insulation/.test(text))return ['insulate'];
+  if(/primer|tiefengrund|roller|brush|vacuum|abrasive|dust/.test(text))return ['joints','surface','cleanup'];
+  if(/access|gloves|protection/.test(text))return ['access','frame','clad-first','clad-second','insulate','joints','surface','cleanup'];
+  if(/pn50|ps50|track|stud|anchor|dowel|perforator|shears|punch/.test(text))return ['frame','control'];
+  if(/laser|measure|level/.test(text))return ['setout','frame','control'];
+  if(/waste|offcut/.test(text))return ['cleanup'];
+  if(/delivery|handling|lift/.test(text))return ['handling'];
+  return ['control'];
+ };
+ const resources=base.resources.map(row=>{
+  const profile=p.profiles.find(profile=>profile.key==='c111'? !row.row_id.startsWith('drywall:c11:') :row.row_id.startsWith('drywall:c11:'+profile.key+':')),
+   original=row.resource_graph.operationCompositionV1 as Json|undefined;
+  if(!profile||!original)return row;
+  const additions=physicalKeys(row).map(key=>op(profile,key)),existing=canonicalEstimateOperationReferences(original),seen=new Set(existing.map(op=>op.operationId));
+  return rehash({...row,resource_graph:{...row.resource_graph,operationCompositionV1:{...original,
+   additionalOperations:[...(Array.isArray(original.additionalOperations)?original.additionalOperations:[]),...additions.filter(op=>!seen.has(op.operationId))]}},
+   source_metadata:row.source_metadata});
+ });
+ for(const{profile,branch,extra}of definitions)for(const row of extra.resources){
+  const item=p.newFunctions.find(item=>row.row_id===id(profile.key,'function:'+item.key)),key=row.row_id.slice(id(profile.key,'control:').length),
+   recipeCheck=['water-under-recipe','water-over-recipe','water-supply-shortage'].includes(key),method=key==='method-facts',coverage=key==='whole-coverage',held=key==='physical-source-scope',
+   measured=p.measuredBalanceRule.rules.find(item=>item.key===key),
+   keys=item?.ops??measured?.ops??(method||coverage||held?['control']:['joints']),
+   insulation=item?.key==='insulation-knife-blade'&&profile.key==='c111'?[{kind:'equals',parameterId:'c111_insulation_mode',value:'AKUSTIKNAUF_50'}]:[],
+   inclusion={kind:'and',operands:[branch,...insulation,...(recipeCheck?[{kind:'formula_greater_than',expression:extra.formulas.find(f=>f.formula_id===row.formula_id)!.expression_source,
+    unitId:row.unit_id,value:0}]:[])]},
+   covered=base.resources.filter(candidate=>candidate.resource_graph.costTreatment==='OWN_COST'&&candidate.procurement_eligible&&
+    (profile.key==='c111'?candidate.row_id.startsWith('material:c111:')&&candidate.row_id!=='material:c111:insulation':candidate.row_id.startsWith('drywall:c11:'+profile.key+':')&&candidate.row_id.endsWith('-order'))).map(row=>row.row_id),
+   scope=recipeCheck?{kind:'PROCESS',coveringRowIds:[],reasonRu:'Фактический замес должен соответствовать рецептуре; действующая поставка воды должна покрывать его без двойного заказа.'}:
+    method?{kind:'OBJECT_SCOPE',coveringRowIds:[],objectFactMode:'PROJECT_APPLICABILITY_ONLY',objectFactParameterId:fact('opening_scope'),unknownObjectValues:[],requiredFactParameterIds:allFacts,
+     reasonRu:'Только подтверждённая исходная система/геометрия/основание/организация; открытый проём или другая технология этим source не приняты.'}:
+    coverage?{kind:'INCLUDED',coveringRowIds:[...covered,profile.wholeOwnerRowId],costExclusionBreaksScopeV1:true,
+     reasonRu:'Исключение обязательного материала или единого труда нарушает выбранный whole scope; количество этапов не создаёт дополнительный труд.'}:
+    held?{kind:'PROJECT_SCOPE',coveringRowIds:[],reasonRu:'Не закрыты точные количества/комплектность, проектные условия и единая граница оплаты физического обеспечения. Старые UNKNOWN и видимый contractorcount1 не являются приёмкой.'}:null;
+  resources.push(rehash({...row,ordinal:resources.length,inclusion_ast:inclusion,resource_graph:{...row.resource_graph,inputParameterIds:method||coverage||held||measured?[]:item?item.requiredConditionKeys.map(fact):[fact('fugen_reference'),fact('water_temperature_c'),fact('ambient_temperature_c')],
+   operationCompositionV1:composition(profile,keys),...(held||measured?{scopeContextParameterIds:p.quantityEvidenceFactKeys.map(fact)}:{}),...(scope?{scopeRequirementV1:{contractVersion:'canonical-scope-requirement/v1',groupId:profile.groupId,
+    groupTitleRu:composition(profile,['control']).groupTitleRu,titleRu:row.title_ru,exactScopeWhen:branch,originalRowIds:[],...scope,
+    sourceEvidence:[{sha256:recipeCheck?recipe.sha256!:primary.sha256!,locator:recipeCheck?recipe.locator:primary.locator}]}}:{}),
+   publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:row.title_ru,nameRu:row.title_ru,brandAndModelRu:null,specificationRu:null,
+    detailsRu:[item?'Количество/совместимость/обеспечение и граница оплаты требуют source/PPR; это не автоматический комплект1.':'Физический контроль, не дополнительная норма или оплачиваемая операция.'],
+    ...(item?{resourceKind:item.kind}:{rowKind:'CALCULATION_DETAIL'})}},source_metadata:{...row.source_metadata,normativeTrace:[],newPaidOwnerAccepted:false,...(measured?{sourceRole:'MEASURED_ALLOCATION_BALANCE_NOT_SUPPLY_NORM',artifact_sha256:p.measuredBalanceRule.sha256,exact_locator:p.measuredBalanceRule.locator,recordedConsumptionNotOrder:true,legacySourceNeedsNotAutoClosed:true}:{}),
+    actualObjectFactsAsserted:false,numericNormAccepted:false,full_technical_acceptance:false,physicalResourceCoverageComplete:false,retainedLayeredQuantityNeeds:73,
+    ...(item?{sourceQuantityReturnWhen:item.returnWhen,physicalPrimarySourceId:item.source,
+     sourceRole:'AUTHORED_PHYSICAL_FUNCTION_SOURCE_QUANTITY_HELD',artifact_sha256:p.sources.find(source=>source.id===item.source)?.sha256??null,
+     exact_locator:p.sources.find(source=>source.id===item.source)?.locator??'ACTUAL_PPR_REQUIRED',unitNotGuessed:item.unit===''}:{}),actualDryMassNotPurchasedBagMass:true}}));
+ }
+ const formulas=[...base.formulas,...definitions.flatMap(item=>item.extra.formulas)],consumers=buildMasterParameterCalculationConsumers({parameters,formulas,resources});
+ return{...base,formulas,resources,ordinaryParameterIds:[...new Set([...base.ordinaryParameterIds,...p.measurementInputs.map(item=>item.id)])],parameters:parameters.map(parameter=>({...parameter,truth_metadata:{...parameter.truth_metadata,
+  formula_consumers:[...new Set([...(Array.isArray(parameter.truth_metadata.formula_consumers)?parameter.truth_metadata.formula_consumers as string[]:[]),...(consumers.formulaConsumers[parameter.parameter_id]??[])])],
+  resource_branch_consumers:[...new Set([...(Array.isArray(parameter.truth_metadata.resource_branch_consumers)?parameter.truth_metadata.resource_branch_consumers as string[]:[]),...(consumers.resourceConsumers[parameter.parameter_id]??[])])]}}))};
+}
+
+
+export function drywallC11CurrentPhysicalCompletenessR1(){
+ const p=physicalC11,id=(profile:string,key:string)=>'c11-current-physical:'+profile+':'+key;
+ return{contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:p.sourceKind,
+  generatedFromCurrentRows:false,operationResourceBindingRequired:true,evidenceSha256:p.sources.find(source=>source.id==='c11')!.sha256!,fullTechnicalAcceptance:false,
+  existing212RowsAnd73UnknownNeedsRetained:true,entries:p.profiles.flatMap(profile=>[
+   ...p.newFunctions.map(item=>({expectedResourceId:id(profile.key,'function:'+item.key),operationId:id(profile.key,'operation:'+item.ops[0]!),
+    requiredOperationIds:item.ops.map(key=>id(profile.key,'operation:'+key)),sourceId:item.source,condition:p.selectorId+'='+profile.value,
+    quantityRule:'UNRESOLVED_APPLICATION_SOURCE_NO_CONSUMER_COUNT1',unitId:item.unit,formulaId:id(profile.key,'formula:function:'+item.key),
+    resolution:{kind:'ROW',rowId:id(profile.key,'function:'+item.key)}})),
+   ...[...p.measuredBalanceRule.rules.map(item=>item.key),'water-lower','water-upper','water-under-recipe','water-over-recipe','water-supply-shortage','method-facts','whole-coverage','physical-source-scope'].map(key=>({
+    expectedResourceId:id(profile.key,'control:'+key),operationId:id(profile.key,'operation:'+(p.measuredBalanceRule.rules.find(item=>item.key===key)?.ops[0]??(['method-facts','whole-coverage','physical-source-scope'].includes(key)?'control':'joints'))),
+    requiredOperationIds:(p.measuredBalanceRule.rules.find(item=>item.key===key)?.ops??[(['method-facts','whole-coverage','physical-source-scope'].includes(key)?'control':'joints')]).map(op=>id(profile.key,'operation:'+op)),
+    sourceId:key.startsWith('water-')?'fugen':p.contract,condition:p.selectorId+'='+profile.value,
+    quantityRule:p.measuredBalanceRule.rules.some(item=>item.key===key)?'DEDICATED_METER_DELTA_NOT_SUPPLY_OR_ORDER':'ACTUAL_DRY_MIX_RECIPE_ACCEPTED_EXISTING_WATER_OWNER_OR_EXPLICIT_SCOPE_GUARD',unitId:p.measuredBalanceRule.rules.find(item=>item.key===key)?.unitId??(key.startsWith('water-')?'l':'m2'),
+    formulaId:id(profile.key,'formula:control:'+key),resolution:{kind:'ROW',rowId:id(profile.key,'control:'+key)}}))])};
+}
+
+/** Structural typed view of the exact existing-reader body. It accepts no
+ * baseline inputs as runtime values. The continuation still checks catalog,
+ * header and an unrounded canonical-text body digest before any append. */
+export function drywallC11ActualRetainedModelR2(raw:unknown):AutomaticOwnerDefinition{
+ const rec=(value:unknown,label:string):Record<string,unknown>=>{if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('C11_ACTUAL_RECORD_REQUIRED:'+label);return value as Record<string,unknown>;},
+  arr=(value:unknown,label:string)=>{if(!Array.isArray(value))throw Error('C11_ACTUAL_ARRAY_REQUIRED:'+label);return value.map(item=>rec(item,label));},
+  text=(value:unknown,label:string)=>{if(typeof value!=='string')throw Error('C11_ACTUAL_TEXT_REQUIRED:'+label);return value;},
+  number=(value:unknown,label:string)=>{if(typeof value!=='number'||!Number.isFinite(value))throw Error('C11_ACTUAL_NUMBER_REQUIRED:'+label);return value;},
+  bool=(value:unknown,label:string)=>{if(typeof value!=='boolean')throw Error('C11_ACTUAL_BOOLEAN_REQUIRED:'+label);return value;},
+  nullable=(value:unknown,label:string)=>value===null?null:text(value,label),body=rec(raw,'body'),
+  parameters=arr(body.parameters,'parameters').map(q=>({...q,parameter_id:text(q.parameter_id,'parameter_id'),ordinal:number(q.ordinal,'ordinal'),
+   unit_id:nullable(q.unit_id,'parameterunit'),title_ru:text(q.title_ru,'parametertitle'),value_type:text(q.value_type,'value_type'),required:bool(q.required,'required'),
+   default_value:q.default_value,constraints_json:q.constraints_json===null?null:rec(q.constraints_json,'constraints'),truth_metadata:rec(q.truth_metadata,'truth')})),
+  formulas=arr(body.formulas,'formulas').map(f=>{
+   const source=text(f.expression_source,'expression'),compiled=compileFormulaGraph(source);
+   if(canonicalEstimateStableJson(compiled.ast)!==canonicalEstimateStableJson(f.ast)||canonicalEstimateStableJson(compiled.inputParameterIds)!==canonicalEstimateStableJson(f.input_parameter_ids))
+    throw Error('C11_RETAINED_FORMULA_AST_OR_INPUTS_REQUIRED:'+String(f.formula_id));
+   return{...f,formula_id:text(f.formula_id,'formula_id'),output_unit_id:text(f.output_unit_id,'outputunit'),expression_source:source,
+    ast:compiled.ast,input_parameter_ids:compiled.inputParameterIds,ast_sha256:text(f.ast_sha256,'ast_sha256')};
+  }),resources=arr(body.resources,'resources').map(r=>({...r,id:text(r.id,'resourceid'),row_id:text(r.row_id,'rowid'),ordinal:number(r.ordinal,'ordinal'),
+   section:text(r.section,'section'),category:text(r.category,'category'),title_ru:text(r.title_ru,'title'),unit_id:text(r.unit_id,'unit'),formula_id:text(r.formula_id,'formula'),
+   inclusion_ast:rec(r.inclusion_ast,'inclusion'),resource_graph:rec(r.resource_graph,'resourcegraph'),procurement_eligible:bool(r.procurement_eligible,'procurement'),
+   cost_owner_id:nullable(r.cost_owner_id,'costowner'),source_metadata:r.source_metadata===null?null:rec(r.source_metadata,'sourcemetadata'),row_sha256:text(r.row_sha256,'rowhash')}));
+ return{parameters,formulas,resources,runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['area_m2','partition_length_m','partition_height_m']};
 }

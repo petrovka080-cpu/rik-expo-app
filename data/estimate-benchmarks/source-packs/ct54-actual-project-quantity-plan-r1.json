@@ -1,0 +1,938 @@
+{
+  "contract": "ct54-actual-project-quantity-plan/r1",
+  "option": "ACTUAL_PROJECT_PLAN_R1",
+  "sourceId": "project-system:ct54-measured-organizational-quantity-plan-r1",
+  "existingReferenceSourceId": "project-system:ct54-ready-ground-manual-r608",
+  "existingReferencePackSha256": "05698bb74b7c16e4ecfe55db323aeecb9ff8b9a69bdd3e0927afaf024db22ede",
+  "primarySource": {
+    "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\.release-runtime\\r568\\s27-58\\ct54-mixer-gap-source\\CERESIT-CT-54-current-linked-en_GL.pdf",
+    "sha256": "7e595dd60379f4e1fdee47c69418cd755c4909d9a16a29b818533d41679ebfb0",
+    "locator": "C_CT54_TDS_1_0819 pp1-2; retained source0.3l/m2 for2coats only"
+  },
+  "scopeRu": "Opt-in организационная модель текущего ручного reference: документированные полные совместимые роли, личная выдача СИЗ без неучтённой замены, одно целое прямоугольное укрытие, одинаковые измеренные циклы мойки, одинаковая пригодная оригинальная тара, отдельный счётчик миксеров и заданный бланк журнала. Это расчёт по фактам выбранного плана, не универсальная норма и не утверждение реального объекта. Все исходные7обязательных технологических условий сохраняются. Для иного плана остаётся прежний прямой reference путь.",
+  "numericPrimitives": 19,
+  "retainedDirectManualQuantities": 3,
+  "independentNumericInputs": 22,
+  "evidenceReferences": 8,
+  "derivedResourceRows": 27,
+  "sourceNormativeResourceRows": 1,
+  "parameters": [
+    {
+      "id": "ct54_plan_roller_stations",
+      "key": "roller_stations",
+      "titleRu": "Одновременно назначенные полные места ручной окраски",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 1,
+      "numericPeerConstraints": {
+        "lessThanOrEqualParameter": "ct54_plan_crew_people"
+      }
+    },
+    {
+      "id": "ct54_plan_mixing_stations",
+      "key": "mixing_stations",
+      "titleRu": "Одновременно назначенные полные места перемешивания",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 1,
+      "numericPeerConstraints": {
+        "lessThanOrEqualParameter": "ct54_plan_crew_people"
+      }
+    },
+    {
+      "id": "ct54_plan_wash_stations",
+      "key": "wash_stations",
+      "titleRu": "Одновременно назначенные полные места ручной мойки",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 1,
+      "numericPeerConstraints": {
+        "lessThanOrEqualParameter": "ct54_plan_crew_people"
+      }
+    },
+    {
+      "id": "ct54_plan_crew_people",
+      "key": "crew_people",
+      "titleRu": "Разные исполнители, которым выдан личный комплект СИЗ",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 1
+    },
+    {
+      "id": "ct54_plan_control_stations",
+      "key": "control_stations",
+      "titleRu": "Полные отдельные точки контроля условий и журнала",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 1,
+      "numericPeerConstraints": {
+        "lessThanOrEqualParameter": "ct54_plan_crew_people"
+      }
+    },
+    {
+      "id": "ct54_plan_replacement_covers",
+      "key": "replacement_covers",
+      "titleRu": "Подтверждённые дополнительные сменные шубки за цикл",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_replacement_brushes",
+      "key": "replacement_brushes",
+      "titleRu": "Подтверждённые дополнительные кисти за цикл",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_replacement_glove_pairs",
+      "key": "replacement_glove_pairs",
+      "titleRu": "Подтверждённые дополнительные пары перчаток за цикл",
+      "valueType": "integer",
+      "unitId": "pair",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_wash_cycles",
+      "key": "wash_cycles",
+      "titleRu": "Полное число одинаковых подтверждённых циклов промывки",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 2
+    },
+    {
+      "id": "ct54_plan_fresh_l_per_wash_cycle",
+      "key": "fresh_l_per_wash_cycle",
+      "titleRu": "Измеренный объём чистой воды одного такого полного цикла",
+      "valueType": "decimal",
+      "unitId": "l",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_meter_start_kwh",
+      "key": "meter_start_kwh",
+      "titleRu": "Начальное показание отдельного счётчика миксеров",
+      "valueType": "decimal",
+      "unitId": "kwh",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_meter_end_kwh",
+      "key": "meter_end_kwh",
+      "titleRu": "Конечное показание того же отдельного счётчика",
+      "valueType": "decimal",
+      "unitId": "kwh",
+      "min": 0,
+      "numericPeerConstraints": {
+        "greaterThanParameter": "ct54_plan_meter_start_kwh"
+      }
+    },
+    {
+      "id": "ct54_plan_collected_liquid_l",
+      "key": "collected_liquid_l",
+      "titleRu": "Измеренный/обоснованный весь объём жидкого сбора, отдельно от чистой воды",
+      "valueType": "decimal",
+      "unitId": "l",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_container_usable_l",
+      "key": "container_usable_l",
+      "titleRu": "Подтверждённая полезная вместимость одной оригинальной сборной тары",
+      "valueType": "decimal",
+      "unitId": "l",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_protection_cut_length_m",
+      "key": "protection_cut_length_m",
+      "titleRu": "Длина одного целого прямоугольного полотна по карте укрытия",
+      "valueType": "decimal",
+      "unitId": "m",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_protection_cut_width_m",
+      "key": "protection_cut_width_m",
+      "titleRu": "Ширина того же целого полотна по карте укрытия",
+      "valueType": "decimal",
+      "unitId": "m",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_extra_attachment_tape_m",
+      "key": "extra_attachment_tape_m",
+      "titleRu": "Дополнительные фактические отрезки крепления сверх четырёх краёв",
+      "valueType": "decimal",
+      "unitId": "m",
+      "min": 0
+    },
+    {
+      "id": "ct54_plan_record_count",
+      "key": "record_count",
+      "titleRu": "Число полных записей условий/партии/проходов по плану контроля",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 4
+    },
+    {
+      "id": "ct54_plan_records_per_sheet",
+      "key": "records_per_sheet",
+      "titleRu": "Фактическое число таких записей на листе принятого бланка",
+      "valueType": "integer",
+      "unitId": "piece",
+      "min": 1
+    },
+    {
+      "id": "ct54_plan_organization_reference",
+      "key": "organization_reference",
+      "titleRu": "План рабочих мест с именными выдачами полных совместимых комплектов и обеспечением/стоимостью",
+      "valueType": "text",
+      "unitId": null
+    },
+    {
+      "id": "ct54_plan_replacement_reference",
+      "key": "replacement_reference",
+      "titleRu": "Акт пробного цикла/ППР, обосновывающий смену шубок, кистей и перчаток без универсального износа",
+      "valueType": "text",
+      "unitId": null
+    },
+    {
+      "id": "ct54_plan_wash_reference",
+      "key": "wash_reference",
+      "titleRu": "Подтверждение одинаковых полных циклов и измеренного расхода воды, сбора брызг и вместимости поста",
+      "valueType": "text",
+      "unitId": null
+    },
+    {
+      "id": "ct54_plan_meter_reference",
+      "key": "meter_reference",
+      "titleRu": "Журнал начального/конечного показаний отдельного счётчика только миксеров",
+      "valueType": "text",
+      "unitId": null
+    },
+    {
+      "id": "ct54_plan_container_reference",
+      "key": "container_reference",
+      "titleRu": "Акт объёма жидкого сбора и оригинальной тары/крышек с полезной вместимостью",
+      "valueType": "text",
+      "unitId": null
+    },
+    {
+      "id": "ct54_plan_protection_reference",
+      "key": "protection_reference",
+      "titleRu": "Принятая карта одного целого прямоугольного укрытия, четырёх краёв и дополнительных отрезков",
+      "valueType": "text",
+      "unitId": null
+    },
+    {
+      "id": "ct54_plan_journal_reference",
+      "key": "journal_reference",
+      "titleRu": "Принятый бланк журнала и полный график обязательных записей до/во время двух проходов",
+      "valueType": "text",
+      "unitId": null
+    },
+    {
+      "id": "ct54_plan_direct_requirements_reference",
+      "key": "direct_requirements_reference",
+      "titleRu": "Ведомость фактических салфеток, пакетов и журнал суммарного труда всех семи операций без двойного учёта",
+      "valueType": "text",
+      "unitId": null
+    }
+  ],
+  "rules": [
+    {
+      "rowId": "reference:wall-paint:ct54:water",
+      "formulaId": "reference:wall-paint:ct54:water:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_water",
+      "unitId": "l",
+      "resourceKind": "MATERIAL",
+      "operationIds": [
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_PROJECT_MEASUREMENT",
+      "expression": "ct54_plan_wash_cycles*ct54_plan_fresh_l_per_wash_cycle",
+      "requiredEvidenceIds": [
+        "ct54_plan_wash_reference"
+      ],
+      "authorityRu": "Сумма одинаковых полностью измеренных промывок; это не норма л/м², не разбавление и не объём отходов.",
+      "independentInputs": [
+        "ct54_plan_fresh_l_per_wash_cycle",
+        "ct54_plan_wash_cycles"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:electricity",
+      "formulaId": "reference:wall-paint:ct54:electricity:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_electricity",
+      "unitId": "kwh",
+      "resourceKind": "MATERIAL",
+      "operationIds": [
+        "mix-paint"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_PROJECT_MEASUREMENT",
+      "expression": "ct54_plan_meter_end_kwh-ct54_plan_meter_start_kwh",
+      "requiredEvidenceIds": [
+        "ct54_plan_meter_reference"
+      ],
+      "authorityRu": "Разность показаний выделенного счётчика только миксеров; мощность шильдика и около2мин не подставлены как фактическая энергия.",
+      "independentInputs": [
+        "ct54_plan_meter_end_kwh",
+        "ct54_plan_meter_start_kwh"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:paint-roller",
+      "formulaId": "material:wall-paint:tool:paint-roller:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_paint_roller",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_roller_stations+ct54_plan_replacement_covers",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_replacement_reference"
+      ],
+      "authorityRu": "Одна исходная шубка на фактически назначенный полный ручной комплект плюс документированные смены; не ресурс на м².",
+      "independentInputs": [
+        "ct54_plan_replacement_covers",
+        "ct54_plan_roller_stations"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:paint-roller-frame",
+      "formulaId": "material:wall-paint:tool:paint-roller-frame:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_paint_roller_frame",
+      "unitId": "piece",
+      "resourceKind": "TOOL",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_roller_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Один подтверждённый держатель на каждый одновременно выделенный комплект; он общий для двух проходов/мойки.",
+      "independentInputs": [
+        "ct54_plan_roller_stations"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:roller-tray",
+      "formulaId": "material:wall-paint:tool:roller-tray:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_roller_tray",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_roller_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Одна совместимая ванночка на фактически выделенный комплект; вкладыш не выбран и не добавляется.",
+      "independentInputs": [
+        "ct54_plan_roller_stations"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:cut-in-brush",
+      "formulaId": "material:wall-paint:tool:cut-in-brush:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_cut_in_brush",
+      "unitId": "piece",
+      "resourceKind": "TOOL",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_roller_stations+ct54_plan_replacement_brushes",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_replacement_reference"
+      ],
+      "authorityRu": "Подтверждённый комплект включает последовательную работу валиком/кистью; смены по фактической пробе/плану, не срок службы производителя.",
+      "independentInputs": [
+        "ct54_plan_replacement_brushes",
+        "ct54_plan_roller_stations"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:telescopic-pole",
+      "formulaId": "material:wall-paint:tool:telescopic-pole:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_telescopic_pole",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "paint",
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_roller_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Принятый комплект включает совместимую рукоять и доказанную достижимость всей стены с земли; высотное средство не заменяется количеством рукоятей.",
+      "independentInputs": [
+        "ct54_plan_roller_stations"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:mixing-drill",
+      "formulaId": "material:wall-paint:tool:mixing-drill:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_mixing_drill",
+      "unitId": "piece",
+      "resourceKind": "TOOL",
+      "operationIds": [
+        "mix-paint"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_mixing_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Одна фактически выделенная совместимая дрель на одновременную точку перемешивания; оператор остаётся в едином труде.",
+      "independentInputs": [
+        "ct54_plan_mixing_stations"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:mixing-paddle",
+      "formulaId": "material:wall-paint:tool:mixing-paddle:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_mixing_paddle",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "mix-paint",
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_mixing_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Одна фактически спаренная чистая нержавеющая насадка на выделенную дрель; два прохода не удваивают оборудование.",
+      "independentInputs": [
+        "ct54_plan_mixing_stations"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:mixing-bucket",
+      "formulaId": "material:wall-paint:tool:mixing-bucket:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_mixing_bucket",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "mix-paint",
+        "paint",
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_mixing_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Одна выделенная чистая рабочая ёмкость достаточной вместимости на точку; оригинальная тара сбора отходов отдельно.",
+      "independentInputs": [
+        "ct54_plan_mixing_stations"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:protection-film",
+      "formulaId": "material:wall-paint:tool:protection-film:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_protection_film",
+      "unitId": "m2",
+      "resourceKind": "CONSUMABLE",
+      "operationIds": [
+        "protect",
+        "paint",
+        "clean-site"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_GEOMETRY",
+      "expression": "ct54_plan_protection_cut_length_m*ct54_plan_protection_cut_width_m",
+      "requiredEvidenceIds": [
+        "ct54_plan_protection_reference"
+      ],
+      "authorityRu": "Площадь одного фактически выбранного целого прямоугольного полотна; все выступы включены в обмер. Нет универсального коэффициента от площади стены, нет новой пароизоляции/рулона/цены.",
+      "independentInputs": [
+        "ct54_plan_protection_cut_length_m",
+        "ct54_plan_protection_cut_width_m"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:masking-tape",
+      "formulaId": "material:wall-paint:tool:masking-tape:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_masking_tape",
+      "unitId": "m",
+      "resourceKind": "CONSUMABLE",
+      "operationIds": [
+        "protect",
+        "paint",
+        "clean-site"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_GEOMETRY",
+      "expression": "2*(ct54_plan_protection_cut_length_m+ct54_plan_protection_cut_width_m)+ct54_plan_extra_attachment_tape_m",
+      "requiredEvidenceIds": [
+        "ct54_plan_protection_reference"
+      ],
+      "authorityRu": "Четыре непрерывно закреплённых края выбранного полотна плюс отдельные фактические крепления. Не узел преднаклеенной Tesa4369, не 0.5м/м², не универсальный план раскроя рулона.",
+      "independentInputs": [
+        "ct54_plan_extra_attachment_tape_m",
+        "ct54_plan_protection_cut_length_m",
+        "ct54_plan_protection_cut_width_m"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:wipes",
+      "formulaId": "material:wall-paint:tool:wipes:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_wipes",
+      "unitId": "piece",
+      "resourceKind": "CONSUMABLE",
+      "operationIds": [
+        "paint",
+        "clean-tools",
+        "clean-site"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DIRECT_MANUAL_UNCHANGED",
+      "expression": "ct54_reference_qty_wipes",
+      "requiredEvidenceIds": [
+        "ct54_plan_direct_requirements_reference"
+      ],
+      "authorityRu": "Точного применимого расхода/износа/производительности нет. Сохраняется исходное фактическое количество/трудовой журнал, UNKNOWN если его нет. Никакого автоматического1 или процента.",
+      "independentInputs": [
+        "ct54_reference_qty_wipes"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:waste-bags",
+      "formulaId": "material:wall-paint:tool:waste-bags:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_waste_bags",
+      "unitId": "piece",
+      "resourceKind": "CONSUMABLE",
+      "operationIds": [
+        "clean-site"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DIRECT_MANUAL_UNCHANGED",
+      "expression": "ct54_reference_qty_waste_bags",
+      "requiredEvidenceIds": [
+        "ct54_plan_direct_requirements_reference"
+      ],
+      "authorityRu": "Точного применимого расхода/износа/производительности нет. Сохраняется исходное фактическое количество/трудовой журнал, UNKNOWN если его нет. Никакого автоматического1 или процента.",
+      "independentInputs": [
+        "ct54_reference_qty_waste_bags"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:whole-cycle-labour",
+      "formulaId": "reference:wall-paint:ct54:whole-cycle-labour:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_whole_cycle_labour",
+      "unitId": "man_hour",
+      "resourceKind": "LABOR",
+      "operationIds": [
+        "prepare",
+        "protect",
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DIRECT_MANUAL_UNCHANGED",
+      "expression": "ct54_reference_qty_whole_cycle_labour",
+      "requiredEvidenceIds": [
+        "ct54_plan_direct_requirements_reference"
+      ],
+      "authorityRu": "Точного применимого расхода/износа/производительности нет. Сохраняется исходное фактическое количество/трудовой журнал, UNKNOWN если его нет. Никакого автоматического1 или процента.",
+      "independentInputs": [
+        "ct54_reference_qty_whole_cycle_labour"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:gloves",
+      "formulaId": "material:wall-paint:tool:gloves:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_gloves",
+      "unitId": "pair",
+      "resourceKind": "PPE",
+      "operationIds": [
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_PERSONAL_ALLOCATION",
+      "expression": "ct54_plan_crew_people+ct54_plan_replacement_glove_pairs",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_replacement_reference"
+      ],
+      "authorityRu": "Именная выдача личного совместимого комплекта каждому фактическому исполнителю; для перчаток отдельные подтверждённые смены. Нет нормы износа/новой закупки; пригодное обеспечение исполнителем проверяет исходный документ.",
+      "independentInputs": [
+        "ct54_plan_crew_people",
+        "ct54_plan_replacement_glove_pairs"
+      ]
+    },
+    {
+      "rowId": "material:wall-paint:tool:eye-protection",
+      "formulaId": "material:wall-paint:tool:eye-protection:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_eye_protection",
+      "unitId": "piece",
+      "resourceKind": "PPE",
+      "operationIds": [
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_PERSONAL_ALLOCATION",
+      "expression": "ct54_plan_crew_people",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Именная выдача личного совместимого комплекта каждому фактическому исполнителю; для перчаток отдельные подтверждённые смены. Нет нормы износа/новой закупки; пригодное обеспечение исполнителем проверяет исходный документ.",
+      "independentInputs": [
+        "ct54_plan_crew_people"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:work-clothing",
+      "formulaId": "reference:wall-paint:ct54:work-clothing:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_work_clothing",
+      "unitId": "piece",
+      "resourceKind": "PPE",
+      "operationIds": [
+        "prepare",
+        "protect",
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_PERSONAL_ALLOCATION",
+      "expression": "ct54_plan_crew_people",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Именная выдача личного совместимого комплекта каждому фактическому исполнителю; для перчаток отдельные подтверждённые смены. Нет нормы износа/новой закупки; пригодное обеспечение исполнителем проверяет исходный документ.",
+      "independentInputs": [
+        "ct54_plan_crew_people"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:work-shoes",
+      "formulaId": "reference:wall-paint:ct54:work-shoes:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_work_shoes",
+      "unitId": "pair",
+      "resourceKind": "PPE",
+      "operationIds": [
+        "prepare",
+        "protect",
+        "mix-paint",
+        "paint",
+        "clean-tools",
+        "clean-site",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_PERSONAL_ALLOCATION",
+      "expression": "ct54_plan_crew_people",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference"
+      ],
+      "authorityRu": "Именная выдача личного совместимого комплекта каждому фактическому исполнителю; для перчаток отдельные подтверждённые смены. Нет нормы износа/новой закупки; пригодное обеспечение исполнителем проверяет исходный документ.",
+      "independentInputs": [
+        "ct54_plan_crew_people"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:clean-water-pail",
+      "formulaId": "reference:wall-paint:ct54:clean-water-pail:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_clean_water_pail",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_wash_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_wash_reference"
+      ],
+      "authorityRu": "Полный фактически принятый ручной моечный узел: отдельные чистая/моечная ёмкости и совместимый поддон достаточного удержания. Это конкретная ведомость одновременных точек, не1пост по умолчанию.",
+      "independentInputs": [
+        "ct54_plan_wash_stations"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:wash-pail",
+      "formulaId": "reference:wall-paint:ct54:wash-pail:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_wash_pail",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_wash_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_wash_reference"
+      ],
+      "authorityRu": "Полный фактически принятый ручной моечный узел: отдельные чистая/моечная ёмкости и совместимый поддон достаточного удержания. Это конкретная ведомость одновременных точек, не1пост по умолчанию.",
+      "independentInputs": [
+        "ct54_plan_wash_stations"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:wash-tray",
+      "formulaId": "reference:wall-paint:ct54:wash-tray:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_wash_tray",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "clean-tools"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_wash_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_wash_reference"
+      ],
+      "authorityRu": "Полный фактически принятый ручной моечный узел: отдельные чистая/моечная ёмкости и совместимый поддон достаточного удержания. Это конкретная ведомость одновременных точек, не1пост по умолчанию.",
+      "independentInputs": [
+        "ct54_plan_wash_stations"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:used-paint-container",
+      "formulaId": "reference:wall-paint:ct54:used-paint-container:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_used_paint_container",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "clean-tools",
+        "clean-site"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_CONTAINMENT_BALANCE",
+      "expression": "ceil(ct54_plan_collected_liquid_l/ct54_plan_container_usable_l)",
+      "requiredEvidenceIds": [
+        "ct54_plan_container_reference",
+        "ct54_plan_wash_reference"
+      ],
+      "authorityRu": "Число одинаковой предоставленной пригодной оригинальной тары по всему жидкому сбору и полезной вместимости; столько же штатных проверенных крышек. Не число закупленных вёдер краски и не чистая вода=отходы.",
+      "independentInputs": [
+        "ct54_plan_collected_liquid_l",
+        "ct54_plan_container_usable_l"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:used-paint-container-lid",
+      "formulaId": "reference:wall-paint:ct54:used-paint-container-lid:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_used_paint_container_lid",
+      "unitId": "piece",
+      "resourceKind": "ACCESSORY",
+      "operationIds": [
+        "clean-tools",
+        "clean-site"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_CONTAINMENT_BALANCE",
+      "expression": "ceil(ct54_plan_collected_liquid_l/ct54_plan_container_usable_l)",
+      "requiredEvidenceIds": [
+        "ct54_plan_container_reference",
+        "ct54_plan_wash_reference"
+      ],
+      "authorityRu": "Число одинаковой предоставленной пригодной оригинальной тары по всему жидкому сбору и полезной вместимости; столько же штатных проверенных крышек. Не число закупленных вёдер краски и не чистая вода=отходы.",
+      "independentInputs": [
+        "ct54_plan_collected_liquid_l",
+        "ct54_plan_container_usable_l"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:air-thermometer",
+      "formulaId": "reference:wall-paint:ct54:air-thermometer:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_air_thermometer",
+      "unitId": "piece",
+      "resourceKind": "TOOL",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_control_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_journal_reference"
+      ],
+      "authorityRu": "Один отдельный полный комплект контроля на фактически назначенную точку, доступную при всех замерах и перемешивании: разные воздушный/контактный/влажностный приборы, часы и ручка; не неявный комбинированный прибор.",
+      "independentInputs": [
+        "ct54_plan_control_stations"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:surface-thermometer",
+      "formulaId": "reference:wall-paint:ct54:surface-thermometer:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_surface_thermometer",
+      "unitId": "piece",
+      "resourceKind": "TOOL",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_control_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_journal_reference"
+      ],
+      "authorityRu": "Один отдельный полный комплект контроля на фактически назначенную точку, доступную при всех замерах и перемешивании: разные воздушный/контактный/влажностный приборы, часы и ручка; не неявный комбинированный прибор.",
+      "independentInputs": [
+        "ct54_plan_control_stations"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:humidity-instrument",
+      "formulaId": "reference:wall-paint:ct54:humidity-instrument:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_humidity_instrument",
+      "unitId": "piece",
+      "resourceKind": "TOOL",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_control_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_journal_reference"
+      ],
+      "authorityRu": "Один отдельный полный комплект контроля на фактически назначенную точку, доступную при всех замерах и перемешивании: разные воздушный/контактный/влажностный приборы, часы и ручка; не неявный комбинированный прибор.",
+      "independentInputs": [
+        "ct54_plan_control_stations"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:clock",
+      "formulaId": "reference:wall-paint:ct54:clock:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_clock",
+      "unitId": "piece",
+      "resourceKind": "TOOL",
+      "operationIds": [
+        "mix-paint",
+        "paint",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_control_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_journal_reference"
+      ],
+      "authorityRu": "Один отдельный полный комплект контроля на фактически назначенную точку, доступную при всех замерах и перемешивании: разные воздушный/контактный/влажностный приборы, часы и ручка; не неявный комбинированный прибор.",
+      "independentInputs": [
+        "ct54_plan_control_stations"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:record-pen",
+      "formulaId": "reference:wall-paint:ct54:record-pen:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_record_pen",
+      "unitId": "piece",
+      "resourceKind": "TOOL",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_ORGANIZATIONAL_ALLOCATION",
+      "expression": "ct54_plan_control_stations",
+      "requiredEvidenceIds": [
+        "ct54_plan_organization_reference",
+        "ct54_plan_journal_reference"
+      ],
+      "authorityRu": "Один отдельный полный комплект контроля на фактически назначенную точку, доступную при всех замерах и перемешивании: разные воздушный/контактный/влажностный приборы, часы и ручка; не неявный комбинированный прибор.",
+      "independentInputs": [
+        "ct54_plan_control_stations"
+      ]
+    },
+    {
+      "rowId": "reference:wall-paint:ct54:record-sheet",
+      "formulaId": "reference:wall-paint:ct54:record-sheet:reference-quantity",
+      "quantityParameterId": "ct54_reference_qty_record_sheet",
+      "unitId": "piece",
+      "resourceKind": "CONSUMABLE",
+      "operationIds": [
+        "prepare",
+        "paint",
+        "quality"
+      ],
+      "before": "DIRECT_DEFERRED_PROJECT_QUANTITY_UNKNOWN",
+      "after": "DERIVED_DOCUMENT_LAYOUT",
+      "expression": "ceil(ct54_plan_record_count/ct54_plan_records_per_sheet)",
+      "requiredEvidenceIds": [
+        "ct54_plan_journal_reference"
+      ],
+      "authorityRu": "Число полных фактических записей делится на вместимость выбранного бланка с округлением вверх. Не1лист на объект и не норма бумаги на площадь.",
+      "independentInputs": [
+        "ct54_plan_record_count",
+        "ct54_plan_records_per_sheet"
+      ]
+    }
+  ],
+  "defaultChanged": false,
+  "newRows": 0,
+  "newPaidOwners": 0,
+  "newManufacturerNorms": 0,
+  "actualObjectFactsAsserted": false,
+  "fullTechnicalAcceptance": false,
+  "genuinelyUnknownUntilActualEvidence": [
+    "wipes",
+    "waste-bags",
+    "whole-cycle-labour",
+    "all19physical/organizationalprimitives and8documentrefs if absent"
+  ],
+  "sourceDocumentPath": "data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.source.txt",
+  "sourceDocumentSha256": "28f4de8430bf0fd36e75201ebcf95c013d5e52ef2aaa43312ed61c4dce34352f",
+  "sourceDocumentBytes": 20971,
+  "netIndependentNumericInputReduction": 8
+}

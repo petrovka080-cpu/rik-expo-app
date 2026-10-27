@@ -1,3 +1,7 @@
+import {canonicalEstimateSha256HexText} from '../backendPlatform/canonicalEstimateSha256';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
+import {buildMasterParameterCalculationConsumers} from '../backendPlatform/canonicalDefinitionParameterConsumersR1';
+import ct54ActualQuantityPlan from '../../../../data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.json';
 import ct54ReferenceProjectSystem from '../../../../data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json';
 import type {AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
 import {buildAutomaticConstructionOwnerR1,compileAutomaticConstructionOwnerR1,type AutomaticParameterSpec,type AutomaticRowSpec,type AutomaticInclusionCondition} from './automaticConstructionOwnerR1';
@@ -221,4 +225,55 @@ export function compileWallPaintReferenceProjectSystemS2735(submittedParameters:
   if(!WALL_PAINT_CATALOGS_S2735.includes(catalogId))throw Error('CT54_REFERENCE_EXISTING_CATALOG_REQUIRED');
   return compileAutomaticConstructionOwnerR1({compilerVersion:ct54ReferenceProjectSystem.contract,catalogId,
     primaryMeasureParameterId:'area_m2',definition:buildWallPaintReferenceProjectSystemS2735(),submittedParameters});
+}
+
+export const CT54_ACTUAL_QUANTITY_PLAN_R1=ct54ActualQuantityPlan;
+/** An opt-in set of ordinary formula graphs, not an alternate calculator.
+ * The default R608/R613 reference and every immutable capture stay unchanged. */
+export function withWallPaintCt54ActualQuantityPlanR1(base:AutomaticOwnerDefinition):AutomaticOwnerDefinition{
+ const p=ct54ActualQuantityPlan,source=ct54ReferenceProjectSystem,byId=new Map(p.rules.map(rule=>[rule.rowId,rule])),
+  existing=new Map(base.resources.map(row=>[row.row_id,row]));
+ if(base.resources.length!==31||base.formulas.length!==31||source.resources.some(v=>!existing.has(v.rowId))
+  ||p.rules.length!==30||p.rules.some(v=>existing.get(v.rowId)?.formula_id!==v.formulaId||existing.get(v.rowId)?.unit_id!==v.unitId))
+  throw Error('CT54_QUANTITY_PLAN_EXACT_CURRENT_REFERENCE_ROSTER_REQUIRED');
+ const positive=new Set(['fresh_l_per_wash_cycle','collected_liquid_l','container_usable_l','protection_cut_length_m','protection_cut_width_m']),
+  compiled=buildAutomaticConstructionOwnerR1({contract:p.contract,semanticOwner:'wall-paint:ct54-reference-project-system',sourceId:p.sourceId,normId:'ACTUAL_MEASUREMENTS_AND_DOCUMENTED_ORGANIZATIONAL_ALLOCATION_NOT_CONSUMPTION_NORM',
+   sourceMetadata:{source_title:'Количества ручной окраски по фактическому плану',source_document_version:p.contract,definition_hash:canonicalEstimateSha256HexText(canonicalEstimateStableJson(p)),artifact_sha256:p.sourceDocumentSha256,
+    exact_locator:p.sourceDocumentPath+'; CT54TDS pp1-2 retained0.3l/m2; actual project evidence remains required'},
+   applicabilityRu:p.scopeRu,ordinary:[],profile:[],conditional:p.parameters.map(v=>({id:v.id,title:v.titleRu,kind:'conditional',valueType:v.valueType,unitId:v.unitId,
+    ...('min'in v?{min:v.min}:{}),...('numericPeerConstraints'in v?{numericPeerConstraints:v.numericPeerConstraints}:{})}) as AutomaticParameterSpec),
+   rows:p.rules.filter(v=>v.after!=='DIRECT_MANUAL_UNCHANGED').map(rule=>{const row=existing.get(rule.rowId)!;return{rowId:rule.rowId,formulaId:rule.formulaId,title:row.title_ru,unitId:row.unit_id,
+    section:row.section,category:row.category,expression:rule.expression,procurement:false,costTreatment:'INFORMATIONAL_SCOPE' as const};}),excludedUnownedAssumptions:[
+    'No kit1/stock0/area-wear/labourproductivity defaults. All22numeric inputs are independent actualfacts or retainedmanualquantities.',
+    'A named document is evidence to verify; it does not replace original substrate/access/utilities/PPE/receiver/conditions.']});
+ const byFormula=new Map(compiled.formulas.map(f=>[f.formula_id,f])),retired=new Set(p.rules.filter(v=>v.after!=='DIRECT_MANUAL_UNCHANGED').map(v=>v.quantityParameterId)),
+  direct=new Set(p.rules.filter(v=>v.after==='DIRECT_MANUAL_UNCHANGED').map(v=>v.quantityParameterId)),
+  oldParameters=base.parameters.map(v=>retired.has(v.parameter_id)?{...v,required:false,default_value:null,
+   constraints_json:{...v.constraints_json,forbiddenWhen:{kind:'equals',parameterId:'ct54_reference_method',value:source.conditions.ct54_reference_method}},
+   truth_metadata:{...v.truth_metadata,visibility_role:'INTERNAL_ONLY',provenance:{...v.truth_metadata.provenance as Record<string,unknown>,consumer_input_role_v1:'APPLICATION_TECHNICAL'},
+    retiredOnlyInActualQuantityPlanR1:true,guide:{...v.truth_metadata.guide as Record<string,unknown>,guide_short_ru:'В этом варианте количество производно от фактического плана; старое поле сохранено для истории и ввод запрещён.'}}}:
+   direct.has(v.parameter_id)?{...v,constraints_json:{...v.constraints_json,requiredWhen:{kind:'greater_than',parameterId:'area_m2',value:0}},truth_metadata:{...v.truth_metadata,visibility_role:'USER_INPUT',value_source_role:'CONDITIONAL_PROJECT_FACT',preliminary_compilation_allowed:true,
+    provenance:{...v.truth_metadata.provenance as Record<string,unknown>,consumer_input_role_v1:'ADVANCED_OPTION'},directManualUnchanged:true}}:v),
+  added=compiled.parameters.map((v,i)=>{const spec=p.parameters.find(item=>item.id===v.parameter_id)!;return{...v,ordinal:base.parameters.length+i,required:false,default_value:null,
+   constraints_json:{...v.constraints_json,requiredWhen:{kind:'greater_than',parameterId:'area_m2',value:0},...(positive.has(spec.key)?{exclusiveMin:0}:{})},truth_metadata:{...v.truth_metadata,visibility_role:'USER_INPUT',value_source_role:spec.valueType==='text'?'USER_INPUT':'CONDITIONAL_PROJECT_FACT',
+    preliminary_compilation_allowed:true,source_confirmation_required:false,provenance:{consumer_input_role_v1:'ADVANCED_OPTION'},input_origin_class:'KNOWN_PRIMARY_WORK_SCOPE',
+    guide:{...v.truth_metadata.guide as Record<string,unknown>,guide_version:p.contract,source_document:p.sourceId,source_snapshot_hash:p.sourceDocumentSha256,source_role:'USER_SUPPLIED_OBJECT_FACT',guide_kind:spec.valueType==='text'?'MEASUREMENT_RULE':'PROJECT_DEFINED',
+     guide_validation_policy:'MANDATORY_BLOCK',applicability:p.scopeRu,guide_short_ru:'Только фактический обмер, журнал, именная опись или утверждённый план. Отсутствие не равно нулю/одной единице; источник/traceID обязателен.'}}};}),
+  resources=base.resources.map(row=>{const rule=byId.get(row.row_id);if(!rule)return row;
+   const original=row.resource_graph.operationCompositionV1 as Record<string,unknown>|undefined,
+    extraKeys=row.row_id==='reference:wall-paint:ct54:water'?['paint']:row.row_id==='material:wall-paint:tool:mixing-drill'?['clean-tools']:[],
+    extra=extraKeys.map(key=>{const op=source.operationRoster.find(op=>op.operationId===key);if(!op)throw Error('CT54_WHOLE_CONSUMER_REQUIRED:'+key);return{...op,processRole:'PROCESS' as const};}),
+    existing=original?[String(original.operationId),...(Array.isArray(original.additionalOperations)?original.additionalOperations.map(value=>String((value as Record<string,unknown>).operationId)):[])]:[];
+   const body={...row,resource_graph:{...row.resource_graph,inputParameterIds:[...new Set([...(row.resource_graph.inputParameterIds as string[]??[]),...rule.requiredEvidenceIds])],...(original&&extra.length?{operationCompositionV1:{...original,additionalOperations:[...(Array.isArray(original.additionalOperations)?original.additionalOperations:[]),...extra.filter(op=>!existing.includes(op.operationId))]}}:{})},
+    source_metadata:{...row.source_metadata,quantityRuleV1:{contract:p.contract,kind:rule.after,sourceId:p.sourceId,ruleSourceHash:canonicalEstimateSha256HexText(canonicalEstimateStableJson(p)),primarySourceSha256:p.primarySource.sha256,
+     expression:rule.expression,independentInputIds:rule.independentInputs,requiredEvidenceParameterIds:rule.requiredEvidenceIds,organizationalDocumentIsNotTechnologyWaiver:true},
+     actualObjectQuantityAsserted:false,manufacturerNormAdded:false,paidOwnerAdded:false,full_technical_acceptance:false},row_sha256:''};return{...body,row_sha256:estimateDeterministicHash(body)};
+  });
+ // Same31 IDs and7 operations; two explicit shared consumers reuse existing owners.
+ // No additional wet site-cleaning allowance is inferred from tool-wash litres.
+ // Missing derivedfacts or traceID remain ordinary preliminary requirements.
+ const next:AutomaticOwnerDefinition={...base,parameters:[...oldParameters,...added],formulas:base.formulas.map(v=>byFormula.get(v.formula_id)??v),resources,
+  ordinaryParameterIds:base.ordinaryParameterIds.filter(v=>!retired.has(v))};
+ const consumers=buildMasterParameterCalculationConsumers(next as unknown as Parameters<typeof buildMasterParameterCalculationConsumers>[0]);
+ return{...next,parameters:next.parameters.map(v=>({...v,truth_metadata:{...v.truth_metadata,formula_consumers:consumers.formulaConsumers[v.parameter_id]??[],resource_branch_consumers:consumers.resourceConsumers[v.parameter_id]??[]}}))};
 }

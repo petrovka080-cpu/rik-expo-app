@@ -1,6 +1,9 @@
 name: Current canonical WaterProof APK V1
-run-name: WaterProof fresh current source APK ${{ inputs.source_commit }}
+run-name: WaterProof exact ABI verified-precomputed APK ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
 on:
+  push:
+    branches: ['codex/gox-types-operations-resources-r580']
+    paths: ['.github/workflows/android-waterproof-current-v1.yml', 'scripts/verification/android-waterproof-current-v1/inputs/current-build-r750.json']
   workflow_dispatch:
     inputs:
       source_commit:
@@ -48,9 +51,9 @@ jobs:
           python-version: '3.13'
       - name: Validate dispatch paths and hashes
         env:
-          SOURCE_COMMIT: ${{ inputs.source_commit }}
-          BUILD_SPEC_PATH: ${{ inputs.build_spec_path }}
-          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 }}
+          SOURCE_COMMIT: ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
+          BUILD_SPEC_PATH: ${{ inputs.build_spec_path || 'scripts/verification/android-waterproof-current-v1/inputs/current-build-r750.json' }}
+          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 || 'ca907a39a933458ecd20df6493c97b75c41bf71288652bf3d681569e2e7b2289' }}
         run: |
           if ($env:SOURCE_COMMIT -notmatch '^[a-f0-9]{40}$') { throw 'Exact commit required' }
           if ($env:BUILD_SPEC_SHA -notmatch '^[a-f0-9]{64}$') { throw 'Exact build contract hash required' }
@@ -62,7 +65,7 @@ jobs:
           if ((Get-FileHash -LiteralPath $spec -Algorithm SHA256).Hash.ToLowerInvariant() -ne $env:BUILD_SPEC_SHA) { throw 'Input hash changed' }
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.source_commit }}
+          ref: ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
           path: r
           persist-credentials: false
       - uses: actions/setup-node@v4
@@ -82,15 +85,22 @@ jobs:
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;27.1.12297006'
       - name: Install process monitor
         run: python -m pip install psutil==7.1.0
+      - name: Reuse exact current HBC and assets from completed producer run
+        uses: actions/download-artifact@v4
+        with:
+          name: current-waterproof-apk-40556026061
+          run-id: 40556026061
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: prior-precomputed
       - name: Build and verify exact embedded APK
         env:
-          SOURCE_COMMIT: ${{ inputs.source_commit }}
-          BUILD_SPEC_PATH: ${{ inputs.build_spec_path }}
-          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 }}
+          SOURCE_COMMIT: ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
+          BUILD_SPEC_PATH: ${{ inputs.build_spec_path || 'scripts/verification/android-waterproof-current-v1/inputs/current-build-r750.json' }}
+          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 || 'ca907a39a933458ecd20df6493c97b75c41bf71288652bf3d681569e2e7b2289' }}
         run: |
           $driver = Join-Path $env:GITHUB_WORKSPACE 'ci/scripts/verification/android-waterproof-current-v1/build_current_apk.py'
           $spec = Join-Path (Join-Path $env:GITHUB_WORKSPACE 'ci') $env:BUILD_SPEC_PATH
-          python $driver --root (Join-Path $env:GITHUB_WORKSPACE 'r') --spec $spec --spec-sha256 $env:BUILD_SPEC_SHA --source-commit $env:SOURCE_COMMIT --output (Join-Path $env:GITHUB_WORKSPACE 'apk-artifact')
+          python $driver --root (Join-Path $env:GITHUB_WORKSPACE 'r') --spec $spec --spec-sha256 $env:BUILD_SPEC_SHA --source-commit $env:SOURCE_COMMIT --output (Join-Path $env:GITHUB_WORKSPACE 'apk-artifact') --precomputed-root (Join-Path $env:GITHUB_WORKSPACE 'prior-precomputed/apk-artifact') --reuse-contract (Join-Path $env:GITHUB_WORKSPACE 'ci/scripts/verification/android-waterproof-current-v1/inputs/reuse-precomputed-r815.json') --reuse-contract-sha256 e53eb2a7654746ae30e96f941a9f955b275f04e46f5cc7e84a3246c5be3e3690
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         if: always()

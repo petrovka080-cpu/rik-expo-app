@@ -1,3 +1,16 @@
+import {ct54MeasuredModelFromActualReferenceR930,prepareCt54MeasuredCurrentReferenceR930,type Ct54MeasuredCurrentContextR930} from '../../../../scripts/estimate/r4a13/prepareCt54ReferencePublicationR613';
+import {readFileSync,mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {tmpdir} from 'node:os';
+import {resolveMasterScopedNormativeRegistryOptInR1 as resolveCt54ActualScopedRoute} from '../../../../scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1';
+import {prepareCt54ReferencePublicationFromReadR619 as prepareCt54FreshReadContext} from '../../../../scripts/estimate/r4a13/prepareCt54ReferencePublicationR613';
+import {captureCt54ReferenceFormalRegistryR619 as captureCt54FreshPlan} from '../../../../scripts/estimate/r4a13/prepareCt54ReferencePublicationR613';
+import {prepareCt54ReferencePublicationR613 as prepareCt54PlanPublisher} from '../../../../scripts/estimate/r4a13/prepareCt54ReferencePublicationR613';
+import {validateMasterTypedPartialQuantityPreparationR1 as validateCt54PlanPartial} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
+import {assembleMasterSingleDefinitionManagedRegistryCandidateR1 as assembleCt54PlanCandidate} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
+import {makeMasterScopedNormativeRegistryCaptureR1 as captureCt54PlanRegistry} from '../../../../scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1';
+import ct54QuantityPlan from '../../../../data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.json';
+import {validateIndependentCompletenessMapReferences as validateCt54PlanReferences,validateMasterFormulaGraphConsistency as validateCt54PlanGraphs} from '../../../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import {createHash} from 'node:crypto';
 import {buildCanonicalRevisionCommitPayload} from './canonicalEstimateRevisionWriter';
 import {canonicalOperationCompositionEvidenceFromPassportV1,canonicalSavedOperationCompositionEvidenceV1} from './canonicalEstimateSavedOperationAcceptanceV1';
@@ -610,4 +623,351 @@ it('R873 preserves known unverified scope through historical cold rows without m
     scopeRequirementDecisionV1:{...scope,kind:'PROCESS',status:'PROCESS_REQUIRED'}}}};
   const futureResult=canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[future]});
   expect(futureResult.issues.some(issue=>issue.code==='RESOURCE_CONDITION_UNRESOLVED')).toBe(false);
+});
+
+// New opt-in quantity rules only. Existing R642 tests/captures above are unchanged.
+// Narrow the actual Core/saved JSON records before reading trace evidence.
+const ct54PlanObject=(value:unknown):Record<string,unknown>=>{
+ if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('CT54_TEST_EXPECTED_REAL_JSON_RECORD');return value;
+},ct54PlanTrace=(row:unknown)=>ct54PlanObject(ct54PlanObject(row).calculation_trace);
+
+const ct54PlanId=(key:string)=>'ct54_plan_'+key,
+ ct54PlanDemo=():Record<string,unknown>=>{const p:Record<string,unknown>={area_m2:20,...ct54Reference.conditions,
+  ct54_plan_roller_stations:2,ct54_plan_mixing_stations:1,ct54_plan_wash_stations:1,ct54_plan_crew_people:3,ct54_plan_control_stations:1,
+  ct54_plan_replacement_covers:1,ct54_plan_replacement_brushes:0,ct54_plan_replacement_glove_pairs:2,
+  ct54_plan_wash_cycles:4,ct54_plan_fresh_l_per_wash_cycle:2,ct54_plan_meter_start_kwh:10,ct54_plan_meter_end_kwh:10.08,
+  ct54_plan_collected_liquid_l:9,ct54_plan_container_usable_l:4,ct54_plan_protection_cut_length_m:5,ct54_plan_protection_cut_width_m:1.6,
+  ct54_plan_extra_attachment_tape_m:1.8,ct54_plan_record_count:8,ct54_plan_records_per_sheet:6,
+  ct54_reference_qty_wipes:10,ct54_reference_qty_waste_bags:2,ct54_reference_qty_whole_cycle_labour:7.5};
+  for(const key of ['organization_reference','replacement_reference','wash_reference','meter_reference','container_reference','protection_reference','journal_reference','direct_requirements_reference'])p[ct54PlanId(key)]='TEST_ONLY_CONFIRMED_PLAN_'+key;
+  delete p.ct54_reference_method;return p;},
+ ct54PlanCompile=async(submitted:Record<string,unknown>=ct54PlanDemo(),rowOverrides:Parameters<typeof compileCanonicalEstimateCore>[0]['rowOverrides']={},model=ct54ReferencePublicationModelR613('ACTUAL_PROJECT_PLAN_R1'))=>{
+  const hashJson=(v:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(v)).digest('hex'),
+   compiled=await compileCanonicalEstimateCore({operation:Object.keys(rowOverrides??{}).length?'recalculate':'compile',compilerVersion:ct54QuantityPlan.contract,
+    catalogId:'canonical-work:base:plaster_paint_interior_paint_wall_paint_standard',primaryMeasureParameterId:'area_m2',parameterDefinitions:[...model.parameters],formulaDefinitions:[...model.formulas],resourceDefinitions:[...model.resources],
+    submittedParameters:submitted,confirmedParameters:{ct54_reference_method:ct54Reference.conditions.ct54_reference_method},rowOverrides,currencyCode:'KGS',priceItems:[],maximumResourceRows:31,hashJson}),
+   evidence=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'TEST_ONLY_CT54_PLAN_RELEASE',definitionVersionId:'TEST_ONLY_CT54_PLAN_DEFINITION',passport:{definition_version_id:'TEST_ONLY_CT54_PLAN_DEFINITION',payload_sha256:'c'.repeat(64),decision:{independentCompletenessMap:ct54Reference.independentComposition}}})!,
+   checksum=hashJson({...compiled.revisionProjection,operationCompositionEvidenceV1:evidence}),commit=buildCanonicalRevisionCommitPayload({rowCount:compiled.rows.length,currencyCode:'KGS',totals:compiled.totals,checksumSha256:checksum,
+    compilerVersion:ct54QuantityPlan.contract,parameters:compiled.parameters,approvedTemplateBaselineId:null,baselineAssumptions:{ct54_reference_method:ct54Reference.conditions.ct54_reference_method},effectiveUserParameters:submitted,parentRevisionId:null,identityContract:{},preliminaryNeeds:compiled.preliminaryNeeds,operationCompositionEvidenceV1:evidence}),
+   saved={...revision,release_id:'TEST_ONLY_CT54_PLAN_RELEASE',definition_version_id:'TEST_ONLY_CT54_PLAN_DEFINITION',catalog_id:'canonical-work:base:plaster_paint_interior_paint_wall_paint_standard',row_count:compiled.rows.length,input_parameters:compiled.parameters,checksum_sha256:checksum,amendment_contract:{parameterSources:commit.parameterSources}},
+   resources=[...compiled.rows,...canonicalArtifactPreliminaryNeeds(saved)];return{compiled,saved,resources,model};
+ },ct54PlanRow=(result:Awaited<ReturnType<typeof ct54PlanCompile>>,key:string)=>{const resource=ct54Reference.resources.find(v=>v.rowId.endsWith(':'+key))!;return[...result.compiled.rows,...result.compiled.preliminaryNeeds].find(v=>v.row_id===resource.rowId);};
+
+describe('SOURCE_ONLY CT54 actual project plan quantity rules in the existing ordinary owner',()=>{
+ it('preserves the default current reference while opt-in replaces27operands and retains31resources/7operations/soleowners',()=>{
+  const original=ct54ReferencePublicationModelR613(),d=ct54ReferencePublicationModelR613('ACTUAL_PROJECT_PLAN_R1');expect([original.parameters.length,original.formulas.length,original.resources.length]).toEqual([39,31,31]);expect([d.parameters.length,d.formulas.length,d.resources.length]).toEqual([66,31,31]);
+  expect(ct54QuantityPlan.parameters.filter(v=>v.valueType!=='text')).toHaveLength(19);expect(ct54QuantityPlan.rules.filter(v=>v.after==='DIRECT_MANUAL_UNCHANGED')).toHaveLength(3);expect(ct54QuantityPlan.independentNumericInputs).toBe(22);
+  for(const old of original.resources){const next=d.resources.find(v=>v.row_id===old.row_id)!;expect([next.row_id,next.formula_id,next.unit_id,next.cost_owner_id,next.inclusion_ast,next.procurement_eligible,next.resource_graph.costTreatment]).toEqual([old.row_id,old.formula_id,old.unit_id,old.cost_owner_id,old.inclusion_ast,old.procurement_eligible,old.resource_graph.costTreatment]);
+   const originalOperation=old.resource_graph.operationCompositionV1 as Record<string,unknown>,extraKey=old.row_id==='reference:wall-paint:ct54:water'?'paint':old.row_id==='material:wall-paint:tool:mixing-drill'?'clean-tools':null;
+   expect(next.resource_graph.operationCompositionV1).toEqual(extraKey?{...originalOperation,additionalOperations:[...(Array.isArray(originalOperation.additionalOperations)?originalOperation.additionalOperations:[]),ct54Reference.operationRoster.find(op=>op.operationId===extraKey)]}:originalOperation);
+   for(const id of old.resource_graph.inputParameterIds as string[])expect(next.resource_graph.inputParameterIds).toContain(id);
+  }
+  expect(d.formulas.find(v=>v.formula_id==='reference:wall-paint:ct54:ct54:reference-quantity')).toEqual(original.formulas.find(v=>v.formula_id==='reference:wall-paint:ct54:ct54:reference-quantity'));
+  expect(ct54ReferencePublicationModelR613()).toEqual(original);expect(d.parameters.every(v=>v.default_value==null)).toBe(true);
+ });
+ it('explicit complete DEMO plan derives all31 quantities using22independentnumericfacts, not30manualresourcequantities',async()=>{
+  const r=await ct54PlanCompile();expect(r.compiled.rows).toHaveLength(31);expect(r.compiled.preliminaryNeeds).toHaveLength(0);
+  const q:Record<string,string>={ct54:'6',water:'8',electricity:'0.08','paint-roller':'3','paint-roller-frame':'2','roller-tray':'2','cut-in-brush':'2','telescopic-pole':'2','mixing-drill':'1','mixing-paddle':'1','mixing-bucket':'1','protection-film':'8','masking-tape':'15',wipes:'10','waste-bags':'2',gloves:'5','eye-protection':'3','work-clothing':'3','work-shoes':'3','clean-water-pail':'1','wash-pail':'1','wash-tray':'1','used-paint-container':'3','used-paint-container-lid':'3','air-thermometer':'1','surface-thermometer':'1','humidity-instrument':'1',clock:'1','record-sheet':'2','record-pen':'1','whole-cycle-labour':'7.5'};
+  for(const[key,value]of Object.entries(q))expect(ct54PlanRow(r,key)?.quantity).toBe(value);
+  expect(r.compiled.rows.filter(v=>v.included_in_estimate||v.included_in_procurement)).toHaveLength(0);expect(r.compiled.rows.every(v=>v.unit_price==null)).toBe(true);expect(ct54QuantityPlan.fullTechnicalAcceptance).toBe(false);
+ });
+ it('with actual derivedfacts but no3manualresiduals the ordinary result is28known+3UNKNOWN, and no invented wipes/bags/labour norm',async()=>{
+  const p=ct54PlanDemo();for(const id of ['ct54_reference_qty_wipes','ct54_reference_qty_waste_bags','ct54_reference_qty_whole_cycle_labour'])delete p[id];const r=await ct54PlanCompile(p);expect(r.compiled.rows).toHaveLength(28);expect(r.compiled.preliminaryNeeds).toHaveLength(3);
+  for(const key of ['wipes','waste-bags','whole-cycle-labour'])expect(ct54PlanRow(r,key)?.quantity).toBeNull();const gate=canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources});expect(gate).toMatchObject({pdfAllowed:true,completeClaimAllowed:false});
+ });
+ it('absent plan leaves6l sourcequantity and honest30needs; no documents/counts are silently borrowed fromDEMO',async()=>{
+  const p:Record<string,unknown>={area_m2:20,...ct54Reference.conditions};delete p.ct54_reference_method;const r=await ct54PlanCompile(p);expect(r.compiled.rows).toHaveLength(1);expect(r.compiled.preliminaryNeeds).toHaveLength(30);expect(ct54PlanRow(r,'ct54')?.quantity).toBe('6');
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).pdfAllowed).toBe(false);
+ });
+ it('small wallarea changes onlysourcepaint, not PPE/tools/washwater or inheritedrawlabour',async()=>{
+  const r=await ct54PlanCompile({...ct54PlanDemo(),area_m2:0.01});expect(ct54PlanRow(r,'ct54')?.quantity).toBe('0.003');expect(ct54PlanRow(r,'paint-roller')?.quantity).toBe('3');expect(ct54PlanRow(r,'whole-cycle-labour')?.quantity).toBe('7.5');expect(ct54PlanRow(r,'water')?.quantity).toBe('8');
+ });
+ it.each([0,-1,Number.NaN])('zero/invalid sourceprimary%s retains actualvalidator',async area=>{await expect(ct54PlanCompile({...ct54PlanDemo(),area_m2:area})).rejects.toThrow();});
+ it('missing replacementcounts never assumes0; sharedframequantity remainsknown from the same organizationplan',async()=>{
+  const p=ct54PlanDemo();delete p.ct54_plan_replacement_covers;delete p.ct54_plan_replacement_glove_pairs;const r=await ct54PlanCompile(p);expect(ct54PlanRow(r,'paint-roller')?.quantity).toBeNull();expect(ct54PlanRow(r,'gloves')?.quantity).toBeNull();expect(ct54PlanRow(r,'paint-roller-frame')?.quantity).toBe('2');
+ });
+ it.each([['roller_stations',0],['roller_stations',2.5],['roller_stations',4],['container_usable_l',0],['fresh_l_per_wash_cycle',0],['protection_cut_width_m',0],['wash_cycles',1],['record_count',3],['records_per_sheet',0],['meter_end_kwh',10],['meter_end_kwh',9.9]])('rejects impossible actualprimitive%s=%s',async(key,value)=>{await expect(ct54PlanCompile({...ct54PlanDemo(),[ct54PlanId(String(key))]:value})).rejects.toThrow();});
+ it.each([[8,4,'2'],[8.001,4,'3'],[9,4.5,'2']])('collected%s litres/netcapacity%s gives%s originalcontainers andmatchinglids, independently of8lfreshwater',async(volume,capacity,count)=>{
+  const r=await ct54PlanCompile({...ct54PlanDemo(),ct54_plan_collected_liquid_l:volume,ct54_plan_container_usable_l:capacity});expect(ct54PlanRow(r,'used-paint-container')?.quantity).toBe(count);expect(ct54PlanRow(r,'used-paint-container-lid')?.quantity).toBe(count);expect(ct54PlanRow(r,'water')?.quantity).toBe('8');
+ });
+ it('paper is rounded by actual journalcapacity; no new instruments/clock/pen perrecord orcoat',async()=>{
+  const r=await ct54PlanCompile({...ct54PlanDemo(),ct54_plan_record_count:12,ct54_plan_records_per_sheet:6});expect(ct54PlanRow(r,'record-sheet')?.quantity).toBe('2');const more=await ct54PlanCompile({...ct54PlanDemo(),ct54_plan_record_count:13,ct54_plan_records_per_sheet:6});expect(ct54PlanRow(more,'record-sheet')?.quantity).toBe('3');for(const key of ['clock','record-pen','air-thermometer','surface-thermometer','humidity-instrument'])expect(ct54PlanRow(more,key)?.quantity).toBe('1');
+ });
+ it('actual traceID is mandatory even beside known allocatedquantity; one document never waives technicalconditions',async()=>{
+  const p=ct54PlanDemo();delete p.ct54_plan_organization_reference;const r=await ct54PlanCompile(p),need=ct54PlanRow(r,'paint-roller-frame')!;expect(need).toMatchObject({quantity:'2',need_state:'CONDITION_REQUIRED'});expect(ct54PlanTrace(need).unresolvedConditionParameterIds).toContain('ct54_plan_organization_reference');
+  const gate=canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources});expect(gate.pdfAllowed).toBe(false);expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(gate)).toThrow(expect.objectContaining({httpStatus:409}));
+  const missing=ct54PlanDemo();delete missing.ct54_reference_waste_receiver;const all=await ct54PlanCompile(missing);expect(all.compiled.preliminaryNeeds).toHaveLength(31);expect(ct54PlanRow(all,'ct54')).toMatchObject({quantity:'6',need_state:'CONDITION_REQUIRED'});expect(canonicalEstimateSavedOperationAcceptanceV1({revision:all.saved,resources:all.resources}).pdfAllowed).toBe(false);
+ });
+ it.each(['ct54_reference_substrate','ct54_reference_access','ct54_reference_utilities','ct54_reference_compatible_tools_ppe','ct54_reference_conditions'])('known organizationaldocument cannot replace original%s condition',async key=>{
+  const p=ct54PlanDemo();delete p[key];const r=await ct54PlanCompile(p);expect(r.compiled.preliminaryNeeds).toHaveLength(31);expect((ct54PlanRow(r,'ct54') as {missing_parameter_ids:string[]}).missing_parameter_ids).toContain(key);expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).pdfAllowed).toBe(false);
+ });
+ it('retired27 rawquantityfields cannot silently override derivedtools/water;3 retainedmanualfields are explicit',async()=>{
+  await expect(ct54PlanCompile({...ct54PlanDemo(),ct54_reference_qty_paint_roller:99})).rejects.toThrow();const r=await ct54PlanCompile({...ct54PlanDemo(),ct54_reference_qty_whole_cycle_labour:9});expect(ct54PlanRow(r,'whole-cycle-labour')?.quantity).toBe('9');
+ });
+ it('manual resource amendments retain one originalowner/sourceformula, distinguish automatic plan from manual actualquantity and never add payment',async()=>{
+  const rowId='material:wall-paint:tool:paint-roller',r=await ct54PlanCompile(ct54PlanDemo(),{[rowId]:{quantity:'4',unitPrice:'2',titleRu:'Моя шубка валика',provenance:{kind:'manual',reason:'TEST_ONLY actualrow amendment, not sourcewear norm'}}});
+  expect(ct54PlanRow(r,'paint-roller')).toMatchObject({quantity:'4',unit_price:'2',title_ru:'Моя шубка валика',included_in_estimate:false,included_in_procurement:false});expect(ct54PlanTrace(ct54PlanRow(r,'paint-roller')).calculatedQuantityBeforeOverride).toBe('3');expect(r.compiled.rows.filter(v=>v.row_id===rowId)).toHaveLength(1);expect(r.compiled.totals.amount).toBe('0');
+ });
+ it('saved/cold JSON preserves all31rows, same source refs/soleowners/conditions, and commonPDFgate checks the saved snapshot',async()=>{
+  const r=await ct54PlanCompile(),cold=JSON.parse(JSON.stringify({saved:r.saved,resources:r.resources})),before=JSON.stringify(cold),gate=canonicalEstimateSavedOperationAcceptanceV1({revision:cold.saved,resources:cold.resources});expect(gate.pdfAllowed).toBe(true);expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(gate)).not.toThrow();expect(JSON.stringify(cold)).toBe(before);expect(cold.resources).toHaveLength(31);
+  const frame=cold.resources.find((v:{row_id:string})=>v.row_id==='material:wall-paint:tool:paint-roller-frame');expect(ct54PlanObject(ct54PlanObject(ct54PlanTrace(frame).resourceGraph).operationCompositionV1).additionalOperations).toEqual(expect.arrayContaining([expect.objectContaining({operationId:'clean-tools'})]));expect(ct54PlanObject(ct54PlanTrace(frame).resourceGraph).inputParameterIds).toContain('ct54_plan_organization_reference');
+ });
+ it('existing source referencevalidator sees the same31formula/row/operation/unit bindings in the opt-in model',()=>{
+  const d=ct54ReferencePublicationModelR613('ACTUAL_PROJECT_PLAN_R1');expect(validateCt54PlanReferences({completenessMap:ct54Reference.independentComposition,formulaDefinitions:d.formulas,resourceDefinitions:d.resources,requireOperationBindings:true})).toEqual([]);expect(validateCt54PlanGraphs(d.formulas)).toEqual([]);
+ });
+});
+
+it('SOURCE_ONLY CT54 opt-in uses the existing typed partial publisher and22driver witness for all30dependentrows without a fake norm',()=>{
+ const c=prepareCt54PlanPublisher({quantityPlan:'ACTUAL_PROJECT_PLAN_R1',parentReleaseId:'TEST_ONLY_CURRENT_RELEASE',parentSearchReleaseId:'TEST_ONLY_SEARCH',currentReleasePath:'TEST_ONLY_REFERENCE_POINTER_COPY',selectedCurrentReleasePath:'TEST_ONLY_SELECTED_POINTER',referencePointerMode:'PREPARED_NOT_ACTIVE_COPY',outputRoot:'TEST_ONLY',expectedBranch:'TEST_ONLY',masterPath:'TEST_ONLY',masterSha256:'a'.repeat(64),currentDefinitionVersionId:'TEST_ONLY_CURRENT_DEF',currentDefinitionSha256:'b'.repeat(64),approvedTemplateBaselineId:'TEST_ONLY_BASELINE',capturedParentPath:'TEST_ONLY_CAPTURE',capturedParentByteSha256:'c'.repeat(64),expectedParentShape:[39,31,31],verifyTargetPrecondition:async()=>{throw Error('TEST_ONLY_NO_DB');},verifyCore:async()=>({status:'TEST_ONLY_NO_EXECUTION'})}),
+  candidate=assembleCt54PlanCandidate(c,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate,
+  scope={artifactSha256:String(candidate.newSource.artifact_sha256),normId:c.normId,sourceKey:c.sourceId,generatedSourceId:candidate.newSource.id,generatedLocatorIds:candidate.newLocators.map(v=>v.id),generatedLocatorKeys:candidate.newLocators.map(v=>v.locator_key)},
+  scoped={...c,capturedScopedNormativeRegistry:captureCt54PlanRegistry(scope,{sourceRows:[],locatorRows:[]})};
+ expect(validateCt54PlanPartial(scoped)).toEqual([]);expect((c.passport.partialQuantityBasis as {parameters:unknown[]}).parameters).toHaveLength(22);expect((c.passport.partialQuantityBasis as {resourceRowIds:string[]}).resourceRowIds).toHaveLength(30);
+ expect(c.sourcePaths).toContain(ct54QuantityPlan.sourceDocumentPath);expect(c.sourceId).toBe(ct54QuantityPlan.sourceId);expect(c.resourceDefinitions.every(v=>!v.procurement_eligible&&v.resource_graph.costTreatment==='INFORMATIONAL_SCOPE')).toBe(true);
+});
+
+it('CT54 full existing typed preflight separates22quantity facts from8condition traceIDs and rejects stale/absent scopedsource',()=>{
+ const config=prepareCt54FreshReadContext({quantityPlan:'ACTUAL_PROJECT_PLAN_R1',parentReleaseId:'TEST_ONLY_PREPARED_REFERENCE_RELEASE',parentSearchReleaseId:'TEST_ONLY_REFERENCE_SEARCH',currentReleasePath:'TEST_ONLY_REFERENCE_COPY',selectedCurrentReleasePath:'TEST_ONLY_SELECTED',referencePointerMode:'PREPARED_NOT_ACTIVE_COPY',outputRoot:'TEST_ONLY',expectedBranch:'TEST_ONLY',masterPath:'TEST_ONLY',masterSha256:'a'.repeat(64),currentDefinitionVersionId:'TEST_ONLY_PREPARED_REFERENCE_DEF',currentDefinitionSha256:'b'.repeat(64),approvedTemplateBaselineId:'TEST_ONLY_REFERENCE_BASELINE',capturedParentPath:'TEST_ONLY_FRESH_TWO_PARENT_CAPTURE',capturedParentByteSha256:'c'.repeat(64),expectedParentShape:[39,31,31],verifyTargetPrecondition:async()=>{throw Error('TEST_ONLY_NO_DB');},verifyCore:async()=>({status:'TEST_ONLY_NO_EXECUTION'})});
+ const candidate=assembleCt54PlanCandidate(config,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate,
+  scope={artifactSha256:String(candidate.newSource.artifact_sha256),normId:config.normId,sourceKey:config.sourceId,generatedSourceId:candidate.newSource.id,generatedLocatorIds:candidate.newLocators.map(v=>v.id),generatedLocatorKeys:candidate.newLocators.map(v=>v.locator_key)},
+  scoped={...config,capturedScopedNormativeRegistry:captureCt54PlanRegistry(scope,{sourceRows:[],locatorRows:[]})},
+  expectedQuantityIds=[...ct54QuantityPlan.parameters.filter(v=>v.valueType!=='text').map(v=>v.id),...ct54QuantityPlan.rules.filter(v=>v.after==='DIRECT_MANUAL_UNCHANGED').map(v=>v.quantityParameterId)].sort(),
+  actualDeferred=config.parameterDefinitions.filter(p=>p.truth_metadata.visibility_role==='USER_INPUT'&&['PROJECT_SPECIFIC_INPUT','CONDITIONAL_PROJECT_FACT'].includes(String(p.truth_metadata.value_source_role))&&!Object.hasOwn({...config.acceptanceInput,...config.runtimeProfileInput},p.parameter_id)).map(p=>p.parameter_id).sort();
+ expect(actualDeferred).toEqual(expectedQuantityIds);expect(actualDeferred).toHaveLength(22);expect(validateCt54PlanPartial(scoped)).toEqual([]);
+ for(const p of ct54QuantityPlan.parameters.filter(v=>v.valueType==='text')){
+  const field=config.parameterDefinitions.find(v=>v.parameter_id===p.id)!;
+  expect(field.truth_metadata.value_source_role).toBe('USER_INPUT');expect(field.constraints_json?.requiredWhen).toEqual({kind:'greater_than',parameterId:'area_m2',value:0});
+  expect(field.truth_metadata.resource_branch_consumers).not.toHaveLength(0);expect(Object.hasOwn(config.acceptanceInput,p.id)).toBe(false);
+ }
+ // The ordinary route throws its strict-absence guard before the generic
+ // scoped!=null fallback can run. Exercise both actual entrypoints, not a guessed error suffix.
+ const missingCapture='STOP_CT54_REFERENCE_PROJECT_SYSTEM_SCOPED_REGISTRY_ORDINARY_SOURCE_CAPTURE_REQUIRED';
+ expect(()=>resolveCt54ActualScopedRoute(candidate)).toThrow(missingCapture);
+ expect(validateCt54PlanPartial(config)).toContain(missingCapture);
+ const nullCapture={...config,capturedScopedNormativeRegistry:null as never},
+  malformedCandidate=assembleCt54PlanCandidate(nullCapture,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate;
+ expect(()=>resolveCt54ActualScopedRoute(malformedCandidate)).toThrow('STOP_CT54_REFERENCE_PROJECT_SYSTEM_SCOPED_REGISTRY_OPT_IN_RAW_PROJECTION_OBJECT');
+ expect(validateCt54PlanPartial(nullCapture)).toContain('STOP_CT54_REFERENCE_PROJECT_SYSTEM_SCOPED_REGISTRY_OPT_IN_RAW_PROJECTION_OBJECT');
+ const missingBinding={...scoped,binding:{...scoped.binding,additionalRowIds:scoped.binding.additionalRowIds!.slice(1)}};
+ expect(validateCt54PlanPartial(missingBinding).some(e=>e.includes('EXACT_RESOURCE_BINDINGS'))).toBe(true);
+ const sourceMismatch={...scoped,sourceMetadata:{...scoped.sourceMetadata,artifact_sha256:'e'.repeat(64)}};
+ expect(validateCt54PlanPartial(sourceMismatch).length).toBeGreaterThan(0);
+});
+
+it('CT54 new plan source/locator scope is disjoint from the already published reference without changing its default identifiers',()=>{
+ const base={parentReleaseId:'TEST_ONLY_PREPARED_REFERENCE_RELEASE',parentSearchReleaseId:'TEST_ONLY_REFERENCE_SEARCH',currentReleasePath:'TEST_ONLY_REFERENCE_COPY',selectedCurrentReleasePath:'TEST_ONLY_SELECTED',referencePointerMode:'PREPARED_NOT_ACTIVE_COPY' as const,outputRoot:'TEST_ONLY',expectedBranch:'TEST_ONLY',masterPath:'TEST_ONLY',masterSha256:'a'.repeat(64),currentDefinitionVersionId:'TEST_ONLY_PREPARED_REFERENCE_DEF',currentDefinitionSha256:'b'.repeat(64),approvedTemplateBaselineId:'TEST_ONLY_REFERENCE_BASELINE',capturedParentPath:'TEST_ONLY_FRESH_TWO_PARENT_CAPTURE',capturedParentByteSha256:'c'.repeat(64),expectedParentShape:[39,31,31] as const,verifyTargetPrecondition:async()=>{throw Error('TEST_ONLY_NO_DB');},verifyCore:async()=>({status:'TEST_ONLY_NO_EXECUTION'})},
+  legacy=prepareCt54PlanPublisher(base),actual=prepareCt54PlanPublisher({...base,quantityPlan:'ACTUAL_PROJECT_PLAN_R1'});
+ expect(legacy.locator.key).toBe('ct54-manual-reference-project-system-r608:31-resources-70-class-reviews:v1');
+ expect(legacy.normId).toBe('PROJECT_SYSTEM:CT54_READY_GROUND_MANUAL_R608');
+ expect(actual.locator.key).toBe('ct54-actual-project-quantity-plan-r1:31-resources-27-derived-rules:v1');
+ expect(actual.normId).toBe('PROJECT_SYSTEM:CT54_ACTUAL_QUANTITY_PLAN_R1');
+ expect(actual.sourceId).not.toBe(legacy.sourceId);
+ expect(actual.parameterDefinitions).toHaveLength(66);expect(actual.formulaDefinitions).toHaveLength(31);expect(actual.resourceDefinitions).toHaveLength(31);
+});
+it('CT54 quantity materialization refuses the legacy incomplete R619 context before any SQL or old callback can run',async()=>{
+ const query=jest.fn(),guard=jest.fn(async()=>{}),root={quantityPlan:'ACTUAL_PROJECT_PLAN_R1' as const,parentReleaseId:'TEST_ONLY',parentSearchReleaseId:'TEST_ONLY',currentReleasePath:'TEST_ONLY_REFERENCE_COPY',referencePointerMode:'PREPARED_NOT_ACTIVE_COPY' as const,outputRoot:'TEST_ONLY',expectedBranch:'TEST_ONLY',masterPath:'TEST_ONLY',masterSha256:'a'.repeat(64),verifyTargetPrecondition:guard,verifyCore:async()=>({status:'TEST_ONLY_NO_EXECUTION'})};
+ await expect(captureCt54FreshPlan({query} as never,root,{expectedSourcePins:{},expectedReferencePointerSha256:'b'.repeat(64),expectedSelectedPointerSha256:'c'.repeat(64)}))
+  .rejects.toThrow('STOP_CT54_QUANTITY_PLAN_FRESH_COMPLETE_CONTEXT_REQUIRED');
+ expect(query).not.toHaveBeenCalled();expect(guard).not.toHaveBeenCalled();
+});
+
+// Contract cases only. They document the existing common classification; they
+// do not change a numeric unknown into a failed technology or open a PDF gate.
+function ct54CoherenceUnknownPlan():Record<string,unknown>{
+ const values:Record<string,unknown>={area_m2:20,...ct54Reference.conditions};delete values.ct54_reference_method;
+ for(const field of ct54QuantityPlan.parameters.filter(v=>v.valueType==='text'))values[field.id]='TEST_ONLY_RECONCILED_SECTION_'+field.key;
+ return values;
+}
+const ct54NumericCoherenceKeys=['electricity','paint-roller','paint-roller-frame','roller-tray','cut-in-brush','telescopic-pole',
+ 'mixing-drill','mixing-paddle','mixing-bucket','clean-water-pail','wash-pail','wash-tray',
+ 'air-thermometer','surface-thermometer','humidity-instrument','clock','record-pen'];
+it('CT54 all eight trace references with unknown numeric plan retain seventeen coherence needs and thirteen quantity needs',async()=>{
+ const values=ct54CoherenceUnknownPlan(),r=await ct54PlanCompile(values);
+ expect(r.compiled.rows).toHaveLength(1);expect(r.compiled.preliminaryNeeds).toHaveLength(30);
+ expect(r.compiled.preliminaryNeeds.filter(n=>n.need_state==='CONDITION_REQUIRED')).toHaveLength(17);
+ expect(r.compiled.preliminaryNeeds.filter(n=>n.need_state==='QUANTITY_REQUIRED')).toHaveLength(13);
+ const numericIds=ct54QuantityPlan.parameters.filter(v=>v.valueType!=='text').map(v=>v.id);
+ for(const key of ct54NumericCoherenceKeys){
+  const row=ct54PlanRow(r,key)!;expect(row).toMatchObject({quantity:null,need_state:'CONDITION_REQUIRED'});
+  const ids=ct54PlanTrace(row).unresolvedConditionParameterIds as string[];
+  expect(ids.length).toBeGreaterThan(0);expect(ids.every(id=>numericIds.includes(id))).toBe(true);
+  expect(ids.some(id=>id.startsWith('ct54_reference_'))).toBe(false);
+ }
+ expect(ct54PlanRow(r,'ct54')?.quantity).toBe('6');
+ expect(ct54PlanRow(r,'water')).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});
+ expect(ct54PlanTrace(ct54PlanRow(r,'water')).unresolvedConditionParameterIds??[]).toEqual([]);
+ for(const id of Object.keys(ct54Reference.conditions).filter(id=>id!=='ct54_reference_method'))
+  expect(r.compiled.parameters[id]).toBe(values[id]);
+ const gate=canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources});
+ expect(gate.pdfAllowed).toBe(false);expect(gate.issues).toEqual(expect.arrayContaining([expect.objectContaining({code:'RESOURCE_CONDITION_UNRESOLVED'})]));
+ expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(gate)).toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED',httpStatus:409}));
+});
+it.each([
+ ['station missing with crew known',{ct54_plan_crew_people:3},null,['ct54_plan_roller_stations']],
+ ['crew missing with station known',{ct54_plan_roller_stations:2},'2',['ct54_plan_crew_people']],
+] as const)('CT54 numeric coherence: %s keeps exact missing numeric consumer without claiming incompatible technology',async(_label,known,quantity,missing)=>{
+ const r=await ct54PlanCompile({...ct54CoherenceUnknownPlan(),...known}),frame=ct54PlanRow(r,'paint-roller-frame')!;
+ expect(frame).toMatchObject({quantity,need_state:'CONDITION_REQUIRED'});
+ expect([...ct54PlanTrace(frame).unresolvedConditionParameterIds as string[]].sort()).toEqual([...missing].sort());
+ expect([...(frame as {missing_parameter_ids:string[]}).missing_parameter_ids].sort()).toEqual([...missing].sort());
+ expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).pdfAllowed).toBe(false);
+});
+it('CT54 known coherent workplace and crew resolve that frame while an independent missing cover replacement stays a quantity need',async()=>{
+ const r=await ct54PlanCompile({...ct54CoherenceUnknownPlan(),ct54_plan_crew_people:3,ct54_plan_roller_stations:2});
+ const frame=ct54PlanRow(r,'paint-roller-frame')!,cover=ct54PlanRow(r,'paint-roller')!;
+ expect(frame.quantity).toBe('2');expect(ct54PlanTrace(frame).unresolvedConditionParameterIds??[]).toEqual([]);
+ expect(cover).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});
+ expect((cover as {missing_parameter_ids:string[]}).missing_parameter_ids).toEqual(['ct54_plan_replacement_covers']);
+ expect(ct54PlanTrace(cover).unresolvedConditionParameterIds??[]).toEqual([]);
+ // Other independent unentered pairs may still prevent PDF; this case does not infer a global PASS.
+});
+it.each([
+ [{ct54_plan_meter_start_kwh:10},['ct54_plan_meter_end_kwh']],
+ [{ct54_plan_meter_end_kwh:10.08},['ct54_plan_meter_start_kwh']],
+] as const)('CT54 one meter reading is an incomplete numeric pair %j, never an assumed zero endpoint',async(known,missing)=>{
+ const r=await ct54PlanCompile({...ct54CoherenceUnknownPlan(),...known}),energy=ct54PlanRow(r,'electricity')!;
+ expect(energy).toMatchObject({quantity:null,need_state:'CONDITION_REQUIRED'});
+ expect([...ct54PlanTrace(energy).unresolvedConditionParameterIds as string[]].sort()).toEqual([...missing].sort());
+});
+it('CT54 full nineteen drivers with three direct quantities absent has exactly three quantity needs and no invented applicability condition',async()=>{
+ const values=ct54PlanDemo();for(const rule of ct54QuantityPlan.rules.filter(v=>v.after==='DIRECT_MANUAL_UNCHANGED'))delete values[rule.quantityParameterId];
+ const r=await ct54PlanCompile(values);expect(r.compiled.rows).toHaveLength(28);expect(r.compiled.preliminaryNeeds).toHaveLength(3);
+ expect(r.compiled.preliminaryNeeds.map(n=>n.row_id).sort()).toEqual(ct54QuantityPlan.rules.filter(v=>v.after==='DIRECT_MANUAL_UNCHANGED').map(v=>v.rowId).sort());
+ for(const row of r.compiled.preliminaryNeeds){expect(row.need_state).toBe('QUANTITY_REQUIRED');expect(row.quantity).toBeNull();expect(ct54PlanTrace(row).unresolvedConditionParameterIds??[]).toEqual([]);}
+ const gate=canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources});expect(gate.pdfAllowed).toBe(true);expect(gate.completeClaimAllowed).toBe(false);
+});
+it('CT54 manual frame quantity cannot waive its uncomputed workplace to crew numeric coherence',async()=>{
+ const r=await ct54PlanCompile({...ct54CoherenceUnknownPlan(),ct54_plan_roller_stations:2},{'material:wall-paint:tool:paint-roller-frame':{quantity:'4',provenance:{kind:'manual',reason:'TEST_ONLY physical count, crew still unknown'}}}),frame=ct54PlanRow(r,'paint-roller-frame')!;
+ expect(frame).toMatchObject({quantity:'4',need_state:'CONDITION_REQUIRED'});expect(ct54PlanTrace(frame).unresolvedConditionParameterIds).toEqual(['ct54_plan_crew_people']);
+ expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).pdfAllowed).toBe(false);
+});
+it.each([
+ {ct54_plan_roller_stations:4,ct54_plan_crew_people:3},
+ {ct54_plan_meter_start_kwh:10,ct54_plan_meter_end_kwh:10},
+] as const)('CT54 a supplied contradictory numeric pair is rejected, rather than converted to a missing technology fact: %j',async known=>{
+ await expect(ct54PlanCompile({...ct54CoherenceUnknownPlan(),...known})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
+});
+it('CT54 missing original access is still a technology condition after every numeric pair and document is complete',async()=>{
+ const values=ct54PlanDemo();delete values.ct54_reference_access;const r=await ct54PlanCompile(values),frame=ct54PlanRow(r,'paint-roller-frame')!;
+ expect(frame).toMatchObject({quantity:'2',need_state:'CONDITION_REQUIRED'});
+ expect(ct54PlanTrace(frame).unresolvedConditionParameterIds).toEqual(['ct54_reference_access']);
+ expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).pdfAllowed).toBe(false);
+});
+
+it('CT54 a missing wash trace remains a saved condition even beside an unknown water quantity',async()=>{
+ const values=ct54CoherenceUnknownPlan();delete values.ct54_plan_wash_reference;const r=await ct54PlanCompile(values),water=ct54PlanRow(r,'water')!;
+ expect(water).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});
+ expect(ct54PlanTrace(water).unresolvedConditionParameterIds).toEqual(['ct54_plan_wash_reference']);
+ expect((water as {missing_parameter_ids:string[]}).missing_parameter_ids).toEqual(expect.arrayContaining(['ct54_plan_wash_cycles','ct54_plan_fresh_l_per_wash_cycle','ct54_plan_wash_reference']));
+ expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).pdfAllowed).toBe(false);
+});
+
+it('CT54 direct quantity source declarations remain formula-only so a manual wipe quantity does not require a second quantity fact',async()=>{
+ const values=ct54PlanDemo();for(const rule of ct54QuantityPlan.rules.filter(v=>v.after==='DIRECT_MANUAL_UNCHANGED'))delete values[rule.quantityParameterId];
+ const model=ct54ReferencePublicationModelR613('ACTUAL_PROJECT_PLAN_R1');
+ for(const rule of ct54QuantityPlan.rules.filter(v=>v.after==='DIRECT_MANUAL_UNCHANGED')){
+  const field=model.parameters.find(v=>v.parameter_id===rule.quantityParameterId)!,row=model.resources.find(v=>v.row_id===rule.rowId)!,formula=model.formulas.find(v=>v.formula_id===rule.formulaId)!;
+  expect(field.default_value).toBeNull();expect(field.truth_metadata.preliminary_compilation_allowed).toBe(true);
+  expect(field.constraints_json?.requiredWhen).toEqual({kind:'greater_than',parameterId:'area_m2',value:0});
+  expect(formula.input_parameter_ids).toEqual([rule.quantityParameterId]);expect(row.resource_graph.inputParameterIds).not.toContain(rule.quantityParameterId);
+ }
+ const r=await ct54PlanCompile(values,{'material:wall-paint:tool:wipes':{quantity:'11',provenance:{kind:'manual',reason:'TEST_ONLY accepted wipe count, other two direct quantities unknown'}}});
+ expect(r.compiled.rows).toHaveLength(29);expect(r.compiled.preliminaryNeeds).toHaveLength(2);expect(ct54PlanRow(r,'wipes')?.quantity).toBe('11');
+ for(const row of r.compiled.preliminaryNeeds){expect(row.need_state).toBe('QUANTITY_REQUIRED');expect(ct54PlanTrace(row).unresolvedConditionParameterIds??[]).toEqual([]);}
+ expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).pdfAllowed).toBe(true);
+});
+
+// Current user REFERENCE body, not the selected VGT definition or old R634
+// capture. TEST_ONLY facts below are deliberate fixtures, never object readback.
+const ct54R930Pin={path:resolve(__dirname,'../../../../data/estimate-benchmarks/fixtures/ct54-user-reference-parent-r930.json'),sha256:'e4f8534c4ba883d8d0e4414e0fe6a3bd389a29a6997d675825af303bd9db634c'},
+ ct54R934Pin={path:resolve(__dirname,'../../../../data/estimate-benchmarks/fixtures/ct54-quantity-key-observation-r934.json'),sha256:'8d3c3c7a8f65734c8173890f2d993193ae26822c7849839130a515d68f2e3c27'},
+ ct54R930Model=()=>ct54MeasuredModelFromActualReferenceR930(ct54R930Pin),
+ ct54R930Compile=(parameters:Record<string,unknown>=ct54PlanDemo(),overrides:Parameters<typeof compileCanonicalEstimateCore>[0]['rowOverrides']={})=>ct54PlanCompile(parameters,overrides,ct54R930Model());
+function ct54R930Context(overrides:Partial<Ct54MeasuredCurrentContextR930>={}):Ct54MeasuredCurrentContextR930{
+ return{quantityPlan:'ACTUAL_PROJECT_PLAN_R1',actualReferenceReadback:ct54R930Pin,quantityTargetObservation:ct54R934Pin,
+  parentReleaseId:'514af229-9dbd-5c45-9383-6d21fe2b9f21',parentSearchReleaseId:'TEST_ONLY_ROOT_MUST_SUPPLY_REFERENCE_SEARCH_POINTER',
+  currentReleasePath:'TEST_ONLY_PREPARED_REFERENCE_COPY',selectedCurrentReleasePath:'TEST_ONLY_SELECTED_VGT_POINTER',referencePointerMode:'PREPARED_NOT_ACTIVE_COPY',
+  outputRoot:'TEST_ONLY_NO_PREPARE_EXECUTED',expectedBranch:'TEST_ONLY',masterPath:'TEST_ONLY',masterSha256:'a'.repeat(64),
+  currentDefinitionVersionId:'0a31889f-6085-550b-9c74-dbbbc7cb9555',currentDefinitionSha256:'696c0a974e9e16b82862ef76eba4b44913a0b2c45dff0cef711a9168f635d58b',
+  approvedTemplateBaselineId:'2348f432-87d8-5058-8f65-a2539cba7b32',expectedParentShape:[39,31,31],capturedParentPath:ct54R930Pin.path,capturedParentByteSha256:ct54R930Pin.sha256,
+  verifyTargetPrecondition:async()=>{throw Error('TEST_ONLY_NO_DB_CAPTURE');},verifyCore:async()=>({status:'TEST_ONLY_NO_VERIFY_CORE_EXECUTION'}),...overrides};
+}
+describe('CT54 R930 whole current reference quantity continuation',()=>{
+ it('uses exact reference v10 39/31/31 without importing selected VGT baseline or DEMO parameters',()=>{
+  const d=ct54R930Model(),bytes=readFileSync(ct54R930Pin.path);expect(createHash('sha256').update(bytes).digest('hex')).toBe(ct54R930Pin.sha256);
+  const rawBody=ct54PlanObject(ct54PlanObject(JSON.parse(bytes.toString('utf8'))).body);
+  if(!Array.isArray(rawBody.formulas)||!Array.isArray(rawBody.resources))throw Error('CT54_TEST_REAL_R930_FORMULA_AND_RESOURCE_ARRAYS_REQUIRED');
+  const originalFormulas=rawBody.formulas.map(ct54PlanObject),originalResources=rawBody.resources.map(ct54PlanObject);
+  expect(originalFormulas).toHaveLength(31);expect(originalResources).toHaveLength(31);
+  expect([d.parameters.length,d.formulas.length,d.resources.length]).toEqual([66,31,31]);
+  expect(new Set(d.resources.map(row=>row.row_id))).toEqual(new Set(ct54Reference.resources.map(row=>row.rowId)));
+  expect(new Set(d.formulas.map(f=>f.formula_id))).toEqual(new Set(originalFormulas.map(formula=>formula.formula_id)));
+  for(const original of originalResources){const next=d.resources.find(row=>row.row_id===original.row_id)!;
+   expect([next.row_id,next.formula_id,next.unit_id,next.cost_owner_id,next.procurement_eligible,next.inclusion_ast]).toEqual([original.row_id,original.formula_id,original.unit_id,original.cost_owner_id,original.procurement_eligible,original.inclusion_ast]);
+  }
+  for(const original of originalFormulas){const next=d.formulas.find(formula=>formula.formula_id===original.formula_id)!,rule=ct54QuantityPlan.rules.find(rule=>rule.formulaId===original.formula_id);
+   if(rule&&rule.after!=='DIRECT_MANUAL_UNCHANGED'){expect(next.expression_source).toBe(rule.expression);expect(next.output_unit_id).toBe(rule.unitId);expect([...next.input_parameter_ids].sort()).toEqual([...rule.independentInputs].sort());}
+   else expect(next).toEqual(original);
+  }
+  expect(validateCt54PlanGraphs(d.formulas)).toEqual([]);
+  expect(d.parameters.slice(0,39).every(p=>p.default_value==null)).toBe(true);expect(d.runtimeInput).toEqual({});expect(d.runtimeClassification).toEqual({});expect(d.runtimeSourceIds).toEqual({});
+  expect(d.ordinaryParameterIds).toEqual(['area_m2',...Object.keys(ct54Reference.conditions).filter(id=>id!=='ct54_reference_method')]);
+  expect(d.formulas.find(f=>f.formula_id==='reference:wall-paint:ct54:ct54:reference-quantity')?.input_parameter_ids).toEqual(['area_m2']);
+  for(const row of d.resources){expect(row.cost_owner_id).toBe(row.row_id);expect(row.procurement_eligible).toBe(false);expect(row.resource_graph.costTreatment).toBe('INFORMATIONAL_SCOPE');}
+ });
+ it('rejects changed actual bytes and an attacker-supplied new digest rather than bypassing the parent guard',()=>{
+  const dir=mkdtempSync(resolve(tmpdir(),'ct54-r930-byte-mutation-'));
+  try{const path=resolve(dir,'parent.json'),bytes=readFileSync(ct54R930Pin.path,'utf8').replace('"parameter_id": "area_m2"','"parameter_id": "area_m2_changed"');
+   expect(bytes).not.toBe(readFileSync(ct54R930Pin.path,'utf8'));writeFileSync(path,bytes,'utf8');
+   expect(()=>ct54MeasuredModelFromActualReferenceR930({...ct54R930Pin,path})).toThrow('STOP_CT54_R619_CURRENT_PIN');
+   expect(()=>ct54MeasuredModelFromActualReferenceR930({path,sha256:createHash('sha256').update(bytes).digest('hex')})).toThrow('STOP_CT54_ACTUAL_R930_REFERENCE_BYTE_PIN_REQUIRED');
+  }finally{rmSync(dir,{recursive:true,force:true});}
+ });
+ it('derives28 known rows with three direct UNKNOWN holds through actual Core and saved mapper; procurement stays zero',async()=>{
+  const p=ct54PlanDemo();for(const id of ['ct54_reference_qty_wipes','ct54_reference_qty_waste_bags','ct54_reference_qty_whole_cycle_labour'])delete p[id];
+  const r=await ct54R930Compile(p);expect(r.compiled.rows).toHaveLength(28);expect(r.compiled.preliminaryNeeds).toHaveLength(3);
+  expect(ct54PlanRow(r,'ct54')?.quantity).toBe('6');expect(ct54PlanRow(r,'water')?.quantity).toBe('8');expect(ct54PlanRow(r,'protection-film')?.quantity).toBe('8');expect(ct54PlanRow(r,'masking-tape')?.quantity).toBe('15');
+  for(const key of ['wipes','waste-bags','whole-cycle-labour'])expect(ct54PlanRow(r,key)).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources})).toMatchObject({pdfAllowed:true,completeClaimAllowed:false});
+  expect(r.compiled.rows.every(row=>!row.included_in_estimate&&!row.included_in_procurement&&row.unit_price==null)).toBe(true);expect(r.compiled.totals.amount).toBe('0');
+ });
+ it('shares immediate paint-tool wash and drill care with existing owners, without adding a wet site-cleaning allowance',async()=>{
+  const r=await ct54R930Compile(),water=ct54PlanRow(r,'water')!,drill=ct54PlanRow(r,'mixing-drill')!;
+  expect(water).toMatchObject({quantity:'8',included_in_estimate:false,included_in_procurement:false});
+  expect(ct54PlanObject(ct54PlanTrace(water).resourceGraph).operationCompositionV1).toMatchObject({operationId:'clean-tools',additionalOperations:[expect.objectContaining({operationId:'paint'})]});
+  expect(JSON.stringify(ct54PlanObject(ct54PlanTrace(water).resourceGraph).operationCompositionV1)).not.toContain('clean-site');
+  expect(ct54PlanObject(ct54PlanTrace(drill).resourceGraph).operationCompositionV1).toMatchObject({operationId:'mix-paint',additionalOperations:[expect.objectContaining({operationId:'clean-tools'})]});
+  expect(r.resources.filter(row=>row.row_id===water.row_id)).toHaveLength(1);expect(r.resources.filter(row=>row.row_id===drill.row_id)).toHaveLength(1);
+ });
+ it('keeps the original30 unknown quantities when site measurements are absent, with known6l paint and no baseline borrowing',async()=>{
+  const p:Record<string,unknown>={area_m2:20,...ct54Reference.conditions};delete p.ct54_reference_method;
+  const r=await ct54R930Compile(p);expect(r.compiled.rows).toHaveLength(1);expect(r.compiled.preliminaryNeeds).toHaveLength(30);expect(ct54PlanRow(r,'ct54')?.quantity).toBe('6');
+  for(const key of ['wipes','waste-bags','whole-cycle-labour'])expect(ct54PlanRow(r,key)?.quantity).toBeNull();expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).completeClaimAllowed).toBe(false);
+ });
+ it('does not let all quantity plans bypass an unconfirmed receiver or ground-access condition after saved cold JSON',async()=>{
+  for(const id of ['ct54_reference_waste_receiver','ct54_reference_access']){const p=ct54PlanDemo();delete p[id];const r=await ct54R930Compile(p),cold=JSON.parse(JSON.stringify({saved:r.saved,resources:r.resources}));
+   expect(r.compiled.preliminaryNeeds).toHaveLength(31);expect(ct54PlanRow(r,'ct54')).toMatchObject({need_state:'CONDITION_REQUIRED'});
+   expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold.saved,resources:cold.resources}).pdfAllowed).toBe(false);
+  }
+ });
+ it('preserves actual source formula and sole-owner manual amendments through saved cold JSON without payment or order',async()=>{
+  const id='material:wall-paint:tool:paint-roller',r=await ct54R930Compile(ct54PlanDemo(),{[id]:{quantity:'4',unitPrice:'2',provenance:{kind:'manual',reason:'TEST_ONLY stock issue amendment, no wear norm'}}}),
+   cold=JSON.parse(JSON.stringify({saved:r.saved,resources:r.resources}));
+  expect(ct54PlanRow(r,'paint-roller')).toMatchObject({quantity:'4',unit_price:'2',included_in_estimate:false,included_in_procurement:false});expect(ct54PlanTrace(ct54PlanRow(r,'paint-roller')).calculatedQuantityBeforeOverride).toBe('3');
+  expect(cold.resources.filter((row:{row_id:string})=>row.row_id===id)).toHaveLength(1);expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold.saved,resources:cold.resources}).pdfAllowed).toBe(true);expect(r.compiled.totals.amount).toBe('0');
+ });
+ it('uses the existing ordinary config and typed witness but refuses admission without a fresh scoped registry capture',()=>{
+  const c=prepareCt54MeasuredCurrentReferenceR930(ct54R930Context());expect(c.sourceId).toBe(ct54QuantityPlan.sourceId);expect(c.parentReleaseId).toBe('514af229-9dbd-5c45-9383-6d21fe2b9f21');expect(c.expectedParentShape).toEqual([39,31,31]);
+  expect([c.parameterDefinitions.length,c.formulaDefinitions.length,c.resourceDefinitions.length]).toEqual([66,31,31]);expect(c.sourcePaths).toEqual(expect.arrayContaining([ct54R930Pin.path,ct54R934Pin.path]));
+  expect((c.passport.partialQuantityBasis as {parameters:unknown[]}).parameters).toHaveLength(22);expect((c.passport.partialQuantityBasis as {resourceRowIds:string[]}).resourceRowIds).toHaveLength(30);
+  // The existing candidate source guard refuses BEFORE the typed-witness
+  // wrapper's generic absent-capture check. It is the real strict entrypoint.
+  expect(validateCt54PlanPartial(c)).toEqual(['STOP_CT54_REFERENCE_PROJECT_SYSTEM_SCOPED_REGISTRY_ORDINARY_SOURCE_CAPTURE_REQUIRED']);
+  expect(c.capturedScopedNormativeRegistry).toBeUndefined();expect(c.binding.ordinaryCompositeSourceV1).toBeDefined();expect(c.applicability).toMatchObject({activationAllowed:false,productionEligible:false,fullTechnicalAcceptance:false});
+ });
+ it('rejects the selected VGT tuple, a stale requested-key pin, and incomplete direct-producer contexts',()=>{
+  expect(()=>prepareCt54MeasuredCurrentReferenceR930(ct54R930Context({parentReleaseId:'01417cef-3091-5012-844d-1bbd9e75cee1',currentDefinitionVersionId:'789494af-ef14-5592-9f00-139276aaf0b5',expectedParentShape:[19,91,91]}))).toThrow('STOP_CT54_CURRENT_REFERENCE_PARENT_CONTEXT_REQUIRED');
+  expect(()=>prepareCt54MeasuredCurrentReferenceR930(ct54R930Context({quantityTargetObservation:{...ct54R934Pin,sha256:'0'.repeat(64)}}))).toThrow('STOP_CT54_FRESH_R934_QUANTITY_SOURCE_OBSERVATION_REQUIRED');
+  expect(()=>prepareCt54PlanPublisher({...ct54R930Context(),quantityTargetObservation:undefined})).toThrow('STOP_CT54_MEASURED_REFERENCE_COMPLETE_CONTEXT_REQUIRED');
+ });
 });
