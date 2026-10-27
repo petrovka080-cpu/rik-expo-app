@@ -1,3 +1,4 @@
+import {assertCanonicalProfessionalArtifactCurrentPresentationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
 import {canonicalEstimateSavedOperationAcceptanceV1, assertCanonicalEstimateSavedArtifactStructureV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
 import type {CanonicalEstimateOperationResourceAcceptanceV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import { attachCanonicalPhysicalNormEvidenceV1, canonicalPhysicalNormRevisionFromStorageV1 } from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection';
@@ -4616,7 +4617,7 @@ async function route(
         (
           await client.query(
             `
-      select a.*,r.owner_user_id,r.organization_id from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
+      select a.*,r.release_id,r.catalog_id,r.definition_version_id,r.row_count,r.checksum_sha256 revision_checksum_sha256,r.owner_user_id,r.organization_id from public.estimate_revision_artifact a join public.estimate_revision r on r.id=a.revision_id
       where a.id=$1 and a.status='ready'
     `,
             [path[1]],
@@ -4645,6 +4646,9 @@ async function route(
       });
     }
     assertCanonicalEstimateSavedArtifactStructureV1(await localSavedOperationAcceptanceV1(String(artifact.revision_id)));
+    if(artifact.artifact_kind==='professional_pdf')assertCanonicalProfessionalArtifactCurrentPresentationV1({
+      metadata:artifact.metadata,rendererVersion:CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+      revision:{...artifact,id:artifact.revision_id,checksum_sha256:artifact.revision_checksum_sha256}});
     const bytes = readFileSync(artifactFilePath(artifact.storage_key));
     response.writeHead(200, {
       "Access-Control-Allow-Origin": "*",
@@ -6152,6 +6156,9 @@ async function route(
         });
       const operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(artifact.revision_id));
       if(artifact.status==='ready')assertCanonicalEstimateSavedArtifactStructureV1(operationResourceAcceptanceV1);
+      if(artifact.status==='ready'&&kind==='professional_pdf')assertCanonicalProfessionalArtifactCurrentPresentationV1({
+        metadata:artifact.metadata,rendererVersion:CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+        revision:{...artifact,id:artifact.revision_id,checksum_sha256:artifact.revision_checksum_sha256}});
       const forwardedProtocol = String(
         request.headers["x-forwarded-proto"] ?? "",
       )

@@ -76,5 +76,8 @@
   "scripts/estimate/r4a13/canonicalDefinitionPublisherConditionalSourceScopeR1.test.ts": null,
   "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": null,
   "scripts/estimate/r4a13/canonicalDefinitionPublisherResourceOrderingR1.test.ts": null,
-  "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": null
+  "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": null,
+  "src/features/consumerRepair/consumerCanonicalArtifactHydration.ts": null,
+  "src/features/consumerRepair/consumerCanonicalArtifactHydration.test.ts": null,
+  "AGENTS.md": null
 }

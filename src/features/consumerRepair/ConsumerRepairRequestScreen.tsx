@@ -2230,7 +2230,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
               documentProfile: "professional_v1",
             });
           } catch (error) {
-            if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
+            if (!(error instanceof CanonicalEstimateApiError) || !["NOT_FOUND","ARTIFACT_PRESENTATION_REFRESH_REQUIRED"].includes(error.code)) throw error;
             throw new CanonicalEstimateApiError(
               "Для этой старой версии ранее созданный PDF не найден.",
               { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
@@ -2359,11 +2359,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
           documentProfile: "professional_v1",
         });
       } catch (error) {
-        if (!(error instanceof CanonicalEstimateApiError) || error.code !== "NOT_FOUND") throw error;
+        if (!(error instanceof CanonicalEstimateApiError) || !["NOT_FOUND","ARTIFACT_PRESENTATION_REFRESH_REQUIRED"].includes(error.code)) throw error;
         const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
         if (currentCatalog.releaseId !== revision.releaseId) {
           throw new CanonicalEstimateApiError(
-            "Для выбранной исторической сметы сохранённый PDF не найден. Сформируйте исправленную смету для нового документа.",
+            "PDF этой исторической версии требует повторного оформления, но её источник сейчас не допускает новый выпуск. Сохранённая смета и история доступны для просмотра.",
             { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
           );
         }

@@ -6,7 +6,8 @@
       "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts",
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts",
-      "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.test.ts"
+      "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.test.ts",
+      "src/features/consumerRepair/consumerCanonicalArtifactHydration.test.ts"
     ],
     "owners": [
       "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts",

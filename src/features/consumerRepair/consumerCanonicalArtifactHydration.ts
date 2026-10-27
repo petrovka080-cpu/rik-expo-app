@@ -111,7 +111,7 @@ export async function loadConsumerCanonicalReadyArtifacts(input: {
         expectedReleaseId: input.releaseId,
       });
     } catch (error) {
-      if (error instanceof CanonicalEstimateApiError && error.code === "NOT_FOUND") {
+      if (error instanceof CanonicalEstimateApiError && ["NOT_FOUND","ARTIFACT_PRESENTATION_REFRESH_REQUIRED"].includes(error.code)) {
         return null;
       }
       throw error;

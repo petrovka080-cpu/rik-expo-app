@@ -541,3 +541,19 @@ export function canonicalArtifactSection(row: Record<string, unknown>): string {
     category:nullableText(row.category),manualTitleOverride:trace.manualTitleOverride===true})
     ?? 'Категория не определена';
 }
+/** Current issuance is separate from historical metadata identity. Old bytes
+ * stay stored, but are not evidence of the current renderer's acceptance. */
+export function assertCanonicalProfessionalArtifactCurrentPresentationV1(input:{
+  metadata:unknown;revision:CanonicalArtifactRevision;rendererVersion:string;
+}):void {
+  const metadata=objectValue(input.metadata);
+  if(metadata.templateVersion!==CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION
+    ||metadata.renderer!==input.rendererVersion||metadata.generatorVersion!==input.rendererVersion
+    ||nullableText(metadata.sourceReleaseId)!==nullableText(input.revision.release_id)
+    ||nullableText(metadata.sourceCatalogId)!==nullableText(input.revision.catalog_id)
+    ||nullableText(metadata.sourceRevisionChecksumSha256)!==nullableText(input.revision.checksum_sha256)
+    ||metadata.sourceRowCount!==Number(input.revision.row_count)
+    ||!canonicalProfessionalArtifactMetadataIdentityMatches(input))
+    throw Object.assign(new Error('Сохранённый PDF нужно заново сформировать для этой же версии сметы.'),{
+      code:'ARTIFACT_PRESENTATION_REFRESH_REQUIRED',httpStatus:409});
+}

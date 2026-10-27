@@ -1,3 +1,4 @@
+import {assertCanonicalProfessionalArtifactCurrentPresentationV1} from './canonicalEstimateArtifactContract';
 import unresolvedCeiling from '../../../../data/estimate-benchmarks/fixtures/master24-ceiling-unresolved-included-pdf-r1.json';
 import {canonicalPublicSavedResourceRowKindV1} from './canonicalPublicResourcePresentationV1';
 import savedFanAcceptanceFixture from './fixtures/saved-operation-acceptance-native-fan-source-r1.json';
@@ -376,9 +377,14 @@ test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
       calculation_trace:{...trace,resourceGraph:{...trace.resourceGraph,
         operationCompositionV1:null,
         publicResourcePresentationV1:{...trace.resourceGraph.publicResourcePresentationV1,rowKind}}}};
-    const counter={...need,row_id:'explicit-counter',ownership_status:'OWNED',need_state:undefined,quantity:'1',
-      calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE',
-        publicResourcePresentationV1:{...trace.resourceGraph.publicResourcePresentationV1,rowKind:'CALCULATION_DETAIL'}}}};
+    const counterTitle='Проверочный счётчик расхода';
+    const counter={row_id:'explicit-counter',title_ru:counterTitle,category:'material',unit_id:'item',
+      ownership_status:'OWNED',quantity:'1',unit_price:null,amount:null,
+      included_in_estimate:false,included_in_procurement:false,
+      calculation_trace:{resourceGraph:{costTreatment:'INFORMATIONAL_SCOPE',purchaseBalanceOwnerRowId:'owner-counter-supply',
+        publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',
+          sourceTitleRu:counterTitle,nameRu:counterTitle,brandAndModelRu:null,specificationRu:null,detailsRu:[],
+          rowKind:'CALCULATION_DETAIL'}}}};
     const scope={...counter,row_id:'scope',calculation_trace:{resourceGraph:{scopeRequirementDecisionV1:{
       contractVersion:'canonical-scope-requirement-decision/v1',rowId:'scope',groupId:'ceiling',groupTitleRu:'Потолок',
       titleRu:'Проверка основания',reasonRu:'Нужны данные объекта',kind:'OBJECT_SCOPE',status:'OBJECT_FACT_REQUIRED',
@@ -392,3 +398,24 @@ test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
     expect(result.issues.some(issue=>issue.rowId==='explicit-counter'||issue.rowId==='scope')).toBe(false);
     expect(result.pdfAllowed).toBe(false);expect(JSON.stringify(resources)).toBe(before);
   });
+
+it('separates archived metadata identity from current PDF issuance and preserves old bytes/source',()=>{
+  const renderer='canonical-professional-pdf.r4-a13-operation-resource-acceptance-template85';
+  const saved={...revision,definition_version_id:'definition-version-1'};
+  const current=buildCanonicalArtifactMetadata({operation:'professional_pdf',renderer,revision:saved,
+    sourceRowCount:3,projectedRowCount:3,selectedProcurementRowCount:0,definitionVersionId:'definition-version-1',
+    pageCount:1,grandTotalStatus:'PARTIAL_NEEDS_PRICE'});
+  const archived={...current,templateVersion:'professional-estimate-pdf:36',
+    renderer:'canonical-professional-pdf.r4-a13-plain-resource-names-legacy4-template84',
+    generatorVersion:'canonical-professional-pdf.r4-a13-plain-resource-names-legacy4-template84'};
+  const before=JSON.stringify({saved,current,archived});
+  expect(canonicalProfessionalArtifactMetadataIdentityMatches({metadata:archived,revision:saved})).toBe(true);
+  expect(()=>assertCanonicalProfessionalArtifactCurrentPresentationV1({metadata:current,revision:saved,rendererVersion:renderer})).not.toThrow();
+  for(const metadata of [archived,{...current,renderer:'old'},{...current,generatorVersion:'old'},
+    {...current,pageCount:null},{...current,definitionVersionId:'other'},
+    {...current,sourceRevisionChecksumSha256:'0'.repeat(64)},{...current,sourceReleaseId:'other'},
+    {...current,sourceRowCount:2},{...current,sourceCatalogId:'other'}])
+    expect(()=>assertCanonicalProfessionalArtifactCurrentPresentationV1({metadata,revision:saved,rendererVersion:renderer}))
+      .toThrow(expect.objectContaining({code:'ARTIFACT_PRESENTATION_REFRESH_REQUIRED'}));
+  expect(JSON.stringify({saved,current,archived})).toBe(before);
+});

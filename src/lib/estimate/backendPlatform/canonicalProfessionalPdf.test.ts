@@ -27,6 +27,43 @@ function syntheticTrace<T extends Record<string,unknown> = Record<string,never>>
     resourceGraph:(T extends {resourceGraph:infer G}?G:Record<string,never>) & {operationCompositionV1:typeof syntheticPdfOperation}};
 }
 
+// Independent synthetic display fixture: deliberately not the real saved ceiling
+// capture. Its one declared process permits quantity/money assertions while the
+// unchanged native capture must fail the common operation-structure barrier.
+function syntheticIncludedQuantityFixture(): {owner:CanonicalArtifactRow;savedNeed:CanonicalArtifactRow} {
+  const owner:CanonicalArtifactRow={...rows(1)[0]!,row_id:'synthetic-ceiling:owner',category:'work',
+    title_ru:'Монтаж проверочного потолка',unit_id:'m2',quantity:'300',unit_price:'100',amount:'30000',
+    currency_code:'KGS',procurement_eligible:false,included_in_procurement:false};
+  const title='Труд устройства шва проверочного потолка';
+  const savedNeed:CanonicalArtifactRow={...rows(1)[0]!,row_id:'synthetic-ceiling:included-labor',ordinal:1,
+    category:'labor',title_ru:title,unit_id:'man_hour',quantity:null,unit_price:null,amount:null,
+    ownership_status:'PRELIMINARY_NEED',need_state:'QUANTITY_REQUIRED',included_in_estimate:false,
+    included_in_procurement:false,procurement_eligible:false,
+    calculation_trace:syntheticTrace({needState:'QUANTITY_REQUIRED',resourceGraph:{
+      costTreatment:'INCLUDED_IN_RESOURCE_ROWS',includedInResourceOwnerRowId:owner.row_id,
+      publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:title,
+        nameRu:title,resourceKind:'LABOR',brandAndModelRu:null,specificationRu:null,detailsRu:[]}}})};
+  return {owner,savedNeed};
+}
+function assertNativeCeilingStructureHold() {
+  const before=JSON.stringify(unresolvedCeiling);
+  expect(()=>buildCanonicalProfessionalPdfProjection({revision:revision(1),rows:[unresolvedCeiling.owner],
+    preliminaryNeeds:[unresolvedCeiling.need],workTitleRu:'Потолок ГКЛ П112.1'}))
+    .toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID',
+      operationResourceAcceptanceV1:expect.objectContaining({issues:expect.arrayContaining([{
+        code:'RELATED_OPERATION_INVALID_OR_DUPLICATED',rowId:unresolvedCeiling.owner.row_id}])})}));
+  expect(JSON.stringify(unresolvedCeiling)).toBe(before);
+}
+// These are already synthetic title/layout rows. A source-bound public name
+// makes their intentionally verbose saved title compatible with the same guard.
+function syntheticPublicTitleTrace(row:CanonicalArtifactRow,nameRu:string,resourceKind:string) {
+  const trace=row.calculation_trace as Record<string,unknown>;
+  const graph=(trace.resourceGraph??{}) as Record<string,unknown>;
+  return syntheticTrace({...trace,resourceGraph:{...graph,publicResourcePresentationV1:{
+    contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:row.title_ru,nameRu,
+    resourceKind,brandAndModelRu:null,specificationRu:null,detailsRu:[]}}});
+}
+
 test('renders service hours through the shared unit label without changing the saved service or quantity', () => {
   const source = [{...rows(1)[0]!, row_id:'service-hours', category:'service', unit_id:'service_hour',
     title_ru:'Геодезический контроль конструкции', quantity:'2.75', unit_price:null, amount:null}];
@@ -73,8 +110,8 @@ test('PDF identifies the saved corrected geometry beside the original request wi
 
 test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
   'a saved included labor quantity need stays explicit despite display role %s', rowKind => {
-    const owner:CanonicalArtifactRow={...unresolvedCeiling.owner,unit_price:'100',amount:'30000',currency_code:'KGS'};
-    const savedNeed=unresolvedCeiling.need,trace=savedNeed.calculation_trace;
+    assertNativeCeilingStructureHold();
+    const {owner,savedNeed}=syntheticIncludedQuantityFixture(),trace=savedNeed.calculation_trace as {resourceGraph:Record<string,unknown>&{publicResourcePresentationV1:Record<string,unknown>}};
     const need:CanonicalArtifactRow={...savedNeed,ownership_status:'PRELIMINARY_NEED',amount:null,
       included_in_estimate:false,included_in_procurement:false,
       calculation_trace:{...trace,resourceGraph:{...trace.resourceGraph,
@@ -103,11 +140,11 @@ test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
 );
 
 test.each(['4.625', 0, null])('a pending physical quantity %s retains its saved unit price only as a reference', quantity => {
-  const owner: CanonicalArtifactRow = {...unresolvedCeiling.owner,unit_price:'100',amount:'30000',currency_code:'KGS'};
-  const source = unresolvedCeiling.need;
+  assertNativeCeilingStructureHold();
+  const {owner,savedNeed:source}=syntheticIncludedQuantityFixture();
   const need: CanonicalArtifactRow = {...source,ownership_status:'PRELIMINARY_NEED',need_state:'QUANTITY_REQUIRED',
     quantity,unit_price:'1294.65',amount:null,currency_code:'KGS',included_in_estimate:false,included_in_procurement:false,
-    calculation_trace:{...source.calculation_trace,manualQuantityOverride:quantity!=null,manualPriceOverride:true}};
+    calculation_trace:{...(source.calculation_trace as Record<string,unknown>),manualQuantityOverride:quantity!=null,manualPriceOverride:true}};
   const before=JSON.stringify({owner,need});
   const projection=buildCanonicalProfessionalPdfProjection({revision:revision(1),rows:[owner],preliminaryNeeds:[need],workTitleRu:'Потолок ГКЛ'});
   expect(projection.html).toContain('<td class="money">1\u00a0294,65 сом</td>');
@@ -382,6 +419,8 @@ describe("R4-A6 canonical professional PDF", () => {
       title_ru:`Дополнительное обращение со снятой асфальтовым покрытием пола — Состав спуска и погрузки: ${contents}, Спецификация услуги: ${reference}`,
       calculation_trace:syntheticTrace({resourceGraph:{titleSpecificationMode:'APPEND',titleSpecificationParameterIds:['contents','reference'],
         titleSpecificationParameterLabelsRu:{contents:'Состав спуска и погрузки',reference:'Спецификация услуги'},titleSpecificationSeparator:' — '}})};
+    source[0]!.calculation_trace=syntheticPublicTitleTrace(source[0]!,
+      'Дополнительное обращение со снятым асфальтовым покрытием пола','SERVICE');
     const saved = {...revision(1),input_parameters:{contents,reference}};
     const before = JSON.stringify({source,saved});
     const pdf = buildCanonicalProfessionalPdfProjection({revision:saved,rows:source,workTitleRu:'Разборка асфальтового покрытия'});
@@ -608,6 +647,8 @@ describe("R4-A6 canonical professional PDF", () => {
     const sourceRows = rows(1);
     const verboseTitle = "нижний слой: горячая плотная мелкозернистая асфальтобетонная смесь типа А по КРЕР 27-06-020-01 + 27-06-021-01 при принятой толщине; марка и состав уточняются проектом и паспортом завода";
     sourceRows[0]!.title_ru = verboseTitle;
+    sourceRows[0]!.calculation_trace=syntheticPublicTitleTrace(sourceRows[0]!,
+      'Нижний слой: асфальтобетонная смесь типа А','MATERIAL');
 
     const projection = buildCanonicalProfessionalPdfProjection({
       revision: revision(1),
@@ -701,8 +742,10 @@ describe("R4-A6 canonical professional PDF", () => {
     expect(projection.html).not.toMatch(/<td class="money">(?:Не применяется|Не суммируется)/u);
     expect(projection.html).toContain('<td class="money"></td>');
     const resourceTable = projection.html.slice(projection.html.indexOf('<table class="client">'));
-    expect(resourceTable.indexOf("Профессиональная позиция 1"))
-      .toBeLessThan(resourceTable.indexOf("Профессиональная позиция 2"));
+    // The declared operation displays labour first, then its resources. Source
+    // storage order still does not create a second operation or payment owner.
+    expect(resourceTable.indexOf("Профессиональная позиция 2"))
+      .toBeLessThan(resourceTable.indexOf("Профессиональная позиция 1"));
   });
 
   it("fails closed when projected rows differ from revision truth", () => {
@@ -865,8 +908,15 @@ describe("R4-A6 canonical professional PDF", () => {
       calculation_trace:syntheticTrace({resourceGraph:{costTreatment:'INCLUDED_IN_RESOURCE_ROWS',includedInResourceOwnerRowId:'row-1'}})};
     const saved=JSON.stringify(source);
     const result=buildCanonicalProfessionalPdfProjection({revision:revision(3),rows:source,workTitleRu:'Отделка'});
-    expect([...result.html.matchAll(/<td class="money">([^<]*)<\/td>/gu)].map(m=>m[1]))
-      .toEqual(['100,00 сом','200,00 сом','','','300,00 сом','']);
+    const tableRows=[...result.html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gu)].map(match=>match[1]!);
+    const moneyFor=(title:string)=>{
+      const matches=tableRows.filter(html=>html.includes(`<strong>${title}</strong>`));
+      expect(matches).toHaveLength(1);
+      return [...matches[0]!.matchAll(/<td class="money">([^<]*)<\/td>/gu)].map(match=>match[1]);
+    };
+    expect(moneyFor(source[0]!.title_ru)).toEqual(['100,00 сом','200,00 сом']);
+    expect(moneyFor(source[1]!.title_ru)).toEqual(['','']);
+    expect(moneyFor(source[2]!.title_ru)).toEqual(['300,00 сом','']);
     expect(result).toMatchObject({pricedRowCount:1,missingPriceRowCount:1,nonPayableRowCount:1});
     expect(JSON.stringify(source)).toBe(saved);
   });
