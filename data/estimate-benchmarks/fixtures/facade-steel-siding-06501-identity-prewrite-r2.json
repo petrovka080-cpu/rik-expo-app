@@ -1,0 +1,45 @@
+{
+  "status": "PASS_EXACT_IDENTITY_PREWRITE_READONLY",
+  "atUtc": "2026-10-23T03:49:18.577Z",
+  "input": {
+    "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+    "workKey": "facade_steel_siding_insulated_krer15_01_065_01",
+    "groupId": "wg:master:facade_steel_siding_insulated_krer15_01_065_01",
+    "sourceKey": "kg_krer15_2015_steel_siding_06501_r2"
+  },
+  "parentReleaseId": "47453643-bc8b-50ef-b617-60a8e87a71ed",
+  "parentSearchReleaseId": "4b991866-ceeb-55f3-a1ba-01f80e49d8fd",
+  "proof": {
+    "identitiesExactCatalogOrWorkKey": {
+      "count": 0,
+      "rows": []
+    },
+    "allDefinitionVersionsExactCatalog": {
+      "count": 0,
+      "rows": []
+    },
+    "currentManifestExactCatalog": {
+      "count": 0,
+      "rows": []
+    },
+    "currentSearchExactCatalog": {
+      "count": 0,
+      "rows": []
+    },
+    "currentGroupExactIdentity": {
+      "count": 0,
+      "rows": []
+    },
+    "currentGroupMembersExactGroupOrCatalog": {
+      "count": 0,
+      "rows": []
+    },
+    "normativeSourceExactKey": {
+      "count": 0,
+      "rows": []
+    }
+  },
+  "databaseWrites": false,
+  "notAnAppendAdmission": true,
+  "normalLockedPublisherPreflightStillRequired": true
+}

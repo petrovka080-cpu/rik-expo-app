@@ -1,0 +1,967 @@
+{
+  "contract": "roof-four-technologies-independent-whole-roster-oracle/r1",
+  "sourceArtifactSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+  "generatedFromCompiledRows": false,
+  "basisM2": "100",
+  "profiles": [
+    {
+      "kind": "flat_torch",
+      "stage": "torch_field",
+      "normId": "12-01-002-09",
+      "sourcePack": "flat-roof-torch-two-s27-63.json",
+      "sourcePackSha256": "dd905e5b6bdd376081420782dfd94da582c68810ee6ab242dcbf3ddc871515c9",
+      "sourceLocator": "КРЕР12-01-002-09; состав и измеритель PDF9, ресурсы PDF10, продолжение PDF11; §1.1,1.3–1.4,1.8,2.1–2.4 PDF4–6",
+      "scopeRu": "Основное поле наружной плоской кровли: два наплавляемых слоя Изопласт ЭПП-4 и ЭКП-4.5 по готовому минеральному основанию, КРЕР12-01-002-09. Полный кровельный комплекс ещё не подтверждён.",
+      "operationsIncluded": "Наплавление нижнего и верхнего слоёв кровельного поля",
+      "excludedOrRemaining": [
+        "Несущая и ровная готовая поверхность, проверка проектного соответствия, готовность/сухость и приёмка. Устройство или ремонт стяжки/основания отдельно; ранее выпущенная стяжка не подставляется автоматически.",
+        "Огрунтовка бетонного основания/цементной стяжки. Уже выпущенный primer допускает отдельную связь после проверки совместимости и исключения двойной оплаты; не считать её частью14.36ч.",
+        "Примыкания к стенам/фонарям/трубам, деформационные швы, усиление ендов. Оставить видимыми до отдельного подтверждения.",
+        "Свесы/желоба, парапетные и другие обделки, стаканы зенитных фонарей и примыкания; площадь поля не включает их самостоятельный расход.",
+        "Пароизоляция/теплоизоляция, водоотвод, дополнительные защитные/эксплуатируемые слои по проекту. Расходы соседних норм, гравий011 и текущийPVC процесс не наследуются.",
+        "Инструмент, безопасный доступ, защита, организация огневых работ и зоны. Без выдуманной покупки1комплект/площадь и без объявления нужды закрытой наличием строки машины.",
+        "Контроль слоёв/стыков, проверки, документация, уборка/обращение с отходами и сдача. Сохранить процессную потребность; не добавлять неподтверждённые часы к14.36 и не выдавать норму за фактическое выполнение."
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:workers",
+          "role": "workers",
+          "resourceCode": "000-1003-8",
+          "quantityPer100m2": "14.36",
+          "unitId": "man_hour",
+          "sourcePrintedUnit": "чел.-ч",
+          "sourcePrintedQuantity": "14.36",
+          "exactUnitConversionFactor": "1",
+          "category": "labor",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.1795",
+            "100": "14.36",
+            "250": "35.9"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:included_machine_operators",
+          "role": "included_machine_operators",
+          "resourceCode": null,
+          "quantityPer100m2": "0.20",
+          "unitId": "man_hour",
+          "sourcePrintedUnit": "чел.-ч",
+          "sourcePrintedQuantity": "0.20",
+          "exactUnitConversionFactor": "1",
+          "category": "labor",
+          "informational": true,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.0025",
+            "100": "0.2",
+            "250": "0.5"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:tower_crane_8t",
+          "role": "tower_crane_8t",
+          "resourceCode": "02-0005",
+          "quantityPer100m2": "0.15",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "маш.-ч",
+          "sourcePrintedQuantity": "0.15",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.001875",
+            "100": "0.15",
+            "250": "0.375"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:truck_crane_10t",
+          "role": "truck_crane_10t",
+          "resourceCode": "02-0075",
+          "quantityPer100m2": "0.05",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "маш.-ч",
+          "sourcePrintedQuantity": "0.05",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.000625",
+            "100": "0.05",
+            "250": "0.125"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:gas_flame_burner",
+          "role": "gas_flame_burner",
+          "resourceCode": "15-0060",
+          "quantityPer100m2": "4.60",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "маш.-ч",
+          "sourcePrintedQuantity": "4.60",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.0575",
+            "100": "4.6",
+            "250": "11.5"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:flatbed_truck_to_5t",
+          "role": "flatbed_truck_to_5t",
+          "resourceCode": "40-0001",
+          "quantityPer100m2": "0.09",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "маш.-ч",
+          "sourcePrintedQuantity": "0.09",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.001125",
+            "100": "0.09",
+            "250": "0.225"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:propane_butane",
+          "role": "propane_butane",
+          "resourceCode": "01-0910-0002",
+          "quantityPer100m2": "6.9",
+          "unitId": "kg",
+          "sourcePrintedUnit": "кг",
+          "sourcePrintedQuantity": "6.9",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.08625",
+            "100": "6.9",
+            "250": "17.25"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:upper_isoplast_ekp_4_5",
+          "role": "upper_isoplast_ekp_4_5",
+          "resourceCode": "01-7406-0061",
+          "quantityPer100m2": "114",
+          "unitId": "m2",
+          "sourcePrintedUnit": "м²",
+          "sourcePrintedQuantity": "114",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "1.425",
+            "100": "114",
+            "250": "285"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:torch_field:roof:torch-two:krer12-002-09:lower_isoplast_epp_4",
+          "role": "lower_isoplast_epp_4",
+          "resourceCode": "01-7406-0062",
+          "quantityPer100m2": "116",
+          "unitId": "m2",
+          "sourcePrintedUnit": "м²",
+          "sourcePrintedQuantity": "116",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "1.45",
+            "100": "116",
+            "250": "290"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        }
+      ]
+    },
+    {
+      "kind": "pitched_clay",
+      "stage": "tile_field",
+      "normId": "12-01-007-05",
+      "sourcePack": "clay-tile-pitched-roof-six-s27-63.json",
+      "sourcePackSha256": "fab4a8d6c44d5a329eaff25fdf080da6f3abc3c229b26e79ffc509c18324558b",
+      "sourceLocator": "КРЕР12-01-007-05; состав PDF16; нормы PDF18; техническая часть PDF4–6, §1.1,1.6,1.8,2.1–2.4",
+      "scopeRu": "Кровля из глиняной пазовой черепицы указанных размеров с устройством новой обрешётки на готовой пригодной несущей стропильной основе, КРЕР12-01-007-05. Включены обрешётка, покрытие и нормативная обделка с заделкой зазоров раствором.",
+      "operationsIncluded": "Устройство новой обрешётки, покрытия и нормативная обделка",
+      "excludedOrRemaining": [
+        "Несущая стропильная конструкция, другие подкровельные слои и утепление не входят в этот выбранный комплекс.",
+        "Дополнительные проектные детали, водосток, новые окна и конструкции, демонтаж, защита и фактический дополнительный инструмент требуют своего подтверждения.",
+        "Внешняя доставка, уборка, вывоз, испытания, сдача и документы имеют отдельную применимость, объём и владельца цены.",
+        "Изделия, упаковки, пригодный склад, резерв и реальные цены неизвестны до подтверждения поставки."
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:workers",
+          "role": "workers",
+          "resourceCode": "000-1003-5",
+          "quantityPer100m2": "96.60",
+          "unitId": "man_hour",
+          "sourcePrintedUnit": "чел.-ч",
+          "sourcePrintedQuantity": "96.60",
+          "exactUnitConversionFactor": "1",
+          "category": "labor",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "1.2075",
+            "100": "96.6",
+            "250": "241.5"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:included_machine_operators",
+          "role": "included_machine_operators",
+          "resourceCode": null,
+          "quantityPer100m2": "1.72",
+          "unitId": "man_hour",
+          "sourcePrintedUnit": "чел.-ч",
+          "sourcePrintedQuantity": "1.72",
+          "exactUnitConversionFactor": "1",
+          "category": "labor",
+          "informational": true,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.0215",
+            "100": "1.72",
+            "250": "4.3"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:tower_crane",
+          "role": "tower_crane",
+          "resourceCode": "02-0005",
+          "quantityPer100m2": "1.36",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "маш.-ч",
+          "sourcePrintedQuantity": "1.36",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.017",
+            "100": "1.36",
+            "250": "3.4"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:truck_crane",
+          "role": "truck_crane",
+          "resourceCode": "02-0075",
+          "quantityPer100m2": "0.36",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "маш.-ч",
+          "sourcePrintedQuantity": "0.36",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.0045",
+            "100": "0.36",
+            "250": "0.9"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:flatbed_truck",
+          "role": "flatbed_truck",
+          "resourceCode": "40-0001",
+          "quantityPer100m2": "0.57",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "маш.-ч",
+          "sourcePrintedQuantity": "0.57",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.007125",
+            "100": "0.57",
+            "250": "1.425"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:roofing_nails",
+          "role": "roofing_nails",
+          "resourceCode": "01-1113-0005",
+          "quantityPer100m2": "7.8",
+          "unitId": "kg",
+          "sourcePrintedUnit": "т",
+          "sourcePrintedQuantity": "0.0078",
+          "exactUnitConversionFactor": "1000",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.0975",
+            "100": "7.8",
+            "250": "19.5"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:softwood_boards",
+          "role": "softwood_boards",
+          "resourceCode": "01-6305-0097",
+          "quantityPer100m2": "1.37",
+          "unitId": "m3",
+          "sourcePrintedUnit": "м3",
+          "sourcePrintedQuantity": "1.37",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.017125",
+            "100": "1.37",
+            "250": "3.425"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:square_forgings",
+          "role": "square_forgings",
+          "resourceCode": "01-6901-0001",
+          "quantityPer100m2": "5",
+          "unitId": "kg",
+          "sourcePrintedUnit": "т",
+          "sourcePrintedQuantity": "0.005",
+          "exactUnitConversionFactor": "1000",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.0625",
+            "100": "5",
+            "250": "12.5"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:clay_ridge_tile",
+          "role": "clay_ridge_tile",
+          "resourceCode": "01-8401-0002",
+          "quantityPer100m2": "30",
+          "unitId": "pcs",
+          "sourcePrintedUnit": "1000 шт.",
+          "sourcePrintedQuantity": "0.03",
+          "exactUnitConversionFactor": "1000",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.375",
+            "100": "30",
+            "250": "75"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:clay_grooved_tile",
+          "role": "clay_grooved_tile",
+          "resourceCode": "01-8402-0004",
+          "quantityPer100m2": "1020",
+          "unitId": "pcs",
+          "sourcePrintedUnit": "1000 шт.",
+          "sourcePrintedQuantity": "1.02",
+          "exactUnitConversionFactor": "1000",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "12.75",
+            "100": "1020",
+            "250": "2550"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:galvanized_washers",
+          "role": "galvanized_washers",
+          "resourceCode": "01-8604-0020",
+          "quantityPer100m2": "200",
+          "unitId": "pcs",
+          "sourcePrintedUnit": "шт.",
+          "sourcePrintedQuantity": "200",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "2.5",
+            "100": "200",
+            "250": "500"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:round_head_screws",
+          "role": "round_head_screws",
+          "resourceCode": "01-9203-0005",
+          "quantityPer100m2": "2",
+          "unitId": "kg",
+          "sourcePrintedUnit": "т",
+          "sourcePrintedQuantity": "0.002",
+          "exactUnitConversionFactor": "1000",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.025",
+            "100": "2",
+            "250": "5"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:cement_mortar_100",
+          "role": "cement_mortar_100",
+          "resourceCode": "03-0406-0004",
+          "quantityPer100m2": "0.27",
+          "unitId": "m3",
+          "sourcePrintedUnit": "м3",
+          "sourcePrintedQuantity": "0.27",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.003375",
+            "100": "0.27",
+            "250": "0.675"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:tile_field:roof:clay-tile:krer12-007-05:galvanized_sheet_07",
+          "role": "galvanized_sheet_07",
+          "resourceCode": "10-0208-0004",
+          "quantityPer100m2": "38",
+          "unitId": "kg",
+          "sourcePrintedUnit": "т",
+          "sourcePrintedQuantity": "0.038",
+          "exactUnitConversionFactor": "1000",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.475",
+            "100": "38",
+            "250": "95"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        }
+      ]
+    },
+    {
+      "kind": "pitched_metal",
+      "stage": "metal_field",
+      "normId": "12-01-023-01",
+      "sourcePack": "metal-roof-simple-krer12-six-s27-63.json",
+      "sourcePackSha256": "a472d1813480e012cb937285c6f9e588f493de828c3a6f4755d23fe084a8cd9f",
+      "sourceLocator": "Таблица12-01-023, колонка12-01-023-01; §1.1,1.8–1.11,2.1–2.4; весь раздел3 технической части",
+      "scopeRu": "Устройство простой кровли из металлочерепицы с отделочным покрытием по готовым принятым прогонам, КРЕР 12-01-023-01: укладка листов, постановка креплений, обделка коньков, труб, шахт и примыканий к стенам. Требуется подтверждение выбранной системы по проекту. Раскрой и остальные непокрытые подработы проверяются отдельно.",
+      "operationsIncluded": "Устройство простой кровли из металлочерепицы с отделочным покрытием по готовым принятым прогонам, КРЕР 12-01-023-01: укладка листов, постановка креплений, обделка коньков, труб, шахт и примыканий к стенам. Требуется подтверждение выбранной системы по проекту. Раскрой и остальные непокрытые подработы проверяются отдельно.",
+      "excludedOrRemaining": [
+        "Раскрой металлочерепицы исключён из нормы по §1.9. При необходимости нужен отдельный подтверждённый состав и фактическая длина реза.",
+        "Проектная раскладка, расчёт крепления, выбранные изделия, упаковки и дополнительные элементы по проекту проверяются отдельно.",
+        "Отдельные непокрытые соседние слои/конструкции, специальные узлы, водосток, безопасность/СИЗ/доступ, дополнительный инструмент/измерение.",
+        "Внешняя логистика, возвратная тара, отдельные отходы и уборка, независимые испытания, сдача и документы: необходимость, состав и количество проверяются отдельно."
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:workers",
+          "role": "workers",
+          "resourceCode": "000-1003-1",
+          "quantityPer100m2": "38.53",
+          "unitId": "man_hour",
+          "sourcePrintedUnit": "person_hour",
+          "sourcePrintedQuantity": "38.53",
+          "exactUnitConversionFactor": "1",
+          "category": "labor",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.481625",
+            "100": "38.53",
+            "250": "96.325"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:tower_crane",
+          "role": "tower_crane",
+          "resourceCode": "02-0005",
+          "quantityPer100m2": "0.5",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "machine_hour",
+          "sourcePrintedQuantity": "0.5",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.00625",
+            "100": "0.5",
+            "250": "1.25"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:truck_crane",
+          "role": "truck_crane",
+          "resourceCode": "02-0075",
+          "quantityPer100m2": "0.29",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "machine_hour",
+          "sourcePrintedQuantity": "0.29",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.003625",
+            "100": "0.29",
+            "250": "0.725"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:electric_drill",
+          "role": "electric_drill",
+          "resourceCode": "33-0241",
+          "quantityPer100m2": "2.41",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "machine_hour",
+          "sourcePrintedQuantity": "2.41",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.030125",
+            "100": "2.41",
+            "250": "6.025"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:flatbed_truck",
+          "role": "flatbed_truck",
+          "resourceCode": "40-0001",
+          "quantityPer100m2": "0.4",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "machine_hour",
+          "sourcePrintedQuantity": "0.4",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.005",
+            "100": "0.4",
+            "250": "1"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:screw_4_8x35",
+          "role": "screw_4_8x35",
+          "resourceCode": "01-0508-0001",
+          "quantityPer100m2": "645",
+          "unitId": "pcs",
+          "sourcePrintedUnit": "pcs",
+          "sourcePrintedQuantity": "645",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "8.0625",
+            "100": "645",
+            "250": "1612.5"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:screw_4_8x80",
+          "role": "screw_4_8x80",
+          "resourceCode": "01-0508-0003",
+          "quantityPer100m2": "81",
+          "unitId": "pcs",
+          "sourcePrintedUnit": "pcs",
+          "sourcePrintedQuantity": "81",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "1.0125",
+            "100": "81",
+            "250": "202.5"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:open_cell_pu_gasket",
+          "role": "open_cell_pu_gasket",
+          "resourceCode": "01-7002-0003",
+          "quantityPer100m2": "16",
+          "unitId": "m",
+          "sourcePrintedUnit": "m",
+          "sourcePrintedQuantity": "16",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.2",
+            "100": "16",
+            "250": "40"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:coated_metal_tile",
+          "role": "coated_metal_tile",
+          "resourceCode": "09-0204-0021",
+          "quantityPer100m2": "122",
+          "unitId": "m2",
+          "sourcePrintedUnit": "m2",
+          "sourcePrintedQuantity": "122",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "1.525",
+            "100": "122",
+            "250": "305"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:reuse:metal_field:roof:metal-tile:krer12-023-01:included_machine_operators",
+          "role": "included_machine_operators",
+          "resourceCode": null,
+          "quantityPer100m2": "0.79",
+          "unitId": "man_hour",
+          "sourcePrintedUnit": "person_hour",
+          "sourcePrintedQuantity": "0.79",
+          "exactUnitConversionFactor": "1",
+          "category": "labor",
+          "informational": true,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.009875",
+            "100": "0.79",
+            "250": "1.975"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        }
+      ]
+    },
+    {
+      "kind": "flat_mastic",
+      "stage": "mastic_field",
+      "normId": "12-01-033-01",
+      "sourceLocator": "КРЕР12 PDF40, entire exactcolumn12-01-033-01; technicalpart PDF4–6",
+      "sourceLiteralTranscription": "master212-roof-primary-transcription-r1.json",
+      "scopeRu": "Три основных мастичных слоя1.8мм;033-02/03 не включены в совместный paid aggregate.",
+      "operationsIncluded": [
+        "Подготовка основания в буквальной границе таблицы",
+        "Нанесение грунтовки",
+        "Нанесение трёх мастичных слоёв",
+        "Промывка оборудования"
+      ],
+      "excludedOrRemaining": [
+        "033-02/03 whole sources held for joint measure rule",
+        "Полная физическая оснастка/доступ/защита/контроль/отходы не доказаны часами"
+      ],
+      "rows": [
+        {
+          "rowId": "master212:roof:r1:mastic_field:workers",
+          "role": "workers",
+          "resourceCode": "000-1003-5",
+          "quantityPer100m2": "8.29",
+          "unitId": "man_hour",
+          "sourcePrintedUnit": "man_hour",
+          "sourcePrintedQuantity": "8.29",
+          "exactUnitConversionFactor": "1",
+          "category": "labor",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.103625",
+            "100": "8.29",
+            "250": "20.725"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:mastic_field:machinists",
+          "role": "machinists",
+          "resourceCode": null,
+          "quantityPer100m2": "0.76",
+          "unitId": "man_hour",
+          "sourcePrintedUnit": "man_hour",
+          "sourcePrintedQuantity": "0.76",
+          "exactUnitConversionFactor": "1",
+          "category": "labor",
+          "informational": true,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.0095",
+            "100": "0.76",
+            "250": "1.9"
+          },
+          "procurementEligible": false,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:mastic_field:forklift",
+          "role": "forklift",
+          "resourceCode": "03-0020",
+          "quantityPer100m2": "0.15",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "machine_hour",
+          "sourcePrintedQuantity": "0.15",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.001875",
+            "100": "0.15",
+            "250": "0.375"
+          },
+          "procurementEligible": true,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:mastic_field:lift",
+          "role": "lift",
+          "resourceCode": "03-0330",
+          "quantityPer100m2": "0.2",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "machine_hour",
+          "sourcePrintedQuantity": "0.2",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.0025",
+            "100": "0.2",
+            "250": "0.5"
+          },
+          "procurementEligible": true,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:mastic_field:compressor",
+          "role": "compressor",
+          "resourceCode": "05-0005",
+          "quantityPer100m2": "0.41",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "machine_hour",
+          "sourcePrintedQuantity": "0.41",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.005125",
+            "100": "0.41",
+            "250": "1.025"
+          },
+          "procurementEligible": true,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:mastic_field:airless",
+          "role": "airless",
+          "resourceCode": "39-0541",
+          "quantityPer100m2": "2.43",
+          "unitId": "machine_hour",
+          "sourcePrintedUnit": "machine_hour",
+          "sourcePrintedQuantity": "2.43",
+          "exactUnitConversionFactor": "1",
+          "category": "equipment",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.030375",
+            "100": "2.43",
+            "250": "6.075"
+          },
+          "procurementEligible": true,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:mastic_field:kerosene",
+          "role": "kerosene",
+          "resourceCode": "01-1504-0001",
+          "quantityPer100m2": "2",
+          "unitId": "kg",
+          "sourcePrintedUnit": "т",
+          "sourcePrintedQuantity": "0.002",
+          "exactUnitConversionFactor": "1000",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.025",
+            "100": "2",
+            "250": "5"
+          },
+          "procurementEligible": true,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:mastic_field:mastic",
+          "role": "mastic",
+          "resourceCode": "01-4606-0005",
+          "quantityPer100m2": "240",
+          "unitId": "kg",
+          "sourcePrintedUnit": "kg",
+          "sourcePrintedQuantity": "240",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "3",
+            "100": "240",
+            "250": "600"
+          },
+          "procurementEligible": true,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        },
+        {
+          "rowId": "master212:roof:r1:mastic_field:primer",
+          "role": "primer",
+          "resourceCode": "01-0201-0002*",
+          "quantityPer100m2": "40",
+          "unitId": "kg",
+          "sourcePrintedUnit": "kg",
+          "sourcePrintedQuantity": "40",
+          "exactUnitConversionFactor": "1",
+          "category": "material",
+          "informational": false,
+          "costOwner": "SELF_EXCEPT_INFORMATIONAL_OPERATOR",
+          "prices2015Imported": false,
+          "expectedByAreaM2": {
+            "1.25": "0.5",
+            "100": "40",
+            "250": "100"
+          },
+          "procurementEligible": true,
+          "ownershipRuleSource": "R2 newcolumn literal procurement material OR equipment true; full-hour service is not physical machine purchase. Whole accepted reused kernels retain procurement false."
+        }
+      ]
+    }
+  ]
+}

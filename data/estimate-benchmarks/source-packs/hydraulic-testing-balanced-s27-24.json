@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.hydraulic-testing-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:hydraulic_testing",
+  "scope": "Hydraulic pressure and leakage testing of 1200 m of an explicitly selected PE100 SDR17 OD 250 PN10 pressure sewer pipeline split into four isolated test sections. Eight temporary PE250-PN10-TEST-CAP closures, calibrated gauges and recorder, hoses/manifold, fill water and approved disposal, test records, labor, mechanisms, QA and logistics are direct project inputs.",
+  "sourceAuthority": "Approved pipeline designer, pressure-test procedure author, calibrated-instrument provider, water supplier, disposal authority and approving project engineer",
+  "ordinaryFixture": {
+    "testedLengthM": 1200,
+    "pipeMaterial": "PE100",
+    "pipeSdr": "SDR17",
+    "pipeOutsideDiameterMm": 250,
+    "pressureClass": "PN10",
+    "testSectionCount": 4,
+    "temporaryClosureInstalledPiece": 8,
+    "closureDesignation": "PE250-PN10-TEST-CAP",
+    "testPressureMpa": 1,
+    "holdDurationMin": 120,
+    "procedureDesignation": "HT-PE250-PN10-4S-1.0MPA-120MIN"
+  },
+  "procurementBalance": {
+    "temporaryTestClosures": {
+      "installedQuantity": "hyd_temporary_closure_installed_piece",
+      "retainedSpareQuantity": "hyd_closure_retained_spare_piece",
+      "supplierPackageQuantity": "hyd_closure_supplier_package_quantity_piece"
+    },
+    "visiblePreliminaryProfile": {
+      "hyd_closure_retained_spare_piece": 0,
+      "hyd_closure_supplier_package_quantity_piece": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "pipe supply or laying, trench, bedding, backfill, manholes or commissioning beyond the selected pressure and leakage test",
+    "water, labor, mechanism or logistics quantities derived from tested-length coefficients",
+    "automatic imported-water supply, treatment or off-site disposal",
+    "universal spare or supplier-package quantity",
+    "invented price"
+  ]
+}

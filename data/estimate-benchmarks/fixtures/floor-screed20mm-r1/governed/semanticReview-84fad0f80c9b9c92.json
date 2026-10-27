@@ -1,0 +1,166 @@
+{
+  "status": "VERIFIED_CURRENT_BOUNDED_THREE_BODY_SEMANTIC_COMPARISON_NOT_SAME_STANDALONE_01101",
+  "source": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/selected-subject-bodies-r72b-screed/selected-subject-bodies-result-r72b-screed.json",
+    "sha256": "36e7b5e6d9e1fc680344efe323cb73d0624a5c75e3e9e3b9fe2db92f33f8e02b",
+    "bytes": 1033185
+  },
+  "parent": {
+    "sourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+    "recordedReleaseSourceCommit": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+    "definitionReleaseId": "f36fa786-6634-518c-853d-b9ae54ab3ccf",
+    "searchReleaseId": "304b7f3f-1618-5e0e-91ea-da062e4f287e"
+  },
+  "sameSnapshotReadOnly": {
+    "db": "rik_r4_runtime_b5_v2",
+    "host": "127.0.0.1",
+    "port": 55432,
+    "read_only": "on",
+    "isolation": "repeatable read",
+    "snapshot": "538059:538059:"
+  },
+  "comparisons": [
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_large_area",
+      "definitionId": "adab5016-0fbf-5588-92f0-b36c9661af0c",
+      "definitionHash": "f4c5fe97479936c80cc935ecf8a93446656fba123035957ace27c51e078427da",
+      "resourceRows": 59,
+      "formulaRows": 59,
+      "parameterRows": 1,
+      "physicalResult": "подготовка после демонтажа стяжки пола на большой площади",
+      "sourceNormPack": "norm_pack_screed_v1",
+      "sourceExamples": [
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_large_area_labor_19",
+          "title": "снятие крепежа для стяжки пола",
+          "unit": "piece"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_large_area_equipment_26",
+          "title": "отбойный инструмент для стяжки пола",
+          "unit": "set"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_large_area_logistics_28",
+          "title": "вывоз отходов для стяжки пола",
+          "unit": "m3"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_large_area_labor_18",
+          "title": "разборка слоя для стяжки пола",
+          "unit": "m2"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_large_area_materials_02",
+          "title": "мешки строительные для стяжки пола",
+          "unit": "m2"
+        }
+      ],
+      "formulasUseGenericQ": [
+        "max(1, ceil(q / 10))",
+        "max(1, ceil(q / 120))",
+        "max(1, ceil(q / 120))"
+      ],
+      "disposition": "DIFFERENT_DEMOLITION_PREPARATION_SCOPE_KEEP_ID_AND_HISTORY_UNCHANGED",
+      "reuseBoundary": "If this project already paid compatible preparation/protection/logistics, reconcile that physical scope before this source operation. No59-row coefficient/price transfer into exact01101."
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_small_area",
+      "definitionId": "95622959-de5c-58ac-b78a-c9262f9c799a",
+      "definitionHash": "3fa009bfdde5e61053dc0a5c80880f3ea846b709eb65f917cb43ae064421c679",
+      "resourceRows": 59,
+      "formulaRows": 59,
+      "parameterRows": 1,
+      "physicalResult": "подготовка после демонтажа стяжки пола на малой площади",
+      "sourceNormPack": "norm_pack_screed_v1",
+      "sourceExamples": [
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_small_area_logistics_28",
+          "title": "вывоз отходов для стяжки пола",
+          "unit": "m3"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_small_area_labor_18",
+          "title": "разборка слоя для стяжки пола",
+          "unit": "m2"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_small_area_labor_19",
+          "title": "снятие крепежа для стяжки пола",
+          "unit": "piece"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_small_area_equipment_26",
+          "title": "отбойный инструмент для стяжки пола",
+          "unit": "set"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_small_area_materials_02",
+          "title": "мешки строительные для стяжки пола",
+          "unit": "m2"
+        }
+      ],
+      "formulasUseGenericQ": [
+        "max(1, ceil(q / 10))",
+        "max(1, ceil(q / 120))",
+        "max(1, ceil(q / 120))"
+      ],
+      "disposition": "DIFFERENT_DEMOLITION_PREPARATION_SCOPE_KEEP_ID_AND_HISTORY_UNCHANGED",
+      "reuseBoundary": "If this project already paid compatible preparation/protection/logistics, reconcile that physical scope before this source operation. No59-row coefficient/price transfer into exact01101."
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_standard",
+      "definitionId": "68fc8e12-64a0-51e8-88e3-d7a84dba7918",
+      "definitionHash": "8d2ec3e28895703c829936beb73709dd616129c40170f297a403e0843a73a68b",
+      "resourceRows": 59,
+      "formulaRows": 59,
+      "parameterRows": 1,
+      "physicalResult": "подготовка после демонтажа стяжки пола в стандартной зоне",
+      "sourceNormPack": "norm_pack_screed_v1",
+      "sourceExamples": [
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_standard_equipment_26",
+          "title": "отбойный инструмент для стяжки пола",
+          "unit": "set"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_standard_logistics_28",
+          "title": "вывоз отходов для стяжки пола",
+          "unit": "m3"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_standard_materials_02",
+          "title": "мешки строительные для стяжки пола",
+          "unit": "m2"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_standard_labor_19",
+          "title": "снятие крепежа для стяжки пола",
+          "unit": "piece"
+        },
+        {
+          "rowId": "demolition_interior_screed_prepare_repair_standard_labor_18",
+          "title": "разборка слоя для стяжки пола",
+          "unit": "m2"
+        }
+      ],
+      "formulasUseGenericQ": [
+        "max(1, ceil(q / 10))",
+        "max(1, ceil(q / 120))",
+        "max(1, ceil(q / 120))"
+      ],
+      "disposition": "DIFFERENT_DEMOLITION_PREPARATION_SCOPE_KEEP_ID_AND_HISTORY_UNCHANGED",
+      "reuseBoundary": "If this project already paid compatible preparation/protection/logistics, reconcile that physical scope before this source operation. No59-row coefficient/price transfer into exact01101."
+    }
+  ],
+  "exactSourceScope": "New20mm readyM15001101 includes preparation+placing/leveling+curing at39.51workerh/100m2, exact water/mortar and hoist/vibrator coefficients. Existing three bodies aredemolition/prepare_repair,59generic handling/protection/removal rows each; no source-specific01101 or M150 owner proved.",
+  "headerScope": 45,
+  "previousEightPassportHashesUnchanged": true,
+  "notGlobalAbsence": true,
+  "catalogIdentityAdmitted": false,
+  "exactIdentityAndSourceCollisionCapture": "A_SOLE_INTEGRATOR_STILL_REQUIRED",
+  "machineFinancialAdmission": false,
+  "openNeeds": 5,
+  "publicationPerformed": false,
+  "astraCalls": 0
+}

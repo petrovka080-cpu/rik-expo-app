@@ -1,0 +1,150 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "mandatory-032-подпорная-стена-80-м-высота-4-м",
+  "prompt": "подпорная стена 80 м высота 4 м",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "mandatory-032-подпорная-стена-80-м-высота-4-м:wall_concrete_m3",
+      "code": "wall_concrete_m3",
+      "title": "Бетон подпорной стены",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 144,
+      "unit": "m3",
+      "quantity_formula": "length_m * height_m * 0.45",
+      "formula_ref": "retainingWallCalculator_wall_concrete_m3_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "mandatory-032-подпорная-стена-80-м-высота-4-м:rebar_t",
+      "code": "rebar_t",
+      "title": "Арматура подпорной стены",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 17.28,
+      "unit": "t",
+      "quantity_formula": "concrete_m3 * 0.12",
+      "formula_ref": "retainingWallCalculator_rebar_t_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "mandatory-032-подпорная-стена-80-м-высота-4-м:drainage_prism_m3",
+      "code": "drainage_prism_m3",
+      "title": "Дренажная призма",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 112,
+      "unit": "m3",
+      "quantity_formula": "length_m * height_m * 0.35",
+      "formula_ref": "retainingWallCalculator_drainage_prism_m3_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "mandatory-032-подпорная-стена-80-м-высота-4-м:geotextile_m2",
+      "code": "geotextile_m2",
+      "title": "Геотекстиль за стеной",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 336,
+      "unit": "m2",
+      "quantity_formula": "length_m * height_m * 1.05",
+      "formula_ref": "retainingWallCalculator_geotextile_m2_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "mandatory-032-подпорная-стена-80-м-высота-4-м:formwork_m2",
+      "code": "formwork_m2",
+      "title": "Опалубка подпорной стены",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 640,
+      "unit": "m2",
+      "quantity_formula": "length_m * height_m * 2",
+      "formula_ref": "retainingWallCalculator_formwork_m2_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "mandatory-032-подпорная-стена-80-м-высота-4-м:excavator_shifts",
+      "code": "excavator_shifts",
+      "title": "Экскаватор",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 4,
+      "unit": "shift",
+      "quantity_formula": "ceil(length_m * height_m / 80)",
+      "formula_ref": "retainingWallCalculator_excavator_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "secondary"
+    }
+  ],
+  "material_rows": [
+    "wall_concrete_m3",
+    "rebar_t",
+    "drainage_prism_m3",
+    "geotextile_m2"
+  ],
+  "work_rows": [
+    "formwork_m2"
+  ],
+  "service_rows": [],
+  "equipment_rows": [
+    "excavator_shifts"
+  ],
+  "procurement_subset": [
+    "wall_concrete_m3",
+    "rebar_t",
+    "drainage_prism_m3",
+    "geotextile_m2",
+    "excavator_shifts"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_bridges_tunnels_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1683322023"
+}

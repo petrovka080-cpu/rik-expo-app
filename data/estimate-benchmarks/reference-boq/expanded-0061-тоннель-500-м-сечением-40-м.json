@@ -1,0 +1,150 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "expanded-0061-тоннель-500-м-сечением-40-м",
+  "prompt": "тоннель 500 м сечением 40 м²",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "expanded-0061-тоннель-500-м-сечением-40-м:tunnel_lining_concrete_m3",
+      "code": "tunnel_lining_concrete_m3",
+      "title": "Бетон обделки тоннеля",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 3600,
+      "unit": "m3",
+      "quantity_formula": "length_m * section_m2 * 0.18",
+      "formula_ref": "tunnelCalculator_tunnel_lining_concrete_m3_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0061-тоннель-500-м-сечением-40-м:tunnel_waterproofing_m2",
+      "code": "tunnel_waterproofing_m2",
+      "title": "Гидроизоляция тоннеля",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 12649.111,
+      "unit": "m2",
+      "quantity_formula": "length_m * sqrt(section_m2) * 4",
+      "formula_ref": "tunnelCalculator_tunnel_waterproofing_m2_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0061-тоннель-500-м-сечением-40-м:drainage_lm",
+      "code": "drainage_lm",
+      "title": "Дренаж тоннеля",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 1000,
+      "unit": "m",
+      "quantity_formula": "length_m * 2",
+      "formula_ref": "tunnelCalculator_drainage_lm_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0061-тоннель-500-м-сечением-40-м:tunnel_excavation_m3",
+      "code": "tunnel_excavation_m3",
+      "title": "Выемка тоннеля",
+      "line_type": "work",
+      "group": "earthworks",
+      "quantity": 20000,
+      "unit": "m3",
+      "quantity_formula": "length_m * section_m2",
+      "formula_ref": "tunnelCalculator_tunnel_excavation_m3_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0061-тоннель-500-м-сечением-40-м:ventilation_equipment_set",
+      "code": "ventilation_equipment_set",
+      "title": "Система вентиляции тоннеля",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "1 set; price missing until design",
+      "formula_ref": "tunnelCalculator_ventilation_equipment_set_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0061-тоннель-500-м-сечением-40-м:special_equipment_shifts",
+      "code": "special_equipment_shifts",
+      "title": "Тоннельная спецтехника",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 25,
+      "unit": "shift",
+      "quantity_formula": "ceil(length_m / 20)",
+      "formula_ref": "tunnelCalculator_special_equipment_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_bridges_tunnels_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Мосты, тоннели и инженерные сооружения\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "secondary"
+    }
+  ],
+  "material_rows": [
+    "tunnel_lining_concrete_m3",
+    "tunnel_waterproofing_m2",
+    "drainage_lm"
+  ],
+  "work_rows": [
+    "tunnel_excavation_m3"
+  ],
+  "service_rows": [],
+  "equipment_rows": [
+    "ventilation_equipment_set",
+    "special_equipment_shifts"
+  ],
+  "procurement_subset": [
+    "tunnel_lining_concrete_m3",
+    "tunnel_waterproofing_m2",
+    "drainage_lm",
+    "ventilation_equipment_set",
+    "special_equipment_shifts"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_bridges_tunnels_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1080224919"
+}

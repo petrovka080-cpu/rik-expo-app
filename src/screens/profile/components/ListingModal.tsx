@@ -1,0 +1,605 @@
+import React from "react";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+
+import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBar";
+import { MARKET_LISTING_CATEGORY_OPTIONS } from "../../../features/market/marketListingCategories";
+import {
+  LiveRouteMediaEntrypointPanel,
+  type LiveRouteMediaPickInput,
+  type LiveRouteMediaPickResult,
+  type LiveRouteMediaEntrypointSnapshot,
+} from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
+import { profileStyles } from "../profile.styles";
+import React19SafeModal from "../../../ui/React19SafeModal";
+import type {
+  CatalogSearchItem,
+  ListingCartItem,
+  ListingFormState,
+  ListingKind,
+} from "../profile.types";
+import { LabeledInput } from "./ProfilePrimitives";
+
+const styles = profileStyles;
+
+const UI_COPY = {
+  modalTitle: "\u0421\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
+  backAction: "\u2190 \u041d\u0430\u0437\u0430\u0434",
+  myListingsAction: "\u041c\u043e\u0438",
+  kindLabel: "\u0422\u0438\u043f \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f",
+  titleLabel: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f",
+  titlePlaceholder:
+    "\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: \u0413\u0430\u0437\u043e\u0431\u043b\u043e\u043a D500, \u043a\u0440\u043e\u0432\u043b\u044f, \u0431\u0435\u0442\u043e\u043d, \u0431\u0435\u0442\u043e\u043d\u043e\u043d\u0430\u0441\u043e\u0441\u2026",
+  loadingCatalog: "\u0418\u0449\u0435\u043c \u0432 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0435\u2026",
+  catalogFallback: "\u041f\u043e\u0437\u0438\u0446\u0438\u044f \u0438\u0437 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430",
+  catalogUomLabel: "\u0415\u0434. \u0438\u0437\u043c.",
+  catalogKindLabel: "\u0422\u0438\u043f",
+  noValue: "\u2014",
+  addedItemsTitle: "\u0414\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u043d\u044b\u0435 \u043f\u043e\u0437\u0438\u0446\u0438\u0438",
+  qtyLabel: "\u041a\u043e\u043b-\u0432\u043e",
+  priceLabel: "\u0426\u0435\u043d\u0430",
+  descriptionLabel: "\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435",
+  descriptionPlaceholder:
+    "\u041a\u0440\u0430\u0442\u043a\u043e \u043e\u043f\u0438\u0448\u0438\u0442\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b \u0438\u043b\u0438 \u0443\u0441\u043b\u0443\u0433\u0443, \u0443\u0441\u043b\u043e\u0432\u0438\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438 \u0438 \u043e\u043f\u043b\u0430\u0442\u044b",
+  phoneLabel: "\u0422\u0435\u043b\u0435\u0444\u043e\u043d",
+  phonePlaceholder: "+996\u2026",
+  cancelAction: "\u041e\u0442\u043c\u0435\u043d\u0430",
+  publishAction: "\u041e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u0442\u044c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
+  publishingAction: "\u041f\u0443\u0431\u043b\u0438\u043a\u0443\u0435\u043c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435\u2026",
+  uploadingMediaAction: "\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u0435\u043c \u043c\u0435\u0434\u0438\u0430\u2026",
+  openListingAction: "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u0435",
+  backToMarketAction: "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u0432 \u043c\u0430\u0440\u043a\u0435\u0442",
+  itemModalTitle: "\u041f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u044b \u043f\u043e\u0437\u0438\u0446\u0438\u0438",
+  itemModalSub:
+    "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0433\u043e\u0440\u043e\u0434, \u0435\u0434\u0438\u043d\u0438\u0446\u0443 \u0438\u0437\u043c\u0435\u0440\u0435\u043d\u0438\u044f, \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0438 \u0446\u0435\u043d\u0443 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443 \u0434\u043b\u044f \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0439 \u043f\u043e\u0437\u0438\u0446\u0438\u0438.",
+  cityLabel: "\u0413\u043e\u0440\u043e\u0434",
+  cityPlaceholder: "\u0411\u0438\u0448\u043a\u0435\u043a",
+  uomLabel: "\u0415\u0434. \u0438\u0437\u043c.",
+  uomPlaceholder: "\u043c\u0435\u0448\u043e\u043a, \u043c2, \u043c3\u2026",
+  qtyInputLabel: "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e",
+  qtyPlaceholder: "\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: 10",
+  priceInputLabel: "\u0426\u0435\u043d\u0430 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443",
+  pricePlaceholder: "\u041d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: 420",
+  addAction: "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c",
+} as const;
+
+const LISTING_KIND_OPTIONS: {
+  code: ListingKind;
+  label: string;
+}[] = MARKET_LISTING_CATEGORY_OPTIONS.map((item) => ({
+  code: item.kind as ListingKind,
+  label: item.label,
+}));
+
+const getListingKindLabel = (kind: ListingCartItem["kind"]) => {
+  return MARKET_LISTING_CATEGORY_OPTIONS.find((item) => item.kind === kind)?.singularLabel ?? "";
+};
+
+export type AddListingPublishStatus =
+  | "idle"
+  | "validating"
+  | "uploading_media"
+  | "creating_listing"
+  | "linking_media"
+  | "published"
+  | "failed_retryable"
+  | "failed_final";
+
+export type AddListingValidationErrors = Partial<Record<
+  | "listingKind"
+  | "listingTitle"
+  | "media"
+  | "listingDescription"
+  | "listingCity"
+  | "listingPrice"
+  | "listingPhone"
+  | "submit",
+  string
+>>;
+
+const PUBLISH_STATUS_LABELS: Record<AddListingPublishStatus, string> = {
+  idle: "",
+  validating: "Проверяем поля объявления...",
+  uploading_media: "Загружаем медиа перед публикацией...",
+  creating_listing: "Создаем объявление...",
+  linking_media: "Связываем медиа с объявлением...",
+  published: "Объявление опубликовано.",
+  failed_retryable: "Не удалось опубликовать. Проверьте поля и попробуйте еще раз.",
+  failed_final: "Не удалось опубликовать объявление.",
+};
+
+type ListingModalProps = {
+  visible: boolean;
+  itemModalOpen: boolean;
+  listingForm: ListingFormState;
+  listingCartItems: ListingCartItem[];
+  editingItem: ListingCartItem | null;
+  catalogResults: CatalogSearchItem[];
+  savingListing: boolean;
+  mediaUploading: boolean;
+  catalogLoading: boolean;
+  publishStatus: AddListingPublishStatus;
+  validationErrors: AddListingValidationErrors;
+  publishedListingId: string | null;
+  onRequestClose: () => void;
+  onPublish: () => void;
+  onOpenMyListings: () => void;
+  onOpenPublishedListing: () => void;
+  onBackToMarket: () => void;
+  backAfterPublishLabel?: string;
+  onChangeListingKind: (kind: ListingKind) => void;
+  onChangeListingTitle: (value: string) => void;
+  onChangeListingCity: (value: string) => void;
+  onChangeListingPrice: (value: string) => void;
+  onChangeListingDescription: (value: string) => void;
+  onChangeListingPhone: (value: string) => void;
+  onMarketplaceMediaSnapshotChange: (
+    snapshot: LiveRouteMediaEntrypointSnapshot,
+  ) => void;
+  onPickMarketplaceMedia?: (
+    input: LiveRouteMediaPickInput,
+  ) => Promise<LiveRouteMediaPickResult>;
+  onInlineCatalogPick: (item: CatalogSearchItem) => void;
+  onItemModalClose: () => void;
+  onChangeEditingItemCity: (value: string) => void;
+  onChangeEditingItemUom: (value: string) => void;
+  onChangeEditingItemQty: (value: string) => void;
+  onChangeEditingItemPrice: (value: string) => void;
+  onConfirmEditingItem: () => void;
+};
+
+export function ListingModal({
+  visible,
+  itemModalOpen,
+  listingForm,
+  listingCartItems,
+  editingItem,
+  catalogResults,
+  savingListing,
+  mediaUploading,
+  catalogLoading,
+  publishStatus,
+  validationErrors,
+  publishedListingId,
+  onRequestClose,
+  onPublish,
+  onOpenMyListings,
+  onOpenPublishedListing,
+  onBackToMarket,
+  backAfterPublishLabel,
+  onChangeListingKind,
+  onChangeListingTitle,
+  onChangeListingCity,
+  onChangeListingPrice,
+  onChangeListingDescription,
+  onChangeListingPhone,
+  onMarketplaceMediaSnapshotChange,
+  onPickMarketplaceMedia,
+  onInlineCatalogPick,
+  onItemModalClose,
+  onChangeEditingItemCity,
+  onChangeEditingItemUom,
+  onChangeEditingItemQty,
+  onChangeEditingItemPrice,
+  onConfirmEditingItem,
+}: ListingModalProps) {
+  const titleInputRef = React.useRef<TextInput>(null);
+  const descriptionInputRef = React.useRef<TextInput>(null);
+  const phoneInputRef = React.useRef<TextInput>(null);
+
+  const focusDescriptionInput = () => {
+    descriptionInputRef.current?.focus();
+  };
+
+  const focusPhoneInput = () => {
+    phoneInputRef.current?.focus();
+  };
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
+  const handleRequestClose = () => {
+    if (savingListing || mediaUploading) {
+      return;
+    }
+    onRequestClose();
+  };
+  const firstValidationError = Object.values(validationErrors).find((value) => Boolean(value));
+  const statusLabel = PUBLISH_STATUS_LABELS[publishStatus];
+  const publishBusy = savingListing || mediaUploading;
+  const publishLabel = mediaUploading
+    ? UI_COPY.uploadingMediaAction
+    : savingListing
+      ? UI_COPY.publishingAction
+      : UI_COPY.publishAction;
+
+  return (
+    <>
+      <React19SafeModal
+        isVisible={visible}
+        onBackdropPress={handleRequestClose}
+        onBackButtonPress={handleRequestClose}
+        backdropOpacity={0.55}
+        hideModalContentWhileAnimating
+        style={styles.listingFullscreenHost}
+      >
+        <SafeAreaView
+          style={styles.listingFullscreenShell}
+          testID="add-listing-owner-shell"
+        >
+          <KeyboardAvoidingView
+            style={styles.flexOne}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={0}
+          >
+            <View style={styles.listingHeader}>
+              <Pressable
+                testID="add-listing-header-back"
+                accessibilityRole="button"
+                style={styles.listingHeaderBackButton}
+                onPress={handleRequestClose}
+                disabled={publishBusy}
+              >
+                <Text style={styles.listingHeaderBackText}>
+                  {UI_COPY.backAction}
+                </Text>
+              </Pressable>
+              <Text style={styles.listingHeaderTitle}>{UI_COPY.modalTitle}</Text>
+              <Pressable
+                testID="add-listing-header-my-listings"
+                accessibilityRole="button"
+                accessibilityLabel="\u041c\u043e\u0438 \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f"
+                style={styles.listingHeaderSideButton}
+                onPress={onOpenMyListings}
+                disabled={publishBusy}
+              >
+                <Ionicons name="file-tray-full-outline" size={15} color={publishBusy ? "#64748B" : "#FFFFFF"} />
+                <Text style={styles.listingHeaderSideButtonText}>
+                  {UI_COPY.myListingsAction}
+                </Text>
+              </Pressable>
+            </View>
+
+            <ScrollView
+              style={styles.listingFullscreenScroll}
+              contentContainerStyle={styles.listingFullscreenScrollContent}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.modalLabel}>{UI_COPY.kindLabel}</Text>
+              <View style={styles.listingKindRow}>
+                {LISTING_KIND_OPTIONS.map((option) => {
+                  const active = listingForm.listingKind === option.code;
+                  return (
+                    <Pressable
+                      key={option.code}
+                      testID={`market-add-kind-${option.code}`}
+                      onPress={() => onChangeListingKind(option.code)}
+                      style={[
+                        styles.listingKindChip,
+                        active && styles.listingKindChipActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.listingKindChipText,
+                          active && styles.listingKindChipTextActive,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              {validationErrors.listingKind ? (
+                <Text testID="market-add-kind-error" style={styles.fieldErrorText}>
+                  {validationErrors.listingKind}
+                </Text>
+              ) : null}
+              {firstValidationError ? (
+                <View testID="market-add-error-summary" style={styles.addListingErrorSummary}>
+                  <Text style={styles.addListingErrorSummaryText}>{firstValidationError}</Text>
+                </View>
+              ) : null}
+              {statusLabel ? (
+                <Text testID="market-add-publish-state" style={styles.addListingPublishStateText}>
+                  {publishedListingId ? `${statusLabel} ID: ${publishedListingId}` : statusLabel}
+                </Text>
+              ) : null}
+              {publishStatus === "published" && publishedListingId ? (
+                <View testID="market-add-success-state" style={styles.addListingSuccessPanel}>
+                  <Text style={styles.addListingSuccessTitle}>Объявление опубликовано</Text>
+                  <Text style={styles.addListingSuccessText}>Карточка уже доступна в маркете.</Text>
+                  <View style={styles.addListingSuccessActions}>
+                    <Pressable
+                      accessibilityRole="button"
+                      testID="market-add-open-listing"
+                      onPress={onOpenPublishedListing}
+                      style={styles.addListingSuccessPrimary}
+                    >
+                      <Text style={styles.addListingSuccessPrimaryText}>
+                        {UI_COPY.openListingAction}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      testID="market-add-back-to-market"
+                      onPress={onBackToMarket}
+                      style={styles.addListingSuccessSecondary}
+                    >
+                      <Text style={styles.addListingSuccessSecondaryText}>
+                        {backAfterPublishLabel ?? UI_COPY.backToMarketAction}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+
+              <LiveRouteMediaEntrypointPanel
+                variant="marketplace"
+                onPickMedia={onPickMarketplaceMedia}
+                onSnapshotChange={onMarketplaceMediaSnapshotChange}
+              />
+              {validationErrors.media ? (
+                <Text testID="market-add-media-error" style={styles.fieldErrorText}>
+                  {validationErrors.media}
+                </Text>
+              ) : null}
+
+              <LabeledInput
+                ref={titleInputRef}
+                testID="market-add-title"
+                label={UI_COPY.titleLabel}
+                value={listingForm.listingTitle}
+                onChangeText={onChangeListingTitle}
+                placeholder={UI_COPY.titlePlaceholder}
+                hintText="Например: Газоблок 600x200x300, 1000 шт"
+                errorText={validationErrors.listingTitle}
+                required
+                returnKeyType="next"
+                onSubmitEditing={focusDescriptionInput}
+                blurOnSubmit={false}
+                autoCapitalize="sentences"
+                autoCorrect={false}
+              />
+
+              {catalogLoading && listingForm.listingTitle.trim().length >= 2 ? (
+                <Text
+                  style={[
+                    styles.listingHelperText,
+                    styles.listingHelperTextBottom,
+                  ]}
+                >
+                  {UI_COPY.loadingCatalog}
+                </Text>
+              ) : null}
+
+              {catalogResults.map((item) => (
+                <Pressable
+                  key={item.rik_code}
+                  style={styles.catalogItemRow}
+                  onPress={() => onInlineCatalogPick(item)}
+                >
+                  <Text style={styles.catalogItemTitle}>
+                    {item.name_human_ru || UI_COPY.catalogFallback}
+                  </Text>
+                  <Text style={styles.catalogItemMeta}>
+                    {`${UI_COPY.catalogUomLabel}: ${item.uom_code || UI_COPY.noValue} \u00b7 ${UI_COPY.catalogKindLabel}: ${item.kind}`}
+                  </Text>
+                </Pressable>
+              ))}
+
+              {listingCartItems.length > 0 && (
+                <View style={styles.listingCartCard}>
+                  <Text style={styles.listingCartTitle}>
+                    {UI_COPY.addedItemsTitle}
+                  </Text>
+
+                  {listingCartItems.map((item, index) => {
+                    const kindLabel = getListingKindLabel(item.kind);
+                    const lastCartItem = index === listingCartItems.length - 1;
+                    const prefix = kindLabel ? `${kindLabel} \u00b7 ` : "";
+
+                    return (
+                      <View
+                        key={item.id}
+                        style={[
+                          styles.listingCartItem,
+                          lastCartItem && styles.listingCartItemLast,
+                        ]}
+                      >
+                        <Text style={styles.listingCartItemTitle}>
+                          {item.name}
+                        </Text>
+                        <Text style={styles.listingCartItemMeta}>
+                          {`${prefix}${UI_COPY.qtyLabel}: ${item.qty} ${item.uom || ""} \u00b7 ${UI_COPY.priceLabel}: ${item.price} KGS`}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+
+              <LabeledInput
+                ref={descriptionInputRef}
+                testID="market-add-description"
+                label={UI_COPY.descriptionLabel}
+                value={listingForm.listingDescription}
+                onChangeText={onChangeListingDescription}
+                placeholder={UI_COPY.descriptionPlaceholder}
+                hintText="Укажите состояние, доставку, самовывоз и особенности товара."
+                errorText={validationErrors.listingDescription}
+                required
+                multiline
+                big
+                returnKeyType="next"
+                onSubmitEditing={focusPhoneInput}
+                blurOnSubmit
+                autoCapitalize="sentences"
+              />
+
+              <LabeledInput
+                testID="market-add-city"
+                label={UI_COPY.cityLabel}
+                value={listingForm.listingCity}
+                onChangeText={onChangeListingCity}
+                placeholder={UI_COPY.cityPlaceholder}
+                hintText="Выберите город, где находится товар."
+                errorText={validationErrors.listingCity}
+                required
+                returnKeyType="next"
+                autoCapitalize="words"
+              />
+
+              <LabeledInput
+                testID="market-add-price"
+                label={UI_COPY.priceLabel}
+                value={listingForm.listingPrice}
+                onChangeText={onChangeListingPrice}
+                placeholder={UI_COPY.pricePlaceholder}
+                hintText="Укажите цену в KGS."
+                errorText={validationErrors.listingPrice}
+                required
+                keyboardType="numeric"
+                returnKeyType="next"
+              />
+
+              <LabeledInput
+                ref={phoneInputRef}
+                testID="market-add-phone"
+                label={UI_COPY.phoneLabel}
+                value={listingForm.listingPhone}
+                onChangeText={onChangeListingPhone}
+                placeholder={UI_COPY.phonePlaceholder}
+                hintText="Введите номер для связи."
+                errorText={validationErrors.listingPhone}
+                required
+                keyboardType="phone-pad"
+                returnKeyType="done"
+                onSubmitEditing={dismissKeyboard}
+                textContentType="telephoneNumber"
+              />
+            </ScrollView>
+
+            <AppStickyActionBar
+              visible
+              safeAreaAware
+              placement="above_bottom_nav"
+              secondary={[
+                {
+                  labelRu: UI_COPY.cancelAction,
+                  onPress: handleRequestClose,
+                  disabled: publishBusy,
+                  testID: "add-listing-flow-close",
+                },
+              ]}
+              primary={{
+                labelRu: publishLabel,
+                onPress: onPublish,
+                disabled: publishBusy,
+                loading: publishBusy,
+                testID: "add-listing-flow-publish",
+              }}
+            />
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </React19SafeModal>
+
+      <React19SafeModal
+        isVisible={itemModalOpen}
+        onBackdropPress={onItemModalClose}
+        onBackButtonPress={onItemModalClose}
+        backdropOpacity={0.55}
+        hideModalContentWhileAnimating
+        style={styles.listingModalHost}
+      >
+        <View
+          style={[styles.modalCard, styles.compactModalCard]}
+          testID="add-listing-item-modal"
+        >
+          <Text style={styles.modalTitle}>{UI_COPY.itemModalTitle}</Text>
+          <Text style={styles.modalSub}>{UI_COPY.itemModalSub}</Text>
+          {editingItem && (
+            <View style={styles.modalBodySection}>
+              <ScrollView
+                style={styles.modalScrollItem}
+                contentContainerStyle={styles.modalScrollContent}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator
+              >
+                <LabeledInput
+                  testID="market-add-item-city"
+                  label={UI_COPY.cityLabel}
+                  value={editingItem.city || ""}
+                  onChangeText={onChangeEditingItemCity}
+                  placeholder={UI_COPY.cityPlaceholder}
+                />
+
+                <LabeledInput
+                  testID="market-add-item-uom"
+                  label={UI_COPY.uomLabel}
+                  value={editingItem.uom || ""}
+                  onChangeText={onChangeEditingItemUom}
+                  placeholder={UI_COPY.uomPlaceholder}
+                />
+
+                <LabeledInput
+                  testID="market-add-item-qty"
+                  label={UI_COPY.qtyInputLabel}
+                  value={editingItem.qty}
+                  onChangeText={onChangeEditingItemQty}
+                  placeholder={UI_COPY.qtyPlaceholder}
+                  keyboardType="numeric"
+                />
+
+                <LabeledInput
+                  testID="market-add-item-price"
+                  label={UI_COPY.priceInputLabel}
+                  value={editingItem.price}
+                  onChangeText={onChangeEditingItemPrice}
+                  placeholder={UI_COPY.pricePlaceholder}
+                  keyboardType="numeric"
+                />
+              </ScrollView>
+            </View>
+          )}
+          <View style={styles.modalButtonsRow}>
+            <Pressable
+              testID="add-listing-item-cancel"
+              style={[styles.modalBtn, styles.modalBtnSecondary]}
+              onPress={onItemModalClose}
+            >
+              <Text style={styles.modalBtnSecondaryText}>
+                {UI_COPY.cancelAction}
+              </Text>
+            </Pressable>
+            <Pressable
+              testID="add-listing-item-confirm"
+              style={[styles.modalBtn, styles.modalBtnPrimary]}
+              onPress={onConfirmEditingItem}
+            >
+              <Text style={styles.modalBtnPrimaryText}>
+                {UI_COPY.addAction}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </React19SafeModal>
+    </>
+  );
+}
+
+export default ListingModal;

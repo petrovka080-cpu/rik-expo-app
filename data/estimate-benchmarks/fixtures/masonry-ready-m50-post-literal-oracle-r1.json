@@ -1,0 +1,53 @@
+{
+  "contract": "m50-post-independent-literal-count-oracle/r1",
+  "sourceSha256": "fac02f9833c4844770519dc8560ec579b118e9b665f920cebf5cf38e4434fc28",
+  "expectedNotFromCompiledRows": true,
+  "literalCounts": {
+    "rotating-tubs": {
+      "quantity": "3",
+      "unitId": "piece"
+    },
+    "steel-boxes": {
+      "quantity": "4",
+      "unitId": "piece"
+    },
+    "shovels": {
+      "quantity": "2",
+      "unitId": "piece"
+    },
+    "rigger-crew": {
+      "quantity": "2",
+      "unitId": "person"
+    }
+  },
+  "small": {
+    "wallLength": "1",
+    "wallHeight": "1",
+    "netWallVolume": "0.25",
+    "readyM50M3": "0.0585"
+  },
+  "normal": {
+    "wallLength": "10",
+    "wallHeight": "3",
+    "openings": "5.5",
+    "insertVolume": "0.125",
+    "netWallVolume": "6",
+    "readyM50M3": "1.404"
+  },
+  "stockShortfall": {
+    "available": [
+      "1",
+      "4",
+      "0"
+    ],
+    "expected": [
+      "2",
+      "0",
+      "2"
+    ]
+  },
+  "newPaidOwners": 0,
+  "newProcurementOwners": 0,
+  "full": 0,
+  "closedNeeds": 0
+}

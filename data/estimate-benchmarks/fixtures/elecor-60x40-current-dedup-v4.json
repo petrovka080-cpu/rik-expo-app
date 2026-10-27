@@ -1,0 +1,3101 @@
+{
+  "contract": "elecor-60x40-current-bounded-physical-dedup-probe/v2",
+  "sourceHead": "b56e311d5a34094d19cd2a38b8cecbb386aef304",
+  "master": {
+    "path": "C:/Users/User/Downloads/MASTER_TZ_GOX_BUILD_PRODUCTION (10).md",
+    "sha256": "90e84fbfbf17321f1dd935f5e56a090f31619a3336e582bfabe1e66fcdfa48d7",
+    "section": "20.82"
+  },
+  "pair": {
+    "definitionReleaseId": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+    "searchReleaseId": "756fad32-723d-553c-8215-1e6271c05ec7"
+  },
+  "atUtc": "2026-10-18T09:56:20.781Z",
+  "inputSha256": "cc0e5c687cf79157acbb3799845cc52784ac6ccda5697a758862ecd9716d405a",
+  "sqlSha256": {
+    "header": "d9e87de1f898b643ea0fb22675131605720bc53d07833148bc5e52f936475c8f",
+    "deep": "a4158f91d1da75fb2893a1e01ba4e16cbf36f0a310683c45821e684cba47ca83"
+  },
+  "transaction": {
+    "address": "127.0.0.1",
+    "port": 55432,
+    "database": "rik_r4_runtime_b5_v2",
+    "read_only": "on",
+    "isolation": "repeatable read"
+  },
+  "decision": "NO_MATCH_IN_DECLARED_CABLE_CHANNEL_SCOPE_CLASSIFICATION_REQUIRED",
+  "scopeBoundary": "Global current resource titles plus public current search/identity cable-channel classifications; deep JSON only exact finite header definitions. Deep JSON was NOT inspected globally; a hidden/misclassified profile outside this scope is not disproved.",
+  "directIdentityMatches": [],
+  "directSearchMatches": [],
+  "payload": {
+    "header": {
+      "pair": {
+        "search": {
+          "id": "756fad32-723d-553c-8215-1e6271c05ec7",
+          "status": "draft",
+          "definitionReleaseId": "039c5354-6791-52b5-8a47-ffacebb04d5c"
+        },
+        "definition": {
+          "id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "status": "prepared"
+        }
+      },
+      "candidates": [
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_high_load",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "182867c2f20c93fc73776c393a2610a0ec98e6aa94410b7f149266d7e9c271e4",
+          "definition_sha256": "182867c2f20c93fc73776c393a2610a0ec98e6aa94410b7f149266d7e9c271e4",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "8bcc06bc-17ce-5603-9430-276ddea3aa2b",
+          "approved_template_baseline_id": "7407e964-2f04-59c8-a53e-4891f09b668f"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_large_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "f24d25463cadca77b6ef83fa0614fae71821638f2bce6b1e52196245458632ba",
+          "definition_sha256": "f24d25463cadca77b6ef83fa0614fae71821638f2bce6b1e52196245458632ba",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "54c73a9e-b272-5967-9eac-c04e6fd09b7f",
+          "approved_template_baseline_id": "eb9aa5e9-9574-5559-923c-8b28bad384da"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_small_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "72b634da382506d3e1584961d7ade6f88a40eb06752848f8a2b9282ee06b27c4",
+          "definition_sha256": "72b634da382506d3e1584961d7ade6f88a40eb06752848f8a2b9282ee06b27c4",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "2db0903f-aef7-5c31-8cef-fab2a63715c9",
+          "approved_template_baseline_id": "6ce7aa7d-c69a-5b41-9654-06297e1700f6"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_standard",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "e1e8737b4c563c3c680e90c78db2e8f9f60189fd73f7f37907d380751929349f",
+          "definition_sha256": "e1e8737b4c563c3c680e90c78db2e8f9f60189fd73f7f37907d380751929349f",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "ea91d1c8-5ecb-51a7-86a9-c138c477fdf3",
+          "approved_template_baseline_id": "6d92a101-6ee4-57bb-a5e2-e2fe63215642"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_technical_room",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "993c7499db5b970d61a585a5f46f449d95a4d661df3f0725e31139794f5420bb",
+          "definition_sha256": "993c7499db5b970d61a585a5f46f449d95a4d661df3f0725e31139794f5420bb",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "6d660313-e598-57e7-a55c-101595201e3d",
+          "approved_template_baseline_id": "2baf36b9-76a4-50cc-871d-893b63c8e370"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_wet_zone",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "c1426708a9123840cab6286ab961676e6df48ca56c456c1fe32d247be54c84f8",
+          "definition_sha256": "c1426708a9123840cab6286ab961676e6df48ca56c456c1fe32d247be54c84f8",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "6d794b24-3e71-5ff8-9002-ddae18bb6ff8",
+          "approved_template_baseline_id": "a3e44533-2e9a-530c-8746-4f0a2d778886"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_high_load",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "f68579b2a3a6ced431e504675926da61763d08bf66ab877e17b6f2c5c006c6fc",
+          "definition_sha256": "f68579b2a3a6ced431e504675926da61763d08bf66ab877e17b6f2c5c006c6fc",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "2aca253c-00d6-5904-bc17-12cee4e5f636",
+          "approved_template_baseline_id": "0e6af9c3-8af4-5ab4-85e9-54130ae03a5e"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_large_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "18e43a7a6211911588ae95ac34e164d444b71bc31a0579f1892d78589f21e03b",
+          "definition_sha256": "18e43a7a6211911588ae95ac34e164d444b71bc31a0579f1892d78589f21e03b",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "756ab076-b201-53d9-af38-64c374b299fb",
+          "approved_template_baseline_id": "8fb9e9a5-0b31-5eb0-ae4e-3b5773baad80"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_small_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "0d5dc9045eecb9a8e47ce1f205f53c40fc83d33983f6416557ef98245d6d81f2",
+          "definition_sha256": "0d5dc9045eecb9a8e47ce1f205f53c40fc83d33983f6416557ef98245d6d81f2",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "db17ef8e-fae1-5a89-a956-9428e36e509c",
+          "approved_template_baseline_id": "30476db3-a26a-5ffe-8eb3-cdb240bc6371"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_standard",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "f2a6be8e7045b05b69eb555cc29f8c7266a886b975887ddface6aa4401f4fb81",
+          "definition_sha256": "f2a6be8e7045b05b69eb555cc29f8c7266a886b975887ddface6aa4401f4fb81",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "87952b07-b820-54b7-bc8e-e413965c64ee",
+          "approved_template_baseline_id": "ea2c3b18-4291-562d-9b70-18dee89b75ca"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_technical_room",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "000eda2f07345c8f64f4fe59cbb1d949f943a2a799b554c2d47357b9f3d7e4c3",
+          "definition_sha256": "000eda2f07345c8f64f4fe59cbb1d949f943a2a799b554c2d47357b9f3d7e4c3",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "f74675ae-5f4d-5b71-86a3-a257b329891b",
+          "approved_template_baseline_id": "127c257d-29b1-5f33-9e50-ac3a19441093"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_wet_zone",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "a03e85e762c0864dcce265a91ee008a69b41e63f32f268fda954ed454687af3f",
+          "definition_sha256": "a03e85e762c0864dcce265a91ee008a69b41e63f32f268fda954ed454687af3f",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "8120a3ca-bab5-5103-ab85-5aef6832c0c1",
+          "approved_template_baseline_id": "42a0a561-f09d-5c6a-ac35-5385683bd69f"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION",
+            "KNOWN_REGISTERED_INSTALL_FAMILY_REFERENCE"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_high_load",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "3b6cf68e428ba4b8d29c4d6d8c9039a3060583aa13bf017bce9c5a080232fd50",
+          "definition_sha256": "3b6cf68e428ba4b8d29c4d6d8c9039a3060583aa13bf017bce9c5a080232fd50",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "b6b48b6f-974c-5603-aca8-15840cf04a77",
+          "approved_template_baseline_id": "d9acc5e5-5cdc-5b96-ac84-ecb8ff15ccd1"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION",
+            "KNOWN_REGISTERED_INSTALL_FAMILY_REFERENCE"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_large_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "4aa987859925bf586ab01b825ea919e5c4f4077599704217b8d324546377e8fa",
+          "definition_sha256": "4aa987859925bf586ab01b825ea919e5c4f4077599704217b8d324546377e8fa",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "86c97373-24f8-52a3-a3b5-168c08f713a1",
+          "approved_template_baseline_id": "b4003f2f-ce31-5b7b-b36b-ef2c820c64cb"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION",
+            "KNOWN_REGISTERED_INSTALL_FAMILY_REFERENCE"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_small_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "be37575440f68f601ce2fa7fe08e7f921810fcd9f2dc36a0699c7ee86d407d1e",
+          "definition_sha256": "be37575440f68f601ce2fa7fe08e7f921810fcd9f2dc36a0699c7ee86d407d1e",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "2eb59d67-9c09-5c36-a018-e7dd5c03e851",
+          "approved_template_baseline_id": "ab1f2777-8322-5eec-8947-f0b4ef99106b"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION",
+            "KNOWN_REGISTERED_INSTALL_FAMILY_REFERENCE"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_standard",
+          "resourceCount": 41,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "e5a3ddb236f5a9fc0e0c10804d1daa18284201fd981c5c63db8157bb9401e1cd",
+          "definition_sha256": "e5a3ddb236f5a9fc0e0c10804d1daa18284201fd981c5c63db8157bb9401e1cd",
+          "source_release_id": "ab4f37ed-6956-5631-bddf-d8e37a7de20b",
+          "definition_version": 6,
+          "definition_version_id": "72e33bb1-a323-519d-b68a-c9d44eb00a10",
+          "approved_template_baseline_id": "5c066a20-3958-5ae6-a00d-97d1cebd55e5"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION",
+            "KNOWN_REGISTERED_INSTALL_FAMILY_REFERENCE"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_technical_room",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "b5b1b985ffeecc552ed15e97f8915eb5cc984c37abafa24a033f19627f29209c",
+          "definition_sha256": "b5b1b985ffeecc552ed15e97f8915eb5cc984c37abafa24a033f19627f29209c",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "5486b7db-853e-5084-bdff-39a7787c0a48",
+          "approved_template_baseline_id": "1639d5f3-aae4-5cdd-a23b-81f4514e59f9"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION",
+            "KNOWN_REGISTERED_INSTALL_FAMILY_REFERENCE"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_wet_zone",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "764b6334043a66000d770e723252ffe089fac2fa683e08786b7a0599d98a3ed2",
+          "definition_sha256": "764b6334043a66000d770e723252ffe089fac2fa683e08786b7a0599d98a3ed2",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "66c579f7-b1dc-5fcd-9c2e-89b73013aba1",
+          "approved_template_baseline_id": "11edc074-b9cd-5d2d-b141-11127b19ec34"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_high_load",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "7384eb98f0523b9e298bd6adf75d1104184bef0bc96e4193b32b563619e2bf52",
+          "definition_sha256": "7384eb98f0523b9e298bd6adf75d1104184bef0bc96e4193b32b563619e2bf52",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "fae1bdf7-f0b3-5da6-bd93-e612d1c75e79",
+          "approved_template_baseline_id": "ad704e21-850c-5056-bc03-09d417635384"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_large_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "d1e2f170ddc655d9fcee0b4e1020d9bec59e619cc8d11b2574c56ffb364d726f",
+          "definition_sha256": "d1e2f170ddc655d9fcee0b4e1020d9bec59e619cc8d11b2574c56ffb364d726f",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "6604de84-7e99-579c-bae3-5a03ade42ad8",
+          "approved_template_baseline_id": "8e2143ab-671a-5497-b810-1174b669edf3"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_small_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "ee60147c99fcd181dcaa2a2a6e2272798ef359a9591e5a0d7b999353dd27cc39",
+          "definition_sha256": "ee60147c99fcd181dcaa2a2a6e2272798ef359a9591e5a0d7b999353dd27cc39",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "60dba903-0026-5404-a7f2-4ed85c7098bc",
+          "approved_template_baseline_id": "2baedf53-6180-53ed-8b2d-31527766361d"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_standard",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "115d1966a0ea1041accd85d4b4ff070c31eb4ca3fc04b06bae17debd53a45ddb",
+          "definition_sha256": "115d1966a0ea1041accd85d4b4ff070c31eb4ca3fc04b06bae17debd53a45ddb",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "d25daa5a-fdef-54f6-9f1a-f7462f0c03f1",
+          "approved_template_baseline_id": "9c3eba80-c597-5d4d-a9c6-a69f53c1ae6f"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_technical_room",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "964e4a4d0ee149bf37887f5da2b76c843dc5edfedda2448eda9976e54f1027de",
+          "definition_sha256": "964e4a4d0ee149bf37887f5da2b76c843dc5edfedda2448eda9976e54f1027de",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "c92ae40c-5994-5d33-a650-ef5d0642259d",
+          "approved_template_baseline_id": "44a75352-f3fc-53be-bb95-8bcd12214529"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_wet_zone",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "ee0d25a4c3c98eb4eb69b8623ac7a5c5f0b85d47aab5a0ba2af4796e7501c63d",
+          "definition_sha256": "ee0d25a4c3c98eb4eb69b8623ac7a5c5f0b85d47aab5a0ba2af4796e7501c63d",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "a71b8fe6-3fbb-50dc-8724-22bf38826db5",
+          "approved_template_baseline_id": "830abd48-f913-5315-b702-2c2a250620d4"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_high_load",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "c097969d7fcda5d70f65a2ac139077137896cb9976c00c1a4b8e114e60042dfe",
+          "definition_sha256": "c097969d7fcda5d70f65a2ac139077137896cb9976c00c1a4b8e114e60042dfe",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "e1af86e3-63bb-5d2f-92c6-339bfe9fb9ea",
+          "approved_template_baseline_id": "8b151a51-aee0-58dc-962a-b1b3ea5efc6c"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_large_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "110148a4a512f141b7dbcc22c84afab20a674baed3998227185fe5e9d336a84e",
+          "definition_sha256": "110148a4a512f141b7dbcc22c84afab20a674baed3998227185fe5e9d336a84e",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "55e567cc-8e40-57d9-b8ed-64fd58d3f42b",
+          "approved_template_baseline_id": "757edb9a-65ec-55f4-930e-5fc004292f86"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_small_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "ca920dc2dd7019a40062432b4b96d3dd7286c6c058afa27655b7ac3321929ac5",
+          "definition_sha256": "ca920dc2dd7019a40062432b4b96d3dd7286c6c058afa27655b7ac3321929ac5",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "0bac1c76-6798-529f-a0ef-77465386720f",
+          "approved_template_baseline_id": "84ba432a-4fc7-5a81-bcaa-f90619252570"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_standard",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "d523a092031d010ad13c1b8db247853fda1cff8ff817f80d17bf6a7d49f1e86b",
+          "definition_sha256": "d523a092031d010ad13c1b8db247853fda1cff8ff817f80d17bf6a7d49f1e86b",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "beeb9b3c-7ee3-565c-bb17-8782cf0d7c4c",
+          "approved_template_baseline_id": "fb9a2896-67e8-5540-b535-ecc7eb79c7f0"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_technical_room",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "f3a3ed970f31b10d588af5745963c04a34239edcf9cd8c662c074fc94b98a034",
+          "definition_sha256": "f3a3ed970f31b10d588af5745963c04a34239edcf9cd8c662c074fc94b98a034",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "ff2d1d1b-4f52-5cc7-8072-74317eb63d5a",
+          "approved_template_baseline_id": "33370a77-58c5-5053-8003-73216e78bb3d"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_wet_zone",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "3314c22cc95f6fb358bdbecb10918e7cafe9ccc1a862c34875b444f9ef5902cc",
+          "definition_sha256": "3314c22cc95f6fb358bdbecb10918e7cafe9ccc1a862c34875b444f9ef5902cc",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "1f4b2cea-6fbe-5fee-9bf3-f36efd8699a1",
+          "approved_template_baseline_id": "ba85e6bd-4ead-5348-b887-ad621be2b8d6"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_large_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "992bde2459912a33aea17ba0eb770609915d034c4a1dcb1d6759c9dde35dc191",
+          "definition_sha256": "992bde2459912a33aea17ba0eb770609915d034c4a1dcb1d6759c9dde35dc191",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "2b585135-e0a8-57d8-9f71-cfa6a60aa831",
+          "approved_template_baseline_id": "8f188d40-6af7-5924-b633-93b908da5bb4"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_small_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "666544bc1e18dd3b421dda0a6fe28b4e0b51ccaad725bb461f1d4faa4084ed80",
+          "definition_sha256": "666544bc1e18dd3b421dda0a6fe28b4e0b51ccaad725bb461f1d4faa4084ed80",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "1d89c9f8-b344-58e7-b54e-5c8d04cf6798",
+          "approved_template_baseline_id": "3be9985b-f4de-5df7-85c0-7fe5db3eb592"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_standard",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "7592ac36303fa1f65ee0ec325d98ca2265ddfecd33f2cdefaad81f5e254a4c4d",
+          "definition_sha256": "7592ac36303fa1f65ee0ec325d98ca2265ddfecd33f2cdefaad81f5e254a4c4d",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "d01c67ed-7928-5dca-a7a6-bc91b0ac636f",
+          "approved_template_baseline_id": "0ba724ce-3df5-5392-a7ee-1c612b9bb8ab"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_technical_room",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "4dbe1c3ecbd1c187db9f0a7cec0880ce42f2785cb0ce30d7338784481e9e8bc0",
+          "definition_sha256": "4dbe1c3ecbd1c187db9f0a7cec0880ce42f2785cb0ce30d7338784481e9e8bc0",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "57c80e9d-b08c-5459-a81d-a54a550ede60",
+          "approved_template_baseline_id": "7f584914-e60d-5c62-a0e5-c4cb7c28b6b4"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_wet_zone",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "abef2ea6fc50ac84fe8aa64c445c898d579ab9598864bf14a98724f721877887",
+          "definition_sha256": "abef2ea6fc50ac84fe8aa64c445c898d579ab9598864bf14a98724f721877887",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "aa7bb70b-ae39-5e4c-88be-59acd79e758b",
+          "approved_template_baseline_id": "a4fcb2c4-d3a7-589a-94c4-9ec559032989"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_high_load",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "163de59aa5955b37b08fa286981ce479a9ed958fe64c92faee3c528f38c36171",
+          "definition_sha256": "163de59aa5955b37b08fa286981ce479a9ed958fe64c92faee3c528f38c36171",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "c30fcaa7-f0d4-5250-97ae-8f51f2a31cc2",
+          "approved_template_baseline_id": "b628c9cc-0342-5795-bbce-72eeb9098fcd"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_large_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "2bb217dd1edcdc16964948d772a81dd76add9625729f52804481a450db07a6b5",
+          "definition_sha256": "2bb217dd1edcdc16964948d772a81dd76add9625729f52804481a450db07a6b5",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "5b14fe62-5368-51bc-beb3-c319b1d6ea62",
+          "approved_template_baseline_id": "aa04da15-cf45-5e7f-8eea-7fa4b12803be"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_small_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "b2446ded64e3e24106d16c1ba90531eff4649aa08859b708a33df9c978ba4531",
+          "definition_sha256": "b2446ded64e3e24106d16c1ba90531eff4649aa08859b708a33df9c978ba4531",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "a6ec86e9-cb92-5535-b012-1d2ef248df83",
+          "approved_template_baseline_id": "423b057d-b7f6-5310-825d-5ef886fae854"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_standard",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "c9124cd9b1041b8c692b7b680ef300bc229c796da27dc924e600d59c4f2ff956",
+          "definition_sha256": "c9124cd9b1041b8c692b7b680ef300bc229c796da27dc924e600d59c4f2ff956",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "9749f9a5-9ef4-554b-b715-d9c21b188abf",
+          "approved_template_baseline_id": "d06c436e-0eca-5a56-a3fb-8974de865bd9"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_technical_room",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "5db78576d1a9b5e7d4731880868ce06bfcbd8db5e547a8dfca345500d1da2467",
+          "definition_sha256": "5db78576d1a9b5e7d4731880868ce06bfcbd8db5e547a8dfca345500d1da2467",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "a7d49be7-9606-57fa-880d-426f6413d4a0",
+          "approved_template_baseline_id": "07a43587-7663-5db1-925c-2236a19ff7fb"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_wet_zone",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "a52591e8c24de1f9555f9208c5d62d2c190534c335cb61a5df929dde167ef3c3",
+          "definition_sha256": "a52591e8c24de1f9555f9208c5d62d2c190534c335cb61a5df929dde167ef3c3",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "c1d180df-25df-5ad5-b40e-e92fcfcce8ff",
+          "approved_template_baseline_id": "c76e0661-4349-5cd1-85d4-ea9b5e5106bf"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_high_load",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "cc0909bc3821db61a052f8f44a95edc8d680fc24a90ef8dd6090ac2d62627fbf",
+          "definition_sha256": "cc0909bc3821db61a052f8f44a95edc8d680fc24a90ef8dd6090ac2d62627fbf",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "902cc9d7-de3d-542f-965c-4b3b547eab4f",
+          "approved_template_baseline_id": "e6c2fa06-58aa-531f-b72f-e89c50a00e39"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_large_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "49bef8e9077ec42a8ed1bf984fdf165c6e1a46fd7db5b171ae185c9a512bc768",
+          "definition_sha256": "49bef8e9077ec42a8ed1bf984fdf165c6e1a46fd7db5b171ae185c9a512bc768",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "496d2050-fcfc-5430-8985-f5a14283e981",
+          "approved_template_baseline_id": "38740013-6bd4-5a42-a182-c56a4aef80ec"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_small_area",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "0d712fdb48501e4ef1c8627be5b1c5f758111adae3e89f8be0c698af801093e0",
+          "definition_sha256": "0d712fdb48501e4ef1c8627be5b1c5f758111adae3e89f8be0c698af801093e0",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "cbd52d1a-bb2a-5f03-88a1-821b60c0cd5e",
+          "approved_template_baseline_id": "83e242f2-8d9b-5fcd-81e1-9a3bc71ce092"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_standard",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "e90b760509458b6a519f79afb20649266c26accb95211ea96e7031e7392220ee",
+          "definition_sha256": "e90b760509458b6a519f79afb20649266c26accb95211ea96e7031e7392220ee",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "ccbf8bd9-6a62-5c1b-850a-9798404abbe2",
+          "approved_template_baseline_id": "786562e8-264e-50c3-89d1-f130a5e44175"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_technical_room",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "97bc40b43263f3e1307103dbba9b05b3e03be80aed787db4596ae32ccdbc312f",
+          "definition_sha256": "97bc40b43263f3e1307103dbba9b05b3e03be80aed787db4596ae32ccdbc312f",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "492beda6-c52e-5bfe-9485-921d36f63ccf",
+          "approved_template_baseline_id": "267b804d-4418-5ac1-ac9d-c41436cb068a"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_wet_zone",
+          "resourceCount": 63,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "a1253bcf1eea874cab56fa3d885d5e29aaabc3cc1ac4bf31c454b2529555935b",
+          "definition_sha256": "a1253bcf1eea874cab56fa3d885d5e29aaabc3cc1ac4bf31c454b2529555935b",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "7f98de20-0397-58d1-97aa-ef7cdfaf3ef1",
+          "approved_template_baseline_id": "3afdf92a-ee66-580e-b607-168b1171b49a"
+        },
+        {
+          "reasons": [
+            "CURRENT_SEARCH_CABLE_CHANNEL_CLASSIFICATION",
+            "IDENTITY_CABLE_CHANNEL_CLASSIFICATION"
+          ],
+          "catalog_id": "canonical-work:expanded:cable_ducts",
+          "resourceCount": 59,
+          "baseline_ready": true,
+          "scenario_ready": true,
+          "definition_hash": "b22cd844db32bc44ba6051e8f6e77292c8087d1b42578a48816d186483cce4d2",
+          "definition_sha256": "b22cd844db32bc44ba6051e8f6e77292c8087d1b42578a48816d186483cce4d2",
+          "source_release_id": "3788cc88-701d-5cc9-9130-c61262cb9979",
+          "definition_version": 3,
+          "definition_version_id": "9492a30e-702e-5534-96cb-a014f458f57b",
+          "approved_template_baseline_id": "1df2c6e2-f2bb-5b1f-b131-04e7ee97df80"
+        }
+      ],
+      "scopeMetrics": {
+        "deepJsonScope": "NOT_READ_IN_HEADER",
+        "candidateDefinitions": 48,
+        "candidateResourceRows": 2998,
+        "searchClassifiedCatalogs": 48,
+        "currentManifestDefinitions": 10458,
+        "globalResourceJsonFieldsRead": false,
+        "globalTitleMatchingDefinitions": 0,
+        "globalTitleMatchingResourceRows": 0,
+        "identityClassifiedRowsIncludingNoncurrent": 142
+      },
+      "proposedIdentity": {
+        "kmsSku": "CKMP10D-S-060-040-K01",
+        "workKey": "electrical_elecor_60x40_white_single_straight_route_materials",
+        "decision": "PROPOSED_DISTINCT_PHYSICAL_PROFILE_APPEND_REQUIRES_ACTUAL_DEDUPLICATION_AND_CLASSIFICATION",
+        "catalogId": "canonical-work:master:electrical_elecor_60x40_white_single_straight_route_materials",
+        "persisted": false,
+        "channelSku": "CKK10-060-040-1-K01-018",
+        "sourceIdentity": "manufacturer:iek:elecor:CKK10-060-040-1-K01-018:single-straight-route:CKMP10D-S-060-040-K01"
+      },
+      "searchClassifications": [
+        {
+          "aliases": [
+            "пусконаладка кабель-канала для высокой нагрузки"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_commission",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_high_load",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "пусконаладка кабель-канала для высокой нагрузки",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "8bcc06bc-17ce-5603-9430-276ddea3aa2b"
+        },
+        {
+          "aliases": [
+            "пусконаладка кабель-канала на большой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_commission",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_large_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "пусконаладка кабель-канала на большой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "54c73a9e-b272-5967-9eac-c04e6fd09b7f"
+        },
+        {
+          "aliases": [
+            "пусконаладка кабель-канала на малой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_commission",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_small_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "пусконаладка кабель-канала на малой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "2db0903f-aef7-5c31-8cef-fab2a63715c9"
+        },
+        {
+          "aliases": [
+            "пусконаладка кабель-канала в стандартной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_commission",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_standard",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "пусконаладка кабель-канала в стандартной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "ea91d1c8-5ecb-51a7-86a9-c138c477fdf3"
+        },
+        {
+          "aliases": [
+            "пусконаладка кабель-канала в техническом помещении"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_commission",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_technical_room",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "пусконаладка кабель-канала в техническом помещении",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "6d660313-e598-57e7-a55c-101595201e3d"
+        },
+        {
+          "aliases": [
+            "пусконаладка кабель-канала во влажной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_commission",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_wet_zone",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "пусконаладка кабель-канала во влажной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "6d794b24-3e71-5ff8-9002-ddae18bb6ff8"
+        },
+        {
+          "aliases": [
+            "подключение кабель-канала для высокой нагрузки"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_connect",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_high_load",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подключение кабель-канала для высокой нагрузки",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "2aca253c-00d6-5904-bc17-12cee4e5f636"
+        },
+        {
+          "aliases": [
+            "подключение кабель-канала на большой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_connect",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_large_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подключение кабель-канала на большой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "756ab076-b201-53d9-af38-64c374b299fb"
+        },
+        {
+          "aliases": [
+            "подключение кабель-канала на малой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_connect",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_small_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подключение кабель-канала на малой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "db17ef8e-fae1-5a89-a956-9428e36e509c"
+        },
+        {
+          "aliases": [
+            "подключение кабель-канала в стандартной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_connect",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_standard",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подключение кабель-канала в стандартной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "87952b07-b820-54b7-bc8e-e413965c64ee"
+        },
+        {
+          "aliases": [
+            "подключение кабель-канала в техническом помещении"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_connect",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_technical_room",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подключение кабель-канала в техническом помещении",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "f74675ae-5f4d-5b71-86a3-a257b329891b"
+        },
+        {
+          "aliases": [
+            "подключение кабель-канала во влажной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_connect",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_wet_zone",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подключение кабель-канала во влажной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "8120a3ca-bab5-5103-ab85-5aef6832c0c1"
+        },
+        {
+          "aliases": [
+            "монтаж кабель-канала для высокой нагрузки"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_high_load",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "монтаж кабель-канала для высокой нагрузки",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "b6b48b6f-974c-5603-aca8-15840cf04a77"
+        },
+        {
+          "aliases": [
+            "монтаж кабель-канала на большой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_large_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "монтаж кабель-канала на большой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "86c97373-24f8-52a3-a3b5-168c08f713a1"
+        },
+        {
+          "aliases": [
+            "монтаж кабель-канала на малой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_small_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "монтаж кабель-канала на малой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "2eb59d67-9c09-5c36-a018-e7dd5c03e851"
+        },
+        {
+          "aliases": [
+            "монтаж кабель канала 100 м",
+            "установка кабель-канала ELECOR 40x25",
+            "открытая прокладка в пластиковом кабельном канале"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_standard",
+          "selectable": true,
+          "primary_uom": "м",
+          "physical_match": false,
+          "canonical_name_ru": "монтаж кабель-канала IEK ELECOR 40×25 в стандартной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "72e33bb1-a323-519d-b68a-c9d44eb00a10"
+        },
+        {
+          "aliases": [
+            "монтаж кабель-канала в техническом помещении"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_technical_room",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "монтаж кабель-канала в техническом помещении",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "5486b7db-853e-5084-bdff-39a7787c0a48"
+        },
+        {
+          "aliases": [
+            "монтаж кабель-канала во влажной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_wet_zone",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "монтаж кабель-канала во влажной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "66c579f7-b1dc-5fcd-9c2e-89b73013aba1"
+        },
+        {
+          "aliases": [
+            "прокладка кабель-канала для высокой нагрузки"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_lay",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_high_load",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "прокладка кабель-канала для высокой нагрузки",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "fae1bdf7-f0b3-5da6-bd93-e612d1c75e79"
+        },
+        {
+          "aliases": [
+            "прокладка кабель-канала на большой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_lay",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_large_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "прокладка кабель-канала на большой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "6604de84-7e99-579c-bae3-5a03ade42ad8"
+        },
+        {
+          "aliases": [
+            "прокладка кабель-канала на малой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_lay",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_small_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "прокладка кабель-канала на малой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "60dba903-0026-5404-a7f2-4ed85c7098bc"
+        },
+        {
+          "aliases": [
+            "прокладка кабель-канала в стандартной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_lay",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_standard",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "прокладка кабель-канала в стандартной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "d25daa5a-fdef-54f6-9f1a-f7462f0c03f1"
+        },
+        {
+          "aliases": [
+            "прокладка кабель-канала в техническом помещении"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_lay",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_technical_room",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "прокладка кабель-канала в техническом помещении",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "c92ae40c-5994-5d33-a650-ef5d0642259d"
+        },
+        {
+          "aliases": [
+            "прокладка кабель-канала во влажной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_lay",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_wet_zone",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "прокладка кабель-канала во влажной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "a71b8fe6-3fbb-50dc-8724-22bf38826db5"
+        },
+        {
+          "aliases": [
+            "маркировка кабель-канала для высокой нагрузки"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_mark",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_high_load",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "маркировка кабель-канала для высокой нагрузки",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "e1af86e3-63bb-5d2f-92c6-339bfe9fb9ea"
+        },
+        {
+          "aliases": [
+            "маркировка кабель-канала на большой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_mark",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_large_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "маркировка кабель-канала на большой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "55e567cc-8e40-57d9-b8ed-64fd58d3f42b"
+        },
+        {
+          "aliases": [
+            "маркировка кабель-канала на малой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_mark",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_small_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "маркировка кабель-канала на малой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "0bac1c76-6798-529f-a0ef-77465386720f"
+        },
+        {
+          "aliases": [
+            "маркировка кабель-канала в стандартной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_mark",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_standard",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "маркировка кабель-канала в стандартной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "beeb9b3c-7ee3-565c-bb17-8782cf0d7c4c"
+        },
+        {
+          "aliases": [
+            "маркировка кабель-канала в техническом помещении"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_mark",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_technical_room",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "маркировка кабель-канала в техническом помещении",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "ff2d1d1b-4f52-5cc7-8072-74317eb63d5a"
+        },
+        {
+          "aliases": [
+            "маркировка кабель-канала во влажной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_mark",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_wet_zone",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "маркировка кабель-канала во влажной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "1f4b2cea-6fbe-5fee-9bf3-f36efd8699a1"
+        },
+        {
+          "aliases": [
+            "подготовка кабель-канала на большой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_prepare",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_large_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подготовка кабель-канала на большой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "2b585135-e0a8-57d8-9f71-cfa6a60aa831"
+        },
+        {
+          "aliases": [
+            "подготовка кабель-канала на малой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_prepare",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_small_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подготовка кабель-канала на малой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "1d89c9f8-b344-58e7-b54e-5c8d04cf6798"
+        },
+        {
+          "aliases": [
+            "подготовка кабель-канала в стандартной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_prepare",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_standard",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подготовка кабель-канала в стандартной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "d01c67ed-7928-5dca-a7a6-bc91b0ac636f"
+        },
+        {
+          "aliases": [
+            "подготовка кабель-канала в техническом помещении"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_prepare",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_technical_room",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подготовка кабель-канала в техническом помещении",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "57c80e9d-b08c-5459-a81d-a54a550ede60"
+        },
+        {
+          "aliases": [
+            "подготовка кабель-канала во влажной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_prepare",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_wet_zone",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "подготовка кабель-канала во влажной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "aa7bb70b-ae39-5e4c-88be-59acd79e758b"
+        },
+        {
+          "aliases": [
+            "замена кабель-канала для высокой нагрузки"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_replace",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_high_load",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "замена кабель-канала для высокой нагрузки",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "c30fcaa7-f0d4-5250-97ae-8f51f2a31cc2"
+        },
+        {
+          "aliases": [
+            "замена кабель-канала на большой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_replace",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_large_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "замена кабель-канала на большой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "5b14fe62-5368-51bc-beb3-c319b1d6ea62"
+        },
+        {
+          "aliases": [
+            "замена кабель-канала на малой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_replace",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_small_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "замена кабель-канала на малой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "a6ec86e9-cb92-5535-b012-1d2ef248df83"
+        },
+        {
+          "aliases": [
+            "замена кабель-канала в стандартной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_replace",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_standard",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "замена кабель-канала в стандартной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "9749f9a5-9ef4-554b-b715-d9c21b188abf"
+        },
+        {
+          "aliases": [
+            "замена кабель-канала в техническом помещении"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_replace",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_technical_room",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "замена кабель-канала в техническом помещении",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "a7d49be7-9606-57fa-880d-426f6413d4a0"
+        },
+        {
+          "aliases": [
+            "замена кабель-канала во влажной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_replace",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_wet_zone",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "замена кабель-канала во влажной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "c1d180df-25df-5ad5-b40e-e92fcfcce8ff"
+        },
+        {
+          "aliases": [
+            "испытание кабель-канала для высокой нагрузки"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_test",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_high_load",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "испытание кабель-канала для высокой нагрузки",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "902cc9d7-de3d-542f-965c-4b3b547eab4f"
+        },
+        {
+          "aliases": [
+            "испытание кабель-канала на большой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_test",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_large_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "испытание кабель-канала на большой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "496d2050-fcfc-5430-8985-f5a14283e981"
+        },
+        {
+          "aliases": [
+            "испытание кабель-канала на малой площади"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_test",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_small_area",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "испытание кабель-канала на малой площади",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "cbd52d1a-bb2a-5f03-88a1-821b60c0cd5e"
+        },
+        {
+          "aliases": [
+            "испытание кабель-канала в стандартной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_test",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_standard",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "испытание кабель-канала в стандартной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "ccbf8bd9-6a62-5c1b-850a-9798404abbe2"
+        },
+        {
+          "aliases": [
+            "испытание кабель-канала в техническом помещении"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_test",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_technical_room",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "испытание кабель-канала в техническом помещении",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "492beda6-c52e-5bfe-9485-921d36f63ccf"
+        },
+        {
+          "aliases": [
+            "испытание кабель-канала во влажной зоне"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_test",
+          "domain_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_wet_zone",
+          "selectable": true,
+          "primary_uom": "точка",
+          "physical_match": false,
+          "canonical_name_ru": "испытание кабель-канала во влажной зоне",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "7f98de20-0397-58d1-97aa-ef7cdfaf3ef1"
+        },
+        {
+          "aliases": [
+            "Электроснабжение, ЛЭП и подстанции: прокладка кабельных каналов"
+          ],
+          "group_id": "wg:expanded:cable_ducts",
+          "domain_id": "electrical_infrastructure",
+          "catalog_id": "canonical-work:expanded:cable_ducts",
+          "selectable": true,
+          "primary_uom": "м",
+          "physical_match": false,
+          "canonical_name_ru": "прокладка кабельных каналов",
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "9492a30e-702e-5534-96cb-a014f458f57b"
+        }
+      ],
+      "globalExactTitleMatches": [],
+      "identityClassifications": [
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_high_load",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_commission_high_load",
+          "retired_at": "2026-08-23T03:59:51.587425+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_commission_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_large_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_commission_large_area",
+          "retired_at": "2026-08-23T03:59:51.587436+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_commission_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_small_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_commission_small_area",
+          "retired_at": "2026-08-23T03:59:51.587445+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_commission_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_standard",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_commission_standard",
+          "retired_at": "2026-08-23T03:59:51.587454+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_commission_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_technical_room",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_commission_technical_room",
+          "retired_at": "2026-08-23T03:59:51.587462+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_commission_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_wet_zone",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_commission_wet_zone",
+          "retired_at": "2026-08-23T03:59:51.587488+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_commission_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_high_load",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_connect_high_load",
+          "retired_at": "2026-08-23T03:59:51.58752+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_connect_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_large_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_connect_large_area",
+          "retired_at": "2026-08-23T03:59:51.587529+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_connect_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_small_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_connect_small_area",
+          "retired_at": "2026-08-23T03:59:51.587542+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_connect_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_standard",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_connect_standard",
+          "retired_at": "2026-08-23T03:59:51.58755+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_connect_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_technical_room",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_connect_technical_room",
+          "retired_at": "2026-08-23T03:59:51.587559+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_connect_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_wet_zone",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_connect_wet_zone",
+          "retired_at": "2026-08-23T03:59:51.587581+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_connect_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_high_load",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_install_high_load",
+          "retired_at": "2026-08-23T03:59:51.58759+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_install_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_large_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_install_large_area",
+          "retired_at": "2026-08-23T03:59:51.587599+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_install_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_small_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_install_small_area",
+          "retired_at": "2026-08-23T03:59:51.587607+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_install_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_standard",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_install_standard",
+          "retired_at": "2026-08-23T03:59:51.587616+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_install_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_technical_room",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_install_technical_room",
+          "retired_at": "2026-08-23T03:59:51.587624+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_install_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_wet_zone",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_install_wet_zone",
+          "retired_at": "2026-08-23T03:59:51.587634+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_install_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_high_load",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_lay_high_load",
+          "retired_at": "2026-08-23T03:59:51.587642+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_lay_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_large_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_lay_large_area",
+          "retired_at": "2026-08-23T03:59:51.587651+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_lay_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_small_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_lay_small_area",
+          "retired_at": "2026-08-23T03:59:51.587659+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_lay_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_standard",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_lay_standard",
+          "retired_at": "2026-08-23T03:59:51.58767+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_lay_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_technical_room",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_lay_technical_room",
+          "retired_at": "2026-08-23T03:59:51.58768+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_lay_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_wet_zone",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_lay_wet_zone",
+          "retired_at": "2026-08-23T03:59:51.587688+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_lay_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_high_load",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_mark_high_load",
+          "retired_at": "2026-08-23T03:59:51.587695+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_mark_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_large_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_mark_large_area",
+          "retired_at": "2026-08-23T03:59:51.587892+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_mark_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_small_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_mark_small_area",
+          "retired_at": "2026-08-23T03:59:51.587906+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_mark_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_standard",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_mark_standard",
+          "retired_at": "2026-08-23T03:59:51.587917+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_mark_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_technical_room",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_mark_technical_room",
+          "retired_at": "2026-08-23T03:59:51.587928+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_mark_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_wet_zone",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_mark_wet_zone",
+          "retired_at": "2026-08-23T03:59:51.587937+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_mark_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_large_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_prepare_large_area",
+          "retired_at": "2026-08-23T03:59:51.587948+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_prepare_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_small_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_prepare_small_area",
+          "retired_at": "2026-08-23T03:59:51.587959+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_prepare_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_standard",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_prepare_standard",
+          "retired_at": "2026-08-23T03:59:51.588049+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_prepare_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_technical_room",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_prepare_technical_room",
+          "retired_at": "2026-08-23T03:59:51.588058+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_prepare_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_wet_zone",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_prepare_wet_zone",
+          "retired_at": "2026-08-23T03:59:51.588066+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_prepare_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_high_load",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_replace_high_load",
+          "retired_at": "2026-08-23T03:59:51.588074+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_replace_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_large_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_replace_large_area",
+          "retired_at": "2026-08-23T03:59:51.588086+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_replace_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_small_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_replace_small_area",
+          "retired_at": "2026-08-23T03:59:51.588094+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_replace_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_standard",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_replace_standard",
+          "retired_at": "2026-08-23T03:59:51.588101+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_replace_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_technical_room",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_replace_technical_room",
+          "retired_at": "2026-08-23T03:59:51.58811+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_replace_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_wet_zone",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_replace_wet_zone",
+          "retired_at": "2026-08-23T03:59:51.588118+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_replace_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_high_load",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_test_high_load",
+          "retired_at": "2026-08-23T03:59:51.588129+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_test_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_large_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_test_large_area",
+          "retired_at": "2026-08-23T03:59:51.588143+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_test_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_small_area",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_test_small_area",
+          "retired_at": "2026-08-23T03:59:51.588151+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_test_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_standard",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_test_standard",
+          "retired_at": "2026-08-23T03:59:51.588158+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_test_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_technical_room",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_test_technical_room",
+          "retired_at": "2026-08-23T03:59:51.588166+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_test_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_wet_zone",
+          "catalog_id": "archive-a172-electrical_interior_cable_channel_test_wet_zone",
+          "retired_at": "2026-08-23T03:59:51.588176+05:00",
+          "source_identity": "archive-a172:batch005-r4:electrical_interior_cable_channel_test_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала для высокой нагрузки",
+          "work_key": "electrical_interior_cable_channel_commission_high_load",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_high_load",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_commission_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала на большой площади",
+          "work_key": "electrical_interior_cable_channel_commission_large_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_large_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_commission_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала на малой площади",
+          "work_key": "electrical_interior_cable_channel_commission_small_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_small_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_commission_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала в стандартной зоне",
+          "work_key": "electrical_interior_cable_channel_commission_standard",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_standard",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_commission_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала в техническом помещении",
+          "work_key": "electrical_interior_cable_channel_commission_technical_room",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_technical_room",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_commission_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала во влажной зоне",
+          "work_key": "electrical_interior_cable_channel_commission_wet_zone",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_commission_wet_zone",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_commission_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала для высокой нагрузки",
+          "work_key": "electrical_interior_cable_channel_connect_high_load",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_high_load",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_connect_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала на большой площади",
+          "work_key": "electrical_interior_cable_channel_connect_large_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_large_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_connect_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала на малой площади",
+          "work_key": "electrical_interior_cable_channel_connect_small_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_small_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_connect_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала в стандартной зоне",
+          "work_key": "electrical_interior_cable_channel_connect_standard",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_standard",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_connect_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала в техническом помещении",
+          "work_key": "electrical_interior_cable_channel_connect_technical_room",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_technical_room",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_connect_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала во влажной зоне",
+          "work_key": "electrical_interior_cable_channel_connect_wet_zone",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_connect_wet_zone",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_connect_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала для высокой нагрузки",
+          "work_key": "electrical_interior_cable_channel_install_high_load",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_high_load",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_install_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала на большой площади",
+          "work_key": "electrical_interior_cable_channel_install_large_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_large_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_install_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала на малой площади",
+          "work_key": "electrical_interior_cable_channel_install_small_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_small_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_install_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала в стандартной зоне",
+          "work_key": "electrical_interior_cable_channel_install_standard",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_standard",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_install_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала в техническом помещении",
+          "work_key": "electrical_interior_cable_channel_install_technical_room",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_technical_room",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_install_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала во влажной зоне",
+          "work_key": "electrical_interior_cable_channel_install_wet_zone",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_wet_zone",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_install_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала для высокой нагрузки",
+          "work_key": "electrical_interior_cable_channel_lay_high_load",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_high_load",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_lay_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала на большой площади",
+          "work_key": "electrical_interior_cable_channel_lay_large_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_large_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_lay_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала на малой площади",
+          "work_key": "electrical_interior_cable_channel_lay_small_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_small_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_lay_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала в стандартной зоне",
+          "work_key": "electrical_interior_cable_channel_lay_standard",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_standard",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_lay_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала в техническом помещении",
+          "work_key": "electrical_interior_cable_channel_lay_technical_room",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_technical_room",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_lay_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала во влажной зоне",
+          "work_key": "electrical_interior_cable_channel_lay_wet_zone",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_lay_wet_zone",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_lay_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала для высокой нагрузки",
+          "work_key": "electrical_interior_cable_channel_mark_high_load",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_high_load",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_mark_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала на большой площади",
+          "work_key": "electrical_interior_cable_channel_mark_large_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_large_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_mark_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала на малой площади",
+          "work_key": "electrical_interior_cable_channel_mark_small_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_small_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_mark_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала в стандартной зоне",
+          "work_key": "electrical_interior_cable_channel_mark_standard",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_standard",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_mark_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала в техническом помещении",
+          "work_key": "electrical_interior_cable_channel_mark_technical_room",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_technical_room",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_mark_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала во влажной зоне",
+          "work_key": "electrical_interior_cable_channel_mark_wet_zone",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_mark_wet_zone",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_mark_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала на большой площади",
+          "work_key": "electrical_interior_cable_channel_prepare_large_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_large_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_prepare_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала на малой площади",
+          "work_key": "electrical_interior_cable_channel_prepare_small_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_small_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_prepare_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала в стандартной зоне",
+          "work_key": "electrical_interior_cable_channel_prepare_standard",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_standard",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_prepare_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала в техническом помещении",
+          "work_key": "electrical_interior_cable_channel_prepare_technical_room",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_technical_room",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_prepare_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала во влажной зоне",
+          "work_key": "electrical_interior_cable_channel_prepare_wet_zone",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_prepare_wet_zone",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_prepare_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала для высокой нагрузки",
+          "work_key": "electrical_interior_cable_channel_replace_high_load",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_high_load",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_replace_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала на большой площади",
+          "work_key": "electrical_interior_cable_channel_replace_large_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_large_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_replace_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала на малой площади",
+          "work_key": "electrical_interior_cable_channel_replace_small_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_small_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_replace_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала в стандартной зоне",
+          "work_key": "electrical_interior_cable_channel_replace_standard",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_standard",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_replace_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала в техническом помещении",
+          "work_key": "electrical_interior_cable_channel_replace_technical_room",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_technical_room",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_replace_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала во влажной зоне",
+          "work_key": "electrical_interior_cable_channel_replace_wet_zone",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_replace_wet_zone",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_replace_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала для высокой нагрузки",
+          "work_key": "electrical_interior_cable_channel_test_high_load",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_high_load",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_test_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала на большой площади",
+          "work_key": "electrical_interior_cable_channel_test_large_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_large_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_test_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала на малой площади",
+          "work_key": "electrical_interior_cable_channel_test_small_area",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_small_area",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_test_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала в стандартной зоне",
+          "work_key": "electrical_interior_cable_channel_test_standard",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_standard",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_test_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала в техническом помещении",
+          "work_key": "electrical_interior_cable_channel_test_technical_room",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_technical_room",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_test_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала во влажной зоне",
+          "work_key": "electrical_interior_cable_channel_test_wet_zone",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_test_wet_zone",
+          "retired_at": null,
+          "source_identity": "base-work:electrical_interior_cable_channel_test_wet_zone"
+        },
+        {
+          "domain": "electrical_infrastructure",
+          "title_ru": "Электроснабжение, ЛЭП и подстанции: прокладка кабельных каналов",
+          "work_key": "cable_ducts",
+          "catalog_id": "canonical-work:expanded:cable_ducts",
+          "retired_at": null,
+          "source_identity": "expanded-template:cable_ducts_preliminary_boq_expanded_complex_v1"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_high_load",
+          "catalog_id": "electrical_interior_cable_channel_commission_high_load",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_commission_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_large_area",
+          "catalog_id": "electrical_interior_cable_channel_commission_large_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_commission_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_small_area",
+          "catalog_id": "electrical_interior_cable_channel_commission_small_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_commission_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_standard",
+          "catalog_id": "electrical_interior_cable_channel_commission_standard",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_commission_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_technical_room",
+          "catalog_id": "electrical_interior_cable_channel_commission_technical_room",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_commission_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "пусконаладка кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_commission_wet_zone",
+          "catalog_id": "electrical_interior_cable_channel_commission_wet_zone",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_commission_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_high_load",
+          "catalog_id": "electrical_interior_cable_channel_connect_high_load",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_connect_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_large_area",
+          "catalog_id": "electrical_interior_cable_channel_connect_large_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_connect_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_small_area",
+          "catalog_id": "electrical_interior_cable_channel_connect_small_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_connect_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_standard",
+          "catalog_id": "electrical_interior_cable_channel_connect_standard",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_connect_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_technical_room",
+          "catalog_id": "electrical_interior_cable_channel_connect_technical_room",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_connect_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подключение кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_connect_wet_zone",
+          "catalog_id": "electrical_interior_cable_channel_connect_wet_zone",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_connect_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_high_load",
+          "catalog_id": "electrical_interior_cable_channel_install_high_load",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_install_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_large_area",
+          "catalog_id": "electrical_interior_cable_channel_install_large_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_install_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_small_area",
+          "catalog_id": "electrical_interior_cable_channel_install_small_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_install_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_standard",
+          "catalog_id": "electrical_interior_cable_channel_install_standard",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_install_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_technical_room",
+          "catalog_id": "electrical_interior_cable_channel_install_technical_room",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_install_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "монтаж кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_install_wet_zone",
+          "catalog_id": "electrical_interior_cable_channel_install_wet_zone",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_install_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_high_load",
+          "catalog_id": "electrical_interior_cable_channel_lay_high_load",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_lay_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_large_area",
+          "catalog_id": "electrical_interior_cable_channel_lay_large_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_lay_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_small_area",
+          "catalog_id": "electrical_interior_cable_channel_lay_small_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_lay_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_standard",
+          "catalog_id": "electrical_interior_cable_channel_lay_standard",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_lay_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_technical_room",
+          "catalog_id": "electrical_interior_cable_channel_lay_technical_room",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_lay_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "прокладка кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_lay_wet_zone",
+          "catalog_id": "electrical_interior_cable_channel_lay_wet_zone",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_lay_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_high_load",
+          "catalog_id": "electrical_interior_cable_channel_mark_high_load",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_mark_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_large_area",
+          "catalog_id": "electrical_interior_cable_channel_mark_large_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_mark_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_small_area",
+          "catalog_id": "electrical_interior_cable_channel_mark_small_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_mark_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_standard",
+          "catalog_id": "electrical_interior_cable_channel_mark_standard",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_mark_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_technical_room",
+          "catalog_id": "electrical_interior_cable_channel_mark_technical_room",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_mark_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "маркировка кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_mark_wet_zone",
+          "catalog_id": "electrical_interior_cable_channel_mark_wet_zone",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_mark_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_large_area",
+          "catalog_id": "electrical_interior_cable_channel_prepare_large_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_prepare_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_small_area",
+          "catalog_id": "electrical_interior_cable_channel_prepare_small_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_prepare_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_standard",
+          "catalog_id": "electrical_interior_cable_channel_prepare_standard",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_prepare_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_technical_room",
+          "catalog_id": "electrical_interior_cable_channel_prepare_technical_room",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_prepare_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "подготовка кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_prepare_wet_zone",
+          "catalog_id": "electrical_interior_cable_channel_prepare_wet_zone",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_prepare_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_high_load",
+          "catalog_id": "electrical_interior_cable_channel_replace_high_load",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_replace_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_large_area",
+          "catalog_id": "electrical_interior_cable_channel_replace_large_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_replace_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_small_area",
+          "catalog_id": "electrical_interior_cable_channel_replace_small_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_replace_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_standard",
+          "catalog_id": "electrical_interior_cable_channel_replace_standard",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_replace_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_technical_room",
+          "catalog_id": "electrical_interior_cable_channel_replace_technical_room",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_replace_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "замена кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_replace_wet_zone",
+          "catalog_id": "electrical_interior_cable_channel_replace_wet_zone",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_replace_wet_zone"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала для высокой нагрузки",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_high_load",
+          "catalog_id": "electrical_interior_cable_channel_test_high_load",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_test_high_load"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала на большой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_large_area",
+          "catalog_id": "electrical_interior_cable_channel_test_large_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_test_large_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала на малой площади",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_small_area",
+          "catalog_id": "electrical_interior_cable_channel_test_small_area",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_test_small_area"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала в стандартной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_standard",
+          "catalog_id": "electrical_interior_cable_channel_test_standard",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_test_standard"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала в техническом помещении",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_technical_room",
+          "catalog_id": "electrical_interior_cable_channel_test_technical_room",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_test_technical_room"
+        },
+        {
+          "domain": "electrical",
+          "title_ru": "испытание кабель-канала во влажной зоне",
+          "work_key": "Batch005CanonicalBackendSuccessorR4:electrical_interior_cable_channel_test_wet_zone",
+          "catalog_id": "electrical_interior_cable_channel_test_wet_zone",
+          "retired_at": null,
+          "source_identity": "batch005-r4:electrical_interior_cable_channel_test_wet_zone"
+        }
+      ],
+      "standard40x25SearchReference": {
+        "group": {
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "domain_id": "electrical",
+          "system_id": "electrical",
+          "breadcrumb": [
+            "монтаж кабель-канала для высокой нагрузки"
+          ],
+          "assembly_id": "wg:base:electrical_interior_cable_channel_install",
+          "member_count": 6,
+          "subsystem_id": "wg:base:electrical_interior_cable_channel_install",
+          "group_name_ru": "монтаж кабель-канала для высокой нагрузки",
+          "work_family_id": "wg:base:electrical_interior_cable_channel_install",
+          "member_set_sha256": "c3702aac7af62cd99ab62f8a242e5bc2fabc2c82b84974175838edbd98874f5d",
+          "search_release_id": "756fad32-723d-553c-8215-1e6271c05ec7",
+          "oracle_disposition": {
+            "contract": "rik-expo-app-r555.full-cumulative-successor-db.v1",
+            "disposition": "EXACT_PHYSICAL_WORK_GROUP",
+            "memberCatalogIdsSha256": "c3702aac7af62cd99ab62f8a242e5bc2fabc2c82b84974175838edbd98874f5d"
+          }
+        },
+        "search": {
+          "aliases": [
+            "монтаж кабель канала 100 м",
+            "установка кабель-канала ELECOR 40x25",
+            "открытая прокладка в пластиковом кабельном канале"
+          ],
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "domain_id": "electrical",
+          "system_id": "electrical",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_standard",
+          "selectable": true,
+          "assembly_id": "wg:base:electrical_interior_cable_channel_install",
+          "primary_uom": "м",
+          "subgroup_id": null,
+          "element_type": "WORK",
+          "subsystem_id": "wg:base:electrical_interior_cable_channel_install",
+          "catalog_origin": "GLOBAL",
+          "operation_kind": "NEW_INSTALLATION",
+          "short_scope_ru": "Монтаж открытой трассы кабель-канала IEK ELECOR 40×25 с упаковками, крепежом и совместимыми аксессуарами; кабель и устройства считаются отдельно.",
+          "work_family_id": "electrical",
+          "document_sha256": "9b4d7c2fa156f37a1ffffd8a83b439ea8972b9a0e6c3f58d60f164eb3489091c",
+          "canonical_name_ru": "монтаж кабель-канала IEK ELECOR 40×25 в стандартной зоне",
+          "publication_state": "ADMITTED_BACKEND",
+          "search_release_id": "756fad32-723d-553c-8215-1e6271c05ec7",
+          "source_provenance": {
+            "contract": "rik-expo-app.selected-material-delivery-forward.r1",
+            "sourceTree": "83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05",
+            "payloadContract": "rik-expo-app-r555.cumulative-successor.v1",
+            "searchReleaseId": "02b3df75-ba42-5534-98b4-2cea3cf6ca15",
+            "sourcePackSha256": "758c2c4822923c9619c7c08e43d70ce77cf2cb94d04c0e188c81b367867841b2",
+            "activationAllowed": false,
+            "sourceFingerprint": "a5a9e3ea0f939ec9d709a0778da115d1cb63bccad78988bb2a102e8b2984ba37",
+            "sourceIdentityIds": [
+              "base-work:electrical_interior_cable_channel_install_standard"
+            ],
+            "productionEligible": false,
+            "definitionReleaseId": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+            "sourceDocumentSha256": "402fa2251cf94995c1ad247010b6c2783b7efc39a4ff0cd4521fc02ffb62d5cc",
+            "ownerSourceIdentityId": "base-work:electrical_interior_cable_channel_install_standard",
+            "parentSearchReleaseId": "6c1df985-20fe-5d50-8cb4-a83b79dbc4ae",
+            "firstEstimateThenRefine": true,
+            "knownWorkScopeFirstEstimate": true,
+            "firstEstimateFromRouteLength": true,
+            "officialIekSnapshotsRestored": true,
+            "conditionalTechnologyFailClosed": true,
+            "nodeCountsNeverInferredFromLength": true,
+            "officialKgElectricalSnapshotsRestored": true
+          },
+          "adjudication_class": "EFFECTIVE_WORK",
+          "applicability_tags": [],
+          "construction_state": "EXISTING_OR_NEW",
+          "normalized_aliases": [
+            "монтаж кабель канала 100 м",
+            "установка кабель канала elecor 40x25",
+            "открытая прокладка в пластиковом кабельном канале"
+          ],
+          "technology_variant": "Каноническая технологическая работа версии 5.5.5",
+          "excluded_boundaries": [
+            "кабель, протяжка, оконцевание, устройства, проходки и огнезаделка",
+            "скрытые универсальные нормы производительности или неподтверждённые цены"
+          ],
+          "included_boundaries": [
+            "трасса, канал, крепёж, прямые стыки, узловые аксессуары, раскрой, труд, механизмы и логистика",
+            "автоматические количества от длины и отдельных фактов раскладки"
+          ],
+          "clarification_fields": [
+            "inner_corner_count",
+            "outer_corner_count",
+            "flat_angle_count",
+            "tee_count",
+            "open_end_count"
+          ],
+          "definition_release_id": "039c5354-6791-52b5-8a47-ffacebb04d5c",
+          "definition_version_id": "72e33bb1-a323-519d-b68a-c9d44eb00a10",
+          "normalized_catalog_id": "canonical work base electrical interior cable channel install standard",
+          "normative_classifiers": [],
+          "required_inputs_count": 3,
+          "normalized_search_blob": "монтаж кабель канала iek elecor 40 25 в стандартной зоне монтаж кабель канала 100 м установка кабель канала elecor 40x25 открытая прокладка в пластиковом кабельном канале кабель канал короб пластиковый elecor 40 25 кмс кмв кмн кмп кмт кмз открытая проводка",
+          "replacement_catalog_id": null,
+          "normalized_search_terms": [
+            "монтаж кабель канала iek elecor 40 25 в стандартной зоне",
+            "монтаж кабель канала 100 м",
+            "установка кабель канала elecor 40x25",
+            "открытая прокладка в пластиковом кабельном канале",
+            "кабель канал короб пластиковый elecor 40 25 кмс кмв кмн кмп кмт кмз открытая проводка"
+          ],
+          "normalized_canonical_name": "монтаж кабель канала iek elecor 40 25 в стандартной зоне",
+          "canonical_target_catalog_id": null,
+          "key_distinguishing_parameters": [
+            "route_length_m",
+            "selected_system_reference",
+            "substrate_profile"
+          ]
+        },
+        "primary": {
+          "unitId": "m",
+          "parameterId": "route_length_m"
+        },
+        "membership": {
+          "ordinal": 3,
+          "group_id": "wg:base:electrical_interior_cable_channel_install",
+          "catalog_id": "canonical-work:base:electrical_interior_cable_channel_install_standard",
+          "search_release_id": "756fad32-723d-553c-8215-1e6271c05ec7",
+          "independent_disposition": {
+            "contract": "rik-expo-app-r555.full-cumulative-successor-db.v1",
+            "classification": "CANONICAL_VISIBLE",
+            "exactPhysicalIdentity": true
+          }
+        }
+      }
+    },
+    "deep": {
+      "matches": [],
+      "scopeMetrics": {
+        "deepNotGlobal": true,
+        "resourceRowsRead": 2998,
+        "matchingResourceRows": 0,
+        "requestedDefinitions": 48,
+        "resourceJsonLogicalBytes": 7417661,
+        "definitionsWithResourceRows": 48
+      },
+      "perDefinition": [
+        {
+          "resource_count": 63,
+          "definition_version_id": "0bac1c76-6798-529f-a0ef-77465386720f",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154462
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "1d89c9f8-b344-58e7-b54e-5c8d04cf6798",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "1f4b2cea-6fbe-5fee-9bf3-f36efd8699a1",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 153580
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "2aca253c-00d6-5904-bc17-12cee4e5f636",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155344
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "2b585135-e0a8-57d8-9f71-cfa6a60aa831",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "2db0903f-aef7-5c31-8cef-fab2a63715c9",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 157108
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "2eb59d67-9c09-5c36-a018-e7dd5c03e851",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "492beda6-c52e-5bfe-9485-921d36f63ccf",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 156226
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "496d2050-fcfc-5430-8985-f5a14283e981",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154462
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "5486b7db-853e-5084-bdff-39a7787c0a48",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 157549
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "54c73a9e-b272-5967-9eac-c04e6fd09b7f",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 157108
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "55e567cc-8e40-57d9-b8ed-64fd58d3f42b",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154462
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "57c80e9d-b08c-5459-a81d-a54a550ede60",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 157549
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "5b14fe62-5368-51bc-beb3-c319b1d6ea62",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "60dba903-0026-5404-a7f2-4ed85c7098bc",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154021
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "6604de84-7e99-579c-bae3-5a03ade42ad8",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154021
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "66c579f7-b1dc-5fcd-9c2e-89b73013aba1",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154903
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "6d660313-e598-57e7-a55c-101595201e3d",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 158872
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "6d794b24-3e71-5ff8-9002-ddae18bb6ff8",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 156226
+        },
+        {
+          "resource_count": 41,
+          "definition_version_id": "72e33bb1-a323-519d-b68a-c9d44eb00a10",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 132097
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "756ab076-b201-53d9-af38-64c374b299fb",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "7f98de20-0397-58d1-97aa-ef7cdfaf3ef1",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 153580
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "8120a3ca-bab5-5103-ab85-5aef6832c0c1",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154903
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "86c97373-24f8-52a3-a3b5-168c08f713a1",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "87952b07-b820-54b7-bc8e-e413965c64ee",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154903
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "8bcc06bc-17ce-5603-9430-276ddea3aa2b",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 156667
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "902cc9d7-de3d-542f-965c-4b3b547eab4f",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154021
+        },
+        {
+          "resource_count": 59,
+          "definition_version_id": "9492a30e-702e-5534-96cb-a014f458f57b",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 140181
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "9749f9a5-9ef4-554b-b715-d9c21b188abf",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154903
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "a6ec86e9-cb92-5535-b012-1d2ef248df83",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "a71b8fe6-3fbb-50dc-8724-22bf38826db5",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 153139
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "a7d49be7-9606-57fa-880d-426f6413d4a0",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 157549
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "aa7bb70b-ae39-5e4c-88be-59acd79e758b",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154903
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "b6b48b6f-974c-5603-aca8-15840cf04a77",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155344
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "beeb9b3c-7ee3-565c-bb17-8782cf0d7c4c",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 153580
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "c1d180df-25df-5ad5-b40e-e92fcfcce8ff",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154903
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "c30fcaa7-f0d4-5250-97ae-8f51f2a31cc2",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155344
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "c92ae40c-5994-5d33-a650-ef5d0642259d",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "cbd52d1a-bb2a-5f03-88a1-821b60c0cd5e",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154462
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "ccbf8bd9-6a62-5c1b-850a-9798404abbe2",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 153580
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "d01c67ed-7928-5dca-a7a6-bc91b0ac636f",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154903
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "d25daa5a-fdef-54f6-9f1a-f7462f0c03f1",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 153139
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "db17ef8e-fae1-5a89-a956-9428e36e509c",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 155785
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "e1af86e3-63bb-5d2f-92c6-339bfe9fb9ea",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 154021
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "ea91d1c8-5ecb-51a7-86a9-c138c477fdf3",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 156226
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "f74675ae-5f4d-5b71-86a3-a257b329891b",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 157549
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "fae1bdf7-f0b3-5da6-bd93-e612d1c75e79",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 153580
+        },
+        {
+          "resource_count": 63,
+          "definition_version_id": "ff2d1d1b-4f52-5cc7-8072-74317eb63d5a",
+          "matching_resource_count": 0,
+          "resource_json_logical_bytes": 156226
+        }
+      ]
+    }
+  },
+  "payloadSha256": "90251598dd60c25aaa57703479c86c73f34efd3886ff246c7de9487befde6abe",
+  "completeDeclaredReadSet": true,
+  "globalDeepAbsenceProved": false,
+  "transactionRolledBack": true,
+  "dbWrites": false,
+  "appJobs": false,
+  "publicationReady": false,
+  "nextStep": "Root/reviewer must validate candidate classification coverage and distinct physical profile from this exact snapshot before governed append; do not treat a new key or partial material count as a complete estimate.",
+  "status": "PASS_ELECOR60X40_CURRENT_PHYSICAL_DEDUP_READ",
+  "error": null,
+  "completeReadSet": true,
+  "connectionClosed": true,
+  "databaseWritesPerformed": false
+}

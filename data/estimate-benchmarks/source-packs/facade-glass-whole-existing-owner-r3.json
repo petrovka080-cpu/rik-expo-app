@@ -1,0 +1,1529 @@
+{
+  "contract": "gox.facade.glass-whole-existing-owner.r3",
+  "status": "SOURCE_ONLY_WHOLE_METHOD_DRAFT_NO_PUBLICATION_OR_NEW_READY_QUEUE",
+  "existingOwnerAnchor": "canonical-work:expanded:curtain_wall_system",
+  "additionalExistingOwnersRetainedUnmodified": [
+    "canonical-work:expanded:high_rise_glazing",
+    "canonical-work:expanded:stained_glass_facade"
+  ],
+  "existingParentCaptureSha256": "38d9fccbf92673c03d9a388d93f6d637cf5191ddb654a4a4f31d3ead20977023",
+  "profiles": [
+    {
+      "key": "stick",
+      "titleRu": "Стоечно-ригельный стеклянный фасад с механическим прижимом",
+      "prefix": "facade:glass-whole:r3:stick",
+      "sources": [
+        {
+          "key": "YKK-stick-OG-2024",
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\YKK-stick-OG-2024.pdf",
+          "url": "https://www.ykkap.com/commercial/productguide/instman/04-4005-18.pdf",
+          "sha256": "f7ff6ef8dace527773e0df3584d0a0216332b06a79adc6be50b1b5288f874872",
+          "pdfPagesActuallyRead": [
+            4,
+            12,
+            51,
+            53,
+            55
+          ]
+        }
+      ],
+      "scope": {
+        "internalExactSystem": "YCW750OG04-4005-18effective04Jan2024",
+        "territory": "USmanufacturer method;notKGadmission",
+        "physicalResult": "specific whole stick-frame glazing with pressureplates/caps/gaskets and approved glass/anchors;not genericNVF"
+      },
+      "bom": [
+        {
+          "key": "frame-vertical",
+          "titleRu": "Вертикальный профиль фасадной системы",
+          "unitId": "m",
+          "operation": "frame",
+          "testOnlyQuantity": "120",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "frame-horizontal",
+          "titleRu": "Горизонтальный профиль фасадной системы",
+          "unitId": "m",
+          "operation": "frame",
+          "testOnlyQuantity": "90",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "brackets",
+          "titleRu": "Опорный кронштейн фасадной системы",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "24",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "anchors",
+          "titleRu": "Анкер опорного кронштейна",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "48",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "frame-bolts",
+          "titleRu": "Болт соединения элементов каркаса",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "96",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "glass",
+          "titleRu": "Заполнение фасада стеклопакетами по проекту",
+          "unitId": "m2",
+          "operation": "glazing",
+          "testOnlyQuantity": "84",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "blocks",
+          "titleRu": "Опорная прокладка стеклянного заполнения",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "40",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "gaskets",
+          "titleRu": "Уплотнитель фасадного остекления",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "320",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "flashings",
+          "titleRu": "Фасонный элемент примыкания остекления",
+          "unitId": "m",
+          "operation": "nodes",
+          "testOnlyQuantity": "55",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "backer",
+          "titleRu": "Уплотнительный шнур стыка",
+          "unitId": "m",
+          "operation": "seal",
+          "testOnlyQuantity": "90",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "end-dams",
+          "titleRu": "Торцевая заглушка водоотводящего узла",
+          "unitId": "piece",
+          "operation": "nodes",
+          "testOnlyQuantity": "20",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "pressure-vertical",
+          "titleRu": "Вертикальная прижимная планка",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "120",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "pressure-horizontal",
+          "titleRu": "Горизонтальная прижимная планка",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "90",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "caps-vertical",
+          "titleRu": "Вертикальная наружная крышка прижима",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "120",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "caps-horizontal",
+          "titleRu": "Горизонтальная наружная крышка прижима",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "90",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "pressure-screws",
+          "titleRu": "Винт крепления прижимной планки",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "880",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        }
+      ],
+      "needs": [
+        {
+          "key": "whole-labour",
+          "titleRu": "Труд полного цикла фасадного остекления",
+          "category": "labor",
+          "unitId": "man_hour",
+          "missing": "Own complete compatible labour norm for actual method; historical1.15h/m2 and KGglass-composite unitized columns do not prove this method."
+        },
+        {
+          "key": "cut-drill-driver-post",
+          "titleRu": "Комплект резки, сверления и завинчивания",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Entire compatible workstation quantities, supports and attachments; dimensions/specifications are not stock counts."
+        },
+        {
+          "key": "glass-handling-post",
+          "titleRu": "Комплект безопасной подачи стеклянного заполнения",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Full vacuum/manual gripping/holding method matched to actual glass/coating/format/mass; capacity alone not sufficient."
+        },
+        {
+          "key": "primary-rigging",
+          "titleRu": "Присоединение грузозахватов к механизму подъёма",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete compatible primary rigging/connection/balance method and quantities."
+        },
+        {
+          "key": "crane-operation",
+          "titleRu": "Полная эксплуатация механизма подъёма",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "missing": "Full approved crane/hoist operation and operators; not inferred from pane area or mass alone."
+        },
+        {
+          "key": "access-PPE",
+          "titleRu": "Доступ и средства защиты монтажного звена",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete safe access/edge protection/crew PPE stock, crew composition and actual accepted PPR."
+        },
+        {
+          "key": "power",
+          "titleRu": "Временное питание монтажного поста",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Whole power/distribution/connection/protection resources, no guessed set per facade."
+        },
+        {
+          "key": "working-parts",
+          "titleRu": "Рабочие части резки и сверления",
+          "category": "material",
+          "unitId": "piece",
+          "missing": "Compatible consumable working parts and wear quantities for the exact material/process."
+        },
+        {
+          "key": "surface-prep",
+          "titleRu": "Совместимые средства очистки и подготовки склеиваемых поверхностей",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact compatible cleaner/primer/material method and consumption; no universal cleaner substitution."
+        },
+        {
+          "key": "weather-sealant",
+          "titleRu": "Совместимый герметик наружных погодных швов",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact approved sealant/PDS, actual joint geometry/consumption, preparation and wastage; structural adhesive is not weatherseal."
+        },
+        {
+          "key": "measurement-torque-tools",
+          "titleRu": "Средства измерения, выверки и контроля затяжки",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete measured tool quantities/calibration/maintenance; one torque value does not prove a workstation."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Контроль, испытания и исполнительные документы",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole test/inspection/service resource norm with exact method and project frequency."
+        },
+        {
+          "key": "delivery-store-feed",
+          "titleRu": "Доставка, складирование и подача изделий",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole physical route/unloading/storing/separators/protection/feed process and quantities."
+        },
+        {
+          "key": "cleanup-waste",
+          "titleRu": "Очистка, возврат оснастки и вывоз отходов",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole compatible cleaning/liquids/rags/waste packaging/haul process and quantities."
+        },
+        {
+          "key": "fire-nodes",
+          "titleRu": "Полный состав огнезащитных и иных специальных примыканий",
+          "category": "material",
+          "unitId": null,
+          "missing": "Actual accepted complete node/fire/acoustic/water/thermal BOM; no universal area norm from NVF or historical floors*120."
+        }
+      ],
+      "operations": [
+        {
+          "key": "design-base",
+          "titleRu": "Приёмка проекта, основания и узлов"
+        },
+        {
+          "key": "receive-store",
+          "titleRu": "Приёмка, разгрузка и хранение изделий"
+        },
+        {
+          "key": "frame",
+          "titleRu": "Монтаж опор и фасадной подсистемы"
+        },
+        {
+          "key": "prepare",
+          "titleRu": "Раскрой, обработка и подготовка компонентов"
+        },
+        {
+          "key": "glazing",
+          "titleRu": "Подача и монтаж стеклянного заполнения"
+        },
+        {
+          "key": "seal",
+          "titleRu": "Уплотнение и герметизация стыков"
+        },
+        {
+          "key": "nodes",
+          "titleRu": "Примыкания, водоотвод и огнезащита"
+        },
+        {
+          "key": "control",
+          "titleRu": "Контроль, испытания и приёмка"
+        },
+        {
+          "key": "cleanup",
+          "titleRu": "Очистка, демонтаж временных средств и отходы"
+        }
+      ],
+      "exclusions": [
+        "9inchplateholemaxand30then50inchpounds are exact2024sourceconditions,not a screw/m2norm.",
+        "Panecomposition/thickness/mass,anchors and thermal/fireloads from exactproject."
+      ],
+      "existingOwnerCatalogId": "canonical-work:expanded:curtain_wall_system",
+      "sourceTechnologyNotParent45ResourceNorm": true,
+      "fullTechnicalAcceptance": false,
+      "newFULL": 0,
+      "derivedSourceRows": []
+    },
+    {
+      "key": "structural",
+      "titleRu": "Структурный стеклянный фасад с четырёхсторонним клеевым креплением",
+      "prefix": "facade:glass-whole:r3:structural",
+      "sources": [
+        {
+          "key": "YKK-SSG-field-current",
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\YKK-SSG-field-current.pdf",
+          "url": "https://www.ykkap.com/commercial/productguide/instman/04-4015-20.pdf",
+          "sha256": "992f0b95fc2bee40b17f05326651edda922ead6cba68e3e3d062d1c49f7f99d0",
+          "pdfPagesActuallyRead": [
+            4,
+            51,
+            53,
+            54
+          ]
+        }
+      ],
+      "scope": {
+        "internalExactSystem": "YCW750SS04-4015-20effective21Jan2025",
+        "territory": "USmanufacturer field four-sideSSG;notgenericfactorymodule",
+        "physicalResult": "exactstructuralbond after full cure then remove retainers and complete exteriorweatherseal"
+      },
+      "bom": [
+        {
+          "key": "frame-vertical",
+          "titleRu": "Вертикальный профиль фасадной системы",
+          "unitId": "m",
+          "operation": "frame",
+          "testOnlyQuantity": "120",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "frame-horizontal",
+          "titleRu": "Горизонтальный профиль фасадной системы",
+          "unitId": "m",
+          "operation": "frame",
+          "testOnlyQuantity": "90",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "brackets",
+          "titleRu": "Опорный кронштейн фасадной системы",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "24",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "anchors",
+          "titleRu": "Анкер опорного кронштейна",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "48",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "frame-bolts",
+          "titleRu": "Болт соединения элементов каркаса",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "96",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "glass",
+          "titleRu": "Заполнение фасада стеклопакетами по проекту",
+          "unitId": "m2",
+          "operation": "glazing",
+          "testOnlyQuantity": "84",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "blocks",
+          "titleRu": "Опорная прокладка стеклянного заполнения",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "40",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "gaskets",
+          "titleRu": "Уплотнитель фасадного остекления",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "320",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "flashings",
+          "titleRu": "Фасонный элемент примыкания остекления",
+          "unitId": "m",
+          "operation": "nodes",
+          "testOnlyQuantity": "55",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "backer",
+          "titleRu": "Уплотнительный шнур стыка",
+          "unitId": "m",
+          "operation": "seal",
+          "testOnlyQuantity": "90",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "end-dams",
+          "titleRu": "Торцевая заглушка водоотводящего узла",
+          "unitId": "piece",
+          "operation": "nodes",
+          "testOnlyQuantity": "20",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "temporary-retainers",
+          "titleRu": "Временный фиксатор стеклянного заполнения",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "96",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM",
+          "informationalStockOnly": true,
+          "procurement": false,
+          "periodOwnerNeed": "retainer-period-owner"
+        },
+        {
+          "key": "structural-spacer",
+          "titleRu": "Прокладка структурного шва остекления",
+          "unitId": "m",
+          "operation": "seal",
+          "testOnlyQuantity": "220",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        }
+      ],
+      "needs": [
+        {
+          "key": "whole-labour",
+          "titleRu": "Труд полного цикла фасадного остекления",
+          "category": "labor",
+          "unitId": "man_hour",
+          "missing": "Own complete compatible labour norm for actual method; historical1.15h/m2 and KGglass-composite unitized columns do not prove this method."
+        },
+        {
+          "key": "cut-drill-driver-post",
+          "titleRu": "Комплект резки, сверления и завинчивания",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Entire compatible workstation quantities, supports and attachments; dimensions/specifications are not stock counts."
+        },
+        {
+          "key": "glass-handling-post",
+          "titleRu": "Комплект безопасной подачи стеклянного заполнения",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Full vacuum/manual gripping/holding method matched to actual glass/coating/format/mass; capacity alone not sufficient."
+        },
+        {
+          "key": "primary-rigging",
+          "titleRu": "Присоединение грузозахватов к механизму подъёма",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete compatible primary rigging/connection/balance method and quantities."
+        },
+        {
+          "key": "crane-operation",
+          "titleRu": "Полная эксплуатация механизма подъёма",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "missing": "Full approved crane/hoist operation and operators; not inferred from pane area or mass alone."
+        },
+        {
+          "key": "access-PPE",
+          "titleRu": "Доступ и средства защиты монтажного звена",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete safe access/edge protection/crew PPE stock, crew composition and actual accepted PPR."
+        },
+        {
+          "key": "power",
+          "titleRu": "Временное питание монтажного поста",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Whole power/distribution/connection/protection resources, no guessed set per facade."
+        },
+        {
+          "key": "working-parts",
+          "titleRu": "Рабочие части резки и сверления",
+          "category": "material",
+          "unitId": "piece",
+          "missing": "Compatible consumable working parts and wear quantities for the exact material/process."
+        },
+        {
+          "key": "surface-prep",
+          "titleRu": "Совместимые средства очистки и подготовки склеиваемых поверхностей",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact compatible cleaner/primer/material method and consumption; no universal cleaner substitution."
+        },
+        {
+          "key": "weather-sealant",
+          "titleRu": "Совместимый герметик наружных погодных швов",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact approved sealant/PDS, actual joint geometry/consumption, preparation and wastage; structural adhesive is not weatherseal."
+        },
+        {
+          "key": "measurement-torque-tools",
+          "titleRu": "Средства измерения, выверки и контроля затяжки",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete measured tool quantities/calibration/maintenance; one torque value does not prove a workstation."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Контроль, испытания и исполнительные документы",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole test/inspection/service resource norm with exact method and project frequency."
+        },
+        {
+          "key": "delivery-store-feed",
+          "titleRu": "Доставка, складирование и подача изделий",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole physical route/unloading/storing/separators/protection/feed process and quantities."
+        },
+        {
+          "key": "cleanup-waste",
+          "titleRu": "Очистка, возврат оснастки и вывоз отходов",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole compatible cleaning/liquids/rags/waste packaging/haul process and quantities."
+        },
+        {
+          "key": "fire-nodes",
+          "titleRu": "Полный состав огнезащитных и иных специальных примыканий",
+          "category": "material",
+          "unitId": null,
+          "missing": "Actual accepted complete node/fire/acoustic/water/thermal BOM; no universal area norm from NVF or historical floors*120."
+        },
+        {
+          "key": "structural-adhesive",
+          "titleRu": "Одобренный структурный герметик крепления стекла",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact systemholder/glass/frame/sealant approval, joint bite/depth/length and PDS consumption; no weatherseal substitution or universal curing time."
+        },
+        {
+          "key": "retainer-period-owner",
+          "titleRu": "Обеспечение временными фиксаторами на период выдержки",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Actual owned/hired whole retainer provision to full approved adhesive cure; inventory count is not per-pane consumption or automatic retail price."
+        }
+      ],
+      "operations": [
+        {
+          "key": "design-base",
+          "titleRu": "Приёмка проекта, основания и узлов"
+        },
+        {
+          "key": "receive-store",
+          "titleRu": "Приёмка, разгрузка и хранение изделий"
+        },
+        {
+          "key": "frame",
+          "titleRu": "Монтаж опор и фасадной подсистемы"
+        },
+        {
+          "key": "prepare",
+          "titleRu": "Раскрой, обработка и подготовка компонентов"
+        },
+        {
+          "key": "glazing",
+          "titleRu": "Подача и монтаж стеклянного заполнения"
+        },
+        {
+          "key": "seal",
+          "titleRu": "Уплотнение и герметизация стыков"
+        },
+        {
+          "key": "nodes",
+          "titleRu": "Примыкания, водоотвод и огнезащита"
+        },
+        {
+          "key": "control",
+          "titleRu": "Контроль, испытания и приёмка"
+        },
+        {
+          "key": "cleanup",
+          "titleRu": "Очистка, демонтаж временных средств и отходы"
+        }
+      ],
+      "exclusions": [
+        "Temporaryretainerlayout is actualapprovedmap;max2ftdoesnotmean4retainersperpane.",
+        "SIKAgeneral factoryQA guidance is not automatically approved for this YKK system."
+      ],
+      "existingOwnerCatalogId": "canonical-work:expanded:curtain_wall_system",
+      "sourceTechnologyNotParent45ResourceNorm": true,
+      "fullTechnicalAcceptance": false,
+      "newFULL": 0,
+      "derivedSourceRows": []
+    },
+    {
+      "key": "semi-structural",
+      "titleRu": "Полуструктурный стеклянный фасад с горизонтальным прижимом",
+      "prefix": "facade:glass-whole:r3:semi-structural",
+      "sources": [
+        {
+          "key": "YKK-SSG-two-side-current",
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\YKK-SSG-two-side-current.pdf",
+          "url": "https://www.ykkap.com/commercial/productguide/instman/04-4006-24.pdf",
+          "sha256": "18ab7dfebe4be9a8155e8c819a8eac852cee70646bceb1b1cb9b43a250fdd483",
+          "pdfPagesActuallyRead": [
+            4,
+            62,
+            64,
+            65
+          ]
+        }
+      ],
+      "scope": {
+        "internalExactSystem": "YCW750SS04-4006-24effective24Jul2024",
+        "territory": "USmanufacturer two-sideSSG method",
+        "physicalResult": "horizontalmechanicalcapture andverticalstructuralbond;orientationnotrotated"
+      },
+      "bom": [
+        {
+          "key": "frame-vertical",
+          "titleRu": "Вертикальный профиль фасадной системы",
+          "unitId": "m",
+          "operation": "frame",
+          "testOnlyQuantity": "120",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "frame-horizontal",
+          "titleRu": "Горизонтальный профиль фасадной системы",
+          "unitId": "m",
+          "operation": "frame",
+          "testOnlyQuantity": "90",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "brackets",
+          "titleRu": "Опорный кронштейн фасадной системы",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "24",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "anchors",
+          "titleRu": "Анкер опорного кронштейна",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "48",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "frame-bolts",
+          "titleRu": "Болт соединения элементов каркаса",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "96",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "glass",
+          "titleRu": "Заполнение фасада стеклопакетами по проекту",
+          "unitId": "m2",
+          "operation": "glazing",
+          "testOnlyQuantity": "84",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "blocks",
+          "titleRu": "Опорная прокладка стеклянного заполнения",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "40",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "gaskets",
+          "titleRu": "Уплотнитель фасадного остекления",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "320",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "flashings",
+          "titleRu": "Фасонный элемент примыкания остекления",
+          "unitId": "m",
+          "operation": "nodes",
+          "testOnlyQuantity": "55",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "backer",
+          "titleRu": "Уплотнительный шнур стыка",
+          "unitId": "m",
+          "operation": "seal",
+          "testOnlyQuantity": "90",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "end-dams",
+          "titleRu": "Торцевая заглушка водоотводящего узла",
+          "unitId": "piece",
+          "operation": "nodes",
+          "testOnlyQuantity": "20",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "pressure-horizontal",
+          "titleRu": "Горизонтальная прижимная планка",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "90",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "caps-horizontal",
+          "titleRu": "Горизонтальная наружная крышка прижима",
+          "unitId": "m",
+          "operation": "glazing",
+          "testOnlyQuantity": "90",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "pressure-screws",
+          "titleRu": "Винт крепления прижимной планки",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "880",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "temporary-retainers",
+          "titleRu": "Временный фиксатор стеклянного заполнения",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "96",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM",
+          "informationalStockOnly": true,
+          "procurement": false,
+          "periodOwnerNeed": "retainer-period-owner"
+        },
+        {
+          "key": "structural-spacer",
+          "titleRu": "Прокладка структурного шва остекления",
+          "unitId": "m",
+          "operation": "seal",
+          "testOnlyQuantity": "220",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        }
+      ],
+      "needs": [
+        {
+          "key": "whole-labour",
+          "titleRu": "Труд полного цикла фасадного остекления",
+          "category": "labor",
+          "unitId": "man_hour",
+          "missing": "Own complete compatible labour norm for actual method; historical1.15h/m2 and KGglass-composite unitized columns do not prove this method."
+        },
+        {
+          "key": "cut-drill-driver-post",
+          "titleRu": "Комплект резки, сверления и завинчивания",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Entire compatible workstation quantities, supports and attachments; dimensions/specifications are not stock counts."
+        },
+        {
+          "key": "glass-handling-post",
+          "titleRu": "Комплект безопасной подачи стеклянного заполнения",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Full vacuum/manual gripping/holding method matched to actual glass/coating/format/mass; capacity alone not sufficient."
+        },
+        {
+          "key": "primary-rigging",
+          "titleRu": "Присоединение грузозахватов к механизму подъёма",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete compatible primary rigging/connection/balance method and quantities."
+        },
+        {
+          "key": "crane-operation",
+          "titleRu": "Полная эксплуатация механизма подъёма",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "missing": "Full approved crane/hoist operation and operators; not inferred from pane area or mass alone."
+        },
+        {
+          "key": "access-PPE",
+          "titleRu": "Доступ и средства защиты монтажного звена",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete safe access/edge protection/crew PPE stock, crew composition and actual accepted PPR."
+        },
+        {
+          "key": "power",
+          "titleRu": "Временное питание монтажного поста",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Whole power/distribution/connection/protection resources, no guessed set per facade."
+        },
+        {
+          "key": "working-parts",
+          "titleRu": "Рабочие части резки и сверления",
+          "category": "material",
+          "unitId": "piece",
+          "missing": "Compatible consumable working parts and wear quantities for the exact material/process."
+        },
+        {
+          "key": "surface-prep",
+          "titleRu": "Совместимые средства очистки и подготовки склеиваемых поверхностей",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact compatible cleaner/primer/material method and consumption; no universal cleaner substitution."
+        },
+        {
+          "key": "weather-sealant",
+          "titleRu": "Совместимый герметик наружных погодных швов",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact approved sealant/PDS, actual joint geometry/consumption, preparation and wastage; structural adhesive is not weatherseal."
+        },
+        {
+          "key": "measurement-torque-tools",
+          "titleRu": "Средства измерения, выверки и контроля затяжки",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete measured tool quantities/calibration/maintenance; one torque value does not prove a workstation."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Контроль, испытания и исполнительные документы",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole test/inspection/service resource norm with exact method and project frequency."
+        },
+        {
+          "key": "delivery-store-feed",
+          "titleRu": "Доставка, складирование и подача изделий",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole physical route/unloading/storing/separators/protection/feed process and quantities."
+        },
+        {
+          "key": "cleanup-waste",
+          "titleRu": "Очистка, возврат оснастки и вывоз отходов",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole compatible cleaning/liquids/rags/waste packaging/haul process and quantities."
+        },
+        {
+          "key": "fire-nodes",
+          "titleRu": "Полный состав огнезащитных и иных специальных примыканий",
+          "category": "material",
+          "unitId": null,
+          "missing": "Actual accepted complete node/fire/acoustic/water/thermal BOM; no universal area norm from NVF or historical floors*120."
+        },
+        {
+          "key": "structural-adhesive",
+          "titleRu": "Одобренный структурный герметик крепления стекла",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact systemholder/glass/frame/sealant approval, joint bite/depth/length and PDS consumption; no weatherseal substitution or universal curing time."
+        },
+        {
+          "key": "retainer-period-owner",
+          "titleRu": "Обеспечение временными фиксаторами на период выдержки",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Actual owned/hired whole retainer provision to full approved adhesive cure; inventory count is not per-pane consumption or automatic retail price."
+        }
+      ],
+      "operations": [
+        {
+          "key": "design-base",
+          "titleRu": "Приёмка проекта, основания и узлов"
+        },
+        {
+          "key": "receive-store",
+          "titleRu": "Приёмка, разгрузка и хранение изделий"
+        },
+        {
+          "key": "frame",
+          "titleRu": "Монтаж опор и фасадной подсистемы"
+        },
+        {
+          "key": "prepare",
+          "titleRu": "Раскрой, обработка и подготовка компонентов"
+        },
+        {
+          "key": "glazing",
+          "titleRu": "Подача и монтаж стеклянного заполнения"
+        },
+        {
+          "key": "seal",
+          "titleRu": "Уплотнение и герметизация стыков"
+        },
+        {
+          "key": "nodes",
+          "titleRu": "Примыкания, водоотвод и огнезащита"
+        },
+        {
+          "key": "control",
+          "titleRu": "Контроль, испытания и приёмка"
+        },
+        {
+          "key": "cleanup",
+          "titleRu": "Очистка, демонтаж временных средств и отходы"
+        }
+      ],
+      "exclusions": [
+        "No four-sideSSG adhesivevolume transfer or vertical pressureplates invented.",
+        "Retain temporarydevices until actualapprovedcure;no fixeduniversalpause."
+      ],
+      "existingOwnerCatalogId": "canonical-work:expanded:curtain_wall_system",
+      "sourceTechnologyNotParent45ResourceNorm": true,
+      "fullTechnicalAcceptance": false,
+      "newFULL": 0,
+      "derivedSourceRows": []
+    },
+    {
+      "key": "unitized",
+      "titleRu": "Модульный стеклянный фасад из готовых заводских элементов",
+      "prefix": "facade:glass-whole:r3:unitized",
+      "sources": [
+        {
+          "key": "YKK-unitized-TU-assembly",
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\YKK-unitized-TU-assembly.pdf",
+          "url": "https://www.ykkap.com/commercial/productguide/instman/04-4042-06.pdf",
+          "sha256": "fc7cc050456109103bccdf74b3eb15a40c8eefbb6d59d03feed18f27a0f1f237",
+          "pdfPagesActuallyRead": [
+            3,
+            4
+          ]
+        },
+        {
+          "key": "YKK-unitized-TU-installation",
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\YKK-unitized-TU-installation.pdf",
+          "url": "https://www.ykkap.com/commercial/productguide/instman/04-4045-06.pdf",
+          "sha256": "803d59345f01badbd38d0aa8c62b31e864932dae8e96a96455db0566cc0eb0a7",
+          "pdfPagesActuallyRead": [
+            3,
+            4
+          ]
+        }
+      ],
+      "scope": {
+        "internalExactSystem": "YCW750TUassembly04-4042-06+install04-4045-06effective26Aug2022",
+        "territory": "USmanufacturer sameTUmethod;XTnotmixed",
+        "physicalResult": "purchasedfactorymodules plus site anchors/start/joints;factoryfabrication included in supplier module"
+      },
+      "bom": [
+        {
+          "key": "factory-modules",
+          "titleRu": "Готовый заводской модуль стеклянного фасада",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "12",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "unit-anchors",
+          "titleRu": "Анкер опорного узла заводского фасадного модуля",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "48",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "unit-brackets",
+          "titleRu": "Опорный кронштейн заводского фасадного модуля",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "24",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "unit-joint-gaskets",
+          "titleRu": "Монтажный уплотнитель стыка фасадных модулей",
+          "unitId": "m",
+          "operation": "seal",
+          "testOnlyQuantity": "90",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "unit-sill-starter",
+          "titleRu": "Стартовый профиль модульного остекления",
+          "unitId": "m",
+          "operation": "frame",
+          "testOnlyQuantity": "20",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "unit-flashings",
+          "titleRu": "Фасонный элемент примыкания модульного остекления",
+          "unitId": "m",
+          "operation": "nodes",
+          "testOnlyQuantity": "55",
+          "positiveRequired": false,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        }
+      ],
+      "needs": [
+        {
+          "key": "whole-labour",
+          "titleRu": "Труд полного цикла фасадного остекления",
+          "category": "labor",
+          "unitId": "man_hour",
+          "missing": "Own complete compatible labour norm for actual method; historical1.15h/m2 and KGglass-composite unitized columns do not prove this method."
+        },
+        {
+          "key": "cut-drill-driver-post",
+          "titleRu": "Комплект резки, сверления и завинчивания",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Entire compatible workstation quantities, supports and attachments; dimensions/specifications are not stock counts."
+        },
+        {
+          "key": "glass-handling-post",
+          "titleRu": "Комплект безопасной подачи стеклянного заполнения",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Full vacuum/manual gripping/holding method matched to actual glass/coating/format/mass; capacity alone not sufficient."
+        },
+        {
+          "key": "primary-rigging",
+          "titleRu": "Присоединение грузозахватов к механизму подъёма",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete compatible primary rigging/connection/balance method and quantities."
+        },
+        {
+          "key": "crane-operation",
+          "titleRu": "Полная эксплуатация механизма подъёма",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "missing": "Full approved crane/hoist operation and operators; not inferred from pane area or mass alone."
+        },
+        {
+          "key": "access-PPE",
+          "titleRu": "Доступ и средства защиты монтажного звена",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete safe access/edge protection/crew PPE stock, crew composition and actual accepted PPR."
+        },
+        {
+          "key": "power",
+          "titleRu": "Временное питание монтажного поста",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Whole power/distribution/connection/protection resources, no guessed set per facade."
+        },
+        {
+          "key": "working-parts",
+          "titleRu": "Рабочие части резки и сверления",
+          "category": "material",
+          "unitId": "piece",
+          "missing": "Compatible consumable working parts and wear quantities for the exact material/process."
+        },
+        {
+          "key": "surface-prep",
+          "titleRu": "Совместимые средства очистки и подготовки склеиваемых поверхностей",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact compatible cleaner/primer/material method and consumption; no universal cleaner substitution."
+        },
+        {
+          "key": "weather-sealant",
+          "titleRu": "Совместимый герметик наружных погодных швов",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact approved sealant/PDS, actual joint geometry/consumption, preparation and wastage; structural adhesive is not weatherseal."
+        },
+        {
+          "key": "measurement-torque-tools",
+          "titleRu": "Средства измерения, выверки и контроля затяжки",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete measured tool quantities/calibration/maintenance; one torque value does not prove a workstation."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Контроль, испытания и исполнительные документы",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole test/inspection/service resource norm with exact method and project frequency."
+        },
+        {
+          "key": "delivery-store-feed",
+          "titleRu": "Доставка, складирование и подача изделий",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole physical route/unloading/storing/separators/protection/feed process and quantities."
+        },
+        {
+          "key": "cleanup-waste",
+          "titleRu": "Очистка, возврат оснастки и вывоз отходов",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole compatible cleaning/liquids/rags/waste packaging/haul process and quantities."
+        },
+        {
+          "key": "fire-nodes",
+          "titleRu": "Полный состав огнезащитных и иных специальных примыканий",
+          "category": "material",
+          "unitId": null,
+          "missing": "Actual accepted complete node/fire/acoustic/water/thermal BOM; no universal area norm from NVF or historical floors*120."
+        },
+        {
+          "key": "factory-glass-inventory",
+          "titleRu": "Стеклянное заполнение в составе заводских модулей",
+          "category": "material",
+          "unitId": "m2",
+          "missing": "Exact supplier module BOM quantity; already inside purchased module, not a second glazing purchase."
+        },
+        {
+          "key": "factory-frame-inventory",
+          "titleRu": "Профили в составе заводских модулей",
+          "category": "material",
+          "unitId": "m",
+          "missing": "Exact supplier module BOM quantity; already inside module, not a second frame purchase."
+        },
+        {
+          "key": "factory-gasket-inventory",
+          "titleRu": "Уплотнители в составе заводских модулей",
+          "category": "material",
+          "unitId": "m",
+          "missing": "Exact supplier module gasket BOM quantity; no duplication with site module-joint gaskets."
+        },
+        {
+          "key": "factory-bond-inventory",
+          "titleRu": "Материалы заводских клеевых соединений модулей",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact supplier module BOM for original approved unit; no second field application or factoryQA payment."
+        }
+      ],
+      "operations": [
+        {
+          "key": "design-base",
+          "titleRu": "Приёмка проекта, основания и узлов"
+        },
+        {
+          "key": "receive-store",
+          "titleRu": "Приёмка, разгрузка и хранение изделий"
+        },
+        {
+          "key": "frame",
+          "titleRu": "Монтаж опор и фасадной подсистемы"
+        },
+        {
+          "key": "prepare",
+          "titleRu": "Раскрой, обработка и подготовка компонентов"
+        },
+        {
+          "key": "glazing",
+          "titleRu": "Подача и монтаж стеклянного заполнения"
+        },
+        {
+          "key": "seal",
+          "titleRu": "Уплотнение и герметизация стыков"
+        },
+        {
+          "key": "nodes",
+          "titleRu": "Примыкания, водоотвод и огнезащита"
+        },
+        {
+          "key": "control",
+          "titleRu": "Контроль, испытания и приёмка"
+        },
+        {
+          "key": "cleanup",
+          "titleRu": "Очистка, демонтаж временных средств и отходы"
+        }
+      ],
+      "exclusions": [
+        "KG09-04-024/025/026FRPprofilesnotaluminiumTU.",
+        "Do not buy factorymodule and its glass/frame/factoryadhesive again.",
+        "Structural modulepickpoints/framecapability mustbeapproved;glass-only vacuumratingnotproof."
+      ],
+      "existingOwnerCatalogId": "canonical-work:expanded:curtain_wall_system",
+      "sourceTechnologyNotParent45ResourceNorm": true,
+      "fullTechnicalAcceptance": false,
+      "newFULL": 0,
+      "derivedSourceRows": []
+    },
+    {
+      "key": "point-fixed",
+      "titleRu": "Точечный фасад из плоского монолитного или многослойного стекла",
+      "prefix": "facade:glass-whole:r3:point-fixed",
+      "sources": [
+        {
+          "key": "SADEV-ATec-2-1-16-1736-V1",
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\SADEV-ATec-2-1-16-1736-V1.pdf",
+          "url": "https://p9j5t8p8.delivery.rocketcdn.me/wp-content/uploads/sites/1/2022/10/AT-SADEV_ATec-2.1_16-1736_V1_EN.pdf",
+          "sha256": "ea83f2bee4c086e9279181800fa73255da1877317657029441f5801d6356fa45",
+          "pdfPagesActuallyRead": [
+            4,
+            10,
+            11,
+            12
+          ]
+        }
+      ],
+      "scope": {
+        "internalExactSystem": "ATec2.1/16-1736V1;selectedR1001fittingwith2O-rings;exactmanufacturer/glassapprovalrequired",
+        "territory": "Franceonlysourceassessment;notKGautomaticadmission",
+        "physicalResult": "singleflatmonolithic/laminatedglass on acceptedreadystructure;premisesacceptpotentiallongterminfiltration;notIGUheatedweathertightwall"
+      },
+      "bom": [
+        {
+          "key": "point-glass",
+          "titleRu": "Плоская стеклянная панель точечного фасада",
+          "unitId": "m2",
+          "operation": "glazing",
+          "testOnlyQuantity": "84",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "spiders",
+          "titleRu": "Опорная деталь точечного крепления стекла",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "20",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "articulated-fittings",
+          "titleRu": "Шарнирное крепление плоской стеклянной панели",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "40",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "interface-plates",
+          "titleRu": "Переходная опорная пластина точечного крепления",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "20",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "interface-bolts",
+          "titleRu": "Болт опорного узла точечного крепления",
+          "unitId": "piece",
+          "operation": "frame",
+          "testOnlyQuantity": "80",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "glass-bushes",
+          "titleRu": "Защитная втулка точечного крепления стекла",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "40",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        },
+        {
+          "key": "glass-nuts",
+          "titleRu": "Гайка точечного крепления стекла",
+          "unitId": "piece",
+          "operation": "glazing",
+          "testOnlyQuantity": "40",
+          "positiveRequired": true,
+          "quantityRole": "ACTUAL_APPROVED_STRUCTURAL_OR_COMPONENT_SCHEDULE_NOT_AREA_NORM"
+        }
+      ],
+      "needs": [
+        {
+          "key": "whole-labour",
+          "titleRu": "Труд полного цикла фасадного остекления",
+          "category": "labor",
+          "unitId": "man_hour",
+          "missing": "Own complete compatible labour norm for actual method; historical1.15h/m2 and KGglass-composite unitized columns do not prove this method."
+        },
+        {
+          "key": "cut-drill-driver-post",
+          "titleRu": "Комплект резки, сверления и завинчивания",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Entire compatible workstation quantities, supports and attachments; dimensions/specifications are not stock counts."
+        },
+        {
+          "key": "glass-handling-post",
+          "titleRu": "Комплект безопасной подачи стеклянного заполнения",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Full vacuum/manual gripping/holding method matched to actual glass/coating/format/mass; capacity alone not sufficient."
+        },
+        {
+          "key": "primary-rigging",
+          "titleRu": "Присоединение грузозахватов к механизму подъёма",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete compatible primary rigging/connection/balance method and quantities."
+        },
+        {
+          "key": "crane-operation",
+          "titleRu": "Полная эксплуатация механизма подъёма",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "missing": "Full approved crane/hoist operation and operators; not inferred from pane area or mass alone."
+        },
+        {
+          "key": "access-PPE",
+          "titleRu": "Доступ и средства защиты монтажного звена",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete safe access/edge protection/crew PPE stock, crew composition and actual accepted PPR."
+        },
+        {
+          "key": "power",
+          "titleRu": "Временное питание монтажного поста",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Whole power/distribution/connection/protection resources, no guessed set per facade."
+        },
+        {
+          "key": "working-parts",
+          "titleRu": "Рабочие части резки и сверления",
+          "category": "material",
+          "unitId": "piece",
+          "missing": "Compatible consumable working parts and wear quantities for the exact material/process."
+        },
+        {
+          "key": "surface-prep",
+          "titleRu": "Совместимые средства очистки и подготовки склеиваемых поверхностей",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact compatible cleaner/primer/material method and consumption; no universal cleaner substitution."
+        },
+        {
+          "key": "weather-sealant",
+          "titleRu": "Совместимый герметик наружных погодных швов",
+          "category": "material",
+          "unitId": "l",
+          "missing": "Exact approved sealant/PDS, actual joint geometry/consumption, preparation and wastage; structural adhesive is not weatherseal."
+        },
+        {
+          "key": "measurement-torque-tools",
+          "titleRu": "Средства измерения, выверки и контроля затяжки",
+          "category": "equipment",
+          "unitId": "set",
+          "missing": "Complete measured tool quantities/calibration/maintenance; one torque value does not prove a workstation."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Контроль, испытания и исполнительные документы",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole test/inspection/service resource norm with exact method and project frequency."
+        },
+        {
+          "key": "delivery-store-feed",
+          "titleRu": "Доставка, складирование и подача изделий",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole physical route/unloading/storing/separators/protection/feed process and quantities."
+        },
+        {
+          "key": "cleanup-waste",
+          "titleRu": "Очистка, возврат оснастки и вывоз отходов",
+          "category": "service",
+          "unitId": null,
+          "missing": "Whole compatible cleaning/liquids/rags/waste packaging/haul process and quantities."
+        },
+        {
+          "key": "fire-nodes",
+          "titleRu": "Полный состав огнезащитных и иных специальных примыканий",
+          "category": "material",
+          "unitId": null,
+          "missing": "Actual accepted complete node/fire/acoustic/water/thermal BOM; no universal area norm from NVF or historical floors*120."
+        },
+        {
+          "key": "point-system-project-fit",
+          "titleRu": "Совместимый проект и условия точечного остекления",
+          "category": "service",
+          "unitId": null,
+          "missing": "Exact accepted local project/ATec scope, selected R1001glass/fitting/frame approval and infiltration-suitable destination; no generic spider permission."
+        }
+      ],
+      "operations": [
+        {
+          "key": "design-base",
+          "titleRu": "Приёмка проекта, основания и узлов"
+        },
+        {
+          "key": "receive-store",
+          "titleRu": "Приёмка, разгрузка и хранение изделий"
+        },
+        {
+          "key": "frame",
+          "titleRu": "Монтаж опор и фасадной подсистемы"
+        },
+        {
+          "key": "prepare",
+          "titleRu": "Раскрой, обработка и подготовка компонентов"
+        },
+        {
+          "key": "glazing",
+          "titleRu": "Подача и монтаж стеклянного заполнения"
+        },
+        {
+          "key": "seal",
+          "titleRu": "Уплотнение и герметизация стыков"
+        },
+        {
+          "key": "nodes",
+          "titleRu": "Примыкания, водоотвод и огнезащита"
+        },
+        {
+          "key": "control",
+          "titleRu": "Контроль, испытания и приёмка"
+        },
+        {
+          "key": "cleanup",
+          "titleRu": "Очистка, демонтаж временных средств и отходы"
+        }
+      ],
+      "exclusions": [
+        "No universal4spidersperpane orthicknessderivedfromarea.",
+        "10Nmglassassemblyand60NmDIN934nutsarenotoneuniversalboltsetting.",
+        "Glassdoesnotstabilisebuildingstructure."
+      ],
+      "existingOwnerCatalogId": "canonical-work:expanded:curtain_wall_system",
+      "sourceTechnologyNotParent45ResourceNorm": true,
+      "fullTechnicalAcceptance": false,
+      "newFULL": 0,
+      "derivedSourceRows": [
+        {
+          "key": "fitting-o-rings",
+          "titleRu": "Уплотнительное кольцо исходного шарнирного крепления",
+          "unitId": "piece",
+          "sourceInputKey": "articulated-fittings",
+          "sourceMultiplier": "2",
+          "operation": "glazing",
+          "locator": "ATecPDF12§2.4.4.3;R1001onlyselectedhere",
+          "testOnlyExpected": "80"
+        }
+      ]
+    }
+  ],
+  "noHistoricalAreaRatesCarriedToNewMethods": true,
+  "noFactoryAndSiteDoublePayment": true,
+  "allProductChecks": "UNRUN",
+  "newFULL": 0
+}

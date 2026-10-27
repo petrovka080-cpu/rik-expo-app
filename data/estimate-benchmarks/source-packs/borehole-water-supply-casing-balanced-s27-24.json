@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.borehole-water-supply-casing-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:borehole_water_supply",
+  "scope": "Construction of one explicitly selected 180 m potable-water production borehole BH-PW-180-DN250 with a 311 mm final bore, 180 m DN250 casing, 36 m stainless V-wire screen, one 45 m3/h submersible pump, 160 m DN80 rising main and one sanitary wellhead. Geological logging, gravel pack, annular grouting, sanitary seal, headworks, electrical-controls, development, testing, labor, mechanisms and logistics are project-owned.",
+  "sourceAuthority": "Approved hydrogeological design, borehole log, drilling program, casing-screen schedule, gravel and grout specification, pump duty calculation, headworks and electrical-control drawings, pumping-test program, water laboratory, suppliers and approving project engineer",
+  "ordinaryFixture": {
+    "boreholeCount": 1,
+    "boreholeDesignation": "BH-PW-180-DN250",
+    "purpose": "POTABLE_WATER_PRODUCTION",
+    "drilledDepthM": 180,
+    "finalBoreDiameterMm": 311,
+    "casingInstalledM": 180,
+    "casingDesignation": "STEEL-CASING-DN250-EN10217",
+    "screenInstalledM": 36,
+    "screenDesignation": "SS316L-VWIRE-DN200-0.75MM",
+    "pumpInstalledPiece": 1,
+    "pumpDesignation": "SUBMERSIBLE-45M3H-120M",
+    "risingMainInstalledM": 160,
+    "risingMainDesignation": "SS304-DN80-PN16",
+    "wellheadInstalledSet": 1,
+    "wellheadDesignation": "SANITARY-WELLHEAD-DN250-DN80"
+  },
+  "procurementBalance": {
+    "casing": {
+      "installedLength": "bh_casing_installed_m",
+      "retainedSpareLength": "bh_casing_retained_spare_m",
+      "supplierJointLength": "bh_casing_supplier_joint_length_m"
+    },
+    "visiblePreliminaryProfile": {
+      "bh_casing_retained_spare_m": 0,
+      "bh_casing_supplier_joint_length_m": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "hard-coded 80 m drilling depth or casing schedule",
+    "casing, screen, gravel, grout, labor, mechanism or logistics quantities derived from a generic length coefficient",
+    "automatic temporary access, drilling-fluid disposal or standby power",
+    "universal retained spare or supplier-joint length",
+    "distribution network, reservoir, treatment plant, sewerage or invented price"
+  ]
+}

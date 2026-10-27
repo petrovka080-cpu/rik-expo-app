@@ -1,0 +1,60 @@
+{
+  "contract": "gox.electrical.two-gang-finite-test-only/v1",
+  "fixtureAuthority": "TEST_ONLY_NOT_OBJECT_NOT_PRICE_NOT_SOURCE_ADMISSION",
+  "selectedNodeCount": "5",
+  "expectedConceptualConsumption": {
+    "mechanism": "5",
+    "box": "5"
+  },
+  "independentSupplyVectors": [
+    {
+      "name": "separate-mechanism-stock-and-quantum",
+      "consumed": "5",
+      "stock": "1",
+      "reserve": "2",
+      "quantum": "4",
+      "expectedOrder": "8",
+      "expectedRemaining": "4",
+      "expectedFree": "2",
+      "expectedShortage": "0",
+      "expectedReserveDeficit": "0"
+    },
+    {
+      "name": "box-stock-covers-consumption-not-reserve",
+      "consumed": "5",
+      "stock": "5",
+      "reserve": "1",
+      "quantum": "3",
+      "expectedOrder": "3",
+      "expectedRemaining": "3",
+      "expectedFree": "2",
+      "expectedShortage": "0",
+      "expectedReserveDeficit": "0"
+    },
+    {
+      "name": "explicit-zero-order-is-not-unknown-stock",
+      "consumed": "5",
+      "stock": "8",
+      "reserve": "2",
+      "quantum": "4",
+      "expectedOrder": "0",
+      "expectedRemaining": "3",
+      "expectedFree": "1",
+      "expectedShortage": "0",
+      "expectedReserveDeficit": "0"
+    }
+  ],
+  "sourceHoldMustSurvive": [
+    "all-project-facts",
+    "manual-price",
+    "manual-order",
+    "trusted-source-field-echo"
+  ],
+  "nodeCountMustNotBe": [
+    "legacy-q-default100",
+    "socket-way-count10",
+    "tool-post-count",
+    "labour-hours"
+  ],
+  "doNotReplayAcceptedSocket13": true
+}

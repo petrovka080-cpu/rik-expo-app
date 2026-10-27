@@ -1,0 +1,93 @@
+{
+  "schema": "ai-estimate-layer-dependencies-v1",
+  "description": "Required layer dependency chain for AI estimate acceptance.",
+  "dependency_order": [
+    "L0_RUNTIME_BASELINE",
+    "L1_REQUEST_PRODUCT_FLOW",
+    "L2_CORE_RENOVATION_CALCULATORS",
+    "L3_LEGACY_10000_CATALOG",
+    "L4_EXPANDED_COMPLEX_WORKS",
+    "L5_NPLUS_UNIFIED_CATALOG",
+    "L6_TRUST_PRICEBOOK_GOVERNANCE",
+    "L7_PDF_BUYER_HANDOFF",
+    "L8_GOLDEN_BENCHMARK",
+    "L9_WEB_ANDROID_CONTROLLED_PILOT",
+    "L10_OBSERVABILITY_REGRESSION"
+  ],
+  "dependencies": [
+    {
+      "layer_id": "L0_RUNTIME_BASELINE",
+      "depends_on": []
+    },
+    {
+      "layer_id": "L1_REQUEST_PRODUCT_FLOW",
+      "depends_on": [
+        "L0_RUNTIME_BASELINE"
+      ]
+    },
+    {
+      "layer_id": "L2_CORE_RENOVATION_CALCULATORS",
+      "depends_on": [
+        "L1_REQUEST_PRODUCT_FLOW"
+      ]
+    },
+    {
+      "layer_id": "L3_LEGACY_10000_CATALOG",
+      "depends_on": [
+        "L2_CORE_RENOVATION_CALCULATORS"
+      ]
+    },
+    {
+      "layer_id": "L4_EXPANDED_COMPLEX_WORKS",
+      "depends_on": [
+        "L3_LEGACY_10000_CATALOG"
+      ]
+    },
+    {
+      "layer_id": "L5_NPLUS_UNIFIED_CATALOG",
+      "depends_on": [
+        "L4_EXPANDED_COMPLEX_WORKS"
+      ]
+    },
+    {
+      "layer_id": "L6_TRUST_PRICEBOOK_GOVERNANCE",
+      "depends_on": [
+        "L5_NPLUS_UNIFIED_CATALOG"
+      ]
+    },
+    {
+      "layer_id": "L7_PDF_BUYER_HANDOFF",
+      "depends_on": [
+        "L6_TRUST_PRICEBOOK_GOVERNANCE"
+      ]
+    },
+    {
+      "layer_id": "L8_GOLDEN_BENCHMARK",
+      "depends_on": [
+        "L7_PDF_BUYER_HANDOFF"
+      ]
+    },
+    {
+      "layer_id": "L9_WEB_ANDROID_CONTROLLED_PILOT",
+      "depends_on": [
+        "L8_GOLDEN_BENCHMARK"
+      ]
+    },
+    {
+      "layer_id": "L10_OBSERVABILITY_REGRESSION",
+      "depends_on": [
+        "L9_WEB_ANDROID_CONTROLLED_PILOT"
+      ]
+    }
+  ],
+  "rules": {
+    "layers_run_in_order": true,
+    "stop_on_first_failed_required_layer": true,
+    "upper_layers_blocked_if_dependency_failed": true,
+    "upper_layer_cannot_green_if_lower_layer_failed": true
+  },
+  "acceptance": {
+    "layer_dependencies_created": true,
+    "upper_layer_cannot_green_if_lower_layer_failed": true
+  }
+}

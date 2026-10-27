@@ -1,0 +1,26 @@
+{
+  "contract": "gox-build.masonry-m50-effective-lift-correction/r4",
+  "status": "UNSEALED_CORRECTIVE_SOURCE_NOT_READY",
+  "sourceId": "masonry_m50_effective_lift_correction_r4",
+  "prefix": "masonry:m50:effective-lift:r4",
+  "parentDefinitionId": "9e2b5498-7b4d-5f82-ace7-6c6b822b4ef8",
+  "parentDefinitionSha256": "f72f853aaffcab2b21cf172e7a3371dbe80a378a8f74b2b427d255c775166c6b",
+  "sourceSnapshotManifestSha256": "0a577c53cb676cb24798bae8df2e62183c463c4e8a4a4bcdb6621ce1c44ffddc",
+  "mortarRowId": "masonry:wall:krer08-02-001-07:mortar-consumed",
+  "effectiveMortarParameterId": "m33_masonry_m33_masonry_effective_resource_quantity_masonry_wall_krer08_02_001_07_mortar_consumed",
+  "makerEvidence": {
+    "sha256": "9f86c3fffc6471afcd249960e89e0cd4433ac4187098f04a21efd15fe0a4ad62",
+    "locator": "METEL YAR-1 original PDF1: capacity0.25m3,payload500kg,tare45kg,serialgarland; actual complete upper load scheme and crane curve remain project facts"
+  },
+  "methodEvidence": {
+    "sha256": "f5db7d0913d2d5f57634fb587a37fbccb61f9dda1787046fe13c30b096fe5b10",
+    "locator": "KZ2019 PDF35-36 table2: three-box physical flow; PDF38 actual returns and cleaning, no foreign financial rate"
+  },
+  "correction": "Use the retained effective mortar output for all8 process volumes and worst-load/return mass. Physical bounds are computed by the existing common formula graph after resource derivation, protected by mandatory OBJECT_SCOPE. No nominal wall*0.234 shortcut or incoming fake effective value.",
+  "newPaidOwners": 0,
+  "newProcurementOwners": 0,
+  "closedOldNeeds": 0,
+  "newPublicCards": 0,
+  "full": 0,
+  "productChecks": "UNRUN"
+}

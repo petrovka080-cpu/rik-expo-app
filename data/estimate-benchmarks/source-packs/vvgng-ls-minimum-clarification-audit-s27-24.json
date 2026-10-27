@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.vvgng-ls-minimum-clarification-audit.v1",
+  "catalogId": "canonical-work:base:electrical_interior_vvg_cable_lay_standard",
+  "knownMinimumInput": {
+    "length_m": 150,
+    "cable_mark": "ВВГнг(А)-LS",
+    "core_count": 5,
+    "conductor_area_mm2": 6
+  },
+  "safeAutomaticResults": [
+    "installed net cable length",
+    "visible expected loss from an explicit replaceable ratio",
+    "visible retained reserve from an explicit replaceable length",
+    "total cable need",
+    "supplier cut-increment order",
+    "remainder after installation and expected loss",
+    "surplus beyond retained reserve"
+  ],
+  "notDerivableFromMinimumInput": {
+    "routeAndSchedule": [
+      "marker quantity",
+      "halogen-free clamp quantity and spacing"
+    ],
+    "terminations": [
+      "gland quantity",
+      "lug quantity"
+    ],
+    "penetrationsAndQa": [
+      "firestop compound quantity",
+      "test count"
+    ],
+    "conditionalMethodBranches": [
+      "cable tray applicability and length",
+      "protective pipe applicability and length",
+      "pulling lubricant applicability and quantity"
+    ],
+    "pprAndResourceSchedule": [
+      "installation labor hours",
+      "testing labor hours",
+      "reel stand machine hours",
+      "pulling device machine hours",
+      "crimp tool machine hours",
+      "installation tester machine hours"
+    ],
+    "logistics": [
+      "delivery trips",
+      "waste-removal trips"
+    ]
+  },
+  "questionReduction": {
+    "rule": "A missing SKU or project designation must not become a separate mandatory question when the row already has a truthful functional specification.",
+    "optionalDesignationParameters": [
+      "marker_designation",
+      "clamp_designation",
+      "gland_designation",
+      "lug_designation",
+      "firestop_designation",
+      "test_designation"
+    ],
+    "effect": "The 17 dependent rows remain visible, but the minimum input asks only for real quantities or applicability decisions. Exact designations can be added later from project documents."
+  },
+  "forbiddenInferences": [
+    "derive clamp spacing from cable length without a route detail",
+    "derive gland or lug count from core count without a termination schedule",
+    "derive firestop quantity without penetration geometry and system passport",
+    "derive labor or machine hours without an applicable rate table or approved method statement",
+    "derive logistics trips without payload, packaging and logistics plan",
+    "hide dependent rows until all project facts are supplied"
+  ],
+  "officialGuidance": {
+    "locator": "КРЕРм-2015, Указания по применению, п. 2.9.2",
+    "snapshotSha256": "a0c3a8684c66a3d7ce5b30b5340562972e11f6a0df92a2240770af46fdae2c54"
+  }
+}

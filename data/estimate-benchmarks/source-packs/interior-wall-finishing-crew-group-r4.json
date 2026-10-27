@@ -1,0 +1,603 @@
+{
+  "contract": "rik-expo-app.ready-wall-finishing-crew-group.r4",
+  "masterSha256": "28089a66fa72e574dc730ed67beaec81e320380ee3dc8206561437c5cdcb9239",
+  "baseContract": "rik-expo-app.interior-wall-finishing-geometry-group.r3",
+  "baseNamespace": "wall_finish_ready_krer150400701_r3_",
+  "baseParameterId": "net_wall_area_m2",
+  "basePins": [
+    {
+      "path": "src/lib/estimate/v4/interiorWallFinishingGeometryGroupR3.ts",
+      "sha256": "2d94fd6f7dec3db2392a2fb52db306e80a6f82ef2a8d25943e16f7ff57b16e7d"
+    },
+    {
+      "path": "src/lib/estimate/v4/interiorWallFinishingGeometryGroupR3.test.ts",
+      "sha256": "35233ac13b0430c012483e53750a9f7bf97f470afbf118f4402662d20cb503ec"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/interior-wall-finishing-geometry-group-r3.json",
+      "sha256": "9d7c0648df548b3a888b1cd6d34814b9a74a91227a9d039a08ec3062b0738880"
+    }
+  ],
+  "sources": [
+    {
+      "id": "krause949967-item-r4",
+      "title": "krause949967-item-r4",
+      "edition": "Первичный изготовитель; снимок2026-10-21",
+      "path": ".release-runtime/r568/interior-wall-finishing-crew-r4/sources/krause949967-product.html",
+      "sha256": "a4bebdb316266114e869fecba702d5be55cb49c40a7d8322a7334a34edd71fcc",
+      "url": "https://www.krause-systems.de/detail/product/9994-protec-xs-eco-aluminium-faltgeruest-arbeitshoehe-ca-360-m.html",
+      "locatorRu": "Точный949967, рабочая высота3,60м, платформа1,60м, один человек/240кг, платформа2,00×0,60м; таблица9артикулов с количеством комплектации."
+    },
+    {
+      "id": "krause-protec-eco-instructions-r4",
+      "title": "krause-protec-eco-instructions-r4",
+      "edition": "Первичный изготовитель; снимок2026-10-21",
+      "path": ".release-runtime/r568/interior-wall-finishing-crew-r4/sources/krause-protec-eco-manual.pdf",
+      "sha256": "6fc84808394f59103d2bd71376e771c9819059db91f15dd3af0c1f0455778c93",
+      "url": "https://www.krause-systems.de/fileadmin/krauseproducts/files/Rohdaten/AundV/G01_D560085_AV_GESAMT_800000_00_00_00_10.pdf",
+      "locatorRu": "Редакция2.0©2024,02.09.2024. PDF11–14: один исполнитель,240кг, уклон≤1%, запертые ролики, ограждения, движение пустым по ровному пути; PDF13: два ключа13мм и видимый щит данных. PDF63: схема949967. Это паспорт, не часы/норма воды."
+    },
+    {
+      "id": "krause-protec-eco-datasheet-r4",
+      "title": "krause-protec-eco-datasheet-r4",
+      "edition": "Первичный изготовитель; снимок2026-10-21",
+      "path": ".release-runtime/r568/interior-wall-finishing-crew-r4/sources/krause-protec-eco-datasheet.pdf",
+      "sha256": "ce1f603a5302608a3eada2d4a4f2fefa9552091148f19450afa686a35b4ace5c",
+      "url": "https://www.krause-systems.de/fileadmin/krauseproducts/files/Rohdaten/Datenbl%C3%A4tter/DB_ProTec%20XS%20ECO_v1.pdf",
+      "locatorRu": "PDF1: размеры/нагрузка; оснастка и рабочее оборудование не входят. Два ключа/уровень/щит раскрыты отдельно, а не приписаны поставке949967."
+    },
+    {
+      "id": "3m2890s-eyewear-primary-r4",
+      "title": "3m2890s-eyewear-primary-r4",
+      "edition": "Первичный изготовитель; снимок2026-10-21",
+      "path": ".release-runtime/r568/interior-wall-finishing-crew-r4/sources/3m-eyewear-guide.pdf",
+      "sha256": "2b0ec1664460ed295018e38037ec43b56157aee5e95c9f46e2f824f9fffa6eee",
+      "url": "https://multimedia.3m.com/mws/media/2020427O/3m-eyewear-interactive-guide-english.pdf",
+      "locatorRu": "PDF24,2890S SAP7000061924: закрытая вентиляция, маркировка3M345BT, защита брызги3/крупнаяпыль4/мелкаяпыль5, прозрачныйполикарбонат; профиль совместим с полумасками по широкой гибкой переносице. MOQ10 — не число новых закупок; предоставляется один действующий предмет подрядчика."
+    },
+    {
+      "id": "kg-krer15-wall-150400705-source-r4",
+      "title": "КРЕР2015, сборник15 «Отделочные работы»",
+      "edition": "приказ28.03.2016 №2-нпа; КРЕР-2015",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/KRER-15.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "locatorRu": "PDF173 полный состав15-04-007 инаименования01–08;PDF174нижняятаблица,ПЕРВАЯчисловаяколонка15-04-007-05:68.37рабочих3.2,.03операторы,.03подъемник25м,.20автомобиль5т,20кггрунт,.03ткраска,.88м²шкурка,.36кгветошь,.079тшпаклевка;PDF8§1.1г,PDF11§1.17,PDF22–23приложение4.",
+      "quantityVerifiedVisually": true,
+      "historicalPricesImported": false
+    },
+    {
+      "id": "kg-krer15-wall-primer150400603-source-r4",
+      "title": "КРЕР2015, сборник15 «Отделочные работы»",
+      "edition": "приказ28.03.2016 №2-нпа; КРЕР-2015",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/KRER-15.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "locatorRu": "PDF172–173,колонка15-04-006-03:одно грунтование стен,6.55рабочих4.0,.01машинист,.01подъемник45м,.01автомобиль5т,.1кгветошь,.013тобщейгрунтовки/100м². ВыбранныйVGT0301отдельно:верх.12кг/м²,реальнаяфасовка1кг;130гнеприписаныVGT.",
+      "quantityVerifiedVisually": true,
+      "historicalPricesImported": false
+    }
+  ],
+  "assets": [
+    {
+      "key": "tool-manual-putty-pan",
+      "nameRu": "Тара ручного перемешивания",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Типовая нержавеющая рабочая тара с явно ЗАДАННЫМ полезным внутренним прямоугольным просветом не меньше150×150мм и глубиной100мм; ровное дно и доступ шпателя120мм к углам. Выбранная рабочая отметка50мм даёт1,125л. Это требуемая спецификация, не вывод из внешних размеров товара.",
+      "operationIds": [
+        "full-putty",
+        "ordinary-completion"
+      ],
+      "sourceId": "vgt-current-ready-putty-r3",
+      "role": "MANUAL_MIXING",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "tool-manual-putty-pan-lid",
+      "nameRu": "Крышка рабочей тары",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Штатная закрываемая крышка точно выбранной рабочей тары, закрывает открытый полезный просвет150×150мм; отдельный предмет. Временное сохранение чистого неиспользованного остатка того же состава; не герметичная упаковка для произвольного срока.",
+      "operationIds": [
+        "full-putty",
+        "ordinary-completion"
+      ],
+      "sourceId": "vgt-current-ready-putty-r3",
+      "role": "MANUAL_MIXING",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-locking-pins",
+      "nameRu": "Фиксаторы KRAUSE 704405",
+      "count": 4,
+      "unitId": "item",
+      "specificationRu": "Артикул704405, фиксирующие штифты;4шт в949967.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-caster-set",
+      "nameRu": "Ролики KRAUSE 714169",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Артикул714169:1полный набор из4роликов для949967, не1неизвестныйкомплект.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-platform",
+      "nameRu": "Платформа KRAUSE 911001",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Артикул911001:1платформа с люком2,00×0,60м.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-guardrail-braces",
+      "nameRu": "Ограждения KRAUSE 912855",
+      "count": 5,
+      "unitId": "item",
+      "specificationRu": "Артикул912855:5горизонтальных связей/элементов ограждения.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-long-toeboards",
+      "nameRu": "Продольные борта KRAUSE 913517",
+      "count": 2,
+      "unitId": "item",
+      "specificationRu": "Артикул913517:2продольных бортовых элемента.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-end-toeboards",
+      "nameRu": "Поперечные борта KRAUSE 913555",
+      "count": 2,
+      "unitId": "item",
+      "specificationRu": "Артикул913555:2торцевых бортовых элемента.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-base-plates",
+      "nameRu": "Опоры KRAUSE 914026",
+      "count": 4,
+      "unitId": "item",
+      "specificationRu": "Артикул914026:4опорных элемента комплектации949967.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-folding-base",
+      "nameRu": "Основание KRAUSE 915009",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Артикул915009:1складной базовый элемент.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-frames",
+      "nameRu": "Рамы KRAUSE 915023",
+      "count": 2,
+      "unitId": "item",
+      "specificationRu": "Артикул915023:2вертикальные рамы1,0м.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause949967-item-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-spanners",
+      "nameRu": "Ключи 13 мм",
+      "count": 2,
+      "unitId": "item",
+      "specificationRu": "Два отдельных подходящих гаечных ключа13мм для удержания/затяжки крепежа по руководству; не один ключ с двумя концами.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause-protec-eco-instructions-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-spirit-level",
+      "nameRu": "Уровень пузырьковый",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Цельный пузырьковый уровень с двумя направлениями измерения, точность не хуже0,5мм/м; последовательно проверяется горизонталь в двух осях до допуска1%.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause-protec-eco-instructions-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-identification-board",
+      "nameRu": "Щит допуска площадки",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Повторно заполняемый закрепляемый щит с предусмотренными руководством полями: ответственное лицо/контакт, готовность, класс/нагрузка, применение внутри, дата сборки; читаемость с пола проверяется до использования.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause-protec-eco-instructions-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "access-board-marker",
+      "nameRu": "Маркер щита допуска",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Действующий маркер для повторно заполняемого щита, не создаёт отдельной нормы чернил/м²; работоспособность обеспечивается тем же владельцем.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "krause-protec-eco-instructions-r4",
+      "role": "ACCESS",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    },
+    {
+      "key": "tool-eye-protection",
+      "nameRu": "Очки 3M 2890S",
+      "count": 1,
+      "unitId": "item",
+      "specificationRu": "Полное изделие2890S,SAP7000061924,закрытая вентиляция; линза/оправа/ремень, маркировка3M345BT. Защита брызг/крупной/мелкой пыли. Срок ношения/замена и химическая совместимость глазной защиты не выводятся изMOQ10.",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceId": "3m2890s-eyewear-primary-r4",
+      "role": "PPE_PART",
+      "quantityBasis": "PEAK_ONE_SERIAL_POSITION_FUNCTIONAL_ITEMS_NOT_PURCHASE_OR_WEAR"
+    }
+  ],
+  "selectedOrganisation": {
+    "simultaneousPositions": 1,
+    "simultaneousWorkers": 1,
+    "parallelBrigadesAdmitted": false,
+    "sameWholeCostOwner": true,
+    "manufacturerCrewNormClaimed": false
+  },
+  "manualMixing": {
+    "closedNeed": "stirring-tool",
+    "reusedSpatulaKey": "tool-putty-spatula",
+    "wholeFactoryPackKg": "1",
+    "densityKgPerL": "1.77",
+    "actualPackVolumeLExpression": "1/1.77",
+    "internalPanWidthMm": 150,
+    "internalPanLengthMm": 150,
+    "internalPanDepthMm": 100,
+    "selectedWorkingFillMm": 50,
+    "selectedWorkingCapacityL": "1.125",
+    "spatulaWidthMm": 120,
+    "minimumTotalSideClearanceMm": 30,
+    "methodRu": "Один готовый незагустевший1кг заводской пакет нормальной консистенции, без добавки воды, вручную перемешивается имеющимся нержавеющим120ммшпателем в описанной чистой таре до однородности без полос/сгустков; соскоб со стенок и дна включён. Перед следующей тарой тот же инвентарь очищается. Режим инженерный: VGT требует перемешивания, но не задаёт электропривод/обороты/минуты. Нового труда/нормы продуктивности нет; исходный малярный труд и обычное обеспечение сохраняются. Если вручную не получается однородность в нормальной консистенции, материал/профиль не принят; холодное/загустевшее восстановление не допущено.",
+    "noMinimumOverbuy": "One documented1kg product pack already matches whole-pack supply quantum. No9kg minimum,powered mixer,water dilution or invented minutes."
+  },
+  "access": {
+    "model": "KRAUSE ProTec XS ECO949967",
+    "manufacturerWorkHeightM": "3.60",
+    "standingHeightM": "1.60",
+    "selectedMaximumRoomHeightM": "3.50",
+    "platformLengthM": "2.00",
+    "platformWidthM": "0.60",
+    "maxPersons": 1,
+    "maximumTotalLoadKg": "240",
+    "includedPartsRows": 9,
+    "spannerCount": 2,
+    "applicabilityIsNotAssumedRu": "Помещение должно фактически позволять развернуть/перемещать площадку; ровное несущее основание,≤1%выравнивание, запертые ролики, полные ограждения/борта, один человек и суммарный груз≤240кг, осмотр/щит, движение только пустым. Эти исполнительские условия остаются отдельной CONDITION_REQUIRED; прежняя QUANTITY_REQUIRED не удаляется без раскрытых16предметов/принадлежностей. Геометрический верх3,5м покрыт паспортной рабочей высотой3,6м; наружный балласт не переносится во внутреннюю ветвь."
+  },
+  "branches": [
+    {
+      "id": "improved-wall-01",
+      "normId": "15-04-007-01",
+      "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+      "reuseVerdict": "REUSE_WITH_PROVEN_ADAPTATION",
+      "titleRu": "Улучшенная отделка стен VGT",
+      "normBasisM2": 100,
+      "sourceColumn": "01",
+      "wholeWorkers": "43.56",
+      "totalWorkersWithPreprimer": "50.11",
+      "wholeOperators": "0.02",
+      "wholeLift": "0.02",
+      "wholeTruck": "0.15",
+      "normRags": "0.3",
+      "normAbrasive": "0.84",
+      "normPrimerKg": "20",
+      "normPaintTonnes": "0.03",
+      "normPuttyTonnes": "0.051",
+      "materialProfileStatus": "CURRENT_ONE_OPTIMAL_1MM_APPLICATION_ADMITTED_BASE",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ]
+    },
+    {
+      "id": "high-quality-wall-05",
+      "normId": "15-04-007-05",
+      "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+      "reuseVerdict": "REUSE_WITH_PROVEN_ADAPTATION",
+      "titleRu": "Высококачественная отделка стен VGT",
+      "normBasisM2": 100,
+      "sourceColumn": "05",
+      "wholeWorkers": "68.37",
+      "totalWorkersWithPreprimer": "74.92",
+      "wholeOperators": "0.03",
+      "wholeLift": "0.03",
+      "wholeTruck": "0.20",
+      "normRags": "0.36",
+      "normAbrasive": "0.88",
+      "normPrimerKg": "20",
+      "normPaintTonnes": "0.03",
+      "normPuttyTonnes": "0.079",
+      "materialProfileStatus": "VGT_TOTAL_PUTTY_DEMAND_REQUIRES_APPLICABLE_PASS_THICKNESS_PROOF",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ]
+    },
+    {
+      "id": "deep-primer-00603",
+      "normId": "15-04-006-03",
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_prime_standard",
+      "reuseVerdict": "REUSE_WITH_PROVEN_ADAPTATION",
+      "titleRu": "Грунтование оштукатуренных стен VGT 0301",
+      "normBasisM2": 100,
+      "sourceColumn": "03",
+      "wholeWorkers": "6.55",
+      "wholeOperators": "0.01",
+      "wholeLift": "0.01",
+      "wholeTruck": "0.01",
+      "normRags": "0.1",
+      "genericNormPrimerTonnes": "0.013",
+      "selectedVgtPrimerKgPerM2": "0.12",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "ordinary-completion"
+      ]
+    }
+  ],
+  "requiredOpenNeeds": [
+    "washing-water",
+    "access",
+    "ppe",
+    "handling-profile"
+  ],
+  "fullTechnicalAcceptance": false,
+  "selectedScopeQuantitiesComplete": false,
+  "sourceConstraintRu": {
+    "water": "Найдена только инструкцияVGT очисткиводой. Поиск применимой первичнойТК/КРЕР по ручной очистке не дал отдельной нормы; промывочная вода остаётся QUANTITY_REQUIRED. Нет литров, циклов, table-water remainder,1водопункта вместо потребления или новой энергии.",
+    "ppe": "2890S закрывает конкретный предмет защиты глаз. Полный принятый профиль кожи/дыхания ещё не доказан. Свежий3M6000TDS2025 прямо запрещает неизвестную концентрацию и требует мойку/дезинфекцию; поэтому6200+6035не объявлены достаточными и не добавлены как фиктивное закрытие.",
+    "highQualityPutty": "Таблица007173–174 даёт цельную05норму68.37 и общий пункт сплошногошпатлевания. Приложение4PDF22–23 не содержит отдельной акриловой колонки. Число/толщина VGTпроходов для выбранной высококачественной цели не выводится из0.079т старого материала; запрос внутренней нормы не передаётся пользователю."
+  },
+  "reuseCompatibility": [
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+      "component": "interiorWallFinishingGeometryGroupR3",
+      "version": "rik-expo-app.interior-wall-finishing-geometry-group.r3",
+      "verdict": "REUSE_WITH_PROVEN_ADAPTATION",
+      "scope": "01wholebranch and05whole-norm branch,shared crew;05putty material guard retained"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_prime_standard",
+      "component": "R3 preputty-prime full source15-04-006-03",
+      "version": "rik-expo-app.interior-wall-finishing-geometry-group.r3",
+      "verdict": "REUSE_WITH_PROVEN_ADAPTATION",
+      "scope": "Whole6.55h/.01operators/.01lift/.01truck/.1rags source subwork + current0301 demand; no arbitrary share of43.56h"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_putty_apply_standard",
+      "component": "wallPuttyConstructorS2736/CT127",
+      "version": "wall-putty-third-mineral:s27-36.v1",
+      "verdict": "INCOMPATIBLE",
+      "scope": "Dry gypsum CT127 and third oil-glue norm cannot become readyVGT whole subwork; manual tool class only is not whole reuse"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_high_load",
+      "component": "wallPaintConstructorS2735",
+      "version": "wall-paint-constructor:s27-35.v1",
+      "verdict": "INCOMPATIBLE",
+      "scope": "CT54 silicate/CT17 wet chemistry and project productivity; no substantiated high-load claim for chosenVGT"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_paint_ceiling_paint_standard",
+      "component": "ceiling variant",
+      "version": "current catalog manifest",
+      "verdict": "INCOMPATIBLE",
+      "scope": "Wall01/05norm and VGTwall paint do not establish ceiling02/06 demand/work/access applicability"
+    },
+    {
+      "catalogId": "standalone-ready-vgt-putty",
+      "component": "existing whole ready putty subwork",
+      "version": "bounded current search",
+      "verdict": "MISSING",
+      "scope": "No applicable standalone labor norm;43.56h/68.37h not split"
+    }
+  ],
+  "primerExpectedKeys": [
+    "whole-work",
+    "workers-preputty",
+    "workers-total",
+    "operators",
+    "lift-preputty",
+    "truck",
+    "rags-consumed",
+    "ordinary-access",
+    "ordinary-accompanying",
+    "process-preparation",
+    "process-preputty-prime",
+    "process-ordinary-completion",
+    "tool-waterborne-brush",
+    "tool-application-pail",
+    "tool-application-pail-lid",
+    "tool-dedust-brush",
+    "tool-floor-brush",
+    "tool-dustpan",
+    "tool-waste-bin",
+    "tool-waste-bin-lid",
+    "tool-work-clothing",
+    "tool-waterproof-gloves",
+    "open-washing-water",
+    "open-access",
+    "open-ppe",
+    "open-handling-profile",
+    "preputty-primer-consumed",
+    "preputty-primer-order",
+    "preputty-primer-packages",
+    "preputty-primer-stock-credit",
+    "preputty-primer-remaining",
+    "preputty-primer-shortage"
+  ],
+  "exclusiveBranchesNotSummedOrSilentlyMerged": true,
+  "highQualityMaterialDemandRemainsUnknown": true
+}

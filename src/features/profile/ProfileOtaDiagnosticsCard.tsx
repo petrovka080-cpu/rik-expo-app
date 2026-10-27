@@ -1,0 +1,497 @@
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Platform, Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+
+import { logger } from "@/src/lib/logger";
+import { checkAndFetchOtaNow } from "@/src/lib/otaHardening";
+import {
+  buildOfficeReentryBreadcrumbsText,
+  getOfficeReentryBreadcrumbs,
+} from "@/src/lib/navigation/officeReentryBreadcrumbs";
+import {
+  buildWarehouseBackBreadcrumbsText,
+  getWarehouseBackBreadcrumbs,
+} from "@/src/lib/navigation/warehouseBackBreadcrumbs";
+import { buildOtaDiagnosticsText, getOtaDiagnostics, type OtaDiagnostics } from "@/src/lib/otaDiagnostics";
+import { buildPdfCrashBreadcrumbsText, getPdfCrashBreadcrumbs } from "@/src/lib/pdf/pdfCrashBreadcrumbs";
+import {
+  embeddedWebBuildIdentity,
+  loadWebBuildIdentity,
+  type WebBuildIdentity,
+} from "@/src/lib/release/webBuildIdentity";
+import { readableUnknownError } from "@/src/lib/auth/protectedIdentity";
+import { styles, UI } from "./ProfileOtaDiagnosticsCard.styles";
+
+type RowProps = {
+  label: string;
+  value: string;
+  last?: boolean;
+};
+
+type BatchResult<T> =
+  | { status: "success"; data: T }
+  | { status: "error"; error: unknown };
+
+type BreadcrumbBatchSectionKey =
+  | "pdf_crash_breadcrumbs"
+  | "warehouse_back_breadcrumbs"
+  | "office_reentry_breadcrumbs";
+
+type BreadcrumbBatchSection = {
+  key: BreadcrumbBatchSectionKey;
+  content: string;
+};
+
+type BreadcrumbBatchSectionResult = {
+  key: BreadcrumbBatchSectionKey;
+  result: BatchResult<BreadcrumbBatchSection>;
+};
+
+type BreadcrumbBatchState = "complete" | "partial" | "diagnostics_only";
+
+const OTA_DIAGNOSTICS_COPIED_MESSAGE = "Диагностика скопирована.";
+
+async function copyTextToClipboard(value: string): Promise<void> {
+  if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.clipboard) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Clipboard = require("expo-clipboard") as typeof import("expo-clipboard");
+  await Clipboard.setStringAsync(value);
+}
+
+function normalizeBatch<T>(results: PromiseSettledResult<T>[]): BatchResult<T>[] {
+  return results.map((result) =>
+    result.status === "fulfilled"
+      ? { status: "success", data: result.value }
+      : { status: "error", error: result.reason },
+  );
+}
+
+function toBatchErrorMessage(error: unknown): string {
+  return readableUnknownError(error) ?? "неизвестная ошибка диагностики";
+}
+
+async function loadPdfCrashBreadcrumbCopySection(): Promise<BreadcrumbBatchSection> {
+  const items = await getPdfCrashBreadcrumbs();
+  return {
+    key: "pdf_crash_breadcrumbs",
+    content: items.length ? buildPdfCrashBreadcrumbsText(items) : "- none",
+  };
+}
+
+async function loadWarehouseBackBreadcrumbCopySection(): Promise<BreadcrumbBatchSection> {
+  const items = await getWarehouseBackBreadcrumbs();
+  return {
+    key: "warehouse_back_breadcrumbs",
+    content: items.length ? buildWarehouseBackBreadcrumbsText(items) : "- none",
+  };
+}
+
+async function loadOfficeReentryBreadcrumbCopySection(): Promise<BreadcrumbBatchSection> {
+  const items = await getOfficeReentryBreadcrumbs();
+  return {
+    key: "office_reentry_breadcrumbs",
+    content: items.length ? buildOfficeReentryBreadcrumbsText(items) : "- none",
+  };
+}
+
+function normalizeBreadcrumbBatchResults(
+  results: PromiseSettledResult<BreadcrumbBatchSection>[],
+): BreadcrumbBatchSectionResult[] {
+  const normalized = normalizeBatch(results);
+  const keys: BreadcrumbBatchSectionKey[] = [
+    "pdf_crash_breadcrumbs",
+    "warehouse_back_breadcrumbs",
+    "office_reentry_breadcrumbs",
+  ];
+
+  return keys.map((key, index) => ({
+    key,
+    result: normalized[index] ?? {
+      status: "error",
+      error: new Error(`Missing batch result for ${key}`),
+    },
+  }));
+}
+
+function classifyBreadcrumbBatchState(params: {
+  successCount: number;
+  errorCount: number;
+}): BreadcrumbBatchState {
+  if (params.errorCount === 0) return "complete";
+  if (params.successCount === 0) return "diagnostics_only";
+  return "partial";
+}
+
+function logBreadcrumbBatchOutcome(params: {
+  state: BreadcrumbBatchState;
+  errors: { key: BreadcrumbBatchSectionKey; error: unknown }[];
+}) {
+  if (!params.errors.length) return;
+
+  logger.warn("ota-diagnostics", "breadcrumb batch degraded", {
+    state: params.state,
+    failedSections: params.errors.map((entry) => entry.key),
+    errorMessages: params.errors.map((entry) => toBatchErrorMessage(entry.error)),
+  });
+}
+
+function buildDiagnosticsCopyPayload(params: {
+  diagnostics: OtaDiagnostics;
+  batchResults: BreadcrumbBatchSectionResult[];
+}) {
+  const successes = params.batchResults
+    .filter(
+      (
+        entry,
+      ): entry is {
+        key: BreadcrumbBatchSectionKey;
+        result: { status: "success"; data: BreadcrumbBatchSection };
+      } => entry.result.status === "success",
+    );
+  const errors = params.batchResults
+    .filter(
+      (
+        entry,
+      ): entry is {
+        key: BreadcrumbBatchSectionKey;
+        result: { status: "error"; error: unknown };
+      } => entry.result.status === "error",
+    )
+    .map((entry) => ({ key: entry.key, error: entry.result.error }));
+  const state = classifyBreadcrumbBatchState({
+    successCount: successes.length,
+    errorCount: errors.length,
+  });
+
+  const payload = buildOtaDiagnosticsText(params.diagnostics)
+    + params.batchResults
+      .map((entry) =>
+        `\n\n${entry.key}:\n${entry.result.status === "success" ? entry.result.data.content : `- error: ${toBatchErrorMessage(entry.result.error)}`}`,
+      )
+      .join("");
+
+  const failedKeys = errors.map((entry) => entry.key).join(", ");
+  const message =
+    state === "complete"
+      ? OTA_DIAGNOSTICS_COPIED_MESSAGE
+      : state === "diagnostics_only"
+        ? `${OTA_DIAGNOSTICS_COPIED_MESSAGE}\n\nAll breadcrumb sections failed: ${failedKeys}.`
+        : `${OTA_DIAGNOSTICS_COPIED_MESSAGE}\n\nUnavailable breadcrumb sections: ${failedKeys}.`;
+
+  return {
+    payload,
+    message,
+    state,
+    successes,
+    errors,
+  };
+}
+
+function getSeverityTheme(severity: OtaDiagnostics["severity"]) {
+  switch (severity) {
+    case "error":
+      return {
+        icon: "alert-circle-outline" as const,
+        border: "#DC2626",
+        badgeBg: "rgba(220,38,38,0.14)",
+        cardBg: "rgba(127,29,29,0.16)",
+        text: "#FCA5A5",
+      };
+    case "warning":
+      return {
+        icon: "warning-outline" as const,
+        border: "#D97706",
+        badgeBg: "rgba(217,119,6,0.14)",
+        cardBg: "rgba(146,64,14,0.16)",
+        text: "#FCD34D",
+      };
+    default:
+      return {
+        icon: "checkmark-circle-outline" as const,
+        border: "#22C55E",
+        badgeBg: "rgba(34,197,94,0.14)",
+        cardBg: "rgba(21,128,61,0.14)",
+        text: "#86EFAC",
+      };
+  }
+}
+
+function DiagnosticsRow({ label, value, last }: RowProps) {
+  return (
+    <View style={[styles.row, last && styles.rowLast]}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      <Text style={styles.rowValue}>{value}</Text>
+    </View>
+  );
+}
+
+function BlockTitle({ title }: { title: string }) {
+  return <Text style={styles.blockTitle}>{title}</Text>;
+}
+
+function shouldUseSafeOtaInstructions(diagnostics: OtaDiagnostics): boolean {
+  return diagnostics.channel === "production" || diagnostics.channel === "preview";
+}
+
+function buildSafeOtaInstructionsMessage(diagnostics: OtaDiagnostics): string {
+  return [
+    "В этом release-билде ручная OTA-проверка отключена, чтобы не выбрасывать приложение.",
+    `Канал: ${diagnostics.channel}`,
+    `Runtime: ${diagnostics.runtimeVersion}`,
+    `Build: ${diagnostics.nativeBuildVersion}`,
+    "",
+    "Что делать:",
+    "1. Откройте приложение на интернете и подождите 20-30 секунд.",
+    "2. Полностью закройте приложение.",
+    "3. Откройте его снова и подождите 20-30 секунд.",
+    "4. Полностью закройте и откройте еще раз.",
+    "",
+    "Если обновление все еще не применилось, скопируйте OTA diagnostics и пришлите их.",
+  ].join("\n");
+}
+
+function BulletList(props: { items: string[]; emptyLabel: string }) {
+  if (!props.items.length) {
+    return <Text style={styles.listItem}>- {props.emptyLabel}</Text>;
+  }
+
+  return (
+    <>
+      {props.items.map((item, index) => (
+        <Text key={`${item}-${index}`} style={styles.listItem}>
+          - {item}
+        </Text>
+      ))}
+    </>
+  );
+}
+
+function ProfileWebBuildDiagnosticsCard() {
+  const [identity, setIdentity] = useState<WebBuildIdentity>(() => embeddedWebBuildIdentity());
+
+  useEffect(() => {
+    let active = true;
+    void loadWebBuildIdentity().then((next) => {
+      if (active) setIdentity(next);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <View style={styles.section} testID="profile-web-build-diagnostics">
+      <View style={[styles.card, { borderColor: "#22C55E" }]}>
+        <View style={styles.header}>
+          <View style={styles.headerTitleWrap}>
+            <Ionicons name="globe-outline" size={18} color="#86EFAC" />
+            <Text style={styles.headerTitle}>Диагностика Web-сборки</Text>
+          </View>
+          <View style={[styles.badge, { borderColor: "#22C55E", backgroundColor: "rgba(21,128,61,0.14)" }]}>
+            <Text style={[styles.badgeText, { color: "#86EFAC" }]}>WEB</Text>
+          </View>
+        </View>
+        <View style={styles.grid}>
+          <DiagnosticsRow label="Source SHA" value={identity.sourceSha256} />
+          <DiagnosticsRow label="Web build SHA" value={identity.webBuildSha256 ?? "Не встроен"} />
+          <DiagnosticsRow
+            label="Источник идентичности"
+            value={identity.source === "release-manifest" ? "Манифест Web-сборки" : "Встроенный fingerprint"}
+          />
+          <DiagnosticsRow label="Native / EAS / OTA" value="Не применяется для Web" last />
+        </View>
+        <View style={[styles.callout, { borderColor: "#22C55E", backgroundColor: "rgba(21,128,61,0.14)" }]}>
+          <Text style={[styles.calloutText, { color: "#86EFAC" }]}>
+            Для Web отдельно проверяются полный source SHA и SHA основного Web bundle. Отсутствие native runtime или EAS channel не является ошибкой.
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function ProfileNativeOtaDiagnosticsCard() {
+  const [loading, setLoading] = useState(false);
+  const [lastActionMessage, setLastActionMessage] = useState("");
+
+  // Keep OTA diagnostics off the eager startup-critical path.
+  // Using the static snapshot is enough for recovery builds and avoids
+  // subscribing to expo-updates state during the first profile mount.
+  const diagnostics = getOtaDiagnostics();
+  const severityTheme = getSeverityTheme(diagnostics.severity);
+  const useSafeOtaInstructions = shouldUseSafeOtaInstructions(diagnostics);
+  const primaryButtonLabel = useSafeOtaInstructions ? "Показать шаги OTA" : "Проверить OTA сейчас";
+
+  const handleCopy = async () => {
+    try {
+      const settled = await Promise.allSettled([
+        loadPdfCrashBreadcrumbCopySection(),
+        loadWarehouseBackBreadcrumbCopySection(),
+        loadOfficeReentryBreadcrumbCopySection(),
+      ]);
+      const batchResults = normalizeBreadcrumbBatchResults(settled);
+      const copyPayload = buildDiagnosticsCopyPayload({
+        diagnostics,
+        batchResults,
+      });
+
+      logBreadcrumbBatchOutcome({
+        state: copyPayload.state,
+        errors: copyPayload.errors,
+      });
+
+      await copyTextToClipboard(copyPayload.payload);
+      if (copyPayload.state !== "complete") {
+        setLastActionMessage(copyPayload.message);
+        Alert.alert("OTA diagnostics", copyPayload.message);
+        return;
+      }
+      setLastActionMessage(OTA_DIAGNOSTICS_COPIED_MESSAGE);
+      Alert.alert("OTA diagnostics", OTA_DIAGNOSTICS_COPIED_MESSAGE);
+    } catch (error) {
+      const message = readableUnknownError(error) ?? "Не удалось скопировать диагностику.";
+      setLastActionMessage(message);
+      Alert.alert("OTA diagnostics", message);
+    }
+  };
+
+  const handleCheckNow = async () => {
+    setLastActionMessage("");
+
+    if (useSafeOtaInstructions) {
+      const message = buildSafeOtaInstructionsMessage(diagnostics);
+      setLastActionMessage(message);
+      Alert.alert("OTA diagnostics", message);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await checkAndFetchOtaNow();
+      const message = result.error ? `${result.message}\n\n${result.error}` : result.message;
+
+      setLastActionMessage(message);
+      Alert.alert("OTA diagnostics", message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.section}>
+      <View style={[styles.card, { borderColor: severityTheme.border }]}>
+        <View style={styles.header}>
+          <View style={styles.headerTitleWrap}>
+            <Ionicons name={severityTheme.icon} size={18} color={severityTheme.text} />
+            <Text style={styles.headerTitle}>OTA diagnostics</Text>
+          </View>
+          <View style={[styles.badge, { borderColor: severityTheme.border, backgroundColor: severityTheme.badgeBg }]}>
+            <Text style={[styles.badgeText, { color: severityTheme.text }]}>
+              {diagnostics.severity.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.grid}>
+          <DiagnosticsRow label="Channel" value={diagnostics.channel} />
+          <DiagnosticsRow label="Expected branch" value={diagnostics.expectedBranch} />
+          <DiagnosticsRow label="Runtime" value={diagnostics.runtimeVersion} />
+          <DiagnosticsRow label="Update ID" value={diagnostics.updateId} />
+          <DiagnosticsRow label="Embedded launch" value={diagnostics.isEmbeddedLaunch ? "yes" : "no"} />
+          <DiagnosticsRow label="Launch source" value={diagnostics.launchSource} />
+          <DiagnosticsRow label="Created at" value={diagnostics.createdAt} />
+          <DiagnosticsRow
+            label="Last update age"
+            value={
+              diagnostics.lastUpdateAgeHours == null
+                ? "unknown"
+                : `${Math.floor(diagnostics.lastUpdateAgeHours)} h`
+            }
+          />
+          <DiagnosticsRow label="Update availability" value={diagnostics.updateAvailabilitySummary} />
+          <DiagnosticsRow label="Last check" value={diagnostics.lastCheckForUpdateTimeSinceRestart} />
+          <DiagnosticsRow label="App version" value={diagnostics.nativeAppVersion} />
+          <DiagnosticsRow label="Build" value={diagnostics.nativeBuildVersion} />
+          <DiagnosticsRow label="Configured iOS build" value={diagnostics.configuredIosBuildNumber} />
+          <DiagnosticsRow label="Configured Android code" value={diagnostics.configuredAndroidVersionCode} />
+          <DiagnosticsRow label="App version source" value={diagnostics.appVersionSource} />
+          <DiagnosticsRow label="Check automatically" value={diagnostics.checkAutomatically} />
+          <DiagnosticsRow
+            label="Fallback timeout"
+            value={
+              diagnostics.fallbackToCacheTimeout == null
+                ? "unknown"
+                : `${diagnostics.fallbackToCacheTimeout} ms`
+            }
+          />
+          <DiagnosticsRow label="Release label" value={diagnostics.releaseLabel} />
+          <DiagnosticsRow label="Git commit" value={diagnostics.gitCommit} />
+          <DiagnosticsRow label="Update group" value={diagnostics.updateGroupId} />
+          <DiagnosticsRow label="Update message" value={diagnostics.updateMessage} />
+          <DiagnosticsRow label="Metadata source" value={diagnostics.metadataSource} />
+          <DiagnosticsRow label="Emergency launch" value={diagnostics.isEmergencyLaunch ? "yes" : "no"} />
+          <DiagnosticsRow label="Outdated" value={diagnostics.isProbablyOutdated ? "yes" : "no"} />
+          <DiagnosticsRow label="Project ID" value={diagnostics.projectId} />
+          <DiagnosticsRow label="Updates URL" value={diagnostics.updatesUrl} last />
+        </View>
+
+        <View style={[styles.callout, { borderColor: severityTheme.border, backgroundColor: severityTheme.cardBg }]}>
+          <Text style={[styles.calloutText, { color: severityTheme.text }]}>
+            {diagnostics.publishHint}
+          </Text>
+        </View>
+
+        <BlockTitle title="Reasons" />
+        <BulletList items={diagnostics.reasons} emptyLabel="No lineage risks detected." />
+
+        <BlockTitle title="Actions" />
+        <BulletList items={diagnostics.actions} emptyLabel="No follow-up action required." />
+
+        <View style={styles.runbookCard}>
+          <Text style={styles.runbookTitle}>Release runbook</Text>
+          <Text style={styles.runbookText}>1. iPhone / TestFlight: publish only to production.</Text>
+          <Text style={styles.runbookText}>2. Android preview APK: publish only to preview.</Text>
+          <Text style={styles.runbookText}>
+            3. После OTA: полностью закройте приложение, откройте его, снова закройте и откройте еще раз.
+          </Text>
+        </View>
+
+        <View style={styles.actionsRow}>
+          <Pressable
+            testID="ota-check-action"
+            style={[styles.primaryButton, loading && styles.buttonDisabled]}
+            onPress={handleCheckNow}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={UI.buttonText} />
+            ) : (
+              <Text style={styles.primaryButtonText}>{primaryButtonLabel}</Text>
+            )}
+          </Pressable>
+
+          <Pressable testID="ota-copy-action" style={styles.secondaryButton} onPress={handleCopy} disabled={loading}>
+            <Text style={styles.secondaryButtonText}>Скопировать диагностику</Text>
+          </Pressable>
+        </View>
+
+        {!!lastActionMessage && (
+          <View style={styles.messageBox}>
+            <Text style={styles.messageText}>{lastActionMessage}</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+export function ProfileOtaDiagnosticsCard() {
+  return Platform.OS === "web"
+    ? <ProfileWebBuildDiagnosticsCard />
+    : <ProfileNativeOtaDiagnosticsCard />;
+}

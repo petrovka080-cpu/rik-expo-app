@@ -1,0 +1,2025 @@
+{
+  "contract": "masonry-brick-column-six-whole-own-profiles-normal-r117/v1",
+  "status": "SOURCE_ONLY_SAME_CANDIDATE_SIX_OWN_PROFILES_NOT_RUN_OR_PUBLISHED",
+  "activeMaster": {
+    "path": "C:\\Users\\User\\Downloads\\GOX_BUILD_MASTER_TZ_2_16_2026-10-24.txt",
+    "sha256": "541bc82df10231ca885288a7937283729b08484bd8301a22cd57a7b5c221eb40"
+  },
+  "sourceId": "kg_krer08_2015_rectangular_unreinforced_brick_columns_03_04_whole_r109",
+  "source": {
+    "path": ".release-runtime/r568/next-wave/masonry-krer08/primary/KRER08-2015-official.pdf",
+    "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+    "bytes": 2521223,
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no8konstrukciiizkirpicaiblokov_compressed-54969083389b50a47.50527306.pdf",
+    "edition": "КРЕР-2015, сборник 08 «Конструкции из кирпича и блоков», официальное издание, Бишкек 2015",
+    "pages": [
+      5,
+      7,
+      8,
+      21,
+      22
+    ],
+    "locatorRu": "PDF/печатные стр.21–22: таблица08-02-003, собственные01–06; м³ кладки. Стр5§1.2; стр7§1.12/1.13/1.18/1.21; стр8§2.5.",
+    "layoutEvidence": "Скан, текстового слоя нет; колонка и техническая часть прочитаны визуально. Цены базисного уровня 2015 не используются."
+  },
+  "immutableOriginal03Pack": {
+    "path": "data/estimate-benchmarks/source-packs/brick-rectangular-unreinforced-column-krer08-003-03-quantity-r1.json",
+    "sha256": "576978a826cf2a940d012b70ea3aa37a336bba0988627747bc644416431cf576"
+  },
+  "measurement": {
+    "primaryId": "actual_rectangular_unreinforced_brick_column_masonry_volume_m3",
+    "heightId": "column00303_storey_height_m",
+    "unitId": "m3",
+    "sourceDenominator": "1",
+    "storeyHeightNotColumnHeight": true,
+    "originalAreaOrColumnCountNotSubstitute": true,
+    "rules": "Самостоятельный чистый проектный объём именно выбранного вида кирпичных столбов. Исторический ID объёма сохраняется, площадь стен или число столбов его не заменяет. §2.5 и утверждённый проект обязательны.",
+    "exactFourIncluded": true,
+    "physicalKindId": "brick_column_physical_kind",
+    "physicalKindChoicesRu": [
+      "Прямоугольный столб без армирования",
+      "Прямоугольный столб с армированием",
+      "Круглый столб с армированием"
+    ]
+  },
+  "technicalReadbackFacts": [
+    {
+      "id": "column00303_profile",
+      "titleRu": "Форма и армирование столба",
+      "values": [
+        "Прямоугольные неармированные кирпичные столбы"
+      ]
+    },
+    {
+      "id": "column00303_brick",
+      "titleRu": "Кирпич по исходной норме",
+      "values": [
+        "Керамический одинарный кирпич 250×120×65 мм марки 100"
+      ]
+    },
+    {
+      "id": "column00303_mortar",
+      "titleRu": "Раствор по исходной норме",
+      "values": [
+        "Готовый кладочный цементно-известковый раствор марки 50"
+      ]
+    },
+    {
+      "id": "column00303_design",
+      "titleRu": "Разрешённость конструкции проектом",
+      "values": [
+        "Применение неармированного столба подтверждено утверждённым конструктивным проектом"
+      ]
+    },
+    {
+      "id": "column00303_volume_rule",
+      "titleRu": "Самостоятельный обмер кладки",
+      "values": [
+        "Самостоятельный проектный объём кирпичной кладки столбов в м³, без замены площадью или объёмом стен"
+      ]
+    },
+    {
+      "id": "column00303_adjustment",
+      "titleRu": "Условия применения исходной нормы",
+      "values": [
+        "Применима исходная колонка без самостоятельно назначенных поправок"
+      ]
+    },
+    {
+      "id": "column00303_payment",
+      "titleRu": "Граница оплаты",
+      "values": [
+        "Цельный труд кладки оплачивается один раз; машинист и кран остаются справочными"
+      ]
+    },
+    {
+      "id": "column00303_material_scope",
+      "titleRu": "Граница расхода материалов",
+      "values": [
+        "Только буквальный исходный расход; заказ, фасовка и складской остаток не подтверждены"
+      ]
+    },
+    {
+      "id": "column00303_approved_design_reference",
+      "titleRu": "Утверждённый конструктивный проект и разрешение неармированного прямоугольного столба"
+    },
+    {
+      "id": "column00303_independent_volume_reference",
+      "titleRu": "Самостоятельный обмер объёма кирпичной кладки столбов и исключений по §2.5"
+    },
+    {
+      "id": "column00303_scope_payment_reference",
+      "titleRu": "Границы цельного труда, исходного состава, переноски и справочных ресурсов"
+    }
+  ],
+  "technicalReadbackProducer": "UNRUN_NOT_FAKED_BY_TEST_CONFIRMATIONS",
+  "profiles": [
+    {
+      "key": "rectangular-unreinforced-lte4",
+      "normId": "08-02-003-03",
+      "prefix": "masonry:brick-rectangular-column:krer08-02-003-03",
+      "storeyHeightBand": "LTE4",
+      "rows": [
+        {
+          "id": "whole-masonry-labour",
+          "titleRu": "Труд кладки прямоугольных неармированных кирпичных столбов",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "7.93",
+          "resourceCode": "000-1003-8",
+          "printedNameRu": "Рабочие-строители среднего разряда 3,8",
+          "printedUnitRu": "чел.-ч",
+          "printedRatePerM3": "7.93",
+          "normalizationFactor": "1",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "id": "operator-information",
+          "titleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "0.42",
+          "resourceCode": null,
+          "printedNameRu": "Затраты труда машинистов",
+          "printedUnitRu": "чел.-ч",
+          "printedRatePerM3": "0.42",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "tower-crane8t-reference",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.42",
+          "resourceCode": "02-0005",
+          "printedNameRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+          "printedUnitRu": "маш.-ч",
+          "printedRatePerM3": "0.42",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "water-reference",
+          "titleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.1",
+          "resourceCode": "01-0601-0001",
+          "printedNameRu": "Вода",
+          "printedUnitRu": "м³",
+          "printedRatePerM3": "0.1",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ceramic-brick-reference",
+          "titleRu": "Кирпич керамический одинарный 250×120×65 мм М100",
+          "category": "material",
+          "unitId": "item",
+          "ratePerM3": "404",
+          "resourceCode": "01-3306-0005",
+          "printedNameRu": "Кирпич керамический одинарный, размером 250×120×65 мм, марка 100",
+          "printedUnitRu": "1000 шт.",
+          "printedRatePerM3": "0.404",
+          "normalizationFactor": "1000",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ready-m50-mortar-reference",
+          "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.22",
+          "resourceCode": "03-0405-0003",
+          "printedNameRu": "Раствор готовый кладочный цементно-известковый, марка 50",
+          "printedUnitRu": "м³",
+          "printedRatePerM3": "0.22",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        }
+      ],
+      "openNeeds": [
+        {
+          "id": "base-and-setting-out",
+          "titleRu": "Готовность опоры, разбивка и отсечная гидроизоляция",
+          "missingFactRu": "Норма кладки столба не устанавливает объём подготовки опоры, разбивки, выравнивания или отсечной гидроизоляции.",
+          "ownerRu": "Проектировщик и производитель работ",
+          "nextTaskRu": "Предоставить узел опирания, отметки и акт готовности основания; определить необходимость и источник каждой дополнительной операции, её единицу, объём и непересекающегося владельца оплаты.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_base_and_setting_out"
+        },
+        {
+          "id": "structural-junctions",
+          "titleRu": "Примыкания, связи, оголовок и конструктивные ограничения",
+          "missingFactRu": "Колонка не рассчитывает несущую способность, сейсмику, анкеры, связи, оголовок, закладные или необходимость армирования.",
+          "ownerRu": "Конструктор",
+          "nextTaskRu": "Подтвердить утверждённый конструктивный проект прямоугольного неармированного столба и отдельную ведомость примыканий/связей; если требуется армирование или иной профиль, отказаться от этой колонки, а не добавлять скрытую норму.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_structural_junctions"
+        },
+        {
+          "id": "access-scaffolding",
+          "titleRu": "Подмости и безопасный доступ к столбу",
+          "missingFactRu": "§1.13 прямо описывает подмости для кладки стен до 4 м; самостоятельную норму и непересекающуюся оплату подмостей именно столба он не доказывает.",
+          "ownerRu": "Разработчик ППР и сметчик",
+          "nextTaskRu": "Определить фактический доступ и применимый источник для столба; письменно согласовать границу включённого труда и отдельной оснастки. Не переносить стеновые леса или нормы колонки для высоты свыше 4 м.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_access_scaffolding"
+        },
+        {
+          "id": "tools-ppe",
+          "titleRu": "Инструмент, оснастка и СИЗ",
+          "missingFactRu": "Нет самостоятельного расхода инструмента, средств защиты и количества комплектов на м³ или столб.",
+          "ownerRu": "Производитель работ и охрана труда",
+          "nextTaskRu": "Дать ППР, принадлежность и оборот инструмента, расходники и договорную границу обеспечения; отдельные количество и оплату принимать только по источнику, а не по единице объёма кладки.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_tools_ppe"
+        },
+        {
+          "id": "curing-protection",
+          "titleRu": "Уход, выдержка и защита кладки",
+          "missingFactRu": "Колонка не задаёт расход материалов, режим и срок ухода за этой кирпичной кладкой на готовом цементно-известковом М50.",
+          "ownerRu": "Технолог и поставщик раствора",
+          "nextTaskRu": "Получить применимую технологическую карту или паспорт раствора с условиями ухода и защиты; установить реальный объём/срок и границу оплаты без переноса норм ухода за бетоном или стяжкой.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_curing_protection"
+        },
+        {
+          "id": "quality-acceptance",
+          "titleRu": "Контроль геометрии и приёмка столбов",
+          "missingFactRu": "Нет численного допуска, частоты контроля, количества испытаний или самостоятельной нормы приёмки.",
+          "ownerRu": "Служба качества и заказчик",
+          "nextTaskRu": "Назначить применимые проектные допуски, метод и документы приёмки; отдельно подтвердить дополнительный измеримый контроль и оплату. Исходная норма не является актом готовности или расчётом несущей способности.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_quality_acceptance"
+        },
+        {
+          "id": "machine-payment-scope",
+          "titleRu": "Оплачиваемая работа крана и граница машиниста",
+          "missingFactRu": "0,42 маш.-ч и 0,42 чел.-ч — разные исходные справочные величины. Не подтверждены отдельный платный владелец крана, охват его оператора и точный договорный состав.",
+          "ownerRu": "Сметчик и поставщик механизации",
+          "nextTaskRu": "Сверить реальный башенный кран 8 т с источником и получить полный договорный состав; до подтверждения единственного владельца оплаты и полного состава работы крана вместе с машинистом не оплачивать ни машиниста, ни отдельную машинную строку. Не утверждать, что 0,42 чел.-ч включены в 7,93 чел.-ч рабочих.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_machine_payment_scope"
+        },
+        {
+          "id": "material-supply-order",
+          "titleRu": "Комплектация, поставка, склад и заказ материалов",
+          "missingFactRu": "Буквальные 0,404 тысячи кирпичей, 0,22 м³ готового М50 и 0,1 м³ воды не доказывают торговую фасовку, остатки, рецепт, заказ или отдельную цену.",
+          "ownerRu": "Снабжение и поставщики",
+          "nextTaskRu": "Составить отдельные позиции кирпича, готового М50 и воды с паспортами, фактическими единицами поставки, остатками/возвратом и ценой; не округлять кирпич на каждый м³ или столб и не добавлять произвольный запас.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_material_supply_order"
+        },
+        {
+          "id": "external-logistics",
+          "titleRu": "Внешняя доставка, разгрузка и переноска сверх 5 м",
+          "missingFactRu": "§1.21 учитывает переноску кирпича на 5 м. Внешние маршруты, партии и разгрузка из нормы не следуют; автомобиль 40-0001 присутствует в соседних армированных колонках, но в 03 отсутствует.",
+          "ownerRu": "Логист и сметчик",
+          "nextTaskRu": "Получить фактические партии, маршрут, массу, разгрузку и перемещение сверх 5 м по ПОС; исключить перекрытие общего труда, учтённой переноски и крана. Не выводить рейсы из м³ или часов.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_external_logistics"
+        },
+        {
+          "id": "cleanup-waste",
+          "titleRu": "Уборка, тара, бой и вывоз отходов",
+          "missingFactRu": "Норма не задаёт дополнительный процент боя, контейнер, массу отходов и маршрут вывоза.",
+          "ownerRu": "Подрядчик и оператор отходов",
+          "nextTaskRu": "Составить фактическую ведомость тары, остатков и отходов, применимый источник сбора/погрузки/вывоза и отдельную единицу/цену с проверкой включения; нормативный расход кирпича не превращать в дополнительный запас.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00303_application_need_cleanup_waste"
+        }
+      ],
+      "includedOperation": {
+        "id": "included-source-masonry-operation",
+        "titleRu": "Операции, учтённые в цельной кладке столбов",
+        "unitMeaningRu": "м³ — только маркер включённого состава общего труда на тот же объём кладки; это не отдельный объём подмостей, пробок, переноски или дополнительная оплата.",
+        "printedCompositionRu": [
+          "Кладка конструкций из кирпича — состав работ для норм 03 и 04, PDF21.",
+          "Переноска кирпича на 5 м учтена §1.21, PDF7; сверх 5 м — отдельные данные ПОС.",
+          "Установка деревянных пробок учтена общим §1.2, PDF5; количество и материал пробок не выведены и в заказ не допускаются."
+        ]
+      },
+      "paidWholeOwnerId": "masonry:brick-rectangular-column:krer08-02-003-03:whole-masonry-labour",
+      "physicalChoiceRu": "Прямоугольный столб без армирования",
+      "technicalFactIds": [
+        "column00303_profile",
+        "column00303_brick",
+        "column00303_mortar",
+        "column00303_design",
+        "column00303_volume_rule",
+        "column00303_adjustment",
+        "column00303_payment",
+        "column00303_material_scope",
+        "column00303_approved_design_reference",
+        "column00303_independent_volume_reference",
+        "column00303_scope_payment_reference"
+      ],
+      "markerTitleRu": "Операции цельной кладки прямоугольного неармированного столба",
+      "sourceTitleRu": "Кладка прямоугольных неармированных кирпичных столбов",
+      "sourceLocatorRu": "PDF/печатная стр21: таблица08-02-003, целые собственные03/04, прямоугольные неармированные столбы; м³ кладки. Стр5§1.2; стр7§1.12/1.13/1.18/1.21; стр8§2.5.",
+      "physicalResultRu": "Самостоятельная кладка прямоугольного неармированного кирпичного столба по проекту",
+      "sourceResourceCount": 6,
+      "sourceNeedsCount": 10,
+      "reinforcementIncludedInWholeLabour": false,
+      "acceptedR113UnchangedNormArithmeticAndIds": true
+    },
+    {
+      "key": "rectangular-unreinforced-gt4",
+      "normId": "08-02-003-04",
+      "prefix": "masonry:brick-rectangular-column:krer08-02-003-04",
+      "storeyHeightBand": "GT4",
+      "rows": [
+        {
+          "id": "whole-masonry-labour",
+          "titleRu": "Труд кладки прямоугольных неармированных кирпичных столбов",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "7.78",
+          "resourceCode": "000-1003-8",
+          "printedNameRu": "Рабочие-строители среднего разряда 3,8",
+          "printedUnitRu": "чел.-ч",
+          "printedRatePerM3": "7.78",
+          "normalizationFactor": "1",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "id": "operator-information",
+          "titleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "0.33",
+          "resourceCode": null,
+          "printedNameRu": "Затраты труда машинистов",
+          "printedUnitRu": "чел.-ч",
+          "printedRatePerM3": "0.33",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "tower-crane8t-reference",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.33",
+          "resourceCode": "02-0005",
+          "printedNameRu": "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+          "printedUnitRu": "маш.-ч",
+          "printedRatePerM3": "0.33",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "water-reference",
+          "titleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.1",
+          "resourceCode": "01-0601-0001",
+          "printedNameRu": "Вода",
+          "printedUnitRu": "м³",
+          "printedRatePerM3": "0.1",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ceramic-brick-reference",
+          "titleRu": "Кирпич керамический одинарный 250×120×65 мм М100",
+          "category": "material",
+          "unitId": "item",
+          "ratePerM3": "404",
+          "resourceCode": "01-3306-0005",
+          "printedNameRu": "Кирпич керамический одинарный, размером 250×120×65 мм, марка 100",
+          "printedUnitRu": "1000 шт.",
+          "printedRatePerM3": "0.404",
+          "normalizationFactor": "1000",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ready-m50-mortar-reference",
+          "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.22",
+          "resourceCode": "03-0405-0003",
+          "printedNameRu": "Раствор готовый кладочный цементно-известковый, марка 50",
+          "printedUnitRu": "м³",
+          "printedRatePerM3": "0.22",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        }
+      ],
+      "openNeeds": [
+        {
+          "id": "base-and-setting-out",
+          "titleRu": "Готовность опоры, разбивка и отсечная гидроизоляция",
+          "missingFactRu": "Норма кладки столба не устанавливает объём подготовки опоры, разбивки, выравнивания или отсечной гидроизоляции.",
+          "ownerRu": "Проектировщик и производитель работ",
+          "nextTaskRu": "Предоставить узел опирания, отметки и акт готовности основания; определить необходимость и источник каждой дополнительной операции, её единицу, объём и непересекающегося владельца оплаты.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_base_and_setting_out"
+        },
+        {
+          "id": "structural-junctions",
+          "titleRu": "Примыкания, связи, оголовок и конструктивные ограничения",
+          "missingFactRu": "Колонка не рассчитывает несущую способность, сейсмику, анкеры, связи, оголовок, закладные или необходимость армирования.",
+          "ownerRu": "Конструктор",
+          "nextTaskRu": "Подтвердить утверждённый конструктивный проект прямоугольного неармированного столба и отдельную ведомость примыканий/связей; если требуется армирование или иной профиль, отказаться от этой колонки, а не добавлять скрытую норму.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_structural_junctions"
+        },
+        {
+          "id": "access-scaffolding",
+          "titleRu": "Подмости и безопасный доступ к столбу",
+          "missingFactRu": "§1.13 прямо описывает подмости для кладки стен до 4 м; самостоятельную норму и непересекающуюся оплату подмостей именно столба он не доказывает.",
+          "ownerRu": "Разработчик ППР и сметчик",
+          "nextTaskRu": "Определить фактический доступ и применимый источник для столба; письменно согласовать границу включённого труда и отдельной оснастки. Не переносить стеновые леса или нормы колонки для высоты свыше 4 м.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_access_scaffolding"
+        },
+        {
+          "id": "tools-ppe",
+          "titleRu": "Инструмент, оснастка и СИЗ",
+          "missingFactRu": "Нет самостоятельного расхода инструмента, средств защиты и количества комплектов на м³ или столб.",
+          "ownerRu": "Производитель работ и охрана труда",
+          "nextTaskRu": "Дать ППР, принадлежность и оборот инструмента, расходники и договорную границу обеспечения; отдельные количество и оплату принимать только по источнику, а не по единице объёма кладки.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_tools_ppe"
+        },
+        {
+          "id": "curing-protection",
+          "titleRu": "Уход, выдержка и защита кладки",
+          "missingFactRu": "Колонка не задаёт расход материалов, режим и срок ухода за этой кирпичной кладкой на готовом цементно-известковом М50.",
+          "ownerRu": "Технолог и поставщик раствора",
+          "nextTaskRu": "Получить применимую технологическую карту или паспорт раствора с условиями ухода и защиты; установить реальный объём/срок и границу оплаты без переноса норм ухода за бетоном или стяжкой.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_curing_protection"
+        },
+        {
+          "id": "quality-acceptance",
+          "titleRu": "Контроль геометрии и приёмка столбов",
+          "missingFactRu": "Нет численного допуска, частоты контроля, количества испытаний или самостоятельной нормы приёмки.",
+          "ownerRu": "Служба качества и заказчик",
+          "nextTaskRu": "Назначить применимые проектные допуски, метод и документы приёмки; отдельно подтвердить дополнительный измеримый контроль и оплату. Исходная норма не является актом готовности или расчётом несущей способности.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_quality_acceptance"
+        },
+        {
+          "id": "machine-payment-scope",
+          "titleRu": "Оплачиваемая работа крана и граница машиниста",
+          "missingFactRu": "0,42 маш.-ч и 0,42 чел.-ч — разные исходные справочные величины. Не подтверждены отдельный платный владелец крана, охват его оператора и точный договорный состав.",
+          "ownerRu": "Сметчик и поставщик механизации",
+          "nextTaskRu": "Сверить реальный башенный кран 8 т с источником и получить полный договорный состав; до подтверждения единственного владельца оплаты и полного состава работы крана вместе с машинистом не оплачивать ни машиниста, ни отдельную машинную строку. Не утверждать, что 0,42 чел.-ч включены в 7,93 чел.-ч рабочих.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_machine_payment_scope"
+        },
+        {
+          "id": "material-supply-order",
+          "titleRu": "Комплектация, поставка, склад и заказ материалов",
+          "missingFactRu": "Буквальные 0,404 тысячи кирпичей, 0,22 м³ готового М50 и 0,1 м³ воды не доказывают торговую фасовку, остатки, рецепт, заказ или отдельную цену.",
+          "ownerRu": "Снабжение и поставщики",
+          "nextTaskRu": "Составить отдельные позиции кирпича, готового М50 и воды с паспортами, фактическими единицами поставки, остатками/возвратом и ценой; не округлять кирпич на каждый м³ или столб и не добавлять произвольный запас.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_material_supply_order"
+        },
+        {
+          "id": "external-logistics",
+          "titleRu": "Внешняя доставка, разгрузка и переноска сверх 5 м",
+          "missingFactRu": "§1.21 учитывает переноску кирпича на 5 м. Внешние маршруты, партии и разгрузка из нормы не следуют; автомобиль 40-0001 присутствует в соседних армированных колонках, но в 03 отсутствует.",
+          "ownerRu": "Логист и сметчик",
+          "nextTaskRu": "Получить фактические партии, маршрут, массу, разгрузку и перемещение сверх 5 м по ПОС; исключить перекрытие общего труда, учтённой переноски и крана. Не выводить рейсы из м³ или часов.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_external_logistics"
+        },
+        {
+          "id": "cleanup-waste",
+          "titleRu": "Уборка, тара, бой и вывоз отходов",
+          "missingFactRu": "Норма не задаёт дополнительный процент боя, контейнер, массу отходов и маршрут вывоза.",
+          "ownerRu": "Подрядчик и оператор отходов",
+          "nextTaskRu": "Составить фактическую ведомость тары, остатков и отходов, применимый источник сбора/погрузки/вывоза и отдельную единицу/цену с проверкой включения; нормативный расход кирпича не превращать в дополнительный запас.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00304_application_need_cleanup_waste"
+        }
+      ],
+      "includedOperation": {
+        "id": "included-source-masonry-operation",
+        "titleRu": "Операции, учтённые в цельной кладке столбов",
+        "unitMeaningRu": "м³ — только маркер включённого состава общего труда на тот же объём кладки; это не отдельный объём подмостей, пробок, переноски или дополнительная оплата.",
+        "printedCompositionRu": [
+          "Кладка конструкций из кирпича — состав работ для норм 03 и 04, PDF21.",
+          "Переноска кирпича на 5 м учтена §1.21, PDF7; сверх 5 м — отдельные данные ПОС.",
+          "Установка деревянных пробок учтена общим §1.2, PDF5; количество и материал пробок не выведены и в заказ не допускаются."
+        ]
+      },
+      "paidWholeOwnerId": "masonry:brick-rectangular-column:krer08-02-003-04:whole-masonry-labour",
+      "physicalChoiceRu": "Прямоугольный столб без армирования",
+      "technicalFactIds": [
+        "column00303_profile",
+        "column00303_brick",
+        "column00303_mortar",
+        "column00303_design",
+        "column00303_volume_rule",
+        "column00303_adjustment",
+        "column00303_payment",
+        "column00303_material_scope",
+        "column00303_approved_design_reference",
+        "column00303_independent_volume_reference",
+        "column00303_scope_payment_reference"
+      ],
+      "markerTitleRu": "Операции цельной кладки прямоугольного неармированного столба",
+      "sourceTitleRu": "Кладка прямоугольных неармированных кирпичных столбов",
+      "sourceLocatorRu": "PDF/печатная стр21: таблица08-02-003, целые собственные03/04, прямоугольные неармированные столбы; м³ кладки. Стр5§1.2; стр7§1.12/1.13/1.18/1.21; стр8§2.5.",
+      "physicalResultRu": "Самостоятельная кладка прямоугольного неармированного кирпичного столба по проекту",
+      "sourceResourceCount": 6,
+      "sourceNeedsCount": 10,
+      "reinforcementIncludedInWholeLabour": false,
+      "acceptedR113UnchangedNormArithmeticAndIds": true
+    },
+    {
+      "key": "rectangular-reinforced-lte4",
+      "normId": "08-02-003-01",
+      "prefix": "masonry:brick-column:krer08-02-003-01",
+      "storeyHeightBand": "LTE4",
+      "rows": [
+        {
+          "id": "whole-masonry-labour",
+          "titleRu": "Труд кладки и армирования прямоугольных кирпичных столбов",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "8.80",
+          "resourceCode": "000-1003-8",
+          "printedNameRu": "Труд цельной кладки и армирования столба",
+          "printedUnitRu": "man_hour",
+          "printedRatePerM3": "8.80",
+          "normalizationFactor": "1",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "id": "operator-information",
+          "titleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "0.42",
+          "resourceCode": null,
+          "printedNameRu": "Труд машиниста башенного крана",
+          "printedUnitRu": "man_hour",
+          "printedRatePerM3": "0.42",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "tower-crane8t-reference",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.42",
+          "resourceCode": "02-0005",
+          "printedNameRu": "Башенный кран грузоподъёмностью8т",
+          "printedUnitRu": "machine_hour",
+          "printedRatePerM3": "0.42",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "flatbed-truck5t-reference",
+          "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.05",
+          "resourceCode": "40-0001",
+          "printedNameRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+          "printedUnitRu": "machine_hour",
+          "printedRatePerM3": "0.05",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "water-reference",
+          "titleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.1",
+          "resourceCode": "01-0601-0001",
+          "printedNameRu": "Вода",
+          "printedUnitRu": "m3",
+          "printedRatePerM3": "0.1",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ceramic-brick-reference",
+          "titleRu": "Кирпич керамический одинарный 250×120×65 мм М100",
+          "category": "material",
+          "unitId": "item",
+          "ratePerM3": "404",
+          "resourceCode": "01-3306-0005",
+          "printedNameRu": "Кирпич керамический одинарный250×120×65ммМ100",
+          "printedUnitRu": "1000шт.",
+          "printedRatePerM3": "0.404",
+          "normalizationFactor": "1000",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "reinforcement-mesh-a1-reference",
+          "titleRu": "Арматура-сетка из стали А-I диаметром 12–14 мм",
+          "category": "material",
+          "unitId": "t",
+          "ratePerM3": "0.01",
+          "resourceCode": "03-0104-0001",
+          "printedNameRu": "Арматура-сетка из сталиА-I диаметром12–14мм",
+          "printedUnitRu": "t",
+          "printedRatePerM3": "0.01",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ready-m50-mortar-reference",
+          "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.22",
+          "resourceCode": "03-0405-0003",
+          "printedNameRu": "Раствор готовый кладочный цементно-известковыйМ50",
+          "printedUnitRu": "m3",
+          "printedRatePerM3": "0.22",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        }
+      ],
+      "openNeeds": [
+        {
+          "id": "structural-design",
+          "titleRu": "Проект и конструктивные узлы",
+          "missingFactRu": "Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Проект и конструктивные узлы», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_structural_design",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "base-and-dpc",
+          "titleRu": "Основание и сопряжения",
+          "missingFactRu": "Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Основание и сопряжения», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_base_and_dpc",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "receiving-storage",
+          "titleRu": "Приёмка и хранение материалов",
+          "missingFactRu": "Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Приёмка и хранение материалов», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_receiving_storage",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "mortar-whole-process",
+          "titleRu": "Полный процесс раствора",
+          "missingFactRu": "Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Полный процесс раствора», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_mortar_whole_process",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "handling-crane",
+          "titleRu": "Подача краном",
+          "missingFactRu": "Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Подача краном», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_handling_crane",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "truck-transport",
+          "titleRu": "Перевозка материалов",
+          "missingFactRu": "0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Перевозка материалов», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_truck_transport",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "access",
+          "titleRu": "Рабочий доступ и подмости",
+          "missingFactRu": "Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Рабочий доступ и подмости», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_access",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "reinforcement-process",
+          "titleRu": "Обеспечение армирования",
+          "missingFactRu": "Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Обеспечение армирования», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_reinforcement_process",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "masonry-tools-ppe",
+          "titleRu": "Инструмент кладки и защита",
+          "missingFactRu": "Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Инструмент кладки и защита», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_masonry_tools_ppe",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "curing-protection",
+          "titleRu": "Уход и защита кладки",
+          "missingFactRu": "Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Уход и защита кладки», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_curing_protection",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "quality",
+          "titleRu": "Контроль и приёмка",
+          "missingFactRu": "Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Контроль и приёмка», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_quality",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "cleanup-waste",
+          "titleRu": "Очистка и отходы",
+          "missingFactRu": "Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Очистка и отходы», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00301_application_need_cleanup_waste",
+          "sourceIdsForUnknownNorm": []
+        }
+      ],
+      "includedOperation": {
+        "id": "included-source-masonry-operation",
+        "titleRu": "Операции цельной кладки и армирования столбов",
+        "unitMeaningRu": "Тот же м³ служит только показом включённых операций цельного труда; это не второй физический объём или оплата.",
+        "printedCompositionRu": [
+          "Кладка конструкций из кирпича",
+          "Армирование конструкций",
+          "§1.21: переноска кирпича5м входит в источник; сверх5м отдельно поПОС",
+          "§1.2: установка деревянных пробок входит, количество/материал не выведены"
+        ]
+      },
+      "paidWholeOwnerId": "masonry:brick-column:krer08-02-003-01:whole-masonry-labour",
+      "physicalChoiceRu": "Прямоугольный столб с армированием",
+      "technicalFactIds": [
+        "column00301_profile",
+        "column00301_brick",
+        "column00301_mortar",
+        "column00301_design",
+        "column00301_volume_rule",
+        "column00301_adjustment",
+        "column00301_payment",
+        "column00301_material_scope",
+        "column00301_approved_design_reference",
+        "column00301_independent_volume_reference",
+        "column00301_scope_payment_reference"
+      ],
+      "markerTitleRu": "Операции цельной кладки и армирования столба",
+      "sourceTitleRu": "Кладка кирпичных столбов",
+      "sourceLocatorRu": "PDF/печатная стр.21: таблица08-02-003, собственная колонка 01; техническая часть стр.5/7/8.",
+      "physicalResultRu": "Кладка выбранного по проекту кирпичного столба с армированием; прямоугольный столб с армированием",
+      "sourceResourceCount": 8,
+      "sourceNeedsCount": 12,
+      "reinforcementIncludedInWholeLabour": true,
+      "acceptedR113UnchangedNormArithmeticAndIds": false
+    },
+    {
+      "key": "rectangular-reinforced-gt4",
+      "normId": "08-02-003-02",
+      "prefix": "masonry:brick-column:krer08-02-003-02",
+      "storeyHeightBand": "GT4",
+      "rows": [
+        {
+          "id": "whole-masonry-labour",
+          "titleRu": "Труд кладки и армирования прямоугольных кирпичных столбов",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "8.58",
+          "resourceCode": "000-1003-8",
+          "printedNameRu": "Труд цельной кладки и армирования столба",
+          "printedUnitRu": "man_hour",
+          "printedRatePerM3": "8.58",
+          "normalizationFactor": "1",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "id": "operator-information",
+          "titleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "0.33",
+          "resourceCode": null,
+          "printedNameRu": "Труд машиниста башенного крана",
+          "printedUnitRu": "man_hour",
+          "printedRatePerM3": "0.33",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "tower-crane8t-reference",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.33",
+          "resourceCode": "02-0005",
+          "printedNameRu": "Башенный кран грузоподъёмностью8т",
+          "printedUnitRu": "machine_hour",
+          "printedRatePerM3": "0.33",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "flatbed-truck5t-reference",
+          "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.05",
+          "resourceCode": "40-0001",
+          "printedNameRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+          "printedUnitRu": "machine_hour",
+          "printedRatePerM3": "0.05",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "water-reference",
+          "titleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.1",
+          "resourceCode": "01-0601-0001",
+          "printedNameRu": "Вода",
+          "printedUnitRu": "m3",
+          "printedRatePerM3": "0.1",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ceramic-brick-reference",
+          "titleRu": "Кирпич керамический одинарный 250×120×65 мм М100",
+          "category": "material",
+          "unitId": "item",
+          "ratePerM3": "404",
+          "resourceCode": "01-3306-0005",
+          "printedNameRu": "Кирпич керамический одинарный250×120×65ммМ100",
+          "printedUnitRu": "1000шт.",
+          "printedRatePerM3": "0.404",
+          "normalizationFactor": "1000",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "reinforcement-mesh-a1-reference",
+          "titleRu": "Арматура-сетка из стали А-I диаметром 12–14 мм",
+          "category": "material",
+          "unitId": "t",
+          "ratePerM3": "0.01",
+          "resourceCode": "03-0104-0001",
+          "printedNameRu": "Арматура-сетка из сталиА-I диаметром12–14мм",
+          "printedUnitRu": "t",
+          "printedRatePerM3": "0.01",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ready-m50-mortar-reference",
+          "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.22",
+          "resourceCode": "03-0405-0003",
+          "printedNameRu": "Раствор готовый кладочный цементно-известковыйМ50",
+          "printedUnitRu": "m3",
+          "printedRatePerM3": "0.22",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        }
+      ],
+      "openNeeds": [
+        {
+          "id": "structural-design",
+          "titleRu": "Проект и конструктивные узлы",
+          "missingFactRu": "Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Проект и конструктивные узлы», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_structural_design",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "base-and-dpc",
+          "titleRu": "Основание и сопряжения",
+          "missingFactRu": "Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Основание и сопряжения», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_base_and_dpc",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "receiving-storage",
+          "titleRu": "Приёмка и хранение материалов",
+          "missingFactRu": "Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Приёмка и хранение материалов», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_receiving_storage",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "mortar-whole-process",
+          "titleRu": "Полный процесс раствора",
+          "missingFactRu": "Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Полный процесс раствора», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_mortar_whole_process",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "handling-crane",
+          "titleRu": "Подача краном",
+          "missingFactRu": "Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Подача краном», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_handling_crane",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "truck-transport",
+          "titleRu": "Перевозка материалов",
+          "missingFactRu": "0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Перевозка материалов», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_truck_transport",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "access",
+          "titleRu": "Рабочий доступ и подмости",
+          "missingFactRu": "Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Рабочий доступ и подмости», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_access",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "reinforcement-process",
+          "titleRu": "Обеспечение армирования",
+          "missingFactRu": "Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Обеспечение армирования», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_reinforcement_process",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "masonry-tools-ppe",
+          "titleRu": "Инструмент кладки и защита",
+          "missingFactRu": "Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Инструмент кладки и защита», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_masonry_tools_ppe",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "curing-protection",
+          "titleRu": "Уход и защита кладки",
+          "missingFactRu": "Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Уход и защита кладки», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_curing_protection",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "quality",
+          "titleRu": "Контроль и приёмка",
+          "missingFactRu": "Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Контроль и приёмка», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_quality",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "cleanup-waste",
+          "titleRu": "Очистка и отходы",
+          "missingFactRu": "Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Очистка и отходы», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00302_application_need_cleanup_waste",
+          "sourceIdsForUnknownNorm": []
+        }
+      ],
+      "includedOperation": {
+        "id": "included-source-masonry-operation",
+        "titleRu": "Операции цельной кладки и армирования столбов",
+        "unitMeaningRu": "Тот же м³ служит только показом включённых операций цельного труда; это не второй физический объём или оплата.",
+        "printedCompositionRu": [
+          "Кладка конструкций из кирпича",
+          "Армирование конструкций",
+          "§1.21: переноска кирпича5м входит в источник; сверх5м отдельно поПОС",
+          "§1.2: установка деревянных пробок входит, количество/материал не выведены"
+        ]
+      },
+      "paidWholeOwnerId": "masonry:brick-column:krer08-02-003-02:whole-masonry-labour",
+      "physicalChoiceRu": "Прямоугольный столб с армированием",
+      "technicalFactIds": [
+        "column00301_profile",
+        "column00301_brick",
+        "column00301_mortar",
+        "column00301_design",
+        "column00301_volume_rule",
+        "column00301_adjustment",
+        "column00301_payment",
+        "column00301_material_scope",
+        "column00301_approved_design_reference",
+        "column00301_independent_volume_reference",
+        "column00301_scope_payment_reference"
+      ],
+      "markerTitleRu": "Операции цельной кладки и армирования столба",
+      "sourceTitleRu": "Кладка кирпичных столбов",
+      "sourceLocatorRu": "PDF/печатная стр.21: таблица08-02-003, собственная колонка 02; техническая часть стр.5/7/8.",
+      "physicalResultRu": "Кладка выбранного по проекту кирпичного столба с армированием; прямоугольный столб с армированием",
+      "sourceResourceCount": 8,
+      "sourceNeedsCount": 12,
+      "reinforcementIncludedInWholeLabour": true,
+      "acceptedR113UnchangedNormArithmeticAndIds": false
+    },
+    {
+      "key": "round-source-reinforced-lte4",
+      "normId": "08-02-003-05",
+      "prefix": "masonry:brick-column:krer08-02-003-05",
+      "storeyHeightBand": "LTE4",
+      "rows": [
+        {
+          "id": "whole-masonry-labour",
+          "titleRu": "Труд кладки и армирования круглых кирпичных столбов",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "12.27",
+          "resourceCode": "000-1004-4",
+          "printedNameRu": "Труд цельной кладки и армирования столба",
+          "printedUnitRu": "man_hour",
+          "printedRatePerM3": "12.27",
+          "normalizationFactor": "1",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "id": "operator-information",
+          "titleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "0.42",
+          "resourceCode": null,
+          "printedNameRu": "Труд машиниста башенного крана",
+          "printedUnitRu": "man_hour",
+          "printedRatePerM3": "0.42",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "tower-crane8t-reference",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.42",
+          "resourceCode": "02-0005",
+          "printedNameRu": "Башенный кран грузоподъёмностью8т",
+          "printedUnitRu": "machine_hour",
+          "printedRatePerM3": "0.42",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "flatbed-truck5t-reference",
+          "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.05",
+          "resourceCode": "40-0001",
+          "printedNameRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+          "printedUnitRu": "machine_hour",
+          "printedRatePerM3": "0.05",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "water-reference",
+          "titleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.1",
+          "resourceCode": "01-0601-0001",
+          "printedNameRu": "Вода",
+          "printedUnitRu": "m3",
+          "printedRatePerM3": "0.1",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ceramic-brick-reference",
+          "titleRu": "Кирпич керамический одинарный 250×120×65 мм М100",
+          "category": "material",
+          "unitId": "item",
+          "ratePerM3": "450",
+          "resourceCode": "01-3306-0005",
+          "printedNameRu": "Кирпич керамический одинарный250×120×65ммМ100",
+          "printedUnitRu": "1000шт.",
+          "printedRatePerM3": "0.45",
+          "normalizationFactor": "1000",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "reinforcement-mesh-a1-reference",
+          "titleRu": "Арматура-сетка из стали А-I диаметром 12–14 мм",
+          "category": "material",
+          "unitId": "t",
+          "ratePerM3": "0.01",
+          "resourceCode": "03-0104-0001",
+          "printedNameRu": "Арматура-сетка из сталиА-I диаметром12–14мм",
+          "printedUnitRu": "t",
+          "printedRatePerM3": "0.01",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ready-m50-mortar-reference",
+          "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.24",
+          "resourceCode": "03-0405-0003",
+          "printedNameRu": "Раствор готовый кладочный цементно-известковыйМ50",
+          "printedUnitRu": "m3",
+          "printedRatePerM3": "0.24",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        }
+      ],
+      "openNeeds": [
+        {
+          "id": "structural-design",
+          "titleRu": "Проект и конструктивные узлы",
+          "missingFactRu": "Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Проект и конструктивные узлы», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_structural_design",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "base-and-dpc",
+          "titleRu": "Основание и сопряжения",
+          "missingFactRu": "Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Основание и сопряжения», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_base_and_dpc",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "receiving-storage",
+          "titleRu": "Приёмка и хранение материалов",
+          "missingFactRu": "Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Приёмка и хранение материалов», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_receiving_storage",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "mortar-whole-process",
+          "titleRu": "Полный процесс раствора",
+          "missingFactRu": "Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Полный процесс раствора», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_mortar_whole_process",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "handling-crane",
+          "titleRu": "Подача краном",
+          "missingFactRu": "Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Подача краном», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_handling_crane",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "truck-transport",
+          "titleRu": "Перевозка материалов",
+          "missingFactRu": "0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Перевозка материалов», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_truck_transport",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "access",
+          "titleRu": "Рабочий доступ и подмости",
+          "missingFactRu": "Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Рабочий доступ и подмости», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_access",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "reinforcement-process",
+          "titleRu": "Обеспечение армирования",
+          "missingFactRu": "Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Обеспечение армирования», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_reinforcement_process",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "masonry-tools-ppe",
+          "titleRu": "Инструмент кладки и защита",
+          "missingFactRu": "Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Инструмент кладки и защита», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_masonry_tools_ppe",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "curing-protection",
+          "titleRu": "Уход и защита кладки",
+          "missingFactRu": "Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Уход и защита кладки», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_curing_protection",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "quality",
+          "titleRu": "Контроль и приёмка",
+          "missingFactRu": "Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Контроль и приёмка», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_quality",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "cleanup-waste",
+          "titleRu": "Очистка и отходы",
+          "missingFactRu": "Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Очистка и отходы», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00305_application_need_cleanup_waste",
+          "sourceIdsForUnknownNorm": []
+        }
+      ],
+      "includedOperation": {
+        "id": "included-source-masonry-operation",
+        "titleRu": "Операции цельной кладки и армирования столбов",
+        "unitMeaningRu": "Тот же м³ служит только показом включённых операций цельного труда; это не второй физический объём или оплата.",
+        "printedCompositionRu": [
+          "Кладка конструкций из кирпича",
+          "Армирование конструкций",
+          "§1.21: переноска кирпича5м входит в источник; сверх5м отдельно поПОС",
+          "§1.2: установка деревянных пробок входит, количество/материал не выведены"
+        ]
+      },
+      "paidWholeOwnerId": "masonry:brick-column:krer08-02-003-05:whole-masonry-labour",
+      "physicalChoiceRu": "Круглый столб с армированием",
+      "technicalFactIds": [
+        "column00305_profile",
+        "column00305_brick",
+        "column00305_mortar",
+        "column00305_design",
+        "column00305_volume_rule",
+        "column00305_adjustment",
+        "column00305_payment",
+        "column00305_material_scope",
+        "column00305_approved_design_reference",
+        "column00305_independent_volume_reference",
+        "column00305_scope_payment_reference"
+      ],
+      "markerTitleRu": "Операции цельной кладки и армирования столба",
+      "sourceTitleRu": "Кладка кирпичных столбов",
+      "sourceLocatorRu": "PDF/печатная стр.22: таблица08-02-003, собственная колонка 05; техническая часть стр.5/7/8.",
+      "physicalResultRu": "Кладка выбранного по проекту кирпичного столба с армированием; круглый столб с армированием",
+      "sourceResourceCount": 8,
+      "sourceNeedsCount": 12,
+      "reinforcementIncludedInWholeLabour": true,
+      "acceptedR113UnchangedNormArithmeticAndIds": false
+    },
+    {
+      "key": "round-source-reinforced-gt4",
+      "normId": "08-02-003-06",
+      "prefix": "masonry:brick-column:krer08-02-003-06",
+      "storeyHeightBand": "GT4",
+      "rows": [
+        {
+          "id": "whole-masonry-labour",
+          "titleRu": "Труд кладки и армирования круглых кирпичных столбов",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "12.05",
+          "resourceCode": "000-1004-4",
+          "printedNameRu": "Труд цельной кладки и армирования столба",
+          "printedUnitRu": "man_hour",
+          "printedRatePerM3": "12.05",
+          "normalizationFactor": "1",
+          "costTreatment": "OWN_COST"
+        },
+        {
+          "id": "operator-information",
+          "titleRu": "Труд машиниста башенного крана",
+          "category": "work",
+          "unitId": "man_hour",
+          "ratePerM3": "0.33",
+          "resourceCode": null,
+          "printedNameRu": "Труд машиниста башенного крана",
+          "printedUnitRu": "man_hour",
+          "printedRatePerM3": "0.33",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "tower-crane8t-reference",
+          "titleRu": "Башенный кран грузоподъёмностью 8 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.33",
+          "resourceCode": "02-0005",
+          "printedNameRu": "Башенный кран грузоподъёмностью8т",
+          "printedUnitRu": "machine_hour",
+          "printedRatePerM3": "0.33",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "flatbed-truck5t-reference",
+          "titleRu": "Автомобиль бортовой грузоподъёмностью до 5 т",
+          "category": "equipment",
+          "unitId": "machine_hour",
+          "ratePerM3": "0.05",
+          "resourceCode": "40-0001",
+          "printedNameRu": "Автомобиль бортовой грузоподъёмностьюдо5т",
+          "printedUnitRu": "machine_hour",
+          "printedRatePerM3": "0.05",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "water-reference",
+          "titleRu": "Вода",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.1",
+          "resourceCode": "01-0601-0001",
+          "printedNameRu": "Вода",
+          "printedUnitRu": "m3",
+          "printedRatePerM3": "0.1",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ceramic-brick-reference",
+          "titleRu": "Кирпич керамический одинарный 250×120×65 мм М100",
+          "category": "material",
+          "unitId": "item",
+          "ratePerM3": "450",
+          "resourceCode": "01-3306-0005",
+          "printedNameRu": "Кирпич керамический одинарный250×120×65ммМ100",
+          "printedUnitRu": "1000шт.",
+          "printedRatePerM3": "0.45",
+          "normalizationFactor": "1000",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "reinforcement-mesh-a1-reference",
+          "titleRu": "Арматура-сетка из стали А-I диаметром 12–14 мм",
+          "category": "material",
+          "unitId": "t",
+          "ratePerM3": "0.01",
+          "resourceCode": "03-0104-0001",
+          "printedNameRu": "Арматура-сетка из сталиА-I диаметром12–14мм",
+          "printedUnitRu": "t",
+          "printedRatePerM3": "0.01",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        },
+        {
+          "id": "ready-m50-mortar-reference",
+          "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+          "category": "material",
+          "unitId": "m3",
+          "ratePerM3": "0.24",
+          "resourceCode": "03-0405-0003",
+          "printedNameRu": "Раствор готовый кладочный цементно-известковыйМ50",
+          "printedUnitRu": "m3",
+          "printedRatePerM3": "0.24",
+          "normalizationFactor": "1",
+          "costTreatment": "INFORMATIONAL_SCOPE"
+        }
+      ],
+      "openNeeds": [
+        {
+          "id": "structural-design",
+          "titleRu": "Проект и конструктивные узлы",
+          "missingFactRu": "Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Проект и конструктивные узлы», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_structural_design",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "base-and-dpc",
+          "titleRu": "Основание и сопряжения",
+          "missingFactRu": "Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Основание и сопряжения», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_base_and_dpc",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "receiving-storage",
+          "titleRu": "Приёмка и хранение материалов",
+          "missingFactRu": "Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Приёмка и хранение материалов», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_receiving_storage",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "mortar-whole-process",
+          "titleRu": "Полный процесс раствора",
+          "missingFactRu": "Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Полный процесс раствора», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_mortar_whole_process",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "handling-crane",
+          "titleRu": "Подача краном",
+          "missingFactRu": "Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Подача краном», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_handling_crane",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "truck-transport",
+          "titleRu": "Перевозка материалов",
+          "missingFactRu": "0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Перевозка материалов», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_truck_transport",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "access",
+          "titleRu": "Рабочий доступ и подмости",
+          "missingFactRu": "Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Рабочий доступ и подмости», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_access",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "reinforcement-process",
+          "titleRu": "Обеспечение армирования",
+          "missingFactRu": "Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Обеспечение армирования», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_reinforcement_process",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "masonry-tools-ppe",
+          "titleRu": "Инструмент кладки и защита",
+          "missingFactRu": "Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Инструмент кладки и защита», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_masonry_tools_ppe",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "curing-protection",
+          "titleRu": "Уход и защита кладки",
+          "missingFactRu": "Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Уход и защита кладки», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_curing_protection",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "quality",
+          "titleRu": "Контроль и приёмка",
+          "missingFactRu": "Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Контроль и приёмка», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_quality",
+          "sourceIdsForUnknownNorm": []
+        },
+        {
+          "id": "cleanup-waste",
+          "titleRu": "Очистка и отходы",
+          "missingFactRu": "Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости.",
+          "ownerRu": "Конструктор, технолог и ответственный за соответствующий этап",
+          "nextTaskRu": "Получить применимое подтверждение по этапу «Очистка и отходы», его целый состав, единицы, количества и единственного владельца оплаты/закупки; до доказательства оставить неизвестным.",
+          "resolved": false,
+          "quantityUnitConfirmed": false,
+          "paidOwnerAdmitted": false,
+          "parameterId": "column00306_application_need_cleanup_waste",
+          "sourceIdsForUnknownNorm": []
+        }
+      ],
+      "includedOperation": {
+        "id": "included-source-masonry-operation",
+        "titleRu": "Операции цельной кладки и армирования столбов",
+        "unitMeaningRu": "Тот же м³ служит только показом включённых операций цельного труда; это не второй физический объём или оплата.",
+        "printedCompositionRu": [
+          "Кладка конструкций из кирпича",
+          "Армирование конструкций",
+          "§1.21: переноска кирпича5м входит в источник; сверх5м отдельно поПОС",
+          "§1.2: установка деревянных пробок входит, количество/материал не выведены"
+        ]
+      },
+      "paidWholeOwnerId": "masonry:brick-column:krer08-02-003-06:whole-masonry-labour",
+      "physicalChoiceRu": "Круглый столб с армированием",
+      "technicalFactIds": [
+        "column00305_profile",
+        "column00305_brick",
+        "column00305_mortar",
+        "column00305_design",
+        "column00305_volume_rule",
+        "column00305_adjustment",
+        "column00305_payment",
+        "column00305_material_scope",
+        "column00305_approved_design_reference",
+        "column00305_independent_volume_reference",
+        "column00305_scope_payment_reference"
+      ],
+      "markerTitleRu": "Операции цельной кладки и армирования столба",
+      "sourceTitleRu": "Кладка кирпичных столбов",
+      "sourceLocatorRu": "PDF/печатная стр.22: таблица08-02-003, собственная колонка 06; техническая часть стр.5/7/8.",
+      "physicalResultRu": "Кладка выбранного по проекту кирпичного столба с армированием; круглый столб с армированием",
+      "sourceResourceCount": 8,
+      "sourceNeedsCount": 12,
+      "reinforcementIncludedInWholeLabour": true,
+      "acceptedR113UnchangedNormArithmeticAndIds": false
+    }
+  ],
+  "nativeResources": 44,
+  "includedSourceMarkers": 6,
+  "unknownNeedOccurrences": 68,
+  "expectedShape": [
+    104,
+    118,
+    118
+  ],
+  "visibleSimpleInputs": 3,
+  "sourceOperations": [
+    "Кладка конструкций из кирпича — состав работ для норм 03 и 04, PDF21.",
+    "Переноска кирпича на 5 м учтена §1.21, PDF7; сверх 5 м — отдельные данные ПОС.",
+    "Установка деревянных пробок учтена общим §1.2, PDF5; количество и материал пробок не выведены и в заказ не допускаются.",
+    "Колонки01/02/05/06 включают кладку и армирование; повторный труд08-02-007за ту же операцию не допускается."
+  ],
+  "sourceVisualReadPages": [
+    5,
+    7,
+    8,
+    21,
+    22
+  ],
+  "sourcePageRenders": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r109\\research\\KRER08-page21-existing.png",
+      "sha256": "f6c30878427c995dcdfcb95262362e4a8553f1941510921e8fc29068f6f3ef9f",
+      "bytes": 700082
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r109\\research\\KRER08-page5-existing.png",
+      "sha256": "4b1407cf5610f1bbd99e2693981fcf2689be9514e99b6ed1b292986d73c9423e",
+      "bytes": 695835
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r109\\research\\KRER08-page7-existing.png",
+      "sha256": "615eb3dd8f8afb5c025f8e7349aaedd01ff9bdce9b68765ccd2553176e5f6a57",
+      "bytes": 765094
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-24\\files-pasted-by-the-user-21\\work\\masonry-r91\\r109\\research\\KRER08-page8-existing.png",
+      "sha256": "77c0e7b2aa71d12b769a7d59dc3c7b53c151708eba8692d7f18f45eb002c871f",
+      "bytes": 893938
+    }
+  ],
+  "legacy03ExcludedRu": [
+    "Армированные прямоугольные столбы 01/02, круглые столбы 05/06, декоративные конструкции 07/08 и своды/арки 09 не подставляются.",
+    "Высота этажа свыше 4 м не принимается по колонке 03.",
+    "Стены/перегородки/BIA, иной кирпич/размер/марка или раствор не становятся совместимыми по одному слову «кладка».",
+    "Арматура 03-0104-0001 и автомобиль 40-0001 из соседних колонок отсутствуют в 03 и не импортируются.",
+    "0,404 тысячи штук — размер исходной единицы, а не упаковка/палета; нет округления до целого кирпича на каждый м³/столб.",
+    "Нет рецепта М50, плотности, добавочного процента боя, рейсов, несущей способности или коэффициента по среднему разряду.",
+    "§1.13 описывает подмости для стен и не даёт готовую отдельную норму подмостей столбов.",
+    "Отдельная оплата машиниста/машины/материалов, закупка и полный состав не допущены."
+  ],
+  "sourceConstraints": [
+    "Все шесть собственных колонок применяются только к своему выбранному виду и высоте; нет неармированного круглого профиля.",
+    "Старые03/04не получают автомобиль или арматуру из соседних колонок; в новых01/02/05/06они присутствуют собственными строками.",
+    "Ставки труда не умножаются на средний разряд; кирпич из1000шт. переводится в штуки без упаковочного округления.",
+    "0,01тсетчатой стали с напечатанным диаметром12–14мм не задаёт проект армирования, отходы или упаковку.",
+    "Декоративные07/08, своды/арки09, иной кирпич/раствор и чужие wholeкомпоненты не подставляются.",
+    "Нет подстановки стеновых подмостей, DPC7, готового whole15или ремонтаKG46. Честные неизвестные не равны нулю."
+  ],
+  "remaining": [
+    "Готовность опоры, разбивка и отсечная гидроизоляция: Норма кладки столба не устанавливает объём подготовки опоры, разбивки, выравнивания или отсечной гидроизоляции.",
+    "Примыкания, связи, оголовок и конструктивные ограничения: Колонка не рассчитывает несущую способность, сейсмику, анкеры, связи, оголовок, закладные или необходимость армирования.",
+    "Подмости и безопасный доступ к столбу: §1.13 прямо описывает подмости для кладки стен до 4 м; самостоятельную норму и непересекающуюся оплату подмостей именно столба он не доказывает.",
+    "Инструмент, оснастка и СИЗ: Нет самостоятельного расхода инструмента, средств защиты и количества комплектов на м³ или столб.",
+    "Уход, выдержка и защита кладки: Колонка не задаёт расход материалов, режим и срок ухода за этой кирпичной кладкой на готовом цементно-известковом М50.",
+    "Контроль геометрии и приёмка столбов: Нет численного допуска, частоты контроля, количества испытаний или самостоятельной нормы приёмки.",
+    "Оплачиваемая работа крана и граница машиниста: 0,42 маш.-ч и 0,42 чел.-ч — разные исходные справочные величины. Не подтверждены отдельный платный владелец крана, охват его оператора и точный договорный состав.",
+    "Комплектация, поставка, склад и заказ материалов: Буквальные 0,404 тысячи кирпичей, 0,22 м³ готового М50 и 0,1 м³ воды не доказывают торговую фасовку, остатки, рецепт, заказ или отдельную цену.",
+    "Внешняя доставка, разгрузка и переноска сверх 5 м: §1.21 учитывает переноску кирпича на 5 м. Внешние маршруты, партии и разгрузка из нормы не следуют; автомобиль 40-0001 присутствует в соседних армированных колонках, но в 03 отсутствует.",
+    "Уборка, тара, бой и вывоз отходов: Норма не задаёт дополнительный процент боя, контейнер, массу отходов и маршрут вывоза.",
+    "Собственный реальный producer чтения11проектных фактов и applicability, обычнаяUIграница и текущий проектный/нормативный допуск не приняты.",
+    "Стр7 §1.13 даёт подмости стен; столбам ни до4м, ни свыше4м не назначается чужая готовая схема доступа.",
+    "Стр8 §2.5 сохраняет гнёзда/борозды для заделки концов балок в обмере новой кладки; KG46ремонт не добавляется автоматически второй оплатой.",
+    "ФактическиеDBabsence/collision/normal/locked, solepublisher, API/UI/Android/сохранение/PDF/закупка и FULL — UNRUN.",
+    "Новые01/02/05/06: Проект и конструктивные узлы: Геометрия, армирование, сейсмическая область, перевязка, узлы и чистый объём подтверждаются проектом. 0,01 т не задаёт конструкцию каркаса.",
+    "Новые01/02/05/06: Основание и сопряжения: Требуются собственные опора, разбивка, выравнивание, отсечная гидроизоляция и сопряжения. Стеновой DPC7 автоматически не присоединяется.",
+    "Новые01/02/05/06: Приёмка и хранение материалов: Нужны реальные поставка, тара, складирование и контроль. Расход в кладке не равен заказу, упаковке или складскому остатку.",
+    "Новые01/02/05/06: Полный процесс раствора: Родной готовый цементно-известковый М50 требует всей цепочки приёмки, передачи, применения и очистки. Информационный объём не является допущенным effective output для whole15.",
+    "Новые01/02/05/06: Подача краном: Нужны фактические груз, основание, маршрут, стропы, захваты и граница договора с оператором. Норма крана не доказывает весь подъёмный комплект.",
+    "Новые01/02/05/06: Перевозка материалов: 0,05 маш.-ч не задаёт число рейсов, плечо доставки или включённого водителя. Нужны фактические грузы и договорная граница перевозки.",
+    "Новые01/02/05/06: Рабочий доступ и подмости: Стеновая область §1.13 не подтверждает колонковые подмости ни для одной высоты. Неизвестны полный настил, ограждение, лестница, опоры, крепления, монтаж и возврат.",
+    "Новые01/02/05/06: Обеспечение армирования: Армирование включено в цельный труд этой колонки. Неизвестны целые резка, гибка, сборка, вязка, инструмент, отходы и остатки. Второй труд 08-02-007 за ту же операцию не добавляется.",
+    "Новые01/02/05/06: Инструмент кладки и защита: Нужны полный набор подгонки, перевязки и кладки, расходники, защита и износ. Комплект на столб или на м³ не выдумывается.",
+    "Новые01/02/05/06: Уход и защита кладки: Нужны собственные условия, метод ухода и защитные материалы с количествами. Ожидание не является оплачиваемыми часами, уход за бетоном не переносится.",
+    "Новые01/02/05/06: Контроль и приёмка: Нужны контроль геометрии, вертикальности, армирования и качества материалов, средства и объёмы проверки. Сметная норма не является актом приёмки.",
+    "Новые01/02/05/06: Очистка и отходы: Нужны свежая и затвердевшая очистка, вода, ёмкости, приёмник и пункт отходов; отдельный вывоз подтверждается по фактической применимости."
+  ],
+  "newPaidOrProcurementOwnersBeyondOwnTwoWholeWorkers": 4,
+  "procurementAdmitted": false,
+  "currentNormativeAdmission": "UNRUN",
+  "M50Whole15Attached": false,
+  "effectiveQuantityProducerForWhole15": "UNRUN_NOT_INVENTED",
+  "newFullTechnologies": 0,
+  "fullTechnicalAcceptance": false,
+  "immutableAccepted03_04WholePack": {
+    "path": "data/estimate-benchmarks/source-packs/masonry-brick-rectangular-column-whole-r109.json",
+    "sha256": "3b4ee4fcfa1c7358344d07fd391b9537eacfc9fa93ca0bb59ff57c7cf65d04e0"
+  },
+  "immutableAccepted03_04IndependentMap": {
+    "path": "data/estimate-benchmarks/source-packs/masonry-brick-column-independent-full-map-r109.json",
+    "sha256": "5750b14edab1b69dc3e426d45de2936b3537e62236555e6715a9b60640fc936e"
+  },
+  "immutableR116OwnFourProfileRoster": {
+    "path": "data/estimate-benchmarks/source-packs/masonry-column-own01-02-05-06-source-interface-r116.json",
+    "sha256": "2aa58090dce9720053f936862d300c69261c814f530ba763291ad8b7df187d3e"
+  },
+  "immutableR116OwnFourProfileStageMap": {
+    "path": "data/estimate-benchmarks/source-packs/masonry-column-own01-02-05-06-whole-stage-map-r116.json",
+    "sha256": "640621620e52046557d88b402a415e9ffe5760daab3418a66cbcc5ffdcf2c780"
+  },
+  "acceptedR113HandoffSha256": "f4d4f1537a40ce14b5bee84ada6d4b3b7984676ecc6ba5b4f9df425218e8d765",
+  "candidateCatalogWorkGroupAndSourceKeysUnchanged": true,
+  "physicalChoiceIsNotNormCodeSelector": true,
+  "additionalTechnicalReadbackFacts": [
+    {
+      "id": "column00301_profile",
+      "titleRu": "Форма и армирование столба",
+      "values": [
+        "Прямоугольные армированные кирпичные столбы"
+      ],
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_brick",
+      "titleRu": "Кирпич по исходной норме",
+      "values": [
+        "Керамический одинарный кирпич 250×120×65 мм марки 100"
+      ],
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_mortar",
+      "titleRu": "Раствор по исходной норме",
+      "values": [
+        "Готовый кладочный цементно-известковый раствор марки 50"
+      ],
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_design",
+      "titleRu": "Разрешённость конструкции проектом",
+      "values": [
+        "Применение прямоугольного армированного столба подтверждено утверждённым конструктивным проектом"
+      ],
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_volume_rule",
+      "titleRu": "Самостоятельный обмер кладки",
+      "values": [
+        "Самостоятельный проектный объём кирпичной кладки столбов в м³, без замены площадью или объёмом стен"
+      ],
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_adjustment",
+      "titleRu": "Условия применения исходной нормы",
+      "values": [
+        "Применима исходная колонка без самостоятельно назначенных поправок"
+      ],
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_payment",
+      "titleRu": "Граница оплаты",
+      "values": [
+        "Цельный труд кладки и включённого армирования оплачивается один раз; машинист, кран и перевозка остаются справочными"
+      ],
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_material_scope",
+      "titleRu": "Граница расхода материалов",
+      "values": [
+        "Только буквальный исходный расход; заказ, фасовка и складской остаток не подтверждены"
+      ],
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_approved_design_reference",
+      "titleRu": "Утверждённый конструктивный проект выбранного вида столба и схема армирования",
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_independent_volume_reference",
+      "titleRu": "Самостоятельный обмер объёма кирпичной кладки столбов и исключений по §2.5",
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00301_scope_payment_reference",
+      "titleRu": "Границы цельного труда, исходного состава, переноски и справочных ресурсов",
+      "physicalChoiceRu": "Прямоугольный столб с армированием"
+    },
+    {
+      "id": "column00305_profile",
+      "titleRu": "Форма и армирование столба",
+      "values": [
+        "Круглые кирпичные столбы с включённым в исходный состав армированием"
+      ],
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_brick",
+      "titleRu": "Кирпич по исходной норме",
+      "values": [
+        "Керамический одинарный кирпич 250×120×65 мм марки 100"
+      ],
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_mortar",
+      "titleRu": "Раствор по исходной норме",
+      "values": [
+        "Готовый кладочный цементно-известковый раствор марки 50"
+      ],
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_design",
+      "titleRu": "Разрешённость конструкции проектом",
+      "values": [
+        "Применение круглого столба с армированием подтверждено утверждённым конструктивным проектом"
+      ],
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_volume_rule",
+      "titleRu": "Самостоятельный обмер кладки",
+      "values": [
+        "Самостоятельный проектный объём кирпичной кладки столбов в м³, без замены площадью или объёмом стен"
+      ],
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_adjustment",
+      "titleRu": "Условия применения исходной нормы",
+      "values": [
+        "Применима исходная колонка без самостоятельно назначенных поправок"
+      ],
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_payment",
+      "titleRu": "Граница оплаты",
+      "values": [
+        "Цельный труд кладки и включённого армирования оплачивается один раз; машинист, кран и перевозка остаются справочными"
+      ],
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_material_scope",
+      "titleRu": "Граница расхода материалов",
+      "values": [
+        "Только буквальный исходный расход; заказ, фасовка и складской остаток не подтверждены"
+      ],
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_approved_design_reference",
+      "titleRu": "Утверждённый конструктивный проект выбранного вида столба и схема армирования",
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_independent_volume_reference",
+      "titleRu": "Самостоятельный обмер объёма кирпичной кладки столбов и исключений по §2.5",
+      "physicalChoiceRu": "Круглый столб с армированием"
+    },
+    {
+      "id": "column00305_scope_payment_reference",
+      "titleRu": "Границы цельного труда, исходного состава, переноски и справочных ресурсов",
+      "physicalChoiceRu": "Круглый столб с армированием"
+    }
+  ],
+  "additionalPaidOwnerMeaning": "По одному цельному труду только выбранной собственной колонки; не одновременная оплата шести профилей. Все материалы, механизмы и машинист остаются справочными."
+}

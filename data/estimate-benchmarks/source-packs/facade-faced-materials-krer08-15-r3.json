@@ -1,0 +1,1099 @@
+{
+  "contract": "gox-build.facade-faced-materials-whole-krer/r3",
+  "status": "AUTHORING_NOT_THIRD_READY_QUEUE",
+  "profiles": [
+    {
+      "key": "face-brick-aac",
+      "titleRu": "Лицевая кирпичная облицовка фасада",
+      "catalogId": "canonical-work:master:facade_face_brick_cladding",
+      "workKey": "facade_face_brick_cladding",
+      "groupId": "wg:master:facade_face_brick_cladding",
+      "prefix": "facade:face-brick-aac:krer:r3",
+      "sourceId": "gox_facade_facade_face_brick_cladding_whole_r3",
+      "normId": "08-02-017-01",
+      "source": {
+        "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+        "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+        "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/424/show",
+        "kind": "REUSE_EXACT_FULL_OFFICIAL_PRIMARY_DOCUMENT_NEW_FACADE_COLUMN"
+      },
+      "denominatorM2": "100",
+      "sourceRows": [
+        {
+          "key": "labour",
+          "titleRu": "Каменщики: цельный исходный состав лицевой облицовки",
+          "category": "labor",
+          "resourceCode": "000-1003-0",
+          "unitId": "man_hour",
+          "ratePer100M2": "144.19",
+          "operation": "whole",
+          "printedUnit": "man_hour",
+          "printedRate": "144.19"
+        },
+        {
+          "key": "operators",
+          "titleRu": "Машинисты исходных механизмов, справочно",
+          "category": "labor",
+          "resourceCode": "SOURCE_OPERATORS_TOTAL",
+          "unitId": "man_hour",
+          "ratePer100M2": "0.76",
+          "operation": "feed",
+          "printedUnit": "man_hour",
+          "printedRate": "0.76",
+          "informational": true
+        },
+        {
+          "key": "tower-crane",
+          "titleRu": "Кран башенный5т",
+          "category": "equipment",
+          "resourceCode": "02-0004",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.42",
+          "operation": "feed",
+          "printedUnit": "machine_hour",
+          "printedRate": "0.42"
+        },
+        {
+          "key": "mobile-crane",
+          "titleRu": "Кран автомобильный10т",
+          "category": "equipment",
+          "resourceCode": "02-0075",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.34",
+          "operation": "feed",
+          "printedUnit": "machine_hour",
+          "printedRate": "0.34"
+        },
+        {
+          "key": "angle-grinder",
+          "titleRu": "Машина шлифовальная угловая",
+          "category": "equipment",
+          "resourceCode": "33-0367",
+          "unitId": "machine_hour",
+          "ratePer100M2": "5",
+          "operation": "steel",
+          "printedUnit": "machine_hour",
+          "printedRate": "5"
+        },
+        {
+          "key": "truck",
+          "titleRu": "Бортовой автомобиль до5т",
+          "category": "equipment",
+          "resourceCode": "40-0001",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.34",
+          "operation": "feed",
+          "printedUnit": "machine_hour",
+          "printedRate": "0.34"
+        },
+        {
+          "key": "face-brick",
+          "titleRu": "Кирпич керамический лицевой250×120×65мм, М125",
+          "category": "material",
+          "resourceCode": "01-3305-0007",
+          "unitId": "piece",
+          "ratePer100M2": "5070",
+          "operation": "lay",
+          "printedUnit": "1000piece",
+          "printedRate": "5.07"
+        },
+        {
+          "key": "anchor-steel-comparator",
+          "titleRu": "Арматурная сталь А-III диаметром8мм, исходная масса",
+          "category": "material",
+          "resourceCode": "03-0102-0039",
+          "unitId": "kg",
+          "ratePer100M2": "50",
+          "operation": "steel",
+          "printedUnit": "t",
+          "printedRate": "0.05",
+          "structuralComparatorOnly": true
+        },
+        {
+          "key": "ready-mortar",
+          "titleRu": "Раствор готовый кладочный цементно-известковый М50",
+          "category": "material",
+          "resourceCode": "03-0405-0003",
+          "unitId": "m3",
+          "ratePer100M2": "2.33",
+          "operation": "mortar",
+          "printedUnit": "m3",
+          "printedRate": "2.33"
+        },
+        {
+          "key": "reinforcement-mesh-comparator",
+          "titleRu": "Сварная сетка из проволоки4–5мм, исходная масса",
+          "category": "material",
+          "resourceCode": "09-0317-0031",
+          "unitId": "kg",
+          "ratePer100M2": "151",
+          "operation": "steel",
+          "printedUnit": "t",
+          "printedRate": "0.151",
+          "structuralComparatorOnly": true
+        },
+        {
+          "key": "binding-wire",
+          "titleRu": "Проволока вязальная",
+          "category": "material",
+          "resourceCode": "10-0105-0021",
+          "unitId": "kg",
+          "ratePer100M2": "9.6",
+          "operation": "steel",
+          "printedUnit": "kg",
+          "printedRate": "9.6"
+        }
+      ],
+      "operations": [
+        {
+          "key": "unload",
+          "titleRu": "Выгрузка материалов"
+        },
+        {
+          "key": "lift",
+          "titleRu": "Подъём материалов к месту работ"
+        },
+        {
+          "key": "feed",
+          "titleRu": "Перемещение материалов до30м"
+        },
+        {
+          "key": "access",
+          "titleRu": "Устройство и разборка подмостей"
+        },
+        {
+          "key": "lay",
+          "titleRu": "Укладка лицевого кирпича с расшивкой"
+        },
+        {
+          "key": "steel",
+          "titleRu": "Резка и укладка арматурной сетки"
+        },
+        {
+          "key": "anchors",
+          "titleRu": "Установка анкеров в облицовочную кладку"
+        },
+        {
+          "key": "mortar",
+          "titleRu": "Подача и использование готового раствора"
+        }
+      ],
+      "needs": [
+        {
+          "key": "tool-working-parts",
+          "titleRu": "Полный запас ручного инструмента и совместимых рабочих частей",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "WholeKGconsumptioncolumnisnotafrontroster;requiredhandtools,cutting/grinding/drillingpartsandweararesourcenotquantified."
+        },
+        {
+          "key": "access-rigging-power",
+          "titleRu": "Полное физическое обеспечение доступа, захватов и питания",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_PPR",
+          "missing": "MachinetimeandscaffoldlaborareNOTfullphysicalplatform/rigging/anchor/cable/guardBOM. RealPPRandfullratedrosterremainrequired."
+        },
+        {
+          "key": "PPE-protection",
+          "titleRu": "Защита работников и ограждение рабочего фронта",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "NoPPE/replacement/shiftconsumptionnormorcompletefencingquantitiesinthewholecolumn."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Испытания, исполнительный контроль и объектные услуги",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_TEST_PLAN",
+          "missing": "Fullapplicabletestfrequency/services/labor/consumablesnotprovidedbytheresourcecolumn;sourceoperationcompletiondoesnotprovetheact."
+        },
+        {
+          "key": "external-delivery-waste",
+          "titleRu": "Внешняя доставка, тара, очистка и вывоз отходов",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_ROUTE",
+          "missing": "Includedinternalhandlingandcleanupdonotpublishcompletehaul/packaging/exceptionalwaste/waterorconsumablesnorms."
+        },
+        {
+          "key": "anchor-reinforcement-BOM",
+          "titleRu": "Поэлементная ведомость связей, анкеров и армирования",
+          "kind": "ACTUAL_PROJECT_ITEMIZED_BOM",
+          "missing": "Source50kgAIII8and151kgmesharecomparisonmasses;notpiececounts/anchorage/bearing/gap/drainage/fireproof. Actualapprovedphysicalschedulemustcloseit."
+        },
+        {
+          "key": "support-gap-nodes",
+          "titleRu": "Опора облицовки, зазор, отвод влаги и примыкания по проекту",
+          "kind": "ACTUAL_PROJECT_SYSTEM_DESIGN",
+          "missing": "AACfacecladdingcolumnisnotuniversalcavity/bearing/fire/wind/seismicdesign;actualsupportandtieswithvalidatedAACbasearerequired."
+        },
+        {
+          "key": "m50-post-product-compatibility",
+          "titleRu": "Техническая совместимость поворотной бадьи и рабочего ящика",
+          "kind": "INTERNAL_PRODUCT_SOURCE",
+          "missing": "Exact applicable1062/1107 drawings and modern product passport/functional matching; no checkbox confirms unknown source compatibility."
+        },
+        {
+          "key": "m50-post-whole-operation-fit",
+          "titleRu": "Применимость полного последовательного процесса подачи",
+          "kind": "INTERNAL_METHOD_SOURCE",
+          "missing": "Exact finite source organization/front/load cycle and demonstrated compatibility with whole KG readyM50 handling; partial loads/dispatch or parallel variants not inferred."
+        },
+        {
+          "key": "m50-post-lifting-slings",
+          "titleRu": "Стропы и соединительные элементы подъёма",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "Whole rated handler/slings/shackles roster and sufficient quantity; no1sling from crane hours."
+        },
+        {
+          "key": "m50-post-receiving-access",
+          "titleRu": "Доступ и ограждение приёмного места раствора",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "Compatible complete access/deck/guard/edge protection with actual receiving geometry."
+        },
+        {
+          "key": "m50-post-rigger-ppe",
+          "titleRu": "Полный комплект защиты такелажников",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "Source2people does not establish full PPE/replacement/shift consumption quantities."
+        },
+        {
+          "key": "m50-post-inspection-cleaning-waste",
+          "titleRu": "Осмотр, очистка и отходы поста подачи",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_FACT",
+          "missing": "Full physical inspection/cleaning/waste kit and actual exceptional waste/haul boundary; included cleaning action is not a universal disposal quantity."
+        }
+      ],
+      "sourcePricesImported": false,
+      "physicalFull": false,
+      "full": 0,
+      "territory": "KG",
+      "edition": "КРЕР2015 explicitlyacceptedprojectbasis",
+      "methodNotEquivalentToModernAdhesiveOrVentilatedSystems": true,
+      "scope": {
+        "base": "ExistingAACwall;nootherbasebyanalogy",
+        "leaf": "Halfbrick120mm;faceceramic250x120x65M125",
+        "storeyHeightMaximumM": "4",
+        "storeyHeightIsNotWholeBuildingHeight": true,
+        "unloadingLiftCarry30mAndScaffoldLaborIncluded": true,
+        "jointPointingIncluded": true,
+        "steelMassesAreComparisonOnly": true,
+        "noAutomaticInsulationOrCavityWidth": true
+      },
+      "sourcePages": [
+        5,
+        6,
+        7,
+        41,
+        42
+      ],
+      "readyM50Post": {
+        "kind": "PROVEN_ADAPTATION_OF_BOUNDED_SOURCE_ROSTER_ONLY_NOT_BUILDER_REUSE",
+        "sourcePackPath": "data/estimate-benchmarks/source-packs/masonry-ready-m50-supply-post-kt3111176-r1.json",
+        "sourcePackSha256": "1b41598f22bb6e205259da42d16a889524196dbf7cd13147c9b7aa162ce519fc",
+        "source": {
+          "path": "data/estimate-benchmarks/source-artifacts/masonry-ready-m50-post-kt3111176-r1/KT3.1-1.11-76-author-scan.pdf",
+          "sha256": "fac02f9833c4844770519dc8560ec579b118e9b665f920cebf5cf38e4434fc28",
+          "url": "https://meganorm.ru/Data2/1/4293797/4293797431.pdf",
+          "author": "Мособлоргтехстрой / ЦНИБ Главмособлстроя; ВНИПИ труда Госстроя СССР",
+          "edition": "1976; взамен1968",
+          "jurisdiction": "USSR historical authored method; not current KG regulatory admission",
+          "hostingRole": "MIRROR_OF_ORIGINAL_AUTHOR_SCAN",
+          "locator": "PDF2/printed41 §1–3; PDF3/printed42 §3.2/4.1/4.2; PDF4/printed43 §4.3"
+        },
+        "exactMortarCode": "03-0405-0003",
+        "ownVolumeM3Per100M2": "2.33",
+        "oneSerialPostOnly": true,
+        "parallelPostsNotAdmitted": true,
+        "roster": [
+          {
+            "key": "rotating-tubs",
+            "titleRu": "Поворотная бадья для раствора 0,8 м³",
+            "unitId": "piece",
+            "quantity": "3",
+            "category": "equipment",
+            "drawingInternal": "1062",
+            "capacityM3": "0.8",
+            "locator": "PDF3/printed42 §3.2 first row"
+          },
+          {
+            "key": "steel-boxes",
+            "titleRu": "Стальной ящик для раствора 0,27 м³",
+            "unitId": "piece",
+            "quantity": "4",
+            "category": "equipment",
+            "drawingInternal": "1107",
+            "capacityM3": "0.27",
+            "locator": "PDF3/printed42 §3.2 second row"
+          },
+          {
+            "key": "shovels",
+            "titleRu": "Растворная лопата",
+            "unitId": "piece",
+            "quantity": "2",
+            "category": "tool",
+            "drawingInternal": "ГОСТ3620-63",
+            "locator": "PDF3/printed42 §3.2 third row"
+          },
+          {
+            "key": "rigger-crew",
+            "titleRu": "Такелажники II и IV разрядов",
+            "unitId": "person",
+            "quantity": "2",
+            "category": "service",
+            "locator": "PDF2/printed41 §3.1"
+          }
+        ],
+        "organization": {
+          "sequentialPosts": "1",
+          "parallelPostsAllowed": false,
+          "normativeInventoryIsNotConsumption": true,
+          "twoTubsLoadedTogether": true,
+          "oneTubLiftedAtATime": true,
+          "mortarIsReadyNotManufacturedOnsite": true,
+          "preliminaryRemixing": false,
+          "crew": [
+            {
+              "role": "Такелажник",
+              "grade": "II",
+              "quantity": "1",
+              "unitId": "person"
+            },
+            {
+              "role": "Такелажник",
+              "grade": "IV",
+              "quantity": "1",
+              "unitId": "person"
+            }
+          ],
+          "operations": [
+            "Подготовить и проверить тару и рабочие ящики",
+            "Загрузить две бадьи готовым раствором",
+            "Застропить и подать одну бадью краном",
+            "Разгрузить раствор в рабочие ящики",
+            "Очистить бадью, вернуть и расстропить"
+          ]
+        },
+        "newLabourOrMachineOwner": false,
+        "literatureRate0_40NotUsedInFormula": true,
+        "physicalGapsKept": [
+          "product-compatibility",
+          "whole-operation-fit",
+          "lifting-slings",
+          "receiving-access",
+          "rigger-ppe",
+          "inspection-cleaning-waste"
+        ]
+      }
+    },
+    {
+      "key": "limestone-mortar",
+      "titleRu": "Облицовка фасада природным камнем на растворе",
+      "catalogId": "canonical-work:master:facade_natural_stone_mortar_cladding",
+      "workKey": "facade_natural_stone_mortar_cladding",
+      "groupId": "wg:master:facade_natural_stone_mortar_cladding",
+      "prefix": "facade:limestone-mortar:krer:r3",
+      "sourceId": "gox_facade_facade_natural_stone_mortar_cladding_whole_r3",
+      "normId": "15-01-002-01",
+      "source": {
+        "jurisdiction": "KG",
+        "edition": "КРЕР15-2015; утверждено28.03.2016№2-нпа, введено01.01.2016",
+        "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+        "collectionUrl": "https://minstroy.gov.kg/ru/kyzmat/431/show",
+        "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf",
+        "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+        "exactPages": [
+          34,
+          35
+        ],
+        "measurePages": [
+          12,
+          13,
+          17
+        ],
+        "currentPresenceCheckedUtc": "2026-10-22",
+        "currentPresenceIsNotNoAmendmentProof": true
+      },
+      "denominatorM2": "100",
+      "sourceRows": [
+        {
+          "key": "labour",
+          "titleRu": "Облицовщики: цельный исходный состав каменной облицовки",
+          "category": "labor",
+          "resourceCode": "000-1004-6",
+          "unitId": "man_hour",
+          "ratePer100M2": "557.50",
+          "operation": "whole",
+          "printedUnit": "man_hour",
+          "printedRate": "557.50"
+        },
+        {
+          "key": "operators",
+          "titleRu": "Машинисты исходных механизмов, справочно",
+          "category": "labor",
+          "resourceCode": "SOURCE_OPERATORS_TOTAL",
+          "unitId": "man_hour",
+          "ratePer100M2": "11.46",
+          "operation": "feed",
+          "printedUnit": "man_hour",
+          "printedRate": "11.46",
+          "informational": true
+        },
+        {
+          "key": "forklift",
+          "titleRu": "Автопогрузчик5т",
+          "category": "equipment",
+          "resourceCode": "03-0020",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.39",
+          "operation": "feed",
+          "printedUnit": "machine_hour",
+          "printedRate": "0.39"
+        },
+        {
+          "key": "hoist",
+          "titleRu": "Одномачтовый подъёмник до500кг",
+          "category": "equipment",
+          "resourceCode": "03-0327",
+          "unitId": "machine_hour",
+          "ratePer100M2": "2.66",
+          "operation": "feed",
+          "printedUnit": "machine_hour",
+          "printedRate": "2.66"
+        },
+        {
+          "key": "compressor",
+          "titleRu": "Компрессор передвижной до686кПа,5м³/мин",
+          "category": "equipment",
+          "resourceCode": "05-0005",
+          "unitId": "machine_hour",
+          "ratePer100M2": "8.41",
+          "operation": "finish",
+          "printedUnit": "machine_hour",
+          "printedRate": "8.41"
+        },
+        {
+          "key": "abrasive-blaster",
+          "titleRu": "Аппарат пескоструйный",
+          "category": "equipment",
+          "resourceCode": "33-0082",
+          "unitId": "machine_hour",
+          "ratePer100M2": "16.82",
+          "operation": "finish",
+          "printedUnit": "machine_hour",
+          "printedRate": "16.82"
+        },
+        {
+          "key": "water",
+          "titleRu": "Вода технологических операций облицовки",
+          "category": "material",
+          "resourceCode": "01-0601-0001",
+          "unitId": "m3",
+          "ratePer100M2": "0.9",
+          "operation": "clean",
+          "printedUnit": "m3",
+          "printedRate": "0.9"
+        },
+        {
+          "key": "clay",
+          "titleRu": "Глина для защиты облицованной поверхности",
+          "category": "material",
+          "resourceCode": "01-1401-0001",
+          "unitId": "m3",
+          "ratePer100M2": "1.7",
+          "operation": "protection",
+          "printedUnit": "m3",
+          "printedRate": "1.7"
+        },
+        {
+          "key": "sand",
+          "titleRu": "Песок природный строительный средний",
+          "category": "material",
+          "resourceCode": "01-6208-0005",
+          "unitId": "m3",
+          "ratePer100M2": "0.5",
+          "operation": "finish",
+          "printedUnit": "m3",
+          "printedRate": "0.5"
+        },
+        {
+          "key": "ready-mortar",
+          "titleRu": "Раствор готовый отделочный тяжёлый цементный1:3",
+          "category": "material",
+          "resourceCode": "03-0409-0003",
+          "unitId": "m3",
+          "ratePer100M2": "3.6",
+          "operation": "backfill",
+          "printedUnit": "m3",
+          "printedRate": "3.6"
+        },
+        {
+          "key": "wood-wedges",
+          "titleRu": "Клинья деревянные",
+          "category": "material",
+          "resourceCode": "12-1004-0001",
+          "unitId": "m3",
+          "ratePer100M2": "0.00139",
+          "operation": "mount",
+          "printedUnit": "m3",
+          "printedRate": "0.00139"
+        },
+        {
+          "key": "limestone-slabs",
+          "titleRu": "Плита облицовочная из известняка60мм, неполированная",
+          "category": "material",
+          "resourceCode": "15-0102-0045",
+          "unitId": "m2",
+          "ratePer100M2": "99",
+          "operation": "mount",
+          "printedUnit": "m2",
+          "printedRate": "99"
+        },
+        {
+          "key": "fastening-P",
+          "titleRu": "Детали крепления по проекту, исходная массаП",
+          "category": "material",
+          "resourceCode": "01-7902-0001",
+          "unitId": "t",
+          "ratePer100M2": null,
+          "operation": "mount",
+          "printedUnit": "t",
+          "printedRate": "П",
+          "projectMassInformationalOnly": true
+        }
+      ],
+      "operations": [
+        {
+          "key": "unpack",
+          "titleRu": "Распаковка и подбор плит"
+        },
+        {
+          "key": "fit",
+          "titleRu": "Притирка кромок"
+        },
+        {
+          "key": "finish",
+          "titleRu": "Обработка выступающих граней в границе исходного метода"
+        },
+        {
+          "key": "mount",
+          "titleRu": "Установка плит и временных клиньев"
+        },
+        {
+          "key": "backfill",
+          "titleRu": "Заливка готового раствора"
+        },
+        {
+          "key": "joints",
+          "titleRu": "Пригонка плит и разделка швов"
+        },
+        {
+          "key": "protection",
+          "titleRu": "Защита лицевой поверхности"
+        },
+        {
+          "key": "clean",
+          "titleRu": "Очистка и промывка облицовки"
+        }
+      ],
+      "needs": [
+        {
+          "key": "tool-working-parts",
+          "titleRu": "Полный запас ручного инструмента и совместимых рабочих частей",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "WholeKGconsumptioncolumnisnotafrontroster;requiredhandtools,cutting/grinding/drillingpartsandweararesourcenotquantified."
+        },
+        {
+          "key": "access-rigging-power",
+          "titleRu": "Полное физическое обеспечение доступа, захватов и питания",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_PPR",
+          "missing": "MachinetimeandscaffoldlaborareNOTfullphysicalplatform/rigging/anchor/cable/guardBOM. RealPPRandfullratedrosterremainrequired."
+        },
+        {
+          "key": "PPE-protection",
+          "titleRu": "Защита работников и ограждение рабочего фронта",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "NoPPE/replacement/shiftconsumptionnormorcompletefencingquantitiesinthewholecolumn."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Испытания, исполнительный контроль и объектные услуги",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_TEST_PLAN",
+          "missing": "Fullapplicabletestfrequency/services/labor/consumablesnotprovidedbytheresourcecolumn;sourceoperationcompletiondoesnotprovetheact."
+        },
+        {
+          "key": "external-delivery-waste",
+          "titleRu": "Внешняя доставка, тара, очистка и вывоз отходов",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_ROUTE",
+          "missing": "Includedinternalhandlingandcleanupdonotpublishcompletehaul/packaging/exceptionalwaste/waterorconsumablesnorms."
+        },
+        {
+          "key": "fastener-physical-BOM",
+          "titleRu": "Поэлементное крепление и опора тяжёлых каменных плит",
+          "kind": "ACTUAL_PROJECT_ITEMIZED_BOM",
+          "missing": "SourcePtonnequantityisnotanchor/pin/crampcounts,shape/grade/length. Noorderingfromgenericfastenermass. AcceptedstructuralBOQandwall/pulloutdatarequired."
+        },
+        {
+          "key": "stone-handling",
+          "titleRu": "Захваты и безопасный пост перемещения каменных плит",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_PPR",
+          "missing": "Heavy60mmnaturalstoneneedsratedgrips/protection/riggingandactualPPR;forklift/hoisthoursdonotprovecompletephysicalkit."
+        }
+      ],
+      "sourcePricesImported": false,
+      "physicalFull": false,
+      "full": 0,
+      "territory": "KG",
+      "edition": "КРЕР2015 explicitlyacceptedprojectbasis",
+      "methodNotEquivalentToModernAdhesiveOrVentilatedSystems": true,
+      "scope": {
+        "base": "Acceptedloadbearingwallandstonefixingproject",
+        "surface": "Flat;originalnaturalstoneconditions§1.3",
+        "material": "Limestone60mm;unpolishedoriginalresource15-0102-0045",
+        "maximumPlatesPer1M2": "2",
+        "sourcePlateAreaPer100M2": "99",
+        "plateArea99NotSilentlyReplaced100": true,
+        "readyScaffolds": true,
+        "scaffoldErectionExcludedKG15_1_2b": true,
+        "hoist45mCapacityIsNotProductionHeightAdmission": true,
+        "cementMortar": "Readyheavyfinishingcement1:3;NOTcementlimeM50"
+      },
+      "sourcePages": [
+        8,
+        9,
+        34,
+        35
+      ],
+      "sourceP": {
+        "resourceCode": "01-7902-0001",
+        "printedUnit": "t",
+        "printedQuantity": "П",
+        "genericMassNotProcurementOwner": true
+      },
+      "rejectedAlternative": {
+        "material": "Polishedgranite40mm00101",
+        "reason": "Differentwholechemicals/finishingandphysicalkit;notchosenbymechanicalreplacementoflimestone."
+      }
+    },
+    {
+      "key": "ceramic-tile-mortar",
+      "titleRu": "Облицовка фасада керамической плиткой на растворе",
+      "catalogId": "canonical-work:master:facade_ceramic_tile_mortar_install",
+      "workKey": "facade_ceramic_tile_mortar_install",
+      "groupId": "wg:master:facade_ceramic_tile_mortar_install",
+      "prefix": "facade:ceramic-tile-mortar:krer:r3",
+      "sourceId": "gox_facade_facade_ceramic_tile_mortar_install_whole_r3",
+      "normId": "15-01-017-01",
+      "source": {
+        "jurisdiction": "KG",
+        "edition": "КРЕР15-2015; утверждено28.03.2016№2-нпа, введено01.01.2016",
+        "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+        "collectionUrl": "https://minstroy.gov.kg/ru/kyzmat/431/show",
+        "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf",
+        "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+        "exactPages": [
+          54,
+          55
+        ],
+        "measurePages": [
+          12,
+          13,
+          17
+        ],
+        "currentPresenceCheckedUtc": "2026-10-22",
+        "currentPresenceIsNotNoAmendmentProof": true
+      },
+      "denominatorM2": "100",
+      "sourceRows": [
+        {
+          "key": "labour",
+          "titleRu": "Плиточники: цельный исходный состав наружной облицовки",
+          "category": "labor",
+          "resourceCode": "000-1003-8",
+          "unitId": "man_hour",
+          "ratePer100M2": "290.70",
+          "operation": "whole",
+          "printedUnit": "man_hour",
+          "printedRate": "290.70"
+        },
+        {
+          "key": "operators",
+          "titleRu": "Машинисты исходных механизмов, справочно",
+          "category": "labor",
+          "resourceCode": "SOURCE_OPERATORS_TOTAL",
+          "unitId": "man_hour",
+          "ratePer100M2": "1.32",
+          "operation": "feed",
+          "printedUnit": "man_hour",
+          "printedRate": "1.32",
+          "informational": true
+        },
+        {
+          "key": "forklift",
+          "titleRu": "Автопогрузчик5т",
+          "category": "equipment",
+          "resourceCode": "03-0020",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.11",
+          "operation": "feed",
+          "printedUnit": "machine_hour",
+          "printedRate": "0.11"
+        },
+        {
+          "key": "hoist",
+          "titleRu": "Одномачтовый подъёмник до500кг",
+          "category": "equipment",
+          "resourceCode": "03-0327",
+          "unitId": "machine_hour",
+          "ratePer100M2": "1.21",
+          "operation": "feed",
+          "printedUnit": "machine_hour",
+          "printedRate": "1.21"
+        },
+        {
+          "key": "cement",
+          "titleRu": "Цемент пуццолановый М400 для облицовки",
+          "category": "material",
+          "resourceCode": "01-0808-0002",
+          "unitId": "kg",
+          "ratePer100M2": "40",
+          "operation": "joints",
+          "printedUnit": "t",
+          "printedRate": "0.04"
+        },
+        {
+          "key": "ceramic-tile",
+          "titleRu": "Керамическая фасадная цветная плитка9мм исходного типа",
+          "category": "material",
+          "resourceCode": "01-3208-0011",
+          "unitId": "m2",
+          "ratePer100M2": "100",
+          "operation": "lay",
+          "printedUnit": "m2",
+          "printedRate": "100"
+        },
+        {
+          "key": "rags",
+          "titleRu": "Ветошь для очистки облицовки",
+          "category": "material",
+          "resourceCode": "01-7204-0001",
+          "unitId": "kg",
+          "ratePer100M2": "0.5",
+          "operation": "clean",
+          "printedUnit": "kg",
+          "printedRate": "0.5"
+        },
+        {
+          "key": "ready-mortar",
+          "titleRu": "Раствор готовый отделочный тяжёлый цементный1:3",
+          "category": "material",
+          "resourceCode": "03-0409-0003",
+          "unitId": "m3",
+          "ratePer100M2": "2",
+          "operation": "level",
+          "printedUnit": "m3",
+          "printedRate": "2"
+        }
+      ],
+      "operations": [
+        {
+          "key": "level",
+          "titleRu": "Выравнивание бетонного основания цементным раствором"
+        },
+        {
+          "key": "wet",
+          "titleRu": "Смачивание поверхности водой с отбивкой маячных линий"
+        },
+        {
+          "key": "fit",
+          "titleRu": "Переборка и подточка плиток"
+        },
+        {
+          "key": "lay",
+          "titleRu": "Установка фасадной плитки"
+        },
+        {
+          "key": "joints",
+          "titleRu": "Заполнение и расшивка швов"
+        },
+        {
+          "key": "clean",
+          "titleRu": "Очистка облицованной поверхности"
+        }
+      ],
+      "needs": [
+        {
+          "key": "tool-working-parts",
+          "titleRu": "Полный запас ручного инструмента и совместимых рабочих частей",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "WholeKGconsumptioncolumnisnotafrontroster;requiredhandtools,cutting/grinding/drillingpartsandweararesourcenotquantified."
+        },
+        {
+          "key": "access-rigging-power",
+          "titleRu": "Полное физическое обеспечение доступа, захватов и питания",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_PPR",
+          "missing": "MachinetimeandscaffoldlaborareNOTfullphysicalplatform/rigging/anchor/cable/guardBOM. RealPPRandfullratedrosterremainrequired."
+        },
+        {
+          "key": "PPE-protection",
+          "titleRu": "Защита работников и ограждение рабочего фронта",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "NoPPE/replacement/shiftconsumptionnormorcompletefencingquantitiesinthewholecolumn."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Испытания, исполнительный контроль и объектные услуги",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_TEST_PLAN",
+          "missing": "Fullapplicabletestfrequency/services/labor/consumablesnotprovidedbytheresourcecolumn;sourceoperationcompletiondoesnotprovetheact."
+        },
+        {
+          "key": "external-delivery-waste",
+          "titleRu": "Внешняя доставка, тара, очистка и вывоз отходов",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_ROUTE",
+          "missing": "Includedinternalhandlingandcleanupdonotpublishcompletehaul/packaging/exceptionalwaste/waterorconsumablesnorms."
+        },
+        {
+          "key": "wetting-grout-water",
+          "titleRu": "Вода смачивания и затворения цемента для швов",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "Wholecolumnhas40kgcementandready1:3mortarbutNOwaterquantity;watermustnotbezero,norimportedfromothermethod."
+        },
+        {
+          "key": "mortar-physical-post",
+          "titleRu": "Физическая тара и полный пост работы с готовым раствором1:3",
+          "kind": "INTERNAL_METHOD_SOURCE",
+          "missing": "M50cement-limepostnotautomaticallysamewholeorganizationforheavyfinishing1:3mortar;needcompatiblewholepost/source/period."
+        }
+      ],
+      "sourcePricesImported": false,
+      "physicalFull": false,
+      "full": 0,
+      "territory": "KG",
+      "edition": "КРЕР2015 explicitlyacceptedprojectbasis",
+      "methodNotEquivalentToModernAdhesiveOrVentilatedSystems": true,
+      "scope": {
+        "base": "Concreteonly",
+        "surface": "Flat;originalartificialtileconditions§1.4",
+        "material": "Originalcolouredfacadeceramic9mm,typecabanchik",
+        "readyScaffolds": true,
+        "scaffoldErectionExcludedKG15_1_2b": true,
+        "cementMortar": "Readyheavyfinishingcement1:3",
+        "notModernPolymerAdhesive": true,
+        "noM50PostOrWaterTransfer": true
+      },
+      "sourcePages": [
+        8,
+        9,
+        54,
+        55
+      ]
+    },
+    {
+      "key": "plain-render",
+      "titleRu": "Улучшенная штукатурка фасада по каменному основанию",
+      "catalogId": "canonical-work:master:facade_improved_cement_lime_render",
+      "workKey": "facade_improved_cement_lime_render",
+      "groupId": "wg:master:facade_improved_cement_lime_render",
+      "prefix": "facade:plain-render:krer:r3",
+      "sourceId": "gox_facade_improved_cement_lime_render_whole_r3",
+      "normId": "15-02-001-01",
+      "source": {
+        "jurisdiction": "KG",
+        "edition": "КРЕР15-2015; утверждено28.03.2016№2-нпа, введено01.01.2016",
+        "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+        "collectionUrl": "https://minstroy.gov.kg/ru/kyzmat/431/show",
+        "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf",
+        "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+        "exactPages": [
+          124,
+          125
+        ],
+        "measurePages": [
+          12,
+          13,
+          17
+        ],
+        "currentPresenceCheckedUtc": "2026-10-22",
+        "currentPresenceIsNotNoAmendmentProof": true
+      },
+      "denominatorM2": "100",
+      "sourceRows": [
+        {
+          "key": "labour",
+          "titleRu": "Штукатуры: цельная улучшенная штукатурка фасада",
+          "category": "labor",
+          "resourceCode": "000-1004-0",
+          "unitId": "man_hour",
+          "ratePer100M2": "70.88",
+          "operation": "whole",
+          "printedUnit": "man_hour",
+          "printedRate": "70.88"
+        },
+        {
+          "key": "operators",
+          "titleRu": "Машинист растворонасоса, справочно",
+          "category": "labor",
+          "resourceCode": "SOURCE_OPERATORS_TOTAL",
+          "unitId": "man_hour",
+          "ratePer100M2": "2.78",
+          "operation": "mortar",
+          "printedUnit": "man_hour",
+          "printedRate": "2.78",
+          "informational": true
+        },
+        {
+          "key": "winch",
+          "titleRu": "Лебёдка электрическая, тяговое усилие до12,26кН",
+          "category": "equipment",
+          "resourceCode": "03-0159",
+          "unitId": "machine_hour",
+          "ratePer100M2": "0.90",
+          "operation": "feed",
+          "printedUnit": "machine_hour",
+          "printedRate": "0.90"
+        },
+        {
+          "key": "mortar-pump",
+          "titleRu": "Растворонасос3м³/ч",
+          "category": "equipment",
+          "resourceCode": "11-0341",
+          "unitId": "machine_hour",
+          "ratePer100M2": "2.78",
+          "operation": "mortar",
+          "printedUnit": "machine_hour",
+          "printedRate": "2.78"
+        },
+        {
+          "key": "water",
+          "titleRu": "Вода технологических операций штукатурки",
+          "category": "material",
+          "resourceCode": "01-0601-0001",
+          "unitId": "m3",
+          "ratePer100M2": "0.35",
+          "operation": "curing",
+          "printedUnit": "m3",
+          "printedRate": "0.35"
+        },
+        {
+          "key": "ready-mortar",
+          "titleRu": "Раствор готовый отделочный тяжёлый цементно-известковый1:1:6",
+          "category": "material",
+          "resourceCode": "03-0410-0001",
+          "unitId": "m3",
+          "ratePer100M2": "1.89",
+          "operation": "coating",
+          "printedUnit": "m3",
+          "printedRate": "1.89"
+        }
+      ],
+      "operations": [
+        {
+          "key": "preparation",
+          "titleRu": "Подготовка каменной поверхности"
+        },
+        {
+          "key": "coating",
+          "titleRu": "Нанесение, разравнивание и затирка накрывочного слоя"
+        },
+        {
+          "key": "junctions",
+          "titleRu": "Вытягивание и разделка углов и рустов"
+        },
+        {
+          "key": "curing",
+          "titleRu": "Уход за штукатуркой"
+        }
+      ],
+      "needs": [
+        {
+          "key": "tool-working-parts",
+          "titleRu": "Полный запас ручного инструмента и совместимых рабочих частей",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "WholeKGconsumptioncolumnisnotafrontroster;requiredhandtools,cutting/grinding/drillingpartsandweararesourcenotquantified."
+        },
+        {
+          "key": "access-rigging-power",
+          "titleRu": "Полное физическое обеспечение доступа, захватов и питания",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_PPR",
+          "missing": "MachinetimeandscaffoldlaborareNOTfullphysicalplatform/rigging/anchor/cable/guardBOM. RealPPRandfullratedrosterremainrequired."
+        },
+        {
+          "key": "PPE-protection",
+          "titleRu": "Защита работников и ограждение рабочего фронта",
+          "kind": "INTERNAL_APPLICATION_NORM",
+          "missing": "NoPPE/replacement/shiftconsumptionnormorcompletefencingquantitiesinthewholecolumn."
+        },
+        {
+          "key": "quality-services",
+          "titleRu": "Испытания, исполнительный контроль и объектные услуги",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_TEST_PLAN",
+          "missing": "Fullapplicabletestfrequency/services/labor/consumablesnotprovidedbytheresourcecolumn;sourceoperationcompletiondoesnotprovetheact."
+        },
+        {
+          "key": "external-delivery-waste",
+          "titleRu": "Внешняя доставка, тара, очистка и вывоз отходов",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_ROUTE",
+          "missing": "Includedinternalhandlingandcleanupdonotpublishcompletehaul/packaging/exceptionalwaste/waterorconsumablesnorms."
+        },
+        {
+          "key": "mortar-pump-physical-post",
+          "titleRu": "Полный пост подачи и нанесения раствора",
+          "kind": "INTERNAL_APPLICATION_NORM_AND_COMPATIBLE_MACHINE_SOURCE",
+          "missing": "2.78pumpmachinehoursdonotpublishhopper/hose/coupling/nozzle/cleaning/powerstock,noractualcompletefront. NoM50brickpostorbaggedmanufacturerwaterrecipeborrowed."
+        }
+      ],
+      "scope": {
+        "base": "Stone/masonryonly;originalimprovedfaçaderendermethod",
+        "material": "Readyheavyfinishingcement-lime1:1:6;notM50masonryandnotCT29/gypsumMP75",
+        "readyScaffolds": true,
+        "scaffoldErectionExcludedKG15_1_2b": true,
+        "sourceThicknessNotInventedFrom1_89m3": true,
+        "oneWholeProcessNoLayerHourDivision": true
+      },
+      "sourcePages": [
+        8,
+        9,
+        124,
+        125
+      ],
+      "sourcePricesImported": false,
+      "physicalFull": false,
+      "full": 0,
+      "territory": "KG",
+      "edition": "КРЕР2015 explicitlyacceptedprojectbasis",
+      "methodNotEquivalentToModernBaggedFiller": true
+    }
+  ],
+  "primarySources": [
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+      "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/424/show",
+      "kind": "REUSE_EXACT_FULL_OFFICIAL_PRIMARY_DOCUMENT_NEW_FACADE_COLUMN"
+    },
+    {
+      "jurisdiction": "KG",
+      "edition": "КРЕР15-2015; утверждено28.03.2016№2-нпа, введено01.01.2016",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "collectionUrl": "https://minstroy.gov.kg/ru/kyzmat/431/show",
+      "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "exactPages": [
+        120,
+        121
+      ],
+      "measurePages": [
+        12,
+        13,
+        17
+      ],
+      "currentPresenceCheckedUtc": "2026-10-22",
+      "currentPresenceIsNotNoAmendmentProof": true
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-ready-m50-post-kt3111176-r1/KT3.1-1.11-76-author-scan.pdf",
+      "sha256": "fac02f9833c4844770519dc8560ec579b118e9b665f920cebf5cf38e4434fc28",
+      "url": "https://meganorm.ru/Data2/1/4293797/4293797431.pdf",
+      "author": "Мособлоргтехстрой / ЦНИБ Главмособлстроя; ВНИПИ труда Госстроя СССР",
+      "edition": "1976; взамен1968",
+      "jurisdiction": "USSR historical authored method; not current KG regulatory admission",
+      "hostingRole": "MIRROR_OF_ORIGINAL_AUTHOR_SCAN",
+      "locator": "PDF2/printed41 §1–3; PDF3/printed42 §3.2/4.1/4.2; PDF4/printed43 §4.3"
+    }
+  ],
+  "newFULL": 0
+}

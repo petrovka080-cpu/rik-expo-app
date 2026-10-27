@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.wastewater-treatment-plant-mbr-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:wastewater_treatment_plant",
+  "scope": "Construction and process installation of one explicitly selected two-train municipal MBR wastewater treatment plant WWTP-MBR-1000-2T for 1000 m3/day design flow and 1500 m3/day peak flow. The selected SCREEN_GRIT_ANOXIC_AEROBIC_MBR_UV train, influent and effluent criteria, eight MBR-CASSETTE-50M3H membrane cassettes and all direct process, civil, commissioning, labor, mechanism, QA and logistics inputs are project-owned.",
+  "sourceAuthority": "Approved wastewater process and civil designer, MBR system supplier, equipment manufacturers, commissioning laboratory, environmental authority and approving project engineer",
+  "ordinaryFixture": {
+    "plantCount": 1,
+    "plantDesignation": "WWTP-MBR-1000-2T",
+    "processTechnology": "SCREEN_GRIT_ANOXIC_AEROBIC_MBR_UV",
+    "designFlowM3Day": 1000,
+    "peakFlowM3Day": 1500,
+    "processTrainCount": 2,
+    "influentBod5MgL": 250,
+    "influentTssMgL": 300,
+    "influentTnMgL": 45,
+    "effluentBod5MgL": 10,
+    "effluentTssMgL": 10,
+    "effluentTnMgL": 10,
+    "installedMembraneCassettePiece": 8,
+    "membraneCassetteDesignation": "MBR-CASSETTE-50M3H"
+  },
+  "procurementBalance": {
+    "membraneCassettes": {
+      "installedQuantity": "wtp_membrane_cassette_installed_piece",
+      "retainedSpareQuantity": "wtp_membrane_cassette_retained_spare_piece",
+      "supplierPackageQuantity": "wtp_membrane_cassette_supplier_package_quantity_piece"
+    },
+    "visiblePreliminaryProfile": {
+      "wtp_membrane_cassette_retained_spare_piece": 0,
+      "wtp_membrane_cassette_supplier_package_quantity_piece": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "external collection network, unrelated pumping stations, unselected buildings or sludge dewatering",
+    "process, civil, labor, mechanism or logistics quantities derived from design or peak flow coefficients",
+    "automatic odor control, tertiary polishing or standby power",
+    "universal retained spare or supplier-package quantity",
+    "invented price"
+  ]
+}

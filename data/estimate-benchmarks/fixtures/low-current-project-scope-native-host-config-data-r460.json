@@ -1,0 +1,889 @@
+{
+  "contract": "source-test-only-native-host-data-subset/r460",
+  "testOnly": true,
+  "notPublisherInvocation": true,
+  "notCurrentMembershipAuthority": true,
+  "families": {
+    "scs": {
+      "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+      "parentReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+      "parentSearchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+      "catalogId": "canonical-work:expanded:low_voltage_system",
+      "sourceId": "project_structured_cabling_outlet_patching_route_certification_v1",
+      "normId": "norm:project:low_voltage_system:outlet_patching_route_certification:v1",
+      "sourceMetadata": {
+        "source_title": "Утверждённый план информационных розеток, спецификация СКС, кабельный журнал, трассы, ППР и программа сертификации",
+        "source_authority": "Проектная организация связи, интегратор СКС, изготовитель компонентов, служба сертификации и утверждающий инженер проекта",
+        "exact_locator": "Одна СКС, 48 выбранных модулей JACK-RJ45-CAT6 категории CAT6_LSZH и 2 патч-панели PP-24-CAT6; кабели, патч-корды, трассы, комплектующие, расходники, труд, тестирование и логистика — только по утверждённому проектному комплекту",
+        "use_restriction": "Площадь не определяет розетки, кабель или трассы. Шкафы, активное сетевое оборудование, оптика и uplink требуют прямого проектного основания. CCTV, СКУД, пожарная сигнализация и силовое распределение исключены.",
+        "official_url": null,
+        "artifact_sha256": "4de2a7b7b4953208454f3ad16848c69fd11ee115317fb39d76eae09696b347b8"
+      },
+      "expectedParentShape": [
+        47,
+        33,
+        33
+      ],
+      "passport": {
+        "canonicalRuName": "Монтаж и сертификация структурированной кабельной системы",
+        "workKey": "low_voltage_system",
+        "physicalResultRu": "СКС на 48 розеток JACK-RJ45-CAT6 и двух панелях PP-24-CAT6 смонтирована, промаркирована и сертифицирована",
+        "includedScopeRu": [
+          "информационные модули, патч-панели, патч-корды и организаторы",
+          "медные кабели, рамки, коробки, кабеленесущая система и проходки",
+          "окончания, маркировка, крепёж, расходники и заземление",
+          "труд монтажа, окончания, сертификации и документации",
+          "подъём, сертификационный тестер, реестр, протоколы и логистика",
+          "оптическая магистраль и активный uplink только по условным ветвям"
+        ],
+        "excludedScopeRu": [
+          "шкафы и активное сетевое оборудование без явной ветви",
+          "CCTV, СКУД, пожарная сигнализация и силовое распределение",
+          "расчёт розеток или трасс только по площади",
+          "неподтверждённые цены"
+        ]
+      },
+      "applicability": {
+        "country": "KG",
+        "operationClass": "STRUCTURED_CABLING_INSTALLATION_AND_CERTIFICATION",
+        "lowVoltageSystem": "CAT6_STRUCTURED_CABLING_EXPLICIT_OUTLET_AND_PATCHING_SCHEDULE",
+        "knownScopeParameters": [
+          "lvs_information_outlet_count",
+          "lvs_outlet_designation",
+          "lvs_copper_cable_category",
+          "lvs_patch_panel_count",
+          "lvs_patch_panel_designation"
+        ],
+        "adjacentSystemsExcluded": true,
+        "primaryMeasureParameterId": "lvs_system_count",
+        "visibleProcurementBalance": true,
+        "conditionalScopeFailClosed": true,
+        "floorAreaDerivedQuantitiesForbidden": true,
+        "projectLayoutRouteMaterialLaborEquipmentCertificationAndLogisticsRequired": true
+      },
+      "binding": {
+        "rowId": "rc09:lvs_system_install_certification",
+        "applicability": {
+          "norm_id": "norm:project:low_voltage_system:outlet_patching_route_certification:v1",
+          "source_id": "project_structured_cabling_outlet_patching_route_certification_v1",
+          "scope_mode": "KNOWN_OUTLET_PATCHING_IDENTITY_PLUS_VISIBLE_BALANCE_AND_DIRECT_PROJECT_RESOURCES",
+          "exact_locator": "Одна СКС, 48 выбранных модулей JACK-RJ45-CAT6 категории CAT6_LSZH и 2 патч-панели PP-24-CAT6; кабели, патч-корды, трассы, комплектующие, расходники, труд, тестирование и логистика — только по утверждённому проектному комплекту",
+          "quantity_basis": "KNOWN_SYSTEM_OUTLET_CATEGORY_PATCH_PANEL_PLUS_APPROVED_PROJECT_PACKAGE",
+          "operation_class": "STRUCTURED_CABLING_INSTALLATION_AND_CERTIFICATION",
+          "technology_class": "STRUCTURED_CABLING",
+          "low_voltage_system": "CAT6_STRUCTURED_CABLING_EXPLICIT_OUTLET_AND_PATCHING_SCHEDULE",
+          "universal_consumption_claimed": false,
+          "universal_productivity_claimed": false,
+          "historical_project_rates_claimed": false
+        },
+        "retainParentBindings": {
+          "capturedParentSha256": "3090fe07d1487edaa2bb41b3dab87267f3da3c7717c3049cebf846b497dd9065",
+          "newParameterSources": {},
+          "projectScopeMetadataOnlyV1": {
+            "contract": "master-retained-project-scope-metadata-only/v1",
+            "capturedContentPassport": {
+              "definition_version_id": "cb5756cb-cb9d-5238-b415-9fb3913601ea",
+              "release_id": "6cf70371-8291-5342-9f70-34f4704dc788",
+              "catalog_id": "canonical-work:expanded:low_voltage_system",
+              "contract_version": "real-professional-estimates-r3.content-passport.v1",
+              "identity_mode": "WORK",
+              "redirect_catalog_id": null,
+              "physical_result_ru": "СКС на 48 розеток JACK-RJ45-CAT6 и двух панелях PP-24-CAT6 смонтирована, промаркирована и сертифицирована",
+              "included_scope_ru": [
+                "информационные модули, патч-панели, патч-корды и организаторы",
+                "медные кабели, рамки, коробки, кабеленесущая система и проходки",
+                "окончания, маркировка, крепёж, расходники и заземление",
+                "труд монтажа, окончания, сертификации и документации",
+                "подъём, сертификационный тестер, реестр, протоколы и логистика",
+                "оптическая магистраль и активный uplink только по условным ветвям"
+              ],
+              "excluded_scope_ru": [
+                "шкафы и активное сетевое оборудование без явной ветви",
+                "CCTV, СКУД, пожарная сигнализация и силовое распределение",
+                "расчёт розеток или трасс только по площади",
+                "неподтверждённые цены"
+              ],
+              "capability_matrix": [
+                {
+                  "status": "GREEN",
+                  "capability": "PARAMETERS"
+                },
+                {
+                  "status": "GREEN",
+                  "capability": "FORMULAS_AND_PHYSICAL_PARITY"
+                },
+                {
+                  "status": "GREEN",
+                  "capability": "FULL_APPLICABLE_SCOPE"
+                },
+                {
+                  "status": "GREEN_UNKNOWN_IS_NULL",
+                  "capability": "PRICE"
+                }
+              ],
+              "parameter_count": 47,
+              "formula_count": 33,
+              "resource_count": 33,
+              "decision": {
+                "status": "GREEN",
+                "allowed": true,
+                "contract": "real-professional-estimates-r3.content-passport.v1",
+                "priceState": "PARTIAL_NEEDS_PRICE",
+                "waveContract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+                "quantityScope": "FULL",
+                "activationAllowed": false,
+                "productionEligible": false
+              },
+              "payload_sha256": "05d84de4f3b5efda677992d59fc9d75a3e93cee955d40c8f8d4fdbb68e948fb8",
+              "source_head": "351ffac03a048169e2574df8be04d5ca1b571b95",
+              "source_tree": "308f5ce96f190fdfb46add8f57ea9824db483889",
+              "created_at": "2026-10-01T15:18:01.886385+00:00"
+            },
+            "capturedContentPassportSha256": "87b2563f7312f430a52944883d6507eef425f73ac78ee490aa0ebe0fc048ec4e",
+            "newProjectParameterIds": [
+              "lvs_copper_profile_record_r5",
+              "lvs_route_whole_method_record_r5",
+              "lvs_outlet_whole_method_record_r5",
+              "lvs_panel_whole_method_record_r5",
+              "lvs_marking_register_record_r5",
+              "lvs_copper_acceptance_record_r5",
+              "lvs_whole_operation_review_decision_r5"
+            ],
+            "newProjectParametersSha256": "a7046727f6e95b818966cf855b3cdcf93ff1cf4e3003fe9b8b5952ccd3ff487d",
+            "resourceGraphChangesSha256": "e1a53862159228f04a9d11ffed72a7be8a87d9bfc870ec6f174f7d0709042420",
+            "scopeOnly": true,
+            "sourceAdmission": false,
+            "engineeringAcceptance": false
+          }
+        },
+        "reuseExistingNormativeRegistry": {
+          "contract": "master-existing-normative-registry-reuse/r1",
+          "locatorExcerptHashKind": "CAPTURED_PARENT_PROJECT_SCOPE_METADATA_ONLY_V1",
+          "source": {
+            "id": "5594eac4-6317-5b68-8171-b69cb0cccd07",
+            "source_key": "project_structured_cabling_outlet_patching_route_certification_v1",
+            "title_ru": "Утверждённый план информационных розеток, спецификация СКС, кабельный журнал, трассы, ППР и программа сертификации",
+            "authority": "Проектная организация связи, интегратор СКС, изготовитель компонентов, служба сертификации и утверждающий инженер проекта",
+            "official_url": null,
+            "artifact_sha256": "4de2a7b7b4953208454f3ad16848c69fd11ee115317fb39d76eae09696b347b8",
+            "effective_from": null,
+            "effective_to": null,
+            "metadata": {
+              "contract": "rik-expo-app.s27-24.low-voltage-system-balanced-successor.v1",
+              "sourceKind": "PROJECT_DOCUMENT_PACKAGE_REQUIRED",
+              "useRestriction": "Площадь не определяет розетки, кабель или трассы. Шкафы, активное сетевое оборудование, оптика и uplink требуют прямого проектного основания. CCTV, СКУД, пожарная сигнализация и силовое распределение исключены.",
+              "activationAllowed": false,
+              "universalConsumptionClaimed": false,
+              "universalProductivityClaimed": false
+            },
+            "created_at": "2026-10-01T15:18:01.886385+00:00"
+          },
+          "locators": [
+            {
+              "id": "65d5efec-fba1-55ed-9f46-89556982fdf4",
+              "source_id": "5594eac4-6317-5b68-8171-b69cb0cccd07",
+              "locator_key": "low-voltage-system-project-balance-s27-24-v1",
+              "locator": {
+                "kind": "PROJECT_DOCUMENT_PACKAGE_REQUIRED",
+                "exactLocator": "Одна СКС, 48 выбранных модулей JACK-RJ45-CAT6 категории CAT6_LSZH и 2 патч-панели PP-24-CAT6; кабели, патч-корды, трассы, комплектующие, расходники, труд, тестирование и логистика — только по утверждённому проектному комплекту",
+                "knownScopeInputs": [
+                  "lvs_system_count",
+                  "lvs_information_outlet_count",
+                  "lvs_outlet_designation",
+                  "lvs_copper_cable_category",
+                  "lvs_patch_panel_count",
+                  "lvs_patch_panel_designation",
+                  "lvs_outlet_retained_spare_piece",
+                  "lvs_outlet_supplier_pack_size_piece"
+                ],
+                "sourcePackSha256": "4de2a7b7b4953208454f3ad16848c69fd11ee115317fb39d76eae09696b347b8",
+                "conditionalInputs": [
+                  "lvs_fiber_backbone_mode",
+                  "lvs_fiber_cable_designation",
+                  "lvs_fiber_cable_length_m",
+                  "lvs_fiber_termination_designation",
+                  "lvs_fiber_termination_quantity_piece",
+                  "lvs_active_uplink_mode",
+                  "lvs_active_uplink_designation",
+                  "lvs_active_uplink_quantity_piece"
+                ],
+                "directProjectInputs": [
+                  "lvs_copper_cable_designation",
+                  "lvs_copper_cable_length_m",
+                  "lvs_patch_cord_designation",
+                  "lvs_patch_cord_quantity_piece",
+                  "lvs_cable_manager_designation",
+                  "lvs_cable_manager_quantity_piece",
+                  "lvs_faceplate_backbox_designation",
+                  "lvs_faceplate_backbox_quantity_piece",
+                  "lvs_containment_designation",
+                  "lvs_containment_length_m",
+                  "lvs_firestop_designation",
+                  "lvs_firestop_quantity_piece",
+                  "lvs_termination_designation",
+                  "lvs_termination_quantity_piece",
+                  "lvs_label_designation",
+                  "lvs_label_quantity_piece",
+                  "lvs_fastening_designation",
+                  "lvs_fastening_quantity_set",
+                  "lvs_consumable_designation",
+                  "lvs_consumable_quantity_kg",
+                  "lvs_grounding_conductor_designation",
+                  "lvs_grounding_conductor_length_m",
+                  "lvs_test_report_designation",
+                  "lvs_test_report_quantity_document",
+                  "lvs_cable_component_install_labor_h",
+                  "lvs_termination_labeling_labor_h",
+                  "lvs_certification_documentation_labor_h",
+                  "lvs_access_equipment_machine_h",
+                  "lvs_certification_tester_machine_h",
+                  "lvs_delivery_trip_count",
+                  "lvs_packaging_removal_trip_count"
+                ],
+                "visiblePreliminaryBalanceInputs": [
+                  "lvs_outlet_retained_spare_piece",
+                  "lvs_outlet_supplier_pack_size_piece"
+                ]
+              },
+              "excerpt_sha256": "1ca5113ecc43fe54ce4b269eace83e6ec37865de588c8dfe8dbb18ff0b626e62"
+            }
+          ]
+        }
+      },
+      "locator": {
+        "key": "low-voltage-system-project-balance-s27-24-v1",
+        "payload": {
+          "kind": "PROJECT_DOCUMENT_PACKAGE_REQUIRED",
+          "exactLocator": "Одна СКС, 48 выбранных модулей JACK-RJ45-CAT6 категории CAT6_LSZH и 2 патч-панели PP-24-CAT6; кабели, патч-корды, трассы, комплектующие, расходники, труд, тестирование и логистика — только по утверждённому проектному комплекту",
+          "knownScopeInputs": [
+            "lvs_system_count",
+            "lvs_information_outlet_count",
+            "lvs_outlet_designation",
+            "lvs_copper_cable_category",
+            "lvs_patch_panel_count",
+            "lvs_patch_panel_designation",
+            "lvs_outlet_retained_spare_piece",
+            "lvs_outlet_supplier_pack_size_piece"
+          ],
+          "sourcePackSha256": "4de2a7b7b4953208454f3ad16848c69fd11ee115317fb39d76eae09696b347b8",
+          "conditionalInputs": [
+            "lvs_fiber_backbone_mode",
+            "lvs_fiber_cable_designation",
+            "lvs_fiber_cable_length_m",
+            "lvs_fiber_termination_designation",
+            "lvs_fiber_termination_quantity_piece",
+            "lvs_active_uplink_mode",
+            "lvs_active_uplink_designation",
+            "lvs_active_uplink_quantity_piece"
+          ],
+          "directProjectInputs": [
+            "lvs_copper_cable_designation",
+            "lvs_copper_cable_length_m",
+            "lvs_patch_cord_designation",
+            "lvs_patch_cord_quantity_piece",
+            "lvs_cable_manager_designation",
+            "lvs_cable_manager_quantity_piece",
+            "lvs_faceplate_backbox_designation",
+            "lvs_faceplate_backbox_quantity_piece",
+            "lvs_containment_designation",
+            "lvs_containment_length_m",
+            "lvs_firestop_designation",
+            "lvs_firestop_quantity_piece",
+            "lvs_termination_designation",
+            "lvs_termination_quantity_piece",
+            "lvs_label_designation",
+            "lvs_label_quantity_piece",
+            "lvs_fastening_designation",
+            "lvs_fastening_quantity_set",
+            "lvs_consumable_designation",
+            "lvs_consumable_quantity_kg",
+            "lvs_grounding_conductor_designation",
+            "lvs_grounding_conductor_length_m",
+            "lvs_test_report_designation",
+            "lvs_test_report_quantity_document",
+            "lvs_cable_component_install_labor_h",
+            "lvs_termination_labeling_labor_h",
+            "lvs_certification_documentation_labor_h",
+            "lvs_access_equipment_machine_h",
+            "lvs_certification_tester_machine_h",
+            "lvs_delivery_trip_count",
+            "lvs_packaging_removal_trip_count"
+          ],
+          "visiblePreliminaryBalanceInputs": [
+            "lvs_outlet_retained_spare_piece",
+            "lvs_outlet_supplier_pack_size_piece"
+          ]
+        }
+      },
+      "search": {
+        "primaryUom": "system",
+        "canonicalNameRu": "Монтаж и сертификация структурированной кабельной системы",
+        "aliases": [
+          "монтаж СКС",
+          "структурированная кабельная система Cat6",
+          "информационные розетки и патч-панели",
+          "structured cabling installation certification"
+        ],
+        "shortScopeRu": "Одна СКС: 48 розеток JACK-RJ45-CAT6 и 2 панели PP-24-CAT6; трассы, комплектующие, труд и сертификация уточняются по проекту.",
+        "keyDistinguishingParameters": [
+          "lvs_system_count",
+          "lvs_information_outlet_count",
+          "lvs_outlet_designation",
+          "lvs_copper_cable_category",
+          "lvs_patch_panel_count",
+          "lvs_patch_panel_designation"
+        ],
+        "clarificationFields": [
+          "lvs_copper_cable_designation",
+          "lvs_copper_cable_length_m",
+          "lvs_patch_cord_designation",
+          "lvs_patch_cord_quantity_piece",
+          "lvs_cable_manager_designation",
+          "lvs_cable_manager_quantity_piece",
+          "lvs_faceplate_backbox_designation",
+          "lvs_faceplate_backbox_quantity_piece",
+          "lvs_containment_designation",
+          "lvs_containment_length_m",
+          "lvs_firestop_designation",
+          "lvs_firestop_quantity_piece",
+          "lvs_termination_designation",
+          "lvs_termination_quantity_piece",
+          "lvs_label_designation",
+          "lvs_label_quantity_piece",
+          "lvs_fastening_designation",
+          "lvs_fastening_quantity_set",
+          "lvs_consumable_designation",
+          "lvs_consumable_quantity_kg",
+          "lvs_grounding_conductor_designation",
+          "lvs_grounding_conductor_length_m",
+          "lvs_test_report_designation",
+          "lvs_test_report_quantity_document",
+          "lvs_cable_component_install_labor_h",
+          "lvs_termination_labeling_labor_h",
+          "lvs_certification_documentation_labor_h",
+          "lvs_access_equipment_machine_h",
+          "lvs_certification_tester_machine_h",
+          "lvs_delivery_trip_count",
+          "lvs_packaging_removal_trip_count",
+          "lvs_fiber_backbone_mode",
+          "lvs_fiber_cable_designation",
+          "lvs_fiber_cable_length_m",
+          "lvs_fiber_termination_designation",
+          "lvs_fiber_termination_quantity_piece",
+          "lvs_active_uplink_mode",
+          "lvs_active_uplink_designation",
+          "lvs_active_uplink_quantity_piece"
+        ],
+        "includedBoundaries": [
+          "пассивные компоненты, кабели, трассы и сертификация СКС",
+          "труд, тестер, документация, логистика и баланс модулей",
+          "условная оптика и активный uplink только по проекту"
+        ],
+        "excludedBoundaries": [
+          "шкафы, CCTV, СКУД, пожарная сигнализация и силовое распределение",
+          "автоматическое наполнение по площади или статической трассе 432 м",
+          "неподтверждённая активная сеть и цены"
+        ],
+        "sourceProvenance": {
+          "contract": "monolithic-slab-existing-measured-repair-reuse/r55",
+          "sourceTree": "83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05",
+          "payloadContract": "rik-expo-app-r555.cumulative-successor.v1",
+          "searchReleaseId": "02b3df75-ba42-5534-98b4-2cea3cf6ca15",
+          "activationAllowed": false,
+          "sourceFingerprint": "2486717d8618e3941d42c038bc27f9abf9d712b50c91089bdbcc118032bf5027",
+          "sourceIdentityIds": [
+            "expanded-template:low_voltage_system_as_built_estimate_expanded_complex_v1",
+            "expanded-template:low_voltage_system_detailed_boq_from_drawings_expanded_complex_v1",
+            "expanded-template:low_voltage_system_preliminary_boq_expanded_complex_v1",
+            "expanded-template:low_voltage_system_rom_concept_expanded_complex_v1",
+            "expanded-template:low_voltage_system_tender_boq_expanded_complex_v1"
+          ],
+          "productionEligible": false,
+          "definitionReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+          "sourceDocumentSha256": "d62f7489b2786002267f3afddb0e250db7b1ca12e0e826dd2e66e03d0af402d6",
+          "ownerSourceIdentityId": "expanded-template:low_voltage_system_preliminary_boq_expanded_complex_v1",
+          "parentSearchReleaseId": "ce0175a0-464e-53d2-8f1f-212c7032b15d",
+          "firstEstimateThenRefine": true,
+          "knownWorkScopeFirstEstimate": true,
+          "knownOutletCategoryAndPatching": true,
+          "conditionalTechnologyFailClosed": true,
+          "exactExpandedStructuredCablingOwner": true,
+          "visibleIndependentOutletProcurementBalance": true,
+          "exactProjectRouteMaterialLaborEquipmentCertificationAndLogisticsRequired": true
+        }
+      }
+    },
+    "acs": {
+      "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+      "parentReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+      "parentSearchReleaseId": "9b042edf-ca06-50f6-969a-556e6d14547a",
+      "catalogId": "canonical-work:expanded:access_control_system",
+      "sourceId": "project_access_control_door_device_power_method_qa_v1",
+      "normId": "norm:project:access_control_system:door_device_power_method_qa:v1",
+      "sourceMetadata": {
+        "source_title": "Утверждённая ведомость контролируемых дверей, спецификация устройств СКУД, кабельный журнал, расчёт локального питания, ППР и программа ПНР",
+        "source_authority": "Проектная организация систем безопасности, интегратор СКУД, изготовитель оборудования, служба ПНР и утверждающий инженер проекта",
+        "exact_locator": "Одна система СКУД, 8 контролируемых дверей, 2 контроллера ACS-CTRL-4D, 16 считывателей READER-MF, 8 замков MAGLOCK-300 и 8 кнопок EXIT-NO; кабели, локальное питание, комплектующие, расходники, труд, механизмы, контроль и логистика — только по утверждённому проектному комплекту",
+        "use_restriction": "Площадь здания не определяет двери, устройства, питание или трассы. Логика доступа, тип замка, аварийное открытие и интеграции требуют прямого проектного основания. CCTV, оборудование пожарной сигнализации, общая LAN и общая UPS исключены.",
+        "official_url": null,
+        "artifact_sha256": "5a002ececa1b96e1eb0c242534c7a25dccc1a527657e819ea882133e491a06b3"
+      },
+      "expectedParentShape": [
+        53,
+        36,
+        36
+      ],
+      "passport": {
+        "canonicalRuName": "Монтаж и пусконаладка системы контроля и управления доступом",
+        "workKey": "access_control_system",
+        "physicalResultRu": "СКУД для 8 дверей с контроллерами ACS-CTRL-4D, считывателями READER-MF, замками MAGLOCK-300 и кнопками EXIT-NO смонтирована, настроена и проверена",
+        "includedScopeRu": [
+          "контроллеры, считыватели, замки, кнопки выхода и датчики дверей по проекту",
+          "устройства аварийного открытия, локальные блоки питания и аккумуляторы",
+          "сетевые, считывательные и замковые кабели, окончания и монтажные коробки",
+          "маркировка, крепёж, расходники и защитное заземление",
+          "труд монтажа, кабельных работ, настройки и пусконаладки",
+          "подъёмное средство, тестеры, функциональные проверки, реестр и логистика",
+          "домофония и интерфейс аварийного открытия только по условным ветвям"
+        ],
+        "excludedScopeRu": [
+          "CCTV и оборудование пожарной сигнализации",
+          "общая LAN, серверная инфраструктура и общая UPS",
+          "интеграции и логика доступа без явной проектной ветви",
+          "расчёт дверей, устройств и трасс только по площади",
+          "неподтверждённые цены"
+        ]
+      },
+      "applicability": {
+        "country": "KG",
+        "operationClass": "ACCESS_CONTROL_SYSTEM_INSTALLATION_AND_COMMISSIONING",
+        "accessControlSystem": "CONTROLLED_DOOR_CONTROLLER_READER_LOCK_EXPLICIT_SCHEDULE",
+        "knownScopeParameters": [
+          "acs_controlled_door_count",
+          "acs_controller_count",
+          "acs_controller_designation",
+          "acs_reader_count",
+          "acs_reader_designation",
+          "acs_lock_count",
+          "acs_lock_designation",
+          "acs_exit_device_count",
+          "acs_exit_device_designation"
+        ],
+        "primaryMeasureParameterId": "acs_system_count",
+        "visibleProcurementBalance": true,
+        "conditionalScopeFailClosed": true,
+        "floorAreaDerivedQuantitiesForbidden": true,
+        "adjacentSecurityAndInfrastructureSystemsExcluded": true,
+        "projectDoorDevicePowerMaterialLaborEquipmentQaAndLogisticsRequired": true
+      },
+      "binding": {
+        "rowId": "rc09:acs_system_install_commission",
+        "applicability": {
+          "norm_id": "norm:project:access_control_system:door_device_power_method_qa:v1",
+          "source_id": "project_access_control_door_device_power_method_qa_v1",
+          "scope_mode": "KNOWN_DOOR_DEVICE_IDENTITY_PLUS_VISIBLE_BALANCE_AND_DIRECT_PROJECT_RESOURCES",
+          "exact_locator": "Одна система СКУД, 8 контролируемых дверей, 2 контроллера ACS-CTRL-4D, 16 считывателей READER-MF, 8 замков MAGLOCK-300 и 8 кнопок EXIT-NO; кабели, локальное питание, комплектующие, расходники, труд, механизмы, контроль и логистика — только по утверждённому проектному комплекту",
+          "quantity_basis": "KNOWN_SYSTEM_DOOR_CONTROLLER_READER_LOCK_EXIT_DEVICE_PLUS_APPROVED_PROJECT_PACKAGE",
+          "operation_class": "ACCESS_CONTROL_SYSTEM_INSTALLATION_AND_COMMISSIONING",
+          "technology_class": "ACCESS_CONTROL_AND_SECURITY",
+          "access_control_system": "CONTROLLED_DOOR_CONTROLLER_READER_LOCK_EXPLICIT_SCHEDULE",
+          "universal_consumption_claimed": false,
+          "universal_productivity_claimed": false,
+          "historical_project_rates_claimed": false
+        },
+        "retainParentBindings": {
+          "capturedParentSha256": "2105da5b64ac3787265e216825329c5e515dfd930d675cbd1288fd0466299c60",
+          "newParameterSources": {},
+          "projectScopeMetadataOnlyV1": {
+            "contract": "master-retained-project-scope-metadata-only/v1",
+            "capturedContentPassport": {
+              "definition_version_id": "b6ba50d2-9a88-5173-888f-bb75f92d85b5",
+              "release_id": "3e48e562-6ea0-51b7-92ca-dcb787979f35",
+              "catalog_id": "canonical-work:expanded:access_control_system",
+              "contract_version": "real-professional-estimates-r3.content-passport.v1",
+              "identity_mode": "WORK",
+              "redirect_catalog_id": null,
+              "physical_result_ru": "СКУД для 8 дверей с контроллерами ACS-CTRL-4D, считывателями READER-MF, замками MAGLOCK-300 и кнопками EXIT-NO смонтирована, настроена и проверена",
+              "included_scope_ru": [
+                "контроллеры, считыватели, замки, кнопки выхода и датчики дверей по проекту",
+                "устройства аварийного открытия, локальные блоки питания и аккумуляторы",
+                "сетевые, считывательные и замковые кабели, окончания и монтажные коробки",
+                "маркировка, крепёж, расходники и защитное заземление",
+                "труд монтажа, кабельных работ, настройки и пусконаладки",
+                "подъёмное средство, тестеры, функциональные проверки, реестр и логистика",
+                "домофония и интерфейс аварийного открытия только по условным ветвям"
+              ],
+              "excluded_scope_ru": [
+                "CCTV и оборудование пожарной сигнализации",
+                "общая LAN, серверная инфраструктура и общая UPS",
+                "интеграции и логика доступа без явной проектной ветви",
+                "расчёт дверей, устройств и трасс только по площади",
+                "неподтверждённые цены"
+              ],
+              "capability_matrix": [
+                {
+                  "status": "GREEN",
+                  "capability": "PARAMETERS"
+                },
+                {
+                  "status": "GREEN",
+                  "capability": "FORMULAS_AND_PHYSICAL_PARITY"
+                },
+                {
+                  "status": "GREEN",
+                  "capability": "FULL_APPLICABLE_SCOPE"
+                },
+                {
+                  "status": "GREEN_UNKNOWN_IS_NULL",
+                  "capability": "PRICE"
+                }
+              ],
+              "parameter_count": 53,
+              "formula_count": 36,
+              "resource_count": 36,
+              "decision": {
+                "status": "GREEN",
+                "allowed": true,
+                "contract": "real-professional-estimates-r3.content-passport.v1",
+                "priceState": "PARTIAL_NEEDS_PRICE",
+                "waveContract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+                "quantityScope": "FULL",
+                "activationAllowed": false,
+                "productionEligible": false
+              },
+              "payload_sha256": "d67a1f4fa5dc8732a421c97a6edf66519456d522907566e13b2713b35f66eee1",
+              "source_head": "351ffac03a048169e2574df8be04d5ca1b571b95",
+              "source_tree": "308f5ce96f190fdfb46add8f57ea9824db483889",
+              "created_at": "2026-10-01T14:52:05.685389+00:00"
+            },
+            "capturedContentPassportSha256": "9b787af4489f9e48dd71bc6f27093ed3a0cbefa4441ce7fc4bd5d4efcde8fd92",
+            "newProjectParameterIds": [
+              "acs_reader_whole_method_record_r5",
+              "acs_lock_whole_method_record_r5",
+              "acs_psu_whole_method_record_r5",
+              "acs_battery_whole_method_record_r5",
+              "acs_cabling_whole_method_record_r5",
+              "acs_commissioning_whole_method_record_r5",
+              "acs_controller_compatibility_record_r5",
+              "acs_whole_operation_review_decision_r5"
+            ],
+            "newProjectParametersSha256": "b1b2bf2d3ab206483dd66325dd98a922400844d39230ea7151b3ee72d9146797",
+            "resourceGraphChangesSha256": "4907133b7255707178c3a8917f65230ba5b03130ec141e91e6431de9380f894a",
+            "scopeOnly": true,
+            "sourceAdmission": false,
+            "engineeringAcceptance": false
+          }
+        },
+        "reuseExistingNormativeRegistry": {
+          "contract": "master-existing-normative-registry-reuse/r1",
+          "locatorExcerptHashKind": "CAPTURED_PARENT_PROJECT_SCOPE_METADATA_ONLY_V1",
+          "source": {
+            "id": "dec8620f-85cf-58d2-ab75-808246d27fcd",
+            "source_key": "project_access_control_door_device_power_method_qa_v1",
+            "title_ru": "Утверждённая ведомость контролируемых дверей, спецификация устройств СКУД, кабельный журнал, расчёт локального питания, ППР и программа ПНР",
+            "authority": "Проектная организация систем безопасности, интегратор СКУД, изготовитель оборудования, служба ПНР и утверждающий инженер проекта",
+            "official_url": null,
+            "artifact_sha256": "5a002ececa1b96e1eb0c242534c7a25dccc1a527657e819ea882133e491a06b3",
+            "effective_from": null,
+            "effective_to": null,
+            "metadata": {
+              "contract": "rik-expo-app.s27-24.access-control-system-balanced-successor.v1",
+              "sourceKind": "PROJECT_DOCUMENT_PACKAGE_REQUIRED",
+              "useRestriction": "Площадь здания не определяет двери, устройства, питание или трассы. Логика доступа, тип замка, аварийное открытие и интеграции требуют прямого проектного основания. CCTV, оборудование пожарной сигнализации, общая LAN и общая UPS исключены.",
+              "activationAllowed": false,
+              "universalConsumptionClaimed": false,
+              "universalProductivityClaimed": false
+            },
+            "created_at": "2026-10-01T14:52:05.685389+00:00"
+          },
+          "locators": [
+            {
+              "id": "fa081c4a-f663-5250-9610-ada53eaf741c",
+              "source_id": "dec8620f-85cf-58d2-ab75-808246d27fcd",
+              "locator_key": "access-control-system-project-balance-s27-24-v1",
+              "locator": {
+                "kind": "PROJECT_DOCUMENT_PACKAGE_REQUIRED",
+                "exactLocator": "Одна система СКУД, 8 контролируемых дверей, 2 контроллера ACS-CTRL-4D, 16 считывателей READER-MF, 8 замков MAGLOCK-300 и 8 кнопок EXIT-NO; кабели, локальное питание, комплектующие, расходники, труд, механизмы, контроль и логистика — только по утверждённому проектному комплекту",
+                "knownScopeInputs": [
+                  "acs_system_count",
+                  "acs_controlled_door_count",
+                  "acs_controller_count",
+                  "acs_controller_designation",
+                  "acs_reader_count",
+                  "acs_reader_designation",
+                  "acs_lock_count",
+                  "acs_lock_designation",
+                  "acs_exit_device_count",
+                  "acs_exit_device_designation"
+                ],
+                "sourcePackSha256": "5a002ececa1b96e1eb0c242534c7a25dccc1a527657e819ea882133e491a06b3",
+                "conditionalInputs": [
+                  "intercom_integration_mode",
+                  "intercom_gateway_designation",
+                  "intercom_gateway_quantity_piece",
+                  "fire_release_integration_mode",
+                  "fire_release_interface_designation",
+                  "fire_release_interface_quantity_piece"
+                ],
+                "directProjectInputs": [
+                  "acs_door_contact_designation",
+                  "acs_door_contact_quantity_piece",
+                  "acs_emergency_release_designation",
+                  "acs_emergency_release_quantity_piece",
+                  "acs_power_supply_designation",
+                  "acs_power_supply_quantity_piece",
+                  "acs_standby_battery_designation",
+                  "acs_standby_battery_quantity_piece",
+                  "acs_network_cable_designation",
+                  "acs_network_cable_length_m",
+                  "acs_reader_cable_designation",
+                  "acs_reader_cable_length_m",
+                  "acs_lock_cable_designation",
+                  "acs_lock_cable_length_m",
+                  "acs_mounting_box_designation",
+                  "acs_mounting_box_quantity_piece",
+                  "acs_termination_designation",
+                  "acs_termination_quantity_piece",
+                  "acs_label_designation",
+                  "acs_label_quantity_piece",
+                  "acs_fastening_designation",
+                  "acs_fastening_quantity_set",
+                  "acs_consumable_designation",
+                  "acs_consumable_quantity_kg",
+                  "acs_grounding_conductor_designation",
+                  "acs_grounding_conductor_length_m",
+                  "acs_test_report_designation",
+                  "acs_test_report_quantity_document",
+                  "acs_device_install_labor_h",
+                  "acs_cabling_termination_labor_h",
+                  "acs_configuration_commissioning_labor_h",
+                  "acs_lifting_equipment_machine_h",
+                  "acs_cable_device_tester_machine_h",
+                  "acs_delivery_trip_count",
+                  "acs_packaging_removal_trip_count"
+                ],
+                "visiblePreliminaryBalanceInputs": [
+                  "acs_controller_retained_spare_piece",
+                  "acs_controller_supplier_pack_size_piece"
+                ]
+              },
+              "excerpt_sha256": "f3916745a00e430173a21685f2def70235c6955958086b141513353d42f08ce9"
+            }
+          ]
+        }
+      },
+      "locator": {
+        "key": "access-control-system-project-balance-s27-24-v1",
+        "payload": {
+          "kind": "PROJECT_DOCUMENT_PACKAGE_REQUIRED",
+          "exactLocator": "Одна система СКУД, 8 контролируемых дверей, 2 контроллера ACS-CTRL-4D, 16 считывателей READER-MF, 8 замков MAGLOCK-300 и 8 кнопок EXIT-NO; кабели, локальное питание, комплектующие, расходники, труд, механизмы, контроль и логистика — только по утверждённому проектному комплекту",
+          "knownScopeInputs": [
+            "acs_system_count",
+            "acs_controlled_door_count",
+            "acs_controller_count",
+            "acs_controller_designation",
+            "acs_reader_count",
+            "acs_reader_designation",
+            "acs_lock_count",
+            "acs_lock_designation",
+            "acs_exit_device_count",
+            "acs_exit_device_designation"
+          ],
+          "sourcePackSha256": "5a002ececa1b96e1eb0c242534c7a25dccc1a527657e819ea882133e491a06b3",
+          "conditionalInputs": [
+            "intercom_integration_mode",
+            "intercom_gateway_designation",
+            "intercom_gateway_quantity_piece",
+            "fire_release_integration_mode",
+            "fire_release_interface_designation",
+            "fire_release_interface_quantity_piece"
+          ],
+          "directProjectInputs": [
+            "acs_door_contact_designation",
+            "acs_door_contact_quantity_piece",
+            "acs_emergency_release_designation",
+            "acs_emergency_release_quantity_piece",
+            "acs_power_supply_designation",
+            "acs_power_supply_quantity_piece",
+            "acs_standby_battery_designation",
+            "acs_standby_battery_quantity_piece",
+            "acs_network_cable_designation",
+            "acs_network_cable_length_m",
+            "acs_reader_cable_designation",
+            "acs_reader_cable_length_m",
+            "acs_lock_cable_designation",
+            "acs_lock_cable_length_m",
+            "acs_mounting_box_designation",
+            "acs_mounting_box_quantity_piece",
+            "acs_termination_designation",
+            "acs_termination_quantity_piece",
+            "acs_label_designation",
+            "acs_label_quantity_piece",
+            "acs_fastening_designation",
+            "acs_fastening_quantity_set",
+            "acs_consumable_designation",
+            "acs_consumable_quantity_kg",
+            "acs_grounding_conductor_designation",
+            "acs_grounding_conductor_length_m",
+            "acs_test_report_designation",
+            "acs_test_report_quantity_document",
+            "acs_device_install_labor_h",
+            "acs_cabling_termination_labor_h",
+            "acs_configuration_commissioning_labor_h",
+            "acs_lifting_equipment_machine_h",
+            "acs_cable_device_tester_machine_h",
+            "acs_delivery_trip_count",
+            "acs_packaging_removal_trip_count"
+          ],
+          "visiblePreliminaryBalanceInputs": [
+            "acs_controller_retained_spare_piece",
+            "acs_controller_supplier_pack_size_piece"
+          ]
+        }
+      },
+      "search": {
+        "primaryUom": "system",
+        "canonicalNameRu": "Монтаж и пусконаладка системы контроля и управления доступом",
+        "aliases": [
+          "монтаж системы СКУД",
+          "установка контроллеров и считывателей доступа",
+          "монтаж электрозамков и кнопок выхода",
+          "access control system installation commissioning"
+        ],
+        "shortScopeRu": "Одна СКУД: 8 дверей, 2 контроллера ACS-CTRL-4D, 16 считывателей READER-MF, 8 замков MAGLOCK-300 и 8 кнопок EXIT-NO; проектные материалы, труд, механизмы и ПНР уточняются по документам.",
+        "keyDistinguishingParameters": [
+          "acs_system_count",
+          "acs_controlled_door_count",
+          "acs_controller_count",
+          "acs_controller_designation",
+          "acs_reader_count",
+          "acs_reader_designation",
+          "acs_lock_count",
+          "acs_lock_designation",
+          "acs_exit_device_count",
+          "acs_exit_device_designation"
+        ],
+        "clarificationFields": [
+          "acs_door_contact_designation",
+          "acs_door_contact_quantity_piece",
+          "acs_emergency_release_designation",
+          "acs_emergency_release_quantity_piece",
+          "acs_power_supply_designation",
+          "acs_power_supply_quantity_piece",
+          "acs_standby_battery_designation",
+          "acs_standby_battery_quantity_piece",
+          "acs_network_cable_designation",
+          "acs_network_cable_length_m",
+          "acs_reader_cable_designation",
+          "acs_reader_cable_length_m",
+          "acs_lock_cable_designation",
+          "acs_lock_cable_length_m",
+          "acs_mounting_box_designation",
+          "acs_mounting_box_quantity_piece",
+          "acs_termination_designation",
+          "acs_termination_quantity_piece",
+          "acs_label_designation",
+          "acs_label_quantity_piece",
+          "acs_fastening_designation",
+          "acs_fastening_quantity_set",
+          "acs_consumable_designation",
+          "acs_consumable_quantity_kg",
+          "acs_grounding_conductor_designation",
+          "acs_grounding_conductor_length_m",
+          "acs_test_report_designation",
+          "acs_test_report_quantity_document",
+          "acs_device_install_labor_h",
+          "acs_cabling_termination_labor_h",
+          "acs_configuration_commissioning_labor_h",
+          "acs_lifting_equipment_machine_h",
+          "acs_cable_device_tester_machine_h",
+          "acs_delivery_trip_count",
+          "acs_packaging_removal_trip_count",
+          "intercom_integration_mode",
+          "intercom_gateway_designation",
+          "intercom_gateway_quantity_piece",
+          "fire_release_integration_mode",
+          "fire_release_interface_designation",
+          "fire_release_interface_quantity_piece"
+        ],
+        "includedBoundaries": [
+          "контроллеры, считыватели, замки, выходные и дверные устройства СКУД",
+          "локальное питание, кабели, окончания, маркировка, крепёж и расходники",
+          "труд, подъём, тестирование, настройка, ПНР и логистика",
+          "видимый закупочный баланс контроллеров",
+          "условные интерфейсы только по проекту"
+        ],
+        "excludedBoundaries": [
+          "CCTV, пожарная сигнализация, общая LAN, серверная и общая UPS",
+          "автоматическое наполнение по площади или статической трассе 432 м",
+          "неподтверждённые интерфейсы, логика и цены"
+        ],
+        "sourceProvenance": {
+          "contract": "monolithic-slab-existing-measured-repair-reuse/r55",
+          "sourceTree": "83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05",
+          "payloadContract": "rik-expo-app-r555.cumulative-successor.v1",
+          "searchReleaseId": "02b3df75-ba42-5534-98b4-2cea3cf6ca15",
+          "activationAllowed": false,
+          "sourceFingerprint": "2486717d8618e3941d42c038bc27f9abf9d712b50c91089bdbcc118032bf5027",
+          "sourceIdentityIds": [
+            "expanded-template:access_control_system_as_built_estimate_expanded_complex_v1",
+            "expanded-template:access_control_system_detailed_boq_from_drawings_expanded_complex_v1",
+            "expanded-template:access_control_system_preliminary_boq_expanded_complex_v1",
+            "expanded-template:access_control_system_rom_concept_expanded_complex_v1",
+            "expanded-template:access_control_system_tender_boq_expanded_complex_v1"
+          ],
+          "productionEligible": false,
+          "definitionReleaseId": "2df79e8d-4012-5557-87c0-f36285f59f17",
+          "sourceDocumentSha256": "ffb7be5128c55a0b19a4d78410cf8bdcdbd915202052821b08e46a24d989e8c6",
+          "ownerSourceIdentityId": "expanded-template:access_control_system_preliminary_boq_expanded_complex_v1",
+          "parentSearchReleaseId": "ce0175a0-464e-53d2-8f1f-212c7032b15d",
+          "firstEstimateThenRefine": true,
+          "knownWorkScopeFirstEstimate": true,
+          "conditionalTechnologyFailClosed": true,
+          "exactExpandedAccessControlOwner": true,
+          "visibleIndependentControllerProcurementBalance": true,
+          "knownSystemDoorControllerReaderLockAndExitDevice": true,
+          "exactProjectDoorDevicePowerMaterialLaborEquipmentQaAndLogisticsRequired": true
+        }
+      }
+    }
+  },
+  "exactSubsetProvenance": {
+    "scs": {
+      "wholeHostPacket": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-26\\files-pasted-by-the-user-c-2\\work\\low-current\\retained-project-scope-metadata-implementation-r1\\actual-current-hostconfig-slots-r1\\ACTUAL_SCS_CURRENT_HOSTCONFIG_DATA_SLOTS.json",
+        "sha256": "3d2653af9a07f140d24a71dfaa1a17819b1e1dae7c81caefe33e25b04bbe7289",
+        "bytes": 802044
+      },
+      "excludedLargeFields": [
+        "parameterDefinitions",
+        "formulaDefinitions",
+        "resourceDefinitions",
+        "shortInput",
+        "acceptanceInput",
+        "binding.retainParentBindings.capturedParent"
+      ],
+      "restoreOnlyFromExistingCanonicalFullCapture": "data/estimate-benchmarks/fixtures/low-current-project-scope-current-scs-r1.json",
+      "noChangedRetainedFields": true,
+      "nativeInputNotActualObjectFacts": true
+    },
+    "acs": {
+      "wholeHostPacket": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-26\\files-pasted-by-the-user-c-2\\work\\low-current\\retained-project-scope-metadata-implementation-r1\\actual-current-hostconfig-slots-r1\\ACTUAL_ACS_CURRENT_HOSTCONFIG_DATA_SLOTS.json",
+        "sha256": "df682b3a8617c25db390057e69dbc538dd054271af4ba4410304232e26c213fe",
+        "bytes": 1016421
+      },
+      "excludedLargeFields": [
+        "parameterDefinitions",
+        "formulaDefinitions",
+        "resourceDefinitions",
+        "shortInput",
+        "acceptanceInput",
+        "binding.retainParentBindings.capturedParent"
+      ],
+      "restoreOnlyFromExistingCanonicalFullCapture": "data/estimate-benchmarks/fixtures/low-current-project-scope-current-acs-r1.json",
+      "noChangedRetainedFields": true,
+      "nativeInputNotActualObjectFacts": true
+    }
+  }
+}

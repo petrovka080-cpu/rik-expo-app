@@ -1,0 +1,18 @@
+{
+  "schema": "estimate-commercial-level-policy-v1",
+  "levels": [
+    "QUANTITY_ONLY",
+    "PRELIMINARY_WITH_PARTIAL_PRICES",
+    "COMMERCIAL_ESTIMATE_WITH_PRICEBOOK",
+    "TENDER_ESTIMATE",
+    "CONTRACT_ESTIMATE",
+    "AS_BUILT_ACTUAL"
+  ],
+  "rules": {
+    "prices_missing": "QUANTITY_ONLY",
+    "partial_prices": "PRELIMINARY_WITH_PARTIAL_PRICES",
+    "ratebook_selected": "COMMERCIAL_ESTIMATE_WITH_PRICEBOOK",
+    "expert_reviewed_and_pricebook_complete": "TENDER_ESTIMATE",
+    "contract_and_as_built": "future_workflow_only"
+  }
+}

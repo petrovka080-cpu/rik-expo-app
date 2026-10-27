@@ -1,0 +1,2064 @@
+{
+  "contract": "rik-expo-app.legacy-embedded-eight.observed-parent-pins.r1",
+  "sourceContextSha256": "4895052ab35a4001abdcab7126e48172efdbdd23a368cf52647912fd6fe4f177",
+  "selectedPair": {
+    "definitionReleaseId": "5efc195e-9d2c-563d-82d5-68e409983300",
+    "searchReleaseId": "e7ae8ee5-d09b-5d93-82b7-6c14a1c0c4ec"
+  },
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_repair",
+      "family": "slab_foundation",
+      "contextKey": "repair",
+      "titleRu": "монтаж закладных для плитного фундамента с локальным ремонтом основания",
+      "pairedPlacementCatalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_repair",
+      "definitionId": "89f98213-b732-5064-8d95-61c469968f26",
+      "version": 3,
+      "definitionSha256": "be788eaef158fc61c4091ca3a295ddbc758cf08f63a995d10a42863fc1390d2a",
+      "baselineId": "0f153622-e1ab-576b-ac07-974186d684fd",
+      "parameterSchemaSha256": "bc8ce1ffc100ee00be552a0f2fbae6a3d1f04ce81a52d18d90e0b6bc32b7b3df",
+      "oldPrimary": {
+        "parameterId": "q",
+        "unitId": "m3",
+        "defaultValue": 100
+      },
+      "legacyRows": [
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_01",
+          "sha256": "bf7e3d4bdc3e5cf8b200196aa3a7de3fe873cee8f72f94509dbd8c45c7571148"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_02",
+          "sha256": "dd151123839ddfbce56f83305bd8058688547ecc0899d05b016991896310bfbc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_03",
+          "sha256": "66f75832200563ac1b917ab8cc93b6768eeb70200d829e16f0253e2293618bf9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_04",
+          "sha256": "59b043206a34ad0fd2b4ccb2b52787906f04619f3c3ede68003c9a4050ca9b25"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_05",
+          "sha256": "bff9ff15b53d2625816ba3e4ffffa561d3acabd4e51c3ba41d102b40c33f0879"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_06",
+          "sha256": "039d9693ca807b7f29d73e10b1712c6fa47c796bb3654e6c46a3538bb7287bb9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_37",
+          "sha256": "0743ca4297593feb17261c387aac87e0005f2dca1f93ede2c1e22ad7c6457722"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_38",
+          "sha256": "ea67bd331d2265d7d7216f4d533c2cb4ccd7a7af5910f95db2a453495d6d287f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_materials_39",
+          "sha256": "15e65e669e1a10687c5cea18c33b2f2bfe1efa112b4c4ad1005fc5ed8b26e024"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_components_07",
+          "sha256": "f52d8d2515c6c8d70da3c257a14ccac5820b02ee90e68066a8cc2f28e32dd54d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_components_08",
+          "sha256": "8b1590c4f74ee7340335d404077bc55aef7030f857422949d615b44efb39df57"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_components_09",
+          "sha256": "868db70fc151af310052f743db3846e0c25f63d776c2843525164676b20f750d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_components_10",
+          "sha256": "da4535d155f989c2bccb3fc8643e5021d8997dd8c671b8f7c3a5724c7b559721"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_components_40",
+          "sha256": "433658022624c9a4790a48a77f981f60bbc04a2fc56d66a1cb38f015c987a419"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_components_41",
+          "sha256": "16bba7ca92ee2867824582af24a0d45ee7a02bb7158d08c70b17992755a61632"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_components_42",
+          "sha256": "0f7377d72a23931bb2353e74d0201d584ef468686575e63879ca7e21ce98a367"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_consumables_11",
+          "sha256": "41c1df0c6fb87907a29e6f5cfc838e616c7083717cdee8ef3da62bf01a11058b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_consumables_12",
+          "sha256": "a1fe78020ddd2030d42610da4b8321fa7e532d25ae287e14fe5fc93be266c5e8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_consumables_13",
+          "sha256": "b4ca6d5916f792b0c85fab11d9ec6ce64dab9d87e84ea4b06115f1c5d4d90444"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_consumables_43",
+          "sha256": "bba2d170b52d3cdc8d2072223db78a8af36b55e18d6c65a0307faab34b9ba1fc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_consumables_44",
+          "sha256": "5434ea44b0c6e19472250ef430e543bf7385269e01b8118fe92fb0bf1ea7da8e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_preparation_14",
+          "sha256": "3faa228edb1731907a24adb25b1de873c682e7b620261d1e9074fd942743ed5b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_preparation_15",
+          "sha256": "56b1193b38c05080ca2ec4bddb73fcc257f927220ed500544458320633538cc5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_preparation_16",
+          "sha256": "2ca5f5e9a81cb6e057e59bb43abbf01d01a533eb9232fdbb174cad1d9a44d329"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_preparation_17",
+          "sha256": "14551154559a52208b4c2ce62692248597829596f47a6f75516bced34ddeab8d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_preparation_45",
+          "sha256": "a18a2f5e5acda8c847b10c677b6fa506debdca9c246d79b4119d713afbec9eb5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_preparation_46",
+          "sha256": "cb436ac436eb6477ae0b6c613430cb704f2919b32d3939fb37afd540b13e81fe"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_preparation_47",
+          "sha256": "66b2c4a69d9979955e4a5fbb31495a986f04966837b2724be3d7aac9663a6ad2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_18",
+          "sha256": "eee5260ce893c9fe8b420ba7d49e8350c6f32c71fc6af9095b7528be579a776c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_19",
+          "sha256": "6ed976ddbcbd151b90f9f5a59b5e91ea34c7a9e7ea76af36f85f07bb09b5c8f7"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_20",
+          "sha256": "89f104a5939ef531f99da47a1f826b1a83debfb7caa8858f90a64778335fa872"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_21",
+          "sha256": "9f2d8061020296be5ba9639463e23c13bd059acf5d42ab9ede9b6b1ffe69f945"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_22",
+          "sha256": "85eda01372cbaddb9372a78b7d18b122626ed8b0eb5dc718a6e3769cd7170553"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_23",
+          "sha256": "c9bb35065f65274ea04031b372b434e68961d6eb4b26174041d204058e9fc17c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_24",
+          "sha256": "6e9467221af90840120fd43044068c694bb57db01d2ae371828c2c886ee0cb42"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_48",
+          "sha256": "47d9ff75c336e0e6803fda4c7592f6965b5d3fc725d6c3d4a3e1717a14939b05"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_49",
+          "sha256": "bec3cb1c9acd254e1bdf1ff6dc20e16256c934273e083995098eb4dca3f306ae"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_labor_50",
+          "sha256": "f1a4dac69e8c697a2ec03faef6313b938d3cca26e253d5c8836395afd4c18458"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_equipment_25",
+          "sha256": "9e0ddae1d9b08b5aa408ba94b6a9f8774c6dde1fadbd284d54223fa3e5f2458a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_equipment_26",
+          "sha256": "82e11043a720645697a9eb8147b672b26e7c2842a76da0a0d0d965130b4d9c5f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_equipment_27",
+          "sha256": "60a5893ad2ba3051fdf8dae22f94a9f16abee89364e6d1b7672e8b50d1b19cca"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_equipment_51",
+          "sha256": "cbf39bf7415e5c2d16b9f2d8b472ee17ab8a83d874d5dc29a6ef204b79a29637"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_equipment_52",
+          "sha256": "5c8bb6044eda19d02f550228cb7ba302a5a1e70eb0a98a7ce5a01648a34d54bc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_logistics_28",
+          "sha256": "87bab0d10065f9ccad5ffbf32a44bee240d11937e2955fbd75f4ff4448e6c351"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_logistics_29",
+          "sha256": "24829a45d6be9c8424032f4e48a38130dd4ee1c1dbd0aa07d58085ca619a5e50"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_logistics_53",
+          "sha256": "2bf9b187241dfa9c26074669585644458a6aab68f17f8dd8c980d055102a47a1"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_logistics_54",
+          "sha256": "40ebabcc21b12e55beadba9e62170a0c2bddd020ff12a9bc78b7b39b9f538742"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_waste_30",
+          "sha256": "8a77358c32f269f9c24d0735be1460b00aeca05144f6f4ea1cf7f90a8037fe2b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_waste_31",
+          "sha256": "5b8ec9030c58929d1f13f4aeeb61e8ebc6538eedc34041406b491e2ead96acea"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_waste_55",
+          "sha256": "c74189b3f661673fa9d60378a4e5768f73b1cf6e36e26cd0e00fa06d8ce02623"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_waste_56",
+          "sha256": "a70dcc082b95540230d4a66f55a21e8b18a663b788c907ad68580370eb58bf2a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_quality_control_32",
+          "sha256": "d482e78192fb9008aec6f50f29c6cdb7be66822df7df0a0c2b06ca77efa8c32f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_quality_control_33",
+          "sha256": "af7c53e9c99f7b877a0cc2f7b5509389006570c99860911b94be95b42a66798b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_quality_control_34",
+          "sha256": "5d1f5ab9e875434c53c9ef38c0bb77328b13ea71ed55108c4003d7d0e21e7c61"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_quality_control_57",
+          "sha256": "02d088bbc6803d9058c733eaffe9019d79f0b77660cb378c788dbf753541c936"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_quality_control_58",
+          "sha256": "7de12959ec3a3e9c8982c4c0b85142dbc7246ebaecf12b6565f5d2f62f093d68"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_quality_control_59",
+          "sha256": "5c74a98934201e77ce5fab383d4f5cdb72fc7bc4e85da7313d1ffb4899addde3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_overhead_35",
+          "sha256": "3114e4e7a3eecd3bbd0b6d77e535f1aa73d8f01ec831a661297a1e3de20bb1e4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_slab_foundation_anchor_repair_tax_36",
+          "sha256": "ed128c8580f58a551a3f3c563578adae0e9b4fdbe4d0575851673243411dd03b"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_anchor_high_load",
+      "family": "stairs_concrete",
+      "contextKey": "high_load",
+      "titleRu": "монтаж закладных для бетонной лестницы для высокой нагрузки",
+      "pairedPlacementCatalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_high_load",
+      "definitionId": "b9543fb2-3da5-5e38-81aa-45c928495203",
+      "version": 3,
+      "definitionSha256": "47f077223990be251b19e4af96985bb506c6de1e60a08537eb9004af02b37ce2",
+      "baselineId": "83e80c8d-277e-54af-8e95-a5c7917af193",
+      "parameterSchemaSha256": "bc8ce1ffc100ee00be552a0f2fbae6a3d1f04ce81a52d18d90e0b6bc32b7b3df",
+      "oldPrimary": {
+        "parameterId": "q",
+        "unitId": "m3",
+        "defaultValue": 100
+      },
+      "legacyRows": [
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_01",
+          "sha256": "83f6683d58a59aaad1cf0302a743788cbada70249149f552bac26fd74983254f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_02",
+          "sha256": "dd93505036903a8677b5279a01a670ca3906857ddcfe7b0d9337820fafa94562"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_03",
+          "sha256": "3582767c7e604aea9c148c61c35a65c358ce7bf4e756cf18887825fe06f5b124"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_04",
+          "sha256": "ed78c5b163cdb0e3b33068ad7689fbb454a999e44762baada2a5fc5a7c0324a0"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_05",
+          "sha256": "04495beb72a7d8d5ecf9309c237a231c772a9a9f4e66b6770857e841f9e2c99e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_06",
+          "sha256": "4a0362a225975698315c762d8b3513a6ff757776a78ca3d23c80858995ad633b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_37",
+          "sha256": "9dc46d017426a12f89911c3a04fe0d1321b9a696b4ee43ae57dae1eb98b1faf1"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_38",
+          "sha256": "352de689669eb13e3293f1491262b454db677ca56e44d963924fd787af9f2f3b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_materials_39",
+          "sha256": "5dffd559e5e387f86e12aaefc8bdfc6bcfc5df35baf16572ff551cc3e88301c9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_components_07",
+          "sha256": "cea8d8e857a435ecc098f765e45c5b401e6fc8ee22278cd3e07735c3f3e2d328"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_components_08",
+          "sha256": "df34c2f28f634822ab9b32563576a9cb07b10cd92800f0b7d9fd84590f602f66"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_components_09",
+          "sha256": "6a5db1386407eecea1a83ac38f30859535e6b9f7aa510fe791c65fbac5b75608"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_components_10",
+          "sha256": "879b759c04e6909bb91a18a573a2693c48b832d832316dd998b60367fa3b610a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_components_40",
+          "sha256": "75457ef6599bf0f9f5d11bce8eefd181aaa62174d4fa538c490199bbd6455680"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_components_41",
+          "sha256": "99bc9e01081c9988f1565f4e544e91ad409dcc5382151482c17dbcc6d0174194"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_components_42",
+          "sha256": "94f8b05b0457cd3a5918764be84776aa4f5a246e49298f0b62af1274f54b1c94"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_consumables_11",
+          "sha256": "55ac1d17a3eb83ecb5150211d989daf00486e95470f40b2f1fab9c7d74e4757c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_consumables_12",
+          "sha256": "714091225fc687d8aaefbc16b3f9d34e03fed7c4cee9a406e2eaea4a1f1b1fb8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_consumables_13",
+          "sha256": "3efc72978f8bc847261b5ff745784d61ac171a29600303c76432688889cfb7b9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_consumables_43",
+          "sha256": "1b3d7b29f86fab34d4247685a939f4f651803240182e2fcfd1f922c633df7a00"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_consumables_44",
+          "sha256": "fa143ffd15ecb1d60f9978bb9fa9edaf951d13b7bc3fedb845e9d7ecf692eba7"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_preparation_14",
+          "sha256": "0ea215d223dcef65af937f985b6a5ad55e63ce4d12967137b6418e338e25dc76"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_preparation_15",
+          "sha256": "a51421f1ef8e1b3cf2729962a991f25062350ff827a90a419ed01ab1d68adaad"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_preparation_16",
+          "sha256": "1a969e5d0137a774eb42c0b662cd6ab02b58412cd81ddf61fb4db70abe848c34"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_preparation_17",
+          "sha256": "571c21505681c08a9a5241d618fc8d43df5ac55d83ab3e4ee9724f96f5c172dc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_preparation_45",
+          "sha256": "172f00192821bad6c25ec4108b1ed91abd7352618942b0b0f959d846a5f000b6"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_preparation_46",
+          "sha256": "629d5d13d5847512f79aecf02bf2c411e952357d6851d0acc8fd3ca97f0cec85"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_preparation_47",
+          "sha256": "43ec9fba27eb69aa0e2ea48ba9152e41879a0ad07a2df2d82cedc95f618ce602"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_18",
+          "sha256": "fd7c413bd6bf7eeac184b928764e6e35a225d47c5e2438f5dbe151a39071c271"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_19",
+          "sha256": "63c9e6ef57641ed83758000e6fe7e39de4ee8fb841f57ca3470c843226daa69c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_20",
+          "sha256": "cabae58e5d9bc13b18694a3486c9b2446146ddab3b00927f11339e361f09650b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_21",
+          "sha256": "7b9715137225bd2998220dd1b313506b0e4526cd7d87a14e83410c9234c3c2fd"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_22",
+          "sha256": "70289541dbdaa9bef67cb22d0502272537db78ea01f0aa9e1439d513bff87e08"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_23",
+          "sha256": "989da855f0f81d82cbb67422d2fe39f242867c692aea211c9c6ec3922e76d626"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_24",
+          "sha256": "a7a51db832ffddd3bb03af7d3c50e8cbc63c4368f47f69ebd3896484ea503e1f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_48",
+          "sha256": "7a5b4927e7b70dee160d558a38fbdadd30069258af77f0bc5e67d481171d88cc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_49",
+          "sha256": "459749384e23bd5b5abcce8df1b1c7757eed1e412d11dc6d622690dd97fcc062"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_labor_50",
+          "sha256": "fb79330be326a5cd705759325ff124ece3d0c521bcb1cfc97943853b9b3151d7"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_equipment_25",
+          "sha256": "79c3c9c8f47a9378c6b8db3a344993293bf29d1d47b44025a9d25b8229717a13"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_equipment_26",
+          "sha256": "c070dd0f5ff71c61c11a736bebea420a82b29b34834860a3863d768ca3e0065c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_equipment_27",
+          "sha256": "6084dec6423798c532e089b3d0ae922a70cc084c22f193ad1875f6d0bbe9dc7e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_equipment_51",
+          "sha256": "4b8f140ec8e4499fc41f62e372eb24b0429e0d58722a1c6526c977b7b700f1f4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_equipment_52",
+          "sha256": "779f4640330cab1c85183dc5baf143fca2e13867d0695ac1b4d96d290eecc1dc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_logistics_28",
+          "sha256": "886596440b8cbfa5bf0a4491bd645522b7a9cfa56af67e450eec4221672facf6"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_logistics_29",
+          "sha256": "ea756b3dcdfd66e1a7c1edd4d286b834fad41bb2eb95d7d641c741c5258597ec"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_logistics_53",
+          "sha256": "b95a6929c78d39417fa56ad59ebdde6fe798a8511f2698a5285030557f133dfd"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_logistics_54",
+          "sha256": "7d620bfcc238f4215302992fd4fd241bbea2dcc1b268189890bebc2c48471b92"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_waste_30",
+          "sha256": "89fd2919836c2de2547f7a42614ed1567a278a4656225a6603fab121f2708c59"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_waste_31",
+          "sha256": "a28ed504eb152225cfdb30bdb5270269950543a56209aa7048b906bb67cb1847"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_waste_55",
+          "sha256": "7c6b6aac09ee9aa0a4a14e15f11c54f14ec1bdc4fd6132bc0ecf310d476020cf"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_waste_56",
+          "sha256": "d499e882103aa49d890ffd8944bf1afb2c459f942418ac911cab9a397a7f15e9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_quality_control_32",
+          "sha256": "7f0fcf2dedfe0d7d971042c502a8ab838b7b6437ee184d7fcf093cbfe01f01ee"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_quality_control_33",
+          "sha256": "a185b0435898fa74ff5e420e97313e0e58d66bda40cff0a9cd2eabb8f5389a72"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_quality_control_34",
+          "sha256": "3b00cd12f8358d112df4371b570700e1ff5af9ba9e1f7385641b01a09c18d2ec"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_quality_control_57",
+          "sha256": "b4e0d8ae11fd0db32014314af9b87d7753c988714fec8c9503837153622620e8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_quality_control_58",
+          "sha256": "0006497df9f8c0354482cc1a65cfe40fbe2a8b3241de8b43477c630912982a5c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_quality_control_59",
+          "sha256": "f29bed151c457db222d195b019fd30fd9a871f783d360ede2aabe1f48244cbfc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_overhead_35",
+          "sha256": "85bdd5f3b90bebb02e655aa83781735fb9e946bf36ad95672ee90a967767fcff"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_high_load_tax_36",
+          "sha256": "72ee6decaed49139faa4d008913d21c0191ee731279557250eacc47ddf4eeed1"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_anchor_large_area",
+      "family": "stairs_concrete",
+      "contextKey": "large_area",
+      "titleRu": "монтаж закладных для бетонной лестницы на большой площади",
+      "pairedPlacementCatalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_large_area",
+      "definitionId": "c008a56b-b2c9-52d3-ac18-5b65f3cbacdd",
+      "version": 3,
+      "definitionSha256": "4c0b76a417dab755c05a7172a3f257529285ed11b9c78bc3362150df2f8866b3",
+      "baselineId": "856ee26e-6b5a-5430-a4b9-aa8392fcf1ee",
+      "parameterSchemaSha256": "bc8ce1ffc100ee00be552a0f2fbae6a3d1f04ce81a52d18d90e0b6bc32b7b3df",
+      "oldPrimary": {
+        "parameterId": "q",
+        "unitId": "m3",
+        "defaultValue": 100
+      },
+      "legacyRows": [
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_01",
+          "sha256": "2f5ead3098247fb088a36593d24b4251b844e4b302c6936901e4e94764cde2e9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_02",
+          "sha256": "151dfe5638dcb5f32704e12ea911a9a302373d930a5cfd11024c3d393ae942f8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_03",
+          "sha256": "5f1fde6ae7cd4770311234e90bc89243e9fd8033c4f8aea04c87604c3c2617c5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_04",
+          "sha256": "68b6e486aff781a4541abc30636298db5f0d33130447ad3da30428199fade793"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_05",
+          "sha256": "2a057992252514910c954066251a0e94d1e5001a7470d9e446aebcf4ab631124"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_06",
+          "sha256": "358cda33459ac4a0040099c388c73ca4a5dc4b4546869b967d950515621e6f26"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_37",
+          "sha256": "a0054a25133520b932fc0a5b236990a1670039c3a1ec895d08d3f778ab1b709b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_38",
+          "sha256": "a2cc99f1dd46f95ff6fff20988f5f421b5255a16d0a89ccfd74071e4968cebc8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_materials_39",
+          "sha256": "49df20f599ea80e8974d36ee3056b571f72da0ff44a4196cefc5c865277eba0d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_components_07",
+          "sha256": "295a5ae8bfcc4666e32e8cc787bc4556df3849c8ef19e2e4917469906985484e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_components_08",
+          "sha256": "7ceca112c84aa7c1ac18dc66e29cceef3c7107b4814369a5ad3ba46f693f3ca6"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_components_09",
+          "sha256": "62fbf0376e29d15b4eccf7d37d85b087adf1c6216c70a2675026951840d9ecbb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_components_10",
+          "sha256": "098cb13e89b83d098d0d709046d5e377cfa9866fb227e382af775c5a9f68e6dc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_components_40",
+          "sha256": "0667d09ea089a2dc2ce063fdf6344f2e446520e0108b84513be72a9e8f7b3025"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_components_41",
+          "sha256": "3ef18e6c04069d363339bd1a3aa54e9c8d08a77ae1e853e5852886dd557e3cbe"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_components_42",
+          "sha256": "7a0ec7ae02de93f89dcab1f83067012221aa8fc62823cd331f44e8b9695c64c2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_consumables_11",
+          "sha256": "33267175d2ef3078b9c15a34735763393147781053335baa337461abcaec0bb8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_consumables_12",
+          "sha256": "f1ce038ff0d69bfb67a23a614de097996e76691c59ee490d056d63fd28f4b5ac"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_consumables_13",
+          "sha256": "ef13f7e52e111e878a16552914777585b5aac917a869e7963710a2b79bbb2646"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_consumables_43",
+          "sha256": "1159d9a6b266fad835990b1a3f187834672252d7c1ccd9c5d1ed17f8047832a8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_consumables_44",
+          "sha256": "ad8c192368df6995e59d102a3b37a25b50e98943477ff714ef79a711e3dcc62f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_preparation_14",
+          "sha256": "e8fa2228c8e47d62bf9be62dd1397c99d7594592fbb23520990bdbc567bbd272"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_preparation_15",
+          "sha256": "151f0a92fdf1f9a5935d3b72ec1ee4968cc87c99027476f2efe3edcf9e33df0a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_preparation_16",
+          "sha256": "34a6166ee8080dfd7dd234787f45d8f6f961ee76b9f8b6068a39916ef5509225"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_preparation_17",
+          "sha256": "a0b28de284b3011dd3e1a8e4a6de4ceea74cc75ff2e64763a0b5a53c88d22f53"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_preparation_45",
+          "sha256": "17bea01098382ed3358c5310114e0a13756995716e7e855c91ed188153ed618a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_preparation_46",
+          "sha256": "d414cf6503b2f2b255e4eab287af5900a7539f9d6e856d48dd81131916899601"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_preparation_47",
+          "sha256": "ee255bff70a1c87f62785cc07f7aeb3cc23129ae1b50f3b2cf5a4c06e7b9677e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_18",
+          "sha256": "5753493de9e79ff6b1d09d81ff4183c0906e1aa979f24d9f40f35eda7888332b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_19",
+          "sha256": "28dcc72741fdf0fd7303841f2c28be8fa2a33296273c91c66d7b2f8c10889463"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_20",
+          "sha256": "d8208176a1d321e583d18bf61829ba1300429349d651b3ba4959402d3ef9c455"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_21",
+          "sha256": "3e43d19f56fe11f12ac72b6a33143e0d4f7087cf7a44f4c044c01cbea127f8e9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_22",
+          "sha256": "e82369c4206cef62e7f02bd4201743e19e33da26b84cce96b236bb1934dd35e1"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_23",
+          "sha256": "8ab0f99efa1d7b1d1a6ee203ee5653fa5367947fc6b8e1e757a67f6507ff35af"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_24",
+          "sha256": "378cdb92d519b49d4446c94ffc3c9c3cc1214b7d85eaa1ec3d8c2217606c737d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_48",
+          "sha256": "bba5d2450c08fabe14b9cba67c4ef0b1d3b04bb167be94da954fd721f8385c1b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_49",
+          "sha256": "0d02f211bfa2900bf962ba041b4495a23b46df8b14f17ab14643200c8888f84f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_labor_50",
+          "sha256": "2204dc8cc9da8a599143eb97c7d302ef663c54c4ff6ec5fcf23c7c3d2f32e759"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_equipment_25",
+          "sha256": "6f48336054ddb65ef68c6d476c8592ee2bab6f997eb04dc1330cec6dca5e11a2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_equipment_26",
+          "sha256": "d2b7fe8c4063bf8a0b3665704d50f7becb8572d371724b4a25a4e8434fd70aec"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_equipment_27",
+          "sha256": "18ad84b3c31c33dc1f5786f61d0426eb49d4c0028c81ec7924c61991f078190d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_equipment_51",
+          "sha256": "91fadd9912b1c33e430ebe00b8ef2a1bde12ec0678a95885adcdd958253bcc25"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_equipment_52",
+          "sha256": "f0bc44ebd3438811c9fc50ac7a7f8ff2a3d2f2fbb3abde992748356377e9c1e2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_logistics_28",
+          "sha256": "d4de436fa5daa19239cc59a8faeb74421866579040232f0cc6ce9ee7c2d37553"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_logistics_29",
+          "sha256": "89a0c40f9f4624cd2b7fb29b67418c1593444b37cd0f50796618bfd1f0489dba"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_logistics_53",
+          "sha256": "ff3e2f19c03eac475381e65eac63ca20b4489a5b72f464533054cc51b501cee3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_logistics_54",
+          "sha256": "66c8943a89b40a0378603db42588a048cbcf8d00b45ea5b21ff37a83c4b03b81"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_waste_30",
+          "sha256": "fc6148e58dbb7b5b3356321e7796949986e0c30870f4130db093bfca0f1493cb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_waste_31",
+          "sha256": "d12704102111794c19c8cd487fe80ff77fae46ee3d011e9a6d7bb563a7158dff"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_waste_55",
+          "sha256": "daed652044b0cb520734815672f3ae6a08c0119d07d922cfe0bb5a828c74db82"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_waste_56",
+          "sha256": "e84a864404392c53844aeae9521a3e4772be420f9541b855e2c58d96c62a50f5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_quality_control_32",
+          "sha256": "541d2ecca97dd73b1c74d407679efa6335ba11f8e94708e06536a76ad39970cf"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_quality_control_33",
+          "sha256": "4149fdd6df0cc8c2d26245c6a257c9234eb50f8f10b8f2f2bf603e54ded90e58"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_quality_control_34",
+          "sha256": "0b8fb2fb54940f58c610cebda072aa1f930df21952b3cb01c0216e22019e8453"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_quality_control_57",
+          "sha256": "ac8dd780999f37d62c9b3ff0436b826010b6fd8e55bc981db6da1a34f0ecd7c1"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_quality_control_58",
+          "sha256": "38b324497ad3e6fdac492e8c9834561926634ce2f692824ed0219c677317a6cd"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_quality_control_59",
+          "sha256": "eeb1518e420f8bf3cb198f6c022842e7720b0a0670ac97c46d30f0415efac920"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_overhead_35",
+          "sha256": "afbbe6fe23d070446fdf4fa54e7c47731893d827eea80bdfdc99898a3ce4fab2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_large_area_tax_36",
+          "sha256": "e050235ce51c60c3d8d708614dce9ba60dbf7d755a7d070b875ac5a79f5be2ec"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_anchor_small_area",
+      "family": "stairs_concrete",
+      "contextKey": "small_area",
+      "titleRu": "монтаж закладных для бетонной лестницы на малой площади",
+      "pairedPlacementCatalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_small_area",
+      "definitionId": "1799eea4-c9ed-5423-96c0-166955f79b36",
+      "version": 3,
+      "definitionSha256": "3acd34318db18dba43bffa84a29e9ba7db42be80ee3ed016eb56b53112d4621e",
+      "baselineId": "46472bd1-6250-5f44-a5e0-daf3ccb24697",
+      "parameterSchemaSha256": "bc8ce1ffc100ee00be552a0f2fbae6a3d1f04ce81a52d18d90e0b6bc32b7b3df",
+      "oldPrimary": {
+        "parameterId": "q",
+        "unitId": "m3",
+        "defaultValue": 100
+      },
+      "legacyRows": [
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_01",
+          "sha256": "7ad91cc03126a87e96f7281a6838b428fc049746bf6afbcb30fbc8febd2c2070"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_02",
+          "sha256": "3f5ec95145274827ad71b26efb8bc1803886938c65680d2959cd0c13c67978cf"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_03",
+          "sha256": "2dd6b83cd2c25176f106b601c5a323cede09219f538044e06e0217f9d4361a51"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_04",
+          "sha256": "3ca35de6f760e08a98986d3fbe4c2201c1621ba4bff984e2aa9c79abb10bdbf8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_05",
+          "sha256": "4c05a42b99ada81b58b815b3947ac029726306f40c6a2efd563e0ca3866319ab"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_06",
+          "sha256": "3523585dca8ccfdf1026b709f2870c442036757dd9d6e95a3774509017d0d4da"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_37",
+          "sha256": "7171c598139959e0add55bf358d2d316ceb5a3b33784b3722a7fae9601657826"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_38",
+          "sha256": "1891a8bf61de6f6af1a9efd26b3ccee8dc513d095074b4771b084b0a37270c2d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_materials_39",
+          "sha256": "16392c95b9e8db141317c47f03f77e617dbc5a7ef1657d81076c743552605f8b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_components_07",
+          "sha256": "d0d12f7bfcdca2eb188d84241161172cfe118356e5275235819f81a406944c14"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_components_08",
+          "sha256": "4d6aa82999210598c8cc2bd871f0d35945c14bd29810521f0558aa859d2bde5f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_components_09",
+          "sha256": "fccb993874ce53b2174da2016cebbae368c42c186b5a1f34fb0c0851b17a7087"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_components_10",
+          "sha256": "2a4a184bdfced2ac85b0e02a244987a88ae7702e2f7d5242056a258e8cd7ace2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_components_40",
+          "sha256": "a45878a25b0222d528779e72eabebb950d03ec8cb3276f24d728c4bb99eea9cd"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_components_41",
+          "sha256": "eb6c59f5a26adda9cdbd4e6d0c1fc638188d46ae9f35c811025532d360b2cf61"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_components_42",
+          "sha256": "4bfc983d65269231d3d65fcbd2f0c4f5ef4bbd68c6a1b993830a5d83aa048c95"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_consumables_11",
+          "sha256": "cd9a2205584d52413d8868d4066208f71aa525b961d6c5142731ba3839df3991"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_consumables_12",
+          "sha256": "b611cd0ce0b843c2434941e78890a706a4691f163e23810a3ce2ae2a639b2e2b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_consumables_13",
+          "sha256": "1863eb7a4489553bed6e9f4c681e0ccd1cb706e6e900494fe435930201490a60"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_consumables_43",
+          "sha256": "8c6cd48fb2498390f7ebdf914b7c832c8a766187dc30f5faa6ee830b5bb1ae16"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_consumables_44",
+          "sha256": "bfa7a1db8ec8df4e67fcbf4ee975df86e0f407d7b7ae7002235194776484b35c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_preparation_14",
+          "sha256": "64b42155c92d567a653eaac16b73b70475965d6403d10efdba463955ce1a89f5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_preparation_15",
+          "sha256": "f6480cf1a1de728b3e647b7625903b2c753f6c1b25a22134d24dc81fe0ffa250"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_preparation_16",
+          "sha256": "5d76853c7b5f8a57e5732437842ac21ba4558c3e9c5f8396f33affff614a7ee5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_preparation_17",
+          "sha256": "c9253cb953372ae6cbd1e05e8b4ea514f80187dad6baf44c06538282f9a04295"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_preparation_45",
+          "sha256": "d09d9a30d8509c0114173fb0444a79fae7fb681e377ddc1603982fe7c828fd26"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_preparation_46",
+          "sha256": "64b5335e616f17ca540a89cda0b4d7ebdad61eb1f51e4c86979a832e2f61b74f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_preparation_47",
+          "sha256": "25d3402785b344623cce30d2b0f24c558597c79a1f2d41b6bef4930f7c1d3ecc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_18",
+          "sha256": "dbc2474bd95156dee3df608ff42ade05a94d9a1e1daaca72a40713909b6ec3a7"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_19",
+          "sha256": "02c934c27cfec11bbdfbc09cb791a0e6e29205d4399194b93e846000d7b0eb7e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_20",
+          "sha256": "b94e069de89577d7a63ca1d3bf092ed95370eb7f3f62fbe7c41a3370fe828c2d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_21",
+          "sha256": "d6c00168140cf7d1f5a00530e09c4bbe022d42e8bd08e6ecfb3684e0773121b4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_22",
+          "sha256": "0783a64dc05e6dafa6f969251c26406b7de66ee5cc242e1b5af8df1c72b03d4e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_23",
+          "sha256": "a7820d28b169f91fbdf092a0d793fe027a8c52ae8d248177092bde222df15510"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_24",
+          "sha256": "2f06e07346b7fdad3802a12cebb644fff1882a37a1c3a07a42143f4d53fb8378"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_48",
+          "sha256": "4ffcefa4aab95d45324b47f1638dc3926ab53fd46e5df846bf14be9c6cf8b85b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_49",
+          "sha256": "360887e734cf80304c4c9e07358081ab7e9dd0d144f7baa9096342150b731de4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_labor_50",
+          "sha256": "222412700e5e218f865e6cc3a84d2c5ac6974505f217261c2f5c1da1203fa411"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_equipment_25",
+          "sha256": "a61b8a3785bbe27a02bf7d1c6fa8f996a96576969361413dc896b5a8e820a5ec"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_equipment_26",
+          "sha256": "ea724455c97699ebb09f3b2235d619b804cc318d57e188f0fc0440b4f8c6e638"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_equipment_27",
+          "sha256": "32c97d0329cb440389d8564cf592ba6f9af9fdbf9a6df9a352e052918712f2c7"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_equipment_51",
+          "sha256": "271724021a0a41424a10ee091fd4df093224c0b4ee7bcb7b4a01e8e75621839e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_equipment_52",
+          "sha256": "c4bf49cfbf06662688bd6ae244ccaafdcb3c9d65602b0b5a66d63d3d30dd023a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_logistics_28",
+          "sha256": "b0970301517c68109a3e01bd93b5db9f21ea1fd1ca720c91ff4d67191e12be78"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_logistics_29",
+          "sha256": "d095355db6b42e13ef13778169dad8330109b7480c9862898fdaf225d46e2da0"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_logistics_53",
+          "sha256": "66fecc6f80004e5424773c1b8131875c4ce1ede89edbc3ddf536d18b19398342"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_logistics_54",
+          "sha256": "e90943637f4beaf73d0ea7fafb934973cea0ef2f2501b286d91af55e03187e77"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_waste_30",
+          "sha256": "4b93d8e0ef6970c4b7812d08eee7aa8484fdeb25c80988173a043a6fa330c237"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_waste_31",
+          "sha256": "53f744a6119c5b155c40694ea9476055e052f09f67688a4713fb76640962b2d3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_waste_55",
+          "sha256": "1501f78382230d8b710b4c31c7065fa62cc49cd511e17e739f531c3d69b6c16c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_waste_56",
+          "sha256": "86d78177d538e17989ae4bd7d3eafd3f0f413fa0d590073ffd63cd464820f20c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_quality_control_32",
+          "sha256": "d831b809756c79f4402ea4e2db036da6dfff897d82835490e842c36c5a456bed"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_quality_control_33",
+          "sha256": "5db1c34c0903656fcb7f1ac4fbebb9e7af91d73a9dce00e86b6c583a1f45275d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_quality_control_34",
+          "sha256": "78d76d32a2b555cba816d8b2068c2b8f6fb08eff2e83046eef82223483cb4dde"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_quality_control_57",
+          "sha256": "7f1f5b5b026be95445fc154860bea004f9cc8e297c94ac9340a158a7ad61541b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_quality_control_58",
+          "sha256": "36333ec394161538eb6ec4ceda0175a5658d458263859461be4daea647532880"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_quality_control_59",
+          "sha256": "3dcc21a6e7a96a841c1f969fc32c1187a3374e13b583c7b1c61bf5bd88fb4f5c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_overhead_35",
+          "sha256": "fcca351440e613afcdb058e35b795e4ba80327299807d48ad757adfd93fbe6e3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_small_area_tax_36",
+          "sha256": "6b4694ecc455c03c60aac2a318879e77c83ec0394dc5dcec141b84cb4da6f3eb"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_anchor_standard",
+      "family": "stairs_concrete",
+      "contextKey": "standard",
+      "titleRu": "монтаж закладных для бетонной лестницы в стандартной зоне",
+      "pairedPlacementCatalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+      "definitionId": "ec5ceced-bbb1-5bf2-a5a3-cb3969dfc423",
+      "version": 3,
+      "definitionSha256": "732a992fb58483c79b5a78ed634cfb7e96da3edfabdce01be25d18af19db261d",
+      "baselineId": "fd23e47d-450c-5144-9e4d-e7c854333caf",
+      "parameterSchemaSha256": "bc8ce1ffc100ee00be552a0f2fbae6a3d1f04ce81a52d18d90e0b6bc32b7b3df",
+      "oldPrimary": {
+        "parameterId": "q",
+        "unitId": "m3",
+        "defaultValue": 100
+      },
+      "legacyRows": [
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_01",
+          "sha256": "0fd92a91526dbb3505f0231bbf53ce8148eb8e3eb2f4b8f501cfe191e12f88c4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_02",
+          "sha256": "d45fdd17dceeab3abff27b2f7e03ca79a8b1e0794246fbc00879f00f2132f777"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_03",
+          "sha256": "2a7ba622634abeebba7bad6bab4702d93d3597d3874031315a6d33c2df6002f0"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_04",
+          "sha256": "02430d00eb06592e7733217d5911a4e52e9cf995373c014f6ea46fe59c04884b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_05",
+          "sha256": "f2e4dd24a7a0f20eba1c2690eb281897565648c69c4212acf5cbccf8c5e34a8d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_06",
+          "sha256": "9dc0b13e70678473e9710f6ea3a8f8075282fbd745072a9450772f69992aaa62"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_37",
+          "sha256": "cd124638917dd5ffadcfd0fb672323998ea0c512370d11c6f3ab9cf9ccce4787"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_38",
+          "sha256": "d42dac7eb5bac997ddc772383c520bd065e7c619943763d71729588aa97d328b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_materials_39",
+          "sha256": "aaf729fca38ab84c0500b5cb96dfc4357663d8d142f32bea30ce3dfab4ae21fa"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_components_07",
+          "sha256": "85a7a355fcc310171a87b089b19f93ca4e6d710e0922e9335fb1fe3072f3d9de"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_components_08",
+          "sha256": "b83744276be498267de3baa1d06dcec7a5a3fa4b46b4a0fd11dba940ada8627b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_components_09",
+          "sha256": "482c9297f78f6cb7142cc3368c261c4483f8a5ce9831472ba976b4bfc022152e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_components_10",
+          "sha256": "1bb1b480a70bcb638299c9606c5826c9895f535edad60181cf955cb3693f210a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_components_40",
+          "sha256": "fb20c91174bb10e6f9e84497827d432215b0c992e53d1a17e3445767b5b0b1e5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_components_41",
+          "sha256": "62d076d14614dd08299e3ef470478919851a60b8d47b69fd4e68535afc07bff6"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_components_42",
+          "sha256": "100b1353ffe659ce565845c0f76cd2bb2d12ef20263afe3cf303812af0fb5176"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_consumables_11",
+          "sha256": "16842b6f440463ed3bd819d229b421ef26a278c253f600a2b4cb64d418431b07"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_consumables_12",
+          "sha256": "7b3746ec5d72e62e6dd648db9926c72850fea999de09466ea7e842165c8cfd4e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_consumables_13",
+          "sha256": "48d7fac13b832f29ddd5007ba653c5acf2b89773971ad99ddcf64ca451d075b1"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_consumables_43",
+          "sha256": "6eeb4c2308e630845edbc6d9f5df26ac0ed8879841e9eaea8aad6c483ab1386a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_consumables_44",
+          "sha256": "6abb26bf30f5a0c4c1bd66aa54cb58b2258384c631637a161ed7f9bae92354d2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_preparation_14",
+          "sha256": "2eaa6a3c6c18510d7ed097a28a6edacc99b9729900dd3dd78ad89f70328b1fb0"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_preparation_15",
+          "sha256": "3e97c8b646e951c0869952245a5fa59c89ad8b5bc656c55f155aa516166cf525"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_preparation_16",
+          "sha256": "58df37ce4fc090718c40d866c06b07770457a4fb8aeeb2b08f582a79b1434286"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_preparation_17",
+          "sha256": "24afb04c490e6acf5c053684280ae59d5dd973ba6c0e786440f4d3a86884f3c6"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_preparation_45",
+          "sha256": "2df5ecfee0b5620742e0c4e6eb5b26bade747d22e7c600edfc2bac269ab24008"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_preparation_46",
+          "sha256": "5e8a09559a8c53435ed8b97aeea4816b0b8f278b4e209c98ea932fdf571ee07b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_preparation_47",
+          "sha256": "ec9e5861e20ede3e804799cf0a212822ec0f2b431bd90532603209b00a794dac"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_18",
+          "sha256": "46eadc673697e924065b6a2028fba3f76d4a2e988ba480c400be57cc14f899d2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_19",
+          "sha256": "9b4b3b487de0d28ebd36b37837d4ad9cea8f35f6ee691b6e0e904607627ce363"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_20",
+          "sha256": "f0c4c465d2c716d26e57b77897f632fedd6cd22ca91869b638589a21b28aa8a4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_21",
+          "sha256": "d1b56ac9026fa53267be490130602420f023507050012199c2341566ad5c7e1a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_22",
+          "sha256": "7e957a8167eabb219bdedcde0540d36fc9f0de134e059195e0bffe2138db306c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_23",
+          "sha256": "f1ebde1f6a0bb427e54d9d0e6f0c0913beed5b9af8a7c09ad3706b702b8a80bb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_24",
+          "sha256": "49c41c4a1ebd4656319ffc204a457e5cbb4b33e8d84ff89975adaf2c134cea68"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_48",
+          "sha256": "ae19a9e16ec1115724d2d643f7b30540ffb53e04b944f7de98a1f717303a3223"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_49",
+          "sha256": "399fdb13cf661622fe06158a4f4e6aa20cbf321500fda353d52c2eef4df03cd7"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_labor_50",
+          "sha256": "ef1f0efe15f69c6156cd8a6d38eb91eb128af9b7bdc221deffd9d80bcf33097f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_equipment_25",
+          "sha256": "52f1442319c253cd9f6f878d5200340e97294094d8d908e522166d0030e5a7fb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_equipment_26",
+          "sha256": "f228014ecc08adbce3fc2c91ab493b4e1c5416571e6fdef30523aa819b7ca240"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_equipment_27",
+          "sha256": "cde9a9cbc323c7bb05b7238c4632efb550a1c8043536693d27265398e51ff82d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_equipment_51",
+          "sha256": "23b11b2050fab17caf7436b9ac4547c10bebba53c146cf68bf9932c5f4a19c1e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_equipment_52",
+          "sha256": "4f4d4bc8bb3d8345a3c2d98a054d081fe738f3750971d8e457f4157b2d1ad773"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_logistics_28",
+          "sha256": "11285853f3735aa4454ca5c7350c7c7f780ec814cf0ff1b2e6f6f294e383373e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_logistics_29",
+          "sha256": "df7ed398fab16e4a2167a49cff0ac8c5c4b57a389967182fc8a03b61fe8e35d9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_logistics_53",
+          "sha256": "f4421bdac7d14bbcbac57af39efbae088c29a6d902d8ecf6967dd208b9777aca"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_logistics_54",
+          "sha256": "bf366e36de4cabd696d50937d85e817c188a2a82813eb60c51b26b5b184289dc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_waste_30",
+          "sha256": "eb5581f49ba156f26af695bb2842edaad32a82fe5dc50cad9cb6c75dd5272c78"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_waste_31",
+          "sha256": "b1602acc2253e26f2533e4aed6c001e3660b32407a12d3018fa853f015c57f06"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_waste_55",
+          "sha256": "11bce93601a606cf8fa1885d6209cfd0d817175942d7391924bacb96ff8830f1"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_waste_56",
+          "sha256": "b981744c2043be1ccc970924f8692b480b6c46ce51dcd9923021f842478c2a4b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_quality_control_32",
+          "sha256": "7a9381375ca7dd052c6e04228098f22e0606fbdf033ed17bcb0734a34634eee5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_quality_control_33",
+          "sha256": "37cd654039d55748f91a3b8aaae4e8b03dc3758edf8d3cbc801bf09e7c0ebcbb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_quality_control_34",
+          "sha256": "eab450e1c9578a73005bfff2eebf916cd88dbd3218d720d66a89eaf2d08779cb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_quality_control_57",
+          "sha256": "00434385f26aad29e2f1fbf9abb1dfe875fd1d73754ee4c999b5a2de85169f9c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_quality_control_58",
+          "sha256": "1c87d12ef93378ef59e6b714e20a89b940686459a898d95413b72bf693edd86b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_quality_control_59",
+          "sha256": "7fcf5c73aecebea608020a763835161a2e1074a78d3ec07e670c3e92e645e426"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_overhead_35",
+          "sha256": "e3be8cb2d1dcecdc50753651067cb79eea4404977e2a4cb43d848c832617b05f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_standard_tax_36",
+          "sha256": "6a72006da0ba4b8dbcf2564eb32a6e84dcbb8c770700406fdf865bb9db05e0e8"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_anchor_technical_room",
+      "family": "stairs_concrete",
+      "contextKey": "technical_room",
+      "titleRu": "монтаж закладных для бетонной лестницы в техническом помещении",
+      "pairedPlacementCatalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_technical_room",
+      "definitionId": "3af64e8d-64f3-5a29-9dab-f22d7a58ae11",
+      "version": 3,
+      "definitionSha256": "525517d7cc7956c4d588e88791309fe9f12501c6f5bd9e2f8d8bf046c4029918",
+      "baselineId": "880b2600-a2c3-5470-adda-1b51dffedbb8",
+      "parameterSchemaSha256": "bc8ce1ffc100ee00be552a0f2fbae6a3d1f04ce81a52d18d90e0b6bc32b7b3df",
+      "oldPrimary": {
+        "parameterId": "q",
+        "unitId": "m3",
+        "defaultValue": 100
+      },
+      "legacyRows": [
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_01",
+          "sha256": "b95a60f72a518a527414a1b66def3bc6ca1b603faf842560fab2cf47dd364bf5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_02",
+          "sha256": "9a1a10869112fe42132eeaac0fd62e0dadb57eab2f3c9c95dc29a54860a12a0e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_03",
+          "sha256": "b5ef479e56362e5f76562a636ee76313f68209a8bcdbe1abd7b05758ab9f329a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_04",
+          "sha256": "699c11742c58fa9b16ab5413f4eda8cf080cdadc88d462f1335279b54598124e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_05",
+          "sha256": "2bc8c75c9788370d7775c62cc85723b9a772fbc321ce95179a6b1f72aca7e0b3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_06",
+          "sha256": "b7845f333c6d673415219c93af6039b193e8ae2644b9e695c6a5d63dd363b6ca"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_37",
+          "sha256": "f66d329b84e39728c845f01568c390e807942d2334cd5c1dcb074b23f672cb5a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_38",
+          "sha256": "2eda7c0ef7d419db7f4f25a400d0f821f4234b4bb25b4ae985b52b642457b249"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_materials_39",
+          "sha256": "60a5d4e534a983eb5f8da9796e79b8d576ce27cf729616412c55a0e1e1100215"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_components_07",
+          "sha256": "9015a8cf4fff8bcb705e987e8ff5021bbc40a810438b6b0d79d3f3fc98717788"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_components_08",
+          "sha256": "dacceccbe727ae1853f7b439adb0958b24ae4234f6475faffdc9c3ed4587eac8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_components_09",
+          "sha256": "91ba15db6a4b097047615aa794e82941d9e5132b9b13488cacadaba7cb03868e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_components_10",
+          "sha256": "87b0afe026fa407734681c3f63811ad97f843468e0983b50bf83be9875a131a9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_components_40",
+          "sha256": "b92e957b13352ec1d930e8a799eef2dcba170f47daf67aaec013ef705915c507"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_components_41",
+          "sha256": "505c83e0308cbb2a5462c8eac291f2b8f64fac4a77c9a08eeddba2840a45da33"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_components_42",
+          "sha256": "ddd431302b25b939d1abd3c15c6da75b6cffd5328cf344a8b1530937c580411f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_consumables_11",
+          "sha256": "1d295bc7f51f8f410301a9015001bc84c1a56c638cb6b6eba1eb982de398dac4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_consumables_12",
+          "sha256": "f85c73c277bddd5a1d26f0af9a61a202031d2195ded6b9672972eca897c2a62c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_consumables_13",
+          "sha256": "5ac53bf0b0758b73f76e4947efa03c235c49c4bdfeb8b6fbd7b393a67d8a4320"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_consumables_43",
+          "sha256": "37f8c879158f7d922470c9f743bdd773dac0ebdd7cc48bd829635e9974831ae7"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_consumables_44",
+          "sha256": "63be14d8a4f195dcaf5e52b9f240dcb925bf2ca21a8982b78f697d0c9a22d298"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_preparation_14",
+          "sha256": "864f58cfb86dbea19712985af5ba12d60cc22dfb76cf9464f4414fe44af403d3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_preparation_15",
+          "sha256": "75d6d0c8b4898bd5b452bfe85650c7282e92dbc03d7fb8588cfc7b0478c6c49f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_preparation_16",
+          "sha256": "36c2f5074e04ba39d5a9fd6190a33df7b1d68bccfb91e5279b240c0a4096e2cc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_preparation_17",
+          "sha256": "dff2244414b00ea371a3332ecd7a90cd79f6d6331e15d161348c4045c2493774"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_preparation_45",
+          "sha256": "8c8ac0d68be56c6ffa8b5426fbd35400384e1ca2a503e29a3cd75db561684fbc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_preparation_46",
+          "sha256": "1ad52406fdd01156e1ab055972db1cd8e167e2e675e0d21eb901277237a155bc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_preparation_47",
+          "sha256": "2d3fbbc743fd4c83ba2a10a505b2b561b69ebc53a21e26fb971d5b5b64a995c5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_18",
+          "sha256": "d1b8c6dd700dd21ae9019538cd3155698de5a04ecf73af4f46a345f13d049767"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_19",
+          "sha256": "6281e7a8b9b299b58122bb23f2e7f2541a5f12870edcd0203cfd85d6e319218e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_20",
+          "sha256": "1722e78ff7940a67b80fd82c76020b1faec3069111143fa0b3f8c85b8948f700"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_21",
+          "sha256": "b1dfee687c0c93e51c30b7d0e8bbd189ad3ce051eebb33ab5fc0de0ad29a6138"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_22",
+          "sha256": "7e3ce8f1c1c25766b2281bfc6cd23c2c28ab6db4565be6bef5f7289b79a1a093"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_23",
+          "sha256": "b96bb7fd96f2aa79d5935d902bf76c8dd720493785a363ea4c5c387ff5ff35fe"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_24",
+          "sha256": "95617cb96c782422daae41953770641fedae86f1c6050b61f2be491fd6feacce"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_48",
+          "sha256": "e060bbbe0e1199964a16861a7c846763896447c80b67f3c5b2c27f989de1af4c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_49",
+          "sha256": "70b660697543c0220902c519ec9c74bdd6170ad5d3b3312316699bac36ef147e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_labor_50",
+          "sha256": "e8e19d027096c1303b5c798a4e3b74e26e385254440de0d8521b2ab128588d4d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_equipment_25",
+          "sha256": "fc4a34c043d201cdf614d3d37d0a24df8be6466b9b1dd0dfa9687b710837100c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_equipment_26",
+          "sha256": "65b97be6e8b361ddaad2af427f604af3615116aea4a2522d32b64c44f7d7b1aa"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_equipment_27",
+          "sha256": "8caa01a130d52a3f7b7cb49821b5e93d0ac3d6bc7af5f243aaeec5fb39938d4a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_equipment_51",
+          "sha256": "9740b1ab52fa1d961003610e6e3c309d89c1ba07d1ebaf2882c9cbdd016c82de"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_equipment_52",
+          "sha256": "c0b76ce8d9063a43c36561a38bb29efea703acaec2b78131c5a97bd51fa971c4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_logistics_28",
+          "sha256": "96ecc202415aaf070da4d30e2e4640d8112fd279cb96ccbe1564b8b20e849667"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_logistics_29",
+          "sha256": "2d68510e2818bf2fe1689a7e7f0e9385d37cb571bfb612e40f94b276026fef8d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_logistics_53",
+          "sha256": "d4f18cc1f5fcf21544637d11d0b14552fdcaf9a201cc3b28de2a71903d933459"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_logistics_54",
+          "sha256": "db290fc449250ff89b8080f18d5e1bc1b8681411c912d9aeafcbf4bb5c1637f5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_waste_30",
+          "sha256": "fdceea6fa86b7da54ee569b756aefa4a715e1a2a061be5d8322efd1c39dc40d2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_waste_31",
+          "sha256": "56be1e5c66b4c482bbbde0be7f6982671eda5e7baead268591ff0f0444080c0e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_waste_55",
+          "sha256": "13f615f2f73a0c98ca5da47ceac512293c5fc0da4eb17657daba33673c91474e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_waste_56",
+          "sha256": "2a236d009017c5913eaa37621629fd308ead108f91af660d51f5e296be2fb526"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_quality_control_32",
+          "sha256": "63c49a01432b6c4f7e51a2eaabc4cceb7a334013465068a72603651416b11b0e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_quality_control_33",
+          "sha256": "341f1571794f7a8f2f3d6c5278a1a9f192c3cb930e72747841e452421f023746"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_quality_control_34",
+          "sha256": "b3ea09e344a0347689a81fca6e6a4dc7340a20157ab49d9c9ac7a64aec7a182a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_quality_control_57",
+          "sha256": "095a98f6dadb0dbfbb85d6e72cf947d425b5bfe3e3aea1f19c6e17ecfb2ecb9a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_quality_control_58",
+          "sha256": "0a3bb2c9bdaec44e416304167d04e40722f4be01190d3d36c4a0591f82509d56"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_quality_control_59",
+          "sha256": "50bf1ec7fd79283be956881d8851a8b5e79c05facb71599bb5a55c83230d2b81"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_overhead_35",
+          "sha256": "6b0988244c97660b7ea01d5138721493805abb34e7afd9cdccc42412bba4bc76"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_technical_room_tax_36",
+          "sha256": "259d938385b2cf50b9011f62cb29874b8baee8024637b5afffe1a3391c56c04b"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_anchor_wet_zone",
+      "family": "stairs_concrete",
+      "contextKey": "wet_zone",
+      "titleRu": "монтаж закладных для бетонной лестницы во влажной зоне",
+      "pairedPlacementCatalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_wet_zone",
+      "definitionId": "c5c4cf4b-de45-589f-aae6-646b62cdf942",
+      "version": 3,
+      "definitionSha256": "254761d673b69f0cbd42babbe3fa36844c53d310ca5c1e4b284421551f3d5548",
+      "baselineId": "2f467e57-e1c6-544d-9e51-880963a95b9b",
+      "parameterSchemaSha256": "bc8ce1ffc100ee00be552a0f2fbae6a3d1f04ce81a52d18d90e0b6bc32b7b3df",
+      "oldPrimary": {
+        "parameterId": "q",
+        "unitId": "m3",
+        "defaultValue": 100
+      },
+      "legacyRows": [
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_01",
+          "sha256": "20c35d669287d2fc34812459548287b918d00cfba35137993bc3f7d7e86d6e8c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_02",
+          "sha256": "c0d9609b319d949a871f9de0fb559650858759939e9b845cda910d1aa82ec784"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_03",
+          "sha256": "e5e702e622ba73b8b144ba96edb2af35d3b764c4e5c383702331f15dacd63502"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_04",
+          "sha256": "3e792dc6e0d76dc5fb507204380d0907e1522bfd7e06d50c526eb065284f47da"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_05",
+          "sha256": "17078731283d11ab55a56f3b858ce183cf4b9c36471add5f33dece0f5f3faba6"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_06",
+          "sha256": "12979eac5dd7ccf996b512923f974476423a293e7f3621c62813f6b584cb26d8"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_37",
+          "sha256": "cd3aa5364965f556f970d72656667f7f71faef1f72a88729947177925100b737"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_38",
+          "sha256": "02752833fbf02c0d30f0b0a084526114296529e8021094fba838c8d73b5b7f5e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_materials_39",
+          "sha256": "b7ce26b57dd4a3c02979a57f4e23c892cb962d3f3ddad784be154a2bfa398bc6"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_components_07",
+          "sha256": "95ac6b858d9e127873410f38ee63507406447ec21de87d91c11f1388848a944e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_components_08",
+          "sha256": "026a2a3555509f5fd6de99d1e62129e0dd88cab7d3361fcddf547148c88a52a4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_components_09",
+          "sha256": "2ff5da8a30366556642d4be56663c78a63099c1bc58c267de3563eef9823cd30"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_components_10",
+          "sha256": "301f220db22d4ef7feb281d18e7e0db25aa1d15b73f27ccec44d55b53960ed19"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_components_40",
+          "sha256": "aa5a7ff2228613905ffc90bbe70426285209ba8ef9a12949cbc1b9cbddd48fbf"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_components_41",
+          "sha256": "b9d9a0cc0adb790ddbb522c8d4ffc0c96392082db861adcadb5a5e993b0b8f1b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_components_42",
+          "sha256": "88ab54f9a6c59303abaa7bb5c6b37b3285bab893f54af44cd983eeb51ec3617f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_consumables_11",
+          "sha256": "dbfe9104bb66d65b9ca41d6a4a92a17766d1eb90e9c5c0553cf44dc1fe39804a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_consumables_12",
+          "sha256": "06851e21739817e7933f85b57515a9b72d4f14c322801bf94ff5e26a60c2b4c5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_consumables_13",
+          "sha256": "2721024a681668512773cefe135cdf6f25058164d22ef7a2d569ac3b494c6bb5"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_consumables_43",
+          "sha256": "a3ba735af953f9f5268069e4e9e046734acac5122e6b86be1b045dc045c8027d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_consumables_44",
+          "sha256": "d013ae146dff129a5f14f178babb84da096f80d074f5ecf08f995231928c0326"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_preparation_14",
+          "sha256": "85b335736b2d126fc9adde6568e8c0f433bd4533595ac30336c22f271d78dedf"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_preparation_15",
+          "sha256": "15d41f3f63a56d0965536feb9a5ae183864a9ce42611c524dc0b9879172bb82a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_preparation_16",
+          "sha256": "53a48e3db633f94a66fc4b6b6c4f18af77744309a6442f529f3a91f1bc43bd29"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_preparation_17",
+          "sha256": "67e5d9a65c4a02495eed4944b79b1f0eae4225b097ba6f75fbd2e77782e91206"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_preparation_45",
+          "sha256": "8effb211184123d5ba458a8300811127bd3e388810cdf64c58f7b632f92a5699"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_preparation_46",
+          "sha256": "43bdf812c67f37882929e070a4da6a3660648f13c57f7519b708cdf4db32c180"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_preparation_47",
+          "sha256": "7fda4e5bf24739fdf575e8c0e3d094620aab83f1541e751fc4a7fedf5511a702"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_18",
+          "sha256": "2f39f937d7b8e221cf0e4229ca070aec9ce3744a01ec18d2c37886c14dce3592"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_19",
+          "sha256": "c8d38329fd3bbf38345fe8c0c4462016ea37a45096997d1740ed6c78d8b7dee4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_20",
+          "sha256": "bbcbabe0a494ed5e3abcc8edeeffadb9a15a9d32c6c07c1227127282e232ae11"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_21",
+          "sha256": "dcd13bc11412cc9f59d2579b4bd00753a22a19bef4f39820a95137ad4a4dbc87"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_22",
+          "sha256": "cb10f876aabdff81410e4501c55ff3e49a041c165bf187d2d39f7905b6205fe2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_23",
+          "sha256": "a5c22e114fccf64dc83e5f90442a44f6210bd32799816332c54666798b54a6f3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_24",
+          "sha256": "656fdac89845864d9693a7b96a8f0f2ff5ac5fb6e4fcc7d10a2b34ae5b0e1ff9"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_48",
+          "sha256": "fcab986ffd81e482ab1991504163f14c0bb5388459c01fd5219ac8ff7b2cd3ca"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_49",
+          "sha256": "1f91516ca6153372ce881fb746180bfaeb69d952049400b5773010287e90e8ef"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_labor_50",
+          "sha256": "22322a21a2c7b4322a4452ccc5d798897d13396891f0dc527df4b4d452c854aa"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_equipment_25",
+          "sha256": "32226be35b74b9c52d3a7147c3e6d283d00ab717cc5ecb54cc1b3076b233352e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_equipment_26",
+          "sha256": "697e9285db4660ef2dfb03f8573c70fec872efaba332ef1c16ab2bc0d7ad60ef"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_equipment_27",
+          "sha256": "1f289dba402a0a017bf25df588d7f8f64ec2a0936886123e7c5ab02d0a4d2438"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_equipment_51",
+          "sha256": "019b24ef4246c00fce0876a2272cf4d6151a814e4c190990fa74ec90d573b224"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_equipment_52",
+          "sha256": "7d3626f6f5622daafe038849b243eea130f717c482fccd700e07cd4e9c220fbf"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_logistics_28",
+          "sha256": "b3666c5162ae2971ee2968d7dd8e7fcb09f2ca97a5ec2aaf0c86f132f2dc3173"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_logistics_29",
+          "sha256": "8c7bd4f71b9245f1205033f8810e7cabcad6fab68ebe08793d3f3495daf1ee27"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_logistics_53",
+          "sha256": "5964d72d57f98a32416e98b8759e001b4ade59f547acd8c9be2b6047e56d2937"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_logistics_54",
+          "sha256": "16d45edeb5b8cbd205ac4291df7902d7066cfe24539d78c4af2985a072b45329"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_waste_30",
+          "sha256": "fc46060b442601820c975ca09b9e8d36a9b9baa991edda7e901d2e047bffef29"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_waste_31",
+          "sha256": "2ffeca0eca8c26eb8803b643ed0cd22bd704777f8c6e738e59ee5d9cbd58ebdf"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_waste_55",
+          "sha256": "3cc8b6ae327bf7ead203c574906ec199f5a2097584f2d4d6ca852bb48873ff4d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_waste_56",
+          "sha256": "50ab80aebdecf0a3fde5e45839e814a01f1f00fbbca9aeb966aa8a097d35aefc"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_quality_control_32",
+          "sha256": "4b9a825b4e5d725b95da21e6add9b3dac258503c943e07c1feedce8cfef19579"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_quality_control_33",
+          "sha256": "8aebb47996263a2308667784874c54787cdd36b9f6af7d6a383bb11a3104ed4e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_quality_control_34",
+          "sha256": "64e1a459148e328ffc3183d49128ba2bb608dc843f0e511e927e21464857bc85"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_quality_control_57",
+          "sha256": "5d41777f31a9a292571fbffa963b933dcf9948b59caedcd6577f26eb8fb0fc9d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_quality_control_58",
+          "sha256": "a536711a49416b17809dfddb500b77e5639f731ffb181d1b8aeae6077ae377e2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_quality_control_59",
+          "sha256": "c848cbd8bb17896e707172cebf2124fb892dc86f820371e2474a1f2c5a3f8fa0"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_overhead_35",
+          "sha256": "c66455800ca4c874f41ce5479b3548a06a1621b0ec2d2306cc32cec9841f9a59"
+        },
+        {
+          "rowId": "concrete_foundation_interior_stairs_concrete_anchor_wet_zone_tax_36",
+          "sha256": "89fac315aa82c1bae47f536e0d54f6a95e01a7c6b3ef7e2901a01db676b94997"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_repair",
+      "family": "strip_foundation",
+      "contextKey": "repair",
+      "titleRu": "монтаж закладных для ленточного фундамента с локальным ремонтом основания",
+      "pairedPlacementCatalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_repair",
+      "definitionId": "37b724d4-5908-5afb-8596-82f9e4156493",
+      "version": 3,
+      "definitionSha256": "c33b95f8a2b8b816dfb8698a1f19273660a92dc3bd7dfd18437ade94ed2d68f5",
+      "baselineId": "6c45a77f-1389-57bc-b969-8b3dbbe6b682",
+      "parameterSchemaSha256": "bc8ce1ffc100ee00be552a0f2fbae6a3d1f04ce81a52d18d90e0b6bc32b7b3df",
+      "oldPrimary": {
+        "parameterId": "q",
+        "unitId": "m3",
+        "defaultValue": 100
+      },
+      "legacyRows": [
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_01",
+          "sha256": "00d7a8143015da534932bb8ae47ceef3bc9763124692d64b948aa288240bdac3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_02",
+          "sha256": "6aa503390e60dc82f8c5492843ff53f9acb0f985f1b773557ba64ed119532eed"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_03",
+          "sha256": "7feda56fdb79c7200d061f0105ef3cce70001863e106f9388336d696536f7950"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_04",
+          "sha256": "0662919e9fb1046aefd0f0f5be9d7a9fbbc54bb01b808a8da0fbcd150b84ef60"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_05",
+          "sha256": "11049b6e8cea14144211244589b7bd775eb831bc3345327491fcede03ff7e131"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_06",
+          "sha256": "4e6ca466b6760612d443c8e67e932f15f45853d7ab263e4c7b4b49e659ff384a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_37",
+          "sha256": "49758f32f0ef72a0be4041d4613e9b8cc69090c96927ac4a43d72a2a850a4779"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_38",
+          "sha256": "3fbfe4513b1339f55712717e1aa81e32eafab5a3dd3465462a8d2d912a0cb606"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_materials_39",
+          "sha256": "368c5fa9527bb38fb530f36f849ade6c12eca6334a0c467a0132f9f32a799e38"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_components_07",
+          "sha256": "52bfb6c5d47ada5694f48e82baf1cdc933c3ee61acdf1037d88f8931ac8a7b74"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_components_08",
+          "sha256": "cd5c4f4ae251782bee7b5d8e18949c39c6f541e12dd21cf30b64c8261fc739c1"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_components_09",
+          "sha256": "fd1190b0fea1bc7f9e2a93d6aa32b547a39beeb3b32b543de660174f03380681"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_components_10",
+          "sha256": "eade90be56c365249a49b875173e57e19c86a4b58f955d9fa99724c058c98438"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_components_40",
+          "sha256": "6593df27819b616b462bc285d6a38b27a07848c4ce6de20744a2be3e7fcc01e3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_components_41",
+          "sha256": "305b0f5bfa101408f4ebd3e7f7403aee8503e535fbb1984a810c6b93087e3edd"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_components_42",
+          "sha256": "25eff2ab3f9d9c237e286f95f8ccee98265a4d9b89b365b5297824a672824a5e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_consumables_11",
+          "sha256": "314f37e919d8f36cbcd90533c8139e3857ebd3f256465d8bee22d10007b67fdb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_consumables_12",
+          "sha256": "9a8a6b45df654e865eab4819633c837215c842d8998cb50140311d1236a0d7af"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_consumables_13",
+          "sha256": "779fa025df008e312a1d6f9a177924bb5de88696c64ee3b6d54da6623153f84e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_consumables_43",
+          "sha256": "cdd6490ed1bc3d39b7701fc7ba68e6277f25a5919f8b96a70c9459ef3a174a96"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_consumables_44",
+          "sha256": "c5467ed0a88a089564d1a1358885c5d261ffc5a803572ef144101025e2b3c693"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_preparation_14",
+          "sha256": "38509a2f02afc9ea365f3662b4eaa22fa5602f5dd55829ca04006faa67386372"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_preparation_15",
+          "sha256": "ccd0ccc376711d4350033a38dd2b6c1e74774b4653167d07a46343fef616e575"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_preparation_16",
+          "sha256": "5e170e9df02b4143c54bf946d7fe80c68b46dabebcd470b81f0bc530801991b4"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_preparation_17",
+          "sha256": "0ca60a7b2d071772fb5441b8b0c17d8337e305d8455283643dd1093b0cf948c2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_preparation_45",
+          "sha256": "d0cde6399f573a6ae466d9023e45d206d778ad195d5799ab500b5b27d68c8473"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_preparation_46",
+          "sha256": "89172fe3b5f636872ca5b7a1dbc876c8aa3c3f9e602778ae4746182632e55992"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_preparation_47",
+          "sha256": "fb6b8eafcea249d1df7c8c145cc2daa1b50e39cb23bec1239b4af51fc6586adb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_18",
+          "sha256": "64a61d3bfbfb43364da8222a516542324d4c07254bcf4b7d4168afba0587ee8a"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_19",
+          "sha256": "c361a1ebfba08259117e7d3d561e50a46ef760e4c2a8153ae704dbcc08e281f0"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_20",
+          "sha256": "8aacb501bf65672c81469bae1e24742ec18afcc8343066388a0cc661fdbaafbb"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_21",
+          "sha256": "be6c5adc5558e50c2823f559843e45cd2351f43af18253500668e74e4c4b8892"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_22",
+          "sha256": "1b3736c970417516d5d7e8018c64015dae646f0ef9370ecae46ab59d6f135f27"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_23",
+          "sha256": "b955be769f237a2b12fb5e598dffa5559958b5b01de26d6f9ece0ed48b5aa879"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_24",
+          "sha256": "243a9c8e3d3c0b4825b7460dbf22b70148e1edafff136572c11d98a9b58c127c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_48",
+          "sha256": "b890daffae226d1a165c00a47781804c2316987469a26152b3fc116ff9a76148"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_49",
+          "sha256": "928e04dbd18463253ed803bd624288efdd00a3837d38a1f6481fe47694b6c21e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_labor_50",
+          "sha256": "45900db3eb498fc0c2839c666f7a2a8be2ac4a0e004e262a650e931f97854ee3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_equipment_25",
+          "sha256": "e6c42aab425052b4903eb470748288f62766979301357055f000921e2ff59b0c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_equipment_26",
+          "sha256": "20d969700d489dcb5d23b5e0e062c14890d6e2052b406e01730a8841a5d59fe7"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_equipment_27",
+          "sha256": "d3c2d9870b6aabb15821072f3064190925baa55502a1f537abe154ed31751f2b"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_equipment_51",
+          "sha256": "91ee2a012ee172fc4b714f2bb9a0891a8078715b74a364e814c8f4f1f564f951"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_equipment_52",
+          "sha256": "80fb26165ff106b297683e618914c0036eb70fe74a496107bb1850e45214230d"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_logistics_28",
+          "sha256": "cd17182d5cf54b38353dde7a3c609d3c7a05ead8b80584f23f23ed61c0d1359c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_logistics_29",
+          "sha256": "abafd20c2f4cc3a3809d57c990cd73bf2d3efc603a05c28a74249a23b259296c"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_logistics_53",
+          "sha256": "bee4c1a4298b3d8ee31cf7bac0561763d2333d1458ef5e0a69861220acc8c10e"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_logistics_54",
+          "sha256": "ccea1c566cf35b4572f595f44bfa0084d3549ff3c01e037245bed32003e321dd"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_waste_30",
+          "sha256": "044b6ae90b5bcde43e9ea2cd4c1701d14b7ff4e8d53981b84d5699094135a4df"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_waste_31",
+          "sha256": "ca4856e1194b01252aef38432e0f4a0f28f6bb941f2f89756d6da656f6fdd3e1"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_waste_55",
+          "sha256": "6524605526fec90704c8fc533b2e667a58ba5a0ac2f24f118db577c95e04ed01"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_waste_56",
+          "sha256": "e1ad1a4531396fd3f6752316c514dd503f3601194bb5b8bd815286e2523e27ca"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_quality_control_32",
+          "sha256": "1220605d1ddd8efaef7f64dfc99fbdae03c95938ed9b7e357997aac5341a1dce"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_quality_control_33",
+          "sha256": "001ea1c7f9657ccfb90ebd89001c7011cb80ecfe55f3cacc003a4e575403f258"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_quality_control_34",
+          "sha256": "2fe0170b05e5e1e74c1e44443176bec032575e5b8eccc6f7ccaabcccc45cbda3"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_quality_control_57",
+          "sha256": "ab48c9c60363686e85f1582f44b6bae52d3b499d390a902c5d46b45df8f2e20f"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_quality_control_58",
+          "sha256": "45aff336b6ebd49d98ab6c8fed2a693dcb0e1f4421f8c2753ca75e8ec0092030"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_quality_control_59",
+          "sha256": "7e08b8d1ba6a446a8eb54afc4cd2ab626b776dfa12fabee08088d63aa5dd6b60"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_overhead_35",
+          "sha256": "7e4642caebfdf8a0d578fe4918b0fa45f46159e959d27a919bb381d7f666c7a2"
+        },
+        {
+          "rowId": "concrete_foundation_interior_strip_foundation_anchor_repair_tax_36",
+          "sha256": "23da0112db5c852deb85d99996d6283c934b149fd6aa401c2fba70b208da007a"
+        }
+      ]
+    }
+  ],
+  "preserved12CatalogIds": [
+    "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_high_load",
+    "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_large_area",
+    "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_small_area",
+    "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_standard",
+    "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_technical_room",
+    "canonical-work:base:concrete_foundation_interior_slab_foundation_anchor_wet_zone",
+    "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_high_load",
+    "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_large_area",
+    "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_small_area",
+    "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_standard",
+    "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_technical_room",
+    "canonical-work:base:concrete_foundation_interior_strip_foundation_anchor_wet_zone"
+  ]
+}

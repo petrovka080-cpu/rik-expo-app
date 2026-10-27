@@ -1,0 +1,21 @@
+{
+  "schema": "estimate-sample-ratebook-v1",
+  "pricebook_id": "kg-sample-ratebook-2026-q3",
+  "region": "KG",
+  "currency": "KGS",
+  "version": "2026-q3",
+  "rows": [
+    {
+      "catalog_item_id": "masonry_stone_m2",
+      "professional_name_ru": "Камень для кладки",
+      "unit": "m2",
+      "unit_price": 1200,
+      "price_source_id": "kg-sample-ratebook-2026-q3:masonry_stone_m2",
+      "price_source_type": "regional_ratebook",
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "confidence": "medium",
+      "review_status": "APPROVED_FOR_PRELIMINARY"
+    }
+  ]
+}

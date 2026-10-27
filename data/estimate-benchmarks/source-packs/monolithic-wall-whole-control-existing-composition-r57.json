@@ -1,0 +1,1869 @@
+{
+  "contract": "monolithic-wall-whole-control-existing-source-composition/r57",
+  "sourceId": "monolithic-wall-selected-strength-and-measured-repair-r57",
+  "sourcePacks": [
+    {
+      "path": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "sha256": "757a2c49ddd6ef3a34ae8026247d708e6c0d16046b0a5c145ab70da9e2f22fe2"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "sha256": "8ceb1b93a1da2c39cba37a95286bd2974f13da2baac14b9c0863abf8e9e79a9e"
+    }
+  ],
+  "sourceArtifacts": [
+    {
+      "file": "gost-18105-2018-official2019.pdf",
+      "sha256": "df0a656f31ad7245e6b5cccdeee98aaf05df747576253e6e20371b295947d55f",
+      "bytes": 305749,
+      "role": "SITE_PLANNING_AND_ACCEPTANCE_SCOPE"
+    },
+    {
+      "file": "gost-22690-official-reprint2019-with-correction.pdf",
+      "sha256": "338ccbb2f65b7ae7d396cd16f95c3e76548e651c8bc98649e9d5423a11b73cb9",
+      "bytes": 7983918,
+      "role": "SELECTED_DIRECT_STANDARD_METHOD"
+    },
+    {
+      "file": "18105-2021-correction.gif",
+      "sha256": "e0b9da9dac79afb210bf31548017d202bf6de9c9786b8a24f2607e4f8e1dd910",
+      "bytes": 25678,
+      "role": "VISUALLY_REVIEWED_VOTING_TABLE_ONLY"
+    },
+    {
+      "file": "18105-2024-correction.gif",
+      "sha256": "41fa04a7fb988b295be69f764c5b14ee143d726088f03075c9cef5baee4e0f3d",
+      "bytes": 20278,
+      "role": "VISUALLY_REVIEWED_VOTING_TABLE_ONLY"
+    },
+    {
+      "file": "22690-2022-correction.gif",
+      "sha256": "6557fd1b9d8ce360faf10ea22a8c8fa99eb19575d060ffc4da3fba0c9666516f",
+      "bytes": 25810,
+      "role": "VISUALLY_REVIEWED_VOTING_TABLE_ONLY"
+    },
+    {
+      "file": "oniks-os-manufacturer-current.pdf",
+      "sha256": "7ecbea7ab1b1e6df2c197b2d337865677a9d2e6fed07df6e2fdba9026a93d8da",
+      "bytes": 1919483,
+      "role": "EXACT_EQUIPMENT_EXECUTION_AND_BOM"
+    },
+    {
+      "file": "bosch-gbh228-current-202601.pdf",
+      "sha256": "5fef1bdf0829ac175c9d5e076514a90878e841d0d31b967e5d5748221cd2d13c",
+      "bytes": 9689166,
+      "role": "EXACT_SELECTED_DRIVE_NOT_OPERATING_TIME"
+    },
+    {
+      "file": "bosch-gde68-current-linked-2016.pdf",
+      "sha256": "5213f7e1822ec1de231bb06df0ef6ebeb9d45d7903657c9074fce31e208e910e",
+      "bytes": 2515808,
+      "role": "SELECTED_DRY_WALL_HOOD_BOUNDARY"
+    },
+    {
+      "file": "bosch-expert-accessory-brochure-2025-gben.pdf",
+      "sha256": "81b097a0ed750a46e6044ea50e62a7580ffa91e860d89ab668e4bec0f2e41bd3",
+      "bytes": 9278094,
+      "role": "EXACT_SINGLE_INITIAL_BIT_NOT_WEAR_RATE"
+    },
+    {
+      "file": "bosch-gas35h-current-202507.pdf",
+      "sha256": "48f35172d4a43c5790d77b765bfc32e7fb41ffcf2c16c5dff58279ece823a1f5",
+      "bytes": 9154182,
+      "role": "FULL_H_DRY_SYSTEM_SCOPE_NOT_CONSUMABLE_RATE"
+    },
+    {
+      "file": "bosch-gas35h-06019c3600-scope-20261024.html",
+      "path": "data/estimate-benchmarks/source-artifacts/bosch-gas35h-06019c3600-scope-20261024.html",
+      "sha256": "bc62eb389d1e64de135e25cf25f9f9d9789ba714a1a68a5b70a5a3d7e0f64125",
+      "bytes": 566380,
+      "url": "https://www.bosch-professional.com/nl/nl/products/gas-35-h-afc-06019C3600",
+      "role": "EXACT_06019C3600_INITIAL_DELIVERY_NOT_CONSUMPTION_OR_PRICE"
+    },
+    {
+      "file": "sika-monotop4200-multiuse-gb-pds-202504.pdf",
+      "sha256": "e328203e9ba51cbb3922d9a6fb2668e8d98f502e8b6e52a1e2e24ddb4fe2b228",
+      "url": "https://gbr.sika.com/content/dam/dms/gb01/k/sika-monotop-4200multiuse.pdf",
+      "locator": "April2025 v01.02 pp2-4; local restrictions p5"
+    },
+    {
+      "file": "sika-monotop4200-multiuse-gb-sds-current.pdf",
+      "sha256": "d746517247e0c625132cb93edcec0e2cc8b645fd697dfaa5134c299fe6fa20fb",
+      "url": "https://gbr.sika.com/dam/dms/gb01/w/sds-sika-monotop-4200multiuse.pdf",
+      "locator": "24Sep2026 v2.2; exact product only"
+    },
+    {
+      "file": "bosch-grw18-2e-current-linked-202205.pdf",
+      "sha256": "ed54028d1328407d3199f15a448c39b045db6de718b4b3ba1255316cbffdbb06",
+      "url": "https://www.bosch-professional.com/binary/manualsmedia/o390450v21_160992A7YB_202205.pdf",
+      "locator": "RU89-91; mechanical gear I; disconnected assembly and cleaning"
+    },
+    {
+      "file": "bosch-stirrer-paddle-table-20261023.html",
+      "path": "data/estimate-benchmarks/source-artifacts/bosch-stirrer-paddle-table-20261023.html",
+      "sha256": "f272d2ebc02011c1c52b33f1980387f1c1b1d83f77c3539878275fbc16ee7b8d",
+      "url": "https://www.bosch-professional.com/gb/en/pro-multi-material-viscous-and-dense-stirrer-basket-3093241-ocs-ac/",
+      "locator": "Exact3609201038 140mm/25-40kg; compare supplied160mm2607990017 30-60kg"
+    }
+  ],
+  "scope": "One separately identified actual flat member; exact TypeII24x48 direct method, actual dry vertical-wall drilling programme and independently measured GB hand repair. No mix sampling or automatic structural acceptance.",
+  "requiredResources": [
+    {
+      "rowId": "monolithic-strength-direct:r2:planning-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:plan",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд специалиста по программе контроля",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "18105 8.1.2–8.1.7",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:transport",
+      "operationId": "monolithic-strength-direct:r2:operation:mobilize",
+      "unitId": "",
+      "category": "service",
+      "titleRu": "Доставка испытательного оснащения",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "actual workface route + compatible transport method required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:handling-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:mobilize",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Переноска испытательного оснащения",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole handling rate required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:case",
+      "operationId": "monolithic-strength-direct:r2:operation:mobilize",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Футляр для испытательного оснащения",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15: case is optional; actual compatible protection required",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:detector",
+      "operationId": "monolithic-strength-direct:r2:operation:survey",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Прибор поиска арматуры и закладных деталей",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer6.4.1; exact detector compatibility and deployment missing",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:geometry-measure",
+      "operationId": "monolithic-strength-direct:r2:operation:survey",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Средство измерения геометрии участка",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "22690 7.1/table2; whole exact measuring method required",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:moisture-meter",
+      "operationId": "monolithic-strength-direct:r2:operation:survey",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Измеритель влажности бетона",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer6.4.3; recommended instrument is not a universal mandatory purchase",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:temperature-meter",
+      "operationId": "monolithic-strength-direct:r2:operation:survey",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Средство контроля температуры бетона",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "22690 5; actual conditions and compatible measurement method",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:marking",
+      "operationId": "monolithic-strength-direct:r2:operation:survey",
+      "unitId": "kg",
+      "category": "material",
+      "titleRu": "Разметочный материал",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer6.4.1; no consumption printed",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:survey-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:survey",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Обследование и разметка испытательных участков",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole labour rate required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:drill",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Перфоратор 880 Вт с патроном SDS plus",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "Current GBH2-28F30Jan2026 RU118-121; exact SDSplus25x400x450 single bit brochure2025 PDF4-5; dry vertical wall with GDE68/H-class full system. One per actually deployed single-drive assembly; no wear/productivity rate.",
+      "authority": "EXACT_SELECTED_DRILLING_ASSEMBLY",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:drill-bit",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Бур по бетону 25×400×450 мм с хвостовиком SDS plus",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "Current GBH2-28F30Jan2026 RU118-121; exact SDSplus25x400x450 single bit brochure2025 PDF4-5; dry vertical wall with GDE68/H-class full system. One per actually deployed single-drive assembly; no wear/productivity rate.",
+      "authority": "EXACT_SELECTED_DRILLING_ASSEMBLY",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:hole-brush",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Спиральная металлическая щётка для отверстий",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer6.4.5; compatible actual hole brush required",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:blow-pump",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Ручная продувочная помпа",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15, one per exact device base kit; no compressor inferred",
+      "authority": "SOURCE_KIT_BOM",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:power-supply",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Электроснабжение сверлильного поста",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "drill method not yet selected; nominal watts are not consumption",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:dust-control",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Сбор пыли при сверлении и очистке",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "complete compatible dust collection and PPE method required",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:prepare-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по подготовке отверстий",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "a point count is not drill hours",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:anchor",
+      "operationId": "monolithic-strength-direct:r2:operation:anchor",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Анкерное устройство 24×48 мм в сборе",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15: rod + three segments + two rings + nut; no duplicate spare purchase",
+      "authority": "SOURCE_KIT_BOM",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:spanner",
+      "operationId": "monolithic-strength-direct:r2:operation:anchor",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Рожковый ключ 22×24 мм",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15",
+      "authority": "SOURCE_KIT_BOM",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:torque-wrench",
+      "operationId": "monolithic-strength-direct:r2:operation:anchor",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Динамометрический ключ для установки анкера",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer6.6.2 recommends torque control; exact compatible wrench and range required",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:grease",
+      "operationId": "monolithic-strength-direct:r2:operation:anchor",
+      "unitId": "kg",
+      "category": "material",
+      "titleRu": "Густая техническая смазка",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer6.6.1; supplied100ml pack is not use per point",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:wire-brush",
+      "operationId": "monolithic-strength-direct:r2:operation:anchor",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Металлическая щётка для анкера",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15/6.6.1",
+      "authority": "SOURCE_KIT_BOM",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:anchor-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:anchor",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по установке испытательного анкера",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole labour rate required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:press",
+      "operationId": "monolithic-strength-direct:r2:operation:test",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Ручной гидравлический прибор испытания бетона",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15; exact050 instrument only; working force5–50kN is an extra limit",
+      "authority": "SOURCE_KIT_BOM",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:micrometer",
+      "operationId": "monolithic-strength-direct:r2:operation:test",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Микрометрическая гайка 0,1 мм",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15/6.6.3;0.2mm substitutes not accepted",
+      "authority": "SOURCE_KIT_BOM",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:test-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:test",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по испытанию бетона",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "no universal hours/point or turns/hour derived",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:instrument-use",
+      "operationId": "monolithic-strength-direct:r2:operation:test",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "titleRu": "Эксплуатация испытательного прибора",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole cost/instrument time authority required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:retest-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:retest",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по повторным испытаниям",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "actual failed attempts; no invented percentage",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:processing-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:process",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по обработке результатов испытаний",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "18105 8.3–8.5; no built-in instrument class accepted as final certificate",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:computer",
+      "operationId": "monolithic-strength-direct:r2:operation:process",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Средство выгрузки и обработки измерений",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer6.9 requires actual compatible workstation; no assumed purchase",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:usb-cable",
+      "operationId": "monolithic-strength-direct:r2:operation:process",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Кабель передачи данных USB A–mini B",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15",
+      "authority": "SOURCE_KIT_BOM",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:report-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:report",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по оформлению протокола испытаний",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole document/report rate required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:whole-service",
+      "operationId": "monolithic-strength-direct:r2:operation:report",
+      "unitId": "",
+      "category": "service",
+      "titleRu": "Полная услуга контроля прочности бетона",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "no provider unit or scope admitted; this cannot absorb repair/access by label",
+      "authority": "APPLICATION_WHOLE_SERVICE_SCOPE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:repair-mortar",
+      "operationId": "monolithic-strength-direct:r2:operation:restore",
+      "unitId": "kg",
+      "category": "material",
+      "titleRu": "Ремонтный состав для бетона",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "approved repair geometry + compatible whole repair system required; no cone volume guessed",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:repair-preparation",
+      "operationId": "monolithic-strength-direct:r2:operation:restore",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Подготовка бетона перед локальным ремонтом",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole cleaning/priming/mixing/application method required",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:repair-water",
+      "operationId": "monolithic-strength-direct:r2:operation:restore",
+      "unitId": "m3",
+      "category": "material",
+      "titleRu": "Вода для локального ремонта бетона",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "exact repair system water/use required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:repair-labour",
+      "operationId": "monolithic-strength-direct:r2:operation:restore",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по восстановлению мест испытаний",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole repair labour rate required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:cleaning-cloth",
+      "operationId": "monolithic-strength-direct:r2:operation:clean",
+      "unitId": "kg",
+      "category": "material",
+      "titleRu": "Материал для очистки прибора",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer10: cotton cloth/technical alcohol; no use quantity",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:technical-alcohol",
+      "operationId": "monolithic-strength-direct:r2:operation:clean",
+      "unitId": "kg",
+      "category": "material",
+      "titleRu": "Технический спирт для очистки прибора",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer10; only actual compatible need, no universal solvent replacement",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:waste-container",
+      "operationId": "monolithic-strength-direct:r2:operation:clean",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Тара для пыли и бетонной крошки",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole containment/collection method required",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:waste-collection",
+      "operationId": "monolithic-strength-direct:r2:operation:clean",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Сбор и погрузка отходов испытаний",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "actual waste route and whole loading method",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:waste-transport",
+      "operationId": "monolithic-strength-direct:r2:operation:clean",
+      "unitId": "trip",
+      "category": "service",
+      "titleRu": "Вывоз отходов испытаний",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "actual route + compatible transport source required",
+      "authority": "APPLICATION_RATE",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:charger",
+      "operationId": "monolithic-strength-direct:r2:operation:clean",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Зарядное устройство 5 В, 1 А",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer15; no kWh from rated power",
+      "authority": "SOURCE_KIT_BOM",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:access-equipment",
+      "operationId": "monolithic-strength-direct:r2:operation:access",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Средства доступа к испытательным участкам",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer5.4–5.6; actual height/depth/route and complete compatible access method",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:ppe",
+      "operationId": "monolithic-strength-direct:r2:operation:access",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Средства защиты при сверлении и испытании",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "whole exact dust/impact/electrical/site PPE method required",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:barriers",
+      "operationId": "monolithic-strength-direct:r2:operation:access",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Ограждение участка испытаний",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "actual work zone and complete barrier method",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:device-sling",
+      "operationId": "monolithic-strength-direct:r2:operation:access",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Страховочное крепление испытательного прибора",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "manufacturer5 conditional work at height/depth, no universal extra device count",
+      "authority": "APPLICATION_PHYSICAL_METHOD",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:sites-flat",
+      "operationId": "monolithic-strength-direct:r2:operation:plan",
+      "unitId": "piece",
+      "category": "control",
+      "titleRu": "Нижняя граница числа контролируемых участков",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "18105-2018 8.2.5-8.2.7; not actual test programme",
+      "authority": "SOURCE_LOWER_BOUND_NOT_ACTUAL_PROGRAMME",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:sites-horizontal",
+      "operationId": "monolithic-strength-direct:r2:operation:plan",
+      "unitId": "piece",
+      "category": "control",
+      "titleRu": "Нижняя граница числа контролируемых участков",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "18105-2018 8.2.5-8.2.7; not actual test programme",
+      "authority": "SOURCE_LOWER_BOUND_NOT_ACTUAL_PROGRAMME",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:sites-vertical",
+      "operationId": "monolithic-strength-direct:r2:operation:plan",
+      "unitId": "piece",
+      "category": "control",
+      "titleRu": "Нижняя граница числа контролируемых участков",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "18105-2018 8.2.5-8.2.7; not actual test programme",
+      "authority": "SOURCE_LOWER_BOUND_NOT_ACTUAL_PROGRAMME",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:dust-extractor",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Пылесос строительный класса H для сухой пыли",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "Exact initial dry H kit only; GAS35H_AFC_06019C3600",
+      "authority": "EXACT_INITIAL_DRY_H_ASSEMBLY",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:dust-h-filter",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Плоский складчатый фильтр класса H, HEPA/PTFE",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "Exact initial dry H kit only; 2607432052",
+      "authority": "EXACT_INITIAL_DRY_H_ASSEMBLY",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:dust-safety-bag",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Безопасный фильтровальный мешок для пыли",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "Exact initial dry H kit only; 2607432050_ONE_INITIAL_BAG_NOT_RETAIL_PACK5",
+      "authority": "EXACT_INITIAL_DRY_H_ASSEMBLY",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:dust-antistatic-hose",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Антистатический шланг с адаптером инструмента, 35 мм, 5 м",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "Exact initial dry H kit only; 2608000566_ASSEMBLED_HOSE_WITH_TOOL_ADAPTER",
+      "authority": "EXACT_INITIAL_DRY_H_ASSEMBLY",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:dust-hood",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Пылеулавливающий кожух в сборе со щёточной вставкой для отверстия 25 мм",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "Exact initial dry H kit only; GDE68_1600A001G7_BRUSH_INSERT_RETAINED",
+      "authority": "EXACT_INITIAL_DRY_H_ASSEMBLY",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-direct:r2:dust-initial-kit-check",
+      "operationId": "monolithic-strength-direct:r2:operation:prepare",
+      "unitId": "piece",
+      "category": "control",
+      "titleRu": "Сверка начального пылесборного поста",
+      "sourceId": "monolithic-strength-direct-typeII2448-r2",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-direct-whole-cycle-r2.json",
+      "exactLocator": "Existing R45 effective initial assembly balance",
+      "authority": "DERIVED_INITIAL_ASSEMBLY_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:measured-volume",
+      "operationId": "monolithic-strength-repair:r3:operation:apply",
+      "unitId": "m3",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:theoretical-dry",
+      "operationId": "monolithic-strength-repair:r3:operation:apply",
+      "unitId": "kg",
+      "category": "material",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:mixing-charge-dry",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "kg",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:mixing-water-minimum",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "m3",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:mixing-water-maximum",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "m3",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:mixing-charge-shortage",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "kg",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:dry-material-order",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "kg",
+      "category": "material",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:dry-order-bags",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "piece",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:dry-remaining",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "kg",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:dry-free",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "kg",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:dry-consumption-shortage",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "kg",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:dry-reserve-deficit",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "kg",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:initial-station-kit-check",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "piece",
+      "category": "control",
+      "titleRu": "Обмер и материальный баланс принятого локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Existing R3/R38/R41/R42 measured geometry, whole-charge and effective supply/initial-kit balance",
+      "authority": "EXISTING_SOURCE_AND_COMPILER_DERIVED_BALANCE",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:mixer",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Миксер двухскоростной 230 В, 1600 Вт",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:paddle",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Мешалка для густого раствора 140 мм, М14",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:shaft-key",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Ключ гаечный 24 мм",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:paddle-key",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Ключ гаечный для мешалки",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:mixing-container",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Ёмкость для замешивания ремонтного раствора",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:hawk",
+      "operationId": "monolithic-strength-repair:r3:operation:apply",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Сокол штукатурный",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:trowel",
+      "operationId": "monolithic-strength-repair:r3:operation:apply",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Кельма для ремонтного раствора",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:float",
+      "operationId": "monolithic-strength-repair:r3:operation:finish",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Тёрка деревянная",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:sponge",
+      "operationId": "monolithic-strength-repair:r3:operation:wet",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Губка для удаления излишка воды",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "Exact existing R3 initial repair station",
+      "authority": "INITIAL_DOCUMENTED_REPAIR_STATION",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:substrate-tools",
+      "operationId": "monolithic-strength-repair:r3:operation:prepare",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Инструмент подготовки бетона",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:preparation-labour",
+      "operationId": "monolithic-strength-repair:r3:operation:prepare",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по подготовке бетона к ремонту",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:wetting-water",
+      "operationId": "monolithic-strength-repair:r3:operation:wet",
+      "unitId": "m3",
+      "category": "material",
+      "titleRu": "Вода для увлажнения бетона",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:mixing-water",
+      "operationId": "monolithic-strength-repair:r3:operation:mix",
+      "unitId": "m3",
+      "category": "material",
+      "titleRu": "Вода для затворения ремонтного раствора",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "ACTUAL_CHARGE_WATER",
+      "unresolved": false
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:extra-dry-material",
+      "operationId": "monolithic-strength-repair:r3:operation:apply",
+      "unitId": "kg",
+      "category": "material",
+      "titleRu": "Дополнительный ремонтный состав для неровностей и потерь",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:repair-labour",
+      "operationId": "monolithic-strength-repair:r3:operation:apply",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по нанесению ремонтного раствора",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:curing-cover",
+      "operationId": "monolithic-strength-repair:r3:operation:cure",
+      "unitId": "m2",
+      "category": "material",
+      "titleRu": "Материал защиты от высыхания",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:curing-labour",
+      "operationId": "monolithic-strength-repair:r3:operation:cure",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по уходу за ремонтным составом",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:cleaning-water",
+      "operationId": "monolithic-strength-repair:r3:operation:clean",
+      "unitId": "m3",
+      "category": "material",
+      "titleRu": "Вода для очистки инструмента",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:cleaning-labour",
+      "operationId": "monolithic-strength-repair:r3:operation:clean",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Труд по очистке инструмента",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:waste-containment",
+      "operationId": "monolithic-strength-repair:r3:operation:clean",
+      "unitId": "piece",
+      "category": "equipment",
+      "titleRu": "Тара для отходов ремонтного состава",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:waste-transport",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "trip",
+      "category": "service",
+      "titleRu": "Вывоз отходов локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:access",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Средства доступа к месту ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:power",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Электроснабжение ремонтного поста",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:ppe",
+      "operationId": "monolithic-strength-repair:r3:operation:handle",
+      "unitId": "set",
+      "category": "equipment",
+      "titleRu": "Средства защиты при ремонте бетона",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    },
+    {
+      "rowId": "monolithic-strength-repair:r3:quality",
+      "operationId": "monolithic-strength-repair:r3:operation:control",
+      "unitId": "man_hour",
+      "category": "work",
+      "titleRu": "Контроль выполненного локального ремонта",
+      "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+      "sourcePack": "data/estimate-benchmarks/source-packs/monolithic-strength-repair-hand-source-r3.json",
+      "exactLocator": "GB hand repair declared whole-operation requirement; water only uses actual accepted charge programme",
+      "authority": "UNRESOLVED_APPLICATION_NORM",
+      "unresolved": true
+    }
+  ],
+  "sourceOperations": {
+    "strength": [
+      {
+        "id": "plan",
+        "titleRu": "Спланировать контроль",
+        "completedResultRu": "Назначены отдельная конструкция, возраст, схема, зоны и точки",
+        "resources": [
+          {
+            "key": "planning-labour",
+            "titleRu": "Труд специалиста по программе контроля",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "18105 8.1.2–8.1.7",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "mobilize",
+        "titleRu": "Доставить оснащение к месту работы",
+        "completedResultRu": "Полный комплект доставлен по фактическому маршруту",
+        "resources": [
+          {
+            "key": "transport",
+            "titleRu": "Доставка испытательного оснащения",
+            "unitId": "",
+            "category": "LOGISTICS",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "actual workface route + compatible transport method required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "handling-labour",
+            "titleRu": "Переноска испытательного оснащения",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "whole handling rate required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "case",
+            "titleRu": "Футляр для испытательного оснащения",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer15: case is optional; actual compatible protection required",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "survey",
+        "titleRu": "Обследовать и разметить точки",
+        "completedResultRu": "Арматура, края, дефекты и условия испытания проверены",
+        "resources": [
+          {
+            "key": "detector",
+            "titleRu": "Прибор поиска арматуры и закладных деталей",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer6.4.1; exact detector compatibility and deployment missing",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "geometry-measure",
+            "titleRu": "Средство измерения геометрии участка",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "22690 7.1/table2; whole exact measuring method required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "moisture-meter",
+            "titleRu": "Измеритель влажности бетона",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer6.4.3; recommended instrument is not a universal mandatory purchase",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "temperature-meter",
+            "titleRu": "Средство контроля температуры бетона",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "22690 5; actual conditions and compatible measurement method",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "marking",
+            "titleRu": "Разметочный материал",
+            "unitId": "kg",
+            "category": "CONSUMABLES",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer6.4.1; no consumption printed",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "survey-labour",
+            "titleRu": "Обследование и разметка испытательных участков",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "whole labour rate required",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "prepare",
+        "titleRu": "Подготовить отверстия",
+        "completedResultRu": "Отверстия подходящего размера очищены и измерены",
+        "resources": [
+          {
+            "key": "drill",
+            "titleRu": "Перфоратор 880 Вт с патроном SDS plus",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "EXACT_SELECTED_DRILLING_ASSEMBLY",
+            "countPerExactDeviceKit": null,
+            "locator": "Current GBH2-28F30Jan2026 RU118-121; exact SDSplus25x400x450 single bit brochure2025 PDF4-5; dry vertical wall with GDE68/H-class full system. One per actually deployed single-drive assembly; no wear/productivity rate.",
+            "countPerExactDrillingPost": 1
+          },
+          {
+            "key": "drill-bit",
+            "titleRu": "Бур по бетону 25×400×450 мм с хвостовиком SDS plus",
+            "unitId": "piece",
+            "category": "ACCESSORIES",
+            "authority": "EXACT_SELECTED_DRILLING_ASSEMBLY",
+            "countPerExactDeviceKit": null,
+            "locator": "Current GBH2-28F30Jan2026 RU118-121; exact SDSplus25x400x450 single bit brochure2025 PDF4-5; dry vertical wall with GDE68/H-class full system. One per actually deployed single-drive assembly; no wear/productivity rate.",
+            "countPerExactDrillingPost": 1
+          },
+          {
+            "key": "hole-brush",
+            "titleRu": "Спиральная металлическая щётка для отверстий",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer6.4.5; compatible actual hole brush required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "blow-pump",
+            "titleRu": "Ручная продувочная помпа",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "SOURCE_KIT_BOM",
+            "countPerExactDeviceKit": 1,
+            "locator": "manufacturer15, one per exact device base kit; no compressor inferred",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "power-supply",
+            "titleRu": "Электроснабжение сверлильного поста",
+            "unitId": "set",
+            "category": "POWER",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "drill method not yet selected; nominal watts are not consumption",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "dust-control",
+            "titleRu": "Сбор пыли при сверлении и очистке",
+            "unitId": "set",
+            "category": "WASTE",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "complete compatible dust collection and PPE method required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "prepare-labour",
+            "titleRu": "Труд по подготовке отверстий",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "a point count is not drill hours",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "anchor",
+        "titleRu": "Установить анкер",
+        "completedResultRu": "Классический анкер подготовлен и установлен с контролем затяжки",
+        "resources": [
+          {
+            "key": "anchor",
+            "titleRu": "Анкерное устройство 24×48 мм в сборе",
+            "unitId": "piece",
+            "category": "ACCESSORIES",
+            "authority": "SOURCE_KIT_BOM",
+            "countPerExactDeviceKit": 1,
+            "locator": "manufacturer15: rod + three segments + two rings + nut; no duplicate spare purchase",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "spanner",
+            "titleRu": "Рожковый ключ 22×24 мм",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "SOURCE_KIT_BOM",
+            "countPerExactDeviceKit": 1,
+            "locator": "manufacturer15",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "torque-wrench",
+            "titleRu": "Динамометрический ключ для установки анкера",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer6.6.2 recommends torque control; exact compatible wrench and range required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "grease",
+            "titleRu": "Густая техническая смазка",
+            "unitId": "kg",
+            "category": "CONSUMABLES",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer6.6.1; supplied100ml pack is not use per point",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "wire-brush",
+            "titleRu": "Металлическая щётка для анкера",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "SOURCE_KIT_BOM",
+            "countPerExactDeviceKit": 1,
+            "locator": "manufacturer15/6.6.1",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "anchor-labour",
+            "titleRu": "Труд по установке испытательного анкера",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "whole labour rate required",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "test",
+        "titleRu": "Выполнить испытания",
+        "completedResultRu": "Получена действительная запись усилия, скалывания и смещения",
+        "resources": [
+          {
+            "key": "press",
+            "titleRu": "Ручной гидравлический прибор испытания бетона",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "SOURCE_KIT_BOM",
+            "countPerExactDeviceKit": 1,
+            "locator": "manufacturer15; exact050 instrument only; working force5–50kN is an extra limit",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "micrometer",
+            "titleRu": "Микрометрическая гайка 0,1 мм",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "SOURCE_KIT_BOM",
+            "countPerExactDeviceKit": 1,
+            "locator": "manufacturer15/6.6.3;0.2mm substitutes not accepted",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "test-labour",
+            "titleRu": "Труд по испытанию бетона",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "no universal hours/point or turns/hour derived",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "instrument-use",
+            "titleRu": "Эксплуатация испытательного прибора",
+            "unitId": "machine_hour",
+            "category": "MACHINERY",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "whole cost/instrument time authority required",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "retest",
+        "titleRu": "Учесть недействительные испытания",
+        "completedResultRu": "Фактические повторные точки и причины документированы",
+        "resources": [
+          {
+            "key": "retest-labour",
+            "titleRu": "Труд по повторным испытаниям",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "actual failed attempts; no invented percentage",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "process",
+        "titleRu": "Обработать результаты",
+        "completedResultRu": "Обработаны действительные результаты по выбранному стандартному пути",
+        "resources": [
+          {
+            "key": "processing-labour",
+            "titleRu": "Труд по обработке результатов испытаний",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "18105 8.3–8.5; no built-in instrument class accepted as final certificate",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "computer",
+            "titleRu": "Средство выгрузки и обработки измерений",
+            "unitId": "piece",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer6.9 requires actual compatible workstation; no assumed purchase",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "usb-cable",
+            "titleRu": "Кабель передачи данных USB A–mini B",
+            "unitId": "piece",
+            "category": "ACCESSORIES",
+            "authority": "SOURCE_KIT_BOM",
+            "countPerExactDeviceKit": 1,
+            "locator": "manufacturer15",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "report",
+        "titleRu": "Оформить протокол",
+        "completedResultRu": "Результаты связаны с точками, возрастом и подтверждённой поверкой",
+        "resources": [
+          {
+            "key": "report-labour",
+            "titleRu": "Труд по оформлению протокола испытаний",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "whole document/report rate required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "whole-service",
+            "titleRu": "Полная услуга контроля прочности бетона",
+            "unitId": "",
+            "category": "SERVICE",
+            "authority": "APPLICATION_WHOLE_SERVICE_SCOPE",
+            "countPerExactDeviceKit": null,
+            "locator": "no provider unit or scope admitted; this cannot absorb repair/access by label",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "restore",
+        "titleRu": "Восстановить места испытаний",
+        "completedResultRu": "Отверстия и места скалывания восстановлены совместимой системой",
+        "resources": [
+          {
+            "key": "repair-mortar",
+            "titleRu": "Ремонтный состав для бетона",
+            "unitId": "kg",
+            "category": "MATERIALS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "approved repair geometry + compatible whole repair system required; no cone volume guessed",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "repair-preparation",
+            "titleRu": "Подготовка бетона перед локальным ремонтом",
+            "unitId": "set",
+            "category": "TOOLS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "whole cleaning/priming/mixing/application method required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "repair-water",
+            "titleRu": "Вода для локального ремонта бетона",
+            "unitId": "m3",
+            "category": "CONSUMABLES",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "exact repair system water/use required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "repair-labour",
+            "titleRu": "Труд по восстановлению мест испытаний",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "whole repair labour rate required",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "clean",
+        "titleRu": "Очистить приборы и убрать участок",
+        "completedResultRu": "Оснащение очищено, пыль и обломки собраны и удалены",
+        "resources": [
+          {
+            "key": "cleaning-cloth",
+            "titleRu": "Материал для очистки прибора",
+            "unitId": "kg",
+            "category": "CONSUMABLES",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer10: cotton cloth/technical alcohol; no use quantity",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "technical-alcohol",
+            "titleRu": "Технический спирт для очистки прибора",
+            "unitId": "kg",
+            "category": "CONSUMABLES",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer10; only actual compatible need, no universal solvent replacement",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "waste-container",
+            "titleRu": "Тара для пыли и бетонной крошки",
+            "unitId": "piece",
+            "category": "WASTE",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "whole containment/collection method required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "waste-collection",
+            "titleRu": "Сбор и погрузка отходов испытаний",
+            "unitId": "man_hour",
+            "category": "LABOUR",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "actual waste route and whole loading method",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "waste-transport",
+            "titleRu": "Вывоз отходов испытаний",
+            "unitId": "trip",
+            "category": "LOGISTICS",
+            "authority": "APPLICATION_RATE",
+            "countPerExactDeviceKit": null,
+            "locator": "actual route + compatible transport source required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "charger",
+            "titleRu": "Зарядное устройство 5 В, 1 А",
+            "unitId": "piece",
+            "category": "POWER",
+            "authority": "SOURCE_KIT_BOM",
+            "countPerExactDeviceKit": 1,
+            "locator": "manufacturer15; no kWh from rated power",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      },
+      {
+        "id": "access",
+        "titleRu": "Обеспечить доступ и защиту",
+        "completedResultRu": "Рабочее место, ограждение и защита соответствуют фактическим условиям",
+        "resources": [
+          {
+            "key": "access-equipment",
+            "titleRu": "Средства доступа к испытательным участкам",
+            "unitId": "set",
+            "category": "ACCESS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer5.4–5.6; actual height/depth/route and complete compatible access method",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "ppe",
+            "titleRu": "Средства защиты при сверлении и испытании",
+            "unitId": "set",
+            "category": "PPE",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "whole exact dust/impact/electrical/site PPE method required",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "barriers",
+            "titleRu": "Ограждение участка испытаний",
+            "unitId": "set",
+            "category": "ACCESS",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "actual work zone and complete barrier method",
+            "countPerExactDrillingPost": null
+          },
+          {
+            "key": "device-sling",
+            "titleRu": "Страховочное крепление испытательного прибора",
+            "unitId": "piece",
+            "category": "ACCESSORIES",
+            "authority": "APPLICATION_PHYSICAL_METHOD",
+            "countPerExactDeviceKit": null,
+            "locator": "manufacturer5 conditional work at height/depth, no universal extra device count",
+            "countPerExactDrillingPost": null
+          }
+        ]
+      }
+    ],
+    "repair": {
+      "prepare": "Подготовить место ремонта",
+      "wet": "Увлажнить основание",
+      "mix": "Приготовить ремонтный раствор",
+      "apply": "Заполнить подготовленный участок",
+      "finish": "Обработать поверхность ремонта",
+      "cure": "Обеспечить уход за ремонтом",
+      "clean": "Очистить инструмент и собрать отходы",
+      "handle": "Обеспечить доступ, подачу и защиту",
+      "control": "Проверить локальный ремонт"
+    }
+  },
+  "remainingUnresolvedResourceIds": [
+    "monolithic-strength-direct:r2:planning-labour",
+    "monolithic-strength-direct:r2:transport",
+    "monolithic-strength-direct:r2:handling-labour",
+    "monolithic-strength-direct:r2:case",
+    "monolithic-strength-direct:r2:detector",
+    "monolithic-strength-direct:r2:geometry-measure",
+    "monolithic-strength-direct:r2:moisture-meter",
+    "monolithic-strength-direct:r2:temperature-meter",
+    "monolithic-strength-direct:r2:marking",
+    "monolithic-strength-direct:r2:survey-labour",
+    "monolithic-strength-direct:r2:hole-brush",
+    "monolithic-strength-direct:r2:power-supply",
+    "monolithic-strength-direct:r2:dust-control",
+    "monolithic-strength-direct:r2:prepare-labour",
+    "monolithic-strength-direct:r2:torque-wrench",
+    "monolithic-strength-direct:r2:grease",
+    "monolithic-strength-direct:r2:anchor-labour",
+    "monolithic-strength-direct:r2:test-labour",
+    "monolithic-strength-direct:r2:instrument-use",
+    "monolithic-strength-direct:r2:retest-labour",
+    "monolithic-strength-direct:r2:processing-labour",
+    "monolithic-strength-direct:r2:computer",
+    "monolithic-strength-direct:r2:report-labour",
+    "monolithic-strength-direct:r2:whole-service",
+    "monolithic-strength-direct:r2:repair-mortar",
+    "monolithic-strength-direct:r2:repair-preparation",
+    "monolithic-strength-direct:r2:repair-water",
+    "monolithic-strength-direct:r2:repair-labour",
+    "monolithic-strength-direct:r2:cleaning-cloth",
+    "monolithic-strength-direct:r2:technical-alcohol",
+    "monolithic-strength-direct:r2:waste-container",
+    "monolithic-strength-direct:r2:waste-collection",
+    "monolithic-strength-direct:r2:waste-transport",
+    "monolithic-strength-direct:r2:access-equipment",
+    "monolithic-strength-direct:r2:ppe",
+    "monolithic-strength-direct:r2:barriers",
+    "monolithic-strength-direct:r2:device-sling",
+    "monolithic-strength-repair:r3:substrate-tools",
+    "monolithic-strength-repair:r3:preparation-labour",
+    "monolithic-strength-repair:r3:wetting-water",
+    "monolithic-strength-repair:r3:extra-dry-material",
+    "monolithic-strength-repair:r3:repair-labour",
+    "monolithic-strength-repair:r3:curing-cover",
+    "monolithic-strength-repair:r3:curing-labour",
+    "monolithic-strength-repair:r3:cleaning-water",
+    "monolithic-strength-repair:r3:cleaning-labour",
+    "monolithic-strength-repair:r3:waste-containment",
+    "monolithic-strength-repair:r3:waste-transport",
+    "monolithic-strength-repair:r3:access",
+    "monolithic-strength-repair:r3:power",
+    "monolithic-strength-repair:r3:ppe",
+    "monolithic-strength-repair:r3:quality"
+  ],
+  "unresolvedUnitRowIds": [
+    "monolithic-strength-direct:r2:transport",
+    "monolithic-strength-direct:r2:whole-service"
+  ],
+  "fullTechnicalAcceptance": false,
+  "newFull": 0
+}

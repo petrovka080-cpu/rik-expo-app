@@ -1,0 +1,9 @@
+# supplemental-electrical_utilities-007-кабельная-линия-0-4-кв-800-м-траншея
+
+Prompt: кабельная линия 0.4 кВ 800 м траншея
+Group: ELECTRICAL_UTILITIES
+Estimate level: PRELIMINARY_BOQ
+Reviewer: estimate-golden-benchmark-review-board
+Status: APPROVED_FOR_PRELIMINARY
+
+Expert note: reference BOQ is generated from the governed calculator/template at dataset creation time and locked by row/unit/source/formula tolerance gates.

@@ -1,0 +1,311 @@
+{
+  "contract": "drywall-ceiling-high-load-geometry:r1",
+  "catalogId": "canonical-work:base:drywall_ceiling_interior_drywall_ceiling_install_high_load",
+  "titleRu": "Потолок ГКЛ высокой нагрузки: каркас КНАУФ П112.1 500/500/800 мм + сухой шов EMAC NDP",
+  "verifiedAt": "2026-10-20",
+  "system": {
+    "manufacturer": "КНАУФ",
+    "designation": "П112.1",
+    "board": "ГСП-А ПЛУК 12,5 × 1200 × 2500 мм, один слой",
+    "frame": "Двухуровневый каркас ПП60×27×0,6 мм; ПП по3м; парные односторонние анкерные соединители вместо двухуровневого соединителя, согласно разрешённой замене таблицы16",
+    "mainSpacingMaxM": 0.5,
+    "bearingSpacingMaxM": 0.5,
+    "hangerSpacingMaxM": 0.8,
+    "hanger": "Прямой КНАУФ-подвес60×30×125×0,9мм, несущая способность0,40кН; дваLN3,5×11 на подвес",
+    "anchor": "Металлический потолочный анкер6×40мм в сплошной железобетонной плите, один на прямой подвес; монтаж по таблице12 и §7 альбома",
+    "loadClassMaxKnM2": 0.5,
+    "loadMeaningRu": "Полная распределённая нагрузка на систему, включая собственный вес каркаса, обшивки и дополнительный вес. Не500кг/м²; не разрешение навешивать тяжёлые приборы непосредственно на обшивку. Изолированные грузы>10кг требуют независимого крепления к перекрытию по отдельному проекту; грузы6–10кг/м требуют дополнительных основных профилей и не входят в эту карту.",
+    "baseScopeRu": "Составная предметная ветвь: КНАУФ П112.1, один слой ГСП-А 12.5 мм, ПП 60×27×0.6 мм, основные/несущие профили ≤500/500 мм, прямые подвесы 125 мм класса 40 кг через ≤800 мм; сплошное железобетонное перекрытие, металлический анкер 6×40 мм. Одно прямоугольное сухое помещение шириной 1–15 м и длиной 1–120 м; высота 2–4 м, опуск 100–150 мм. Независимые поля длиной ≤15 м соединены только свободно подвижной накладкой EMAC NDP. Нет проёмов, перепадов уровня, приборов на обшивке, требований огнестойкости/звукоизоляции и специальных сейсмических узлов.",
+    "heightMaxM": 4,
+    "dropMinM": 0.1,
+    "dropMaxM": 0.15,
+    "finishRu": "Заделка стыков Q1, примыканий и головокTN; грунтование. СплошнаяQ3/Q4 и окраска не входят.",
+    "engineeringAcceptance": false,
+    "jointSystem": "EMAC_NOVOTAPAJUNTAS_NDP_PLANO_NTDPP50BL3_WITH_5_S_CLIPS",
+    "completeKnaufFactorySystemClaim": false,
+    "compatibilityEvidenceRu": "Несущая схема, шаги и подвесы П112.1 сохранены. EMAC NDP — самостоятельная ненесущая сухая накладка, официально предназначенная для потолков: заводской ПВХ профиль шириной 50 мм, зазор 10–35 мм, поэтому при выбранных 20 мм перекрытие составляет по 15 мм. Специальное подтверждение испытаний всей комбинации КНАУФ+EMAC не заявлено. Ветвь ограничена параллельными швами без их пересечений: ширина помещения ≤15 м. Основание, расчётная нагрузка, пригодность кромки для клипсы и приёмка монтажа проверяются ответственным специалистом на объекте."
+  },
+  "sources": [
+    {
+      "id": "KNAUF_CEILINGS_WORKING_DETAILS_2025",
+      "title": "Альбом рабочих чертежей: потолки из КНАУФ-листов и КНАУФ-суперлистов",
+      "edition": "18.02.2025; серия1.045.9-2.08.1",
+      "url": "https://www.knauf.ru/upload/iblock/16e/8h7c3z35upmxuw098s9cc2f9lnxpedfg/102_0003-Albom-RCH-_Potolki-iz-KNAUF_listov-i-KNAUF_superlistov_-_18_02_2025_-v01-Preview.pdf",
+      "sha256": "fd2387de8671bd758125b4c15709e51d3e0e5398e6eb632d72a52ed1c1530a35",
+      "locatorRu": "PDFстр10(прямой125мм/40кг);13(табл12, металлические потолочные анкеры);14(однослойность, смещения);18(табл16, П112.1 и парная замена соединителя);20–21(ограничения навески, анкеры, удлинители);23–24(150мм TN, ≥400мм разбежка, швы каждые15м);26–27(швы, грунтование, инструмент, подмости);32(П112.1:500/500/800мм при≤0.5кН/м²);33(прямые подвесы);35(деформационный шов с полосой ГСП, приклеенной с одной стороны)",
+      "role": "PRIMARY_MANUFACTURER_SYSTEM_CONFIGURATION_AND_INSTALLATION"
+    },
+    {
+      "id": "KNAUF_P11_2025",
+      "title": "П11: потолки из КНАУФ-листов",
+      "edition": "02/2025",
+      "url": "https://www.knauf.ru/upload/iblock/b1d/9yh37ql79yendgkn7fepgoaowc5u347z/25-IL-P11-Potolki-iz-KNAUF_listov-_08_04_2025_-v01-Preview.pdf",
+      "sha256": "822c9d46f2c9d4eb9209ff47569b148374e4bbe06b1343cfef1336ebb43a3fed",
+      "locatorRu": "PDFстр2,табл1:П112,основные500мм/несущие500мм/подвесы800мм при0.3<p≤0.5кН/м²,подвесы40кг;стр3:последовательность,TN≤150мм;табл2 содержит средний10×10м расход без раскроя, который не подменяет усиленную раскладку",
+      "role": "PRIMARY_INDEPENDENT_CONFIGURATION_CROSS_CHECK"
+    },
+    {
+      "id": "KNAUF_FUGEN_2025_07",
+      "title": "КНАУФ-Фуген, информационный лист",
+      "edition": "07/2025",
+      "url": "https://www.knauf.ru/upload/iblock/d54/s3vq1z4wsuh4e3a81gtzl5pp15z2gv2a/07-IL-KNAUF_Fugen-_02_09_2025_-v04-Preview.pdf",
+      "sha256": "3a6e5980c1e3009793f5b490f68ce80a80b675cb4c903d6725d907075455fdc6",
+      "locatorRu": "PDFстр1:склеивание гипсовых элементов;стр2:Q1=0.25кг/м²,сплошной1мм=0.8кг/м²;стр3:0.6–0.7л воды/кг сухой смеси;мешки5/10/25кг;стр4:приклеивание и инструменты",
+      "role": "PRIMARY_Q1_MIXING_AND_COATING_QUANTITIES"
+    },
+    {
+      "id": "KNAUF_TIEFENGRUND_2026_06",
+      "title": "КНАУФ-Тифенгрунд, информационный лист",
+      "edition": "06/2026",
+      "url": "https://www.knauf.ru/upload/iblock/215/ggu7x06mvv4w1pq8t5w2lw7b2ynkr25y/38-IL-KNAUF_Tifengrund-_23_06_2026_-v02-Preview.pdf",
+      "sha256": "9487c60444959b35d40e9532af4b3fba2e699a9b44239279d999c5ba016b01a9",
+      "locatorRu": "PDFстр2:приблизительно0.1кг/м² на слой,тара5/10кг;готовая неразбавленная грунтовка,кромки ГКЛ под шпаклёвку. Литры P11 не переименованы в килограммы.",
+      "role": "PRIMARY_SELECTED_PRODUCT_QUANTITY_AND_PACKAGING"
+    },
+    {
+      "id": "KG_KRER10_2015",
+      "title": "КРЕР10, деревянные конструкции",
+      "edition": "КРЕР2015, официальный PDF",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no10derevannyekonstrukcii_compressed-6196908347ccd3433.17740211.pdf",
+      "sha256": "f2565dfea716722cf94fa1b151ca245c31f72ee4b8e105d2a0df520b4cc90a0e",
+      "locatorRu": "PDFстр9,§1.15–1.17:комплектные потолки,полный местный комплекс основных/вспомогательных работ;стр10,§1.18–1.19:материалы по рабочим чертежам/узлам/технологии,высота до4м;стр139–140,табл10-05-011-01:двухуровневыйП112,100м²,ГКЛ12.5мм112м²на100м²(однослойностьсверенапоальбомуКНАУФ),92челчразряд3.5,электроножницы0.14,электроперфоратор0.61,шуруповёрт2машч. Колонка02П113 не применяется.",
+      "role": "PRIMARY_BASE_SINGLE_LAYER_P112_NORMATIVE_LABOR_AND_MACHINE_REFERENCE"
+    },
+    {
+      "id": "EMAC_NDP_TDS_R03_001",
+      "title": "Novotapajuntas NDP: Ficha técnica",
+      "edition": "R03.001, 01/02/2013; current official download verified 2026-10-20",
+      "url": "https://emac.es/public/Attachment/2021/7/ficha-tecnica-novotapajuntas-ndp-emac.pdf",
+      "sha256": "cec784b72b91057a64bf3493fbc295b20f13087f4cf03d89073ce5792bd04305",
+      "locatorRu": "PDF стр. 1: NTDPP50, 3 м, ширина 50 мм, клипсы S по 5 шт.; стр. 2: сухая установка комплектных клипс с чередованием направления, без клея/шурупов. Старая TDS описывает стены/фасады; допуск потолков независимо подтверждён текущей карточкой и каталогом.",
+      "role": "PRIMARY_DRY_MECHANICAL_JOINT_COMPONENT_AND_KIT"
+    },
+    {
+      "id": "EMAC_PROJECT_SOLUTIONS_NDP",
+      "title": "EMAC: Soluciones para proyectos, Novotapajuntas NDP",
+      "edition": "official current catalog download verified 2026-10-20",
+      "url": "https://emac.es/public/Attachment/2021/6/soluciones-para-proyectos-emac-esp.pdf",
+      "sha256": "f77bbc132e7ab349eeedf8a91cc305e77eb052a34cdc04983043410a643cc886",
+      "locatorRu": "PDF стр. 54, печатная стр. 55: применение на потолках (techos), диапазон клипсы S 10–35 мм, 5 комплектных клипс на каждый профиль 3 м, монтаж без клея и шурупов.",
+      "role": "PRIMARY_CEILING_APPLICATION_AND_EXACT_KIT_CROSS_CHECK"
+    },
+    {
+      "id": "EMAC_NDP_CURRENT_PRODUCT",
+      "title": "EMAC Novotapajuntas NDP PVC: current official product",
+      "edition": "official HTML snapshot 2026-10-20",
+      "url": "https://emac.es/novotapajuntas-ndp-pvc-tapajuntas",
+      "sha256": "13860d6c7523be8c2b4d3752224d3dc18547b6b0333b20f5b256f85eed0afa36",
+      "locatorRu": "Descripción: techos, без adhesivos y tornillería; Especificaciones: NTDPP50BL3, Plano, PVC, 10–35 мм, 50 мм, белый, 3 м.",
+      "role": "PRIMARY_CURRENT_PRODUCT_CEILING_APPLICATION"
+    },
+    {
+      "id": "KG_KRER_GENERAL_APPLICATION",
+      "title": "Указания по применению КРЕР на строительные и специальные строительные работы",
+      "edition": "официальныйPDF,проверен20.10.2026",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "locatorRu": "PDFстр2,§1.4:для принципиально иной технологии/ресурсов индивидуальная норма;PDFстр9,§4.2:без корректировки при иных типах машин/материалов,не меняющих принципиально технологическую/организационную схему и качество. Часы перфоратора не переименованы в часы иной дрели.",
+      "role": "PRIMARY_BASE_NORM_NON_PRINCIPAL_SUBSTITUTION_BOUNDARY"
+    }
+  ],
+  "products": {
+    "board": {
+      "url": "https://www.knauf.ru/catalog/listovye-i-plitnye-materialy/gipsokarton-gkl/gipsokartonnyy-knauf-list-standartnyy/",
+      "lengthM": 2.5,
+      "widthM": 1.2,
+      "thicknessMm": 12.5
+    },
+    "pp": {
+      "url": "https://www.knauf.ru/catalog/profili-metallicheskie/profili-dlya-gipsokartona/knauf-profil-potolochnyy-pp/",
+      "lengthM": 3,
+      "steelMm": 0.6
+    },
+    "jointTape": {
+      "url": "https://www.knauf.ru/catalog/komplektuyushchie/knauf-lenta-armiruyushchaya-bumazhnaya/",
+      "selectedRollM": 50
+    },
+    "separationTape": {
+      "url": "https://www.knauf.ru/catalog/komplektuyushchie/lenty-stroitelnye-rulonnye-materialy/knauf-trenfiks-lenta-razdelitelnaya/",
+      "selectedRollM": 50
+    },
+    "fugenBagKg": 25,
+    "primerBucketKg": 5,
+    "unverifiedHardwarePackagesExcluded": true,
+    "expansionKit": {
+      "model": "NTDPP50BL3",
+      "brand": "EMAC",
+      "lengthM": 3,
+      "coverWidthM": 0.05,
+      "jointWidthMinM": 0.01,
+      "jointWidthMaxM": 0.035,
+      "includedClipsPerStockPiece": 5,
+      "clipModel": "S",
+      "additionalAdhesiveScrewsOrWetFinishingRequired": false,
+      "separateClipPaymentAllowed": false
+    }
+  },
+  "layout": {
+    "method": "ONE_RECTANGLE_WIDTH_MAX15M_PARALLEL_EQUAL_BAYS_MAX15M_STAGGERED2500X1200_NO_OFFCUT_STOCK_CREDIT",
+    "expansionGapM": 0.02,
+    "profileEndClearanceM": 0.01,
+    "mainEdgeM": 0.1,
+    "bearingEdgeMaxM": 0.1,
+    "hangerEdgeM": 0.1,
+    "boardAlternateStarterM": 1,
+    "narrowTerminalPieceRuleRu": "Если последний торцевой фрагмент<100мм, предыдущий торцевой стык отодвигается на500мм; число исходных листов не меняется. Если последняя продольная полоса<30мм, два последних ряда делятся с переносом600мм. Стыки остаются вразбежку≥400мм.",
+    "scrapRuleRu": "Каждому листовому ряду/профильной линии выделяются целые исходные изделия; обрезки между линиями не засчитываются. Это явно выбранный метод раскроя, не процент отходов из нормы. Листы на недоказанную приклеенную полосу не закупаются: выбран сухой заводской узел.",
+    "referenceAveragesRejected": [
+      "3.2mPP/m2",
+      "1.3hangers/m2",
+      "17TN/m2",
+      "1.2mJointTape/m2",
+      "area-derived perimeter",
+      "P113 standard quantities"
+    ],
+    "expansionNode": "KNAUF P112.1 independent-field geometry + EMAC NDP dry cover; no gypsum cover strip or Fugen adhesive",
+    "expansionStockRuleRu": "Каждый независимый прямой шов кроится из целых 3 м профилей; остатки между швами не засчитываются. На закупленный профиль приходятся 5 заводских клипс S: показываются количественно и включены в цену профиля, без второй закупки/оплаты. Все 5 клипс распределяются по соответствующему отрезку с чередованием направления согласно TDS. Швы не пересекаются в выбранной ветви.",
+    "bearingAxisRuleRu": "Несущие профили проходят по координатам k×500 мм под всеми торцевыми стыками. Первая ось 30 мм от края. Последняя ось k×500 мм оставляется при отступе 30–100 мм, иначе добавляется концевая ось 30 мм от края с удалением оси в последних 30 мм. Получается ceil((Lполя−0.1)/0.5)+1 линий; пролёты ≤500 мм, свободный край ≤100 мм. Кромочные TN смещены от оси в пределах 60 мм полки для отступа 15 мм от кромки."
+  },
+  "commercialScopeRu": "Одна цена полного монтажа П112.1 на измеренный м² включает труд всех названных стадий и предоставление исполнителем исправного инструмента, подъёмника листов, инвентарных подмостей для заявленной геометрии,ограждений,СИЗ,локального пылеудаления и уборки рабочего места до сдачи. Материалы рассчитаны и оплачиваются отдельными владельцами. Применимые внутренние базовые часыКРЕРП112 включены в эту же оплату и не оплачиваются повторно. При наличииEMAC совмещение этих часов и собственный труд шва остаются открытой нормой источника. Цена не наследуется от иной системы и не подтверждает часы всей смешанной сборки. Внешняя доставка,аренда отдельным сроком,вывоз отходов и независимые крепления приборов не включены.",
+  "readiness": {
+    "manufacturerConfigurationVerified": true,
+    "geometryOnlyInputContract": true,
+    "fullTechnicalAcceptance": false,
+    "ordinaryUiAccepted": false,
+    "databaseDelivered": false,
+    "openAuthorObligationsRu": [
+      "Составная ветвь не заявлена как испытанная заводская комплектная система КНАУФ. Нагрузка до 0.5 кН/м² относится к сохранённому каркасу; основание, анкеры, пригодность кромок под клипсы и инженерная приёмка остаются обязательными объектными проверками.",
+      "Для обычной однослойной частиП112 подтверждены базовые92челч и0.14/0.61/2машч на100м² при верхней монтажной отметке анкеров h+drop≤4м,без поправочных коэффициентов;они включены в единую цену за м². При наличии сухогоEMACшва его труд/совмещение с базой остаются реальной внутренней потребностью источника. Полная часовая норма смешанной сборки и финансовое покрытие автоматически не подтверждаются. Выше этой отметки вместо четырёх базовых ресурсов сохраняются четыре внутренние потребности часов; автоматический коэффициент высоты не вводится.",
+      "Ветвь не охватывает ширину >15 м, пересечения деформационных швов, огневые/акустические требования, инженерные приборы, проёмы и проектные сейсмические решения. Другую геометрию нельзя подменять площадным пересчётом этой схемы."
+    ],
+    "selectedScopeQuantitiesComplete": false,
+    "quantityStatus": "VERIFIED_MATERIAL_GEOMETRY_AND_INCLUDED_P112_HOURS_WITH_CONDITIONAL_HEIGHT_AND_EMAC_SOURCE_GAPS",
+    "selectedMaterialGeometryQuantitiesComplete": true,
+    "baseKnaufNormQuantitiesVerified": true,
+    "mixedSystemLaborQuantitiesComplete": false,
+    "conditionalJointLaborGapOnlyWhenJointPresent": true,
+    "requiredNonGeometryUserNormQuestions": 0,
+    "conditionalAboveHeightSourceGaps": true,
+    "baseNormMaximumInstallationHeightM": 4
+  },
+  "baseNorm": {
+    "code": "10-05-011-01",
+    "sourceIndex": 4,
+    "measurementM2": 100,
+    "measurementParameterId": "area_m2",
+    "quantitiesPer100M2": {
+      "laborPersonHours": 92,
+      "electricSnipsMachineHours": 0.14,
+      "perforatorMachineHours": 0.61,
+      "screwdriverMachineHours": 2
+    },
+    "laborGrade": 3.5,
+    "heightMaxM": 4,
+    "coefficient": 1,
+    "admittedScopeRu": "Базовый нормативный ресурс двухуровневого однослойногоП112,без коэффициента по усилению/профилям. Применение только при верхней монтажной отметке анкеров h+drop≤4м. Это справочные внутренние количества в единой оплате монтажа за м²,не фактический хронометраж и не полная норма смешанной сборкиEMAC.",
+    "applicabilityEvidenceRu": [
+      "КРЕР10 PDF140,10-05-011-01 прямоП112;материалГКЛ12.5мм112м²на100м² соответствует одному слою с нормативным запасом,не двум слоям;этот запас в раскрой не переносится.",
+      "АльбомКНАУФ2025 PDF6(классификацияП112.1),14(суффикс.1=одинслой),18табл16(семействоП112/прямыеподвесы/парныесоединители),32–33(конкретнаяоднослойнаясхема);П11 PDF2табл1:усиленные500/500/800 остаютсяП112.",
+      "КРЕР10 PDF9§1.15–1.16 охватывает комплектные потолки и местные вспомогательные работы;PDF10§1.18 разрешает материалы по рабочим чертежам,§1.19 ограничивает высоту работ4м;применён fail-closed отсчёт по верхним анкерам h+drop.",
+      "ОбщиеуказанияКРЕР PDF9§4.2 допускают иные типы материалов/изделий без принципиальной смены двухуровневой технологии. Производитель прямо разрешает выбранные прямые40кгподвесы и парную замену соединителя. Коэффициент по числуПП/подвесов/соединителей не установлен и не вводится."
+    ],
+    "measurementBasisRu": "A=измеренная площадь потолка по длине×ширине;92/0.14/0.61/2×A/100. Разность между этой площадью и чистой площадью листов не является опубликованным поправочным коэффициентом труда. ПриEMAC эти количества остаются только базовой ссылкой; совмещение часов и собственный труд сухого шва ещё не подтверждены.",
+    "machineIdentityRu": "0.61 относится к электрическому перфоратору из таблицыКРЕР,не к произвольной дрели или миксеру.",
+    "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+    "costOwnerSuffix": "work:whole",
+    "separatePaymentAllowed": false,
+    "jointGap": {
+      "rowSuffix": "labor:emac-joint-source-gap",
+      "parameterId": "p112_emac_joint_labor_hours",
+      "unitId": "man_hour",
+      "when": "p112_expansion_m>0",
+      "reasonRu": "Монтаж сухогоEMAC и его совмещение с базовыми часамиП112 не имеют подтверждённой применимой часовой нормы. Это внутренняя обязанность автора источника; коммерческое включение в цену за м² и ручное количество/бюджет норму не подтверждают. Неизвестное не является автоматически добавочными часами сверх базовой ссылки.",
+      "requiredUserQuestion": false,
+      "numericNormAccepted": false
+    },
+    "fullMixedSystemHoursVerified": false,
+    "technicalRatesPubliclyPresented": false,
+    "controls": {
+      "10x10NoJoint": {
+        "areaM2": 100,
+        "jointM": 0,
+        "laborPersonHours": 92,
+        "electricSnipsMachineHours": 0.14,
+        "perforatorMachineHours": 0.61,
+        "screwdriverMachineHours": 2,
+        "conditionalLaborGap": false
+      },
+      "20x15WithJoint": {
+        "areaM2": 300,
+        "jointM": 15,
+        "laborPersonHours": 276,
+        "electricSnipsMachineHours": 0.42,
+        "perforatorMachineHours": 1.83,
+        "screwdriverMachineHours": 6,
+        "conditionalLaborGap": true
+      },
+      "atHeightBoundary": {
+        "areaM2": 100,
+        "finishedCeilingHeightM": 3.88,
+        "dropM": 0.12,
+        "installationHeightM": 4,
+        "baseNormApplicable": true,
+        "conditionalHeightGaps": 0,
+        "laborPersonHours": 92,
+        "electricSnipsMachineHours": 0.14,
+        "perforatorMachineHours": 0.61,
+        "screwdriverMachineHours": 2
+      },
+      "aboveHeightBoundaryNoJoint": {
+        "areaM2": 100,
+        "finishedCeilingHeightM": 3.881,
+        "dropM": 0.12,
+        "installationHeightM": 4.001,
+        "baseNormApplicable": false,
+        "conditionalHeightGaps": 4,
+        "conditionalJointGap": false
+      },
+      "aboveHeightBoundaryWithJoint": {
+        "areaM2": 300,
+        "finishedCeilingHeightM": 3.881,
+        "dropM": 0.12,
+        "installationHeightM": 4.001,
+        "baseNormApplicable": false,
+        "conditionalHeightGaps": 4,
+        "conditionalJointGap": true
+      }
+    },
+    "heightLimitBasisRu": "КРЕР10§1.19 ограничивает высоту производства работ4м. Консервативно учитывается верхняя монтажная отметка анкеров: ceiling_height_m+ceiling_drop_m. Исходный параметр высоты относится к готовому потолку; иной опубликованный отсчёт для§1.19 не установлен.",
+    "heightApplicableWhen": "p112_installation_height_m<=4",
+    "heightParameterId": "p112_installation_height_m",
+    "heightGap": {
+      "when": "p112_installation_height_m>4",
+      "reasonRu": "Верхняя монтажная отметка анкеров выше4м. КРЕР10§1.19 не подтверждает здесь базовые часы10-05-011-01; коэффициент или другая применимая норма не установлены. Необходимые часы труда и трёх машин остаются четырьмя внутренними потребностями автора источника. Геометрия и материалы сохраняются; пользователь норму не задаёт.",
+      "resources": [
+        {
+          "rowSuffix": "labor:height-source-gap",
+          "parameterId": "p112_above_height_labor_hours",
+          "unitId": "man_hour"
+        },
+        {
+          "rowSuffix": "equipment:snips-height-source-gap",
+          "parameterId": "p112_above_height_snips_hours",
+          "unitId": "machine_hour"
+        },
+        {
+          "rowSuffix": "equipment:perforator-height-source-gap",
+          "parameterId": "p112_above_height_perforator_hours",
+          "unitId": "machine_hour"
+        },
+        {
+          "rowSuffix": "equipment:screwdriver-height-source-gap",
+          "parameterId": "p112_above_height_screwdriver_hours",
+          "unitId": "machine_hour"
+        }
+      ],
+      "requiredUserQuestion": false,
+      "numericNormAccepted": false
+    },
+    "oneLayerEvidenceRu": "КРЕР называетП112 безсуффикса.1;выводободнослойнойсовместимостиоснованнаГКЛ12.5мм112м²на100м²ипрямойклассификацииП112.1/П112.2вальбомеКНАУФ. СловооднослойныйневыдаётсязабуквальныйзаголовокКРЕР."
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.gravity-sewer-collector-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:gravity_sewer_collector",
+  "scope": "Complete construction and acceptance of one explicitly designed gravity-sewer collector: 600 m of selected PVC-U SN8 OD 200 pipe at slope 0.007. Pipe-system materials, trench and bedding quantities, manholes, fittings, consumables, labor, mechanisms, testing, records and logistics are project inputs. Pumping stations, building drainage and unrelated utility networks are excluded.",
+  "sourceAuthority": "Approved water-and-sewer design organization, geotechnical engineer, pipe-system manufacturer, construction laboratory and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved plan and longitudinal profile with route length, pipe material, stiffness, diameter and slope",
+    "approved pipe, socket seal, fitting and lubricant schedule",
+    "approved trench, bedding, surround, backfill and excess-soil quantities",
+    "approved manhole and cover schedule",
+    "installation method with labor and mechanism quantities",
+    "leak-testing and CCTV-inspection program",
+    "as-built survey and acceptance-document schedule",
+    "delivery and excess-soil or packaging removal plan",
+    "conditional dewatering, shoring and road-restoration schedules",
+    "supplier pipe-stick length and approved retained spare length"
+  ],
+  "ordinaryFixture": {
+    "collectorCount": 1,
+    "routeLengthM": 600,
+    "pipeMaterialGrade": "PVC-U",
+    "ringStiffnessClass": "SN8",
+    "pipeOutsideDiameterMm": 200,
+    "slopeMPerM": 0.007,
+    "pipeDesignation": "PVC-U-SN8-OD200"
+  },
+  "procurementBalance": {
+    "pipe": {
+      "installedNetLength": "gsc_route_length_m",
+      "retainedSpareLength": "gsc_pipe_retained_spare_m",
+      "supplierStickLength": "gsc_pipe_supplier_stick_length_m"
+    },
+    "rules": {
+      "totalNeed": "installed net length + retained spare length",
+      "stickCount": "ceil(total need / supplier stick length)",
+      "order": "stick count * supplier stick length",
+      "remainderAfterInstallation": "order - installed net length",
+      "surplusBeyondSpare": "remainder - retained spare length"
+    },
+    "visiblePreliminaryProfile": {
+      "gsc_pipe_retained_spare_m": 0,
+      "gsc_pipe_supplier_stick_length_m": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "trench or material quantities derived from generic length coefficients",
+    "automatic manhole or connection-node spacing",
+    "automatic fittings, dewatering, shoring or road restoration",
+    "universal pipe spare or supplier stick length",
+    "pumping station or building drainage included",
+    "invented price"
+  ]
+}

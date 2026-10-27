@@ -1,0 +1,2654 @@
+{
+  "contract": "gox-build.master212.concrete-preparation-krer06-01-001-01/r1",
+  "sourceId": "kg_krer06_01_001_01_preparation_master212_r1",
+  "normId": "06-01-001-01",
+  "prefix": "master212:concrete-preparation:krer06-01-001-01:r1",
+  "titleRu": "Бетонная подготовка B3,5",
+  "catalogId": null,
+  "publicationAllowed": "ONLY_VIA_EXACT_TWO_PARENT_RETAINED_SUCCESSOR_RECIPE",
+  "status": "ENTIRE_PRIMARY_COLUMN_REVIEWED_BOUNDED_FOUNDATION_SUBWORK_NO_FULL_FOUNDATION_CLAIM",
+  "scopeRu": "Самостоятельная нормативная подработка бетонной подготовки из точного столбца01, измеритель100м³ бетона в деле.Не весь фундамент, несущая плита или подстилающий слой под полы.",
+  "source": {
+    "titleRu": "КРЕР-2015, сборник06, бетонные и железобетонные конструкции монолитные",
+    "edition": "КРЕР06-2015; действующая применимая редакция подтверждается базой проекта",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/422/show",
+    "path": "data/estimate-benchmarks/source-artifacts/kg-krer06-2015-monolithic-concrete-45c065fb.pdf",
+    "sha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+    "readOnlyOriginalInspectionPath": ".release-runtime/r568/s27-8/tmp-krer06-inspection/krer06.pdf",
+    "locatorRu": "PDF6–15 technical part1.1,1.4,1.17,1.37,1.39,1.43–44,§2.1 andapp1;PDF16 measurement/work list;PDF17 onlycolumn06-01-001-01",
+    "visualReviewedPages": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      21
+    ],
+    "independentRootReview": "Parent ROOT independently read163.03 and all7 remaining rate cells; tower crane02-0005 corrected by ROOT. Vibrator11-0180 independently identified on clearer repeated row at PDF21, top line; quantity8.03 only PDF17col01.Original monetary cells used only as independent visual cross-check, no prices imported.",
+    "resourceCodesNotReadConfidentlyAreNull": true,
+    "historicalPricesImported": false
+  },
+  "measure": {
+    "parameterId": "m212_preparation_net_volume_m3",
+    "unitId": "m3",
+    "denominator": "100",
+    "netVolumeRuleRu": "§2.1: объём бетонной конструкции за вычетом незаполняемых стаканов/ниш/проёмов/колодцев и подобных элементов; не объём заказа."
+  },
+  "method": {
+    "id": "m212_preparation_normative_method",
+    "value": "КРЕР06-2015: бетонная подготовка06-01-001-01; нормативная база проекта подтверждена"
+  },
+  "fit": {
+    "id": "m212_preparation_exact_profile",
+    "value": "Неармированная подготовкаB3,5 с заполнителем20мм, нормальные условия, башенный кран8т и глубинный вибратор; проект и схема подачи совместимы"
+  },
+  "resources": [
+    {
+      "key": "workers",
+      "titleRu": "Рабочие-строители среднего разряда2,0",
+      "unitId": "man_hour",
+      "ratePer100M3": "163.03",
+      "category": "labor",
+      "resourceCode": "000-1002-0",
+      "operationId": "whole-preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "ordinal": 30
+    },
+    {
+      "key": "machinists",
+      "titleRu": "Машинисты нормативного комплекса",
+      "unitId": "man_hour",
+      "ratePer100M3": "10.38",
+      "category": "labor",
+      "resourceCode": null,
+      "operationId": "machine-operation",
+      "operationTitleRu": "Обеспечить работу машин",
+      "ordinal": 30
+    },
+    {
+      "key": "tower-crane",
+      "titleRu": "Башенный кран грузоподъёмностью8т",
+      "unitId": "machine_hour",
+      "ratePer100M3": "10.38",
+      "category": "equipment",
+      "resourceCode": "02-0005",
+      "operationId": "placing",
+      "operationTitleRu": "Подать и уложить бетон",
+      "ordinal": 30
+    },
+    {
+      "key": "deep-vibrator",
+      "titleRu": "Глубинный вибратор",
+      "unitId": "machine_hour",
+      "ratePer100M3": "8.03",
+      "category": "equipment",
+      "resourceCode": "11-0180",
+      "operationId": "compacting",
+      "operationTitleRu": "Уплотнить бетон",
+      "ordinal": 40
+    },
+    {
+      "key": "flatbed-truck",
+      "titleRu": "Бортовой автомобиль грузоподъёмностью до5т",
+      "unitId": "machine_hour",
+      "ratePer100M3": "0.35",
+      "category": "equipment",
+      "resourceCode": "40-0001",
+      "operationId": "site-transport",
+      "operationTitleRu": "Переместить ресурсы на участке",
+      "ordinal": 20
+    },
+    {
+      "key": "water",
+      "titleRu": "Вода для работ и ухода за бетоном",
+      "unitId": "m3",
+      "ratePer100M3": "1.75",
+      "category": "material",
+      "resourceCode": "01-0601-0001",
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход за подготовкой",
+      "ordinal": 50
+    },
+    {
+      "key": "matting",
+      "titleRu": "Рогожа для ухода за бетоном",
+      "unitId": "m2",
+      "ratePer100M3": "250",
+      "category": "material",
+      "resourceCode": null,
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход за подготовкой",
+      "ordinal": 50
+    },
+    {
+      "key": "concrete",
+      "titleRu": "Тяжёлый бетонB3,5 (М50), заполнитель20мм",
+      "unitId": "m3",
+      "ratePer100M3": "102",
+      "category": "material",
+      "resourceCode": null,
+      "operationId": "placing",
+      "operationTitleRu": "Подать и уложить бетон",
+      "ordinal": 30
+    }
+  ],
+  "needs": [
+    {
+      "key": "scope",
+      "parameterId": "m212_preparation_application_need_scope",
+      "titleRu": "Готовность основания и условия применения нормы",
+      "category": "service",
+      "unitId": "document",
+      "stageTitleRu": "Подготовить основание",
+      "operationId": "scope",
+      "ordinal": 5,
+      "reasonRu": "Нормативная база проекта, класс/заполнитель, основание и нормальные условия должны быть подтверждены; земляные работы не объявлены выполненными."
+    },
+    {
+      "key": "formwork-rebar",
+      "parameterId": "m212_preparation_application_need_formwork_rebar",
+      "titleRu": "Необходимые по проекту ограждения, арматура и дополнительные узлы",
+      "category": "service",
+      "unitId": "document",
+      "stageTitleRu": "Проверить состав подготовки",
+      "operationId": "formwork-rebar",
+      "ordinal": 10,
+      "reasonRu": "Столбец01 не содержит арматуру/щиты, но это не автоматическая неприменимость проектных узлов; специальный конструктив требует своего расчёта."
+    },
+    {
+      "key": "supply-balance",
+      "parameterId": "m212_preparation_application_need_supply_balance",
+      "titleRu": "Пригодное наличие, коммерческий заказ и фасовка материалов",
+      "category": "service",
+      "unitId": "document",
+      "stageTitleRu": "Обеспечить материалы",
+      "operationId": "supply-balance",
+      "ordinal": 15,
+      "reasonRu": "Три известных расхода — нормативная потребность, а не подтверждённая закупка, тара, дополнительные потери или число рейсов."
+    },
+    {
+      "key": "survey-tools",
+      "parameterId": "m212_preparation_application_need_survey_tools",
+      "titleRu": "Геодезические приборы и принадлежности",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Разметить оси и отметки",
+      "operationId": "setting-out",
+      "ordinal": 10,
+      "matrixCategory": "tools",
+      "missingAuthority": "Реестр прибора, штатив, рейка и поверка",
+      "projectFact": "Метод разбивки и требуемая точность",
+      "nextStepRu": "Получить реестр прибора, штатив, рейка и поверка и метод разбивки и требуемая точность.",
+      "reasonRu": "Реестр прибора, штатив, рейка и поверка. Метод разбивки и требуемая точность. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "survey-consumables",
+      "parameterId": "m212_preparation_application_need_survey_consumables",
+      "titleRu": "Колья, шнур и краска разбивки",
+      "category": "material",
+      "unitId": "set",
+      "stageTitleRu": "Разметить оси и отметки",
+      "operationId": "setting-out",
+      "ordinal": 10,
+      "matrixCategory": "consumables",
+      "missingAuthority": "Применимая расходная норма разбивки",
+      "projectFact": "План осей, сохраняемые точки и фронты",
+      "nextStepRu": "Получить применимая расходная норма разбивки и план осей, сохраняемые точки и фронты.",
+      "reasonRu": "Применимая расходная норма разбивки. План осей, сохраняемые точки и фронты. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "concrete-bucket",
+      "parameterId": "m212_preparation_application_need_concrete_bucket",
+      "titleRu": "Бадья для бетонной смеси",
+      "category": "equipment",
+      "unitId": "piece",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "delivery",
+      "ordinal": 50,
+      "matrixCategory": "rigging",
+      "missingAuthority": "Паспорт и полный комплект крановой подачи",
+      "projectFact": "Вместимость, рабочая высота, груз и совместимость крана",
+      "nextStepRu": "Получить паспорт и полный комплект крановой подачи и вместимость, рабочая высота, груз и совместимость крана.",
+      "reasonRu": "Паспорт и полный комплект крановой подачи. Вместимость, рабочая высота, груз и совместимость крана. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "concrete-slings",
+      "parameterId": "m212_preparation_application_need_concrete_slings",
+      "titleRu": "Стропы и соединители подачи бетона",
+      "category": "equipment",
+      "unitId": "piece",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "delivery",
+      "ordinal": 50,
+      "matrixCategory": "rigging",
+      "missingAuthority": "Допущенная схема строповки",
+      "projectFact": "Бадья, груз и точки подвеса; часы крана не дают количества строп",
+      "nextStepRu": "Получить допущенная схема строповки и бадья, груз и точки подвеса; часы крана не дают количества строп.",
+      "reasonRu": "Допущенная схема строповки. Бадья, груз и точки подвеса; часы крана не дают количества строп. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "vibrator-working-kit",
+      "parameterId": "m212_preparation_application_need_vibrator_working_kit",
+      "titleRu": "Булава, вал и привод глубинного вибратора",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Уложить и уплотнить бетон",
+      "operationId": "compacting",
+      "ordinal": 55,
+      "matrixCategory": "rigging",
+      "missingAuthority": "Совместимый полный рабочий комплект",
+      "projectFact": "Сечение, просвет арматуры, глубина и характеристика привода",
+      "nextStepRu": "Получить совместимый полный рабочий комплект и сечение, просвет арматуры, глубина и характеристика привода.",
+      "reasonRu": "Совместимый полный рабочий комплект. Сечение, просвет арматуры, глубина и характеристика привода. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "placing-hand-tools",
+      "parameterId": "m212_preparation_application_need_placing_hand_tools",
+      "titleRu": "Ручной инструмент укладки бетонной смеси",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Уложить и уплотнить бетон",
+      "operationId": "compacting",
+      "ordinal": 55,
+      "matrixCategory": "tools",
+      "missingAuthority": "Полная норма и рабочий комплект укладки",
+      "projectFact": "Фронт, способ распределения и доступ",
+      "nextStepRu": "Получить полная норма и рабочий комплект укладки и фронт, способ распределения и доступ.",
+      "reasonRu": "Полная норма и рабочий комплект укладки. Фронт, способ распределения и доступ. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "finish-rule",
+      "parameterId": "m212_preparation_application_need_finish_rule",
+      "titleRu": "Правило, направляющие и гладилки",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Обработать поверхность",
+      "operationId": "finishing",
+      "ordinal": 60,
+      "matrixCategory": "tools",
+      "missingAuthority": "Полный комплект выбранной обработки поверхности",
+      "projectFact": "Допуски отметки и шероховатость поверхности",
+      "nextStepRu": "Получить полный комплект выбранной обработки поверхности и допуски отметки и шероховатость поверхности.",
+      "reasonRu": "Полный комплект выбранной обработки поверхности. Допуски отметки и шероховатость поверхности. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "curing-feed",
+      "parameterId": "m212_preparation_application_need_curing_feed",
+      "titleRu": "Шланги, распылители и подача воды",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Выполнить уход",
+      "operationId": "curing",
+      "ordinal": 65,
+      "matrixCategory": "tools",
+      "missingAuthority": "Полный комплект применимого ухода",
+      "projectFact": "Режим ухода, источник воды, давление и фронты",
+      "nextStepRu": "Получить полный комплект применимого ухода и режим ухода, источник воды, давление и фронты.",
+      "reasonRu": "Полный комплект применимого ухода. Режим ухода, источник воды, давление и фронты. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "curing-monitor",
+      "parameterId": "m212_preparation_application_need_curing_monitor",
+      "titleRu": "Приборы контроля режима ухода",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Выполнить уход",
+      "operationId": "curing",
+      "ordinal": 65,
+      "matrixCategory": "control",
+      "missingAuthority": "Применимая программа измерений",
+      "projectFact": "Температура, влажность, журнал и допустимые пределы",
+      "nextStepRu": "Получить применимая программа измерений и температура, влажность, журнал и допустимые пределы.",
+      "reasonRu": "Применимая программа измерений. Температура, влажность, журнал и допустимые пределы. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "access-platforms",
+      "parameterId": "m212_preparation_application_need_access_platforms",
+      "titleRu": "Подмости, настил и безопасные проходы",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Установить опалубку и опоры",
+      "operationId": "formwork",
+      "ordinal": 30,
+      "matrixCategory": "access_protection",
+      "missingAuthority": "Полный метод организации доступа",
+      "projectFact": "Высота, края, проёмы, фронты и число пользователей",
+      "nextStepRu": "Получить полный метод организации доступа и высота, края, проёмы, фронты и число пользователей.",
+      "reasonRu": "Полный метод организации доступа. Высота, края, проёмы, фронты и число пользователей. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "edge-protection",
+      "parameterId": "m212_preparation_application_need_edge_protection",
+      "titleRu": "Ограждения краёв и проёмов",
+      "category": "equipment",
+      "unitId": "m",
+      "stageTitleRu": "Установить опалубку и опоры",
+      "operationId": "formwork",
+      "ordinal": 30,
+      "matrixCategory": "access_protection",
+      "missingAuthority": "Система коллективной защиты и её состав",
+      "projectFact": "Периметр, проёмы, несущие основания и схема крепления",
+      "nextStepRu": "Получить система коллективной защиты и её состав и периметр, проёмы, несущие основания и схема крепления.",
+      "reasonRu": "Система коллективной защиты и её состав. Периметр, проёмы, несущие основания и схема крепления. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "ppe",
+      "parameterId": "m212_preparation_application_need_ppe",
+      "titleRu": "Средства индивидуальной защиты",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Уложить и уплотнить бетон",
+      "operationId": "compacting",
+      "ordinal": 55,
+      "matrixCategory": "access_protection",
+      "missingAuthority": "Состав по фактическим рискам и сроку использования",
+      "projectFact": "Звено, операции, воздействие смеси/пыли/шума/высоты",
+      "nextStepRu": "Получить состав по фактическим рискам и сроку использования и звено, операции, воздействие смеси/пыли/шума/высоты.",
+      "reasonRu": "Состав по фактическим рискам и сроку использования. Звено, операции, воздействие смеси/пыли/шума/высоты. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "quality-sampling-kit",
+      "parameterId": "m212_preparation_application_need_quality_sampling_kit",
+      "titleRu": "Формы, приборы и инструмент отбора проб",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Выполнить контроль и приёмку",
+      "operationId": "quality",
+      "ordinal": 80,
+      "matrixCategory": "control",
+      "missingAuthority": "Программа контроля и полный комплект отбора",
+      "projectFact": "Нормбаза проекта, партии и методы испытаний",
+      "nextStepRu": "Получить программа контроля и полный комплект отбора и нормбаза проекта, партии и методы испытаний.",
+      "reasonRu": "Программа контроля и полный комплект отбора. Нормбаза проекта, партии и методы испытаний. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "quality-lab",
+      "parameterId": "m212_preparation_application_need_quality_lab",
+      "titleRu": "Отбор, испытания и лабораторная услуга",
+      "category": "service",
+      "unitId": "service_hour",
+      "stageTitleRu": "Выполнить контроль и приёмку",
+      "operationId": "quality",
+      "ordinal": 80,
+      "matrixCategory": "services",
+      "missingAuthority": "Применимый контроль и состав услуги",
+      "projectFact": "Объём партии, частота отбора, критерии приёмки",
+      "nextStepRu": "Получить применимый контроль и состав услуги и объём партии, частота отбора, критерии приёмки.",
+      "reasonRu": "Применимый контроль и состав услуги. Объём партии, частота отбора, критерии приёмки. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "quality-geometry",
+      "parameterId": "m212_preparation_application_need_quality_geometry",
+      "titleRu": "Геодезический контроль готовой конструкции",
+      "category": "service",
+      "unitId": "service_hour",
+      "stageTitleRu": "Выполнить контроль и приёмку",
+      "operationId": "quality",
+      "ordinal": 80,
+      "matrixCategory": "control",
+      "missingAuthority": "Норма исполнительного контроля",
+      "projectFact": "Допуски, контролируемые сечения и исполнительная схема",
+      "nextStepRu": "Получить норма исполнительного контроля и допуски, контролируемые сечения и исполнительная схема.",
+      "reasonRu": "Норма исполнительного контроля. Допуски, контролируемые сечения и исполнительная схема. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "external-delivery",
+      "parameterId": "m212_preparation_application_need_external_delivery",
+      "titleRu": "Внешняя доставка материалов и оборудования",
+      "category": "service",
+      "unitId": "trip",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "delivery",
+      "ordinal": 50,
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "Отгрузочная ведомость и подтверждённый маршрут",
+      "projectFact": "Масса/габариты, партия, транспорт и коммерческая граница",
+      "nextStepRu": "Получить отгрузочная ведомость и подтверждённый маршрут и масса/габариты, партия, транспорт и коммерческая граница.",
+      "reasonRu": "Отгрузочная ведомость и подтверждённый маршрут. Масса/габариты, партия, транспорт и коммерческая граница. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "mixer-additional-hours",
+      "parameterId": "m212_preparation_application_need_mixer_additional_hours",
+      "titleRu": "Дополнительное время автобетоносмесителей",
+      "category": "service",
+      "unitId": "machine_hour",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "delivery",
+      "ordinal": 50,
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "КРЕР06 п1.39: время по подтверждённой схеме",
+      "projectFact": "Время рейсов и ожидания; бортовой автомобиль не автобетоносмеситель",
+      "nextStepRu": "Получить крер06 п1.39: время по подтверждённой схеме и время рейсов и ожидания; бортовой автомобиль не автобетоносмеситель.",
+      "reasonRu": "КРЕР06 п1.39: время по подтверждённой схеме. Время рейсов и ожидания; бортовой автомобиль не автобетоносмеситель. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "additional-rehandling",
+      "parameterId": "m212_preparation_application_need_additional_rehandling",
+      "titleRu": "Дополнительная перевалка бетонной смеси",
+      "category": "service",
+      "unitId": "machine_hour",
+      "stageTitleRu": "Принять и подать бетон",
+      "operationId": "delivery",
+      "ordinal": 50,
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "КРЕР06 п1.43: добавляется при наличии проектной перевалки",
+      "projectFact": "Наличие и схема дополнительных перегрузок",
+      "nextStepRu": "Получить крер06 п1.43: добавляется при наличии проектной перевалки и наличие и схема дополнительных перегрузок.",
+      "reasonRu": "КРЕР06 п1.43: добавляется при наличии проектной перевалки. Наличие и схема дополнительных перегрузок. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "washing-water",
+      "parameterId": "m212_preparation_application_need_washing_water",
+      "titleRu": "Отдельная потребность воды промывки",
+      "category": "material",
+      "unitId": "m3",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "cleanup",
+      "ordinal": 90,
+      "matrixCategory": "cleaning_waste",
+      "missingAuthority": "Метод и расход промывки без повторения воды ухода",
+      "projectFact": "Промываемые машины, оборудование и принятая граница ставки",
+      "nextStepRu": "Получить метод и расход промывки без повторения воды ухода и промываемые машины, оборудование и принятая граница ставки.",
+      "reasonRu": "Метод и расход промывки без повторения воды ухода. Промываемые машины, оборудование и принятая граница ставки. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "wash-containment",
+      "parameterId": "m212_preparation_application_need_wash_containment",
+      "titleRu": "Моечная площадка и сбор шлама",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "cleanup",
+      "ordinal": 90,
+      "matrixCategory": "cleaning_waste",
+      "missingAuthority": "Полная система удержания стоков",
+      "projectFact": "Место промывки, ёмкость, защита и разрешённый приёмник",
+      "nextStepRu": "Получить полная система удержания стоков и место промывки, ёмкость, защита и разрешённый приёмник.",
+      "reasonRu": "Полная система удержания стоков. Место промывки, ёмкость, защита и разрешённый приёмник. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "solid-waste",
+      "parameterId": "m212_preparation_application_need_solid_waste",
+      "titleRu": "Упаковка, остатки и твёрдые отходы",
+      "category": "service",
+      "unitId": "kg",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "cleanup",
+      "ordinal": 90,
+      "matrixCategory": "cleaning_waste",
+      "missingAuthority": "Ведомость потоков отходов",
+      "projectFact": "Фактические остатки, упаковка и пригодное повторное использование",
+      "nextStepRu": "Получить ведомость потоков отходов и фактические остатки, упаковка и пригодное повторное использование.",
+      "reasonRu": "Ведомость потоков отходов. Фактические остатки, упаковка и пригодное повторное использование. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "waste-loading",
+      "parameterId": "m212_preparation_application_need_waste_loading",
+      "titleRu": "Сбор и погрузка отходов",
+      "category": "labor",
+      "unitId": "man_hour",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "cleanup",
+      "ordinal": 90,
+      "matrixCategory": "labor",
+      "missingAuthority": "Применимая норма сбора и погрузки",
+      "projectFact": "Масса, состав и способ сбора",
+      "nextStepRu": "Получить применимая норма сбора и погрузки и масса, состав и способ сбора.",
+      "reasonRu": "Применимая норма сбора и погрузки. Масса, состав и способ сбора. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "waste-transport",
+      "parameterId": "m212_preparation_application_need_waste_transport",
+      "titleRu": "Вывоз отходов",
+      "category": "service",
+      "unitId": "trip",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "cleanup",
+      "ordinal": 90,
+      "matrixCategory": "delivery_feed",
+      "missingAuthority": "Маршрут и транспорт отходов",
+      "projectFact": "Приёмник, масса, габариты и перевозчик",
+      "nextStepRu": "Получить маршрут и транспорт отходов и приёмник, масса, габариты и перевозчик.",
+      "reasonRu": "Маршрут и транспорт отходов. Приёмник, масса, габариты и перевозчик. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "waste-disposal",
+      "parameterId": "m212_preparation_application_need_waste_disposal",
+      "titleRu": "Приём и обработка отходов",
+      "category": "service",
+      "unitId": "kg",
+      "stageTitleRu": "Очистить и убрать участок",
+      "operationId": "cleanup",
+      "ordinal": 90,
+      "matrixCategory": "services",
+      "missingAuthority": "Подтверждённая услуга и применимая юрисдикция",
+      "projectFact": "Виды отходов и допустимый приёмник",
+      "nextStepRu": "Получить подтверждённая услуга и применимая юрисдикция и виды отходов и допустимый приёмник.",
+      "reasonRu": "Подтверждённая услуга и применимая юрисдикция. Виды отходов и допустимый приёмник. Количество не выводится из восьми исходных ресурсов."
+    },
+    {
+      "key": "power",
+      "parameterId": "m212_preparation_application_need_power",
+      "titleRu": "Питание и временная электросеть подготовки",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Обеспечить применимую бетонную подготовку",
+      "operationId": "power",
+      "ordinal": 20,
+      "missingAuthority": "Полная схема совместимого питания/защиты",
+      "projectFact": "Источник, напряжение, кабель, защита, длины и фактическая потребность",
+      "nextStepRu": "Подтвердить полная схема совместимого питания/защиты и источник, напряжение, кабель, защита, длины и фактическая потребность.",
+      "reasonRu": "Полная схема совместимого питания/защиты. Источник, напряжение, кабель, защита, длины и фактическая потребность."
+    },
+    {
+      "key": "machine-quote-scope",
+      "parameterId": "m212_preparation_application_need_machine_quote_scope",
+      "titleRu": "Полный эксплуатационный час машин",
+      "category": "service",
+      "unitId": "document",
+      "stageTitleRu": "Обеспечить применимую бетонную подготовку",
+      "operationId": "machine-quote-scope",
+      "ordinal": 20,
+      "missingAuthority": "Совместимое подтверждение ставки полного часа",
+      "projectFact": "Без повторного труда машиниста, отдельно нормированные материалы исключены, нет скрытой смены/фиксированной платы",
+      "nextStepRu": "Подтвердить совместимое подтверждение ставки полного часа и без повторного труда машиниста, отдельно нормированные материалы исключены, нет скрытой смены/фиксированной платы.",
+      "reasonRu": "Совместимое подтверждение ставки полного часа. Без повторного труда машиниста, отдельно нормированные материалы исключены, нет скрытой смены/фиксированной платы."
+    },
+    {
+      "key": "preparation-formwork-kit",
+      "parameterId": "m212_preparation_application_need_preparation_formwork_kit",
+      "titleRu": "Краевые ограждения и их крепления подготовки",
+      "category": "equipment",
+      "unitId": "set",
+      "stageTitleRu": "Обеспечить применимую бетонную подготовку",
+      "operationId": "preparation-formwork-kit",
+      "ordinal": 20,
+      "missingAuthority": "Точный проектный способ оформления границ",
+      "projectFact": "Геометрия края и необходимость опалубки; отсутствие щитов в col01 не является расчётом креплений",
+      "nextStepRu": "Подтвердить точный проектный способ оформления границ и геометрия края и необходимость опалубки; отсутствие щитов в col01 не является расчётом креплений.",
+      "reasonRu": "Точный проектный способ оформления границ. Геометрия края и необходимость опалубки; отсутствие щитов в col01 не является расчётом креплений."
+    }
+  ],
+  "technicalPart": [
+    {
+      "locator": "1.1",
+      "claim": "Полный комплекс включает разгрузку, доставку от приобъектного склада, применимые опалубочные/арматурные операции, укладку/уплотнение/уход.Это scope нормы, не новые физические количества оснастки."
+    },
+    {
+      "locator": "1.4/app1",
+      "claim": "Класс/крупность заполнителя по проекту.Данный модуль допускает только напечатанный материал строки; замена требует proven adaptation."
+    },
+    {
+      "locator": "1.39",
+      "claim": "Автобетоносмесители учитываются дополнительно по подтверждённому времени; часы0,35 бортового автомобиля не являются рейсами миксера."
+    },
+    {
+      "locator": "1.43",
+      "claim": "Подача в бадьях краном или насосом без дополнительной перевалки.Дополнительная перевалка по проекту учитывается отдельно; этот столбец не подтверждает насосную замену."
+    },
+    {
+      "locator": "1.44",
+      "claim": "Проценты состава для актирования не использованы для деления нормативных часов/материалов по этапам."
+    }
+  ],
+  "exclusionsRu": [
+    "Нормативная бетонная подготовка01 не равна железобетонному фундаменту09.",
+    "Не применяется к несущим перекрытиям и подготовке под полы11-01-002-09.",
+    "Объём арматуры, закупка/упаковка, строповка, СИЗ, внешняя доставка, питание и очистка не выводятся из объёма бетона.",
+    "Старые цены и generic price не наследуются; машинисты не получают вторую оплату."
+  ],
+  "newFullTypes": 0,
+  "fullTechnicalAcceptance": false,
+  "operationCategoryMatrix": [
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "materials",
+      "knownColumnResourceKeys": [
+        "water",
+        "matting",
+        "concrete"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "consumables",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-consumables",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "fasteners",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "tools",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:survey-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:placing-hand-tools",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:finish-rule",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-feed",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "rigging",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-bucket",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:concrete-slings",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:vibrator-working-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "machines_and_operators",
+      "knownColumnResourceKeys": [
+        "tower-crane",
+        "deep-vibrator",
+        "flatbed-truck",
+        "machinists"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "labor",
+      "knownColumnResourceKeys": [
+        "workers"
+      ],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-loading",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "services",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-lab",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-disposal",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "delivery_feed",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:external-delivery",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:mixer-additional-hours",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:additional-rehandling",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:waste-transport",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "access_protection",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:access-platforms",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:edge-protection",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:ppe",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "control",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:curing-monitor",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-sampling-kit",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:quality-geometry",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    },
+    {
+      "operationId": "cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "cleaning_waste",
+      "knownColumnResourceKeys": [],
+      "needIds": [
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:formwork-rebar",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:supply-balance",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:washing-water",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:wash-containment",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:solid-waste",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:power",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:machine-quote-scope",
+        "master212:concrete-preparation:krer06-01-001-01:r1:need:preparation-formwork-kit"
+      ],
+      "allocationOfWholeColumnToStageForbidden": true,
+      "nextStepRu": "Полные ресурсы col01 используются общим владельцем, без деления ставок по этапам; сопутствующий физический состав подтвердить по указанным needs."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "contract": "marly-skin-normal-hand-provision.r1",
+  "manufacturer": "Marly Products, Ismaning, Germany",
+  "product": "Marly Skin Das Original",
+  "canL": "0.1",
+  "normalHandApplicationsPerCanApprox": 150,
+  "normalSupplyBlockApplications": 400,
+  "normalSupplyBlockCans": 3,
+  "protectionPeriodHours": 4,
+  "activationMinutes": 3,
+  "capacityIsApproximate": true,
+  "exactMeteredMlDoseClaimed": false,
+  "repeatedHandWashingDoesNotRequireReapplicationWithinProtectionPeriod": true,
+  "glovesAndOtherRequiredPpeRetained": true,
+  "preApplicationWashingAndDryingRequired": true,
+  "normalSupplyBoundary": "Manufacturer normal hand-application plan, walnut-sized application on clean dry hands. Whole supply blocks are procurement provision, not an attendance norm, exact measured dose, lower confidence bound or guarantee against loss/misuse. Adapters must supply a finite source-supported organisational application-count expression and keep hygiene dependencies visible.",
+  "sources": [
+    {"path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_INDUSTRY_2024.pdf", "sha256": "e45be4307fd00614621dad23a93677df6d68e1ab7b2651be84d525c7a6528681", "url": "https://marly-skin.shop/wp-content/uploads/2024/09/MARLY-SKIN-Hautschutz-in-INDUSTRIE_HANDWERK.pdf", "locator": "PDF1: wash/dry before use; walnut-sized hand application;3min activation;4h protection survives repeated washing;100ml approx150 normal hand applications;PDF2cement/adhesives/paints"},
+    {"path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_CONSUMPTION_2024.pdf", "sha256": "c4927ae3626f79f4107a0aa3abd60bd7368066003dac07c8f36b561027158bd1", "url": "https://marly-skin.shop/wp-content/uploads/2024/09/MARLY-SKIN-Hautschutzschaum_MONATSBEDARF_Verbrauch.pdf", "locator": "PDF1 image:400normalhandapplications requireapprox3x100mlcans(450nominalapplications);onlysupplycapacityexample transferred,not10workers/20days projectattendance"},
+    {"path": ".release-runtime/r568/next-wave/ceramic02703/r3-sources/MARLY_SKIN_PLAN_2024.pdf", "sha256": "13d0103c70918d6cb97f31cb71ad4311f72079b4d9917c430cf726aa8f0e34a5", "url": "https://marly-skin.shop/wp-content/uploads/2024/08/MARLY-SKIN-Hautschutzplan.pdf", "locator": "PDF2:clean/dry/greasefree,every4h,washingretention,noPPEreplacement;PDF4cement/lime;PDF5cleaning"}
+  ],
+  "handHygiene": [
+    {"key": "handwash-water", "titleRu": "Вода для мытья рук перед нанесением защиты кожи", "unitId": "m3", "quantityStatus": "UNKNOWN_APPLICATION_QUANTITY", "basis": "Manufacturer explicitly requires washing before application; application count does not establish water volume."},
+    {"key": "hand-cleanser", "titleRu": "Мягкое средство для очищения рук перед нанесением защиты кожи", "unitId": "l", "quantityStatus": "UNKNOWN_APPLICATION_QUANTITY", "basis": "Selected ordinary water-and-mild-cleanser method for clean greasefree skin; source does not establish the compatible cleanser/dose. This organisation choice is not a manufacturer dose norm."},
+    {"key": "hand-drying-towels", "titleRu": "Одноразовые салфетки для сушки рук перед нанесением защиты кожи", "unitId": "pcs", "quantityStatus": "UNKNOWN_APPLICATION_QUANTITY", "basis": "Manufacturer requires thorough pre-application drying; selected single-use drying method has no proved sufficient towel specification/count."}
+  ],
+  "fullPersonalProtectionOrHygieneAcceptance": false
+}

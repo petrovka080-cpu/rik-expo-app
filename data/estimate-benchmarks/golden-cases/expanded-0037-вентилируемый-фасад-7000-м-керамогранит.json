@@ -1,0 +1,86 @@
+{
+  "case_id": "expanded-0037-вентилируемый-фасад-7000-м-керамогранит",
+  "prompt": "вентилируемый фасад 7000 м² керамогранит",
+  "work_family_id": "ventilated_facade",
+  "work_family_group": "HIGH_RISE_FACADE_ROOF",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "glazing_area_m2": 5000,
+    "floors": 15
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "glazing_units_m2",
+    "aluminum_profiles_kg_or_lm",
+    "glass_units_m2",
+    "gaskets_lm",
+    "sealant_l",
+    "anchors_pcs",
+    "firebreak_lm_or_m2",
+    "installation_labor_hours",
+    "scaffolding_m2_or_mast_climber_shifts",
+    "crane_lift_shifts"
+  ],
+  "reference_material_rows": [
+    "glazing_units_m2",
+    "aluminum_profiles_kg_or_lm",
+    "glass_units_m2",
+    "gaskets_lm",
+    "sealant_l",
+    "anchors_pcs",
+    "firebreak_lm_or_m2"
+  ],
+  "reference_work_rows": [
+    "installation_labor_hours"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "scaffolding_m2_or_mast_climber_shifts",
+    "crane_lift_shifts"
+  ],
+  "reference_procurement_subset": [
+    "glazing_units_m2",
+    "aluminum_profiles_kg_or_lm",
+    "glass_units_m2",
+    "gaskets_lm",
+    "sealant_l",
+    "anchors_pcs",
+    "firebreak_lm_or_m2",
+    "scaffolding_m2_or_mast_climber_shifts",
+    "crane_lift_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_facade_glazing_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0037-вентилируемый-фасад-7000-м-керамогранит.json",
+  "critical": true,
+  "expected_row_codes": [
+    "glazing_units_m2",
+    "aluminum_profiles_kg_or_lm",
+    "glass_units_m2",
+    "gaskets_lm",
+    "sealant_l",
+    "anchors_pcs",
+    "firebreak_lm_or_m2",
+    "installation_labor_hours",
+    "scaffolding_m2_or_mast_climber_shifts",
+    "crane_lift_shifts"
+  ]
+}

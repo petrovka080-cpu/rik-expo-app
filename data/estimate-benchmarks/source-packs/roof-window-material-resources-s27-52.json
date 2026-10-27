@@ -1,0 +1,1292 @@
+{
+  "contract": "rik-expo-app.s27-52.roof-window-material-resources.v1",
+  "catalogId": "canonical-work:expanded:roof_lanterns",
+  "sourceId": "roof_window_material_resources_s2752",
+  "sources": {
+    "window": {
+      "url": "https://contenthub.velux.com/api/public/content/product-guide_451997",
+      "locator": "VAS451997-2026-09, pp.2,5,7–9,15; ZZZ210 is membrane termination, not structural anchorage",
+      "localArtifact": ".release-runtime/r568/s27-47/lantern-cfp100100-resume-20261009/cfp-isd-installation.pdf",
+      "sha256": "535c7b9758683c7ab414d9f856d1b06b5826082fb2763aa53d590250f8af6928"
+    },
+    "pvc": {
+      "url": "https://mys.sika.com/dms/getdocument.get/b2c33d88-a8d4-4d23-be67-df9bceb91a7e_my01/pds-sarnafil-g-410-18l.pdf",
+      "locator": "Sarnafil G410-18L, March2026 v01.01, pp1,3–4; PVC membrane, Sarnacol2170, system cleaners and separation requirements. Exact CFP interface unconfirmed.",
+      "sha256": "8d5f5409c43c99524f3fce6b99237462af0cec5fd55df5f12ecdb97c11cf4558"
+    },
+    "pvcSealant": {
+      "url": "https://prt.sika.com/pt/solucoes-para-construcao/coberturas/acessorios-para-coberturas/sarnaplast-2235.html",
+      "locator": "Sarnaplast2235: compatible termination sealant; substrate-specific primer; not a membrane seam substitute"
+    },
+    "pvcPrimer": {
+      "url": "https://irl.sika.com/en/construction/roofing/single-ply-membranes/accessories/primers-and-cleaners/primer-110.html",
+      "locator": "Primer110: selected Sarnafil G/S and accepted substrates; Sarnafil T excluded"
+    },
+    "fpo": {
+      "url": "https://mys.sika.com/dms/getdocument.get/fdf63cb4-61d8-4fdf-95ba-75febe4dd76b_my01/pds-sarnafil-t-66-15d.pdf",
+      "locator": "Sarnafil T66-15D, March2026, pp.1–3; detail-only FPO membrane; T660 adhesive, TPrep; not field membrane or universal TPO interchangeability"
+    },
+    "fpoPrimer": {
+      "url": "https://aut.sika.com/de/bau/dachabdichtungen/kunststoff-dachabdichtungsbahnen/zubehoer-fuer-dachsysteme/fpo-zubehoer-fuersarnafiltat/dichtstoffe/primer-t-501.html",
+      "locator": "Primer T501: specified Sarnafil TG/TS sealant substrate preparation; excludes PVC"
+    },
+    "epdm": {
+      "url": "https://www.elevatecommercialbp.com/asia-en/roofing/epdm/rubbergard-epdm/rubbergard-epdm-accessories",
+      "locator": "RubberGard EPDM accessories: SAFlashing, FormFlash, QuickPrimePlus, BA2012, LapSealantHS, WaterBlockS20; roles are distinct; exact CFP interface unconfirmed"
+    },
+    "bitumenUnderlay": {
+      "url": "https://iko.ie/download/70527/",
+      "locator": "IKO Ultra TF underlays; retrieved filename Oct2021. Exact lap method must follow issued system detail.",
+      "sha256": "aae7b31b8219578646f2f29b1f5ababcd83666679f1a165e26d2fdf3487feb02"
+    },
+    "bitumenCap": {
+      "url": "https://ikogroup.co.uk/product-catalogue/built-up-roofing-bur-system-ancillaries/iko-ultra-life-30-self-adhesive-detailing-capsheet/",
+      "locator": "Official product page, SKU64610004, selfadhesive SBS cap. Undated HTML; no June2024 edition or lap-method claim from this page."
+    },
+    "bitumenPrimer": {
+      "url": "https://www.ikogroup.co.uk/wp-content/uploads/2024/02/IKO-Technical-Guidance-IKO-Self-Adhesive-Membranes-JUL-2022.pdf",
+      "locator": "July2022, p.4: detailing underlay+cap, SprayfastMPP OR BondingAgent; no default duplicate primers"
+    },
+    "bitumenColdAdhesive": {
+      "url": "https://ikogroup.co.uk/product-catalogue/merchants-stockists/adhesives-accessories/adhesives/ikopro-high-performance-roofing-felt-adhesive/",
+      "locator": "IKOpro High Performance Roofing Felt Adhesive: separate approved cold-bonded felt method; no default addition to selfadhesive method"
+    },
+    "wood": {
+      "url": "https://www.fischer-international.com/en/products/innovations/powerfast-ii",
+      "locator": "PowerFastII timber-screw family; size/head/embedment/load/corrosion and exact window connection unresolved"
+    },
+    "concrete": {
+      "url": "https://www.fischer-international.com/en/products/steel-fixings/concrete-screws/concrete-screw-ultracut-fbs-ii-8-14",
+      "locator": "UltraCutFBSII concrete-screw family; separate designed subframe anchorage candidate, not direct CFP approval"
+    },
+    "steel": {
+      "url": "https://uk.sfs.com/products/roofing-and-cladding/twin-skin/sheet/self-drilling-stainless-steel-fastener-for-profile-96162",
+      "locator": "SFS SX3-6.0 sheet/profile connection family; exact window fixing not approved; steel thickness and load need selection"
+    },
+    "pitched": {
+      "url": "https://www.velux.co.uk/professionals/installers/installation-product-system",
+      "locator": "Separate compatible pitched-window flashing families: EDQ/EDE standing-seam metal; EDW/EDT/EDP applicable tile profiles; EDL slate with stated limits. Do not transfer to CFP100100."
+    }
+  },
+  "materials": [
+    {
+      "id": "timber-screw",
+      "nameRu": "Конструкционный шуруп по дереву — PowerFast II",
+      "applicationRu": "Деревянная несущая обвязка или подготовленный деревянный подрамник. Диаметр, длина, головка, заглубление и количество — по подтверждённому узлу; размер сверла 4,5 мм не является размером шурупа.",
+      "sourceIds": [
+        "window",
+        "wood"
+      ],
+      "exactProductExample": "PowerFast II",
+      "windowInterfaceApproved": false,
+      "roof": null,
+      "substrate": "TIMBER",
+      "unitId": "item",
+      "operation": "base",
+      "characteristicsRu": "PowerFast II",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:timber-screw",
+      "quantityParameterId": "roof_material_qty_timber_screw",
+      "approvalParameterId": "roof_material_detail_timber_screw",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "concrete-anchor-screw",
+      "nameRu": "Анкер-шуруп по бетону — UltraCut FBS II",
+      "applicationRu": "Крепление рассчитанного подрамника к подходящему бетону. Прямое крепление этой рамы к бетону, размер анкера и краевые расстояния требуют подтверждения.",
+      "sourceIds": [
+        "concrete"
+      ],
+      "exactProductExample": "UltraCut FBS II",
+      "windowInterfaceApproved": false,
+      "roof": null,
+      "substrate": "CONCRETE",
+      "unitId": "item",
+      "operation": "base",
+      "characteristicsRu": "UltraCut FBS II",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:concrete-anchor-screw",
+      "quantityParameterId": "roof_material_qty_concrete_anchor_screw",
+      "approvalParameterId": "roof_material_detail_concrete_anchor_screw",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "steel-fastener",
+      "nameRu": "Самосверлящий крепёж листа к стальному профилю — SX3-6.0 — семейство",
+      "applicationRu": "Пример крепежа листа к металлическому профилю по инструкции SFS. Применение для несущего подрамника и этой рамы не подтверждено; конкретный крепёж требует отдельного подбора.",
+      "sourceIds": [
+        "steel"
+      ],
+      "exactProductExample": "SX3-6.0 family",
+      "windowInterfaceApproved": false,
+      "roof": null,
+      "substrate": "STEEL",
+      "unitId": "item",
+      "operation": "base",
+      "characteristicsRu": "SX3-6.0 — семейство",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:steel-fastener",
+      "quantityParameterId": "roof_material_qty_steel_fastener",
+      "approvalParameterId": "roof_material_detail_steel_fastener",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "pvc-detail-membrane",
+      "nameRu": "Кровельная ПВХ-мембрана для примыканий — Sarnafil G410-18L, 1,8 мм",
+      "applicationRu": "Крыша с совместимой системой ПВХ-мембраны. Марка и толщина — по системе кровли; совместимость с рамой окна и площадь полос с нахлёстами ещё не подтверждены.",
+      "sourceIds": [
+        "pvc",
+        "window"
+      ],
+      "exactProductExample": "Sarnafil G410-18L, 1.8mm",
+      "windowInterfaceApproved": false,
+      "roof": "PVC",
+      "substrate": null,
+      "unitId": "m2",
+      "operation": "waterproof",
+      "characteristicsRu": "Sarnafil G410-18L, 1,8 мм",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:pvc-detail-membrane",
+      "quantityParameterId": "roof_material_qty_pvc_detail_membrane",
+      "approvalParameterId": "roof_material_detail_pvc_detail_membrane",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "pvc-contact-adhesive",
+      "nameRu": "Контактный клей для кровельной ПВХ-мембраны — Sarnacol2170",
+      "applicationRu": "Приклеиваемое вертикальное примыкание выбранной ПВХ-системы к разрешённому основанию. Клей выбирается вместе с мембраной; сварочные нахлёсты оставляют без клея.",
+      "sourceIds": [
+        "pvc"
+      ],
+      "exactProductExample": "Sarnacol2170",
+      "windowInterfaceApproved": false,
+      "roof": "PVC",
+      "substrate": null,
+      "unitId": "kg",
+      "operation": "waterproof",
+      "characteristicsRu": "Sarnacol2170",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:pvc-contact-adhesive",
+      "quantityParameterId": "roof_material_qty_pvc_contact_adhesive",
+      "approvalParameterId": "roof_material_detail_pvc_contact_adhesive",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "pvc-seam-cleaner",
+      "nameRu": "Очиститель сварных швов ПВХ-мембраны — Sarna Seam Cleaner",
+      "applicationRu": "Подготовка шва выбранной ПВХ-системы, когда это требует инструкция мембраны. Не заменяет контактный клей или герметик.",
+      "sourceIds": [
+        "pvc"
+      ],
+      "exactProductExample": "Sarna Seam Cleaner",
+      "windowInterfaceApproved": false,
+      "roof": "PVC",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Sarna Seam Cleaner",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:pvc-seam-cleaner",
+      "quantityParameterId": "roof_material_qty_pvc_seam_cleaner",
+      "approvalParameterId": "roof_material_detail_pvc_seam_cleaner",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "pvc-separation-layer",
+      "nameRu": "Разделительный слой под ПВХ-мембрану",
+      "applicationRu": "Узел, где выбранная ПВХ-мембрана иначе контактирует с несовместимым основанием. Тип и плотность слоя подтверждаются системой; нельзя назначать любое геополотно.",
+      "sourceIds": [
+        "pvc"
+      ],
+      "exactProductExample": null,
+      "windowInterfaceApproved": false,
+      "roof": "PVC",
+      "substrate": null,
+      "unitId": "m2",
+      "operation": "waterproof",
+      "characteristicsRu": "Марка и существенные параметры ещё не подобраны.",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:pvc-separation-layer",
+      "quantityParameterId": "roof_material_qty_pvc_separation_layer",
+      "approvalParameterId": "roof_material_detail_pvc_separation_layer",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "fpo-detail-membrane",
+      "nameRu": "Неармированная FPO-мембрана для деталей примыкания — Sarnafil T 66-15 D",
+      "applicationRu": "Совместимая FPO-система Sarnafil T; сваривается с её мембраной. Этот материал предназначен для деталей, а не покрытия всей крыши; перенос на произвольную TPO-мембрану требует подтверждения.",
+      "sourceIds": [
+        "fpo"
+      ],
+      "exactProductExample": "Sarnafil T 66-15 D",
+      "windowInterfaceApproved": false,
+      "roof": "FPO",
+      "substrate": null,
+      "unitId": "m2",
+      "operation": "waterproof",
+      "characteristicsRu": "Sarnafil T 66-15 D",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:fpo-detail-membrane",
+      "quantityParameterId": "roof_material_qty_fpo_detail_membrane",
+      "approvalParameterId": "roof_material_detail_fpo_detail_membrane",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "fpo-contact-adhesive",
+      "nameRu": "Контактный клей для FPO-примыканий — Sarnacol T-660",
+      "applicationRu": "Приклеиваемое примыкание указанной FPO-системы к разрешённому основанию. Клей для ПВХ вместо него не назначается; контакт с этой рамой требует подтверждения.",
+      "sourceIds": [
+        "fpo"
+      ],
+      "exactProductExample": "Sarnacol T-660",
+      "windowInterfaceApproved": false,
+      "roof": "FPO",
+      "substrate": null,
+      "unitId": "kg",
+      "operation": "waterproof",
+      "characteristicsRu": "Sarnacol T-660",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:fpo-contact-adhesive",
+      "quantityParameterId": "roof_material_qty_fpo_contact_adhesive",
+      "approvalParameterId": "roof_material_detail_fpo_contact_adhesive",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "fpo-seam-preparation",
+      "nameRu": "Состав подготовки сварных швов FPO-мембраны — Sarnafil T Prep",
+      "applicationRu": "Подготовка шва Sarnafil T по его инструкции. Это не клей, не универсальная грунтовка и не разбавитель клея.",
+      "sourceIds": [
+        "fpo"
+      ],
+      "exactProductExample": "Sarnafil T Prep",
+      "windowInterfaceApproved": false,
+      "roof": "FPO",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Sarnafil T Prep",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:fpo-seam-preparation",
+      "quantityParameterId": "roof_material_qty_fpo_seam_preparation",
+      "approvalParameterId": "roof_material_detail_fpo_seam_preparation",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "epdm-curb-flashing",
+      "nameRu": "Самоклеящаяся EPDM-лента для примыкания к борту — QuickSeam SA Flashing",
+      "applicationRu": "Примыкание совместимой RubberGard EPDM-системы по выбранному узлу. Ширину, нахлёсты и площадь подбирают по узлу; совместимость контакта с рамой не подтверждена.",
+      "sourceIds": [
+        "epdm"
+      ],
+      "exactProductExample": "QuickSeam SA Flashing",
+      "windowInterfaceApproved": false,
+      "roof": "EPDM",
+      "substrate": null,
+      "unitId": "m2",
+      "operation": "waterproof",
+      "characteristicsRu": "QuickSeam SA Flashing",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:epdm-curb-flashing",
+      "quantityParameterId": "roof_material_qty_epdm_curb_flashing",
+      "approvalParameterId": "roof_material_detail_epdm_curb_flashing",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "epdm-corner-flashing",
+      "nameRu": "Формуемая EPDM-лента для углов примыкания — QuickSeam FormFlash",
+      "applicationRu": "Углы и сложные детали совместимой RubberGard EPDM-системы. Не заменяет автоматически всю ленту прямого примыкания и не начисляется второй раз на ту же поверхность.",
+      "sourceIds": [
+        "epdm"
+      ],
+      "exactProductExample": "QuickSeam FormFlash",
+      "windowInterfaceApproved": false,
+      "roof": "EPDM",
+      "substrate": null,
+      "unitId": "m2",
+      "operation": "waterproof",
+      "characteristicsRu": "QuickSeam FormFlash",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:epdm-corner-flashing",
+      "quantityParameterId": "roof_material_qty_epdm_corner_flashing",
+      "approvalParameterId": "roof_material_detail_epdm_corner_flashing",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "epdm-primer",
+      "nameRu": "Праймер под самоклеящиеся EPDM-ленты — QuickPrime Plus",
+      "applicationRu": "Подготовка EPDM и разрешённых поверхностей под указанные QuickSeam-ленты по инструкции. Не является клеем для всей поверхности мембраны.",
+      "sourceIds": [
+        "epdm"
+      ],
+      "exactProductExample": "QuickPrime Plus",
+      "windowInterfaceApproved": false,
+      "roof": "EPDM",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "QuickPrime Plus",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:epdm-primer",
+      "quantityParameterId": "roof_material_qty_epdm_primer",
+      "approvalParameterId": "roof_material_detail_epdm_primer",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "epdm-bonding-adhesive",
+      "nameRu": "Контактный клей для EPDM-мембраны — Bonding Adhesive BA-2012",
+      "applicationRu": "Приклеиваемый участок RubberGard EPDM к разрешённому основанию. Применимость к конкретной ПВХ-раме окна и расход требуют отдельного подтверждения.",
+      "sourceIds": [
+        "epdm"
+      ],
+      "exactProductExample": "Bonding Adhesive BA-2012",
+      "windowInterfaceApproved": false,
+      "roof": "EPDM",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Bonding Adhesive BA-2012",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:epdm-bonding-adhesive",
+      "quantityParameterId": "roof_material_qty_epdm_bonding_adhesive",
+      "approvalParameterId": "roof_material_detail_epdm_bonding_adhesive",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "bitumen-detail-underlay",
+      "nameRu": "Битумный подкладочный материал для примыкания — IKO Ultra T-F Detailing Underlay",
+      "applicationRu": "Нижний слой примыкания выбранной битумной системы. Число слоёв, грунтование и способ соединения задаёт её узел; контакт с рамой ещё не подтверждён.",
+      "sourceIds": [
+        "bitumenUnderlay",
+        "bitumenPrimer"
+      ],
+      "exactProductExample": "IKO Ultra T-F Detailing Underlay",
+      "windowInterfaceApproved": false,
+      "roof": "BITUMEN",
+      "substrate": null,
+      "unitId": "m2",
+      "operation": "waterproof",
+      "characteristicsRu": "IKO Ultra T-F Detailing Underlay",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:bitumen-detail-underlay",
+      "quantityParameterId": "roof_material_qty_bitumen_detail_underlay",
+      "approvalParameterId": "roof_material_detail_bitumen_detail_underlay",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "bitumen-detail-capsheet",
+      "nameRu": "Самоклеящийся СБС-битумный материал верхнего слоя примыкания — IKO Ultra Life30 S-A Detailing Capsheet 64610004",
+      "applicationRu": "Верхний слой согласованной системы IKO Ultra Life30. Его самоклеящийся способ не означает отдельную покупку клея для каждого участка. Метод швов и узел окна требуют подтверждения.",
+      "sourceIds": [
+        "bitumenCap",
+        "bitumenPrimer"
+      ],
+      "exactProductExample": "IKO Ultra Life30 S-A Detailing Capsheet 64610004",
+      "windowInterfaceApproved": false,
+      "roof": "BITUMEN",
+      "substrate": null,
+      "unitId": "m2",
+      "operation": "waterproof",
+      "characteristicsRu": "IKO Ultra Life30 S-A Detailing Capsheet 64610004",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:bitumen-detail-capsheet",
+      "quantityParameterId": "roof_material_qty_bitumen_detail_capsheet",
+      "approvalParameterId": "roof_material_detail_bitumen_detail_capsheet",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "bitumen-bonding-primer",
+      "nameRu": "Адгезионный праймер под самоклеящиеся битумные материалы — IKOpro Sprayfast MPP или IKOpro Bonding Agent",
+      "applicationRu": "Грунтование основания применимой IKO Ultra-системы. Sprayfast MPP и Bonding Agent — альтернативы; вместе автоматически не начисляются.",
+      "sourceIds": [
+        "bitumenPrimer"
+      ],
+      "exactProductExample": "IKOpro Sprayfast MPP OR IKOpro Bonding Agent",
+      "windowInterfaceApproved": false,
+      "roof": "BITUMEN",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "IKOpro Sprayfast MPP или IKOpro Bonding Agent",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:bitumen-bonding-primer",
+      "quantityParameterId": "roof_material_qty_bitumen_bonding_primer",
+      "approvalParameterId": "roof_material_detail_bitumen_bonding_primer",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "bitumen-cold-adhesive",
+      "nameRu": "Клей для холодного приклеивания рулонного битумного материала — IKOpro High Performance Roofing Felt Adhesive",
+      "applicationRu": "Отдельный подтверждённый способ холодного приклеивания совместимого материала. Для самоклеящегося верхнего слоя автоматически не требуется.",
+      "sourceIds": [
+        "bitumenColdAdhesive"
+      ],
+      "exactProductExample": "IKOpro High Performance Roofing Felt Adhesive",
+      "windowInterfaceApproved": false,
+      "roof": "BITUMEN",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "IKOpro High Performance Roofing Felt Adhesive",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:bitumen-cold-adhesive",
+      "quantityParameterId": "roof_material_qty_bitumen_cold_adhesive",
+      "approvalParameterId": "roof_material_detail_bitumen_cold_adhesive",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "bitumen-cold-membrane",
+      "nameRu": "Рулонный битумный материал для холодного приклеивания — марка не подобрана",
+      "exactProductExample": null,
+      "sourceIds": [
+        "bitumenColdAdhesive"
+      ],
+      "applicationRu": "Только совместимый с выбранным холодным клеем рулонный материал. Клей не заменяет мембрану. Марка, число слоёв, нахлёсты и узел этой рамы не подтверждены.",
+      "roof": "BITUMEN",
+      "substrate": null,
+      "unitId": "m2",
+      "operation": "waterproof",
+      "characteristicsRu": "Марка и существенные параметры ещё не подобраны.",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "windowInterfaceApproved": false,
+      "rowId": "roof-cfp100100:material:bitumen-cold-membrane",
+      "quantityParameterId": "roof_material_qty_bitumen_cold_membrane",
+      "approvalParameterId": "roof_material_detail_bitumen_cold_membrane",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "membrane-termination-kit",
+      "nameRu": "Комплект прижимных планок для кровельного примыкания — ZZZ 210 — семейство",
+      "applicationRu": "Закрепление верхнего края гидроизоляции к совместимому основанию окна. Семейство ZZZ 210 показано в инструкции; это не анкеры рамы. Исполнение, состав комплекта и расход требуют подтверждения.",
+      "sourceIds": [
+        "window"
+      ],
+      "exactProductExample": "ZZZ 210 family",
+      "windowInterfaceApproved": false,
+      "roof": null,
+      "substrate": null,
+      "unitId": "item",
+      "operation": "waterproof",
+      "characteristicsRu": "ZZZ 210 — семейство",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:membrane-termination-kit",
+      "quantityParameterId": "roof_material_qty_membrane_termination_kit",
+      "approvalParameterId": "roof_material_detail_membrane_termination_kit",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "pvc-termination-sealant",
+      "nameRu": "Эластичный герметик края ПВХ-примыкания — Sarnaplast-2235; праймер подбирается отдельно",
+      "applicationRu": "Узел ПВХ-системы, где предусмотрена герметизация завершения мембраны. Герметик и его контакт с рамой выбираются по совместимости; сварку швов он не заменяет.",
+      "sourceIds": [
+        "pvcSealant",
+        "pvcPrimer"
+      ],
+      "exactProductExample": "Sarnaplast-2235 with approved primer",
+      "windowInterfaceApproved": false,
+      "roof": "PVC",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Sarnaplast-2235; праймер подбирается отдельно",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:pvc-termination-sealant",
+      "quantityParameterId": "roof_material_qty_pvc_termination_sealant",
+      "approvalParameterId": "roof_material_detail_pvc_termination_sealant",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "pvc-sealant-primer",
+      "nameRu": "Грунтовка под герметик ПВХ-примыкания — Primer-110",
+      "applicationRu": "Только разрешённая пара герметик–ПВХ/основание. Primer 110 не применяется к Sarnafil T; это отдельная условная позиция.",
+      "sourceIds": [
+        "pvcPrimer"
+      ],
+      "exactProductExample": "Primer-110",
+      "windowInterfaceApproved": false,
+      "roof": "PVC",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Primer-110",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:pvc-sealant-primer",
+      "quantityParameterId": "roof_material_qty_pvc_sealant_primer",
+      "approvalParameterId": "roof_material_detail_pvc_sealant_primer",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "fpo-sealant-primer",
+      "nameRu": "Грунтовка под герметик FPO-примыкания — Primer T-501",
+      "applicationRu": "Применимое герметизируемое завершение Sarnafil TG/TS с указанным герметиком. Primer T-501 не применяется к ПВХ-мембранам.",
+      "sourceIds": [
+        "fpoPrimer",
+        "pvcSealant"
+      ],
+      "exactProductExample": "Primer T-501",
+      "windowInterfaceApproved": false,
+      "roof": "FPO",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Primer T-501",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:fpo-sealant-primer",
+      "quantityParameterId": "roof_material_qty_fpo_sealant_primer",
+      "approvalParameterId": "roof_material_detail_fpo_sealant_primer",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "epdm-edge-sealant",
+      "nameRu": "Герметик открытых краёв EPDM-ленты — Lap Sealant HS",
+      "applicationRu": "Края и детали QuickSeam, где это прямо требует выбранная инструкция. Не обязателен для каждого EPDM-шва и не заменяет уплотнение под планкой.",
+      "sourceIds": [
+        "epdm"
+      ],
+      "exactProductExample": "Lap Sealant HS",
+      "windowInterfaceApproved": false,
+      "roof": "EPDM",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Lap Sealant HS",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:epdm-edge-sealant",
+      "quantityParameterId": "roof_material_qty_epdm_edge_sealant",
+      "approvalParameterId": "roof_material_detail_epdm_edge_sealant",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "epdm-compression-seal",
+      "nameRu": "Уплотняющий состав под прижимную планку EPDM — Water-Block Seal S-20",
+      "applicationRu": "Сжимаемое уплотнение в предусмотренном узле завершения EPDM. Не заменяет герметик открытых краёв; количество и контакт с рамой не подтверждены.",
+      "sourceIds": [
+        "epdm"
+      ],
+      "exactProductExample": "Water-Block Seal S-20",
+      "windowInterfaceApproved": false,
+      "roof": "EPDM",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Water-Block Seal S-20",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:epdm-compression-seal",
+      "quantityParameterId": "roof_material_qty_epdm_compression_seal",
+      "approvalParameterId": "roof_material_detail_epdm_compression_seal",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "fpo-termination-sealant",
+      "nameRu": "Эластичный герметик завершения FPO-примыкания — Sarnaplast 2235",
+      "exactProductExample": "Sarnaplast 2235",
+      "sourceIds": [
+        "fpoPrimer",
+        "pvcSealant"
+      ],
+      "applicationRu": "Только разрешённое герметизируемое завершение Sarnafil TG/TS с Primer T-501. Контакт с рамой этого окна не подтверждён. Не заменяет сварку мембраны; герметик и праймер учитываются раздельно.",
+      "roof": "FPO",
+      "substrate": null,
+      "unitId": "l",
+      "operation": "waterproof",
+      "characteristicsRu": "Sarnaplast 2235",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "windowInterfaceApproved": false,
+      "rowId": "roof-cfp100100:material:fpo-termination-sealant",
+      "quantityParameterId": "roof_material_qty_fpo_termination_sealant",
+      "approvalParameterId": "roof_material_detail_fpo_termination_sealant",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "vapour-collar",
+      "nameRu": "Пароизоляционный воротник окна — BBX — семейство; точное исполнение не подобрано",
+      "applicationRu": "Непрерывное соединение внутренней пароизоляции с совместимой рамой. Семейство BBX показано в инструкции; точный комплект требует подтверждения. Пароизоляция из выбранного комплекта отделки повторно не покупается.",
+      "sourceIds": [
+        "window"
+      ],
+      "exactProductExample": "BBX family; exact current variant unresolved",
+      "windowInterfaceApproved": false,
+      "roof": null,
+      "substrate": null,
+      "unitId": "item",
+      "operation": "thermal",
+      "characteristicsRu": "BBX — семейство; точное исполнение не подобрано",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:vapour-collar",
+      "quantityParameterId": "roof_material_qty_vapour_collar",
+      "approvalParameterId": "roof_material_detail_vapour_collar",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "thermal-connection-material",
+      "nameRu": "Теплоизоляционные плиты для узла примыкания окна",
+      "applicationRu": "Продолжение теплоизоляции крыши вокруг основания. Тип плиты, толщина, плотность и объём определяются конструкцией крыши; изображение утеплителя не подтверждает конкретную минвату, XPS или PIR.",
+      "sourceIds": [
+        "window"
+      ],
+      "exactProductExample": null,
+      "windowInterfaceApproved": false,
+      "roof": null,
+      "substrate": null,
+      "unitId": "m3",
+      "operation": "thermal",
+      "characteristicsRu": "Марка и существенные параметры ещё не подобраны.",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:thermal-connection-material",
+      "quantityParameterId": "roof_material_qty_thermal_connection_material",
+      "approvalParameterId": "roof_material_detail_thermal_connection_material",
+      "quantity": null,
+      "price": null
+    },
+    {
+      "id": "extension-kerb",
+      "nameRu": "Надставная рама основания окна — ZCE — семейство",
+      "applicationRu": "Когда толщина крыши и требуемая высота борта предусматривают совместимую надставку. Семейство ZCE показано в инструкции; одно или два исполнения не назначаются автоматически.",
+      "sourceIds": [
+        "window"
+      ],
+      "exactProductExample": "ZCE family",
+      "windowInterfaceApproved": false,
+      "roof": null,
+      "substrate": null,
+      "unitId": "item",
+      "operation": "base",
+      "characteristicsRu": "ZCE — семейство",
+      "quantityStatusRu": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusionStatusRu": "Неподобранная альтернатива; в стоимость и готовый заказ не включена.",
+      "confirmationStatus": "PRODUCT_REFERENCE_ONLY_WINDOW_DETAIL_UNCONFIRMED",
+      "rowId": "roof-cfp100100:material:extension-kerb",
+      "quantityParameterId": "roof_material_qty_extension_kerb",
+      "approvalParameterId": "roof_material_detail_extension_kerb",
+      "quantity": null,
+      "price": null
+    }
+  ],
+  "sourceManifestSha256": "2e5b60a60b2e28c6d414896f27327341d100136e2b7f5b4a39f7d3c7aff08d28",
+  "replacedRowIds": [
+    "roof-cfp100100:fixings",
+    "roof-cfp100100:flashing",
+    "roof-cfp100100:membrane-termination",
+    "roof-cfp100100:vapour-connection",
+    "roof-cfp100100:thermal-connection",
+    "roof-cfp100100:extension"
+  ],
+  "removedQuantityParameterIds": [
+    "mounting_fixings_per_unit",
+    "flashing_consumption_m2_per_unit",
+    "vapour_connection_sets_per_unit",
+    "thermal_connection_m3_per_unit",
+    "extension_frames_per_unit",
+    "membrane_termination_sets_per_unit"
+  ],
+  "objectQuestions": {
+    "roof": "Покрытие крыши",
+    "substrate": "Несущая конструкция крепления"
+  },
+  "alternativesPolicy": "ONE_ROOF_AND_SUBSTRATE_ACTIVE_UNSELECTED_VARIANTS_OUTSIDE_COST_AND_ORDER",
+  "applicabilityMatrix": [
+    {
+      "roof": "PVC",
+      "substrate": "TIMBER",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "PVC",
+      "substrate": "CONCRETE",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "PVC",
+      "substrate": "STEEL",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "FPO",
+      "substrate": "TIMBER",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "FPO",
+      "substrate": "CONCRETE",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "FPO",
+      "substrate": "STEEL",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "EPDM",
+      "substrate": "TIMBER",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "EPDM",
+      "substrate": "CONCRETE",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "EPDM",
+      "substrate": "STEEL",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "BITUMEN",
+      "substrate": "TIMBER",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "BITUMEN",
+      "substrate": "CONCRETE",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    },
+    {
+      "roof": "BITUMEN",
+      "substrate": "STEEL",
+      "status": "PRODUCT_CANDIDATES_NODE_COMPATIBILITY_AND_QUANTITIES_UNCONFIRMED",
+      "currentCfpApproved": false
+    }
+  ],
+  "incompatibleOrSeparateWindowBranches": [
+    {
+      "roofRu": "Фальцевая металлическая крыша",
+      "materialRu": "Оклад совместимого окна для фальцевой кровли",
+      "examples": "EDQ / EDE",
+      "sourceId": "pitched",
+      "currentCfpApproval": false
+    },
+    {
+      "roofRu": "Металлочерепица и профилированные покрытия",
+      "materialRu": "Оклад совместимого окна для профилированного покрытия",
+      "examples": "EDW, according to actual profile and window",
+      "sourceId": "pitched",
+      "currentCfpApproval": false
+    },
+    {
+      "roofRu": "Плоская и штучная черепица",
+      "materialRu": "Оклад совместимого окна для выбранного вида черепицы",
+      "examples": "EDT / EDP, according to actual tile and window",
+      "sourceId": "pitched",
+      "currentCfpApproval": false
+    },
+    {
+      "roofRu": "Сланцевая кровля",
+      "materialRu": "Оклад совместимого окна для сланца",
+      "examples": "EDL within its stated limits",
+      "sourceId": "pitched",
+      "currentCfpApproval": false
+    }
+  ],
+  "sourceRestrictionRu": "Текущее окно с куполом рассчитано на уклон 0–15°. Оклады для металлочерепицы, черепицы и сланца относятся к другим совместимым окнам; применимость этого окна к таким крышам не подтверждена.",
+  "resourceTable": [
+    {
+      "operation": "base",
+      "rowId": "roof-cfp100100:material:timber-screw",
+      "resource": "Конструкционный шуруп по дереву — PowerFast II",
+      "characteristics": "PowerFast II",
+      "application": "Деревянная несущая обвязка или подготовленный деревянный подрамник. Диаметр, длина, головка, заглубление и количество — по подтверждённому узлу; размер сверла 4,5 мм не является размером шурупа.",
+      "unitId": "item",
+      "sourceIds": [
+        "window",
+        "wood"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "base",
+      "rowId": "roof-cfp100100:material:concrete-anchor-screw",
+      "resource": "Анкер-шуруп по бетону — UltraCut FBS II",
+      "characteristics": "UltraCut FBS II",
+      "application": "Крепление рассчитанного подрамника к подходящему бетону. Прямое крепление этой рамы к бетону, размер анкера и краевые расстояния требуют подтверждения.",
+      "unitId": "item",
+      "sourceIds": [
+        "concrete"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "base",
+      "rowId": "roof-cfp100100:material:steel-fastener",
+      "resource": "Самосверлящий крепёж листа к стальному профилю — SX3-6.0 — семейство",
+      "characteristics": "SX3-6.0 — семейство",
+      "application": "Пример крепежа листа к металлическому профилю по инструкции SFS. Применение для несущего подрамника и этой рамы не подтверждено; конкретный крепёж требует отдельного подбора.",
+      "unitId": "item",
+      "sourceIds": [
+        "steel"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:pvc-detail-membrane",
+      "resource": "Кровельная ПВХ-мембрана для примыканий — Sarnafil G410-18L, 1,8 мм",
+      "characteristics": "Sarnafil G410-18L, 1,8 мм",
+      "application": "Крыша с совместимой системой ПВХ-мембраны. Марка и толщина — по системе кровли; совместимость с рамой окна и площадь полос с нахлёстами ещё не подтверждены.",
+      "unitId": "m2",
+      "sourceIds": [
+        "pvc",
+        "window"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:pvc-contact-adhesive",
+      "resource": "Контактный клей для кровельной ПВХ-мембраны — Sarnacol2170",
+      "characteristics": "Sarnacol2170",
+      "application": "Приклеиваемое вертикальное примыкание выбранной ПВХ-системы к разрешённому основанию. Клей выбирается вместе с мембраной; сварочные нахлёсты оставляют без клея.",
+      "unitId": "kg",
+      "sourceIds": [
+        "pvc"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:pvc-seam-cleaner",
+      "resource": "Очиститель сварных швов ПВХ-мембраны — Sarna Seam Cleaner",
+      "characteristics": "Sarna Seam Cleaner",
+      "application": "Подготовка шва выбранной ПВХ-системы, когда это требует инструкция мембраны. Не заменяет контактный клей или герметик.",
+      "unitId": "l",
+      "sourceIds": [
+        "pvc"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:pvc-separation-layer",
+      "resource": "Разделительный слой под ПВХ-мембрану",
+      "characteristics": "Марка и существенные параметры ещё не подобраны.",
+      "application": "Узел, где выбранная ПВХ-мембрана иначе контактирует с несовместимым основанием. Тип и плотность слоя подтверждаются системой; нельзя назначать любое геополотно.",
+      "unitId": "m2",
+      "sourceIds": [
+        "pvc"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:fpo-detail-membrane",
+      "resource": "Неармированная FPO-мембрана для деталей примыкания — Sarnafil T 66-15 D",
+      "characteristics": "Sarnafil T 66-15 D",
+      "application": "Совместимая FPO-система Sarnafil T; сваривается с её мембраной. Этот материал предназначен для деталей, а не покрытия всей крыши; перенос на произвольную TPO-мембрану требует подтверждения.",
+      "unitId": "m2",
+      "sourceIds": [
+        "fpo"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:fpo-contact-adhesive",
+      "resource": "Контактный клей для FPO-примыканий — Sarnacol T-660",
+      "characteristics": "Sarnacol T-660",
+      "application": "Приклеиваемое примыкание указанной FPO-системы к разрешённому основанию. Клей для ПВХ вместо него не назначается; контакт с этой рамой требует подтверждения.",
+      "unitId": "kg",
+      "sourceIds": [
+        "fpo"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:fpo-seam-preparation",
+      "resource": "Состав подготовки сварных швов FPO-мембраны — Sarnafil T Prep",
+      "characteristics": "Sarnafil T Prep",
+      "application": "Подготовка шва Sarnafil T по его инструкции. Это не клей, не универсальная грунтовка и не разбавитель клея.",
+      "unitId": "l",
+      "sourceIds": [
+        "fpo"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:epdm-curb-flashing",
+      "resource": "Самоклеящаяся EPDM-лента для примыкания к борту — QuickSeam SA Flashing",
+      "characteristics": "QuickSeam SA Flashing",
+      "application": "Примыкание совместимой RubberGard EPDM-системы по выбранному узлу. Ширину, нахлёсты и площадь подбирают по узлу; совместимость контакта с рамой не подтверждена.",
+      "unitId": "m2",
+      "sourceIds": [
+        "epdm"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:epdm-corner-flashing",
+      "resource": "Формуемая EPDM-лента для углов примыкания — QuickSeam FormFlash",
+      "characteristics": "QuickSeam FormFlash",
+      "application": "Углы и сложные детали совместимой RubberGard EPDM-системы. Не заменяет автоматически всю ленту прямого примыкания и не начисляется второй раз на ту же поверхность.",
+      "unitId": "m2",
+      "sourceIds": [
+        "epdm"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:epdm-primer",
+      "resource": "Праймер под самоклеящиеся EPDM-ленты — QuickPrime Plus",
+      "characteristics": "QuickPrime Plus",
+      "application": "Подготовка EPDM и разрешённых поверхностей под указанные QuickSeam-ленты по инструкции. Не является клеем для всей поверхности мембраны.",
+      "unitId": "l",
+      "sourceIds": [
+        "epdm"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:epdm-bonding-adhesive",
+      "resource": "Контактный клей для EPDM-мембраны — Bonding Adhesive BA-2012",
+      "characteristics": "Bonding Adhesive BA-2012",
+      "application": "Приклеиваемый участок RubberGard EPDM к разрешённому основанию. Применимость к конкретной ПВХ-раме окна и расход требуют отдельного подтверждения.",
+      "unitId": "l",
+      "sourceIds": [
+        "epdm"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:bitumen-detail-underlay",
+      "resource": "Битумный подкладочный материал для примыкания — IKO Ultra T-F Detailing Underlay",
+      "characteristics": "IKO Ultra T-F Detailing Underlay",
+      "application": "Нижний слой примыкания выбранной битумной системы. Число слоёв, грунтование и способ соединения задаёт её узел; контакт с рамой ещё не подтверждён.",
+      "unitId": "m2",
+      "sourceIds": [
+        "bitumenUnderlay",
+        "bitumenPrimer"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:bitumen-detail-capsheet",
+      "resource": "Самоклеящийся СБС-битумный материал верхнего слоя примыкания — IKO Ultra Life30 S-A Detailing Capsheet 64610004",
+      "characteristics": "IKO Ultra Life30 S-A Detailing Capsheet 64610004",
+      "application": "Верхний слой согласованной системы IKO Ultra Life30. Его самоклеящийся способ не означает отдельную покупку клея для каждого участка. Метод швов и узел окна требуют подтверждения.",
+      "unitId": "m2",
+      "sourceIds": [
+        "bitumenCap",
+        "bitumenPrimer"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:bitumen-bonding-primer",
+      "resource": "Адгезионный праймер под самоклеящиеся битумные материалы — IKOpro Sprayfast MPP или IKOpro Bonding Agent",
+      "characteristics": "IKOpro Sprayfast MPP или IKOpro Bonding Agent",
+      "application": "Грунтование основания применимой IKO Ultra-системы. Sprayfast MPP и Bonding Agent — альтернативы; вместе автоматически не начисляются.",
+      "unitId": "l",
+      "sourceIds": [
+        "bitumenPrimer"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:bitumen-cold-adhesive",
+      "resource": "Клей для холодного приклеивания рулонного битумного материала — IKOpro High Performance Roofing Felt Adhesive",
+      "characteristics": "IKOpro High Performance Roofing Felt Adhesive",
+      "application": "Отдельный подтверждённый способ холодного приклеивания совместимого материала. Для самоклеящегося верхнего слоя автоматически не требуется.",
+      "unitId": "l",
+      "sourceIds": [
+        "bitumenColdAdhesive"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:bitumen-cold-membrane",
+      "resource": "Рулонный битумный материал для холодного приклеивания — марка не подобрана",
+      "characteristics": "Марка и существенные параметры ещё не подобраны.",
+      "application": "Только совместимый с выбранным холодным клеем рулонный материал. Клей не заменяет мембрану. Марка, число слоёв, нахлёсты и узел этой рамы не подтверждены.",
+      "unitId": "m2",
+      "sourceIds": [
+        "bitumenColdAdhesive"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:membrane-termination-kit",
+      "resource": "Комплект прижимных планок для кровельного примыкания — ZZZ 210 — семейство",
+      "characteristics": "ZZZ 210 — семейство",
+      "application": "Закрепление верхнего края гидроизоляции к совместимому основанию окна. Семейство ZZZ 210 показано в инструкции; это не анкеры рамы. Исполнение, состав комплекта и расход требуют подтверждения.",
+      "unitId": "item",
+      "sourceIds": [
+        "window"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:pvc-termination-sealant",
+      "resource": "Эластичный герметик края ПВХ-примыкания — Sarnaplast-2235; праймер подбирается отдельно",
+      "characteristics": "Sarnaplast-2235; праймер подбирается отдельно",
+      "application": "Узел ПВХ-системы, где предусмотрена герметизация завершения мембраны. Герметик и его контакт с рамой выбираются по совместимости; сварку швов он не заменяет.",
+      "unitId": "l",
+      "sourceIds": [
+        "pvcSealant",
+        "pvcPrimer"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:pvc-sealant-primer",
+      "resource": "Грунтовка под герметик ПВХ-примыкания — Primer-110",
+      "characteristics": "Primer-110",
+      "application": "Только разрешённая пара герметик–ПВХ/основание. Primer 110 не применяется к Sarnafil T; это отдельная условная позиция.",
+      "unitId": "l",
+      "sourceIds": [
+        "pvcPrimer"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:fpo-sealant-primer",
+      "resource": "Грунтовка под герметик FPO-примыкания — Primer T-501",
+      "characteristics": "Primer T-501",
+      "application": "Применимое герметизируемое завершение Sarnafil TG/TS с указанным герметиком. Primer T-501 не применяется к ПВХ-мембранам.",
+      "unitId": "l",
+      "sourceIds": [
+        "fpoPrimer",
+        "pvcSealant"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:epdm-edge-sealant",
+      "resource": "Герметик открытых краёв EPDM-ленты — Lap Sealant HS",
+      "characteristics": "Lap Sealant HS",
+      "application": "Края и детали QuickSeam, где это прямо требует выбранная инструкция. Не обязателен для каждого EPDM-шва и не заменяет уплотнение под планкой.",
+      "unitId": "l",
+      "sourceIds": [
+        "epdm"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:epdm-compression-seal",
+      "resource": "Уплотняющий состав под прижимную планку EPDM — Water-Block Seal S-20",
+      "characteristics": "Water-Block Seal S-20",
+      "application": "Сжимаемое уплотнение в предусмотренном узле завершения EPDM. Не заменяет герметик открытых краёв; количество и контакт с рамой не подтверждены.",
+      "unitId": "l",
+      "sourceIds": [
+        "epdm"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "waterproof",
+      "rowId": "roof-cfp100100:material:fpo-termination-sealant",
+      "resource": "Эластичный герметик завершения FPO-примыкания — Sarnaplast 2235",
+      "characteristics": "Sarnaplast 2235",
+      "application": "Только разрешённое герметизируемое завершение Sarnafil TG/TS с Primer T-501. Контакт с рамой этого окна не подтверждён. Не заменяет сварку мембраны; герметик и праймер учитываются раздельно.",
+      "unitId": "l",
+      "sourceIds": [
+        "fpoPrimer",
+        "pvcSealant"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "thermal",
+      "rowId": "roof-cfp100100:material:vapour-collar",
+      "resource": "Пароизоляционный воротник окна — BBX — семейство; точное исполнение не подобрано",
+      "characteristics": "BBX — семейство; точное исполнение не подобрано",
+      "application": "Непрерывное соединение внутренней пароизоляции с совместимой рамой. Семейство BBX показано в инструкции; точный комплект требует подтверждения. Пароизоляция из выбранного комплекта отделки повторно не покупается.",
+      "unitId": "item",
+      "sourceIds": [
+        "window"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "thermal",
+      "rowId": "roof-cfp100100:material:thermal-connection-material",
+      "resource": "Теплоизоляционные плиты для узла примыкания окна",
+      "characteristics": "Марка и существенные параметры ещё не подобраны.",
+      "application": "Продолжение теплоизоляции крыши вокруг основания. Тип плиты, толщина, плотность и объём определяются конструкцией крыши; изображение утеплителя не подтверждает конкретную минвату, XPS или PIR.",
+      "unitId": "m3",
+      "sourceIds": [
+        "window"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    },
+    {
+      "operation": "base",
+      "rowId": "roof-cfp100100:material:extension-kerb",
+      "resource": "Надставная рама основания окна — ZCE — семейство",
+      "characteristics": "ZCE — семейство",
+      "application": "Когда толщина крыши и требуемая высота борта предусматривают совместимую надставку. Семейство ZCE показано в инструкции; одно или два исполнения не назначаются автоматически.",
+      "unitId": "item",
+      "sourceIds": [
+        "window"
+      ],
+      "quantity": null,
+      "quantityGap": "Расход на окно не подтверждён; количество не рассчитано.",
+      "inclusion": "Неподобранная альтернатива; в стоимость и готовый заказ не включена."
+    }
+  ],
+  "confirmedNewMaterialResources": 0,
+  "fullTechnicalAcceptance": false,
+  "acceptedNewTypes": 0
+}

@@ -1,0 +1,307 @@
+{
+  "schema": "s2769-standalone-screed-reuse-review/v1",
+  "reviewedAt": "2026-10-13",
+  "verdict": "SAFE_TO_IMPLEMENT_CONDITIONALLY_NOT_YET_ADMITTED",
+  "safeToImplementConditionally": true,
+  "publicationOrRuntimeAdmitted": false,
+  "completeTechnicalTypeAccepted": false,
+  "newFullTechnicalTypes": 0,
+  "scope": "One grouped independent review of new standalone reuse: applicability, q/root-selector binding, migration/exclusions, active parameters, source-owner identities and machine-price coverage. No repeat source arithmetic audit, no reopening of accepted installation package, no ordinary UI review.",
+  "environment": {
+    "verifiedGitRoot": "C:/dev/rik-expo-app-r4a5-dc4f0ce7",
+    "verifiedHead": "2b79d67a797c494ead46d7f0158ae34f5eef5754",
+    "normsReleaseId": "69598ad5-0b97-5b1d-8614-601639707967",
+    "searchReleaseId": "d7af6a5e-4fbd-5c2d-8a47-72eeca655e15",
+    "master": "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (100).md",
+    "masterSections": [
+      "20.71.3.1",
+      "20.71.3.2",
+      "20.71.3.3",
+      "20.71.11"
+    ],
+    "agentsRead": "AGENTS.md",
+    "productEdited": false,
+    "heavyTestsRun": false,
+    "launcherOrPublisherRun": false,
+    "uiControlled": false
+  },
+  "identities": {
+    "frozenParentsPath": "C:/Users/User/Documents/Codex/2026-10-13/new-chat/work/standalone-screed-five-parents.json",
+    "frozenParentsSha256Verified": "33e91d5ab6083fccd5fdfcac332811c744bd943304f9f4be22627a771be9a1b2",
+    "publicReadbackPath": "C:/Users/User/Documents/Codex/2026-10-13/new-chat/work/reuse-target-readback.json",
+    "sourcePack": "data/estimate-benchmarks/source-packs/roof-screed25-companion-s27-67.json",
+    "sourcePackContract": "rik-expo-app.s27-67.roof-screed25-companion.v1",
+    "sourcePrefix": "roof:cement-screed25:krer12-017-01-plus-10x02",
+    "sourceNormId": "12-01-017-01+10*12-01-017-02",
+    "roofSourceSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+    "designSourceSha256": "6291b9410ac2a272b3439f65dcf8a45de327ad1b8c22e9606f76ae57aedd58d7",
+    "priorApplicabilityReview": "C:/Users/User/Documents/Codex/2026-10-12/new-chat/work/s2767-next-primary-sources/screed25-source-review.json",
+    "targets": [
+      {
+        "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_large_area",
+        "definitionId": "34bf8db9-f5f6-5e7a-8766-ba25ea564302",
+        "sha256": "1ac1da30c55fdd61e27e9e78220c1617f147dbfff2e05a45470fc483f10b2726"
+      },
+      {
+        "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_small_area",
+        "definitionId": "0fa2a02f-6820-51f9-8e38-d87770ea601f",
+        "sha256": "478177e06afc1f0cec8db777eeb33bba38f891487397f6402ce4222bcf5ed592"
+      },
+      {
+        "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_standard",
+        "definitionId": "66a3cf35-8162-5fbd-8a86-6ecc954fab65",
+        "sha256": "4515f27937e26d22f55f34811220a6648ef1970edf978f94c8da8816b4d6d520"
+      },
+      {
+        "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_technical_room",
+        "definitionId": "59d92087-7bda-5e0e-8832-ef31a0efbeb4",
+        "sha256": "136cb576bc772e0e1857690553eec73d725c47e117f389d1843ff54e16d1536f"
+      },
+      {
+        "catalogId": "canonical-work:base:roofing_interior_flat_roof_align_wet_zone",
+        "definitionId": "ff14c8e8-f24c-55f1-8a16-2b6f967a18b6",
+        "sha256": "6650c661e562d2ddc11813df575bb808588c4bff85c1e050b342dfebff25c7fa"
+      }
+    ],
+    "eachParent": {
+      "version": 4,
+      "parameters": 64,
+      "formulas": 127,
+      "resources": 127,
+      "legacyRows": 59,
+      "accepted15Rows": 8,
+      "informationalResidualRows": 60
+    }
+  },
+  "applicability": {
+    "conclusion": "All five can host a conditional roof25 variant: current frozen applicability explicitly describes roof cement-sand screed; q explicitly measures that screed. The lexical interior/technical_room/wet_zone suffix is neither proof of floor applicability nor engineering suitability.",
+    "geometry": "q is decimal m2 for THIS homogeneous roof-alignment site. Choosing15/25 changes technology for that site. Different areas or simultaneous15/25 portions require distinct existing work/site instances, not an inferred split or inherited coverage area.",
+    "retainedBounds": [
+      "Exactly25mm, ready M100 mortar, accepted 01701+10x01702 machine method and ordinary source bounds.",
+      "Immediate loose-fill insulation substrate with project-specified suitable top preparation; M100 alone does not prove cone slump<=30mm or compatibility with machine feed.",
+      "Lower vapor barrier and norm4.4m2 felt do not prove preparation of the top of loose fill.",
+      "Wet/technical/large/small titles imply no coefficient, design approval, suitable base or execution fact.",
+      "Depth/reinforcement, joints, curing/acceptance and other open needs remain open. Numeric norms do not prove completed work or full roof."
+    ],
+    "metadata": "Update successor applicability, selected-branch metadata and root/q guides to conditional roof15 OR roof25. Keep old15-only facts as historical lineage. Make new25 choice explicitly roof-specific; no generic interior-floor admission.",
+    "additionalPrimaryArithmeticAuditNeeded": false
+  },
+  "binding": {
+    "rootSelector": "roof_screed_system",
+    "measurement": {
+      "parameterId": "q",
+      "valueType": "decimal",
+      "unitId": "m2",
+      "sameSite": true
+    },
+    "conditionsParameterId": "roof_screed25_technology",
+    "areaParameterId": "roof_screed25_direct_base",
+    "old15BaseParameterId": "roof_screed15_direct_base_scope",
+    "selector": "Preserve all existing15/unknown/legacy choices and null default; append a distinct25 choice. Do not infer25 from q or prior15 approval.",
+    "qAdapter": "Use sourcePinnedRoofNormOwnerR1 native default-q mode: omit measurementParameterId, measurementUnitId and measurementConditional in the effective adapter config, then assert emitted q decimal/m2. Explicit measurementParameterId='q' currently throws. Reuse accepted25 rate validation via a bounded shared owner binding; preserve existing companion wrapper behavior.",
+    "merge": "Keep a single existing q and root selector; add only missing facts; regenerate consumers/schema hashes. Keep old formulas/IDs/physical owners and values. Enforce positive active25 area without rewriting historical snapshots.",
+    "old15Fact": "Narrowly allow verified decimal/m2 q exemplar in roofScreed15DirectBaseParameterV1. Set project-fact authority rather than inheriting q measurement authority wholesale. Apply existing direct-base row guard to eight old15 source rows in new definitions only.",
+    "residuals": "Widen only applicable INFO residual inclusions from selected15 to selected15 OR25. scope_pending becomes NOT(selected15 OR selected25); unknown/incompatible25 facts retain own blocker. Legacy59 rows stay under explicit legacy selector. Correct15-specific wording such as27.22h and1.53m3 in current residual explanations while retaining originalObligationLineage. Residuals acquire no numerical norm or extra payment."
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "priority": "P1",
+      "kind": "MISSING_FINITE_MIGRATION",
+      "problem": "Keeping old row IDs is insufficient. canonicalManualExclusionMigrationBindings hashes the whole parameter-identity array; adding one unused new parameter changes all127 old exclusion bindings. V6 migration is restricted to two installation targets,178/188 rows,82 parameters and a V5 history.",
+      "required": "Add a finite standalone migration proof at existing migration owners, anchored to these five exactversion4 identities/hashes and the expected generated successor. Allow only intended selector/fact/guard/residual deltas. Normalize old rows/old parameter semantics for compatibility comparison ONLY; compile actual successor. Wire both published manualMigrationPredecessorsV1 and server release transition.",
+      "preserve": "Legacy/15 prices, financial row exclusions, composition row exclusions and15 operation exclusions retain exact original identity when inactive. Do not map15 prices or exclusions to25. New25 gets its own price resolution. Reject altered old rate/AST/unit/owner, wrong source/parent/catalog, arbitrary binding/choice or self-approved digest.",
+      "evidence": [
+        "canonicalManualPriceReleaseMigration.ts",
+        "canonicalEstimateCompositionSelectionV1.ts: assertCanonicalCompositionSelectionReleaseMigrationV1",
+        "canonicalRoofScreed25MigrationV1.ts"
+      ]
+    },
+    {
+      "id": "R2",
+      "priority": "P1",
+      "kind": "MISSING_ACTIVE_PARAMETER_BINDING",
+      "problem": "Excluded-question projection depends on V4/V5/V6 receipts and client finite companion-ID whitelist. Standalone has no such receipt. requiredWhen remains true after operation exclusion and is insufficient.",
+      "required": "Extend existing verified projection/editor contract for this finite standalone binding. Full operation exclusion hides exclusively owned15 conditions/area/base or25 technology/base but preserves values. q is shared: retain whenever any applicable active branch consumes it; suppress only when verified to have no active consumer. Root selector remains available. Never trust arbitrary inactive IDs from caller.",
+      "partial": "Individual resource exclusion and price-only exclusion do not establish whole-operation exclusion or engineering suitability. Partial required-resource exclusion retains needed facts and REQUIRED_RESOURCE_EXCLUDED. Restore only requested operation and preserve independently excluded rows/sibling.",
+      "evidence": [
+        "canonicalEstimateParameterSessionSnapshot.ts",
+        "consumerCanonicalParameterEditor.ts: parameterVisibilityCondition and inactiveParameterIds whitelist",
+        "canonicalRoofScreed25MigrationV1.ts: roofScreed25InactiveParameterIdsV1"
+      ]
+    },
+    {
+      "id": "R3",
+      "priority": "P1",
+      "kind": "MISSING_MACHINE_PRICE_ADMISSION",
+      "problem": "canonicalMachineHourPriceCoverageV1 currently admits only two installation catalogs. All five25 tower probes return null; scalar prices lack coverage checks, while supplied coverage evidence is rejected by compileCore without admitted requirement.",
+      "required": "Bound admission to intended catalogs AND reused25 row/code/unit/coverage identity. Prefer catalog-plus-owner admission over globally enabling every machine owner for these five. Consider old15 saved-read/PDF behavior before enabling15 globally because readers also use catalog-only admission.",
+      "invariants": [
+        "Three machines preserve codes and accepted price coverage",
+        "Operators remain INFO/unpaid",
+        "Evidence matches exact price/currency/row or price snapshot",
+        "No retroactive confirmed evidence for scalar prices",
+        "No15-to25 price/evidence copy",
+        "Unknown price/stock/packaging does not block physical quantity"
+      ],
+      "evidence": [
+        "canonicalMachineHourPriceCoverageV1.ts: admittedCatalogs/assert/resolve",
+        "canonicalEstimateCompileCore.ts: machinePriceRequirement"
+      ]
+    },
+    {
+      "id": "R4",
+      "priority": "P1",
+      "kind": "SCOPE_EXCLUSION_BINDING",
+      "problem": "Companion successor/forecast/restoration needs Torch selector, its geometry and project-chain rows. It cannot be reused as standalone successor. A new15 OBJECT_SCOPE check mechanically made a primary member of the15 operation also makes whole15 exclusion fail: composition planner prohibits excluding OBJECT_SCOPE.",
+      "required": "Use standalone root contexts. Keep15 check independently non-excludable and bind projectOperationContextsV1 to the eight15 rows so full15 operation exclusion makes it NOT_APPLICABLE. New25 scope uses selected25 context, admitted conditions, own paid covering rows and operationExclusionSatisfiesScopeV1. Do not fabricate V5/V6 history.",
+      "evidence": [
+        "canonicalRoofScreed25SuccessorV1.ts",
+        "canonicalRoofScreed25MigrationV1.ts",
+        "canonicalEstimateCompositionSelectionV1.ts: OBJECT_SCOPE rejection",
+        "canonicalScopeRequirementV1.ts: PROJECT_APPLICABILITY_ONLY"
+      ],
+      "note": "Prospective standalone design requirement; previously accepted installation package was not re-reviewed."
+    },
+    {
+      "id": "R5",
+      "priority": "P2",
+      "kind": "BINDING_AND_INSTANCE_IDENTITIES",
+      "problem": "Current companion owner rejects five catalogs/forces Torch; explicit q is rejected by sourcePinned owner. Source semantic IDs are reusable but are not global site/payment identity.",
+      "required": "Expose bounded source-owner binding sharing accepted rate validator. Preserve canonical25 row/formula/operation IDs, namespace new cost/physical owners and parameter semantic keys by target catalog as existing overlays do. Preserve distinct revision/work/site instances. No duplicated q/root, copied rate calculator, global dedup by definition ID or parallel registry.",
+      "evidence": [
+        "canonicalRoofScreed25CompanionV1.ts",
+        "sourcePinnedRoofNormOwnerR1.ts",
+        "canonicalDefinitionParameterConsumersR1.ts"
+      ]
+    },
+    {
+      "id": "R6",
+      "priority": "P2",
+      "kind": "PARTIAL_TYPE_DISCLOSURE",
+      "problem": "Each127-parent is59 legacy alternatives+8 source15 rows+60 informational residuals, not127 proven norms.",
+      "required": "Keep PARTIAL/fullTechnical=false and unresolved lineage; update only conditional applicability and accurate explanation. Adding25 does not complete any type or close factual execution/source gaps."
+    }
+  ],
+  "reuseExisting": [
+    "sourcePinnedRoofNormOwnerR1/sourcePinnedRoofNormGuardsR1; shared accepted rate validation from roofScreed25OwnerV1.",
+    "roofScreed15DirectBaseParameterV1/roofScreed15DirectBaseRowV1 with narrow q exemplar allowance.",
+    "buildMasterParameterCalculationConsumers for final schema/baseline references.",
+    "compileCanonicalEstimateCore/planCanonicalCompositionSelectionV1/resolveCanonicalScopeRequirementV1 for actual calculation, partial exclusions and source applicability.",
+    "canonicalManualPriceMigrationBindings/canonicalManualExclusionMigrationBindings/assertCanonicalCompositionSelectionReleaseMigrationV1 under exact admitted transition.",
+    "canonicalMachineHourPriceCoverageV1 with bounded admission and existing consumer/PDF projections.",
+    "Normal immutable publisher helpers to clone exact parent baselines/owners; do not apply the original59-row overlay again to already-overlaid127-row parents."
+  ],
+  "minimalCheapMatrix": [
+    {
+      "id": "V1",
+      "scope": "all five",
+      "checks": "Exact frozen hash/parent identity; input immutability; old127 IDs,ASTs,owners/baseline retained; source25 identity; unique q/root/new IDs; all references resolve; reject other catalog."
+    },
+    {
+      "id": "V2",
+      "scope": "all five",
+      "checks": "q20 selected25 yields existing accepted8 quantities7.444/.448/.156/.292/.472/.77/.88/.51;7 payable+unpaidINFO. Formulas bind only own q. Unrelated companion area changes nothing. Distinctq20/q30 work instances retain independent quantities/prices/exclusions."
+    },
+    {
+      "id": "V3",
+      "scope": "representative plus structural parity",
+      "checks": "15/25/legacy/unknown and back: no double15+25 payment.15 exact old output with new supported-base fact; legacy59 historical output. Missing/unknown/incompatible25 technology/base blocks25 only; active25q0/negative cannot appear complete."
+    },
+    {
+      "id": "V4",
+      "scope": "representative source-boundary binding",
+      "checks": "15 loose fill vs separate suitable base;25 unknown/wrong immediate base/machine feed; excluded insulation costs do not change base. q20-to40 checks binding only; no renewed norm review."
+    },
+    {
+      "id": "V5",
+      "scope": "exclusion/restore",
+      "checks": "Whole15,whole25,inactive sibling,both excluded,one paid material row excluded,machine price-only exclusion,independent saved row exclusion. No OBJECT_SCOPE exclusion error. Full exclusion hides only owned questions; partial exclusion retains required facts; restore preserves sibling/independent exclusions."
+    },
+    {
+      "id": "V6",
+      "scope": "compact and full parameter session",
+      "checks": "V5 states on open/edit/save/migrate.25 does not ask15 facts. Excluded25 does not ask its facts. Shared q hidden only when no active consumer. Forged inactive IDs cannot hide root/q. Restored values retained."
+    },
+    {
+      "id": "V7",
+      "scope": "finite migration",
+      "checks": "Version4 saved manual prices and all exclusion variants migrate exactly. Wrong parent/source/rate/unit/owner/inclusion/parameter meaning rejected. Actual successor used for calculation.15 values never copied to25."
+    },
+    {
+      "id": "V8",
+      "scope": "machines and canonical adapters",
+      "checks": "Each25 machine: missing/scalar/matching source/valid manual/wrongrow-price-currency-snapshot evidence; INFO unpaid; physical quantities unchanged. Historical15 read/PDF semantics preserved. Canonical result/adapter/PDF data keep scoped rows and statuses; no full oldPDF42/UI replay needed for this pre-implementation review."
+    },
+    {
+      "id": "V9",
+      "scope": "dry publication after fixes",
+      "checks": "Existing cheap candidate validation before required heavy gate; consistent definition/search identities; PARTIAL status/unresolved residuals preserved."
+    }
+  ],
+  "performedEvidence": [
+    "Verified canonical root, exactHEAD, AGENTS.md, relevant active MASTER sections and frozen parentSHA.",
+    "Pure read-only probe: explicit measurementParameterId=q throws ROOF_MEASUREMENT_IDENTITY_INVALID; default-q emits8 resources and all formula inputs=q.",
+    "Pure read-only probe: machine definition admission is null for all five catalogs with known25 tower row/code/unit/coverage.",
+    "Pure read-only probe: append one unused parameter ->127/127 unchanged manual price bindings,0/127 unchanged exclusion bindings.",
+    "Direct editor import probe could not run under node/tsx because React Native Flow syntax failed at Unexpected typeof. No mock, UI, product edit or heavy runner was introduced. Active-parameter finding is static source evidence and needs V6 in normal test harness."
+  ],
+  "limitations": "No implementation or candidate exists; this is a conditional finite design recommendation, not delivery/admission. Accepted25 arithmetic and two-installation acceptance were fixed evidence. Only this report was saved.",
+  "recommendedFiniteProof": {
+    "contractVersion": "A distinct versioned standalone screed25 migration contract at the existing migration owner; do not reuse V6 or invent its V5 chain.",
+    "minimalFields": {
+      "contractVersion": "Exact finite contract literal",
+      "catalogId": "One of five admitted align IDs",
+      "fromDefinitionId": "Exact frozen version4 ID",
+      "toDefinitionId": "Different valid successor UUID, version5",
+      "fromDefinitionSha256": "Exact frozen definition SHA",
+      "toDefinitionSha256": "Actual canonical successor definition SHA",
+      "fromSemanticSha256": "Existing roofPreparationMigrationSemanticHashV1(from)",
+      "toSemanticSha256": "Existing roofPreparationMigrationSemanticHashV1(actualTo)",
+      "sourceSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "directBaseSourceSha256": "6291b9410ac2a272b3439f65dcf8a45de327ad1b8c22e9606f76ae57aedd58d7",
+      "applicationBindingSha256": "Hash of the exact reviewed binding and its version: source contract/variant, five-target applicability, root selector, distinct25 choice, q decimal/m2 THIS_SCREED_SITE_AREA, technology/direct-base IDs and guarded scope policy",
+      "preservedRowIds": "Exact sorted127 old row IDs, unique; derive rather than trust client"
+    },
+    "optionalStoredAuditFields": "fromBaselineSha256/fromPassportSha256 and preservedFormulaIds/preservedParameterIds may be persisted for audit once real baseline/passport are read. Baseline/passport checks still belong in exact successor builder even if not duplicated in runtime proof.",
+    "admissionChecks": [
+      "Both from/to catalog identities must equal proof.catalogId, with exact frozen parent ID/version/hash and actual successor ID/version/hash. Same-catalog release is insufficient evidence.",
+      "Recompute both semantic digests from actual models. Independently rebuild expectedTo using the same finite successor transformer and exact binding; expected semantic hash must equal actualTo. A caller who edits payload then recomputes proof hashes must still fail.",
+      "Assert original127 formula IDs, ASTs, inputs and output units unchanged. No old row removal/rekey/unit/category/physical owner/cost owner/procurement-policy/rate change; new source rows distinct from every old owner.",
+      "Root selector preserves all three old enum values exactly and only appends the reviewed25 value; q retains decimal/m2/site meaning and existing semantic key. No hidden default25 or derived base fact.",
+      "Old15 row inclusion becomes exactly AND(original inclusion, supported15 direct-base equality), for the eight explicit norm row IDs only.",
+      "Only the exact reviewed59 residual rows extend selected15 to OR(selected15,selected25); scope_pending becomes NOT(OR(selected15,selected25)). Legacy59 branch inclusions remain unchanged. Required branch-specific prose/metadata changes are enumerated by transformer, not a generic ignore list.",
+      "New25 rows/formulas/source metadata come from accepted shared validator/owner plus reviewed binding. Validate all three machine source codes and coverage metadata, unpaidINFO, q-only formulas, independent owner namespaces and admitted new scope structures.",
+      "New15 OBJECT_SCOPE is outside15 operation membership and uses explicit project contexts; no new paid or scope row changes original15 operation membership for compatibility comparison.",
+      "Bind publication baseline/passport to actual final parameters/resources, preserve old baseline/lineage as historical evidence, and retain PARTIAL/fullTechnical=false. Do not substitute the incomplete frozen fixture for the actual baseline/passport."
+    ],
+    "compatibilityOnlyNormalization": {
+      "parameters": "from.parameters (all64), after proof admission",
+      "resources": "For every preserved127 row ID substitute the original from row; retain actual new rows only where needed for downstream structures",
+      "formulas": "Use actual successor formula list only after exact immutability proof for all127 old formulas",
+      "why": "Exclusion bindings include the complete parameter identity list, and15 applicability/residual guards intentionally changed. This normalization proves compatibility of old user intent, not physical admissibility of new calculation.",
+      "checks": [
+        "For all127 old IDs canonicalManualPriceMigrationBindings(normalizedTo)[id] equals from binding.",
+        "For all127 old IDs canonicalManualExclusionMigrationBindings(normalizedTo)[id] equals from binding.",
+        "assertCanonicalCompositionSelectionReleaseMigrationV1 on original stored selection and admitted comparison model preserves excluded row IDs and exact old operation membership.",
+        "assertCanonicalStoredManualPriceReleaseMigration verifies exact parent/requested overrides, currency, custom-row policy and machine evidence. Unsupported manual quantity/custom-row changes use existing explicit review/fail-closed path; never discard silently.",
+        "Publish the admitted predecessor bindings and use the same admitted model in actual server transition so frontend eligibility and backend migration agree.",
+        "Do not serialize normalizedTo as a new definition, compile it, project it as a resource result or use it to waive the new base fact."
+      ]
+    },
+    "selected15Transition": {
+      "inheritedState": "Copy old root choice15, q, old conditions/area values, manual row prices and all exclusions verbatim. New direct-base fact is absent unless user actually supplies it; no inference from ready-base enum or insulation exclusion.",
+      "included15": "With prior15 conditions accepted, actual successor keeps15 resources unresolved until suitable15 direct-base is supplied. New question is visible. Supplying supported separate base restores the original15 physical quantities; prices remain attached to their old owners.",
+      "fullyExcluded15": "Retain15 operation exclusion and any independent row exclusions; applicability context is NOT_APPLICABLE and its fact is not asked. Save/open/migrate must not resurrect it. Restore15 returns historical values and asks the still-missing base fact before payability.",
+      "partiallyExcluded15": "A single row exclusion or cost-only exclusion does not suppress direct-base applicability while other15 work remains selected. Keep exact row exclusion and price; ask only missing active facts and report required excluded resources without reopening excluded rows.",
+      "changedTo25": "Explicit selector change chooses new25 rows and only25 facts; old15 prices/exclusions/facts are retained inactive. Do not transfer them by resourceCode or similar title. Returning to15 restores its saved data and still enforces its actual base fact.",
+      "immutableHistory": "Oldversion4 revisions and PDFs stay pinned to their original definition and data. No backfill of the new base fact or retroactive recalculation."
+    },
+    "negativeTests": [
+      "Mutate one15 guard operand or remove base guard and rehash candidate/proof -> reject.",
+      "Widen one legacy row to selected25 or close one residual as paid -> reject.",
+      "Change q semantic key/unit, root choice/default, source rate/owner or target parent and rehash -> reject.",
+      "Map an old15 exclusion/price to25 or add a new member to the old15 operation -> reject unless an explicit independently admitted mapping exists; none is proposed here."
+    ]
+  }
+}

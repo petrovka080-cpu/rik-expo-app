@@ -1,0 +1,35 @@
+{
+  "contract": "rik-expo-app.ct29-existing-cement-lime-indoor-delivery-cleanup-r2",
+  "catalogId": "canonical-work:master:ct29_existing_cement_lime_plaster_indoor_standard",
+  "baseSourcePack": "data/estimate-benchmarks/source-packs/ct29-indoor-geometry-r1.json",
+  "baseSourcePackSha256": "ca4fda77d160ec06db47c0e8636feafa7ef02a297d92cef240f8dd8c3c53f24b",
+  "titleRu": "CT29 внутри: расчёт материалов, работ и доставки по геометрии и расстоянию",
+  "transportSource": {
+    "id": "kg_nsc_freight_turnover_definition_2024",
+    "url": "https://stat.gov.kg/media/files/c80be0f5-9c18-49a4-ae26-a3a5d19bc5e3.pdf",
+    "file": "KG_NSC_ISYKKUL_2019_2023_2024.pdf",
+    "sha256": "70d5bfaeee93239d4e3196a67bf394429b838680aede1e6c60524902f980f18c",
+    "locator": "PDF140, печатная140, раздел ТРАНСПОРТ: грузооборот = сумма массы партий в тоннах × расстояние перевозки в километрах",
+    "admittedRole": "DEFINITION_OF_PHYSICAL_TRANSPORT_WORK_ONLY_NOT_A_TRUCK_RATE_OR_TARIFF"
+  },
+  "cleanupSource": {
+    "id": "kr_overheads",
+    "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/nakladnyerashodyvstroitelstv-938692055ac0ce2a6.16153263.pdf",
+    "sha256": "89afde6f0135bb465db576dc8e6d1a1154054df6887e8011447e6fcdee114a76",
+    "locator": "Приложение6, III.11–12, PDF24–25: уборка/очистка, труд, моющие материалы и вывоз строительного мусора при сдаче в составе накладных расходов",
+    "admittedRole": "INCLUDED_OVERHEAD_SCOPE_WITH_REAL_COST_OWNER_NOT_NUMERIC_WASTE_OR_LABOR_NORM"
+  },
+  "transportPolicyRu": "План транспортной работы для сухой массы нового заказа CT29: принятое количество строки закупки в кг /1000 × расстояние от склада поставщика до объекта в км в одну сторону. Не масса приготовленных замесов и не имеющийся на объекте остаток. Ручное изменение заказа пересчитывает доставку. Это т·км сухой смеси, не брутто с тарой, не рейсы, не фактические часы/топливо машины. Тариф на т·км не назначается автоматически. Стоимость материала должна быть без этой отдельно оплачиваемой доставки; труд водителя не начисляется второй строкой. Разгрузка и подача внутри объекта остаются в существующем нормативном составе; их нельзя повторно включать в тариф внешней перевозки. Вода берётся из местного источника и в эту перевозку не включена.",
+  "cleanupPolicyRu": "Обычная уборка и вывоз строительного мусора при сдаче включены в накладное обеспечение единственного трудового владельца, как и инструмент. Цена владельца должна содержать этот состав. Это не отдельная закупка услуги, не вычисленные тонны отходов или нормочасы уборки. Исключение обеспечивающего владельца снимает включённость. Специальные/опасные отходы, демонтаж и фактическое документирование вывоза этим профилем не нормируются.",
+  "readiness": {
+    "fullTechnicalAcceptance": false,
+    "geometryOnlyFullBranch": false,
+    "requiredNonGeometryTechnicalQuestions": 0,
+    "permittedAdditionalMeasurement": "ct29_delivery_distance_km",
+    "openApplicationNorms": ["curing-water"],
+    "openAuthorObligationsRu": [
+      "Применимая количественная норма воды лёгкого распыления при уходе; табличные0.63м³ не подтверждены как общий водный пул exact CT29.",
+      "Прямое нормативное покрытие ухода CT29 в общем трудовом составе, без двойной оплаты."
+    ]
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "expanded-0049-технологический-трубопровод-dn200-300-м",
+  "prompt": "технологический трубопровод DN200 300 м",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "expanded-0049-технологический-трубопровод-dn200-300-м:process_piping_lm_or_t",
+      "code": "process_piping_lm_or_t",
+      "title": "Технологический трубопровод DN200",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 306,
+      "unit": "m",
+      "quantity_formula": "length_m * 1.02",
+      "formula_ref": "technologicalPipelineCalculator_process_piping_lm_or_t_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0049-технологический-трубопровод-dn200-300-м:pipe_supports_pcs",
+      "code": "pipe_supports_pcs",
+      "title": "Опоры трубопровода",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 50,
+      "unit": "pcs",
+      "quantity_formula": "ceil(length_m / 6)",
+      "formula_ref": "technologicalPipelineCalculator_pipe_supports_pcs_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0049-технологический-трубопровод-dn200-300-м:pipeline_insulation_m2",
+      "code": "pipeline_insulation_m2",
+      "title": "Теплоизоляция трубопровода",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 188.496,
+      "unit": "m2",
+      "quantity_formula": "length_m * pi * diameter_m",
+      "formula_ref": "technologicalPipelineCalculator_pipeline_insulation_m2_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0049-технологический-трубопровод-dn200-300-м:welds_pcs",
+      "code": "welds_pcs",
+      "title": "Сварные стыки",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 25,
+      "unit": "pcs",
+      "quantity_formula": "ceil(length_m / 12)",
+      "formula_ref": "technologicalPipelineCalculator_welds_pcs_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "expanded-0049-технологический-трубопровод-dn200-300-м:pressure_testing_lm",
+      "code": "pressure_testing_lm",
+      "title": "Испытания трубопровода",
+      "line_type": "service",
+      "group": "commissioning",
+      "quantity": 300,
+      "unit": "m",
+      "quantity_formula": "length_m",
+      "formula_ref": "technologicalPipelineCalculator_pressure_testing_lm_formula_v1",
+      "source_ref": "src_expanded_complex_gas_heat_pipelines_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Газ, теплосети и промышленные трубопроводы\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    }
+  ],
+  "material_rows": [
+    "process_piping_lm_or_t",
+    "pipe_supports_pcs",
+    "pipeline_insulation_m2"
+  ],
+  "work_rows": [
+    "welds_pcs"
+  ],
+  "service_rows": [
+    "pressure_testing_lm"
+  ],
+  "equipment_rows": [],
+  "procurement_subset": [
+    "process_piping_lm_or_t",
+    "pipe_supports_pcs",
+    "pipeline_insulation_m2",
+    "pressure_testing_lm"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_gas_heat_pipelines_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1945867283"
+}

@@ -1,0 +1,425 @@
+{
+  "contract": "gox-build.master29.roof-facade-whole-subwork-reuse.r1",
+  "baseHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+  "baseProduct": "a10309a6823320325f9426b05c9ccdbfbf3738d05151bd454cc63dcf1f9edd7d",
+  "baseDefinitionReleaseId": "4af88635-3360-5197-844f-5ee2f12fd9d5",
+  "snapshotPath": "data/estimate-benchmarks/fixtures/master29-roof-facade-current-twelve-r1.json",
+  "snapshotSha256": "21062403b17efb34ad0793a644129eb142491661e49ffaaf5b33b9acd69b14e2",
+  "masterPath": "C:/Users/User/Downloads/GOX_BUILD_TZ_Single_Platform_Core_Sol61_2026-10-19(2).txt",
+  "masterSha256": "4fd2e79388521707cec6c9a75101061f81eb7a72beb4e16a1e39b991fab63f68",
+  "roofProfiles": [
+    {
+      "key": "gutter",
+      "object": "gutter",
+      "sourcePack": "data/estimate-benchmarks/source-packs/roof-hanging-gutters-companion-s27-67.json",
+      "sourcePackSha256": "df2395c99939eef37fa1b2ab06daa2218a10a6d1d76fb45b441ae200a9d994f7",
+      "sourcePrefix": "roof:hanging-gutters:krer12-009-02",
+      "normId": "12-01-009-02",
+      "rateRows": 8,
+      "publicNameRu": "Изготовление и монтаж подвесных желобов",
+      "measureId": "roof_hanging_gutter_length_m",
+      "unitId": "linear_m",
+      "conditionsParameterId": "m29_gutter_conditions",
+      "measurementParameterId": "m29_gutter_measurement_scope",
+      "choiceId": "roof_hanging_gutter_scope",
+      "exactChoiceRu": "Подвесные желоба из оцинкованной стали 0,7 мм с изготовлением и креплением",
+      "legacyChoiceRu": "Прежний общий шаблон — нормы не подтверждены",
+      "conditionsValueRu": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+      "measurementValueRu": "Измерена самостоятельная длина подвесных желобов в метрах; площадь кровли и длина труб её не заменяют",
+      "scopeRu": "Подвесные желоба из листовой оцинкованной стали0,7мм с изготовлением, установкой и креплением по009-02. Длина самостоятельная; прочий водоотвод рассчитывается отдельно.",
+      "sourceAdmissionArtifact": "data/estimate-benchmarks/source-packs/roof-hanging-gutters-s27-67-source-admission.json",
+      "sourceAdmissionSha256": "3852bad046c6c90a3091cc7e105a9b59df3985f7182b86d20db2577943285fed",
+      "sources": [
+        {
+          "id": "KRER12_2016_HANGING_GUTTERS",
+          "kind": "roof",
+          "quantityAdmitted": true,
+          "titleRu": "КРЕР12 «Кровли»: устройство подвесных желобов",
+          "authority": "Госстрой Кыргызской Республики",
+          "printedEdition": "КРЕР12-2015; утверждён приказом от28.03.2016 №2-нпа",
+          "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+          "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+          "localArtifact": ".release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+          "reviewedAt": "2026-10-12T20:53:41.642Z",
+          "locators": "КРЕР12, PDF/печатные стр.21–22, таблица12-01-009, колонка009-02; техническая часть§1.1,1.3–1.4,1.8,2.1–2.4"
+        },
+        {
+          "id": "krer_general_metal_roof_s2763",
+          "kind": "guidance",
+          "quantityAdmitted": false,
+          "titleRu": "КРЕР-2015, общие указания по применению",
+          "authority": "Госстрой Кыргызской Республики",
+          "printedEdition": "КРЕР-2015",
+          "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+          "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+          "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+          "reviewedAt": "2026-10-11T21:25:14.667327+00:00",
+          "locators": "§1.3–1.4;1.7;2.8–2.10;3.5;4.1–4.2; приложение3, высокогорье"
+        }
+      ],
+      "closedNeedIds": [],
+      "newFullTechnologies": 0,
+      "nonNumericAdaptationRu": "Самостоятельная подработа вместо прежнего применения в составе будущей плоской кровли. Убрана только связь companion с предстоящими стяжкой15мм и верхней огрунтовкой; нормативная колонка, материал0,7мм, единица/база измерения, комплект8/7 строк, обычные условия/высота15м и запрет двойной оплаты сохранены. Прямое основание и крепление должны быть готовы; прочность/проект не выводятся из нормы."
+    },
+    {
+      "key": "metal-trim",
+      "object": "parapet",
+      "sourcePack": "data/estimate-benchmarks/source-packs/roof-metal-trim-companion-s27-67.json",
+      "sourcePackSha256": "db04a5ddcbedac81777de9dd92e6441d90285de2018ef9f65585eac85d03b65d",
+      "sourcePrefix": "roof:metal-trim:krer12-010-01",
+      "normId": "12-01-010-01",
+      "rateRows": 7,
+      "publicNameRu": "Покрытие парапетов оцинкованной сталью",
+      "measureId": "roof_metal_trim_area_m2",
+      "unitId": "m2",
+      "conditionsParameterId": "m29_metal_trim_conditions",
+      "measurementParameterId": "m29_metal_trim_measurement_scope",
+      "choiceId": "roof_metal_trim_scope",
+      "exactChoiceRu": "Покрытие парапетов оцинкованной сталью 0,7 мм с заготовкой и креплением картин",
+      "legacyChoiceRu": "Прежний общий шаблон — нормы не подтверждены",
+      "conditionsValueRu": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+      "measurementValueRu": "Измерена самостоятельная площадь металлического покрытия парапетов в квадратных метрах; длина парапета и площадь кровли её не заменяют",
+      "scopeRu": "Покрытие брандмауэров, парапетов, свесов и аналогичных малых элементов листовой оцинкованной сталью с заготовкой картин и их креплением, КРЕР12-01-010-01. Не полный кровельный комплекс.",
+      "sourceAdmissionArtifact": "data/estimate-benchmarks/source-packs/roof-metal-trim-s27-67-source-admission.json",
+      "sourceAdmissionSha256": "100bd806b45d962f5a60472efd15b3027472234d86319210034d15b371017fbe",
+      "sources": [
+        {
+          "id": "KRER12_2016_ROOF_METAL_TRIM",
+          "kind": "roof",
+          "quantityAdmitted": true,
+          "titleRu": "КРЕР, сборник12 «Кровли»: малые покрытия парапетов и свесов из оцинкованной стали",
+          "authority": "Госстрой Кыргызской Республики",
+          "printedEdition": "КРЕР12-2015; утверждён приказом от28.03.2016 №2-нпа",
+          "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+          "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+          "localArtifact": ".release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+          "reviewedAt": "2026-10-12T17:33:00.225Z",
+          "locators": "КРЕР12, PDF/печатная стр.22, таблица12-01-010, колонка010-01; техническая часть§1.1,1.3–1.4,1.8,2.1–2.4"
+        },
+        {
+          "id": "krer_general_metal_roof_s2763",
+          "kind": "guidance",
+          "quantityAdmitted": false,
+          "titleRu": "КРЕР-2015, общие указания по применению",
+          "authority": "Госстрой Кыргызской Республики",
+          "printedEdition": "КРЕР-2015",
+          "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+          "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+          "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+          "reviewedAt": "2026-10-11T21:25:14.667327+00:00",
+          "locators": "§1.3–1.4;1.7;2.8–2.10;3.5;4.1–4.2; приложение3, высокогорье"
+        }
+      ],
+      "closedNeedIds": [],
+      "newFullTechnologies": 0,
+      "nonNumericAdaptationRu": "Самостоятельная подработа вместо прежнего применения в составе будущей плоской кровли. Убрана только связь companion с предстоящими стяжкой15мм и верхней огрунтовкой; нормативная колонка, материал0,7мм, единица/база измерения, комплект8/7 строк, обычные условия/высота15м и запрет двойной оплаты сохранены. Прямое основание и крепление должны быть готовы; прочность/проект не выводятся из нормы."
+    }
+  ],
+  "roofOpenNeeds": [
+    {
+      "id": "hand-tools",
+      "nameRu": "Ручной инструмент и оснастка изготовления и крепления",
+      "category": "equipment",
+      "unitId": null,
+      "reasonRu": "Таблица нормирует целую операцию, материалы и машины; полный набор ручного инструмента и его количество данным пакетом не подтверждены. Второй труд изготовления не добавляется."
+    },
+    {
+      "id": "access-protection",
+      "nameRu": "Средства доступа и защиты при работах на высоте",
+      "category": "equipment",
+      "unitId": null,
+      "reasonRu": "Высота до15м ограничивает применимость нормы; она не задаёт полный физический комплект доступа, коллективной и индивидуальной защиты."
+    },
+    {
+      "id": "external-delivery",
+      "nameRu": "Внешняя доставка материалов к месту строительства",
+      "category": "service",
+      "unitId": null,
+      "reasonRu": "Нормативные машино-часы остаются оплачены у своих владельцев. Внешний маршрут, реальная поставка и граница включённой доставки не установлены; повторная оплата не предполагается."
+    },
+    {
+      "id": "waste-handling",
+      "nameRu": "Сбор и передача обрезков металла",
+      "category": "service",
+      "unitId": null,
+      "reasonRu": "Табличный расход не превращается в норму отходов или число рейсов. Фактические остатки, обращение с обрезками и граница включённой уборки требуют отдельного подтверждения."
+    }
+  ],
+  "facade": {
+    "sourceFactory": "ct54Tesa2600DefinitionR1",
+    "sourcePrefix": "paint:ct54-rectangular-protection:tesa2600",
+    "publicChoiceRu": "Укрывная плёнка с верхней лентой, рулон 14 × 2,6 м: одинаковые прямоугольники",
+    "rawSourceChoiceRu": "Плёнка tesa 4369 с верхней лентой, рулон 14 × 2,6 м: одинаковые прямоугольные укрытия",
+    "closedNeedIds": [
+      "paint:ct54-simple-ready-facade:protection-film",
+      "paint:ct54-simple-ready-facade:protection-tape"
+    ],
+    "closureConditionalOnly": true,
+    "modelRows": 13,
+    "physicalPaidOwners": 2,
+    "calculationDetailRows": 11,
+    "wholeLabourAdded": 0,
+    "old1_8mBranchRetained": true,
+    "oldEightOverlayUntouched": true,
+    "retiredAreaIdsNotRestored": true,
+    "newFullTechnologies": 0
+  },
+  "sourcePins": [
+    {
+      "path": "src/lib/estimate/v4/sourcePinnedRoofNormOwnerR1.ts",
+      "sha256": "888d34f52163212823144f29b78ab97c6e7f66dac10337e16d5469bd1036d285"
+    },
+    {
+      "path": "src/lib/estimate/v4/ct54RectangularProtectionS2770.ts",
+      "sha256": "00ee9ff8af503fd5ddc03af1b60c5d38122395e5546f4eae631d28e4e28734cd"
+    },
+    {
+      "path": "src/lib/estimate/v4/ct54ReadyFacadeSeriesS2763.ts",
+      "sha256": "d7edc617c36ff57e9710ca28c6a5b97070e4ec462b00967045601a80fe15bfe3"
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "sha256": "56ffadc92ec669df51ab0f94a5bfc1d8f25a12b9eb9121f4c6323ea30a40cfc0"
+    },
+    {
+      "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+      "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts",
+      "sha256": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/ct54-tesa4369-2600-eight-forward-r1.json",
+      "sha256": "37b6a13ec05701dfa90d2537aa09dfad8d982c8c5b3157d952db3f44e0bc99c5"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/ct54-rectangular-protection-eight-s27-70.json",
+      "sha256": "7822d2d69a4d833f3db28fee3d57b4099a8d638109a7c3abbc42950751c1b1a7"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/roof-hanging-gutters-companion-s27-67.json",
+      "sha256": "df2395c99939eef37fa1b2ab06daa2218a10a6d1d76fb45b441ae200a9d994f7"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/roof-metal-trim-companion-s27-67.json",
+      "sha256": "db04a5ddcbedac81777de9dd92e6441d90285de2018ef9f65585eac85d03b65d"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/roof-hanging-gutters-s27-67-source-admission.json",
+      "sha256": "3852bad046c6c90a3091cc7e105a9b59df3985f7182b86d20db2577943285fed"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/roof-metal-trim-s27-67-source-admission.json",
+      "sha256": "100bd806b45d962f5a60472efd15b3027472234d86319210034d15b371017fbe"
+    },
+    {
+      "path": "src/lib/estimate/v4/ct54SimpleReadyFacadeS2754.ts",
+      "sha256": "141d8969fa70516b35adaaa929252a8263e73c140b0f0568247d9809122c4689"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/ct54-ready-facade-six-s27-63.json",
+      "sha256": "5b666ee44e1f127fb786dd759d71859c82aad086ec2df005cb04e1b92df7aae1"
+    }
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:facade_interior_facade_paint_apply_standard",
+      "definitionId": "3b450a01-16a0-5ef8-844d-08ffbfb518db",
+      "definitionSha256": "5717ca50521e989b50abf0786dbc406dce416ea8da370879dc15ac614b0f9cee",
+      "definitionVersion": 6,
+      "baselineId": "c813f241-9f91-55f5-827c-1ffcbcf36abd",
+      "group": "facade",
+      "profileKey": "protection2600",
+      "sourceId": "master29_facade_protection2600_r1",
+      "expectedParentShape": [
+        74,
+        108,
+        108
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:facade_interior_facade_paint_apply_technical_room",
+      "definitionId": "94be23a0-4089-5ea8-82c1-aa227b2ce469",
+      "definitionSha256": "311916e5dad95e94571a07f26b5e9f642112b25974e1aad73e0bf079f7f15121",
+      "definitionVersion": 7,
+      "baselineId": "95d663e2-ff98-5a1d-83eb-e37cb04fd72c",
+      "group": "facade",
+      "profileKey": "protection2600",
+      "sourceId": "master29_facade_protection2600_r1",
+      "expectedParentShape": [
+        74,
+        108,
+        108
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:facade_interior_facade_paint_install_standard",
+      "definitionId": "c8965bb7-f973-5fb5-866b-b594b88dbb77",
+      "definitionSha256": "9c251375947ad347e202ed3fea5f350aebf6b19ee82c350b8324ed59956e70c1",
+      "definitionVersion": 6,
+      "baselineId": "fef6df84-7d42-555b-8910-1744db93414c",
+      "group": "facade",
+      "profileKey": "protection2600",
+      "sourceId": "master29_facade_protection2600_r1",
+      "expectedParentShape": [
+        74,
+        108,
+        108
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:facade_interior_facade_paint_install_technical_room",
+      "definitionId": "0e13cf4e-7e03-5710-8b3c-b06701249619",
+      "definitionSha256": "cb7bf1078dc7a67f434b356bc3b62fc3f054ec153c2932b2bb4e61f41470550f",
+      "definitionVersion": 7,
+      "baselineId": "89e17c04-5c06-5bd2-8c0e-8127a1fbfb9a",
+      "group": "facade",
+      "profileKey": "protection2600",
+      "sourceId": "master29_facade_protection2600_r1",
+      "expectedParentShape": [
+        74,
+        108,
+        108
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_gutter_install_high_load",
+      "definitionId": "a7ae95c9-bec4-50a0-b574-3d41c2363e2f",
+      "definitionSha256": "80e46d358f450621f72faf224a4a1e6763be8002dad7f8352149d1a13ea6856d",
+      "definitionVersion": 3,
+      "baselineId": "ff05a443-a549-5ec1-91d5-ec4a426f17a6",
+      "group": "roof",
+      "profileKey": "gutter",
+      "sourceId": "master29_roof_gutter_r1",
+      "expectedParentShape": [
+        1,
+        59,
+        59
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_gutter_install_standard",
+      "definitionId": "67ed1a33-4430-50d2-bfeb-56b0240bc544",
+      "definitionSha256": "d14b7fc18eab76a74b3b52cb9067de689697a16c017a46d3f964e7a19eb08187",
+      "definitionVersion": 3,
+      "baselineId": "f7fbda1e-a490-58b0-8fda-dfd24fcd497f",
+      "group": "roof",
+      "profileKey": "gutter",
+      "sourceId": "master29_roof_gutter_r1",
+      "expectedParentShape": [
+        1,
+        59,
+        59
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_gutter_install_technical_room",
+      "definitionId": "fab121bd-52d4-5fc8-bb6a-a877ae156b9e",
+      "definitionSha256": "60b213b63f3b1c73e2d04b14a4d7ad5d37c0d61d9a1d63b892bed7c076932000",
+      "definitionVersion": 3,
+      "baselineId": "8da775e5-849f-5271-a13b-a6b4985987ad",
+      "group": "roof",
+      "profileKey": "gutter",
+      "sourceId": "master29_roof_gutter_r1",
+      "expectedParentShape": [
+        1,
+        59,
+        59
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_gutter_install_wet_zone",
+      "definitionId": "53e39317-7f14-56ab-8569-cb07ca05b267",
+      "definitionSha256": "9fe33c22f9b2860fa796f62cc7ee8c8857e2811aebfae947ddcf4d9682a23ce7",
+      "definitionVersion": 3,
+      "baselineId": "986fb63d-8ad5-5da9-85ab-225ee4f443d2",
+      "group": "roof",
+      "profileKey": "gutter",
+      "sourceId": "master29_roof_gutter_r1",
+      "expectedParentShape": [
+        1,
+        59,
+        59
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_parapet_install_high_load",
+      "definitionId": "3f4bea07-c5a9-5c0f-a704-fe2ac020d702",
+      "definitionSha256": "f2110dfde219c2e63b36f49d987b95bc08d50795bb90e135b04e76bd2551fbfa",
+      "definitionVersion": 3,
+      "baselineId": "0b9e6e8d-49f2-5803-8417-6e1d451fc507",
+      "group": "roof",
+      "profileKey": "metal-trim",
+      "sourceId": "master29_roof_metal_trim_r1",
+      "expectedParentShape": [
+        1,
+        59,
+        59
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_parapet_install_standard",
+      "definitionId": "b9024f5a-639d-53fd-91f3-64dd9359b269",
+      "definitionSha256": "87c2b3bb4153ae2060f9dd74a171ed0e4340f62c00135264c0b23168712163f6",
+      "definitionVersion": 3,
+      "baselineId": "53a56a08-3eea-50ce-8017-2dbc516d6dae",
+      "group": "roof",
+      "profileKey": "metal-trim",
+      "sourceId": "master29_roof_metal_trim_r1",
+      "expectedParentShape": [
+        1,
+        59,
+        59
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_parapet_install_technical_room",
+      "definitionId": "a158fae5-16f2-52cb-8a67-a0087e6b1ef2",
+      "definitionSha256": "4e58fc5914166d358e6b5b507e8336acc68495af9a962c9127772e199ec0bb8b",
+      "definitionVersion": 3,
+      "baselineId": "49d0fd3f-d0c0-5921-86f1-f39b6fbdc243",
+      "group": "roof",
+      "profileKey": "metal-trim",
+      "sourceId": "master29_roof_metal_trim_r1",
+      "expectedParentShape": [
+        1,
+        59,
+        59
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:roofing_interior_parapet_install_wet_zone",
+      "definitionId": "be243c83-b9ec-5dce-bb00-19b2b6a2c898",
+      "definitionSha256": "776f3b365d9795a1fcd52ab266f51cfa757ee9fcdd0f1df640d90c61f52f4695",
+      "definitionVersion": 3,
+      "baselineId": "17532ff6-9b14-546c-b7c3-ad84496571ef",
+      "group": "roof",
+      "profileKey": "metal-trim",
+      "sourceId": "master29_roof_metal_trim_r1",
+      "expectedParentShape": [
+        1,
+        59,
+        59
+      ]
+    }
+  ],
+  "counts": {
+    "groups": 2,
+    "roofConsumerBranches": 8,
+    "roofSourceSubworks": 2,
+    "facadeConsumerBranches": 4,
+    "facadeSourceKits": 1,
+    "newWorkTypes": 0,
+    "newCatalogIds": 0,
+    "newManufacturerOrKrerNorms": 0,
+    "newFullTechnologies": 0,
+    "uniqueNamedSourceNeedIdsConditionallyCovered": 2,
+    "consumerScopedConditionalClosures": 8
+  },
+  "sourceRegistrySharing": {
+    "sourceBundles": 3,
+    "rule": "One exact managed source+locator per whole profile, reused sequentially by4 current consumers through the existing absent-or-managed-exact retained guard. No registry overwrite or gate weakening.",
+    "newPhysicalNorms": 0
+  }
+}

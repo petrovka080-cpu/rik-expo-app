@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rik/estimate/product-health-dashboard.schema.json",
+  "type": "object",
+  "required": [
+    "final_status",
+    "generated_at",
+    "source_sha",
+    "catalog_version",
+    "telemetry_coverage",
+    "thresholds",
+    "metrics",
+    "blockers"
+  ],
+  "properties": {
+    "final_status": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "source_sha": {
+      "type": "string",
+      "minLength": 7
+    },
+    "catalog_version": {
+      "type": "string"
+    },
+    "telemetry_coverage": {
+      "type": "object"
+    },
+    "thresholds": {
+      "type": "object"
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

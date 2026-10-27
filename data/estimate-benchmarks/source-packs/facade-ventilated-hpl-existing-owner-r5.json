@@ -1,0 +1,79 @@
+{
+  "contract": "gox.facade.ventilated.hpl-existing-owner/r5",
+  "status": "WIP_LINKED_NATIVE_PROFILE_NOT_INTAKE_NOT_READY_NOT_EXECUTED",
+  "catalogId": "canonical-work:expanded:ventilated_facade",
+  "currentCapturedDefinitionId": "68a5f104-e991-581d-b326-656e30eb5647",
+  "currentCapturedDefinitionSha256": "771f4300bfeabc4bdf28985d6d6480c553dba89adc4269f8611d9f31e8108377",
+  "currentCapturedBaselineId": "c2ee7a48-313e-53b3-b66f-40ff5d9fa8bd",
+  "target": "Same existing facade card; ready original HPL profile alongside retained legacy and thermowood",
+  "reusedSourceComponent": "facadePanelFaceFixingDefinitionR3(hpl-rivet8-aluminium)",
+  "exactSourceProfile": {
+    "key": "hpl-rivet8-aluminium",
+    "titleRu": "Плита наружного компактного ламината8мм на алюминиевой подсистеме с лицевыми заклёпками",
+    "source": {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-panel-face-fixing-r3/FUNDERMAX-HPL-exterior-current.pdf",
+      "sha256": "ca7e72d5335e4963c85a327a0b6a2f6cfb5bdf29842cfc1e6f43e89d4dfead22",
+      "pdfPagesActuallyReviewed": [
+        35,
+        36,
+        37
+      ],
+      "internalFixingIdentity": "SFSAP16-5 metal-substructure rivet;one fixedpoint;5.1mmfixedpointhole;selectedflat8mmpanel;0.3mmrivetinggauge",
+      "territory": "NorthAmericaJuly2026",
+      "originalCapturedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\FUNDERMAX-HPL-exterior-current.pdf"
+    },
+    "fixedPointsPerPanel": "1",
+    "panelThicknessMm": "8",
+    "prefix": "facade:panel-face-fixing:r3:hpl-rivet8-aluminium",
+    "sourceStockQuantityUnknown": true,
+    "wholeFacadeOwnerRequired": true,
+    "exclusions": [
+      "No substitutions of fixed-point count, fastener, panel or frame material by resemblance.",
+      "Fixed point quantity does not prove total number, positions, edge distances, structural spacing, fire or local regulatory admission.",
+      "Original panel/point schedule must remain immutable; source quantity is not an editable manual application norm."
+    ]
+  },
+  "sourcePack": {
+    "path": "data/estimate-benchmarks/source-packs/facade-panel-face-fixing-r3.json",
+    "sha256": "c70a7684885b3b768c0ba19e66758690db737a3e0ada49f18da7d1d350de65c1"
+  },
+  "immutablePredecessorCandidate": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c-2\\work\\facades-continuation-r5\\ventilated-thermowood-current-consumer-r5-48\\MANIFEST_TYPED_CANDIDATE.json",
+    "sha256": "38dfd8b30372d4d76aac8b64b4cdc6e36bd552adbb4d8968cd42aa20b9a2f768"
+  },
+  "exactPanelProvenanceFix": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c-2\\work\\facades-continuation-r5\\panel-profile-provenance-continuation-r5-49\\MANIFEST.json",
+    "sha256": "273271a898081316f81b96fb67d47c1de2e045af1aeee7cee4f1c5c0aec7173d"
+  },
+  "ownPublicGeometryInputs": [
+    "ventilated_hpl_net_area_m2"
+  ],
+  "technicalQuestionnaire": false,
+  "namespaceUsed": false,
+  "nativeChildIdsAndOwnersPreserved": true,
+  "sourceQuantityRule": "Original1fixedpoint per actual panel; sliding=actual approved points minus fixed. Not an area-to-grid norm.",
+  "importedAreaAndPointLayoutSameDocumentRequired": true,
+  "actualDocumentAuthentication": "NOT_PROVIDED_BY_QUANTITY_WRAPPER",
+  "sourceReadbackMissingMeans": "Known public area plus unresolved preliminary point/material/whole-cycle needs",
+  "applicableUnknownNeeds": 8,
+  "newNorms": 0,
+  "newCatalogIds": 0,
+  "newFULL": 0,
+  "oldTwoProfilesAnd45Rows": "Must remain unchanged behind their existing selections",
+  "profileChange": "Existing canonical primary resolver NEW_ROOT_REQUIRED/carryForwardfalse; fresh simple geometry and separate TEST_ONLY source facts in checks",
+  "existingNormalPublisher": "PREPARED_ORDINARY_CONFIG_UNRUN; exact retained v5 pre-first-facade-publication parent; normal/locked/PG current-parent equality remains mandatory. Later actual successor requires a fresh capture and normal append contract.",
+  "actualRuntime": "UNRUN_NOT_IN_PRIOR_PASSED_11_TYPES",
+  "readOnlyLookupsNotReusedAsMaterialCompatibility": true,
+  "newReadyQueueEntry": false,
+  "preparedNewCases": 1,
+  "preparedCoreCalls": 5,
+  "preparedNormalRetainedRepresentativeCalls": 1,
+  "newCaseTimeoutMs": 60000,
+  "newCaseScope": [
+    "Independent original definition versus new three-choice legacy branch (2 core calls)",
+    "Fresh HPL one-area missing readback plus two exact TEST_ONLY point schedules (3 core calls)",
+    "Native original point IDs and one payment/procurement owner; 8 unresolved whole requirements remain",
+    "Existing primary resolver NEW_ROOT_REQUIRED/carryForwardfalse; no previous quantities/profile transfer",
+    "Normal retained representative; not locked/PG publisher acceptance"
+  ]
+}

@@ -1,0 +1,2775 @@
+{
+  "contract": "gox-build.cm11-ce40-whole-floor-finite-source-blocker.r1",
+  "status": "SOURCE_ONLY_SELECTABLE_PARTIAL_PROFILE_CONSUMER_CHECKS_PENDING",
+  "catalogId": "canonical-work:base:tile_stone_interior_tile_floor_lay_standard",
+  "capturedExistingTarget": {
+    "definitionVersionId": "95322c6a-c7f8-5408-ad3c-cd6e81466680",
+    "version": 3,
+    "definitionSha256": "5b62d5918316d0b1b39a63b0c15ba06a6452d2ef316d61bcadd60ead4d78dee3",
+    "sourceColumn": "EXISTING_CM11_CE40_LEGACY59_ROWS_NOT_KRER02703",
+    "capture": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-post-masonry-reads-v3/tile-six-floor-lay4-actual-current-result-v3.json",
+      "sha256": "bf15a38b85c9c2eae2c2f233d58fd6de37d09ca15bec551a6db35118c00180c6",
+      "definitionReleaseId": "aca4fa71-60c2-57db-83c8-5c8be93175a7",
+      "closedReadOnly": true
+    },
+    "currentPointerClaim": false
+  },
+  "selectedPhysicalScope": {
+    "tile": "glazed ceramic100x100mm",
+    "notchMm": 4,
+    "ordinaryJointMm": 2,
+    "primer": "CT17PROFIru_KZ selected normal undiluted0.2l/m2 onecoat;4–6h untildry",
+    "adhesive": "CM11ru_KZ approx2.5kg/m2,water5.75–6l/25kg,5minpause,80%floorcontact,24hgrout,noCC83",
+    "grout": "CE40Aquastaticru_KZwhite1/2kg,10x10cm/2mmapprox0.4kg/m2",
+    "geometryOnlyUserBudget": true,
+    "conditionsAreNotProofOfActualObjectAcceptance": true
+  },
+  "reuseClassification": "ADAPTATION",
+  "m150Kit44AndControls6TransferredAsExact": false,
+  "readyWholeSubworks": [
+    {
+      "factory": "cm11SmallCeramicDefinitionS2754",
+      "module": {
+        "path": "src/lib/estimate/v4/cm11SmallCeramicS2754.ts",
+        "sha256": "c977317949e3e1bbf0f71b053acc2807b4edf25aa9e6a1b400df56b6743beb01"
+      },
+      "sourcePack": {
+        "path": "data/estimate-benchmarks/source-packs/cm11-small-ceramic-s27-54.json",
+        "sha256": "a0be16d625a6f6e23db2223c9507a5920098db142b0909c6dd39ba237773b31a"
+      },
+      "reuse": "WHOLE_PRIMING_MIXING_LAYING_AND_REMAINING_SCOPE",
+      "retain": [
+        "CT17 consumption expression and one selected order owner",
+        "Whole size/notch relationship is reused; numeric profile replaced by KZ2.5kg/m2; global2kg remains immutable history",
+        "mixing water from mixed dry consumption, never ordered bags",
+        "tile layout boundary",
+        "all declared unresolved whole-cycle needs"
+      ],
+      "adaptOnly": [
+        "selected exact100mm geometry",
+        "internal explicit planning profiles instead of user technical norms",
+        "aggregate water/material owners and one whole cost owner when technically supported",
+        "remove public explanatory details through existing common projection",
+        "Replace whole CM11/CT17 profile with ru_KZ values; never mix new5min with oldglobal2kg/16h/65%/2hprimer. Preserve existing global factory/history."
+      ],
+      "notAdmitted": "Existing unknown quantities do not become zero or one kit; no M150119.78h labour or3.85m3water transfer."
+    },
+    {
+      "factory": "ce40ReadyCeramicDefinitionS2754(2)",
+      "builder": "buildCe40ReadyCeramicDefinitionS2754",
+      "module": {
+        "path": "src/lib/estimate/v4/ce40ReadyCeramicGroutingS2754.ts",
+        "sha256": "12955fcf83d8c8c4a7f996902ce3128154e00bb2fed81b9e5ce1991a817609d3"
+      },
+      "sourcePack": {
+        "path": "data/estimate-benchmarks/source-packs/ce40-ready-ceramic-grouting-s27-54.json",
+        "sha256": "66c9bcc27ab26a55b73f6674f47b3b2f7facf4fb946ac49353e88d14826b872d"
+      },
+      "reuse": "WHOLE_EXACT10X10_2MM_GROUTING_MIXING_CLEANING_PROTECTION_SUBWORK",
+      "retain": [
+        "approximate0.4kg/m2 row",
+        "dry mixing plan separate from supplier order",
+        "one2kg dry product purchase owner",
+        "water0.56–0.60l/2kg of mixed dry grout",
+        "wet surplus not usable dry stock",
+        "cleaning and protection scope retained",
+        "Keep regionalKZ2kg/5min/0.4table/water0.56–0.60 recipe; do not replace byCE40PLUS05/2026global."
+      ],
+      "adaptOnly": [
+        "apply after CM11floor waiting24h and actual dry joints",
+        "one shared mixer/cleaning owner if complete compatibility is proved",
+        "same tile geometry and independent measured joint depth",
+        "namespace distinct CM11/CE40 supplied_product_confirmed and conditions_confirmed meanings; never merge conflicting same-name enum facts"
+      ],
+      "notAdmitted": "CE40 table does not specify joint depth or guarantee consumption; source ready-floor facts do not prove new floor has already cured."
+    }
+  ],
+  "wholeCycleIndependentMap": [
+    {
+      "operation": "base-and-prime",
+      "source": "CT17PDF1–2; CM11PDF1",
+      "materials": [
+        "CT17 exact selected range/coat profile",
+        "water only if applicable source dilution selected; selected normal profile is undiluted"
+      ],
+      "labour": "one whole floor owner; no invented hours",
+      "equipmentTools": [
+        "brush or roller",
+        "primer vessel",
+        "dry dust-removal method for already suitable cement base"
+      ],
+      "ppe": [
+        "skin/eye protection appropriate to material"
+      ],
+      "conditions": [
+        "sound dry even cement screed≥28days/2CM-%",
+        "CT17ru_KZ4–6h untildry and CM11minimum4h"
+      ],
+      "unknownPhysical": [
+        "complete selected cleaning/provision profile, not a missing price"
+      ]
+    },
+    {
+      "operation": "mix-cm11",
+      "source": "CM11PDF1 APPLICATION /PDF2 TECHNICAL DATA",
+      "materials": [
+        "CM11ru_KZ approx2.5kg/m2 at exact100mm/4mm",
+        "cleanwater5.75–6l/25kg of mixed dry mass"
+      ],
+      "labour": "same whole floor owner",
+      "equipmentTools": [
+        "drill/compatible mixer paddle",
+        "compatible batch vessel",
+        "water dosing measure",
+        "power provision if selected electric mixer"
+      ],
+      "ppe": [
+        "alkaline skin/eye protection"
+      ],
+      "conditions": [
+        "CM11ru_KZ5minpause; oldglobal2/5conflict remains historical"
+      ],
+      "unknownPhysical": [
+        "complete compatible mixing assembly for selected batch range"
+      ]
+    },
+    {
+      "operation": "lay-tile-and-form-joints",
+      "source": "CM11PDF1–2",
+      "materials": [
+        "glazed100mmceramic per actual layout",
+        "spacing provisions for2mm ordinaryjoints"
+      ],
+      "labour": "same whole floor owner",
+      "equipmentTools": [
+        "notched4mm trowel",
+        "layout/level tools",
+        "applicable manualcutting system and accessories"
+      ],
+      "ppe": [
+        "cutting-role protection compatible with chosen method"
+      ],
+      "conditions": [
+        "indoor contact≥80%",
+        "no butt joints",
+        "joint/deformation geometry independent of area"
+      ],
+      "unknownPhysical": [
+        "layout/cutting/spacing balance; user inputs may contain actual geometry, never invented technical rates"
+      ]
+    },
+    {
+      "operation": "mix-and-fill-ce40",
+      "source": "CE40PDF1–2 exact10x10cm/2mm approximate0.4kg/m2",
+      "materials": [
+        "CE40 from declared mixing plan",
+        "water0.56–0.60l/2kg mixed dry mass"
+      ],
+      "labour": "same whole floor owner, no second payment for initial wiping",
+      "equipmentTools": [
+        "mixer400–800rpm with compatible paddle/vessel",
+        "rubber float",
+        "dosing measure"
+      ],
+      "ppe": [
+        "alkaline skin/eye protection"
+      ],
+      "conditions": [
+        "CM11ru_KZfloor≥24h and dry",
+        "same accepted joint depth",
+        "approx5min CE40pause and remix;2h usable batch"
+      ],
+      "unknownPhysical": [
+        "small-batch mixer assembly; CT29WK140HF25–35kg is not automatically compatible"
+      ]
+    },
+    {
+      "operation": "clean-and-protect",
+      "source": "CE40PDF1–2; CM11PDF2",
+      "materials": [
+        "separate sponge/edge wetting and toolwashing water",
+        "softdrycloth",
+        "applicable waste containers"
+      ],
+      "labour": "same whole floor owner",
+      "equipmentTools": [
+        "well-wrung frequently rinsed sponge",
+        "washvessel",
+        "dry softcloth",
+        "cleaning kit reused sequentially"
+      ],
+      "ppe": [
+        "same personal protective provision reused"
+      ],
+      "conditions": [
+        "wipeabout15min",
+        "dryhaze removal≤8h",
+        "protect drying24h and watercontact7days; these are conditions, not1service quantities"
+      ],
+      "unknownPhysical": [
+        "quantified washing/conditioning water and associated usable provision for all stages",
+        "external waste geometry/route outside existing source scope"
+      ]
+    },
+    {
+      "operation": "control-and-handover",
+      "source": "CM11PDF1–2; CE40PDF1–2",
+      "materials": [
+        "applicable actual junction system distinct from ordinary CE40 joints"
+      ],
+      "labour": "same whole floor owner",
+      "equipmentTools": [
+        "contact/level/jointdepth and ordinary acceptance tools"
+      ],
+      "ppe": [
+        "same serial profile"
+      ],
+      "conditions": [
+        "contact≥80%",
+        "samejointdepth and no void/contamination before grouting",
+        "groutwalk≥8h; water≥7days"
+      ],
+      "unknownPhysical": [
+        "deformation/abutment system only where applicable, with independent geometry"
+      ]
+    }
+  ],
+  "primaryEvidence": [
+    {
+      "path": ".release-runtime/r568/s27-54/cm11-small-ceramic/CM-11-PLUS.pdf",
+      "sha256": "e52146d1aa0a0b94099658f3e1d2f93cfb509de3e543e20b2366acd44658f1ad",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf",
+      "locator": "Стр.1: подготовка, CT17 и контакт; стр.2: рецептура воды, таблица ≤10см/4мм, CE40/CS25; стр.3: DoP00012"
+    },
+    {
+      "path": ".release-runtime/r568/s27-35/wet-zone-sources/CT-17.pdf",
+      "sha256": "7e3f72f83a9b75a5f90bd44dbac1c88a30da15e0a8d4e0b6e9f9af677fff2847",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CT-17-en_GL.pdf",
+      "locator": "Стр.1: нанесение и основания; стр.2: 0,1–0,5л/м², температура, влажность <80%, фасовки1/2/5/10л"
+    },
+    {
+      "path": ".release-runtime/r568/s27-35/professional-wet-room-sources/CE-40-ru_KZ.pdf",
+      "sha256": "1bb1140499e41734d8ce91f36a1f826d8ecb875bc1b501be21dedad716c676ae",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CE-40-ru_KZ.pdf",
+      "locator": "Стр.1–2: цементная затирка швов до10мм, ведро2кг; расход зависит от точной геометрии плитки и шва"
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ4.html",
+      "sha256": "54e416dc730bc476b1e552f3cf10171ce6c60a083842389c4243b0a13b2690d6",
+      "url": "https://www.collomix.com/de-de/produkte/ruehrwerke/xq4-ruehrwerk",
+      "locator": "XQ4official: артикул29018 сWK140HF,1500Вт,230В,65л.; Паспортнасадок45004DE©2025,PDFс3,40113-000WK140HF:25–35кг,135мм,590мм,HEXAFIX,min1300Вт.; XQmanual07044,PDFс2:WK140дляXQ4;с12:максимум140ммдляобычныхнасадок;с14:строительныерастворы,не непрерывныйрежим;с15:очистканемедленнопослеработы."
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_WK.html",
+      "sha256": "071cfcbf72e97839479850cebcc17a8f84719f9128f494b91a0c6a941643e257",
+      "url": "https://www.collomix.com/de-de/produkte/ruehrstaebe-ruehrquirle/wk",
+      "locator": "XQ4official: артикул29018 сWK140HF,1500Вт,230В,65л.; Паспортнасадок45004DE©2025,PDFс3,40113-000WK140HF:25–35кг,135мм,590мм,HEXAFIX,min1300Вт.; XQmanual07044,PDFс2:WK140дляXQ4;с12:максимум140ммдляобычныхнасадок;с14:строительныерастворы,не непрерывныйрежим;с15:очистканемедленнопослеработы."
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf",
+      "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+      "url": "https://www.collomix.com/03%20Dokumente-Variants/Bedienungsanleitungen/01%20R%C3%BChrwerke/XQ/BA_XQ1_4_6_230V_Multi_07044_ebook.pdf",
+      "locator": "XQ4official: артикул29018 сWK140HF,1500Вт,230В,65л.; Паспортнасадок45004DE©2025,PDFс3,40113-000WK140HF:25–35кг,135мм,590мм,HEXAFIX,min1300Вт.; XQmanual07044,PDFс2:WK140дляXQ4;с12:максимум140ммдляобычныхнасадок;с14:строительныерастворы,не непрерывныйрежим;с15:очистканемедленнопослеработы."
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_PADDLES.pdf",
+      "sha256": "5fc27fe728dccbd25f4a4e6ce42340c5fc24d531948ce61806a953235844a337",
+      "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/02%20R%C3%BChrer/DB_SammelprospektR%C3%BChrer_DE_45004_ebook.pdf",
+      "locator": "XQ4official: артикул29018 сWK140HF,1500Вт,230В,65л.; Паспортнасадок45004DE©2025,PDFс3,40113-000WK140HF:25–35кг,135мм,590мм,HEXAFIX,min1300Вт.; XQmanual07044,PDFс2:WK140дляXQ4;с12:максимум140ммдляобычныхнасадок;с14:строительныерастворы,не непрерывныйрежим;с15:очистканемедленнопослеработы."
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_KR.html",
+      "sha256": "172e3e6c7aaade9c274f5cb722eda48594bd0ff55ae59d0c0ca33d61017c197c",
+      "url": "https://www.collomix.com/de-de/produkte/ruehrstaebe-ruehrquirle/kr",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_KR.html"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_ADAPTERS.html",
+      "sha256": "acf7d9a7a5abd6932ce9eccc111c45d5795326443d20677a354ca59653736047",
+      "url": "https://www.collomix.com/de-de/produkte/workflowtools/adapter",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_ADAPTERS.html"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_MIXGRIP.html",
+      "sha256": "bc67a333030cd0e7c4bf731a5885ab68f2d44377f02323d9a3c9273093d218ff",
+      "url": "https://www.collomix.com/de-de/produkte/workflowtools/mixgrip-eimerhalterung",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_MIXGRIP.html"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_MIXAGON.pdf",
+      "sha256": "ff3288f31a6305113a83dbdd0a0b105037caf29b3ef06e16b939b379021cd775",
+      "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/02%20R%C3%BChrer/PB_MIXAGON_cutout_printable_EN_ebook.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_MIXAGON.pdf"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/CERESIT_CM11_KZ.html",
+      "sha256": "e8af1ada9317e2799e10e10e62dd422eda2110970033d1cb9d268ec339cafb0b",
+      "url": "https://kz.ceresit.com/produkty/plitocnaja-oblicovka/klei-dlja-plitki/produkty.html/ceresit-cm-11-plus/SAP_0201SAC013S3.html",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/CERESIT_CM11_KZ.html"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/CERESIT_CE40_KZ.html",
+      "sha256": "cf5b22f3bedb14cfcb40ade3b5941cee0aa5c7a596a5bb4dff46fc99b82deb06",
+      "url": "https://kz.ceresit.com/produkty/plitocnaja-oblicovka/zatirki-dlja-svov/produkty.html/ceresit-ce-40/SAP_0201SGC013M9.html",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/CERESIT_CE40_KZ.html"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/CM-11-ru_KZ.pdf",
+      "sha256": "4cde3e76ffd7221bc15ca6aa0106a442ead0b8d4cd556e50b17353b96b769989",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CM-11-ru_KZ.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/CM-11-ru_KZ.pdf"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/CE-40-en_GL.pdf",
+      "sha256": "66e46288aab73fc386a3ce3e6c0d55f17d69e4fbec6513998dd75aac01eacd64",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CE-40-en_GL.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/CE-40-en_GL.pdf",
+      "evidenceRole": "NEGATIVE_REGIONAL_COMPATIBILITY_CURRENT_CE40_PLUS_05_2026"
+    },
+    {
+      "path": ".release-runtime/r568/s27-35/professional-wet-room-sources/CT-17-ru_KZ.pdf",
+      "sha256": "cbb38df0d507d67832e527a8a476835ec2fe8804dd6702f3ab9676f55d1fa508",
+      "locator": "PDF1 application;PDF2 single coat0.1–0.2l/m2;4–6h dry;5/10/30l packs"
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_BUCKETS_45711_DE.pdf",
+      "sha256": "3af7f7a39eb8a37cbd23e28c8aa627d3b40efa64f27be4144ae3ce0a4cdd29e0",
+      "locator": "PDF2 60177 useful10l/B320×H256mm;60601 useful25l/B380mm"
+    },
+    {
+      "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/BUERKLE_7204_1000.html",
+      "sha256": "c6ca6b7bcbc56120707ce4c624acd3d4aa078546e588859132cf58a3b7499770",
+      "locator": "Bürkle7204-1000 PP1l,10ml graduation,handle/spout"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_WK_CURRENT.html",
+      "url": "https://www.collomix.com/de-de/produkte/ruehrstaebe-ruehrquirle/wk",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_WK_CURRENT.html",
+      "sha256": "ec48c19639533f1a76e11800202e8e11f0dcae712f0bf2cd840f7075ead0d369",
+      "bytes": 112214,
+      "locator": "Productdetails/Spezifikation rows41100-000 and41200-000;materials;Download→DB_SammelprospektRuehrer_DE45004"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_DE_2025.pdf",
+      "url": "https://www.collomix.com/03%20Dokumente/Kataloge/45310_Collomix_Katalog_2025_DE_LO.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_DE_2025.pdf",
+      "sha256": "3c3bebd8074e02d848a627fcc3028c782b471f0ba201ef000974d5473f68ec67",
+      "bytes": 5994822,
+      "locator": "PDF24 WKtable andKLEBEMOERTEL/FUGENMOERTEL;PDF12 XQ4steps"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_WK_UK.html",
+      "url": "https://collomix.co.uk/mixing-paddles/mixing-paddles-products",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_WK_UK.html",
+      "sha256": "2c7eb3626bcc839342d4c9f79eeac76661506325f4bb22b49792888229a6881a",
+      "bytes": 92296,
+      "locator": "MixingpaddleWK table41100-000 and41200-000;regional litres not substituted for DEkg"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/WOLFCRAFT_1705.html",
+      "url": "https://www.wolfcraft.com/products/wolfcraft/en/EUR/p/P_1705",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/WOLFCRAFT_1705.html",
+      "sha256": "e83a2f643ca0cf7d83731b27351f0637b5ac6438712641494ac47f8839e2b918",
+      "bytes": 311089,
+      "locator": "Article1705000 mixture5–10kg/min400W/500–800rpm/S8"
+    },
+    {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/BOSCH_GBM13HRE.html",
+      "url": "https://www.bosch-professional.com/de/de/products/gbm-13-hre-0601049603",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/BOSCH_GBM13HRE.html",
+      "sha256": "1c1e07f86f154af41dbb05590a319ea9ed627155733d72a7e99a7f89953e8c53",
+      "bytes": 495685,
+      "locator": "Technicaldata:idle0–550rpm;rated380rpm;550W/chuck1.5–13mm"
+    }
+  ],
+  "hardSourceBlockers": [
+    {
+      "id": "ALL_STAGE_CLEANING_WATER_AND_LAYOUT_PROVISION",
+      "status": "SOURCE_BLOCKED",
+      "reason": "Source mixing water is quantified; separate washing/wet-sponge/edge-conditioning water and tile layout/cutting provision are real needs with no admitted complete balance. A service cost owner or missing price does not establish physical water or waste quantities.",
+      "allowedUserFacts": "object/layout/joint geometry and applicable route distance only",
+      "forbiddenUserTechnicalNorms": true
+    }
+  ],
+  "notBlockers": [
+    "unknown prices",
+    "actual warehouse/delivery/booking facts",
+    "ordinary manufacturer curing and access/climate conditions by themselves",
+    "absence of laboratory price when standard process control is covered",
+    "lack of manufacturer worker-hour norm when a coherent measured whole-work provision plan exists"
+  ],
+  "finiteSearch": {
+    "closed": true,
+    "existingWholeFactoriesRead": 2,
+    "primaryTdsRead": 3,
+    "existingWholeMixerProfileRead": 1,
+    "additionalAccessorySearchStarted": true,
+    "newWorkCreated": false,
+    "newNormRegistered": false,
+    "wholeSmallNodeReviewClosed": true
+  },
+  "existing59RowProtection": {
+    "rewritten": false,
+    "legacyWaste7PercentNotAccepted": true,
+    "legacyGenericNormNamesNotTransferred": true
+  },
+  "fullTechnicalAcceptance": false,
+  "acceptedNewCompleteTypes": 0,
+  "publisherDescriptorCreated": false,
+  "databaseAccessed": false,
+  "published": false,
+  "runtimeStarted": false,
+  "nextDeveloperTask": "Verify retained legacy q and explicit exact roots through the existing conditional-primary consumer, core, retained-parent admission and sole-writer publisher. Exact branch remains PARTIAL with all 24 declared physical needs; small-tail search is not reopened. No other source research or generic-name package is part of this packet.",
+  "sourceResearchContinuation": {
+    "closed": true,
+    "reason": "New applicable regional TDS and official compatibility evidence, no speculative accessory publication.",
+    "newPrimaryArtifacts": 8,
+    "oldGlobalConflictNotRewritten": true,
+    "newPublisherOrRuntime": false,
+    "additionalSmallNodePrimaryArtifacts": 5
+  },
+  "regionalProfileDecision": {
+    "status": "ADAPTATION_SOURCE_SUPPORTED_NOT_YET_EXECUTABLE_WHOLE_GROUP",
+    "selected": "CM11ru_KZ /CT17ru_KZ /CE40ru_KZ",
+    "source": {
+      "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/CM-11-ru_KZ.pdf",
+      "sha256": "4cde3e76ffd7221bc15ca6aa0106a442ead0b8d4cd556e50b17353b96b769989",
+      "url": "https://datasheets.tdx.henkel.com/CERESIT-CM-11-ru_KZ.pdf",
+      "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/CM-11-ru_KZ.pdf"
+    },
+    "global2and5MinuteConflict": {
+      "source": {
+        "path": ".release-runtime/r568/s27-54/cm11-small-ceramic/CM-11-PLUS.pdf",
+        "sha256": "e52146d1aa0a0b94099658f3e1d2f93cfb509de3e543e20b2366acd44658f1ad",
+        "url": "https://datasheets.tdx.henkel.com/CERESIT-CM-11-PLUS-en_GL.pdf",
+        "locator": "Стр.1: подготовка, CT17 и контакт; стр.2: рецептура воды, таблица ≤10см/4мм, CE40/CS25; стр.3: DoP00012"
+      },
+      "resolution": "NOT_BOTH_MINIMA",
+      "applicationLiteralRu": "Leave for2min не объявлено минимальным временем;5мин не доказывает соблюдение этого предписания. Историческаяglobal04/2026фабрика не переписывается."
+    },
+    "cm11": {
+      "maturingMinutes": 5,
+      "mixerRpmRange": [
+        400,
+        800
+      ],
+      "dryPackageKg": [
+        5,
+        25
+      ],
+      "selectedTileSideMm": 100,
+      "trowelSquareNotchMm": 4,
+      "approxKgM2": 2.5,
+      "waterLPer25Kg": [
+        5.75,
+        6
+      ],
+      "selectedWaterLPer25Kg": 6,
+      "primerDryMinimumHours": 4,
+      "floorContactMinimumPercent": 80,
+      "floorGroutWaitMinimumHours": 24,
+      "potLifeHours": 2,
+      "openTimeApproxMinutes": 15,
+      "adjustmentApproxMinutes": 15,
+      "conditionsC": [
+        5,
+        25
+      ],
+      "commonTemperatureChosenAsIntersectionWithProductPage": true,
+      "sourceTemperaturePdfC": [
+        5,
+        30
+      ],
+      "sourceLocator": "PDF1 normal cement substrate≥28days and≤4% moisture,CT17≥4h; PDF2 table≤10cm/4mm≈2.5kg/m2,water5.75–6l/25kg,5min/remix,400–800rpm,80%floorcontact,24hgrout,5/25kgpaperbags",
+      "noCC83": true,
+      "noTransferOfGlobal2KgOr16Hours": true
+    },
+    "ct17": {
+      "source": {
+        "path": ".release-runtime/r568/s27-35/professional-wet-room-sources/CT-17-ru_KZ.pdf",
+        "sha256": "cbb38df0d507d67832e527a8a476835ec2fe8804dd6702f3ab9676f55d1fa508",
+        "locator": "PDF1–2"
+      },
+      "rangeLPerM2PerCoat": [
+        0.1,
+        0.2
+      ],
+      "selectedPreliminaryLPerM2": 0.2,
+      "selectedNormalCoats": 1,
+      "undiluted": true,
+      "dryingHoursRange": [
+        4,
+        6
+      ],
+      "packL": [
+        5,
+        10,
+        30
+      ],
+      "condition": "Нормальная впитывающая готовая цементная стяжка. После высыхания проверяется впитываемость; необходимость повторения требует применимого плана. Не перенесеныglobal0.1–0.5л/м2,1/2л,15мин.",
+      "noSourceClaimOfActualObjectReadiness": true
+    },
+    "ce40": {
+      "sourcePackUnchanged": "data/estimate-benchmarks/source-packs/ce40-ready-ceramic-grouting-s27-54.json",
+      "profile": "ru_KZ white1/2kg,10x10cm/2mm approximate0.4kg/m2",
+      "waterLPer2Kg": [
+        0.56,
+        0.6
+      ],
+      "selectedWaterLPer2Kg": 0.6,
+      "maturingMinutesApprox": 5,
+      "potLifeHours": 2,
+      "rejectFiveKgKzPackage": true,
+      "currentGlobalRejected": {
+        "source": {
+          "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/CE-40-en_GL.pdf",
+          "sha256": "66e46288aab73fc386a3ce3e6c0d55f17d69e4fbec6513998dd75aac01eacd64",
+          "url": "https://datasheets.tdx.henkel.com/CERESIT-CE-40-en_GL.pdf",
+          "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/CE-40-en_GL.pdf",
+          "evidenceRole": "NEGATIVE_REGIONAL_COMPATIBILITY_CURRENT_CE40_PLUS_05_2026"
+        },
+        "product": "CE40PLUS05/2026,signed2026-09-21",
+        "differences": [
+          "3min maturing",
+          "water dose depends on colour and packaging",
+          "no10x10cm/2mm/0.4row",
+          "no dry cloth during washing",
+          "water after24h rather than KZ7days"
+        ],
+        "wholeFactoryMixingForbidden": true
+      }
+    }
+  },
+  "wholeMixingNodePlan": {
+    "contract": "SELECTED_SERIAL_ADHESIVE_GROUT_MIXING_PLAN_EXISTING_OWNER_CONTRACTS",
+    "status": "COMPONENTS_AND_BATCH_ENVELOPES_SOURCE_SUPPORTED_NOT_FULL_FLOOR_ADMISSION",
+    "selectedOrganisation": "ONE_SERIAL_MIXING_POSITION;CM11ANDCE40_STAGES_SEQUENTIAL",
+    "quantityNormFromManufacturerClaimed": false,
+    "minimumBatchManufacturerRuleClaimed": false,
+    "wholeSubworks": [
+      "cm11SmallCeramicDefinitionS2754 source-specificKZadaptation",
+      "ce40ReadyCeramicDefinitionS2754(2)wholeKZgroutsubwork"
+    ],
+    "parentPaidOwner": {
+      "rowId": "cm11-ce40-whole-floor:whole-owner",
+      "unitId": "m2",
+      "expression": "tile_area_m2",
+      "oneWholeFloorOwner": true,
+      "unknownPriceDoesNotCreatePhysicalNeed": true,
+      "noInventedManHours": true
+    },
+    "contracts": [
+      "AutomaticRowSpec/buildAutomaticConstructionOwnerR1",
+      "canonical-operation-resource/v1",
+      "effectivePurchaseBalanceExpressionsR1",
+      "canonical-public-resource-presentation/v1"
+    ],
+    "components": [
+      {
+        "rowId": "cm11-ce40-whole-floor:mix:drive",
+        "title": "Миксер строительный, 1500 Вт, 230 В",
+        "category": "equipment",
+        "unitId": "item",
+        "expression": "1",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "includedInResourceOwnerRowId": "cm11-ce40-whole-floor:whole-owner",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "serialReuse": true,
+        "newPurchasePerOperation": false,
+        "sourceProductTitle": "CollomixXQ4HF1500W,230V;одинпривод"
+      },
+      {
+        "rowId": "cm11-ce40-whole-floor:mix:sw10-hf",
+        "title": "Переходник хвостовика 10 мм к быстросменному патрону",
+        "category": "equipment",
+        "unitId": "item",
+        "expression": "1",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "includedInResourceOwnerRowId": "cm11-ce40-whole-floor:whole-owner",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "serialReuse": true,
+        "newPurchasePerOperation": false,
+        "sourceProductTitle": "Collomix49498-000,SW10→HEXAFIX"
+      },
+      {
+        "rowId": "cm11-ce40-whole-floor:mix:cm11-paddle",
+        "title": "Насадка для плиточного клея, 90 мм, хвостовик 10 мм",
+        "category": "equipment",
+        "unitId": "item",
+        "expression": "1",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "includedInResourceOwnerRowId": "cm11-ce40-whole-floor:whole-owner",
+        "operations": [
+          "cm11-mixing",
+          "cleaning"
+        ],
+        "serialReuse": true,
+        "newPurchasePerOperation": false,
+        "sourceProductTitle": "CollomixKR90S41621-000,90mm,S10,5–15kg,min800W"
+      },
+      {
+        "rowId": "cm11-ce40-whole-floor:mix:ce40-paddle",
+        "title": "Насадка для затирочной смеси, 90 мм, хвостовик 10 мм",
+        "category": "equipment",
+        "unitId": "item",
+        "expression": "1",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "includedInResourceOwnerRowId": "cm11-ce40-whole-floor:whole-owner",
+        "operations": [
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "serialReuse": true,
+        "newPurchasePerOperation": false,
+        "sourceProductTitle": "CollomixWK90S41200-000,90mm,S10,5–10kg,min700W"
+      },
+      {
+        "rowId": "cm11-ce40-whole-floor:mix:vessel",
+        "title": "Ёмкость для замешивания, полезный объём 10 л, 320 × 256 мм",
+        "category": "equipment",
+        "unitId": "item",
+        "expression": "1",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "includedInResourceOwnerRowId": "cm11-ce40-whole-floor:whole-owner",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "serialReuse": true,
+        "newPurchasePerOperation": false,
+        "sourceProductTitle": "Collomix60177,полезные10л,320×256мм"
+      },
+      {
+        "rowId": "cm11-ce40-whole-floor:mix:rotation-lock",
+        "title": "Держатель ёмкости от проворачивания, 250–325 мм",
+        "category": "equipment",
+        "unitId": "item",
+        "expression": "1",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "includedInResourceOwnerRowId": "cm11-ce40-whole-floor:whole-owner",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "serialReuse": true,
+        "newPurchasePerOperation": false,
+        "sourceProductTitle": "Collomixmix.GRIP19180,250–325мм"
+      },
+      {
+        "rowId": "cm11-ce40-whole-floor:mix:water-measure",
+        "title": "Мерная ёмкость для воды, 1 л, деление 10 мл",
+        "category": "equipment",
+        "unitId": "item",
+        "expression": "1",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "includedInResourceOwnerRowId": "cm11-ce40-whole-floor:whole-owner",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "serialReuse": true,
+        "newPurchasePerOperation": false,
+        "sourceProductTitle": "Bürkle7204-1000,PP1л,деление10мл"
+      }
+    ],
+    "batchProfiles": {
+      "cm11": {
+        "dryKg": 5,
+        "selectedWaterL": 1.2,
+        "wetMassRangeKg": [
+          6.15,
+          6.2
+        ],
+        "paddle": "KR90S",
+        "paddleKgRange": [
+          5,
+          15
+        ]
+      },
+      "ce40": {
+        "dryKg": 6,
+        "selectedWaterL": 1.8,
+        "wetMassRangeKg": [
+          7.68,
+          7.8
+        ],
+        "paddle": "WK90S",
+        "paddleKgRange": [
+          5,
+          10
+        ]
+      }
+    },
+    "formulaPlan": {
+      "cm11MixedDryKg": "floor_length_m*floor_width_m*2.5",
+      "ce40MixedDryKg": "floor_length_m*floor_width_m*0.4",
+      "cm11MixingWaterL": "(floor_length_m*floor_width_m*2.5)*6/25",
+      "ce40MixingWaterL": "(floor_length_m*floor_width_m*0.4)*0.6/2",
+      "cm11OrderKg": "ceil((floor_length_m*floor_width_m*2.5)/5)*5",
+      "ce40OrderKg": "ceil((floor_length_m*floor_width_m*0.4)/2)*2",
+      "batchGap": "ceil((floor_length_m*floor_width_m*2.5)/5)-(floor_length_m*floor_width_m*2.5)/5+ceil((floor_length_m*floor_width_m*0.4)/6)-(floor_length_m*floor_width_m*0.4)/6",
+      "cm11LastShortDryKg": "(floor_length_m*floor_width_m*2.5)-floor((floor_length_m*floor_width_m*2.5)/5)*5",
+      "ce40LastShortDryKg": "(floor_length_m*floor_width_m*0.4)-floor((floor_length_m*floor_width_m*0.4)/6)*6",
+      "cm11FullBatches": "floor((floor_length_m*floor_width_m*2.5)/5)",
+      "ce40FullBatches": "floor((floor_length_m*floor_width_m*0.4)/6)",
+      "cm11LastShortWaterL": "((floor_length_m*floor_width_m*2.5)-floor((floor_length_m*floor_width_m*2.5)/5)*5)*6/25",
+      "ce40LastShortWaterL": "((floor_length_m*floor_width_m*0.4)-floor((floor_length_m*floor_width_m*0.4)/6)*6)*0.6/2",
+      "ce40LastShortWetKg": "((floor_length_m*floor_width_m*0.4)-floor((floor_length_m*floor_width_m*0.4)/6)*6)*(1+0.6/2)"
+    },
+    "materialOwnerPlan": {
+      "cm11": "One manufacturer5kg package owner; no10kg consumption/order minimum",
+      "ce40": "One manufacturer2kg package owner; no6kg consumption/order minimum",
+      "water": "One aggregate mixingwater owner from net planned dry mixes; separate cleaningwater remains blocked",
+      "stockCredit": false,
+      "supplierMultiplesInvented": false
+    },
+    "checks": {
+      "speedRpm": 550,
+      "driveActualStep": "XQ4MED550rpm,manualPDF8/10",
+      "cm11AndCe40RpmRanges": [
+        400,
+        800
+      ],
+      "KRRecommendedRpm": [
+        500,
+        650
+      ],
+      "WKRecommendedRpm": [
+        400,
+        550
+      ],
+      "maxPaddleMm": 90,
+      "drivePermittedNormalPaddleMm": 140,
+      "driveW": 1500,
+      "maxPaddleMinDriveW": 800,
+      "dryAndWetBatchMassesBothInsideTheirPaddleRanges": true,
+      "nominalUsefulVesselL": 10,
+      "cm11VesselMarginApproxL": 1.7333333333333325,
+      "ce40VesselMarginApproxL": 5.2727272727272725,
+      "clampRangeMm": [
+        250,
+        325
+      ],
+      "publishedBucketWidthMm": 320,
+      "bucketClampFitStatus": "ENGINEERING_INFERENCE_FROM_PUBLISHED_ROUND_BUCKET_WIDTH_AND_CLAMP_RANGE_NOT_A_MANUFACTURER_PAIR_CERTIFICATE",
+      "noInnerDiameterClaim": true,
+      "sourceMaterialSelection": "Mixagon visuallyread:KRtileadhesives;WKgroutingmortar. ADAPTATION bymaterialfunction,notCeresitbrandcertification."
+    },
+    "conditions": [
+      "Каждыйзамес используется в течение2ч; производительность и рабочиечасы не выведены из potlife.",
+      "Непрерывнаяработа миксера исключена; паузы и технологическаяпоследовательность соблюдаются.",
+      "Доступный230Vпост черезRCD≤30mA,сухиеэлектросоединения; кабельвнеобластимешалки.",
+      "Передсменойпродукта насадки иёмкость тщательно очищаются,чистая вода дозируетсяотдельнымкувшином.",
+      "Чистый устойчивый сосудфиксируется; геометрическаяадаптацияпроверяетсявреальномпланеснабжения,фактсклада неутверждается."
+    ],
+    "plannedSurplusBoundary": "No compulsory10/6kg mixed mass. Mixing plan equals selected source approximate net quantity; manufacturer5/2kg orders are rounded once. Ordered dry remainder is real dry balance. Unsupported last-batch provision remains an explicit need; no mixed surplus is relabelled as dry stock.",
+    "stillBlocked": [
+      "LAST_SMALL_BATCH_COMPLETE_ASSEMBLY_IF_REQUIRED",
+      "ALL_STAGE_CLEANING_WATER_AND_LAYOUT_PROVISION"
+    ],
+    "fullTechnicalAcceptance": false,
+    "noSeparateAccessoryPublisher": true,
+    "primaryEvidence": [
+      {
+        "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_ADAPTERS.html",
+        "sha256": "acf7d9a7a5abd6932ce9eccc111c45d5795326443d20677a354ca59653736047",
+        "url": "https://www.collomix.com/de-de/produkte/workflowtools/adapter",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_ADAPTERS.html"
+      },
+      {
+        "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_MIXGRIP.html",
+        "sha256": "bc67a333030cd0e7c4bf731a5885ab68f2d44377f02323d9a3c9273093d218ff",
+        "url": "https://www.collomix.com/de-de/produkte/workflowtools/mixgrip-eimerhalterung",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_MIXGRIP.html"
+      },
+      {
+        "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_MIXAGON.pdf",
+        "sha256": "ff3288f31a6305113a83dbdd0a0b105037caf29b3ef06e16b939b379021cd775",
+        "url": "https://www.collomix.com/03%20Dokumente-Variants/Datenbl%C3%A4tter%20%26%20Flyer-Produktbrosch%C3%BCre/02%20R%C3%BChrer/PB_MIXAGON_cutout_printable_EN_ebook.pdf",
+        "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_MIXAGON.pdf"
+      },
+      {
+        "path": ".release-runtime/r568/s27-35/professional-wet-room-sources/CT-17-ru_KZ.pdf",
+        "sha256": "cbb38df0d507d67832e527a8a476835ec2fe8804dd6702f3ab9676f55d1fa508",
+        "locator": "PDF1 application;PDF2 single coat0.1–0.2l/m2;4–6h dry;5/10/30l packs"
+      },
+      {
+        "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_PADDLES.pdf",
+        "sha256": "5fc27fe728dccbd25f4a4e6ce42340c5fc24d531948ce61806a953235844a337",
+        "locator": "PDF4 WK90S41200-0005–10kg/90mm/S10/min700W; KR90S41621-0005–15kg/90mm/S10/min800W"
+      },
+      {
+        "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/COLLOMIX_XQ_230V_MANUAL.pdf",
+        "sha256": "4c4b3df7546a9a0eced77f820445f554c9d932b6ca9908cf624654db80742d1d",
+        "locator": "PDF8/10 MED550rpm,XQ41500W,maxnormal140mm;PDF9 fixedvessel/RCD≤30mA/PPE;PDF10 notcontinuous operation"
+      },
+      {
+        "path": ".release-runtime/r568/ct29-indoor-resource-provision-r4/sources/COLLOMIX_BUCKETS_45711_DE.pdf",
+        "sha256": "3af7f7a39eb8a37cbd23e28c8aa627d3b40efa64f27be4144ae3ce0a4cdd29e0",
+        "locator": "PDF2 60177 useful10l/B320×H256mm;60601 useful25l/B380mm"
+      },
+      {
+        "path": ".release-runtime/r568/ct29-indoor-resource-provision-r3/sources/BUERKLE_7204_1000.html",
+        "sha256": "c6ca6b7bcbc56120707ce4c624acd3d4aa078546e588859132cf58a3b7499770",
+        "locator": "Bürkle7204-1000 PP1l,10ml graduation,handle/spout"
+      }
+    ],
+    "smallBatchReview": {
+      "contract": "CM11_CE40_KZ_WHOLE_SMALL_MIXING_ASSEMBLY_FINITE_REVIEW_R1",
+      "status": "NEED_COMPLETE_SMALL_BATCH_ASSEMBLY",
+      "reuseClassification": "ADAPTATION_SOURCE_BLOCKED",
+      "candidateSelectedForProvision": false,
+      "wholeSubworks": [
+        "cm11-mixing",
+        "ce40-mixing"
+      ],
+      "historicalPreimage": {
+        "patchSha256": "c79704ef5f3db6d624b90ac408fb0caee045a47b4aee1f470a18a4d0a5f06672",
+        "manifestSha256": "628fd9923d1ec0717cfa4f24dfaee36f73b33c1e17893c7a6a9daa6629bfdd88",
+        "path": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/small-mix-preimage"
+      },
+      "exactSelectedNode": {
+        "classification": "REUSE_EXACT_WITHIN_SELECTED_FULL_PACKAGE_BATCH_DOMAIN",
+        "drive": "XQ4HF1500W/230V,550rpm per pinned operator manual",
+        "paddles": "KR90S+WK90S exactS10 selected variants",
+        "coupling": "49498-000SW10→HEXAFIX",
+        "vessel": "6017710l and19180mix.GRIP,width/clamp inference explicitly retained",
+        "waterMeasure": "7204-1000 PP1l,10ml graduation",
+        "dryCm11Kg": 5,
+        "dryCe40Kg": 6,
+        "smallTailsAdmitted": false
+      },
+      "candidates": [
+        {
+          "id": "XQ4HF_SW10_WK70S",
+          "classification": "ADAPTATION_INCOMPLETE_WHOLE_NODE",
+          "drive": "ExistingXQ4HF+49498SW10,MED550rpm per pinned manual",
+          "paddle": {
+            "article": "41100-000",
+            "name": "WK70S",
+            "diameterMm": 70,
+            "lengthMm": 400,
+            "shaftMm": 10,
+            "currentDeKg": [
+              0,
+              7
+            ],
+            "pinnedPdf": "up to7kg,min400W",
+            "materialFunctions": [
+              "cement adhesive mortar",
+              "cement grout"
+            ],
+            "speedRpm": [
+              400,
+              550
+            ]
+          },
+          "countryConflicts": {
+            "deCurrent": "0–7kg",
+            "de2025": "–7kg",
+            "uk": "4–7litres",
+            "usSearchLead": "0.5–1.8USgal;largePDF not downloaded and not admitted",
+            "disposition": "No lower bound is fabricated from an upper-only PDF, and no kg/litre conversion is inferred from another regional paddle envelope. CurrentDE0–7kg supports the candidate paddle only."
+          },
+          "massCheck": {
+            "ce40DryKg": 0.4,
+            "waterL": 0.12,
+            "wetKg": 0.52,
+            "insideCurrentDeCandidateEnvelope": true
+          },
+          "wholeAssemblyMissing": [
+            "A stable compatible working vessel and fixing arrangement with source-supported working immersion/clearance at the actual small mixed volume;existing10l vessel/clamp is not transferred automatically.",
+            "A suitable dry dosing/weighing provision for a partial factory package;no1g scale is invented.",
+            "Dosing envelope for smaller tails when the required source water range contains no10ml graduation;0.4kg/120ml itself is an exact mark."
+          ],
+          "admittedResourceRows": 0
+        },
+        {
+          "id": "WOLFCRAFT1705000",
+          "classification": "INCOMPATIBLE_WITH_0_4KG_DRY_SMALL_BATCH",
+          "dryAndWetSmallMassBelowPublishedMinimum": true,
+          "minimumKg": 5,
+          "maximumKg": 10,
+          "rpm": [
+            500,
+            800
+          ],
+          "shaftMm": 8,
+          "source": {
+            "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/WOLFCRAFT_1705.html",
+            "url": "https://www.wolfcraft.com/products/wolfcraft/en/EUR/p/P_1705",
+            "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/WOLFCRAFT_1705.html",
+            "sha256": "e83a2f643ca0cf7d83731b27351f0637b5ac6438712641494ac47f8839e2b918",
+            "bytes": 311089,
+            "locator": "Article1705000 mixture5–10kg/min400W/500–800rpm/S8"
+          }
+        },
+        {
+          "id": "BOSCH_GBM13HRE_0601049603",
+          "classification": "INCOMPATIBLE_WITH_SOURCE400_800_RPM_ON_PUBLISHED_RATED_SPEED",
+          "ratedRpm": 380,
+          "idleRpm": [
+            0,
+            550
+          ],
+          "source": {
+            "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/BOSCH_GBM13HRE.html",
+            "url": "https://www.bosch-professional.com/de/de/products/gbm-13-hre-0601049603",
+            "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/BOSCH_GBM13HRE.html",
+            "sha256": "1c1e07f86f154af41dbb05590a319ea9ed627155733d72a7e99a7f89953e8c53",
+            "bytes": 495685,
+            "locator": "Technicaldata:idle0–550rpm;rated380rpm;550W/chuck1.5–13mm"
+          },
+          "notAdmitted": "Idle550rpm is not evidence of400–800rpm under mixing load;bare drill also supplies no complete small mortar vessel/paddle plan."
+        }
+      ],
+      "sourceDifferences": {
+        "wk90Connection": "DE2025cataloguePDF24 says13mmBF;currentDEproductrow and linked pinned datasheet say10mm. Selected exactS10 variant is positively pinned by currentDErow and adapterSW10data;13mmBF is not silently declared a measured13mmshaft or transferred to the adapter.",
+        "driveStep": "DE2025cataloguePDF12 says400/500/700rpm;selected operator manual says400/550/700rpm.500and550 both meetCM11/CE40 andKR/WK speed intersections. Plan retains the exact pinned operator-manual550rpm variant;noidle/rated substitution.",
+        "vesselBoundary": "Nominal volume and outside clamp width do not prove immersion/clearance for0.52kgwet mortar. This source gap is physical planning,not price/stock or actual delivery."
+      },
+      "forbiddenRepairs": [
+        "Increase CE40mixed demand to6kg",
+        "Buy6kg when4kg is required solely for tool minimum",
+        "Treat mixed surplus as dry remainder",
+        "Transfer globalCE40PLUS5kg package toKZ2kg recipe",
+        "Hand mix despite KZTDSmechanical400–800rpm",
+        "Add an accessory row and claim whole-node completeness"
+      ],
+      "arithmeticUsesExistingFormulaGraph": true,
+      "arithmeticIsNotAdditionalPricedQuantityRows": true,
+      "smallBatchNeedRowId": "cm11-ce40-kz-whole-floor:open-batch-provision",
+      "requiredOperationIds": [
+        "cm11-ce40-kz-whole-floor:operation:cm11-mixing",
+        "cm11-ce40-kz-whole-floor:operation:ce40-mixing"
+      ],
+      "otherPhysicalNeedsPreserved": [
+        "movement-joints",
+        "cutting-spacing",
+        "cleaning-water",
+        "external-waste"
+      ],
+      "newSuppliedComponents": 0,
+      "newCompleteTypes": 0,
+      "fullTechnicalAcceptance": false,
+      "finiteSearch": {
+        "closed": true,
+        "primarySourceFamilies": [
+          "Collomix currentDEandDE2025/UK",
+          "CeresitCE40ruKZTDS",
+          "Wolfcraft1705",
+          "BoschGBM13HRE",
+          "RUBI2024 epoxy/mortar range leads",
+          "KWBofficialhandtoolcatalogue leads",
+          "Buerkle/Vitlab vessel-dimension leads"
+        ],
+        "newPinnedArtifacts": 5,
+        "secondaryResellerSpecificationsNotAdmitted": true,
+        "reopenOnlyWith": "New primary evidence for the whole small node including working vessel/fixing,actual mass,drive/paddle and dosing/weighing envelope.",
+        "primaryQueryLimit": 20
+      },
+      "primaryEvidence": [
+        {
+          "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_WK_CURRENT.html",
+          "url": "https://www.collomix.com/de-de/produkte/ruehrstaebe-ruehrquirle/wk",
+          "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_WK_CURRENT.html",
+          "sha256": "ec48c19639533f1a76e11800202e8e11f0dcae712f0bf2cd840f7075ead0d369",
+          "bytes": 112214,
+          "locator": "Productdetails/Spezifikation rows41100-000 and41200-000;materials;Download→DB_SammelprospektRuehrer_DE45004"
+        },
+        {
+          "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_DE_2025.pdf",
+          "url": "https://www.collomix.com/03%20Dokumente/Kataloge/45310_Collomix_Katalog_2025_DE_LO.pdf",
+          "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_DE_2025.pdf",
+          "sha256": "3c3bebd8074e02d848a627fcc3028c782b471f0ba201ef000974d5473f68ec67",
+          "bytes": 5994822,
+          "locator": "PDF24 WKtable andKLEBEMOERTEL/FUGENMOERTEL;PDF12 XQ4steps"
+        },
+        {
+          "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/COLLOMIX_WK_UK.html",
+          "url": "https://collomix.co.uk/mixing-paddles/mixing-paddles-products",
+          "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/COLLOMIX_WK_UK.html",
+          "sha256": "2c7eb3626bcc839342d4c9f79eeac76661506325f4bb22b49792888229a6881a",
+          "bytes": 92296,
+          "locator": "MixingpaddleWK table41100-000 and41200-000;regional litres not substituted for DEkg"
+        },
+        {
+          "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/WOLFCRAFT_1705.html",
+          "url": "https://www.wolfcraft.com/products/wolfcraft/en/EUR/p/P_1705",
+          "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/WOLFCRAFT_1705.html",
+          "sha256": "e83a2f643ca0cf7d83731b27351f0637b5ac6438712641494ac47f8839e2b918",
+          "bytes": 311089,
+          "locator": "Article1705000 mixture5–10kg/min400W/500–800rpm/S8"
+        },
+        {
+          "path": ".release-runtime/r568/cm11-ce40-whole-floor-r1/sources/BOSCH_GBM13HRE.html",
+          "url": "https://www.bosch-professional.com/de/de/products/gbm-13-hre-0601049603",
+          "localHandoffPath": "C:/Users/User/Documents/Codex/2026-10-21/files-pasted-by-the-user-ct29/work/stream-c-master27/cm11-ce40-regional-sources/BOSCH_GBM13HRE.html",
+          "sha256": "1c1e07f86f154af41dbb05590a319ea9ed627155733d72a7e99a7f89953e8c53",
+          "bytes": 495685,
+          "locator": "Technicaldata:idle0–550rpm;rated380rpm;550W/chuck1.5–13mm"
+        }
+      ]
+    }
+  },
+  "resolvedSourceObligations": [
+    {
+      "id": "CM11_MATURING_PRIMARY_CONFLICT",
+      "status": "RESOLVED_FOR_NEW_WHOLE_RU_KZ_PROFILE_ONLY",
+      "historicalGlobalConflictUnchanged": true,
+      "reference": "regionalProfileDecision"
+    },
+    {
+      "id": "COMPLETE_SMALL_BATCH_MIXING_ASSEMBLY",
+      "status": "ONLY_SELECTED_FULL_PACKAGE_BATCH_ENVELOPES_SOURCE_SUPPORTED",
+      "reference": "wholeMixingNodePlan",
+      "remainingWholeFloorBlocker": "Last short batches remain a genuine conditional batch-provision need; cleaningwater/layout and complete support not claimed."
+    }
+  ],
+  "executableProfile": {
+    "contract": "gox-build.cm11-ct17-ce40-kz-selectable-floor.r2",
+    "publicationSourceId": "cm11_ct17_ce40_kz_selectable_floor_r2",
+    "titleRu": "Керамический пол 100 × 100 мм на цементном клее с грунтованием и швами 2 мм",
+    "namespace": "cm11-ce40-kz-whole-floor",
+    "primaryGeometry": "floor_area_m2",
+    "geometry": [
+      "floor_length_m",
+      "floor_width_m"
+    ],
+    "scopeRu": "Одна явно выбранная предварительная технология: прямоугольный внутренний пол без подогрева и отдельной гидроизоляции, по готовой сухой ровной цементной стяжке; глазурованная керамика 100 × 100 мм, прямая раскладка и обычный шов 2 мм. Точные региональные составы и рецептуры закреплены в источниках. Расходы клея 2,5 кг/м² и затирки 0,4 кг/м² ориентировочные и не гарантируют фактическую достаточность. Таблица затирки не публикует глубину; отдельный числовой ввод глубины не назначает расход. Равномерность и чистоту фактических швов проверяют перед затиркой. Ниши, колонны, сложная раскладка и компенсационные узлы не рассчитываются как обычная сетка.",
+    "areaExpression": "floor_length_m*floor_width_m",
+    "tileExpression": "ceil((floor_length_m+0.002)/0.102)*ceil((floor_width_m+0.002)/0.102)*0.01",
+    "cm11Expression": "floor_length_m*floor_width_m*2.5",
+    "ce40Expression": "floor_length_m*floor_width_m*0.4",
+    "primerExpression": "floor_length_m*floor_width_m*0.2",
+    "operations": [
+      {
+        "id": "priming",
+        "titleRu": "Грунтование готового основания"
+      },
+      {
+        "id": "cm11-mixing",
+        "titleRu": "Замешивание плиточного клея"
+      },
+      {
+        "id": "laying",
+        "titleRu": "Укладка керамической плитки"
+      },
+      {
+        "id": "ce40-mixing",
+        "titleRu": "Замешивание затирочной смеси"
+      },
+      {
+        "id": "grouting",
+        "titleRu": "Затирка обычных межплиточных швов"
+      },
+      {
+        "id": "cleaning",
+        "titleRu": "Очистка облицовки и инструмента"
+      },
+      {
+        "id": "control",
+        "titleRu": "Контроль контакта плитки и состояния швов"
+      }
+    ],
+    "cm11Rows": [
+      [
+        "tile-consumed",
+        "laying"
+      ],
+      [
+        "tile-order",
+        "laying"
+      ],
+      [
+        "cm11-consumed",
+        "cm11-mixing"
+      ],
+      [
+        "cm11-order",
+        "cm11-mixing"
+      ],
+      [
+        "cm11-bags",
+        "cm11-mixing"
+      ],
+      [
+        "water-consumed",
+        "cm11-mixing"
+      ],
+      [
+        "water-order",
+        "cm11-mixing"
+      ],
+      [
+        "ct17-consumed",
+        "priming"
+      ],
+      [
+        "ct17-5l-order",
+        "priming"
+      ],
+      [
+        "ct17-5l-containers",
+        "priming"
+      ],
+      [
+        "water-min",
+        "cm11-mixing"
+      ],
+      [
+        "water-max",
+        "cm11-mixing"
+      ]
+    ],
+    "ce40Rows": [
+      [
+        "ce40-table-quantity",
+        "ce40-mixing"
+      ],
+      [
+        "ce40-plan-coverage",
+        "ce40-mixing"
+      ],
+      [
+        "ce40-mixed-plan",
+        "ce40-mixing"
+      ],
+      [
+        "ce40-order",
+        "ce40-mixing"
+      ],
+      [
+        "ce40-buckets",
+        "ce40-mixing"
+      ],
+      [
+        "ce40-dry-remaining",
+        "ce40-mixing"
+      ],
+      [
+        "water-mixing",
+        "ce40-mixing"
+      ]
+    ],
+    "gaps": [
+      {
+        "key": "movement-joints",
+        "titleRu": "Применимые деформационные и примыкающие швы",
+        "unitId": "l",
+        "operation": "laying",
+        "reasonRu": "Геометрия и совместимая системаCS25 не заданы; расходCE40 на специальные швы не переносится.",
+        "rowKey": "open-movement-joints",
+        "category": "material",
+        "operations": [
+          "laying"
+        ],
+        "costTreatment": "INFORMATIONAL_SCOPE"
+      },
+      {
+        "key": "cutting-spacing",
+        "titleRu": "Система резки плитки и формирования швов по раскладке",
+        "unitId": "",
+        "operation": "laying",
+        "reasonRu": "Число целых плиток по прямоугольной сетке рассчитано; совместимые резка/оснастка/организация подрезок не подтверждены целым профилем.",
+        "rowKey": "open-cutting-spacing",
+        "category": "service",
+        "operations": [
+          "laying"
+        ],
+        "costTreatment": "INFORMATIONAL_SCOPE"
+      },
+      {
+        "key": "cleaning-water",
+        "titleRu": "Вода промывки инструмента, губки и смачивания кромок",
+        "unitId": "l",
+        "operation": "cleaning",
+        "reasonRu": "Вода затворения известна отдельно. Полная физическая норма промывкиCT17/CM11/CE40 и губки не подтверждена; цена/владелец услуги её не заменяют.",
+        "rowKey": "open-cleaning-water",
+        "category": "material",
+        "operations": [
+          "cleaning"
+        ],
+        "costTreatment": "INFORMATIONAL_SCOPE"
+      },
+      {
+        "key": "external-waste",
+        "titleRu": "Обращение с внешними отходами и тарой",
+        "unitId": "",
+        "operation": "cleaning",
+        "reasonRu": "Масса, контейнеры и внешний маршрут вне обычной очистки не установлены. Мокрый излишек не записывается в пригодный сухой запас.",
+        "rowKey": "open-external-waste",
+        "category": "service",
+        "operations": [
+          "cleaning"
+        ],
+        "costTreatment": "INFORMATIONAL_SCOPE"
+      },
+      {
+        "key": "batch-provision",
+        "titleRu": "Обеспечение последнего малого замеса",
+        "unitId": "",
+        "operation": "ce40-mixing",
+        "reasonRu": "Для последнего неполного замеса CM11/CE40 требуется целый подтверждённый малый узел: совместимые привод/насадка, рабочий сосуд с фиксацией и дозирование/взвешивание фактической части упаковки. WK70S0–7кг подтверждает только кандидатную насадку; рабочий малый объём целиком не подтверждён. Расход и закупка не повышаются до5/6кг.",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "rowKey": "open-batch-provision",
+        "category": "service",
+        "costTreatment": "INFORMATIONAL_SCOPE"
+      },
+      {
+        "key": "mix-goggles",
+        "rowKey": "mix-goggles",
+        "titleRu": "Защитные очки для работы с цементными смесями",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "operation": "cm11-mixing",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+      },
+      {
+        "key": "mix-gloves",
+        "rowKey": "mix-gloves",
+        "titleRu": "Перчатки для защиты от цементных составов",
+        "category": "equipment",
+        "unitId": "pair",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "operation": "cm11-mixing",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+      },
+      {
+        "key": "mix-dust-mask",
+        "rowKey": "mix-dust-mask",
+        "titleRu": "Средство защиты дыхания от пыли сухих смесей",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "operation": "cm11-mixing",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+      },
+      {
+        "key": "mix-hearing-protection",
+        "rowKey": "mix-hearing-protection",
+        "titleRu": "Средство защиты слуха при работе миксера",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "operation": "cm11-mixing",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+      },
+      {
+        "key": "mix-snug-clothing",
+        "rowKey": "mix-snug-clothing",
+        "titleRu": "Прилегающая рабочая одежда для работы миксера",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "operation": "cm11-mixing",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+      },
+      {
+        "key": "primer-brush",
+        "rowKey": "primer-brush",
+        "titleRu": "Кисть для водной грунтовки",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "priming",
+          "cleaning"
+        ],
+        "operation": "priming",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+      },
+      {
+        "key": "primer-vessel",
+        "rowKey": "primer-vessel",
+        "titleRu": "Ёмкость для грунтовки",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "priming",
+          "cleaning"
+        ],
+        "operation": "priming",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+      },
+      {
+        "key": "notched-trowel",
+        "rowKey": "notched-trowel",
+        "titleRu": "Зубчатый шпатель, квадратный зуб 4 мм",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "laying",
+          "cleaning"
+        ],
+        "operation": "laying",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+      },
+      {
+        "key": "rubber-float",
+        "rowKey": "rubber-float",
+        "titleRu": "Резиновый шпатель для затирки швов",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "grouting",
+          "cleaning"
+        ],
+        "operation": "grouting",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+      },
+      {
+        "key": "grout-sponge",
+        "rowKey": "grout-sponge",
+        "titleRu": "Губка для затирки и промывки",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "grouting",
+          "cleaning"
+        ],
+        "operation": "grouting",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+      },
+      {
+        "key": "dry-cloth",
+        "rowKey": "dry-cloth",
+        "titleRu": "Сухая мягкая ткань для удаления налёта",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cleaning"
+        ],
+        "operation": "cleaning",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+      },
+      {
+        "key": "labour-time",
+        "rowKey": "open-labour-time",
+        "titleRu": "Труд по грунтованию, укладке, затирке и очистке",
+        "category": "labor",
+        "unitId": "man_hour",
+        "operations": [
+          "priming",
+          "cm11-mixing",
+          "laying",
+          "ce40-mixing",
+          "grouting",
+          "cleaning",
+          "control"
+        ],
+        "operation": "priming",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "reasonRu": "Нет подтверждённого конечного баланса рабочих часов; площадь работ и выдержки смесей не превращаются в норму труда."
+      },
+      {
+        "key": "base-dedusting",
+        "rowKey": "open-base-dedusting",
+        "titleRu": "Оборудование для удаления пыли с подготовленного основания",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "priming",
+          "cleaning"
+        ],
+        "operation": "priming",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "reasonRu": "Принятое основание должно быть очищено; совместимый метод и достаточное оборудование не выбраны. Готовность основания не назначает количество оборудования."
+      },
+      {
+        "key": "layout-control",
+        "rowKey": "open-layout-control",
+        "titleRu": "Инструмент разметки и контроля ровности и швов",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "laying",
+          "control"
+        ],
+        "operation": "laying",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "reasonRu": "Для принятой прямой раскладки и контроля нужны реальные средства. Их состав и достаточность не выводятся из площади или инструмента М150."
+      },
+      {
+        "key": "wash-vessel",
+        "rowKey": "open-wash-vessel",
+        "titleRu": "Ёмкость для промывки инструмента и губки",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "priming",
+          "grouting",
+          "cleaning"
+        ],
+        "operation": "priming",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "reasonRu": "Промывка требует совместимой ёмкости. Сосуд для замесов или грунтовки не назначается для промывки автоматически; достаточное количество и смена воды не подтверждены."
+      },
+      {
+        "key": "electricity",
+        "rowKey": "open-electricity",
+        "titleRu": "Электроэнергия для строительного миксера",
+        "category": "equipment",
+        "unitId": "kWh",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "operation": "cm11-mixing",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "reasonRu": "Мощность 1500 Вт не является потреблением энергии на весь объём. Машинное время и энергия не нормированы; количество не присваивается 1 или мощности."
+      },
+      {
+        "key": "electrical-protection",
+        "rowKey": "open-electrical-protection",
+        "titleRu": "Устройство защитного отключения, до 30 мА",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "operation": "cm11-mixing",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "reasonRu": "Руководство выбранного миксера требует защищённый пост 230 В через УЗО до 30 мА. Наличие, достаточное исполнение и граница поставки не подтверждены; требование не скрывается в общих условиях и не подменяется количеством 1."
+      },
+      {
+        "key": "fresh-protection",
+        "rowKey": "open-fresh-protection",
+        "titleRu": "Материалы и ограждение для защиты свежих швов",
+        "category": "material",
+        "unitId": "",
+        "operations": [
+          "grouting",
+          "cleaning",
+          "control"
+        ],
+        "operation": "grouting",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "reasonRu": "Источник требует защиту от пересыхания и контакта с водой. Сроки являются условиями процесса, но физические средства, геометрия и количество не заданы."
+      },
+      {
+        "key": "material-delivery",
+        "rowKey": "open-material-delivery",
+        "titleRu": "Доставка плитки, смесей и воды к месту работы",
+        "category": "service",
+        "unitId": "",
+        "operations": [
+          "priming",
+          "cm11-mixing",
+          "laying",
+          "ce40-mixing"
+        ],
+        "operation": "priming",
+        "costTreatment": "INFORMATIONAL_SCOPE",
+        "reasonRu": "Не определены маршрут, средства подачи, погрузка и граница включённой доставки. Рейс 1 не назначается."
+      }
+    ],
+    "fullPackageBatchPlan": {
+      "cm11DryKg": 5,
+      "cm11WaterL": 1.2,
+      "cm11WetKg": 6.2,
+      "ce40DryKg": 6,
+      "ce40WaterL": 1.8,
+      "ce40WetKg": 7.8,
+      "sourceProof": "CM11KR90S5–15kg accepts dry5/wet6.2. CE40WK90S5–10kg accepts both dry6/wet7.8. CE40factory2kg packaging is retained. Threepackages form a selected supportedbatch, never a purchase or mixing minimum.",
+      "ce40FourKgBoundary": "4kgdry pluswater gives5.12–5.20kg wet, but the conservative admitted profile does not rely on reinterpreting the paddle minimum as only wetmass. Fourkg tails remain blocked, not rounded up.",
+      "knownLastBatchDomain": "Only exact multiples of5kg CM11 and6kg CE40 are admitted to this package-count plan; otherwise explicit batch-provision need remains."
+    },
+    "newHandTools": [],
+    "physicalPlanComplete": false,
+    "fullTechnicalAcceptance": false,
+    "noNewCompleteTypes": true,
+    "priceUnknownIsNotPhysicalGap": true,
+    "publicRowNames": {
+      "tile-consumed": "Расход керамической плитки 100 × 100 мм",
+      "tile-order": "Керамическая плитка 100 × 100 мм",
+      "cm11-consumed": "Расход цементного плиточного клея",
+      "cm11-order": "Цементный плиточный клей, упаковка 5 кг",
+      "cm11-bags": "Упаковки плиточного клея, 5 кг",
+      "water-consumed": "Расход воды для замешивания плиточного клея",
+      "water-order": "Вода для замешивания клея и затирочной смеси",
+      "ct17-consumed": "Расход грунтовки глубокого проникновения",
+      "ct17-5l-order": "Грунтовка глубокого проникновения, канистра 5 л",
+      "ct17-5l-containers": "Канистры грунтовки, 5 л",
+      "water-min": "Нижняя граница расхода воды для плиточного клея",
+      "water-max": "Верхняя граница расхода воды для плиточного клея",
+      "ce40-table-quantity": "Ориентировочный расход затирочной смеси",
+      "ce40-plan-coverage": "Отклонение плана замесов от ориентировочного расхода",
+      "ce40-mixed-plan": "Расход сухой затирочной смеси",
+      "ce40-order": "Цементная затирка, белая, ведро 2 кг",
+      "ce40-buckets": "Вёдра затирочной смеси, 2 кг",
+      "ce40-dry-remaining": "Пригодный сухой остаток затирочной смеси",
+      "water-mixing": "Расход воды для замешивания затирочной смеси"
+    },
+    "sourcePhysicalNeedCountR2": 24,
+    "jointDepthDispositionR2": {
+      "parameterRemoved": "floor_joint_depth_mm",
+      "numericNormInferenceAllowed": false,
+      "reasonRu": "Публикация не задаёт глубину в ориентировочной таблице. Однородную фактическую глубину и чистоту проверяют как обычное условие процесса; произвольное число не используется как доказательство расхода 0,4 кг/м².",
+      "futureUniformityAndCleanlinessCheck": "PROCESS_REQUIRED",
+      "approximateRateGuaranteed": false
+    }
+  },
+  "historicalScopeAtA1d": {
+    "tile": "glazed ceramic100x100mm",
+    "notchMm": 4,
+    "ordinaryJointMm": 2,
+    "primer": "CT17 Profi global03.24 undiluted on normal absorbent prepared cement screed",
+    "adhesive": "CM11 PLUS global04/2026, only clean water, noCC83",
+    "grout": "CE40 Aquastatic ru_KZ white1, selected approximate10x10cm/2mm row",
+    "location": "normal dry interior horizontal floor, no underfloor heating or additional waterproof system",
+    "geometryOnlyUserBudget": true,
+    "conditionsAreNotProofOfActualObjectAcceptance": true
+  },
+  "executableOpenNeeds": [
+    {
+      "id": "movement-joints",
+      "rowId": "cm11-ce40-kz-whole-floor:open-movement-joints",
+      "category": "material",
+      "unitId": "l",
+      "conditional": false,
+      "reasonRu": "Геометрия и совместимая системаCS25 не заданы; расходCE40 на специальные швы не переносится."
+    },
+    {
+      "id": "cutting-spacing",
+      "rowId": "cm11-ce40-kz-whole-floor:open-cutting-spacing",
+      "category": "service",
+      "unitId": null,
+      "conditional": false,
+      "reasonRu": "Число целых плиток по прямоугольной сетке рассчитано; совместимые резка/оснастка/организация подрезок не подтверждены целым профилем."
+    },
+    {
+      "id": "cleaning-water",
+      "rowId": "cm11-ce40-kz-whole-floor:open-cleaning-water",
+      "category": "material",
+      "unitId": "l",
+      "conditional": false,
+      "reasonRu": "Вода затворения известна отдельно. Полная физическая норма промывкиCT17/CM11/CE40 и губки не подтверждена; цена/владелец услуги её не заменяют."
+    },
+    {
+      "id": "external-waste",
+      "rowId": "cm11-ce40-kz-whole-floor:open-external-waste",
+      "category": "service",
+      "unitId": null,
+      "conditional": false,
+      "reasonRu": "Масса, контейнеры и внешний маршрут вне обычной очистки не установлены. Мокрый излишек не записывается в пригодный сухой запас."
+    },
+    {
+      "id": "batch-provision",
+      "rowId": "cm11-ce40-kz-whole-floor:open-batch-provision",
+      "category": "service",
+      "unitId": null,
+      "conditional": true,
+      "reasonRu": "Для последнего неполного замеса CM11/CE40 требуется целый подтверждённый малый узел: совместимые привод/насадка, рабочий сосуд с фиксацией и дозирование/взвешивание фактической части упаковки. WK70S0–7кг подтверждает только кандидатную насадку; рабочий малый объём целиком не подтверждён. Расход и закупка не повышаются до5/6кг."
+    },
+    {
+      "id": "mix-goggles",
+      "rowId": "cm11-ce40-kz-whole-floor:mix-goggles",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+    },
+    {
+      "id": "mix-gloves",
+      "rowId": "cm11-ce40-kz-whole-floor:mix-gloves",
+      "category": "equipment",
+      "unitId": "pair",
+      "conditional": false,
+      "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+    },
+    {
+      "id": "mix-dust-mask",
+      "rowId": "cm11-ce40-kz-whole-floor:mix-dust-mask",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+    },
+    {
+      "id": "mix-hearing-protection",
+      "rowId": "cm11-ce40-kz-whole-floor:mix-hearing-protection",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+    },
+    {
+      "id": "mix-snug-clothing",
+      "rowId": "cm11-ce40-kz-whole-floor:mix-snug-clothing",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Требование защиты подтверждено источником, но совместимое исполнение, число пользователей, достаточность, срок применения и необходимая смена на весь объём не нормированы. Значение 1 не подставляется; перчатки, защита дыхания и кожи не заменяют друг друга."
+    },
+    {
+      "id": "primer-brush",
+      "rowId": "cm11-ce40-kz-whole-floor:primer-brush",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+    },
+    {
+      "id": "primer-vessel",
+      "rowId": "cm11-ce40-kz-whole-floor:primer-vessel",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+    },
+    {
+      "id": "notched-trowel",
+      "rowId": "cm11-ce40-kz-whole-floor:notched-trowel",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+    },
+    {
+      "id": "rubber-float",
+      "rowId": "cm11-ce40-kz-whole-floor:rubber-float",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+    },
+    {
+      "id": "grout-sponge",
+      "rowId": "cm11-ce40-kz-whole-floor:grout-sponge",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+    },
+    {
+      "id": "dry-cloth",
+      "rowId": "cm11-ce40-kz-whole-floor:dry-cloth",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Назначение инструмента или расходника подтверждено технологией. Достаточное число, ресурс, повторное использование и замена для всего объёма не доказаны. Комплект 1 шт. не назначается."
+    },
+    {
+      "id": "labour-time",
+      "rowId": "cm11-ce40-kz-whole-floor:open-labour-time",
+      "category": "labor",
+      "unitId": "man_hour",
+      "conditional": false,
+      "reasonRu": "Нет подтверждённого конечного баланса рабочих часов; площадь работ и выдержки смесей не превращаются в норму труда."
+    },
+    {
+      "id": "base-dedusting",
+      "rowId": "cm11-ce40-kz-whole-floor:open-base-dedusting",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Принятое основание должно быть очищено; совместимый метод и достаточное оборудование не выбраны. Готовность основания не назначает количество оборудования."
+    },
+    {
+      "id": "layout-control",
+      "rowId": "cm11-ce40-kz-whole-floor:open-layout-control",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Для принятой прямой раскладки и контроля нужны реальные средства. Их состав и достаточность не выводятся из площади или инструмента М150."
+    },
+    {
+      "id": "wash-vessel",
+      "rowId": "cm11-ce40-kz-whole-floor:open-wash-vessel",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Промывка требует совместимой ёмкости. Сосуд для замесов или грунтовки не назначается для промывки автоматически; достаточное количество и смена воды не подтверждены."
+    },
+    {
+      "id": "electricity",
+      "rowId": "cm11-ce40-kz-whole-floor:open-electricity",
+      "category": "equipment",
+      "unitId": "kWh",
+      "conditional": false,
+      "reasonRu": "Мощность 1500 Вт не является потреблением энергии на весь объём. Машинное время и энергия не нормированы; количество не присваивается 1 или мощности."
+    },
+    {
+      "id": "electrical-protection",
+      "rowId": "cm11-ce40-kz-whole-floor:open-electrical-protection",
+      "category": "equipment",
+      "unitId": "item",
+      "conditional": false,
+      "reasonRu": "Руководство выбранного миксера требует защищённый пост 230 В через УЗО до 30 мА. Наличие, достаточное исполнение и граница поставки не подтверждены; требование не скрывается в общих условиях и не подменяется количеством 1."
+    },
+    {
+      "id": "fresh-protection",
+      "rowId": "cm11-ce40-kz-whole-floor:open-fresh-protection",
+      "category": "material",
+      "unitId": null,
+      "conditional": false,
+      "reasonRu": "Источник требует защиту от пересыхания и контакта с водой. Сроки являются условиями процесса, но физические средства, геометрия и количество не заданы."
+    },
+    {
+      "id": "material-delivery",
+      "rowId": "cm11-ce40-kz-whole-floor:open-material-delivery",
+      "category": "service",
+      "unitId": null,
+      "conditional": false,
+      "reasonRu": "Не определены маршрут, средства подачи, погрузка и граница включённой доставки. Рейс 1 не назначается."
+    }
+  ],
+  "selectableSuccessorR2": {
+    "contract": "gox-build.cm11-ct17-ce40-kz-selectable-floor.r2",
+    "publicationSourceId": "cm11_ct17_ce40_kz_selectable_floor_r2",
+    "selector": {
+      "parameterId": "ceramic_floor_calculation_profile",
+      "legacyValue": "Прежний общий расчёт плиточного пола",
+      "exactValue": "Керамическая плитка 100 × 100 мм, шов 2 мм, цементный клей и грунтование"
+    },
+    "legacyParent": {
+      "definitionVersionId": "95322c6a-c7f8-5408-ad3c-cd6e81466680",
+      "version": 3,
+      "definitionSha256": "5b62d5918316d0b1b39a63b0c15ba06a6452d2ef316d61bcadd60ead4d78dee3",
+      "sourceColumn": "EXISTING_CM11_CE40_LEGACY59_ROWS_NOT_KRER02703",
+      "capture": {
+        "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-post-masonry-reads-v3/tile-six-floor-lay4-actual-current-result-v3.json",
+        "sha256": "bf15a38b85c9c2eae2c2f233d58fd6de37d09ca15bec551a6db35118c00180c6",
+        "definitionReleaseId": "aca4fa71-60c2-57db-83c8-5c8be93175a7",
+        "closedReadOnly": true
+      },
+      "currentPointerClaim": false
+    },
+    "legacyDefaultPreserved": true,
+    "legacyQuantityParameterId": "q",
+    "legacyRows": 59,
+    "primaryMeasureSelectionV1": {
+      "contract": "canonical-primary-measure-selection/v1",
+      "selectorParameterId": "ceramic_floor_calculation_profile",
+      "selections": [
+        {
+          "selectorValue": "Прежний общий расчёт плиточного пола",
+          "primaryMeasureParameterId": "q",
+          "unitId": "m2"
+        },
+        {
+          "selectorValue": "Керамическая плитка 100 × 100 мм, шов 2 мм, цементный клей и грунтование",
+          "primaryMeasureParameterId": "floor_area_m2",
+          "unitId": "m2"
+        }
+      ]
+    },
+    "counts": {
+      "families": 1,
+      "existingCatalogIds": 1,
+      "newCatalogIds": 0,
+      "newExactProfiles": 1,
+      "newCompleteTechnologies": 0
+    },
+    "migrationRule": "Retain current legacy definition and saved revisions. Same row IDs, formula ASTs, units, cost/procurement owners and manual values remain in legacy branch. Switching primary identity q/m2 to floor_length_m/linear_m uses existing NEW_ROOT_REQUIRED; no automatic parameter/row/price carry-over.",
+    "sourceOnlyUntilConsumerChecksPass": true,
+    "independentExpectedResources": [
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:tile-consumed",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:tile-consumed",
+        "category": "material",
+        "unitId": "m2",
+        "operations": [
+          "laying"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:tile-order",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:tile-order",
+        "category": "material",
+        "unitId": "m2",
+        "operations": [
+          "laying"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:cm11-consumed",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:cm11-consumed",
+        "category": "material",
+        "unitId": "kg",
+        "operations": [
+          "cm11-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:cm11-order",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:cm11-order",
+        "category": "material",
+        "unitId": "kg",
+        "operations": [
+          "cm11-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:cm11-bags",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:cm11-bags",
+        "category": "material",
+        "unitId": "pcs",
+        "operations": [
+          "cm11-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:water-consumed",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:water-consumed",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "cm11-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:water-order",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:water-order",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:ct17-consumed",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:ct17-consumed",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "priming"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:ct17-5l-order",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:ct17-5l-order",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "priming"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:ct17-5l-containers",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:ct17-5l-containers",
+        "category": "material",
+        "unitId": "pcs",
+        "operations": [
+          "priming"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:water-min",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:water-min",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "cm11-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:cm11-10cm-4mm:water-max",
+        "formulaId": "ceramic:cm11-10cm-4mm:formula:water-max",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "cm11-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-table-quantity",
+        "formulaId": "ceramic:ce40-ready:10x10-2mm:formula:ce40-table-quantity",
+        "category": "material",
+        "unitId": "kg",
+        "operations": [
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-plan-coverage",
+        "formulaId": "ceramic:ce40-ready:10x10-2mm:formula:ce40-plan-coverage",
+        "category": "material",
+        "unitId": "kg",
+        "operations": [
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-mixed-plan",
+        "formulaId": "ceramic:ce40-ready:10x10-2mm:formula:ce40-mixed-plan",
+        "category": "material",
+        "unitId": "kg",
+        "operations": [
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-order",
+        "formulaId": "ceramic:ce40-ready:10x10-2mm:formula:ce40-order",
+        "category": "material",
+        "unitId": "kg",
+        "operations": [
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-buckets",
+        "formulaId": "ceramic:ce40-ready:10x10-2mm:formula:ce40-buckets",
+        "category": "material",
+        "unitId": "pcs",
+        "operations": [
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:ce40-ready:10x10-2mm:ce40-dry-remaining",
+        "formulaId": "ceramic:ce40-ready:10x10-2mm:formula:ce40-dry-remaining",
+        "category": "material",
+        "unitId": "kg",
+        "operations": [
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "ceramic:ce40-ready:10x10-2mm:water-mixing",
+        "formulaId": "ceramic:ce40-ready:10x10-2mm:formula:water-mixing",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "APPROXIMATE_OR_SELECTED_MATERIAL_BALANCE"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:whole-owner",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:whole-owner",
+        "category": "work",
+        "unitId": "m2",
+        "operations": [
+          "priming",
+          "cm11-mixing",
+          "laying",
+          "ce40-mixing",
+          "grouting",
+          "cleaning",
+          "control"
+        ],
+        "included": false,
+        "status": "WORK_AREA_OWNER_NOT_LABOUR_HOURS"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:included-priming",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:included-priming",
+        "category": "work",
+        "unitId": "m2",
+        "operations": [
+          "priming"
+        ],
+        "included": true,
+        "status": "INCLUDED_OPERATION"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:included-cm11-mixing",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:included-cm11-mixing",
+        "category": "work",
+        "unitId": "m2",
+        "operations": [
+          "cm11-mixing"
+        ],
+        "included": true,
+        "status": "INCLUDED_OPERATION"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:included-laying",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:included-laying",
+        "category": "work",
+        "unitId": "m2",
+        "operations": [
+          "laying"
+        ],
+        "included": true,
+        "status": "INCLUDED_OPERATION"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:included-ce40-mixing",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:included-ce40-mixing",
+        "category": "work",
+        "unitId": "m2",
+        "operations": [
+          "ce40-mixing"
+        ],
+        "included": true,
+        "status": "INCLUDED_OPERATION"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:included-grouting",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:included-grouting",
+        "category": "work",
+        "unitId": "m2",
+        "operations": [
+          "grouting"
+        ],
+        "included": true,
+        "status": "INCLUDED_OPERATION"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:included-cleaning",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:included-cleaning",
+        "category": "work",
+        "unitId": "m2",
+        "operations": [
+          "cleaning"
+        ],
+        "included": true,
+        "status": "INCLUDED_OPERATION"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:included-control",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:included-control",
+        "category": "work",
+        "unitId": "m2",
+        "operations": [
+          "control"
+        ],
+        "included": true,
+        "status": "INCLUDED_OPERATION"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-drive",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-drive",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "ONE_SELECTED_SEQUENTIAL_WORKSTATION_NOT_WEAR_NORM"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-sw10-hf",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-sw10-hf",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "ONE_SELECTED_SEQUENTIAL_WORKSTATION_NOT_WEAR_NORM"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-cm11-paddle",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-cm11-paddle",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "ONE_SELECTED_SEQUENTIAL_WORKSTATION_NOT_WEAR_NORM"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-ce40-paddle",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-ce40-paddle",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "ONE_SELECTED_SEQUENTIAL_WORKSTATION_NOT_WEAR_NORM"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-vessel",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-vessel",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "ONE_SELECTED_SEQUENTIAL_WORKSTATION_NOT_WEAR_NORM"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-rotation-lock",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-rotation-lock",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "included": true,
+        "status": "ONE_SELECTED_SEQUENTIAL_WORKSTATION_NOT_WEAR_NORM"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-water-measure",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-water-measure",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "ONE_SELECTED_SEQUENTIAL_WORKSTATION_NOT_WEAR_NORM"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-movement-joints",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-movement-joints",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "laying"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-cutting-spacing",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-cutting-spacing",
+        "category": "service",
+        "unitId": null,
+        "operations": [
+          "laying"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-cleaning-water",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-cleaning-water",
+        "category": "material",
+        "unitId": "l",
+        "operations": [
+          "cleaning"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-external-waste",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-external-waste",
+        "category": "service",
+        "unitId": null,
+        "operations": [
+          "cleaning"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-batch-provision",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-batch-provision",
+        "category": "service",
+        "unitId": null,
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-goggles",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-goggles",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-gloves",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-gloves",
+        "category": "equipment",
+        "unitId": "pair",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-dust-mask",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-dust-mask",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-hearing-protection",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-hearing-protection",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:mix-snug-clothing",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:mix-snug-clothing",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:primer-brush",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:primer-brush",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "priming",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:primer-vessel",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:primer-vessel",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "priming",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:notched-trowel",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:notched-trowel",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "laying",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:rubber-float",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:rubber-float",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "grouting",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:grout-sponge",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:grout-sponge",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "grouting",
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:dry-cloth",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:dry-cloth",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cleaning"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-labour-time",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-labour-time",
+        "category": "labor",
+        "unitId": "man_hour",
+        "operations": [
+          "priming",
+          "cm11-mixing",
+          "laying",
+          "ce40-mixing",
+          "grouting",
+          "cleaning",
+          "control"
+        ],
+        "included": true,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-base-dedusting",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-base-dedusting",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "priming",
+          "cleaning"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-layout-control",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-layout-control",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "laying",
+          "control"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-wash-vessel",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-wash-vessel",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "priming",
+          "grouting",
+          "cleaning"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-electricity",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-electricity",
+        "category": "equipment",
+        "unitId": "kWh",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-electrical-protection",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-electrical-protection",
+        "category": "equipment",
+        "unitId": "item",
+        "operations": [
+          "cm11-mixing",
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-fresh-protection",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-fresh-protection",
+        "category": "material",
+        "unitId": null,
+        "operations": [
+          "grouting",
+          "cleaning",
+          "control"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      },
+      {
+        "rowId": "cm11-ce40-kz-whole-floor:open-material-delivery",
+        "formulaId": "cm11-ce40-kz-whole-floor:formula:open-material-delivery",
+        "category": "service",
+        "unitId": null,
+        "operations": [
+          "priming",
+          "cm11-mixing",
+          "laying",
+          "ce40-mixing"
+        ],
+        "included": false,
+        "status": "UNRESOLVED_PHYSICAL_QUANTITY"
+      }
+    ],
+    "legacySemanticFields": {
+      "parameters": [
+        "parameter_id",
+        "ordinal",
+        "value_type",
+        "unit_id",
+        "title_ru",
+        "required",
+        "default_value",
+        "constraints_json",
+        "truth_metadata"
+      ],
+      "formulas": [
+        "formula_id",
+        "output_unit_id",
+        "expression_source",
+        "ast",
+        "input_parameter_ids",
+        "ast_sha256"
+      ],
+      "resources": [
+        "row_id",
+        "ordinal",
+        "section",
+        "category",
+        "title_ru",
+        "unit_id",
+        "formula_id",
+        "inclusion_ast",
+        "resource_graph",
+        "semantic_owner",
+        "cost_owner_id",
+        "procurement_eligible",
+        "source_metadata",
+        "row_sha256"
+      ]
+    },
+    "legacySemanticHash": "eh_deb68b1761fe3e21",
+    "computedPhysicalPrimaryArea": {
+      "parameterId": "floor_area_m2",
+      "unitId": "m2",
+      "expression": "floor_length_m*floor_width_m",
+      "visibilityRole": "INTERNAL_ONLY",
+      "valueSourceRole": "VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE",
+      "runtimeProfileClassification": "PRELIMINARY_SOURCE_FORMULA",
+      "explicitValuePolicy": "REQUIRE_MATCH",
+      "when": "EXACT_SELECTOR_ONLY",
+      "oldQTransferred": false,
+      "secondAreaQuestion": false,
+      "sourceRole": "SOURCE_OWNED_RECTANGULAR_GEOMETRY",
+      "geometryRule": {
+        "text": "Rectangular measured floor area in m2 equals measured floor_length_m times floor_width_m. Neither legacyq nor tile-face purchase area nor a work-row override owns this physical measure. This is an authored engineering measurement identity, not a manufacturer consumption norm.",
+        "sha256": "c03181babe1a8a90abf4dfa74497bd896a342d108df0e14bf931fe9e9ced7b84",
+        "hashKind": "SHA256_UTF8_RULE_TEXT",
+        "sourceDocument": "cm11_ct17_ce40_kz_selectable_floor_r2",
+        "locator": "cm11-ce40-whole-floor-source-blocker-r1.json#/selectableSuccessorR2/computedPhysicalPrimaryArea/geometryRule",
+        "guideVersion": "gox-build.cm11-ct17-ce40-kz-selectable-floor.r2",
+        "verifiedAt": "2026-10-21T21:40:11.538213+00:00"
+      }
+    },
+    "publicRowRoles": {
+      "ceramic:cm11-10cm-4mm:tile-consumed": "CALCULATION_DETAIL",
+      "ceramic:cm11-10cm-4mm:tile-order": "RESOURCE",
+      "ceramic:cm11-10cm-4mm:cm11-consumed": "CALCULATION_DETAIL",
+      "ceramic:cm11-10cm-4mm:cm11-order": "RESOURCE",
+      "ceramic:cm11-10cm-4mm:cm11-bags": "CALCULATION_DETAIL",
+      "ceramic:cm11-10cm-4mm:water-consumed": "CALCULATION_DETAIL",
+      "ceramic:cm11-10cm-4mm:water-order": "RESOURCE",
+      "ceramic:cm11-10cm-4mm:ct17-consumed": "CALCULATION_DETAIL",
+      "ceramic:cm11-10cm-4mm:ct17-5l-order": "RESOURCE",
+      "ceramic:cm11-10cm-4mm:ct17-5l-containers": "CALCULATION_DETAIL",
+      "ceramic:cm11-10cm-4mm:water-min": "CALCULATION_DETAIL",
+      "ceramic:cm11-10cm-4mm:water-max": "CALCULATION_DETAIL",
+      "ceramic:ce40-ready:10x10-2mm:ce40-table-quantity": "CALCULATION_DETAIL",
+      "ceramic:ce40-ready:10x10-2mm:ce40-plan-coverage": "CALCULATION_DETAIL",
+      "ceramic:ce40-ready:10x10-2mm:ce40-mixed-plan": "CALCULATION_DETAIL",
+      "ceramic:ce40-ready:10x10-2mm:ce40-order": "RESOURCE",
+      "ceramic:ce40-ready:10x10-2mm:ce40-buckets": "CALCULATION_DETAIL",
+      "ceramic:ce40-ready:10x10-2mm:ce40-dry-remaining": "CALCULATION_DETAIL",
+      "ceramic:ce40-ready:10x10-2mm:water-mixing": "CALCULATION_DETAIL",
+      "cm11-ce40-kz-whole-floor:whole-owner": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:included-priming": "PROCESS_NOTE",
+      "cm11-ce40-kz-whole-floor:included-cm11-mixing": "PROCESS_NOTE",
+      "cm11-ce40-kz-whole-floor:included-laying": "PROCESS_NOTE",
+      "cm11-ce40-kz-whole-floor:included-ce40-mixing": "PROCESS_NOTE",
+      "cm11-ce40-kz-whole-floor:included-grouting": "PROCESS_NOTE",
+      "cm11-ce40-kz-whole-floor:included-cleaning": "PROCESS_NOTE",
+      "cm11-ce40-kz-whole-floor:included-control": "PROCESS_NOTE",
+      "cm11-ce40-kz-whole-floor:mix-drive": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-sw10-hf": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-cm11-paddle": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-ce40-paddle": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-vessel": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-rotation-lock": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-water-measure": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-movement-joints": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-cutting-spacing": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-cleaning-water": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-external-waste": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-batch-provision": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-goggles": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-gloves": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-dust-mask": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-hearing-protection": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:mix-snug-clothing": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:primer-brush": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:primer-vessel": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:notched-trowel": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:rubber-float": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:grout-sponge": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:dry-cloth": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-labour-time": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-base-dedusting": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-layout-control": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-wash-vessel": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-electricity": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-electrical-protection": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-fresh-protection": "RESOURCE",
+      "cm11-ce40-kz-whole-floor:open-material-delivery": "RESOURCE"
+    },
+    "publicRoleOracle": {
+      "physicalResourceRows": 37,
+      "calculationDetailRows": 14,
+      "processNoteRows": 7,
+      "orders": [
+        "tile-order",
+        "cm11-order",
+        "water-order",
+        "ct17-5l-order",
+        "ce40-order"
+      ],
+      "all24UnknownsRemainPhysical": true,
+      "quantitySourceOrCategoryNotChangedByPublicRole": true
+    },
+    "paidOwnerOracle": {
+      "workOwnerRowId": "cm11-ce40-kz-whole-floor:whole-owner",
+      "workOwnerCategory": "work",
+      "workOwnerUnitId": "m2",
+      "workOwnerCostTreatment": "OWN_COST",
+      "sameInstallationLabour": {
+        "rowId": "cm11-ce40-kz-whole-floor:open-labour-time",
+        "category": "labor",
+        "unitId": "man_hour",
+        "physicalQuantityStatus": "UNRESOLVED",
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "costOwnerRowId": "cm11-ce40-kz-whole-floor:whole-owner",
+        "separatePaymentAllowed": false
+      },
+      "sequentialStation": {
+        "rowIds": [
+          "cm11-ce40-kz-whole-floor:mix-drive",
+          "cm11-ce40-kz-whole-floor:mix-sw10-hf",
+          "cm11-ce40-kz-whole-floor:mix-cm11-paddle",
+          "cm11-ce40-kz-whole-floor:mix-ce40-paddle",
+          "cm11-ce40-kz-whole-floor:mix-vessel",
+          "cm11-ce40-kz-whole-floor:mix-rotation-lock",
+          "cm11-ce40-kz-whole-floor:mix-water-measure"
+        ],
+        "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+        "costOwnerRowId": "cm11-ce40-kz-whole-floor:whole-owner",
+        "procurementEligible": false,
+        "ownershipClaimed": false,
+        "quantityMeaning": "ONE_WORKING_SEQUENTIAL_STATION_PROVIDED_WITH_THE_WORK_NOT_PURCHASED_STOCK_OR_DURABLE_RENEWAL_NORM"
+      },
+      "additionalExternalNeedsOutsideAreaOwner": [
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-movement-joints",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-cutting-spacing",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-cleaning-water",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-external-waste",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-batch-provision",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-base-dedusting",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-layout-control",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-wash-vessel",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-electricity",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-electrical-protection",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-fresh-protection",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        },
+        {
+          "rowId": "cm11-ce40-kz-whole-floor:open-material-delivery",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "paidOwnerRowId": null,
+          "physicalQuantityStatus": "UNRESOLVED",
+          "includedInCurrentPayment": false
+        }
+      ],
+      "unknownHoursNotClosedByCostInclusion": true
+    }
+  },
+  "priorReturnConditionDispositionR2": [
+    {
+      "id": "LEGACY_MEANING",
+      "sourceChange": "59 legacy rows and q remain their own default branch; explicit regional choice adds the exact profile. Same IDs, ASTs, units, owners and manual values survive; saved revisions are not rewritten.",
+      "verification": "PENDING_MEMORY_WINDOW"
+    },
+    {
+      "id": "PPE_AND_CONSUMABLE_SUFFICIENCY",
+      "sourceChange": "Five PPE positions and six hand-tool/consumable positions no longer have assumed quantity 1. They remain named unknowns with source units and operations.",
+      "verification": "PENDING_MEMORY_WINDOW"
+    },
+    {
+      "id": "INDEPENDENT_WHOLE_SCOPE",
+      "sourceChange": "Independent expected map declares 58 exact-branch resources, including 24 unresolved physical needs; it is not generated by enumerating emitted rows.",
+      "verification": "PENDING_MEMORY_WINDOW"
+    },
+    {
+      "id": "DEPTH_QUESTION",
+      "sourceChange": "Disconnected required depth parameter removed. Uniform actual depth/cleanliness is a process condition; approximate 0.4 kg/m2 remains approximate and is not extrapolated.",
+      "verification": "PENDING_MEMORY_WINDOW"
+    }
+  ]
+}

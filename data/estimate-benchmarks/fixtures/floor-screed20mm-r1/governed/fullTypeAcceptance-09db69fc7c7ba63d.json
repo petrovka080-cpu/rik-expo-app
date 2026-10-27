@@ -1,0 +1,62 @@
+{
+  "status": "PASS_ROOT_R75_CI_EXACT_SOURCE_FULL_TYPESCRIPT_PROGRAM",
+  "acceptedAt": "2026-10-19T13:14:56.175537+00:00",
+  "runId": 39256410732,
+  "url": "https://github.com/petrovka080-cpu/rik-expo-app/actions/runs/39256410732",
+  "runMetadata": {
+    "conclusion": "success",
+    "event": "workflow_dispatch",
+    "headBranch": "codex/core-concrete-screed-facade-r75-20261019",
+    "headSha": "075cb7e29e876be0b33df87fb6cbeb425872bb64",
+    "status": "completed",
+    "url": "https://github.com/petrovka080-cpu/rik-expo-app/actions/runs/39256410732",
+    "workflowName": "Platform Core Verification V1"
+  },
+  "sourceFreeze": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/screed-facade-canonical-integration-r75/actual-source-freeze-r75.json",
+    "sha256": "06a2cf525a455942ccb6a36699022cb991570b3ecfde3673c4da741bcac05c4d",
+    "bytes": 804986
+  },
+  "manifest": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/ci-r75-snapshot/payload/scripts/verification/current-core-wave-r75/manifest.json",
+    "sha256": "934978405dd32becfb419dc879d357ff55d45b9086a14afaf6bd909e661bcbbc",
+    "bytes": 728151
+  },
+  "summary": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/ci-r75-run1/summary.json",
+    "sha256": "4ecaa72d9ef99be4b3965b0986aa38abe2839f3cf07806f453b10da69bc4b2fe",
+    "bytes": 758
+  },
+  "typeReport": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/ci-r75-run1/full-types-result.json",
+    "sha256": "b1a5b7f5c5bfec877e6f283427e860495c7a083d82365a245851ac8cd37b032d",
+    "bytes": 3154937
+  },
+  "typeGuard": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/ci-r75-run1/full-types-receipt.json",
+    "sha256": "a5866b6520f19d36abaae635a3d7f2d5bf725305d7d5dbd091bb71b3dd07939c",
+    "bytes": 1525
+  },
+  "canonicalLocalHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
+  "ciSnapshotCommit": "075cb7e29e876be0b33df87fb6cbeb425872bb64",
+  "identitiesDeliberatelyDistinct": true,
+  "rawCiReportsRewritten": false,
+  "allLocal5529SourcePinsStillExact": true,
+  "allSnapshot5488SourcePinsMatchLocalFreeze": true,
+  "everyCompiledFileMatchesLocalBytes": true,
+  "productProgramFiles": 1633,
+  "dependencyProgramFiles": 1154,
+  "actualProgramFiles": 2787,
+  "typeSeeds": 263,
+  "diagnostics": 0,
+  "harnessErrors": 0,
+  "sourceInputsUnchanged": true,
+  "noOwnedProcessStillRunning": true,
+  "remainingOwnedProcesses": [],
+  "SQLAcceptance": false,
+  "publicationPerformed": false,
+  "WebAccepted": false,
+  "AndroidAccepted": false,
+  "platformDelivered": false,
+  "astraCalls": 0
+}

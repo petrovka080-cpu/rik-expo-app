@@ -1,0 +1,401 @@
+{
+  "contract": "rik-expo-app.pile-cap-curing-names-six.r1",
+  "parents": [
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_high_load",
+      "definitionId": "b45b9d6e-1d86-56b3-8344-4aa5d21dddb2",
+      "definitionVersion": 10,
+      "definitionSha256": "4a92928ad46183c1f072c1d85b9f2c8ccd5993eb609b8dc616da0f21c52f8b08",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_large_area",
+      "definitionId": "f1f853b0-bb1f-5f7c-8d25-6c2d4954ea76",
+      "definitionVersion": 10,
+      "definitionSha256": "95a00932dd24af59fa866c36dcf4f880294600df6b68135af1942664ccfc6bd5",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_small_area",
+      "definitionId": "12d67fb6-6f9d-56fc-84d2-ded5870cbe4a",
+      "definitionVersion": 10,
+      "definitionSha256": "182d6c55eb772e83cc9b4fb827a692c5f116b5079f78f12f3a7e73ca401327bb",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_standard",
+      "definitionId": "c5fbf9b1-3c97-5160-89af-de6e0f68c265",
+      "definitionVersion": 10,
+      "definitionSha256": "a4907fe81a290d8bc204cc51f125de9a7b6b8dba7d7abebc04943fa8652a7016",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_technical_room",
+      "definitionId": "356a218f-b26f-55b1-862d-828ccaf39446",
+      "definitionVersion": 10,
+      "definitionSha256": "6b54063a74bccd95b336d729bfed9ed92aec112f27c27b6f6ff8fb0b2e5c9e87",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_anchor_group_cure_wet_zone",
+      "definitionId": "027f5a84-444d-5bf4-87d3-c5f2ad7c8423",
+      "definitionVersion": 10,
+      "definitionSha256": "177070d5c5df76942e5c1555e1df64a57d6861fb33dd8c3cb23c9978401776fb",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_high_load",
+      "definitionId": "5ed744d0-90cf-5960-880b-7ee6ea48d309",
+      "definitionVersion": 10,
+      "definitionSha256": "8817776614aeee08f7115708075d2d910a151571970ddb1b6ce323e674ee1934",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_large_area",
+      "definitionId": "6a7a3c83-411a-5d1d-8248-ec521fef73a3",
+      "definitionVersion": 10,
+      "definitionSha256": "ad23a205459e8553037b1d5935e39258d2cf75d0dd52ddca1fae5e692600226b",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_small_area",
+      "definitionId": "0bac793a-844e-5a1c-8a78-74ebf8e0a37c",
+      "definitionVersion": 10,
+      "definitionSha256": "5d92b6d5ebc4d0202b9d766819ff21ebe245a4aab592574d6c25677a271bbfd5",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_standard",
+      "definitionId": "3d131389-fd1e-5f5b-8699-940572d24a17",
+      "definitionVersion": 10,
+      "definitionSha256": "11ff3757d6dfc52a27c76542d9f67ebcab0d270d37d06e5dba8be041e066909e",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_technical_room",
+      "definitionId": "d4dc4fdd-6366-5388-8778-50e177f2ce77",
+      "definitionVersion": 10,
+      "definitionSha256": "0cd55f0f82061c837d989334b09b737f145bcf61993d4b7fc6159bed6127874a",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_belt_cure_wet_zone",
+      "definitionId": "1779bcb9-3102-53f7-8b02-659e8d9004bf",
+      "definitionVersion": 10,
+      "definitionSha256": "b0298f87d1908d181a3c1ad2cacff3001416e6a1c4a1c3f79802e80feb7da70a",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_high_load",
+      "definitionId": "b0f75403-6809-51e6-8462-7cca9a61df31",
+      "definitionVersion": 10,
+      "definitionSha256": "18afca29c751d5abd16e3ebebbe0e144e31a7a9263626daae17a20175d1513f7",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_large_area",
+      "definitionId": "2c3bb1f9-85c1-5bca-85aa-27664dc10d75",
+      "definitionVersion": 10,
+      "definitionSha256": "b21f171473a920c2911786a9d05acfaa700b2c390d846cfeb5d453f645eec27d",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_small_area",
+      "definitionId": "4ef03bd2-290e-5490-8c48-fe3510dc607b",
+      "definitionVersion": 10,
+      "definitionSha256": "684eb2609409cecad745ee333f5bd3c617994d586868337e49d8a189fd7a95a7",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_standard",
+      "definitionId": "d55b81f0-6552-56d8-81e4-26e0981b424f",
+      "definitionVersion": 10,
+      "definitionSha256": "9f8703ec3b5b52304936de0d8b63ccdaa1582e28fb2e15b67700b2454020dbdf",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_technical_room",
+      "definitionId": "8a1e2277-a26e-521f-81cc-73be651fa5b2",
+      "definitionVersion": 10,
+      "definitionSha256": "376b8582c031dae086f9bd0bdd5a9b33b34c07d99e5bf270067cb4e8064ebad3",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_column_base_cure_wet_zone",
+      "definitionId": "40f6e40c-6892-54d3-8d0f-f87eb39ebb83",
+      "definitionVersion": 10,
+      "definitionSha256": "ca9c852b8c571a33301e1460261d045aa9a4cb22d41901f0396b95eb2416cc11",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_high_load",
+      "definitionId": "2121b88f-c35f-5486-886a-31313b02b30c",
+      "definitionVersion": 10,
+      "definitionSha256": "b059a99d225f97888607b5d89a977aeeec4c6f93a2ac51bced0053532b02ca79",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_large_area",
+      "definitionId": "7f9f7e64-84e7-55a0-8e85-453de5b6779c",
+      "definitionVersion": 10,
+      "definitionSha256": "c4cf44bbca7ab761762cd389de4c84dc42291bf0b085246c4943eb338b3de54e",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_small_area",
+      "definitionId": "ba2e5c14-f954-5856-82ea-35723ede9e55",
+      "definitionVersion": 10,
+      "definitionSha256": "756a41d2967a36c5e5866801aab3b635c94abea616aba3f17e0e937722ac819b",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_standard",
+      "definitionId": "ffcdcfab-2c5c-50df-837e-f73b4e200e90",
+      "definitionVersion": 10,
+      "definitionSha256": "20d31cafe7edb99fe2899e6f4a1fc9c797f3455d1b828c71569758336832e03f",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_technical_room",
+      "definitionId": "e68401e9-719b-5bbb-8389-416bceb8a84e",
+      "definitionVersion": 10,
+      "definitionSha256": "7928b89fb05f279a256d9dadbed8e993800ec3c78759a524bc97cbf213ab9661",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_cure_wet_zone",
+      "definitionId": "0f288f4c-25d0-532b-8a44-0d335d08afed",
+      "definitionVersion": 10,
+      "definitionSha256": "14ca37977620cc815f4026d334fa913a61d5bd23297738bc9116d0f5954037e3",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_high_load",
+      "definitionId": "dc6a3587-6f4a-5721-8534-00a061dfe780",
+      "definitionVersion": 10,
+      "definitionSha256": "713c4d9c89695daedc5137082252933506ae13710d29e5b3dab6dfef880aad67",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_large_area",
+      "definitionId": "1d917094-18e0-5db8-8f16-2bdffb8958a8",
+      "definitionVersion": 10,
+      "definitionSha256": "c26d03e916b39adab6faf403304b54774d479dc14bf7c186f365b1a74ef76cef",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_small_area",
+      "definitionId": "22f89b36-e183-5828-8992-00f2a3aeb686",
+      "definitionVersion": 10,
+      "definitionSha256": "00d38b79621b10020cd10019fc46da8c77937226d52af65ea70a632967be9a33",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_standard",
+      "definitionId": "f0201fcc-b7ae-547c-8069-22d9516705dc",
+      "definitionVersion": 10,
+      "definitionSha256": "2ee0217b1aa8106a135e7abae2089ae24806031527e8ebd0204b3853e4babaae",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_technical_room",
+      "definitionId": "952ade9a-6f2c-5b1e-85a4-4ccdcbc06a84",
+      "definitionVersion": 10,
+      "definitionSha256": "7efdf5c095a689bd112b934334cee105abab5291bfdcf68910455d8df4637e61",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pedestal_cure_wet_zone",
+      "definitionId": "0c91ba70-fb1f-58d0-8f76-01876c1dd518",
+      "definitionVersion": 10,
+      "definitionSha256": "bcdcdc11282a9ec8afe8ec94acde3c2bb278ca3006d5bef1631f591ddb049ee9",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_high_load",
+      "definitionId": "f7f9dfa2-ec8d-5839-8216-2a8403e328c2",
+      "definitionVersion": 10,
+      "definitionSha256": "cdff7ea9d96f82ee3e596483c4513cf3ef5bc5d2ecf6a3c66e2482a0d546b9ba",
+      "changeRequired": true,
+      "oldTitleRu": "Уход за бетоном пьедестала в зоне высокой нагрузки",
+      "newTitleRu": "Уход за бетоном ростверка в зоне высокой нагрузки",
+      "oldShortScopeRu": "Уход за бетоном пьедестала в зоне высокой нагрузки Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю."
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_large_area",
+      "definitionId": "2f47bfdf-1136-50c3-8f6d-2e7425d155cb",
+      "definitionVersion": 10,
+      "definitionSha256": "197c8cbcf53cddd63f3d1892d8115f51b2b15e78ed8d625a4188d602cbe484a2",
+      "changeRequired": true,
+      "oldTitleRu": "Уход за бетоном пьедестала на большом участке",
+      "newTitleRu": "Уход за бетоном ростверка на большом участке",
+      "oldShortScopeRu": "Уход за бетоном пьедестала на большом участке Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю."
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_small_area",
+      "definitionId": "c80ccf27-9df6-5218-8c0b-845dffd650c2",
+      "definitionVersion": 10,
+      "definitionSha256": "148fe7588dd0ced2b36cdb4ce370236027eb4e899750555f1206e375e0aa6832",
+      "changeRequired": true,
+      "oldTitleRu": "Уход за бетоном пьедестала на малом участке",
+      "newTitleRu": "Уход за бетоном ростверка на малом участке",
+      "oldShortScopeRu": "Уход за бетоном пьедестала на малом участке Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю."
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_standard",
+      "definitionId": "fd03cfea-3269-57e8-847a-75db3810cab7",
+      "definitionVersion": 10,
+      "definitionSha256": "a4c97eec21cddbaadda5970b589b7ca052304167202bd835eef846ae8a9308df",
+      "changeRequired": true,
+      "oldTitleRu": "Уход за бетоном пьедестала в стандартной зоне",
+      "newTitleRu": "Уход за бетоном ростверка в стандартной зоне",
+      "oldShortScopeRu": "Уход за бетоном пьедестала в стандартной зоне Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю."
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_technical_room",
+      "definitionId": "c7c4f308-8829-5758-8062-292a326db585",
+      "definitionVersion": 10,
+      "definitionSha256": "9731508a9cea17fb35792a687e6fcc7f91c13e2aca76e0e8ee7f5d251abc40e8",
+      "changeRequired": true,
+      "oldTitleRu": "Уход за бетоном пьедестала в техническом помещении",
+      "newTitleRu": "Уход за бетоном ростверка в техническом помещении",
+      "oldShortScopeRu": "Уход за бетоном пьедестала в техническом помещении Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю."
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_pile_cap_cure_wet_zone",
+      "definitionId": "c74b5d6f-4100-5d43-80aa-e6d89c5e5536",
+      "definitionVersion": 10,
+      "definitionSha256": "4d9f34a417ffa186347739e48210d670b8bfe666e16078ceb6434d3611ce5f6b",
+      "changeRequired": true,
+      "oldTitleRu": "Уход за бетоном пьедестала во влажной зоне",
+      "newTitleRu": "Уход за бетоном ростверка во влажной зоне",
+      "oldShortScopeRu": "Уход за бетоном пьедестала во влажной зоне Для каждой применимой материальной позиции нужны собственные проектные количество, наименование, условия оплаты и поставки. Неизвестные данные не принимаются равными нулю."
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_high_load",
+      "definitionId": "b286770f-b699-5387-856c-308e3e6b79cd",
+      "definitionVersion": 8,
+      "definitionSha256": "f3800e8cdacb0e2c3c6ed87669cfef8a54a69362acae0050d8c38e1f9b76b60b",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_large_area",
+      "definitionId": "9d5ab956-ca9a-51ea-898d-ef4985c5cc91",
+      "definitionVersion": 8,
+      "definitionSha256": "a090927fba0660c0e6750e194593f394ed0f1e86a49b46092638c5a50fde6e19",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_small_area",
+      "definitionId": "68e3c669-df8f-5291-83e9-7fc42652d46b",
+      "definitionVersion": 8,
+      "definitionSha256": "c2731e01dda24476c294a7cead927bffb4dcf9a351c8486ff660688980c051e8",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_standard",
+      "definitionId": "433aaf8a-c3ff-5d1d-878b-971ed03c5d58",
+      "definitionVersion": 8,
+      "definitionSha256": "e69b3e9e8b683a2e4a46e9f6759c60dbb2e60a8883ede109798020e2ce9c26c8",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_technical_room",
+      "definitionId": "738d1724-3d18-5772-875d-962453309185",
+      "definitionVersion": 8,
+      "definitionSha256": "531df1bd6e1229ba0f700a59878b46be0d93db1ccd6aaaed1cb80cd0fb81e26e",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_cure_wet_zone",
+      "definitionId": "8736af06-ec10-5ccc-89a8-81ffe62c769d",
+      "definitionVersion": 8,
+      "definitionSha256": "4e5dfb96659744afcc239729d4233c8a9b09caa328e42c7262c5ffdf7e4378b1",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_high_load",
+      "definitionId": "d11d11cd-5a70-5b5b-823d-ed50d753fb36",
+      "definitionVersion": 9,
+      "definitionSha256": "47610ce0c912cf4bd5abca3af48201b58b545501ced4f4795f172d54af0e6028",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_large_area",
+      "definitionId": "381a1d18-f5c2-5e02-85d9-1f6ea6a5fa1f",
+      "definitionVersion": 9,
+      "definitionSha256": "ff8b2cf7287a87687af6597fb24f4801b32c9a600467bf0edfafd7597b74be84",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_small_area",
+      "definitionId": "d8cad4fc-c444-5caf-8ff2-5cefae68edda",
+      "definitionVersion": 9,
+      "definitionSha256": "edb9344fdce391d9873eda0bb3371cc127a2637ebe3dcb45df5855422bb921f8",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_standard",
+      "definitionId": "8390acdc-d239-52b3-8f99-13a913906cb5",
+      "definitionVersion": 9,
+      "definitionSha256": "1a9531cdd1fb65212acf62c4a422a43efc1fdde2c3c3a48dffc650e929e06306",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_technical_room",
+      "definitionId": "6f2e0d1a-68a4-520a-8abc-5d27e9212f38",
+      "definitionVersion": 9,
+      "definitionSha256": "c17b22110033c18a2a9d5e82fb7d9bf3725de502fc839775d2ae96a5bf5d3838",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_cure_wet_zone",
+      "definitionId": "3fa287de-f393-5f29-8a2e-4a13f305813b",
+      "definitionVersion": 9,
+      "definitionSha256": "bb7e2d7203645012f773f61654e5385a4443439e88d2a8cc364f29c1f7863931",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_high_load",
+      "definitionId": "e969e76b-86ed-5069-8d5a-75574d4932ad",
+      "definitionVersion": 9,
+      "definitionSha256": "d310bc43cbea8b85ca84641d04ec08eb453db0a65506b6b8a1c92d7fc4965880",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_large_area",
+      "definitionId": "0243434f-b8cd-5dda-86f3-d87000b82d7e",
+      "definitionVersion": 9,
+      "definitionSha256": "8fc756c05a82bda08712925e026de4b06b07e1cda3f0fd447eedeeec138ca104",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_small_area",
+      "definitionId": "e7e5a82e-a37b-55dd-815e-f63aafe21666",
+      "definitionVersion": 9,
+      "definitionSha256": "87943161e8aba1593a7d31c9484bdcd2f74e4d9733957673a331770b4f8d4a87",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_standard",
+      "definitionId": "107b1ee1-8f82-5d6d-82ec-09a839f89a57",
+      "definitionVersion": 9,
+      "definitionSha256": "af76cadf3cd2749ebf9de17597258eaa53834192fe513109680fb4262e935918",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_technical_room",
+      "definitionId": "b14e3412-795e-5d69-8622-cf927dd2cd7c",
+      "definitionVersion": 9,
+      "definitionSha256": "7c2c201d0d062ca9059bd92f238ebf6f868a72f625655c7b27acb998d0885477",
+      "changeRequired": false
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_cure_wet_zone",
+      "definitionId": "255f2f1a-52e4-5667-82c6-fb6d710c070c",
+      "definitionVersion": 9,
+      "definitionSha256": "e3426afa04a17ef123f9d55369b3ff30cf7a79369c518c7c883584474b23b6d5",
+      "changeRequired": false
+    }
+  ]
+}

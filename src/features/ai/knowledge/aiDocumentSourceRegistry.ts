@@ -1,0 +1,136 @@
+import type { AiDocumentSourceEntry } from "./aiKnowledgeTypes";
+
+export const REQUIRED_AI_DOCUMENT_SOURCE_GROUPS: readonly string[] = [
+  "director_reports",
+  "foreman_daily_reports",
+  "ai_reports",
+  "acts",
+  "subcontract_documents",
+  "request_documents",
+  "warehouse_documents",
+  "finance_documents",
+  "chat_attachments",
+  "pdf_exports",
+];
+
+export const AI_DOCUMENT_SOURCE_REGISTRY: readonly AiDocumentSourceEntry[] = [
+  {
+    sourceId: "director_reports",
+    kind: "report",
+    domains: ["control", "reports", "finance", "warehouse", "procurement", "projects"],
+    entities: ["report", "pdf_document", "project", "request", "payment", "warehouse_item"],
+    readableByRoles: ["director", "control"],
+    contextPolicy: "director_full",
+    canSummarize: true,
+    canDraft: false,
+    canSend: "approval_required",
+  },
+  {
+    sourceId: "foreman_daily_reports",
+    kind: "report",
+    domains: ["projects", "reports", "subcontracts"],
+    entities: ["report", "project", "act", "subcontract", "pdf_document"],
+    readableByRoles: ["director", "control", "foreman", "contractor"],
+    contextPolicy: "role_scoped",
+    canSummarize: true,
+    canDraft: true,
+    canSend: "approval_required",
+  },
+  {
+    sourceId: "ai_reports",
+    kind: "ai_report",
+    domains: ["control", "reports", "chat", "procurement", "finance"],
+    entities: ["report", "chat_thread"],
+    readableByRoles: ["director", "control", "foreman", "buyer", "accountant", "warehouse", "contractor"],
+    contextPolicy: "role_scoped",
+    canSummarize: true,
+    canDraft: false,
+    canSend: "never",
+  },
+  {
+    sourceId: "acts",
+    kind: "act",
+    domains: ["documents", "subcontracts", "finance", "reports"],
+    entities: ["act", "subcontract", "contractor", "pdf_document"],
+    readableByRoles: ["director", "control", "foreman", "accountant", "contractor"],
+    contextPolicy: "role_scoped",
+    canSummarize: true,
+    canDraft: true,
+    canSend: "approval_required",
+  },
+  {
+    sourceId: "subcontract_documents",
+    kind: "document",
+    domains: ["subcontracts", "contractors", "documents"],
+    entities: ["subcontract", "contractor", "act", "pdf_document"],
+    readableByRoles: ["director", "control", "foreman", "contractor"],
+    contextPolicy: "own_records_only",
+    canSummarize: true,
+    canDraft: true,
+    canSend: "approval_required",
+  },
+  {
+    sourceId: "request_documents",
+    kind: "document",
+    domains: ["procurement", "projects", "warehouse", "documents"],
+    entities: ["request", "material", "supplier", "pdf_document"],
+    readableByRoles: ["director", "control", "foreman", "buyer", "warehouse"],
+    contextPolicy: "role_scoped",
+    canSummarize: true,
+    canDraft: true,
+    canSend: "approval_required",
+  },
+  {
+    sourceId: "warehouse_documents",
+    kind: "pdf",
+    domains: ["warehouse", "documents", "reports"],
+    entities: ["warehouse_item", "stock_movement", "request", "pdf_document"],
+    readableByRoles: ["director", "control", "warehouse"],
+    contextPolicy: "role_scoped",
+    canSummarize: true,
+    canDraft: false,
+    canSend: "approval_required",
+  },
+  {
+    sourceId: "finance_documents",
+    kind: "pdf",
+    domains: ["finance", "documents", "reports"],
+    entities: ["payment", "company_debt", "accounting_posting", "act", "pdf_document"],
+    readableByRoles: ["director", "control", "accountant"],
+    contextPolicy: "redacted_finance",
+    canSummarize: true,
+    canDraft: true,
+    canSend: "approval_required",
+  },
+  {
+    sourceId: "chat_attachments",
+    kind: "attachment",
+    domains: ["chat", "documents"],
+    entities: ["chat_thread", "pdf_document"],
+    readableByRoles: ["director", "control", "foreman", "buyer", "accountant", "warehouse", "contractor", "office", "admin"],
+    contextPolicy: "role_scoped",
+    canSummarize: false,
+    canDraft: false,
+    canSend: "approval_required",
+  },
+  {
+    sourceId: "pdf_exports",
+    kind: "pdf",
+    domains: ["documents", "reports", "finance", "warehouse", "subcontracts", "projects"],
+    entities: ["pdf_document", "report", "act", "request"],
+    readableByRoles: ["director", "control", "foreman", "buyer", "accountant", "warehouse", "contractor"],
+    contextPolicy: "role_scoped",
+    canSummarize: true,
+    canDraft: false,
+    canSend: "approval_required",
+  },
+];
+
+export function getAiDocumentSource(sourceId: string): AiDocumentSourceEntry | null {
+  const normalized = String(sourceId || "").trim();
+  return AI_DOCUMENT_SOURCE_REGISTRY.find((entry) => entry.sourceId === normalized) ?? null;
+}
+
+export function listAiDocumentSources(): AiDocumentSourceEntry[] {
+  return [...AI_DOCUMENT_SOURCE_REGISTRY];
+}

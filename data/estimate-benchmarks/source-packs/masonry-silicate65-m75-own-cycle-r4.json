@@ -1,0 +1,277 @@
+{
+  "contract": "gox-build.masonry-silicate65-m75-own-current-profile/r4",
+  "status": "AUTHORED_SOURCE_PROFILE_PRELIMINARY_NOT_READY_OR_ROOT_ADMITTED",
+  "sourceId": "source:masonry:silicate65:ready-m75-own-cycle:r4",
+  "prefix": "masonry:silicate65:m75:whole-cycle:r4",
+  "publicTitleRu": "Кладка внутренней стены из силикатного кирпича на готовом растворе марки 75",
+  "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+  "parentDefinitionId": "9e2b5498-7b4d-5f82-ace7-6c6b822b4ef8",
+  "parentDefinitionSha256": "f72f853aaffcab2b21cf172e7a3371dbe80a378a8f74b2b427d255c775166c6b",
+  "selectorId": "m33_masonry_source_system",
+  "selectorValue": "OWN_SOLID_SILICATE65_READY_CEMENT_LIME_M75_LTE4_R4",
+  "primaryId": "masonry_brick_r4_net_volume_m3",
+  "groupId": "masonry:wall:krer08-02-001-07",
+  "groupTitleRu": "Внутренняя кирпичная стена 250 мм, высота этажа до 4 м",
+  "materialScope": {
+    "unit": "Solid silicate brick250x120x65mm,M100,F50, actual Sayan product under exact own standard/batch; a higher grade or different producer is not silently substituted.",
+    "wall": "Internal nonbearing or own supported self-supporting wall250mm; source own seismic7/8/9 details. Not a generic bearing-wall,facade or88mm branch.",
+    "territory": "Own KG norm applicability and actual adopted project comparison remain separate from RF maker structural album. No automatic KG recognition of RF SP or an unknown producer bridge."
+  },
+  "financialNorm": {
+    "country": "Kyrgyzstan",
+    "edition": "2015",
+    "norm": "08-02-001-07",
+    "explicitMaterialScope": "General1.2 explicitly silicate250x120x65 and1.6 internal brickwalls07/08",
+    "materialIdentity": "KG01-3311-0002 M100; own SGBM100/F50 actual product required",
+    "mortarIdentity": "KG03-0405-0004 readycement-limeM75, notM50 orcementM75",
+    "mortarGradeComparison": "Own guide4.4 grade cost boundary, exact own method/material/quality comparison4.2 remains mandatory object scope. Source selection never implies legal country conformity.",
+    "priceColumnImported": false
+  },
+  "sources": [
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-silicate65-m75-own-cycle-r4/sgb-atr5-1-2025.pdf",
+      "url": "https://cheremkhovo.bgazobeton.ru/upload/iblock/dbd/uccx5ug0kw653ic18rngbfo1ld42no34/ATR-SGB-5.1_2025.pdf",
+      "sha256": "c645a13e6e76d2a452e974ccac2aa38aca9b04651be65e2333a54f0fe90050d3",
+      "edition": "ATR SGB5.1-2025, printedIrkutsk2026;356pages",
+      "authorship": "SayanGazobeton + TSNIISK Kucherenko; approved SayanGazobeton; recommendation Irkutsk ministry, not KG admission",
+      "locators": "PDF10 own-producer/nonbearing boundary;21-23 product;24-28 actual conditions;37-40 laying;348-352 binder/finish distinct",
+      "role": "maker",
+      "originalCapturedFilename": "sgb-own-silicate-nonbearing-wall-album-2025.pdf"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-silicate65-m75-own-cycle-r4/kg-book03-2016.pdf",
+      "url": "https://minstroy.gov.kg/kg/state_program/download-pdf/kniga03-72368f9fc59d6c728.24978612.pdf",
+      "sha256": "b5548573a4a8cc55d2b0f9dc890375ada41bb23edf2a1332a6f1af4d93d6a7ac",
+      "locator": "OfficialBishkek2016,PDF27,03-0405-0004 readycement-limeM75, distinct fromM50_0003 andcementM75_03-0406-0003. No2015prices imported; gross2420 is not an actual mortar-density input.",
+      "role": "kgMortarIdentity",
+      "originalCapturedFilename": "kg-materials-book03-official.pdf"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-wall-krer08-systems-r1/KRER08-2015-official.pdf",
+      "sha256": "cb6a446ea8b7deeedcf433661a3d1c4145707334edb7328d3d251adf26dde436",
+      "locators": "PDF5 general1.2 explicitly silicate brick250x120x65;PDF6 general1.6 internalbrickwalls07/08;PDF17-19 source07/08. This is own explicit scope, not a material-name transfer of an AAC/light-stone norm.",
+      "role": "kg08"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/kg-resource-materials-book01-4c06ea5b.pdf",
+      "sha256": "4c06ea5b428048cbf33872ded079306f21c2c7f5c798c99a03ec5c6249f9e837",
+      "locator": "PDF73,01-3311-0002 solidsingle silicate250x120x65,M100; gross3850kg/1000pieces is separate catalogue transport-price column, not actual pallet/load mass",
+      "role": "kgBrickIdentity"
+    },
+    {
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "locators": "1.4/1.5/2.8/4.2/4.4; grade change4.4 does not by itself admit every change of material/method/quality",
+      "role": "kgGuide",
+      "path": "data/estimate-benchmarks/source-artifacts/masonry-family-r2/kg-guide2015.pdf"
+    }
+  ],
+  "rates": [
+    {
+      "key": "main-labour",
+      "titleRu": "Труд внутренней кладки из силикатного кирпича на готовом растворе марки 75",
+      "category": "labor",
+      "unitId": "man_hour",
+      "perM3": "5.21",
+      "operationKeys": [
+        "lay-bond-fit",
+        "ready-mortar-post",
+        "control-and-protect",
+        "clean-return-waste"
+      ],
+      "informational": false
+    },
+    {
+      "key": "operators-included",
+      "titleRu": "Труд машинистов, учтённый в работе башенного крана",
+      "category": "labor",
+      "unitId": "man_hour",
+      "perM3": "0.4",
+      "operationKeys": [
+        "receive-store",
+        "ready-mortar-post"
+      ],
+      "informational": true
+    },
+    {
+      "key": "tower-crane",
+      "titleRu": "Башенный кран при внутренней кирпичной кладке",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "perM3": "0.4",
+      "operationKeys": [
+        "receive-store",
+        "ready-mortar-post"
+      ],
+      "informational": false
+    },
+    {
+      "key": "solid-silicate-brick",
+      "titleRu": "Кирпич силикатный полнотелый 250 × 120 × 65 мм",
+      "category": "material",
+      "unitId": "piece",
+      "perM3": "395",
+      "operationKeys": [
+        "lay-bond-fit"
+      ],
+      "informational": false
+    },
+    {
+      "key": "ready-m75-mortar",
+      "titleRu": "Готовый цементно-известковый раствор марки 75",
+      "category": "material",
+      "unitId": "m3",
+      "perM3": "0.234",
+      "operationKeys": [
+        "ready-mortar-post",
+        "lay-bond-fit"
+      ],
+      "informational": false
+    },
+    {
+      "key": "water",
+      "titleRu": "Вода при внутренней кирпичной кладке",
+      "category": "material",
+      "unitId": "m3",
+      "perM3": "0.44",
+      "operationKeys": [
+        "lay-bond-fit"
+      ],
+      "informational": false
+    },
+    {
+      "key": "timber",
+      "titleRu": "Пиломатериал при внутренней кирпичной кладке",
+      "category": "material",
+      "unitId": "m3",
+      "perM3": "0.0005",
+      "operationKeys": [
+        "lay-bond-fit"
+      ],
+      "informational": false
+    }
+  ],
+  "flowOperations": [
+    {
+      "key": "receive",
+      "titleRu": "Принять свежий готовый раствор по паспорту",
+      "ordinal": 10
+    },
+    {
+      "key": "prepare",
+      "titleRu": "Подготовить тару, грузозахват и место приёма",
+      "ordinal": 20
+    },
+    {
+      "key": "load",
+      "titleRu": "Загрузить растворные ящики с транспорта",
+      "ordinal": 30
+    },
+    {
+      "key": "feed",
+      "titleRu": "Подать три ящика последовательной гирляндой",
+      "ordinal": 40
+    },
+    {
+      "key": "receive-front",
+      "titleRu": "Принять и расстропить ящики в обратном порядке",
+      "ordinal": 50
+    },
+    {
+      "key": "remix",
+      "titleRu": "Перелопатить и подать готовый раствор на стену",
+      "ordinal": 60
+    },
+    {
+      "key": "clean",
+      "titleRu": "Очистить и вернуть тару с остатками материала",
+      "ordinal": 70
+    },
+    {
+      "key": "inspect",
+      "titleRu": "Осмотреть, измерить и передать тару на хранение",
+      "ordinal": 80
+    }
+  ],
+  "wholeOpenNeeds": [
+    {
+      "key": "project-and-ready-base",
+      "titleRu": "Опирание, отсечка влаги и подготовленное основание",
+      "reason": "Exact wall role, own producer/batch, seismic/class/stability design, actual support/DPC and base/mark/quality. Own recommended20-50mm levelling layer; if>30mm, own source calls for4-5mm weldedmesh50-70mm acrosslayer. Actual layer/deduction/specification is explicit; no source wall/mortar double counting. Actual structural/levelling/DPC/armature/connection/lintel BOM and own work quantity/norms if new; completed prerequisites visible instead of invented zero."
+    },
+    {
+      "key": "access-and-working-front",
+      "titleRu": "Полный безопасный доступ и организация рабочего фронта",
+      "reason": "Whole eight-mason VPTI one-brick front under actual technology/quality comparison; fullmaker/PPR panel/guards/stairs/anchors/deck/handling/loads andcurrentcertifiedPPE All29source inventory records and9panelcomponenttypes remain whole; only actual PPR panelcount multipliesmakerBOM. Historical belts do not prove current fallprotection. Source KZ10t crane versus own KG8t rate remains an explicit compatibility hold; source stock1 and own norm.4V machine-hours are not an equipment or time equivalence."
+    },
+    {
+      "key": "lay-bond-fit",
+      "titleRu": "Полное обеспечение резки, цепной перевязки и подгонки",
+      "reason": "Own chainbond only; no multibond. Own nominal quarter55/half120/three-quarter185mm andminimumcustompart45mm; vertical joints offset>=45mm inbothdirections,source allows<=15%exceptions. Exact cutting/fitting/fulltoolanddustmethod must maintain product and joint quality. Own source complete front,actual cutting station ifneeded,complete Hdrycollector/PPE for actual dustscope. No ceramic saw or AAC cutting rate transferred by name."
+    },
+    {
+      "key": "structural-connections",
+      "titleRu": "Связи, армирование и сейсмические узлы стены",
+      "reason": "All own source5.9/5.10,8-13 actual reinforcement,flexible/slidingties,floor/columnconnections/openings/temporarysupport. For source8/9-seismic partition framefill, additional two-sided verticalreinforcement applies; it is not deleted as a different name forinternalwall. Exact actual drawings/BOM and separate admitted subworknorms. No generic steel/m2,generic anchor spacing or borrowed AAC anchor0.78kg/m3."
+    },
+    {
+      "key": "control-and-protect",
+      "titleRu": "Фактический контроль, выдерживание и действующая защита",
+      "reason": "Incoming,course/joint/flatness/plumb/mark checks;actual mortarclass andcategoryII tensilejoint>=120kPa under ownsource. Weather and curing/temporarysupport actual program. Whole source measuring inventory,actual calibrated devices/testresources/schedules and currentworkersafety; no automatic qualityacceptance from selecting material."
+    },
+    {
+      "key": "clean-return-waste",
+      "titleRu": "Очистка, возврат, сбор остатков и внешняя доставка",
+      "reason": "Normalminorclosing remains one own KG labour owner;fullfreshmortar/tool/containercleaning,closedwashreceiver,wholeHdryclosure ifused,actualreturns/waste/haulrecord Actual compatible cleaning/waste containers,watercharges/receiverpayload/drybags and separate hauloutside source scope; no universal wastepercent or extra paid cleanup duplicate."
+    }
+  ],
+  "ownUpperStoreyM": 4,
+  "ownProducerOnly": true,
+  "normQuantitiesSeparateFromObjectFit": true,
+  "sourceSelectionIsNotObjectApproval": true,
+  "noLegacyQFallback": true,
+  "newPublicCards": 0,
+  "full": 0,
+  "locatorKey": "masonry-silicate65-m75-own-current-card-r4",
+  "inputs": [
+    {
+      "path": "src/lib/estimate/v4/masonrySilicate65M75CurrentCardR4.ts",
+      "sha256": "b85b57a91961751c97640f2b4a690842b2b33e7fb43bb8301c35cb18687c655c"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonrySilicate65M75CompletenessR4.ts",
+      "sha256": "584aa106c5343aa212df597ca9b969ed332b9d887ec061dae6abc192fda4d6ad"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasonrySilicate65M75CurrentCardR4.ts",
+      "sha256": "7972ca057ef24744093598b69c5fbc71bb646fcdaf6c831783b7a182a56492fa"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryCeramic250OrdinaryCurrentCardR4.ts",
+      "sha256": "37217dd581414ef2ef8381c9d04172561d89d357c3a5c1ce914dfdc2806a3ca0"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasonryCeramic250CurrentCardR4.ts",
+      "sha256": "c6510eff17439d22ed0b47ecfd80e51447bd5bd6d08ea0cde2b8d0d23b3631e8"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-ceramic250-current-card-reuse-r4.json",
+      "sha256": "d5e9fe7f4e1ed671d8cc9e5f636a8066d8d2c9ddf3ef07e5dcaad4c80f82732e"
+    },
+    {
+      "path": "src/lib/estimate/v4/masonryM50EffectiveLiftCorrectionR4.ts",
+      "sha256": "4d5682b020b571f5927e7087daeae93c64ca837320e94b409b9e67066d9e5431"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-ready-m50-whole-supply-cycle-r2.json",
+      "sha256": "205cfd61fd08a24586cd6a0058a4e513c12fc250832bdea1b342745085f4a773"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/masonry-ceramic250-whole-family-composition-r2.json",
+      "sha256": "fe2fd80b24a454875e88218e1cec0c193b7f56e01f0cfd1293456a0aec2be3b3"
+    }
+  ],
+  "m50FinancialSourceFormulaUnitOwnerChanged": false,
+  "oldBranchInclusionExplicitlyExcludesNewProfile": true,
+  "sourceMethodCrane10tVersusNorm8tCompatibilityHeld": true,
+  "foreignCraneHoursTransferred": false
+}

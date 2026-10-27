@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "rik-expo-app.s27-26.flushing-disinfection-volume-automatic-source-pack.v1",
+  "catalogId": "canonical-work:expanded:flushing_disinfection",
+  "scope": "Preliminary complete flushing, sodium-hypochlorite disinfection, sampling and handover of an already installed potable-water pipeline after pressure testing. Pipeline volume, flushing flow and water, disinfectant, temporary connections, consumables, labor, equipment, laboratory work, procurement balance and disposal logistics are calculated from eight ordinary primary facts and a visible editable engineering profile.",
+  "ordinaryFacts": [
+    "pipelineLengthM",
+    "pipelineInternalDiameterMm",
+    "pipelineDesignation",
+    "isolatedSectionCount",
+    "disinfectantTechnology",
+    "targetActiveChlorineMgL",
+    "solutionConcentrationPercent",
+    "contactTimeHour"
+  ],
+  "calculatedScope": [
+    "pipeline internal volume and required flushing flow",
+    "flushing, disinfection-fill and total water demand",
+    "active chlorine and sodium-hypochlorite solution demand",
+    "temporary fill, injection, drain and sampling connections",
+    "hoses, fittings, valves, backflow prevention, supports and consumables",
+    "flushing pumps, dosing equipment and monitoring instruments",
+    "field chlorine and turbidity checks, laboratory samples and analyses",
+    "PPE, spill response, labor, equipment-hours, records and logistics",
+    "hypochlorite procurement need, packages, ordered quantity and remainder"
+  ],
+  "conditionalProjectFacts": [
+    "dechlorination reagent and dosing factor",
+    "temporary delivered-water source",
+    "off-site collection and disposal of flushing water"
+  ],
+  "excludedScope": [
+    "pipeline construction, excavation, bedding, pipe supply, valves, chambers and hydrants",
+    "hydrostatic pressure testing and leak repair",
+    "chlorination-station construction, contact reservoirs and permanent treatment equipment",
+    "gas chlorine, on-site electrochlorination and unconfirmed discharge routes",
+    "prices or manufacturer performance not supplied by a confirmed source"
+  ],
+  "baselineScenario": {
+    "pipelineLengthM": 1000,
+    "pipelineInternalDiameterMm": 100,
+    "pipelineDesignation": "PE100-RC-SDR17-OD110-ID100",
+    "isolatedSectionCount": 2,
+    "disinfectantTechnology": "SODIUM_HYPOCHLORITE",
+    "targetActiveChlorineMgL": 50,
+    "solutionConcentrationPercent": 12.5,
+    "contactTimeHour": 24
+  },
+  "truthBoundary": "This is a visible preliminary execution profile, not an approved universal method statement or sanitary instruction. Every profile assumption remains editable and requires confirmation by the project, operator, laboratory and environmental discharge authority. Derived final quantities are never ordinary questionnaire inputs."
+}

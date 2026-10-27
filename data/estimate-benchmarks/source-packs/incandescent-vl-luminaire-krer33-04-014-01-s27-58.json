@@ -1,0 +1,41 @@
+{
+  "contract": "rik-expo-app.s27-58.incandescent-vl-luminaire-33-04-014-01.v1",
+  "catalogId": "canonical-work:master:incandescent_luminaire_existing_vl_support_krer33_04_014_01",
+  "workKey": "incandescent_luminaire_existing_vl_support_krer33_04_014_01",
+  "titleRu": "Установка светильника с лампой накаливания на готовой опоре воздушной линии",
+  "sourceId": "krer33:2015:33-04-014:01",
+  "normId": "КРЕР33-04-014-01",
+  "source": {"path":".release-runtime/r568/s27-58/review/outdoor-lighting/KRER33-2015.pdf","sha256":"04f1fd346873c19653fb838d28b35b661040a5e482e32ecc3f9feebf6d8c8432","edition":"КРЕР33-2015","officialUrl":"https://minstroy.gov.kg/ru/kyzmat/447/show","downloadUrl":"https://minstroy.gov.kg/ru/state_program/download-pdf/no33liniielektroperedaci_compressed1-304690842799150c2.79236746.pdf","locatorRu":"PDF141–142, таблица33-04-014, колонка01; техническая часть PDF6–9"},
+  "guidance": {"path":".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf","sha256":"5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9","locatorRu":"Общие указания1.7 и2.10: эксплуатационный персонал/водитель включены в стоимость работы машины;3.5 и приложение3: границы нормальных условий"},
+  "sourceAdmission": {"sourcePlanSha256":"9295b363ae5a265382f28ed1bec884cb570d956ce14c30769138c86ce34a9cb4","primaryCellClarificationSha256":"7cbd2a07eab66edc21fd286c6e3670c76517c05d725a07d2cbc3bd574644a043","projectBomContractAdmissionSha256":"ff9b3204d51632eead44f25e8bfa00b96246ce496b55aeebe83bf5e3a147493f"},
+  "scopeValueRu": "Новое строительство: сухая ровная незалесённая местность, положительная температура, высота ниже 1500 м, отключённая линия, без стеснения и сложных пересечений",
+  "projectSupplyScopeRu": "Все пять проектных позиций поставляются и оплачиваются отдельно; лампа входит в светильник",
+  "scopeRu": "Только колонка01: светильник с лампой накаливания на пригодной готовой опоре ВЛ. Нормальные условия нового строительства; готовое основание/опора и питающая линия вне этой операции. Фактические крепления и провод берутся по проекту. Дополнительный доступ, инструмент, защитные средства, электрические проверки и завершение пока не нормированы.",
+  "operations": [
+    {"id":"wire-preparation","nameRu":"Заготовка проводов"},
+    {"id":"luminaire-assembly","nameRu":"Сборка светильников"},
+    {"id":"raise-bracket-luminaire","nameRu":"Подъём кронштейна и светильника на опору"},
+    {"id":"fix-bracket-luminaire","nameRu":"Крепление кронштейна и светильника"},
+    {"id":"connect-lighting-line","nameRu":"Присоединение проводов светильника к линии освещения"}
+  ],
+  "fixedRates": {"wholeLaborManHour":"1.29","flatbedTruckMachineHour":"0.06","solventGasolineT":"0.00006","zesGreaseKg":"0.01"},
+  "materials": [
+    {"id":"solvent_gasoline","nameRu":"Бензин-растворитель","sourceUnitId":"t","orderUnitId":"kg","expression":"luminaire_count*0.00006","orderConsumed":"luminaire_count*0.00006*1000","projectDefined":false,"identityGuideRu":"Укажите фактическую марку/назначение бензина-растворителя, документ поставщика и поставку по массе в кг. Литры требуют подтверждённой плотности и здесь не применяются."},
+    {"id":"zes_grease","nameRu":"Смазка ЗЭС","sourceUnitId":"kg","orderUnitId":"kg","expression":"luminaire_count*0.01","orderConsumed":"luminaire_count*0.01","projectDefined":false,"identityGuideRu":"Укажите именно смазку ЗЭС и фактическую упаковку по массе в кг; универсальная смазка не подменяет эту позицию."},
+    {"id":"construction_bolts","nameRu":"Болты строительные с гайками и шайбами","sourceUnitId":"t","orderUnitId":"t","expression":"construction_bolts_project_total","orderConsumed":"construction_bolts_project_total","projectDefined":true,"identityGuideRu":"Укажите документ проекта, тип/размер/класс болтов и состав гаек/шайб. Введите итоговую массу полного крепежа в т для выбранного объёма; количество на светильник и масса одного болта не предполагаются."},
+    {"id":"brackets","nameRu":"Кронштейны крепления светильника к опоре","sourceUnitId":"kg","orderUnitId":"kg","expression":"brackets_project_total","orderConsumed":"brackets_project_total","projectDefined":true,"identityGuideRu":"Укажите документ проекта, обозначение, геометрию и исполнение совместимого кронштейна. Введите итоговую массу всех кронштейнов в кг для выбранного объёма; один кронштейн на светильник не предполагается."},
+    {"id":"steel_clamps","nameRu":"Хомуты стальные крепления к опоре","sourceUnitId":"kg","orderUnitId":"kg","expression":"steel_clamps_project_total","orderConsumed":"steel_clamps_project_total","projectDefined":true,"identityGuideRu":"Укажите документ проекта, размеры и исполнение стальных хомутов для фактической опоры. Введите итоговую массу в кг для выбранного объёма; число и масса хомутов не предполагаются."},
+    {"id":"incandescent_luminaires","nameRu":"Светильник с лампой накаливания","sourceUnitId":"pcs","orderUnitId":"pcs","expression":"incandescent_luminaires_project_total","orderConsumed":"incandescent_luminaires_project_total","projectDefined":true,"identityGuideRu":"Укажите документ проекта, точную модель, мощность, исполнение светильника с лампой накаливания и состав поставки. Итоговое число собираемых/устанавливаемых светильников должно совпадать с объёмом работы; отдельная лампа или монтажный комплект автоматически не заказываются."},
+    {"id":"rubber_insulated_wire","nameRu":"Провод с резиновой изоляцией для присоединения светильника","sourceUnitId":"t","orderUnitId":"t","expression":"rubber_insulated_wire_project_total","orderConsumed":"rubber_insulated_wire_project_total","projectDefined":true,"identityGuideRu":"Укажите документ проекта, точную марку провода, число/сечение жил и итоговую массу в т для выбранного объёма. Метры нельзя принять за тонны; перевод по длине требует подтверждённой массы на метр выбранного изделия и здесь не выполняется."}
+  ],
+  "gaps": [
+    {"id":"additional-access","category":"equipment","nameRu":"Дополнительные средства безопасного доступа к фактическому месту установки"},
+    {"id":"tools-protection","category":"work","nameRu":"Монтажный инструмент, приборы, ограждение рабочей зоны и защитные средства"},
+    {"id":"connection-protection","category":"material","nameRu":"Клеммы, защитный проводник и совместимость заземления по проекту и паспорту светильника"},
+    {"id":"electrical-checks","category":"testing","nameRu":"Требуемые электрические проверки, пусконаладка и приёмка"},
+    {"id":"external-logistics","category":"delivery","nameRu":"Внешняя доставка и мобилизация с проверкой включения в поставку и работу автомобиля"},
+    {"id":"waste-completion","category":"completion","nameRu":"Сбор упаковки и отходов, отдельно требуемое удаление и завершение работ"}
+  ],
+  "excludedRu": ["LED, люминесцентные и ртутные светильники; колонка02 и её вышка0,8маш.-ч/2,29ч труда","Строительство опоры/фундамента, земляные работы, новая питающая сеть и самостоятельное заземляющее устройство","Работа под напряжением, реконструкция, высота местности от1500м и специальные условия без соответствующих коэффициентов","Универсальная норма одного крепления/комплекта, П=1/0, тонна=метр, литры без плотности","Повторный водитель, выделенные из1,29ч часы пяти операций, отдельная лампа без подтверждённого состава поставки","Проектные монтажные компоненты, включённые в цену другого узла/набора: такая поставка не получает пять самостоятельных заказов","Исторические базовые цены как текущие цены поставщика; неустановленный коэффициент потерь провода1,05/1,02"],
+  "fullTechnicalAcceptance": false
+}

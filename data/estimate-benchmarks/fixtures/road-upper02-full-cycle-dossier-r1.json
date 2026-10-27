@@ -1,0 +1,358 @@
+{
+  "contract": "road-upper02-full-technology-cycle-dossier/v1",
+  "status": "MASTER10_FULL_CYCLE_MAP; FIVE_FROZEN_STAGED_FILES_UNCHANGED",
+  "master": {
+    "path": "C:/Users/User/Downloads/MASTER_TZ_GOX_BUILD_PRODUCTION (10).md",
+    "sha256": "90e84fbfbf17321f1dd935f5e56a090f31619a3336e582bfabe1e66fcdfa48d7",
+    "activeSections": [
+      "20.82.4",
+      "20.82.5",
+      "20.82.7",
+      "20.82.16"
+    ]
+  },
+  "catalogId": "canonical-work:master:road_upper_crushed_stone_150mm_m1200_two_layer_krer27_04_005_02",
+  "sourceColumn": "27-04-005-02",
+  "primary": "m2 ofonlyupper150mmroadlayer",
+  "frozenCandidate": {
+    "handoffSha256": "978e6eb3d4a598f5eab3874f9a1eaed55cb066d1ef0fdfcf9ea7edae9a88eea8",
+    "sourcePins": {
+      "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-landscape-b/next-paving-consumer/upper-gravel02-candidate/after/data/estimate-benchmarks/fixtures/road-upper-gravel02-append-absence-r1.json": "5384b0ece3c1d8f6f039ec2aba74e76bd46b98e204f12970beaa59b1c82eebb1",
+      "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-landscape-b/next-paving-consumer/upper-gravel02-candidate/after/data/estimate-benchmarks/source-packs/road-upper-gravel150-krer27-005-02-r1.json": "4807696d65196ca34cab7daf78ce9d31f237d8f622cd7ece754b85cca277f95c",
+      "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-landscape-b/next-paving-consumer/upper-gravel02-candidate/after/scripts/estimate/r4a13/prepareRoadUpperGravel150Column02AppendR1.ts": "7252c62f5dcfb0affcf570712ea955f7a47dd9802fda5ee59c184430bf18442b",
+      "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-landscape-b/next-paving-consumer/upper-gravel02-candidate/after/src/lib/estimate/v4/roadUpperGravel150Krer27Column02R1.ts": "b62d1a54de19c9ad70182deb329d81c9e65d6bf0b576904001e5e1d3a01885cc",
+      "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-landscape-b/next-paving-consumer/upper-gravel02-candidate/after/tests/estimateNorms/roadUpperGravel150Column02R1.contract.test.ts": "61beb691e8f6b6e62c2f0a80b81c56fc78344d58601033f0e3719590089e930e"
+    },
+    "rootFactoryCases": "ROOT_CHECK_ACTIVE; do notmodifyinputs"
+  },
+  "sources": [
+    {
+      "id": "KRER27_COLUMN02",
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r4a13-6/s19-first-estimate/primary-source-review/kg-krer27-roadworks-2015.pdf",
+      "sha256": "cd3d6735d1bbdda5957945b7682f032785c76624b54a435edfe5d2ef5e107161",
+      "locator": "PDF/printed48, exact27-04-005-02; workcomposition01-03 and resourcecolumn02"
+    },
+    {
+      "id": "KRER_GENERAL",
+      "path": "C:/dev/rik-expo-app-r4a5-dc4f0ce7/.release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "locator": "Accepted local guidance refs: PDF5-6/2.7,2.8,2.10; PDF9-11/4.2,4.4,4.6,4.12-4.14. Reuse only applicable clauses after project/rate scope check; not a new quantitynorm."
+    }
+  ],
+  "technologySequence": [
+    {
+      "sequence": 1,
+      "id": "accept-prepared-lower",
+      "task": "Принять проектные границы верхнего150мм слоя и существующий нижний слой: отметки, уклоны, несущая способность, состояние и доступ тяжёлой техники. Выполнить требуемую подготовку только по самостоятельному подтверждённому составу.",
+      "facts": [
+        "План площади этого верхнего слоя (m2), не объём внутренней подушки",
+        "Акт/проект принятия нижнего слоя и состояние поверхности",
+        "ППР допускает автогрейдер99кВт, погрузчик5т, катки8/13т и выбранную схему движения",
+        "Проектная пригодность фракций40–70 и5–20 М1200 и толщины150мм"
+      ],
+      "alreadyCovered": [
+        "area_m2",
+        "road_upper_project_conditions",
+        "accepted_lower_layer"
+      ],
+      "notCovered": "Разработка/ремонт/выравнивание нижнего слоя, выемка, геотекстиль и дренаж не добавляются этой нормой. При неготовности — отдельная подготовительная подработа по реальному дефекту и обмеру; текущую верхнюю норму не признавать готовой.",
+      "source": [
+        "KRER27_COLUMN02",
+        "actualproject+PPR+lowerlayeracceptancerecord"
+      ],
+      "technicalOwner": "Подрядчик дорожных работ/ответственный за ППР + технический надзор проекта",
+      "paidOwners": "Никакой оплаты нижнего слоя через текущие upper02 owners; отдельный scopedconsumer только при фактической применимости."
+    },
+    {
+      "sequence": 2,
+      "id": "receive-materials-and-distribute",
+      "task": "Сверить поставку, пригодность и наличие каждого материала; распределить и разровнять основной щебень на принятом нижнем слое.",
+      "materials": [
+        {
+          "rowId": "road-upper-base:krer27-04-005-02:material:coarseStone",
+          "spec": "40–70мм М1200",
+          "sourceConsumption": "189m3/1000m2"
+        },
+        {
+          "rowId": "road-upper-base:krer27-04-005-02:material:chokeStone",
+          "spec": "5–20мм М1200",
+          "sourceConsumption": "15m3/1000m2"
+        },
+        {
+          "rowId": "road-upper-base:krer27-04-005-02:material:water",
+          "spec": "Вода для нормативной поливки",
+          "sourceConsumption": "30m3/1000m2"
+        }
+      ],
+      "facts": [
+        "Паспорта/фракция/марка/поставочные спецификации",
+        "Пригодное наличие и подтверждение его совместимости",
+        "Сохраняемый резерв и кратность именно выбранной поставки",
+        "Фактическая разгрузка/перемещение и её цена включены или отдельно — см. external-deliveryneed"
+      ],
+      "alreadyCovered": "Три независимых баланса: consumed→stock/reserve/quantum→order/packages/remaining/free/shortage/reserve deficit. Исторические цены и отходы сверх нормы не подставлены.",
+      "laborMachines": "Рабочие36.96чел.-ч, погрузчик7.96 и автогрейдер1.82маш.-ч входят в общий состав колонки02 на1000m2. Источник не распределяет эти часы между каждой приёмкой/разгрузкой/рассыпкой: отдельные нормы этапов не выдумываются.",
+      "source": [
+        "KRER27_COLUMN02",
+        "actualmaterialpassports+consignment+stockrecords"
+      ],
+      "technicalOwner": "Мастер дорожных работ + снабжение/входной контроль",
+      "paidOwners": [
+        "road-upper-base:krer27-04-005-02:material:coarseStone",
+        "road-upper-base:krer27-04-005-02:material:chokeStone",
+        "road-upper-base:krer27-04-005-02:material:water",
+        "road-upper-base:krer27-04-005-02:worker",
+        "road-upper-base:krer27-04-005-02:equipment:loader",
+        "road-upper-base:krer27-04-005-02:equipment:grader"
+      ]
+    },
+    {
+      "sequence": 3,
+      "id": "wet-profile-compact",
+      "task": "По ППР выполнить расклинцовку, поливку, профилирование/планировку и укатку; последовательность проходов, влажность и контрольные отметки определяет проектный метод.",
+      "alreadyCovered": "Нормативные операции01-03. Поливомоечная машина2.96, распределитель мелочи0.65, каток8т12.08, каток13т27.25маш.-ч на1000m2. Совокупные часы всех шести машин52.72; справочные часы машинистов52.72 не оплачиваются второй раз.",
+      "facts": [
+        "Проектная технологическая карта, допустимая влажность/режим полива и состояние материала",
+        "Рабочие проходы/схема уплотнения и совместимость тяжёлой техники",
+        "Фактические машино-часовые ставки с оператором/водителем и эксплуатацией, отдельно нормированные материалы исключены из этих ставок"
+      ],
+      "source": [
+        "KRER27_COLUMN02",
+        "actualPPR+equipmentratequotes",
+        "existingcanonicalMachineHourPriceCoverageV1root6ownerextension"
+      ],
+      "technicalOwner": "Подрядчик дорожных работ/ППР; механизация и ответственный за договоры ставок",
+      "paidOwners": [
+        "road-upper-base:krer27-04-005-02:worker",
+        "road-upper-base:krer27-04-005-02:equipment:waterBowser",
+        "road-upper-base:krer27-04-005-02:equipment:spreader",
+        "road-upper-base:krer27-04-005-02:equipment:roller8t",
+        "road-upper-base:krer27-04-005-02:equipment:roller13t"
+      ],
+      "noDoublePayment": "Три includedoperationrows остаются неоплачиваемыми; не добавлять отдельные оплачиваемые укатку/поливку/планировку или операторов поверх исходного состава. Число проходов/плотность/производительность из52.72ч не выводятся."
+    },
+    {
+      "sequence": 4,
+      "id": "interfaces-and-adjacent-elements",
+      "task": "Сверить кромки, поперечные/продольные уклоны, примыкания к существующим слоям, бортам и водоотводу; применимые отдельные изделия выполнять по проектному узлу.",
+      "alreadyCovered": "Профилирование и планировка самого верхнего слоя внутри исходного состава. Норма02 не создаёт новые борта, лотки, геотекстиль, дренаж или асфальт.",
+      "facts": [
+        "План и сечения границ/примыканий, фактические линейные длины",
+        "Материал и тип бортов/водоотвода, отметки и несущая способность узла",
+        "Какой adjacentconsumer уже посчитан; исключить его повторное включение"
+      ],
+      "reusableCompatibleOperations": [
+        {
+          "sourcePack": "data/estimate-benchmarks/source-packs/concrete-kerb-installation-s27-54.json",
+          "ids": [
+            "canonical-work:master:concrete_kerb_install_cement_concrete_pavement_standard",
+            "canonical-work:master:concrete_kerb_install_other_pavement_standard"
+          ],
+          "unit": "m",
+          "gate": "Только фактически нужный бетонный борт и exactвид соседнего покрытия; не выбиратьotherпо умолчанию и не назначать длину из площади."
+        },
+        {
+          "sourcePack": "data/estimate-benchmarks/source-packs/precast-rc-embankment-runoff-tray-s27-58.json",
+          "ids": [
+            "canonical-work:master:precast_rc_embankment_runoff_tray_standard"
+          ],
+          "unit": "m",
+          "gate": "Только именно сборныйЖБ водосбросный лоток на откосе насыпи по проекту; не любая линейнаяканализация/обычныйдренаж."
+        }
+      ],
+      "notCovered": "Подработка конкретного сопряжения выбирается по фактическому узлу; если её нет — отдельный source intake узла, а не произвольный комплект материалов. Эти companionработы пока не подключены даннымfactory.",
+      "source": [
+        "KRER27_COLUMN02",
+        "projectinterfaceplan+exactcompanionexistingpacks"
+      ],
+      "technicalOwner": "Проектировщик дорожной конструкции/технадзор; предметныйавтор выбирает совместимыйadapter",
+      "paidOwners": "Собственные owner IDs выбранного adjacentconsumer; currentupper02 owners не расширяются и цена не переносится автоматически."
+    },
+    {
+      "sequence": 5,
+      "id": "quality-and-acceptance",
+      "task": "Проверить отметки/уклоны, толщину и подтверждённые проектом показатели уплотнения/качества; оформить требуемое принятие слоя перед следующим этапом.",
+      "alreadyCovered": "Обычная планировка/профилирование в составе02; количественно заданные нормативные ресурсы не являются актом принятия.",
+      "openNeedRowId": "road-upper-base:krer27-04-005-02:open:quality-control",
+      "facts": [
+        "Проектные критерии и метод контроля",
+        "План/частота испытаний и фактические захватки/пробы/документы",
+        "Договор: контроль включён в конкретную оплачиваемую работу или отдельно, с проверяемым owner/reference"
+      ],
+      "source": [
+        "KRER27_COLUMN02",
+        "actualprojectQAplan+applicabletestmethod+contractscope"
+      ],
+      "technicalOwner": "Лаборатория/технический надзор и проектировщик; subjectauthorподбирает конкретнуюприменимуюметодику",
+      "paidOwners": "Пока existingopen:quality-control item/quantitynull. После доказанного состава — единицы испытаний/услуг/документов изисточника; при includedscope сохранённаяссылка на ужеоплаченногоowner, без второй оплаты."
+    },
+    {
+      "sequence": 6,
+      "id": "delivery-unloading-mobilization",
+      "task": "Раздельно установить поставку, разгрузку/перемещение и мобилизацию техники: фактическая партия, способ, маршрут и граница оплаты.",
+      "openNeedRowIds": [
+        "road-upper-base:krer27-04-005-02:open:external-delivery",
+        "road-upper-base:krer27-04-005-02:open:extra-mobilization"
+      ],
+      "facts": [
+        "Поставка двухфракций и воды: спецификация, масса/объём фактической партии, весовые документы при необходимости",
+        "Подходящее транспортное средство/ёмкость и проверенная грузовместимость/маршрут/доступ",
+        "Кто и чем разгружает; какие разгрузочные/внутриплощадочные действия уже входят в исходную норму или фактическую ставку",
+        "Цена поставки/доставки/разгрузки/мобилизации отдельно или включена; ссылка на конкретный paidowner и документ",
+        "Число реальных перебазировок и фактическая схема работы машин; не рейсы из площади"
+      ],
+      "source": [
+        "KRER27_COLUMN02",
+        "KRER_GENERAL",
+        "actualsupplieroffer+consignment+weighbill+PPR+rentalscope"
+      ],
+      "technicalOwner": "Снабжение/логист + механизация/подрядчик + rootинтегратор для существующего shipmentконтракта",
+      "paidOwners": "Текущие open:item остаются null до reconciliation. Материалm3, перевозкаtrip/service, разгрузкаmachine_hour/man_hour/service и перебазировкаservice/trip имеют разные назначения. При неоднозначном включении в материал/машину не создавать заменяющую оплачиваемую строку.",
+      "existingMechanismReuse": "Нормальный выбранный delivery/admission путь только при точно совместимом подтверждённом транспорте и партии. Нельзя автоматически назначать FordTransit/2357kg или число рейсов по189m3/площади. Сначала проверить admittedprofile/capacity, а при несовместимости подготовить собственнуюдоказаннуюtransportподработу.",
+      "unloadingBoundary": "Погрузчик7.96маш.-ч — ресурс всего sourceсостава, не доказательство произвольной отдельной разгрузки поставщика. До анализа нормы/договора не добавлять сверх него вторые машинные часы."
+    },
+    {
+      "sequence": 7,
+      "id": "protection-cleanup-release",
+      "task": "Обеспечить применимые ограждения/инструмент/СИЗ, безопасную работу и завершение с фактической тарой/остатками/отходами; передать принятый слой следующей работе.",
+      "openNeedRowIds": [
+        "road-upper-base:krer27-04-005-02:open:protection-tools",
+        "road-upper-base:krer27-04-005-02:open:cleanup-waste"
+      ],
+      "facts": [
+        "ППР/оценка рисков: ограждения и рабочая зона, выбранные средства и длительность",
+        "Фактическое оснащение звена/подрядчика и включение его в цену; не покупка нового комплекта на каждые1000m2",
+        "Наличие тары/упаковки, отбраковки, остатков и загрязнений; документы приёма/вывоза или подтверждённое отсутствие применимого вывоза",
+        "Какая обычная планировка/очистка уже включена и какой отдельный waste/safety scope доказан"
+      ],
+      "source": [
+        "KRER27_COLUMN02",
+        "KRER_GENERAL",
+        "actualPPR+safetyplan+contractequipmentlist+wastehandlingrecords"
+      ],
+      "technicalOwner": "Ответственный за безопасность/мастер и эколог/подрядчик обращения с отходами",
+      "paidOwners": "Текущие open:item/quantitynull. Совместимые уже включённые материалы/оснащение связываются с конкретным трудом/машиной/услугой, не оплачиваются второй раз. Отдельный подтверждённый вывоз/тара — собственный scopedowner, после устранения пересечений.",
+      "noInventedWaste": "189+15m3 рыхлых ресурсов минус150m3 геометрии не является объёмом отходов. Не выводить отходы/массу/упаковку/рейсы из этой разницы и не добавлять процент."
+    }
+  ],
+  "explicitOpenNeedTasks": [
+    {
+      "rowId": "road-upper-base:krer27-04-005-02:open:external-delivery",
+      "currentUnit": "item",
+      "currentQuantity": null,
+      "specificTasks": [
+        "Две фракциищебня и вода: состав/единицы конкретнойпартии",
+        "Проверитьвключённые sourceперемещения и фактическую materialprice scope",
+        "Отдельно установитьtransport/unloading scope и совместимыйавтомобиль",
+        "Сохранитьinclreference/owner либо конкретныйраздельныйрасчёт с validatedprofile"
+      ],
+      "requiredFacts": [
+        "supplierquote",
+        "consignmentmass/volume+specification",
+        "route/access",
+        "unloadingmethod",
+        "billingboundaryandpaidownerreference"
+      ],
+      "missingEvidenceOwner": "Снабжение/логист и подрядчик разгрузки; subjectauthor проверяет источник применимой нормы, интегратор привязывает существующийdeliveryконтракт",
+      "reuse": "Existing selectedmaterialdelivery/readiness только по совместимости; не автоматическийFordTransit",
+      "closureRule": "Resolved source/facts+nooverlappingbilling; untilthen visible unmet applicationneed, not0 and notnew paid replacement."
+    },
+    {
+      "rowId": "road-upper-base:krer27-04-005-02:open:extra-mobilization",
+      "currentUnit": "item",
+      "currentQuantity": null,
+      "specificTasks": [
+        "Составить фактическую схему перебазирования шести требуемыхмашин",
+        "Проверить аренду, включение transport/минимальныхчасов/фиксированныхсборов",
+        "Не объявлять fixedfee/minimum rent полноценным machine_hour rate V1 с нулевымиfee/minimum"
+      ],
+      "requiredFacts": [
+        "fleet/route/schedule",
+        "rentalscopequote",
+        "actualmobilizationcount+billingunit",
+        "ownerofincludedorpaidscope"
+      ],
+      "missingEvidenceOwner": "Механизация/подрядчик и договорный специалист",
+      "reuse": "Existing machine_hour price-coverage contract for operation only; mobilizationservice remains separate unless genuinely included and referenced",
+      "closureRule": "Наличие machine_hour не задаёт автоматически услугу перебазирования; requiredsource/factualscope then specificservice/trip quantity, no guessed1."
+    },
+    {
+      "rowId": "road-upper-base:krer27-04-005-02:open:quality-control",
+      "currentUnit": "item",
+      "currentQuantity": null,
+      "specificTasks": [
+        "Определить применимые показатели слоя по проекту",
+        "Выбрать метод/частоту/пробы и акты",
+        "Разделить обычное sourceпрофилирование и действительно дополнительный оплачиваемыйконтроль"
+      ],
+      "requiredFacts": [
+        "projectcriteria",
+        "applicabletestmethod",
+        "actualtestlotsandsamplingplan",
+        "QAcontractandpaidowner"
+      ],
+      "missingEvidenceOwner": "Проектировщик/лаборатория/технадзор; subjectauthor sourceintake именно выбранногометода",
+      "reuse": "Existing common unresolvedneed/price-scope semantics; no per1000m2 lab count invented",
+      "closureRule": "Specific methodandplan, quantityunitandbilling evidence; servicecomposition only aftersource, no superficialready frompassedmachinehours."
+    },
+    {
+      "rowId": "road-upper-base:krer27-04-005-02:open:protection-tools",
+      "currentUnit": "item",
+      "currentQuantity": null,
+      "specificTasks": [
+        "Определить ограждения, дорожную безопасность и СИЗ по ППР",
+        "Проверить предоставленное подрядчиком оснащение и его включение",
+        "При отдельной потребности выбрать конкретные изделия/временныйинвентарь и способучёта"
+      ],
+      "requiredFacts": [
+        "PPRandsafetyplan",
+        "actualcrew/equipmentlist",
+        "duration/boundary",
+        "contractinclusionreference"
+      ],
+      "missingEvidenceOwner": "Ответственный по безопасности и мастер; supply/priceauthor only ifseparatepurchaseproven",
+      "reuse": "Accepted gravel/tool modules may supply knownspecifications only, nottheirvalidationkitcounts/defaults",
+      "closureRule": "Verified includedowner or exactmaterial/service scope; no perarea genericset or new paidPPE on topofincludedlabor."
+    },
+    {
+      "rowId": "road-upper-base:krer27-04-005-02:open:cleanup-waste",
+      "currentUnit": "item",
+      "currentQuantity": null,
+      "specificTasks": [
+        "Установить фактическую тару, упаковку, отбраковку, остатки и загрязнения",
+        "Отделить sourceпрофилирование/планировку от отдельного обращения с отходами",
+        "При необходимости определить перевозку, приём и документы; при неприменимости сохранить основание факта"
+      ],
+      "requiredFacts": [
+        "actualdeliverypackaging",
+        "stock/reject/wasterecords",
+        "handlingmethod/destination",
+        "billingboundaryandowner"
+      ],
+      "missingEvidenceOwner": "Мастер/эколог/подрядчик утилизации; sourceauthor onlyforselectedhandlingmethod",
+      "reuse": "Existing stockremaining/free is materialbalance, notwastequantity; no automatic disposalfromvolume",
+      "closureRule": "Factual wastequantity/classification/method and scope, or documentednotapplicable. Price/unitpermethod, preserveunknownifnotproven."
+    }
+  ],
+  "completenessBoundary": "Source-backed upper-layer construction is one partial subwork. This dossier exposes fullcycle and exact unresolved tasks/owners, it doesnot claim additionalimplementednorms orclose5openneeds. No sitecontractorfullprice is inferred from a material order ormachinehour.",
+  "subworkCompositionGate": [
+    "Existinglowerpreparation/adjacentcurb/drainageconsumer canonlyjoin afterexactscope/geometry/units/facts andsourcepriceownerchecks; not bymatching wordbase.",
+    "Unloading, packaging, transport, machineoperation, mobilization, QA andmaterial ownership remain distinct; ambiguous oldaggregate/includedcost requiresreconciliation first.",
+    "No new numericprofessionalnorms inthisdossier. Futurecompanionmodule mustfulfill MASTER20.82.4 anduseexistingkernel, thenactualsaved/artifact evidence.",
+    "After17factory checks, master-onlysuccessorinput/config canreferenceMASTER10; currentstagedMASTER9config remains frozenforitsrun, not silentlyedited."
+  ],
+  "futureCycleScenarios": [
+    "Acceptedlowerlayer missing ->upperlayer originalneed/unready, no guessedpreparationprice",
+    "Currentnormresources unchangedafteraddingcycle dossier; included operations/operatorsnotpaidtwice",
+    "Suppliermaterialprice includesdelivery/unloading ambiguously ->reconcilebeforenew paidshipment",
+    "Machinequote minimum/fixedfee incompatible withV1fullmachinehour ->scopeunconfirmed andmobilizationtaskvisible",
+    "UnknownQAplan ->specificmethod/sourceowner action, notlabcountfromarea",
+    "Curb/drainage notneeded ->notinvented; ifneeded exactexistingconsumer withlineargeometry/project",
+    "Manualquantity77/title/price/exclusion preserveexistingkernel; quantityshortage107+reserveddeficit3distinctfromwaste",
+    "Bulkdelivery noactualpackaging ->no inventedbags; remainingmaterialnotwaste; savedPDFmust showunclosedscope"
+  ],
+  "canonicalEditsPerformed": false,
+  "DBOrRuntimeOrHeavyLaunchPerformed": false,
+  "newNeedsClosed": 0,
+  "newCompleteTypesAccepted": 0
+}

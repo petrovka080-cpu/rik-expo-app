@@ -1,0 +1,450 @@
+import { readFileSync } from "fs";
+import { join } from "path";
+import { createMemoryOfflineStorage } from "./offlineStorage";
+import {
+  clearContractorProgressQueue,
+  configureContractorProgressQueue,
+  enqueueContractorProgress,
+  loadContractorProgressQueue,
+} from "./contractorProgressQueue";
+import {
+  getQueueBacklogSnapshot,
+  resetQueueBacklogMetrics,
+} from "../observability/queueBacklogMetrics";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../observability/platformObservability";
+import {
+  CONTRACTOR_PROGRESS_FLUSH_LOOP_CEILING,
+  flushContractorProgressQueue,
+  CONTRACTOR_PROGRESS_REPLAY_POLICY,
+} from "./contractorProgressWorker";
+import { resetOfflineReplayCoordinatorForTests } from "./offlineReplayCoordinator";
+import {
+  clearContractorProgressDraftStore,
+  clearContractorProgressDraftForProgress,
+  configureContractorProgressDraftStore,
+  getContractorProgressDraft,
+  patchContractorProgressDraftContext,
+  setContractorProgressDraftFields,
+  setContractorProgressDraftMaterials,
+} from "../../screens/contractor/contractor.progressDraft.store";
+import { clearContractorProgressLocalRecovery } from "../../screens/contractor/contractor.terminalRecovery";
+
+const mockEnsureWorkProgressSubmission = jest.fn();
+
+jest.mock("../../screens/contractor/contractor.progressService", () => ({
+  buildWorkProgressMaterialsPayload: jest.fn((materials) => materials),
+  buildWorkProgressNote: jest.fn((location, comment) =>
+    [location, comment].filter(Boolean).join(" "),
+  ),
+  ensureWorkProgressSubmission: (...args: unknown[]) =>
+    mockEnsureWorkProgressSubmission(...args),
+}));
+
+const waitUntil = async (predicate: () => boolean, message: string) => {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  throw new Error(message);
+};
+
+const createDeferred = <T,>() => {
+  let resolveValue!: (value: T) => void;
+  let rejectValue!: (error: unknown) => void;
+  const promise = new Promise<T>((resolve, reject) => {
+    resolveValue = resolve;
+    rejectValue = reject;
+  });
+
+  return {
+    promise,
+    resolve: resolveValue,
+    reject: rejectValue,
+  };
+};
+
+const seedProgressDraft = async (progressId = "progress-1") => {
+  await patchContractorProgressDraftContext(progressId, {
+    workUom: "m2",
+    rowObjectName: "Runtime Object",
+    jobObjectName: null,
+    workName: "Runtime Work",
+  });
+  await setContractorProgressDraftFields(progressId, {
+    selectedStage: "done",
+    comment: "offline replay",
+    location: "floor 1",
+    qtyDone: 1,
+  });
+  await setContractorProgressDraftMaterials(progressId, [
+    {
+      id: "mat-row-1",
+      materialId: "material-1",
+      matCode: "MAT-1",
+      name: "Material 1",
+      uom: "pcs",
+      qty: 1,
+      qtyFact: 1,
+      price: null,
+      available: null,
+    },
+  ]);
+  await enqueueContractorProgress(progressId, {
+    baseVersion: "1",
+  });
+};
+
+describe("contractorProgressWorker replay discipline", () => {
+  beforeEach(async () => {
+    resetOfflineReplayCoordinatorForTests();
+    configureContractorProgressQueue({ storage: createMemoryOfflineStorage() });
+    configureContractorProgressDraftStore({ storage: createMemoryOfflineStorage() });
+    resetQueueBacklogMetrics();
+    resetPlatformObservabilityEvents();
+    mockEnsureWorkProgressSubmission.mockReset();
+    await clearContractorProgressQueue();
+    await clearContractorProgressDraftStore();
+  });
+
+  it("declares a serial FIFO replay policy owned by the worker", () => {
+    expect(CONTRACTOR_PROGRESS_REPLAY_POLICY).toMatchObject({
+      queueKey: "contractor_progress",
+      owner: "contractor_progress_worker",
+      concurrencyLimit: 1,
+      ordering: "created_at_fifo",
+      backpressure: "coalesce_triggers_and_rerun_once",
+    });
+  });
+
+  it("bounds the flush loop with a ceiling instead of while true", () => {
+    const source = readFileSync(join(__dirname, "contractorProgressWorker.ts"), "utf8");
+
+    expect(CONTRACTOR_PROGRESS_FLUSH_LOOP_CEILING).toBeGreaterThan(0);
+    expect(source).not.toMatch(/while\s*\(\s*true\s*\)/);
+    expect(source).toContain("CONTRACTOR_PROGRESS_FLUSH_LOOP_CEILING");
+    expect(source).toContain("worker_loop_ceiling_reached");
+  });
+
+  it("exits before the ceiling when there is no contractor progress work", async () => {
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+        loopIterationLimit: 1,
+      },
+      "manual_retry",
+    );
+
+    expect(result).toMatchObject({
+      processedCount: 0,
+      remainingCount: 0,
+      failed: false,
+      errorMessage: null,
+      failureClass: "none",
+    });
+    expect(mockEnsureWorkProgressSubmission).not.toHaveBeenCalled();
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "worker_loop_ceiling_reached",
+      ),
+    ).toBe(false);
+  });
+
+  it("exits at the loop ceiling and leaves remaining contractor progress work queued", async () => {
+    await seedProgressDraft("progress-ceiling-1");
+    await seedProgressDraft("progress-ceiling-2");
+    mockEnsureWorkProgressSubmission.mockResolvedValue({
+      ok: true,
+      logId: "log-ceiling",
+    });
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+        loopIterationLimit: 1,
+      },
+      "manual_retry",
+    );
+
+    expect(result).toMatchObject({
+      processedCount: 1,
+      remainingCount: 1,
+      failed: true,
+      errorMessage: "contractor_progress_loop_ceiling_reached",
+      failureClass: "retryable_sync_failure",
+    });
+    expect(mockEnsureWorkProgressSubmission).toHaveBeenCalledTimes(1);
+    expect(await loadContractorProgressQueue()).toEqual([
+      expect.objectContaining({ progressId: "progress-ceiling-2" }),
+    ]);
+    expect(
+      getPlatformObservabilityEvents().filter(
+        (event) => event.event === "worker_loop_ceiling_reached",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        screen: "contractor",
+        sourceKind: "queue:contractor_progress",
+        rowCount: 1,
+        extra: expect.objectContaining({
+          worker: "contractor_progress",
+          processedCount: 1,
+          remainingCount: 1,
+          loopIterationLimit: 1,
+          triggerSource: "manual_retry",
+        }),
+      }),
+    ]);
+    expect(getQueueBacklogSnapshot()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          queue: "contractor_progress",
+          size: 1,
+          processingCount: 0,
+        }),
+      ]),
+    );
+  });
+
+  it("does not run parallel submits when reconnect and manual retry collide", async () => {
+    await seedProgressDraft();
+
+    const deferred = createDeferred<{
+      ok: true;
+      logId: string;
+    }>();
+    let active = 0;
+    let maxActive = 0;
+    mockEnsureWorkProgressSubmission.mockImplementation(async () => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      try {
+        return await deferred.promise;
+      } finally {
+        active -= 1;
+      }
+    });
+
+    const deps = {
+      supabaseClient: {},
+      pickFirstNonEmpty: (...values: unknown[]) =>
+        values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+      getNetworkOnline: () => true,
+    };
+
+    const first = flushContractorProgressQueue(deps, "network_back");
+    const second = flushContractorProgressQueue(deps, "manual_retry");
+
+    await waitUntil(
+      () => mockEnsureWorkProgressSubmission.mock.calls.length === 1,
+      "progress submit did not start",
+    );
+    expect(mockEnsureWorkProgressSubmission).toHaveBeenCalledTimes(1);
+
+    deferred.resolve({ ok: true, logId: "log-1" });
+    const [firstResult, secondResult] = await Promise.all([first, second]);
+
+    expect(firstResult.failed).toBe(false);
+    expect(secondResult.failed).toBe(false);
+    expect(maxActive).toBe(1);
+    expect(await loadContractorProgressQueue()).toEqual([]);
+    expect(getContractorProgressDraft("progress-1")?.syncStatus).toBe("synced");
+  });
+
+  it("tracks contractor progress backlog before and after a successful flush", async () => {
+    await seedProgressDraft("progress-backlog-success");
+    mockEnsureWorkProgressSubmission.mockResolvedValue({
+      ok: true,
+      logId: "log-backlog-success",
+    });
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+      },
+      "network_back",
+    );
+
+    expect(result.failed).toBe(false);
+    const backlogEvents = getPlatformObservabilityEvents().filter(
+      (event) => event.sourceKind === "queue:contractor_progress",
+    );
+    expect(backlogEvents.map((event) => event.event)).toEqual([
+      "contractor_progress_backlog_before_flush",
+      "contractor_progress_backlog_after_flush",
+    ]);
+    expect(backlogEvents[0]).toMatchObject({
+      rowCount: 1,
+      extra: expect.objectContaining({
+        progressId: "progress-backlog-success",
+        triggerSource: "network_back",
+        totalCount: 1,
+      }),
+    });
+    expect(backlogEvents[1]).toMatchObject({
+      rowCount: 0,
+      extra: expect.objectContaining({
+        progressId: "progress-backlog-success",
+        triggerSource: "network_back",
+        totalCount: 0,
+      }),
+    });
+    expect(getQueueBacklogSnapshot()).toEqual([
+      expect.objectContaining({
+        queue: "contractor_progress",
+        size: 0,
+        processingCount: 0,
+        failedCount: 0,
+        retryScheduledCount: 0,
+      }),
+    ]);
+  });
+
+  it("tracks contractor progress retry backlog without changing retry semantics", async () => {
+    await seedProgressDraft("progress-backlog-retry");
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => false,
+      },
+      "network_back",
+    );
+
+    expect(result).toMatchObject({
+      failed: true,
+      remainingCount: 1,
+      failureClass: "offline_wait",
+    });
+    expect(await loadContractorProgressQueue({ includeFinal: true })).toEqual([
+      expect.objectContaining({
+        progressId: "progress-backlog-retry",
+        lifecycleStatus: "retry_scheduled",
+        status: "failed",
+      }),
+    ]);
+    const backlogEvents = getPlatformObservabilityEvents().filter(
+      (event) => event.sourceKind === "queue:contractor_progress",
+    );
+    expect(backlogEvents.map((event) => event.event)).toEqual([
+      "contractor_progress_backlog_before_flush",
+      "contractor_progress_backlog_after_flush",
+    ]);
+    expect(backlogEvents[1]).toMatchObject({
+      rowCount: 1,
+      extra: expect.objectContaining({
+        progressId: "progress-backlog-retry",
+        triggerSource: "network_back",
+        totalCount: 1,
+      }),
+    });
+    expect(getQueueBacklogSnapshot()).toEqual([
+      expect.objectContaining({
+        queue: "contractor_progress",
+        size: 1,
+        processingCount: 0,
+        failedCount: 1,
+        retryScheduledCount: 1,
+      }),
+    ]);
+  });
+
+  it("cleanup removes progress draft and queue entry for terminal work", async () => {
+    await seedProgressDraft("progress-terminal");
+
+    const result = await clearContractorProgressLocalRecovery("progress-terminal");
+
+    expect(result).toMatchObject({
+      kind: "contractor_progress",
+      entityId: "progress-terminal",
+      cleared: true,
+      clearedOwners: [
+        "contractor_progress_queue_v2",
+        "contractor_progress_draft_store_v2",
+      ],
+    });
+    expect(getContractorProgressDraft("progress-terminal")).toBeNull();
+    expect(await loadContractorProgressQueue()).toEqual([]);
+  });
+
+  it("removing one progress draft leaves unrelated local recovery untouched", async () => {
+    await seedProgressDraft("progress-terminal");
+    await seedProgressDraft("progress-active");
+
+    await clearContractorProgressDraftForProgress("progress-terminal");
+
+    expect(getContractorProgressDraft("progress-terminal")).toBeNull();
+    expect(getContractorProgressDraft("progress-active")).toBeTruthy();
+  });
+
+  it("app active flush clears terminal progress recovery instead of submitting it", async () => {
+    await seedProgressDraft("progress-terminal");
+    mockEnsureWorkProgressSubmission.mockResolvedValue({
+      ok: true,
+      logId: "log-terminal",
+    });
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+        inspectRemoteProgress: async () => ({
+          kind: "contractor_progress",
+          entityId: "progress-terminal",
+          terminal: true,
+          reason: "work_closed_on_server",
+        }),
+      },
+      "app_active",
+    );
+
+    expect(result.failed).toBe(false);
+    expect(mockEnsureWorkProgressSubmission).not.toHaveBeenCalled();
+    expect(getContractorProgressDraft("progress-terminal")).toBeNull();
+    expect(await loadContractorProgressQueue()).toEqual([]);
+  });
+
+  it("worker still processes active progress recovery when remote truth is not terminal", async () => {
+    await seedProgressDraft("progress-active");
+    mockEnsureWorkProgressSubmission.mockResolvedValue({
+      ok: true,
+      logId: "log-active",
+    });
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+        inspectRemoteProgress: async () => ({
+          kind: "contractor_progress",
+          entityId: "progress-active",
+          terminal: false,
+          status: "ready",
+          remainingCount: 1,
+        }),
+      },
+      "network_back",
+    );
+
+    expect(result.failed).toBe(false);
+    expect(mockEnsureWorkProgressSubmission).toHaveBeenCalledTimes(1);
+    expect(getContractorProgressDraft("progress-active")?.syncStatus).toBe("synced");
+  });
+});

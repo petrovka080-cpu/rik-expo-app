@@ -1,0 +1,9 @@
+Representation: bounded primary HTML text observation, not raw HTML bytes.
+Official URL: https://www.legrand.fr/pro/catalogue/boitier-saillie-etanche-plexo-2-postes-horizontaux-et-verticaux-sans-cloison-avec-4-embouts-a-membrane-gris
+Observed product reference: 069672L.
+Cloud primary text locators: product reference line120; installation guidance line155.
+Short verbatim excerpt: les 2 points de fixation repérés par des trous oblongs sont suffisants
+Paraphrase: For the described multi-post box, the manufacturer says two marked oblong-hole fixing points provide sufficient attachment to the support. It describes different anchor examples for masonry and hollow partitions.
+Scope: manufacturer guidance for the exact box, not accepted project design, substrate capacity, actual prepared holes or a universal labour/fastener norm.
+No site facts, mandatory purchase quantum, prices, fixing size/count formula, drilling operation or exact069576L+069672L compatibility are admitted.
+The associated product link on this page resolves to069562L; it is not used as evidence for069576L.

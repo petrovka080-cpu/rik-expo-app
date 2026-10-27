@@ -1,0 +1,5 @@
+BOUNDED CLOUD PRIMARY HTML FACT WITNESS; not raw HTML/PDF bytes or source admission.
+Official page: https://www.bosch-professional.com/it/it/products/gbh-2-26-f-06112A4000
+Server text reviewed 2026-10-26: exact order06112A4000, lines532,540-559,574-603.
+Manufacturer facts: corded rotary hammer;230V;SDSplus holder; concrete drilling diameter4-26mm. Supplied role list: machine body, auxiliary handle2602025141, depth stop210mm1613001010, SDSplus quick-change chuck2608572213,13mm quick-change chuck2608572212, machine cloth and carrying case. A declared matching complete kit must retain each listed role; actual allocation and condition are not proved by this page.
+Not proved: suitable drill bit, dust extraction, dust protection, hidden-service clearance, actual power supply/plug, maintenance, bit renewal, rental or wear rate, labour, actual drilling, complete installation or whole tool provision. No norms per metre, per hole, crew or hour are authored. The UK06112A4070/060 variants were not substituted. Remote raw artifact SHA is unknown. Existing IEK/fischer project-node admission remains separate.

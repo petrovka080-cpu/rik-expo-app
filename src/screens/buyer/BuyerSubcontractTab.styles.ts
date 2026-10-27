@@ -1,0 +1,175 @@
+import { StyleSheet } from "react-native";
+import { UI as B_UI } from "./buyerUi";
+
+export const styles = StyleSheet.create({
+  createBtn: {
+    backgroundColor: "#16A34A",
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  createBtnText: {
+    color: "#fff",
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  card: {
+    backgroundColor: B_UI.cardBg,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: B_UI.border,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  cardTitle: {
+    color: B_UI.text,
+    fontSize: 16,
+    fontWeight: "800",
+    flex: 1,
+  },
+  cardSubtitle: {
+    color: B_UI.sub,
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  cardPrice: {
+    color: "#22C55E",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  cardDate: {
+    color: B_UI.sub,
+    fontSize: 12,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  formHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  formTitle: {
+    color: B_UI.text,
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  inputGroup: {
+    marginBottom: 12,
+  },
+  label: {
+    color: B_UI.sub,
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  sectionHeader: {
+    marginTop: 20,
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: B_UI.border,
+    paddingBottom: 6,
+  },
+  sectionTitle: {
+    color: B_UI.sub,
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  input: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 12,
+    padding: 14,
+    color: B_UI.text,
+    fontSize: 15,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  dateRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  datePicker: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    height: 52,
+    justifyContent: "center",
+  },
+  chipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  chip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  chipActive: {
+    backgroundColor: "rgba(34,197,94,0.2)",
+    borderColor: "rgba(34,197,94,0.6)",
+  },
+  chipText: {
+    color: B_UI.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  chipTextActive: {
+    color: "#86EFAC",
+  },
+  btnRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 24,
+  },
+  actionBtn: {
+    height: 52,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: B_UI.btnBorder,
+  },
+  btnText: {
+    color: B_UI.text,
+    fontWeight: "900",
+  },
+  emptyText: {
+    color: B_UI.sub,
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 16,
+  },
+});

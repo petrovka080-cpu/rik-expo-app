@@ -1,0 +1,156 @@
+{
+  "schema": "ai-estimate-controlled-pilot-cohorts-v1",
+  "pilot_id": "ai-estimate-controlled-pilot-web-emulator-v1",
+  "cohorts": [
+    {
+      "cohort_id": "INTERNAL_QA",
+      "enabled_features": [
+        "prompt_to_grouped_draft",
+        "details_drawer",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "buyer_handoff",
+        "support_package_export"
+      ],
+      "allowed_work_families": [
+        "CORE_REPAIR",
+        "INFRASTRUCTURE",
+        "COMPLEX",
+        "ENERGY",
+        "RANDOM_NPLUS"
+      ],
+      "blocked_work_families": [
+        "MARKETPLACE",
+        "RFQ",
+        "WAREHOUSE",
+        "PAYMENT"
+      ],
+      "max_estimates_per_day": 100,
+      "requires_expert_review": true,
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": true,
+      "can_export_support_package": true,
+      "requires_web_smoke": true,
+      "requires_android_emulator_smoke": true
+    },
+    {
+      "cohort_id": "ESTIMATOR_REVIEWERS",
+      "enabled_features": [
+        "prompt_to_grouped_draft",
+        "details_drawer",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "support_package_export"
+      ],
+      "allowed_work_families": [
+        "CORE_REPAIR",
+        "INFRASTRUCTURE",
+        "COMPLEX",
+        "ENERGY",
+        "RANDOM_NPLUS"
+      ],
+      "blocked_work_families": [
+        "MARKETPLACE",
+        "RFQ",
+        "WAREHOUSE",
+        "PAYMENT"
+      ],
+      "max_estimates_per_day": 40,
+      "requires_expert_review": true,
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": false,
+      "can_export_support_package": true,
+      "requires_web_smoke": true,
+      "requires_android_emulator_smoke": true
+    },
+    {
+      "cohort_id": "DIRECTOR_REVIEWERS",
+      "enabled_features": [
+        "prompt_to_grouped_draft",
+        "details_drawer",
+        "confirm_snapshot",
+        "pdf_from_snapshot",
+        "buyer_handoff"
+      ],
+      "allowed_work_families": [
+        "CORE_REPAIR",
+        "INFRASTRUCTURE",
+        "COMPLEX",
+        "ENERGY"
+      ],
+      "blocked_work_families": [
+        "MARKETPLACE",
+        "RFQ",
+        "WAREHOUSE",
+        "PAYMENT"
+      ],
+      "max_estimates_per_day": 25,
+      "requires_expert_review": true,
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": true,
+      "can_export_support_package": true,
+      "requires_web_smoke": true,
+      "requires_android_emulator_smoke": true
+    },
+    {
+      "cohort_id": "PROCUREMENT_REVIEWERS",
+      "enabled_features": [
+        "buyer_handoff",
+        "support_package_export"
+      ],
+      "allowed_work_families": [
+        "CORE_REPAIR",
+        "INFRASTRUCTURE",
+        "COMPLEX",
+        "ENERGY",
+        "RANDOM_NPLUS"
+      ],
+      "blocked_work_families": [
+        "MARKETPLACE",
+        "RFQ",
+        "WAREHOUSE",
+        "PAYMENT"
+      ],
+      "max_estimates_per_day": 30,
+      "requires_expert_review": true,
+      "can_generate_pdf": false,
+      "can_generate_procurement_package": true,
+      "can_export_support_package": true,
+      "requires_web_smoke": true,
+      "requires_android_emulator_smoke": true
+    },
+    {
+      "cohort_id": "LIMITED_CLIENT_DEMO",
+      "enabled_features": [
+        "prompt_to_grouped_draft",
+        "details_drawer",
+        "pdf_from_snapshot"
+      ],
+      "allowed_work_families": [
+        "CORE_REPAIR",
+        "INFRASTRUCTURE"
+      ],
+      "blocked_work_families": [
+        "MARKETPLACE",
+        "RFQ",
+        "WAREHOUSE",
+        "PAYMENT",
+        "ENERGY",
+        "COMPLEX"
+      ],
+      "max_estimates_per_day": 10,
+      "requires_expert_review": true,
+      "can_generate_pdf": true,
+      "can_generate_procurement_package": false,
+      "can_export_support_package": false,
+      "requires_web_smoke": true,
+      "requires_android_emulator_smoke": true
+    }
+  ],
+  "acceptance": {
+    "pilot_cohorts_created": true,
+    "pilot_limited_to_allowed_cohorts": true,
+    "pilot_web_smoke_required": true,
+    "pilot_android_emulator_smoke_required": true
+  }
+}

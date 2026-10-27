@@ -1,0 +1,45 @@
+{
+  "status": "ROOT_REVIEWED_FLOOR_CONCRETE00209_PARTIAL_APPEND",
+  "at": "2026-10-19T12:51:48.494938+00:00",
+  "reviewer": "/root/delivery_sol61",
+  "workingModel": "gpt-6.1-sol",
+  "currentIntakeSha256": "97da664fd5b9c444dfb1feb37f531700459c20ad5c13ac773367bf5cd72e17fe",
+  "pair": {
+    "definitionReleaseId": "f36fa786-6634-518c-853d-b9ae54ab3ccf",
+    "searchReleaseId": "304b7f3f-1618-5e0e-91ea-da062e4f287e"
+  },
+  "identity": {
+    "catalogId": "canonical-work:master:floor_concrete_underlayer_krer11_01_002_09",
+    "workKey": "floor_concrete_underlayer_krer11_01_002_09",
+    "groupId": "wg:master:floor_concrete_underlayer_krer11_01_002_09",
+    "sourceIdentity": "master-work:floor_concrete_underlayer_krer11_01_002_09",
+    "locatorKey": "krer11-01-002-09-floor-concrete-underlayer-exact"
+  },
+  "boundedSemanticComparison": "EIGHT_CURRENT_HASHES_UNCHANGED_DIFFERENT_STANDALONE_SCOPE",
+  "quantityScope": "PARTIAL",
+  "fullTechnicalAcceptance": false,
+  "machineFinancialAdmission": false,
+  "acceptedNewCompleteTypes": 0,
+  "openNeeds": 5,
+  "globalPhysicalAbsenceProved": false,
+  "actualCurrentHeaderReview": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/current-subject-group-read-r70b/current-subject-group-result-r70b.json",
+    "sha256": "26b3c58879c50db53b96a7a683442e950b99c3abff12be38b0766bbf4dd6b452",
+    "bytes": 1059751
+  },
+  "merged14TestReceipt": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/concrete-subject-canonical-integration-r71/owned-merged-checks-r2/00-receipt.json",
+    "sha256": "da645e0ef6dab7313976a314d9352e1a038933496fae38775241399a9e72ece2",
+    "bytes": 1351
+  },
+  "sourceFreeze": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/concrete-subject-canonical-integration-r71/actual-source-freeze-r71.json",
+    "sha256": "55f7819a0ca14a7d1b927df09ad8179df2fc106d3c2f0db7d67d11dcc4efc490",
+    "bytes": 793313
+  },
+  "reviewedPhysicalScope": "Exact11-01-002-09 net cubic metres of B12.5 underfloor layer with surface vibration, joints and curing. Structural foundations/stairs/piles, bridge asphalt, existing tile/laminate/CN69 finish profiles remain unchanged; demolition and post-demolition preparation are distinct from new standalone underfloor concrete volume.",
+  "sourceQuantityArithmetic": "For12.5m3: worker22.5h,vibrator physical6mh,concrete12.75m3,mastic0.025t,water4.375m3,boards0.0125m3. Whole labour and shared water not split/doubled. Four separate material balances.",
+  "paymentBoundary": "Vibrator own/hired/physical branches remain INFO, no cost/procurement eligibility after manual price77. Exact equipment composition source does not prove personal operator labour or contemporary compatible quote.",
+  "publicationAuthorizationScope": "Partial-source-specific append through existing normal and locked publisher lifecycle only after actual scoped-registry capture, complete checks, dry rollback and preservation/readback. This review is not a database apply or user delivery.",
+  "astraCalls": 0
+}

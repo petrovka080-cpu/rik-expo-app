@@ -1,0 +1,218 @@
+{
+  "contract": "gox-build.masonry-ready-m50-serial-supply-post/r1",
+  "sourceId": "masonry_ready_m50_serial_supply_post_kt3111176_reference_r1",
+  "locatorKey": "kt3111176-serial-mortar-post-entire-3-4-2-crew2-r1",
+  "normId": "КТ3.1-1.11-76",
+  "prefix": "masonry:ready-m50:serial-post:kt3111176:r1",
+  "titleRu": "Последовательный пост подачи готового раствора",
+  "catalogId": "canonical-work:base:masonry_interior_brick_wall_lay_standard",
+  "currentDefinitionId": "68cf9452-1747-56ba-9d1c-dd4e91d1cb3a",
+  "currentDefinitionSha256": "650597d17282f923b002c3a33b6d423099728084593b32b3ceb834164a3578ad",
+  "currentDefinitionVersion": 8,
+  "publicationIsWholeMasonryAdmission": false,
+  "full": 0,
+  "closedNeeds": 0,
+  "newlyQuantifiedRosterCategories": 4,
+  "source": {
+    "path": "data/estimate-benchmarks/source-artifacts/masonry-ready-m50-post-kt3111176-r1/KT3.1-1.11-76-author-scan.pdf",
+    "sha256": "fac02f9833c4844770519dc8560ec579b118e9b665f920cebf5cf38e4434fc28",
+    "url": "https://meganorm.ru/Data2/1/4293797/4293797431.pdf",
+    "author": "Мособлоргтехстрой / ЦНИБ Главмособлстроя; ВНИПИ труда Госстроя СССР",
+    "edition": "1976; взамен1968",
+    "jurisdiction": "USSR historical authored method; not current KG regulatory admission",
+    "hostingRole": "MIRROR_OF_ORIGINAL_AUTHOR_SCAN",
+    "locator": "PDF2/printed41 §1–3; PDF3/printed42 §3.2/4.1/4.2; PDF4/printed43 §4.3"
+  },
+  "parentSeal": {
+    "manifestPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-22\\files-pasted-by-the-user-c-2\\work\\masonry-wall-completion-b-r1\\MANIFEST_R1.json",
+    "manifestSha256": "f1e8c6bf946a6bc92123f012b5cddb0d10be12717188927759ac58afdbac3f24",
+    "immutable": true
+  },
+  "parentPrimary": "m33_masonry_wall_length_m",
+  "parentSelector": "m33_masonry_source_system",
+  "parentSelectedValue": "Керамический кирпич 250 × 120 × 65 мм, М100; внутренняя стена 250 мм; готовый раствор М50 по КРЕР-2015",
+  "selectorId": "m50post_method_profile",
+  "selectorValue": "Один последовательный пост подачи готового раствора",
+  "noPostValue": "Без отдельного профиля подачи",
+  "geometryIds": [
+    "m33_masonry_wall_length_m",
+    "m33_masonry_wall_height_m",
+    "m33_masonry_openings_area_m2",
+    "m33_masonry_nonmasonry_insert_volume_m3",
+    "m33_masonry_storey_height_m"
+  ],
+  "wholeOrganization": {
+    "sequentialPosts": "1",
+    "parallelPostsAllowed": false,
+    "normativeInventoryIsNotConsumption": true,
+    "twoTubsLoadedTogether": true,
+    "oneTubLiftedAtATime": true,
+    "mortarIsReadyNotManufacturedOnsite": true,
+    "preliminaryRemixing": false,
+    "crew": [
+      {
+        "role": "Такелажник",
+        "grade": "II",
+        "quantity": "1",
+        "unitId": "person"
+      },
+      {
+        "role": "Такелажник",
+        "grade": "IV",
+        "quantity": "1",
+        "unitId": "person"
+      }
+    ],
+    "operations": [
+      "Подготовить и проверить тару и рабочие ящики",
+      "Загрузить две бадьи готовым раствором",
+      "Застропить и подать одну бадью краном",
+      "Разгрузить раствор в рабочие ящики",
+      "Очистить бадью, вернуть и расстропить"
+    ]
+  },
+  "roster": [
+    {
+      "key": "rotating-tubs",
+      "titleRu": "Поворотная бадья для раствора 0,8 м³",
+      "unitId": "piece",
+      "quantity": "3",
+      "category": "equipment",
+      "drawingInternal": "1062",
+      "capacityM3": "0.8",
+      "locator": "PDF3/printed42 §3.2 first row"
+    },
+    {
+      "key": "steel-boxes",
+      "titleRu": "Стальной ящик для раствора 0,27 м³",
+      "unitId": "piece",
+      "quantity": "4",
+      "category": "equipment",
+      "drawingInternal": "1107",
+      "capacityM3": "0.27",
+      "locator": "PDF3/printed42 §3.2 second row"
+    },
+    {
+      "key": "shovels",
+      "titleRu": "Растворная лопата",
+      "unitId": "piece",
+      "quantity": "2",
+      "category": "tool",
+      "drawingInternal": "ГОСТ3620-63",
+      "locator": "PDF3/printed42 §3.2 third row"
+    },
+    {
+      "key": "rigger-crew",
+      "titleRu": "Такелажники II и IV разрядов",
+      "unitId": "person",
+      "quantity": "2",
+      "category": "service",
+      "locator": "PDF2/printed41 §3.1"
+    }
+  ],
+  "projectFacts": [
+    {
+      "key": "load",
+      "titleRu": "Фактическая ведомость грузов и массы заполненной тары"
+    },
+    {
+      "key": "handler",
+      "titleRu": "Схема применяемого грузозахвата и строповки"
+    },
+    {
+      "key": "crane",
+      "titleRu": "Грузовысотная схема фактического крана по ППР"
+    },
+    {
+      "key": "receiving",
+      "titleRu": "Приёмное место и схема одного последовательного фронта"
+    },
+    {
+      "key": "crew",
+      "titleRu": "Назначенное звено с допуском к такелажным работам"
+    },
+    {
+      "key": "ready-mortar",
+      "titleRu": "Паспорт поставки свежего готового раствора М50 без перемешивания"
+    },
+    {
+      "key": "price-scope",
+      "titleRu": "Фактические границы включённой подачи, тары и полной эксплуатации"
+    }
+  ],
+  "internalGaps": [
+    {
+      "key": "product-compatibility",
+      "titleRu": "Техническая совместимость поворотной бадьи и рабочего ящика",
+      "unitId": "",
+      "gapKind": "INTERNAL_PRODUCT_SOURCE",
+      "missing": "Exact applicable1062/1107 drawings and modern product passport/functional matching; no checkbox confirms unknown source compatibility."
+    },
+    {
+      "key": "whole-operation-fit",
+      "titleRu": "Применимость полного последовательного процесса подачи",
+      "unitId": "",
+      "gapKind": "INTERNAL_METHOD_SOURCE",
+      "missing": "Exact finite source organization/front/load cycle and demonstrated compatibility with whole KG readyM50 handling; partial loads/dispatch or parallel variants not inferred."
+    },
+    {
+      "key": "lifting-slings",
+      "titleRu": "Стропы и соединительные элементы подъёма",
+      "unitId": "piece",
+      "gapKind": "INTERNAL_APPLICATION_NORM",
+      "missing": "Whole rated handler/slings/shackles roster and sufficient quantity; no1sling from crane hours."
+    },
+    {
+      "key": "receiving-access",
+      "titleRu": "Доступ и ограждение приёмного места раствора",
+      "unitId": "",
+      "gapKind": "INTERNAL_APPLICATION_NORM",
+      "missing": "Compatible complete access/deck/guard/edge protection with actual receiving geometry."
+    },
+    {
+      "key": "rigger-ppe",
+      "titleRu": "Полный комплект защиты такелажников",
+      "unitId": "",
+      "gapKind": "INTERNAL_APPLICATION_NORM",
+      "missing": "Source2people does not establish full PPE/replacement/shift consumption quantities."
+    },
+    {
+      "key": "inspection-cleaning-waste",
+      "titleRu": "Осмотр, очистка и отходы поста подачи",
+      "unitId": "",
+      "gapKind": "INTERNAL_APPLICATION_NORM_AND_PROJECT_FACT",
+      "missing": "Full physical inspection/cleaning/waste kit and actual exceptional waste/haul boundary; included cleaning action is not a universal disposal quantity."
+    }
+  ],
+  "stockFacts": [
+    {
+      "key": "rotating-tubs",
+      "titleRu": "Фактически доступные поворотные бадьи"
+    },
+    {
+      "key": "steel-boxes",
+      "titleRu": "Фактически доступные стальные ящики"
+    },
+    {
+      "key": "shovels",
+      "titleRu": "Фактически доступные растворные лопаты"
+    }
+  ],
+  "quantitySupplyBoundary": "Known source inventory3/4/2 plus crew2 is INFO only. Actual compatible available stock produces informational shortage only. No initial-order owner is admitted; exact compatible product and governed supply balance remain required.",
+  "paymentBoundary": "No additional labour0.40h/m3 or crane hours. Existing KG07/08 whole labour and full machine operation are the only paid owners; all added rows INFO.",
+  "sourceLiteratureReferenceOnly": {
+    "publishedLabourPerM3": "0.40",
+    "graphManMinutesPer0_8M3": "20.0",
+    "notUsedInAnyFormula": true
+  },
+  "sharedDependency": {
+    "key": "CANONICAL_BOQ_PERSON_HEADCOUNT_INFO_UNIT_REQUIRED",
+    "professionalOwner": "src/lib/estimate/professionalUnitRegistry.ts",
+    "engineeringOwner": "src/lib/estimate/v4/engineeringUnitRegistryV4.ts",
+    "requiredCanonicalUnit": "person",
+    "displayRu": "чел.",
+    "meaning": "headcount, never labour-time",
+    "noLocalFallback": true,
+    "rootOwnsAdmission": true
+  }
+}

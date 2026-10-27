@@ -1,0 +1,284 @@
+{
+  "contract": "gox-build.facade-factory-panel-vertical-grip/r3",
+  "status": "BOUNDED_INTERNAL_COMPONENT_DRAFT_NOT_READY_QUEUE_ENTRY",
+  "publicCardCreated": false,
+  "source": {
+    "manual": {
+      "key": "RUUKKI-SPA-vertical-grip",
+      "url": "https://www.ruukki.com/docs/default-source/b2b-documents/sandwich-panels/user%27s-manual_rpt2011-v_ver-009_spa80--300_t.pdf?sfvrsn=43638997652755330000",
+      "officialHolder": "https://www.ruukki.com/building-envelopes/services-support/sandwich-panel-support/installation-instructions-for-sandwich-panels",
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\RUUKKI-SPA-vertical-grip.pdf",
+      "sha256": "dad3769bfe70ed6d10015f9621216edeba8dfbf6c8b43bc4369c4170273a4bf9",
+      "bytes": 1846689,
+      "pdfPages": 36,
+      "sourceKind": "FULL_PRIMARY_OFFICIAL_DOCUMENT",
+      "retrievedAt": "2026-10-23T06:52:18.615203+00:00",
+      "status": "FULL_RETRIEVED_TEXT_EXTRACTED_VISUAL_REVIEW_PENDING"
+    },
+    "system": {
+      "key": "RUUKKI-SPA-install-07-2026",
+      "url": "https://www.ruukki.com/docs/default-source/b2b-documents/sandwich-panels/en_sandwich_panel_spa_installation_instr_07_2026.pdf?sfvrsn=29639243296001200000",
+      "officialHolder": "https://www.ruukki.com/building-envelopes/services-support/sandwich-panel-support/installation-instructions-for-sandwich-panels",
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c\\work\\facades-materials-ready-check-r2\\whole-family-current-systems-r3\\expanded-research\\RUUKKI-SPA-install-07-2026.pdf",
+      "sha256": "68f7157bca8eb77bbe9881c71dfc10b21deb9da41f6bee6287cf0498394c8122",
+      "bytes": 7875999,
+      "pdfPages": 32,
+      "sourceKind": "FULL_PRIMARY_OFFICIAL_DOCUMENT",
+      "retrievedAt": "2026-10-23T06:52:16.235953+00:00",
+      "status": "FULL_RETRIEVED_TEXT_EXTRACTED_VISUAL_REVIEW_PENDING"
+    },
+    "actuallyReadGripPDFPages": [
+      2,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "scope": "one original complete case per simultaneously equipped single-panel front; rented provision on actual PPR period; complete case is NOT complete lifting post or facade"
+  },
+  "internalExactIdentity": "RPT2011-V ver009 14.11.2024;SPA80-300 manufacturer specific,selected200mm vertical upperstraightend;notstandardtonguededge",
+  "selectedPanelThicknessMm": "200",
+  "maximumSingleLifterNominalLengthM": "4.6",
+  "boundedMaximumNominalLengthM": "6",
+  "fullCaseRoster": [
+    {
+      "key": "lifters",
+      "titleRu": "Регулируемый захват для вертикального монтажа минераловатных стеновых панелей80–300мм",
+      "quantityPerOriginalCase": "2",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents"
+    },
+    {
+      "key": "adjustment-80",
+      "titleRu": "Регулировочный узел с болтом для панели80мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "copper",
+      "boltLengthMm": "65",
+      "orangeUsesExistingBlueBolt": false,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "adjustment-100",
+      "titleRu": "Регулировочный узел с болтом для панели100мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "red",
+      "boltLengthMm": "90",
+      "orangeUsesExistingBlueBolt": false,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "adjustment-125",
+      "titleRu": "Регулировочный узел с болтом для панели125мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "black",
+      "boltLengthMm": "120",
+      "orangeUsesExistingBlueBolt": false,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "adjustment-150",
+      "titleRu": "Регулировочный узел с болтом для панели150мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "yellow",
+      "boltLengthMm": "140",
+      "orangeUsesExistingBlueBolt": false,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "adjustment-175",
+      "titleRu": "Регулировочный узел с болтом для панели175мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "white",
+      "boltLengthMm": "170",
+      "orangeUsesExistingBlueBolt": false,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "adjustment-200",
+      "titleRu": "Регулировочный узел с болтом для панели200мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "blue",
+      "boltLengthMm": "200",
+      "orangeUsesExistingBlueBolt": false,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "adjustment-200-plus",
+      "titleRu": "Регулировочная втулка для панели200+мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "orange",
+      "boltLengthMm": "200",
+      "orangeUsesExistingBlueBolt": true,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "adjustment-230",
+      "titleRu": "Регулировочный узел с болтом для панели230мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "green",
+      "boltLengthMm": "220",
+      "orangeUsesExistingBlueBolt": false,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "adjustment-300",
+      "titleRu": "Регулировочный узел с болтом для панели300мм",
+      "quantityPerOriginalCase": "4",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents",
+      "internalSourceColour": "colourless",
+      "boltLengthMm": "300",
+      "orangeUsesExistingBlueBolt": false,
+      "notDecomposedIntoInventedParts": true
+    },
+    {
+      "key": "key19",
+      "titleRu": "Ключ трубчатый19мм",
+      "quantityPerOriginalCase": "1",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents"
+    },
+    {
+      "key": "securing-strap-set",
+      "titleRu": "Страховочный комплект с натяжителем и удлинительными лентами2,5м и5,5м",
+      "quantityPerOriginalCase": "2",
+      "unitId": "set",
+      "locator": "grip PDF2 original case contents",
+      "sourceCallsThreeParts": true,
+      "noInventedSubpartCounts": true
+    },
+    {
+      "key": "instructions",
+      "titleRu": "Эксплуатационная инструкция комплекта",
+      "quantityPerOriginalCase": "1",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents"
+    },
+    {
+      "key": "case",
+      "titleRu": "Транспортный кейс комплекта захватов",
+      "quantityPerOriginalCase": "1",
+      "unitId": "piece",
+      "locator": "grip PDF2 original case contents"
+    }
+  ],
+  "wholeBoundedOperations": [
+    {
+      "key": "receive-inspect",
+      "titleRu": "Получение, проверка комплектности и маркировки оснастки"
+    },
+    {
+      "key": "adjust",
+      "titleRu": "Настройка захватов на толщину панели"
+    },
+    {
+      "key": "fit-secure",
+      "titleRu": "Крепление захватов и страховочных лент"
+    },
+    {
+      "key": "trial-lift",
+      "titleRu": "Предварительный подъём и проверка удержания"
+    },
+    {
+      "key": "lift-position",
+      "titleRu": "Вертикальный подъём и позиционирование панели"
+    },
+    {
+      "key": "fix-release",
+      "titleRu": "Крепление панели к основанию и освобождение оснастки"
+    },
+    {
+      "key": "inspect-return",
+      "titleRu": "Осмотр, обслуживание и возврат оснастки"
+    }
+  ],
+  "protectedNeeds": [
+    {
+      "key": "protective-lower-end-sheet",
+      "titleRu": "Защитная плита под нижний торец панели",
+      "category": "equipment",
+      "unitId": "piece",
+      "missing": "PDF16/17 requires protective sheet outside the case; its compatible material/dimensions/stock/replacement norm is not quantified by the case roster."
+    },
+    {
+      "key": "crane-full-operation",
+      "titleRu": "Полная эксплуатация крана для подъёма панели",
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "missing": "Actual crane/load chart/radius/rigging mass and energy/operator coverage; whole operation time norm is absent, not derived from panel area or kit count."
+    },
+    {
+      "key": "primary-lifting-connection",
+      "titleRu": "Внешнее присоединение захватов к крану",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Actual approved primary lifting connection and complete compatible quantities; original securing straps do not replace every crane sling/shackle or lifting attachment."
+    },
+    {
+      "key": "safe-access",
+      "titleRu": "Средства доступа, ограждения и защиты от падения",
+      "category": "equipment",
+      "unitId": null,
+      "missing": "Exact access/installation method at actual height and crew; full physical provision and quantities are not established by the case."
+    },
+    {
+      "key": "whole-post-labour",
+      "titleRu": "Труд полного подъёмного цикла и осмотров перед подъёмом",
+      "category": "labor",
+      "unitId": "man_hour",
+      "missing": "Full crew/hour norm including rigging, visual checks, adjustment, guidance, panel fastening/release; no man-hours inferred from two devices."
+    },
+    {
+      "key": "work-gloves",
+      "titleRu": "Защитные перчатки для работы с панелями",
+      "category": "equipment",
+      "unitId": "pair",
+      "missing": "System manual requires work gloves; exact crew/personal stock/replacement norm absent, not inferred from two lifters."
+    },
+    {
+      "key": "work-clothing",
+      "titleRu": "Защитная рабочая одежда",
+      "category": "equipment",
+      "unitId": "set",
+      "missing": "System manual requires protective clothing; exact crew/personal stock/replacement norm absent."
+    },
+    {
+      "key": "delivery-return-cleaning",
+      "titleRu": "Доставка, очистка и возврат подъёмной оснастки",
+      "category": "service",
+      "unitId": null,
+      "missing": "Source requires timely return/inspection, but no route/transport/cleaning/packing/waste application quantities. Period kit fee must not duplicate any included delivery/service."
+    }
+  ],
+  "returnAndExclusionRules": [
+    "Only specified original manufacturer mineral-wool-core thin-sheet sandwich panels; not glass, stone, arbitrarypanels or unknownskin/core.",
+    "Selected verticalstraightupperend200mm scope; do not use for standardtonguedhorizontaledge.",
+    "Check parts, fastenings andfunction beforeeverylift; gapmustbezero and toolmustnotmove.",
+    "Attach gripping levers manually, not hammer/tools; adjust width only with suppliedoriginalparts.",
+    "At200mm one active lifter+onesafetystrap up to4.6m; above4.6m and up to6m use2+2,actualmass/equilibrium and crane/PPRstillrequired.",
+    "No extension beyond6m fromthis bounded component; separateextensions/approval not inferred from havingtwo tools.",
+    "Return by markedinspectiondate or immediatelyon wear/damage/malfunction; no ownerrepair.",
+    "No numerical windspeed or universal hoist/crew rate invented.",
+    "Do not release gripping attachment before panelsecuredtobuilding exceptseparate specificallyengineeredsafeprocedure outsidecurrentprofile."
+  ],
+  "automaticFULL": false,
+  "actualExecution": "UNRUN"
+}

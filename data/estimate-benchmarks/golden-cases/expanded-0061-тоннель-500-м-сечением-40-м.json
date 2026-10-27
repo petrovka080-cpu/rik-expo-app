@@ -1,0 +1,70 @@
+{
+  "case_id": "expanded-0061-тоннель-500-м-сечением-40-м",
+  "prompt": "тоннель 500 м сечением 40 м²",
+  "work_family_id": "tunnel_construction",
+  "work_family_group": "ROADS_HEAVY_CIVIL",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 500,
+    "section_m2": 40
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "tunnel_lining_concrete_m3",
+    "tunnel_waterproofing_m2",
+    "drainage_lm",
+    "tunnel_excavation_m3",
+    "ventilation_equipment_set",
+    "special_equipment_shifts"
+  ],
+  "reference_material_rows": [
+    "tunnel_lining_concrete_m3",
+    "tunnel_waterproofing_m2",
+    "drainage_lm"
+  ],
+  "reference_work_rows": [
+    "tunnel_excavation_m3"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "ventilation_equipment_set",
+    "special_equipment_shifts"
+  ],
+  "reference_procurement_subset": [
+    "tunnel_lining_concrete_m3",
+    "tunnel_waterproofing_m2",
+    "drainage_lm",
+    "ventilation_equipment_set",
+    "special_equipment_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_bridges_tunnels_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0061-тоннель-500-м-сечением-40-м.json",
+  "critical": false,
+  "expected_row_codes": [
+    "tunnel_lining_concrete_m3",
+    "tunnel_waterproofing_m2",
+    "drainage_lm",
+    "tunnel_excavation_m3",
+    "ventilation_equipment_set",
+    "special_equipment_shifts"
+  ]
+}

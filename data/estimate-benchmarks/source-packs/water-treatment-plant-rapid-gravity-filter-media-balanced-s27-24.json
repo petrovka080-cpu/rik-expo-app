@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.water-treatment-plant-filter-media-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:water_treatment_plant",
+  "scope": "Construction of one explicitly selected 5000 m3/day potable-water treatment plant WTP-RGF-5000-4F with coagulation, flocculation, sedimentation, four rapid-gravity filters and chlorination; four raw-water pumps, four treated-water pumps and 80 t anthracite filter media. Direct process equipment, media, civil works, piping, electrical-controls, labor, mechanisms, testing and logistics are project-owned.",
+  "sourceAuthority": "Approved potable-water treatment process design, hydraulic profile, civil drawings, equipment-piping-instrument schedules, filter-media specification, electrical-control design, geotechnical report, commissioning program, suppliers and approving project engineer",
+  "ordinaryFixture": {
+    "facilityCount": 1,
+    "facilityDesignation": "WTP-RGF-5000-4F",
+    "processType": "COAGULATION_FLOCCULATION_SEDIMENTATION_RAPID_GRAVITY_FILTRATION_CHLORINATION",
+    "designCapacityM3Day": 5000,
+    "filterTrainCount": 4,
+    "filterMediaInstalledT": 80,
+    "filterMediaDesignation": "ANTHRACITE-0.8-1.6MM-POTABLE",
+    "rawWaterPumpInstalledPiece": 4,
+    "rawWaterPumpDesignation": "HSC-80LPS-28M",
+    "treatedWaterPumpInstalledPiece": 4,
+    "treatedWaterPumpDesignation": "HSC-75LPS-42M"
+  },
+  "procurementBalance": {
+    "filterMedia": {
+      "installedMass": "wtp_filter_media_installed_t",
+      "retainedSpareMass": "wtp_filter_media_retained_spare_t",
+      "supplierPackageMass": "wtp_filter_media_supplier_package_mass_t"
+    },
+    "visiblePreliminaryProfile": {
+      "wtp_filter_media_retained_spare_t": 0,
+      "wtp_filter_media_supplier_package_mass_t": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "concrete, reinforcement, equipment, piping, labor, mechanism or logistics quantities derived from plant capacity",
+    "unconditional generic one-set pumps or aeration equipment",
+    "automatic excavation shoring, groundwater dewatering or road reinstatement",
+    "universal retained spare or supplier-package mass",
+    "water intake, distribution network, reservoir, tower, wastewater treatment or invented price"
+  ]
+}

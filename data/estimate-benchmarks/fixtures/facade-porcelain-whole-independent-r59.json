@@ -1,0 +1,678 @@
+{
+  "contract": "gox-build.facade-porcelain-independent-whole-oracle/r59-r142",
+  "generatedFromImplementation": false,
+  "sourceOracleReusedWithoutProductExecution": {
+    "contract": "gox-build.facade-current-family-whole-systems/r3",
+    "generatedFromImplementation": false,
+    "execution": "UNRUN",
+    "cases": [
+      {
+        "caseId": "PORCELAIN100_SOURCE_SCOPE",
+        "inputs": {
+          "area": "100",
+          "brackets": "200",
+          "insulationThicknessMm": "100",
+          "sourceLinkCount": "1",
+          "panelSupplyPiece": "280"
+        },
+        "expected": {
+          "laborLayout": "1.5",
+          "laborBrackets": "6.4",
+          "laborGuides": "13",
+          "laborCladding": "84",
+          "laborInsulation": "30",
+          "singleLayerInsulationM3": "11",
+          "panelSupplyPiece": "280",
+          "noScaffoldHoursInReadyPlatformMethod": true,
+          "selectedStockTypes": 16,
+          "visibleNeeds": 5
+        }
+      },
+      {
+        "caseId": "PORCELAIN50_SAME_REAL_BOM",
+        "inputs": {
+          "area": "50",
+          "brackets": "200",
+          "sourceLinkCount": "1"
+        },
+        "expected": {
+          "laborBrackets": "6.4",
+          "projectComponentQuantitiesUnchanged": true,
+          "stockQuantitiesUnchanged": true,
+          "insulationM3": "5.5"
+        }
+      }
+    ],
+    "negatives": [
+      "wrongsubsystem",
+      "hiddenclampwithvisibleprofile",
+      "fiberpanelintoporcelainprofile",
+      "panelthickness8",
+      "productionheight50.001",
+      "inherit150mplatformcapacity",
+      "insulationthickness120",
+      "fractionalprojectanchor",
+      "internalneed0",
+      "internalneed1",
+      "internalneed77",
+      "sourceLinkFractional",
+      "steel-shearsasporcelaincutter",
+      "sourcepreparatoryhoursassumedzero",
+      "oldmanualINFObecomespaid",
+      "useRFregionalTDSasKGlegalapproval"
+    ]
+  },
+  "testOnlyBOMIsNotActualObject": true,
+  "pricesAre": "TEST_ONLY arbitrary validation values, not source or market prices",
+  "definitionShape": {
+    "parameters": 80,
+    "formulas": 120,
+    "resources": 120,
+    "ordinaryParameters": 2,
+    "independentMapEntries": 120
+  },
+  "publicResourceNames": {
+    "labor:layout": "Разметка фасадной подсистемы",
+    "labor:brackets": "Крепление кронштейнов к основанию",
+    "labor:guides": "Монтаж Т-образных направляющих",
+    "labor:cladding": "Монтаж керамогранитной облицовки на видимых кляммерах",
+    "labor:insulation": "Монтаж и крепление минераловатного утепления",
+    "consumed:thermal-break": "Терморазрыв под фасадный кронштейн",
+    "supply:thermal-break": "Терморазрыв под фасадный кронштейн",
+    "consumed:bracket": "Кронштейн фасадный несущий",
+    "supply:bracket": "Кронштейн фасадный несущий",
+    "consumed:fixing-washer": "Шайба фиксирующая 30×33×2 мм из коррозионностойкой стали",
+    "supply:fixing-washer": "Шайба фиксирующая 30×33×2 мм из коррозионностойкой стали",
+    "consumed:base-anchor": "Анкер фасадный для основания",
+    "supply:base-anchor": "Анкер фасадный для основания",
+    "consumed:structural-rivet": "Заклёпка коррозионностойкая для фасадной подсистемы",
+    "supply:structural-rivet": "Заклёпка коррозионностойкая для фасадной подсистемы",
+    "consumed:bracket-extender": "Удлинитель фасадного кронштейна",
+    "supply:bracket-extender": "Удлинитель фасадного кронштейна",
+    "consumed:T-guide": "Профиль фасадный Т-образный",
+    "supply:T-guide": "Профиль фасадный Т-образный",
+    "consumed:row-clamp": "Кляммер рядовой для плиты толщиной 10 мм",
+    "supply:row-clamp": "Кляммер рядовой для плиты толщиной 10 мм",
+    "consumed:start-clamp": "Кляммер стартовый для плиты толщиной 10 мм",
+    "supply:start-clamp": "Кляммер стартовый для плиты толщиной 10 мм",
+    "consumed:corner-clamp": "Кляммер угловой для плиты толщиной 10 мм",
+    "supply:corner-clamp": "Кляммер угловой для плиты толщиной 10 мм",
+    "consumed:panel": "Плита керамогранитная фасадная 600×600×10 мм",
+    "supply:panel": "Плита керамогранитная фасадная 600×600×10 мм",
+    "consumed:insulation-anchor": "Анкер тарельчатый для минераловатной плиты толщиной 100 мм",
+    "supply:insulation-anchor": "Анкер тарельчатый для минераловатной плиты толщиной 100 мм",
+    "consumed:window-bracket": "Кронштейн оконного обрамления",
+    "supply:window-bracket": "Кронштейн оконного обрамления",
+    "consumed:node-bracket": "Кронштейн дополнительной подконструкции",
+    "supply:node-bracket": "Кронштейн дополнительной подконструкции",
+    "consumed:node-profile": "Профиль дополнительной подконструкции",
+    "supply:node-profile": "Профиль дополнительной подконструкции",
+    "consumed:node-extender": "Удлинитель дополнительной подконструкции",
+    "supply:node-extender": "Удлинитель дополнительной подконструкции",
+    "consumed:mounting-shelf": "Полка монтажная 625×625×1,2 мм",
+    "supply:mounting-shelf": "Полка монтажная 625×625×1,2 мм",
+    "consumed:fixing-angle": "Угол крепёжный 60×60×62×2 мм",
+    "supply:fixing-angle": "Угол крепёжный 60×60×62×2 мм",
+    "consumed:left-connector": "Соединитель дополнительного профиля левый",
+    "supply:left-connector": "Соединитель дополнительного профиля левый",
+    "consumed:right-connector": "Соединитель дополнительного профиля",
+    "supply:right-connector": "Соединитель дополнительного профиля",
+    "consumed:flashings": "Стальное обрамление и отливы",
+    "supply:flashings": "Стальное обрамление и отливы",
+    "consumed:fire-screen": "Элемент стальной противопожарный толщиной не менее 0,55 мм",
+    "supply:fire-screen": "Элемент стальной противопожарный толщиной не менее 0,55 мм",
+    "consumed:stone-wool": "Плита из каменной ваты для однослойного фасада толщиной 100 мм",
+    "supply:stone-wool": "Плита из каменной ваты для однослойного фасада толщиной 100 мм",
+    "stock:facade-platform": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+    "tool:facade-platform:own": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+    "tool:facade-platform:hired": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+    "tool:facade-platform:buy": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг",
+    "stock:plumb-cord": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+    "tool:plumb-cord:own": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+    "tool:plumb-cord:hired": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+    "tool:plumb-cord:buy": "Отвес массой 0,4 кг со шнуром длиной 5 м",
+    "stock:spirit-level": "Ватерпас длиной 1,5 м",
+    "tool:spirit-level:own": "Ватерпас длиной 1,5 м",
+    "tool:spirit-level:hired": "Ватерпас длиной 1,5 м",
+    "tool:spirit-level:buy": "Ватерпас длиной 1,5 м",
+    "stock:laser-survey-level": "Нивелир лазерный точностью 0,1 мм/м",
+    "tool:laser-survey-level:own": "Нивелир лазерный точностью 0,1 мм/м",
+    "tool:laser-survey-level:hired": "Нивелир лазерный точностью 0,1 мм/м",
+    "tool:laser-survey-level:buy": "Нивелир лазерный точностью 0,1 мм/м",
+    "stock:laser-level": "Уровень лазерный точностью 0,1 мм/м",
+    "tool:laser-level:own": "Уровень лазерный точностью 0,1 мм/м",
+    "tool:laser-level:hired": "Уровень лазерный точностью 0,1 мм/м",
+    "tool:laser-level:buy": "Уровень лазерный точностью 0,1 мм/м",
+    "stock:drill": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+    "tool:drill:own": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+    "tool:drill:hired": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+    "tool:drill:buy": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм",
+    "stock:steel-tape": "Рулетка стальная длиной 20 м",
+    "tool:steel-tape:own": "Рулетка стальная длиной 20 м",
+    "tool:steel-tape:hired": "Рулетка стальная длиной 20 м",
+    "tool:steel-tape:buy": "Рулетка стальная длиной 20 м",
+    "stock:ratchet-screwdriver": "Отвёртка с рычажным наконечником",
+    "tool:ratchet-screwdriver:own": "Отвёртка с рычажным наконечником",
+    "tool:ratchet-screwdriver:hired": "Отвёртка с рычажным наконечником",
+    "tool:ratchet-screwdriver:buy": "Отвёртка с рычажным наконечником",
+    "stock:manual-nut-driver": "Гайковёрт ручной",
+    "tool:manual-nut-driver:own": "Гайковёрт ручной",
+    "tool:manual-nut-driver:hired": "Гайковёрт ручной",
+    "tool:manual-nut-driver:buy": "Гайковёрт ручной",
+    "stock:drill-and-driver-attachments": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+    "tool:drill-and-driver-attachments:own": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+    "tool:drill-and-driver-attachments:hired": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+    "tool:drill-and-driver-attachments:buy": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания",
+    "stock:manual-riveter": "Инструмент заклёпочный ручной",
+    "tool:manual-riveter:own": "Инструмент заклёпочный ручной",
+    "tool:manual-riveter:hired": "Инструмент заклёпочный ручной",
+    "tool:manual-riveter:buy": "Инструмент заклёпочный ручной",
+    "stock:battery-riveter": "Пистолет заклёпочный аккумуляторный",
+    "tool:battery-riveter:own": "Пистолет заклёпочный аккумуляторный",
+    "tool:battery-riveter:hired": "Пистолет заклёпочный аккумуляторный",
+    "tool:battery-riveter:buy": "Пистолет заклёпочный аккумуляторный",
+    "stock:hammer": "Молоток для монтажа дюбелей",
+    "tool:hammer:own": "Молоток для монтажа дюбелей",
+    "tool:hammer:hired": "Молоток для монтажа дюбелей",
+    "tool:hammer:buy": "Молоток для монтажа дюбелей",
+    "stock:insulation-gloves": "Перчатки защитные для монтажа теплоизоляции",
+    "tool:insulation-gloves:own": "Перчатки защитные для монтажа теплоизоляции",
+    "tool:insulation-gloves:hired": "Перчатки защитные для монтажа теплоизоляции",
+    "tool:insulation-gloves:buy": "Перчатки защитные для монтажа теплоизоляции",
+    "stock:safety-belt": "Пояс предохранительный",
+    "tool:safety-belt:own": "Пояс предохранительный",
+    "tool:safety-belt:hired": "Пояс предохранительный",
+    "tool:safety-belt:buy": "Пояс предохранительный",
+    "stock:helmet": "Каска защитная",
+    "tool:helmet:own": "Каска защитная",
+    "tool:helmet:hired": "Каска защитная",
+    "tool:helmet:buy": "Каска защитная"
+  },
+  "laborQuantities100": {
+    "layout": "1.5",
+    "brackets": "6.4",
+    "guides": "13",
+    "cladding": "84",
+    "insulation": "30"
+  },
+  "laborQuantities50": {
+    "layout": "0.75",
+    "brackets": "6.4",
+    "guides": "6.5",
+    "cladding": "42",
+    "insulation": "15"
+  },
+  "materialOwners": [
+    {
+      "key": "thermal-break",
+      "parameterId": "porcelain_bom_thermal_break",
+      "unitId": "piece",
+      "operation": "brackets",
+      "quantity": "200",
+      "consumed": "consumed:thermal-break",
+      "owner": "supply:thermal-break",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "bracket",
+      "parameterId": "porcelain_bom_bracket",
+      "unitId": "piece",
+      "operation": "brackets",
+      "quantity": "200",
+      "consumed": "consumed:bracket",
+      "owner": "supply:bracket",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "fixing-washer",
+      "parameterId": "porcelain_bom_fixing_washer",
+      "unitId": "piece",
+      "operation": "brackets",
+      "quantity": "200",
+      "consumed": "consumed:fixing-washer",
+      "owner": "supply:fixing-washer",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "base-anchor",
+      "parameterId": "porcelain_bom_base_anchor",
+      "unitId": "piece",
+      "operation": "brackets",
+      "quantity": "200",
+      "consumed": "consumed:base-anchor",
+      "owner": "supply:base-anchor",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "structural-rivet",
+      "parameterId": "porcelain_bom_structural_rivet",
+      "unitId": "piece",
+      "operation": "guides",
+      "quantity": "1000",
+      "consumed": "consumed:structural-rivet",
+      "owner": "supply:structural-rivet",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "bracket-extender",
+      "parameterId": "porcelain_bom_bracket_extender",
+      "unitId": "piece",
+      "operation": "guides",
+      "quantity": "20",
+      "consumed": "consumed:bracket-extender",
+      "owner": "supply:bracket-extender",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "T-guide",
+      "parameterId": "porcelain_bom_T_guide",
+      "unitId": "m",
+      "operation": "guides",
+      "quantity": "160",
+      "consumed": "consumed:T-guide",
+      "owner": "supply:T-guide",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "row-clamp",
+      "parameterId": "porcelain_bom_row_clamp",
+      "unitId": "piece",
+      "operation": "cladding",
+      "quantity": "920",
+      "consumed": "consumed:row-clamp",
+      "owner": "supply:row-clamp",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "start-clamp",
+      "parameterId": "porcelain_bom_start_clamp",
+      "unitId": "piece",
+      "operation": "cladding",
+      "quantity": "80",
+      "consumed": "consumed:start-clamp",
+      "owner": "supply:start-clamp",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "corner-clamp",
+      "parameterId": "porcelain_bom_corner_clamp",
+      "unitId": "piece",
+      "operation": "cladding",
+      "quantity": "40",
+      "consumed": "consumed:corner-clamp",
+      "owner": "supply:corner-clamp",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "panel",
+      "parameterId": "porcelain_bom_panel",
+      "unitId": "piece",
+      "operation": "cladding",
+      "quantity": "280",
+      "consumed": "consumed:panel",
+      "owner": "supply:panel",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "insulation-anchor",
+      "parameterId": "porcelain_bom_insulation_anchor",
+      "unitId": "piece",
+      "operation": "insulation",
+      "quantity": "620",
+      "consumed": "consumed:insulation-anchor",
+      "owner": "supply:insulation-anchor",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "window-bracket",
+      "parameterId": "porcelain_bom_window_bracket",
+      "unitId": "piece",
+      "operation": "junctions",
+      "quantity": "12",
+      "consumed": "consumed:window-bracket",
+      "owner": "supply:window-bracket",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "node-bracket",
+      "parameterId": "porcelain_bom_node_bracket",
+      "unitId": "piece",
+      "operation": "junctions",
+      "quantity": "12",
+      "consumed": "consumed:node-bracket",
+      "owner": "supply:node-bracket",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "node-profile",
+      "parameterId": "porcelain_bom_node_profile",
+      "unitId": "m",
+      "operation": "junctions",
+      "quantity": "24",
+      "consumed": "consumed:node-profile",
+      "owner": "supply:node-profile",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "node-extender",
+      "parameterId": "porcelain_bom_node_extender",
+      "unitId": "piece",
+      "operation": "junctions",
+      "quantity": "12",
+      "consumed": "consumed:node-extender",
+      "owner": "supply:node-extender",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "mounting-shelf",
+      "parameterId": "porcelain_bom_mounting_shelf",
+      "unitId": "piece",
+      "operation": "junctions",
+      "quantity": "12",
+      "consumed": "consumed:mounting-shelf",
+      "owner": "supply:mounting-shelf",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "fixing-angle",
+      "parameterId": "porcelain_bom_fixing_angle",
+      "unitId": "piece",
+      "operation": "junctions",
+      "quantity": "12",
+      "consumed": "consumed:fixing-angle",
+      "owner": "supply:fixing-angle",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "left-connector",
+      "parameterId": "porcelain_bom_left_connector",
+      "unitId": "piece",
+      "operation": "junctions",
+      "quantity": "12",
+      "consumed": "consumed:left-connector",
+      "owner": "supply:left-connector",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "right-connector",
+      "parameterId": "porcelain_bom_right_connector",
+      "unitId": "piece",
+      "operation": "junctions",
+      "quantity": "12",
+      "consumed": "consumed:right-connector",
+      "owner": "supply:right-connector",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "flashings",
+      "parameterId": "porcelain_bom_flashings",
+      "unitId": "m2",
+      "operation": "junctions",
+      "quantity": "8",
+      "consumed": "consumed:flashings",
+      "owner": "supply:flashings",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "fire-screen",
+      "parameterId": "porcelain_bom_fire_screen",
+      "unitId": "m2",
+      "operation": "fire",
+      "quantity": "3",
+      "consumed": "consumed:fire-screen",
+      "owner": "supply:fire-screen",
+      "testUnitPrice": "20"
+    },
+    {
+      "key": "stone-wool",
+      "parameterId": null,
+      "unitId": "m3",
+      "operation": "insulation",
+      "quantity": "11",
+      "consumed": "consumed:stone-wool",
+      "owner": "supply:stone-wool",
+      "testUnitPrice": "20"
+    }
+  ],
+  "stockResources": [
+    {
+      "key": "facade-platform",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "title": "Люлька фасадная длиной 4 м грузоподъёмностью 300 кг"
+    },
+    {
+      "key": "plumb-cord",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "layout",
+        "brackets",
+        "guides",
+        "cladding",
+        "quality"
+      ],
+      "title": "Отвес массой 0,4 кг со шнуром длиной 5 м"
+    },
+    {
+      "key": "spirit-level",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "guides",
+        "quality"
+      ],
+      "title": "Ватерпас длиной 1,5 м"
+    },
+    {
+      "key": "laser-survey-level",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "title": "Нивелир лазерный точностью 0,1 мм/м"
+    },
+    {
+      "key": "laser-level",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "title": "Уровень лазерный точностью 0,1 мм/м"
+    },
+    {
+      "key": "drill",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "title": "Дрель электрическая мощностью 1000 Вт для отверстий в бетоне до 20 мм"
+    },
+    {
+      "key": "steel-tape",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "layout",
+        "quality"
+      ],
+      "title": "Рулетка стальная длиной 20 м"
+    },
+    {
+      "key": "ratchet-screwdriver",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "junctions",
+        "guides"
+      ],
+      "title": "Отвёртка с рычажным наконечником"
+    },
+    {
+      "key": "manual-nut-driver",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets"
+      ],
+      "title": "Гайковёрт ручной"
+    },
+    {
+      "key": "drill-and-driver-attachments",
+      "unitId": "set",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "guides"
+      ],
+      "title": "Дрель электрическая мощностью 800 Вт с насадками для завинчивания"
+    },
+    {
+      "key": "manual-riveter",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "title": "Инструмент заклёпочный ручной"
+    },
+    {
+      "key": "battery-riveter",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "guides",
+        "cladding"
+      ],
+      "title": "Пистолет заклёпочный аккумуляторный"
+    },
+    {
+      "key": "hammer",
+      "unitId": "piece",
+      "quantity": "1",
+      "operationKeys": [
+        "brackets",
+        "insulation"
+      ],
+      "title": "Молоток для монтажа дюбелей"
+    },
+    {
+      "key": "insulation-gloves",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "insulation"
+      ],
+      "title": "Перчатки защитные для монтажа теплоизоляции"
+    },
+    {
+      "key": "safety-belt",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "title": "Пояс предохранительный"
+    },
+    {
+      "key": "helmet",
+      "unitId": "piece",
+      "quantity": "2",
+      "operationKeys": [
+        "brackets",
+        "insulation",
+        "guides",
+        "cladding",
+        "junctions"
+      ],
+      "title": "Каска защитная"
+    }
+  ],
+  "provisionModes": {
+    "own": "Собственное обеспечение на период ППР",
+    "hired": "Услуга обеспечения на период ППР",
+    "buy": "Новая поставка для рабочего фронта"
+  },
+  "protectedNeedKeys": [
+    "preparation-labor",
+    "working-parts",
+    "access-power-protection",
+    "quality-services",
+    "delivery-feed-waste"
+  ],
+  "testOnlyPrices": {
+    "labor": "10",
+    "material": "20",
+    "stockReference": "200",
+    "toolMode": {
+      "own": "5",
+      "hired": "7",
+      "buy": "11"
+    }
+  },
+  "expectedMoney": {
+    "labor": "1349",
+    "material": "81000",
+    "equipment": {
+      "own": "110",
+      "hired": "154",
+      "buy": "242"
+    },
+    "total": {
+      "own": "82459",
+      "hired": "82503",
+      "buy": "82591"
+    },
+    "stockReferenceAmount": "200"
+  },
+  "expectedCorePhases": [
+    "01-existing-before",
+    "02-current-after",
+    "03-same-BOM-area50",
+    "04-own-priced",
+    "05-hired-priced",
+    "06-buy-priced",
+    "07-two-source-links",
+    "08-missing-readback",
+    "09-missing-project-bracket",
+    "10-zero-scope",
+    "11-reject-exact-method",
+    "12-reject-protected-zero-norms",
+    "13-reject-raw-project-echo",
+    "14-reject-height",
+    "15-reject-panel-thickness",
+    "16-reject-fractional-anchor",
+    "17-reject-insulation-thickness",
+    "18-reject-fractional-links",
+    "19-reject-insufficient-layout",
+    "20-reject-weak-base"
+  ],
+  "expectedCanonicalResults": 10,
+  "expectedCoreRejects": 10,
+  "stockTotalPhysicalUnitsPerOneUnsizedLink": "22",
+  "stockConsumers": 43,
+  "additionalStockConsumers": 27,
+  "allRawAndModeAdditionalConsumerBindings": 108,
+  "actualObjectApproved": false,
+  "actualNeedClosures": 0,
+  "execution": "UNRUN"
+}

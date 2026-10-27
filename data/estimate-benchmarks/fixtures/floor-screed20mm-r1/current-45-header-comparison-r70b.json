@@ -1,0 +1,455 @@
+{
+  "status": "CURRENT_BOUNDED_45_HEADERS_REVIEW_THREE_BODY_COMPARISONS_PENDING",
+  "source": {
+    "path": "current-subject-group-result-r70b.json",
+    "sha256": "26b3c58879c50db53b96a7a683442e950b99c3abff12be38b0766bbf4dd6b452"
+  },
+  "parentPair": {
+    "definitionReleaseId": "f36fa786-6634-518c-853d-b9ae54ab3ccf",
+    "searchReleaseId": "304b7f3f-1618-5e0e-91ea-da062e4f287e"
+  },
+  "catalogHeaderCount": 45,
+  "noVisibleStandaloneReadyM15020mmInTheseHeaders": true,
+  "globalAbsenceProved": false,
+  "catalogIdentityAdmitted": false,
+  "exactScreedIdentityCollisionCaptureRequired": true,
+  "bodyReadRequestedFromSoleIntegrator": [
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_large_area",
+      "definitionVersionId": "adab5016-0fbf-5588-92f0-b36c9661af0c",
+      "definitionHash": "f4c5fe97479936c80cc935ecf8a93446656fba123035957ace27c51e078427da",
+      "groupId": "wg:base:demolition_interior_screed_prepare_repair",
+      "canonicalName": "подготовка после демонтажа стяжки пола на большой площади",
+      "physicalResult": null,
+      "disposition": "BODY_READ_REQUIRED_ADJACENT_PREPARATION_REPAIR"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_small_area",
+      "definitionVersionId": "95622959-de5c-58ac-b78a-c9262f9c799a",
+      "definitionHash": "3fa009bfdde5e61053dc0a5c80880f3ea846b709eb65f917cb43ae064421c679",
+      "groupId": "wg:base:demolition_interior_screed_prepare_repair",
+      "canonicalName": "подготовка после демонтажа стяжки пола на малой площади",
+      "physicalResult": null,
+      "disposition": "BODY_READ_REQUIRED_ADJACENT_PREPARATION_REPAIR"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_standard",
+      "definitionVersionId": "68fc8e12-64a0-51e8-88e3-d7a84dba7918",
+      "definitionHash": "8d2ec3e28895703c829936beb73709dd616129c40170f297a403e0843a73a68b",
+      "groupId": "wg:base:demolition_interior_screed_prepare_repair",
+      "canonicalName": "подготовка после демонтажа стяжки пола в стандартной зоне",
+      "physicalResult": null,
+      "disposition": "BODY_READ_REQUIRED_ADJACENT_PREPARATION_REPAIR"
+    }
+  ],
+  "comparisons": [
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_repair",
+      "definitionVersionId": "d033727c-2f2e-5ebb-8c11-798998d9630c",
+      "definitionHash": "15fde096a8cc526dca4222094f1e81e50cef5f46e0481b44dd89e9712d32c4d0",
+      "groupId": "wg:base:concrete_foundation_interior_slab_foundation_pour",
+      "canonicalName": "устройство плитного фундамента полного цикла с локальным ремонтом основания",
+      "physicalResult": "Завершённый монолитный железобетонный плитный фундамент с подготовленным и локально отремонтированным основанием, изоляцией, опалубкой, армированием, бетонированием, уходом, контролем и сдачей.",
+      "disposition": "DIFFERENT_COMPLETE_STRUCTURAL_OR_FINISHING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "definitionVersionId": "f6e01299-4f78-5d05-8556-a68034bf8b09",
+      "definitionHash": "73ce830d2c3315af7396e568091a89ac6ca4789763ae48b9a95ad872f4492e74",
+      "groupId": "wg:base:concrete_foundation_interior_slab_foundation_pour",
+      "canonicalName": "устройство монолитного плитного фундамента полного цикла",
+      "physicalResult": "Завершённый монолитный железобетонный плитный фундамент с основанием, дренажом, подготовкой, гидроизоляцией, утеплением, опалубкой, армированием, бетонированием, уходом, контролем и сдачей.",
+      "disposition": "DIFFERENT_COMPLETE_STRUCTURAL_OR_FINISHING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_form_standard",
+      "definitionVersionId": "e8b40373-c52e-5f47-a45b-f9b6f2d5e82e",
+      "definitionHash": "b18ea15db745635ba790c752bd2c770da5a7681e7d491d637812d0d1a89bc92a",
+      "groupId": "wg:base:concrete_foundation_interior_stairs_concrete_form",
+      "canonicalName": "полное устройство монолитной бетонной лестницы",
+      "physicalResult": "Монолитная железобетонная лестница стандартного контекста с опалубкой, армированием, укладкой, отдельным виброуплотнением, первичной отделкой и уходом.",
+      "disposition": "DIFFERENT_COMPLETE_STRUCTURAL_OR_FINISHING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_large_area",
+      "definitionVersionId": "36afc0ec-82f2-543a-8f59-83406d5cb2b3",
+      "definitionHash": "bb0dcfb33754ca3fecaf24034114ab7383c5bfd0a3000c6387ed315c582785b9",
+      "groupId": "wg:base:demolition_interior_flooring_dismantle",
+      "canonicalName": "Разборка асфальтового или асфальтобетонного покрытия пола — большая площадь",
+      "physicalResult": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона большой площади разобрана по КРЕР 46-04-010-01",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_small_area",
+      "definitionVersionId": "45e53c05-01e0-5a0b-8bcf-93d5af6d4fb3",
+      "definitionHash": "dff59e6aa7372f2b48efaf6030c800d6e5adce5bb764d9fd2daf8ed377218341",
+      "groupId": "wg:base:demolition_interior_flooring_dismantle",
+      "canonicalName": "Разборка асфальтового или асфальтобетонного покрытия пола — малая площадь",
+      "physicalResult": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона малой площади разобрана по КРЕР 46-04-010-01",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_standard",
+      "definitionVersionId": "ce43ff8e-736e-5d39-883a-9ca34abcb282",
+      "definitionHash": "80c7360073fbbed8e57852a22a0e4ad44df1e59a08bcb725e953929dafef4f4d",
+      "groupId": "wg:base:demolition_interior_flooring_dismantle",
+      "canonicalName": "Разборка асфальтового или асфальтобетонного покрытия пола",
+      "physicalResult": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона разобрана по КРЕР 46-04-010-01",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_flooring_dismantle_wet_zone",
+      "definitionVersionId": "aba9e769-4e63-5ed2-8782-fe8edcf3164f",
+      "definitionHash": "13418cfd671d10be092de8dbba1dfe50bcb2eb74f15938c1f97c9717da152bf4",
+      "groupId": "wg:base:demolition_interior_flooring_dismantle",
+      "canonicalName": "Разборка асфальтового или асфальтобетонного покрытия пола — влажная зона",
+      "physicalResult": "Подтверждённая площадь существующего покрытия пола из асфальта или асфальтобетона влажной зоны разобрана по КРЕР 46-04-010-01",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_clean_after_large_area",
+      "definitionVersionId": "6fa21637-a0ec-5d3f-9bba-ed7763156345",
+      "definitionHash": "4d65be11c323a196d7f2f1f73377ae338de23b16ecd0c53f5c75cd8396ee9b2e",
+      "groupId": "wg:base:demolition_interior_screed_clean_after",
+      "canonicalName": "очистка после демонтажа стяжки пола на большой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_clean_after_small_area",
+      "definitionVersionId": "e64fe0db-df01-5000-a107-efbccdd8b56a",
+      "definitionHash": "1355d21cab8daf64e982f46722335ae814da5a511a0f09205529d4f8b1ef5be7",
+      "groupId": "wg:base:demolition_interior_screed_clean_after",
+      "canonicalName": "очистка после демонтажа стяжки пола на малой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_clean_after_standard",
+      "definitionVersionId": "68d1657b-413b-5aca-a61f-69b814294532",
+      "definitionHash": "e952afda1efae39ddf3a52f5c0faff4386bf3200f3943fb861f739bf9a5fce99",
+      "groupId": "wg:base:demolition_interior_screed_clean_after",
+      "canonicalName": "очистка после демонтажа стяжки пола в стандартной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_clean_after_wet_zone",
+      "definitionVersionId": "1263ac51-6083-55e8-b61e-f8ed10938ef6",
+      "definitionHash": "d7d573d7db948dd02472d80302f9321353755165c158946645d088b261642074",
+      "groupId": "wg:base:demolition_interior_screed_clean_after",
+      "canonicalName": "очистка после демонтажа стяжки пола во влажной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_dismantle_large_area",
+      "definitionVersionId": "6dd5f101-8e90-505d-9916-676592576640",
+      "definitionHash": "9f4779d28ddfb4b36ca1f1a6378f1c115e9bf5949b2451927c0f5290a01f1803",
+      "groupId": "wg:base:demolition_interior_screed_dismantle",
+      "canonicalName": "разборка стяжки пола на большой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_dismantle_small_area",
+      "definitionVersionId": "d461cddd-5357-5400-be03-2a45b545b3af",
+      "definitionHash": "3bd7359cb55d42c2a0de53f51c6be7db843f38cf133942b892dbba2ad46531f0",
+      "groupId": "wg:base:demolition_interior_screed_dismantle",
+      "canonicalName": "разборка стяжки пола на малой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_dismantle_standard",
+      "definitionVersionId": "b909ab52-104e-5bce-acbd-2ab1fd123299",
+      "definitionHash": "db918bd4df149f0414bf321a64d8196f4ab1c852151bd3a733e92226e2660f0b",
+      "groupId": "wg:base:demolition_interior_screed_dismantle",
+      "canonicalName": "разборка стяжки пола в стандартной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_dismantle_wet_zone",
+      "definitionVersionId": "ef004368-661b-516e-9f7f-1e53774d3c6c",
+      "definitionHash": "fa0ce8bdf270a06c151050ccb132a1684a28d86ee1069f70a578156b00c44377",
+      "groupId": "wg:base:demolition_interior_screed_dismantle",
+      "canonicalName": "разборка стяжки пола во влажной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_load_large_area",
+      "definitionVersionId": "ab4456c0-dd79-5764-8662-b633f6da6b68",
+      "definitionHash": "82050ceafb928582c6756963c52b128d8342e867e20d36e598da4b1ea7eecc91",
+      "groupId": "wg:base:demolition_interior_screed_load",
+      "canonicalName": "погрузка демонтированного стяжки пола на большой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_load_small_area",
+      "definitionVersionId": "8fd519de-d333-5485-b06b-157c8b1cc729",
+      "definitionHash": "23e29abf3961e4bd18c19f23ed35c49e117f35c3afac669b4f1255b333ab69f9",
+      "groupId": "wg:base:demolition_interior_screed_load",
+      "canonicalName": "погрузка демонтированного стяжки пола на малой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_load_standard",
+      "definitionVersionId": "d76a6f07-531a-5933-b9e3-91cca73d1b64",
+      "definitionHash": "19b7404ebf7e0e8a8de3b791c4203e151883cc256ec195d32c969d4d3479b699",
+      "groupId": "wg:base:demolition_interior_screed_load",
+      "canonicalName": "погрузка демонтированного стяжки пола в стандартной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_open_large_area",
+      "definitionVersionId": "20d32229-0a37-50bc-b0dd-1accdce3dbb9",
+      "definitionHash": "b3c345ae838c673ce486e798fce9fbde2fb086e02da7610569f3159ffce111b0",
+      "groupId": "wg:base:demolition_interior_screed_open",
+      "canonicalName": "вскрытие стяжки пола на большой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_open_small_area",
+      "definitionVersionId": "6908cbc8-a160-5a5d-bbe3-6f3c58973c79",
+      "definitionHash": "9ac5cd5b0e2125d144a3497bb13e28a06ca51d1c0c5793419acd8ced4938c211",
+      "groupId": "wg:base:demolition_interior_screed_open",
+      "canonicalName": "вскрытие стяжки пола на малой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_open_standard",
+      "definitionVersionId": "96b925ba-a104-5545-ab83-fe0f7028da54",
+      "definitionHash": "f6a9ffb677ee9f1e2281b487792db6a4dddca58145e6d51a1d661102634cf182",
+      "groupId": "wg:base:demolition_interior_screed_open",
+      "canonicalName": "вскрытие стяжки пола в стандартной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_open_wet_zone",
+      "definitionVersionId": "f858eb98-a1c7-5ee1-872a-b740c46a7b40",
+      "definitionHash": "fae8b5bcee7672167a3ab2c8167755c214e18becaf89dc06ad2e2dde1b3fc56c",
+      "groupId": "wg:base:demolition_interior_screed_open",
+      "canonicalName": "вскрытие стяжки пола во влажной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_large_area",
+      "definitionVersionId": "adab5016-0fbf-5588-92f0-b36c9661af0c",
+      "definitionHash": "f4c5fe97479936c80cc935ecf8a93446656fba123035957ace27c51e078427da",
+      "groupId": "wg:base:demolition_interior_screed_prepare_repair",
+      "canonicalName": "подготовка после демонтажа стяжки пола на большой площади",
+      "physicalResult": null,
+      "disposition": "BODY_READ_REQUIRED_ADJACENT_PREPARATION_REPAIR"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_small_area",
+      "definitionVersionId": "95622959-de5c-58ac-b78a-c9262f9c799a",
+      "definitionHash": "3fa009bfdde5e61053dc0a5c80880f3ea846b709eb65f917cb43ae064421c679",
+      "groupId": "wg:base:demolition_interior_screed_prepare_repair",
+      "canonicalName": "подготовка после демонтажа стяжки пола на малой площади",
+      "physicalResult": null,
+      "disposition": "BODY_READ_REQUIRED_ADJACENT_PREPARATION_REPAIR"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_prepare_repair_standard",
+      "definitionVersionId": "68fc8e12-64a0-51e8-88e3-d7a84dba7918",
+      "definitionHash": "8d2ec3e28895703c829936beb73709dd616129c40170f297a403e0843a73a68b",
+      "groupId": "wg:base:demolition_interior_screed_prepare_repair",
+      "canonicalName": "подготовка после демонтажа стяжки пола в стандартной зоне",
+      "physicalResult": null,
+      "disposition": "BODY_READ_REQUIRED_ADJACENT_PREPARATION_REPAIR"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_remove_large_area",
+      "definitionVersionId": "cd332fb1-f626-5ff8-91eb-e16f4db586c9",
+      "definitionHash": "848e03b0cb810f49621f75b75c41d1ec40c7a9be9bf7d2bbccc3f17303842299",
+      "groupId": "wg:base:demolition_interior_screed_remove",
+      "canonicalName": "Демонтаж существующей цементно-песчаной стяжки — большая площадь",
+      "physicalResult": "Подтверждённая большая площадь существующей цементно-песчаной стяжки демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_remove_small_area",
+      "definitionVersionId": "0fe73a33-c363-527c-915e-699e3a0c072c",
+      "definitionHash": "1fea54fc9678e351a331f28e92669723daa677bd542c7334628c61b1fd0683c9",
+      "groupId": "wg:base:demolition_interior_screed_remove",
+      "canonicalName": "Демонтаж существующей цементно-песчаной стяжки — малая площадь",
+      "physicalResult": "Подтверждённая площадь существующей цементно-песчаной стяжки малой площади демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_remove_standard",
+      "definitionVersionId": "8ed2ca11-16cd-57b2-b841-3ff4ad2953d5",
+      "definitionHash": "7e43471292092194fddee2e88e9354cbb3522c4c7d1d5ac6462a35a826cf15d7",
+      "groupId": "wg:base:demolition_interior_screed_remove",
+      "canonicalName": "Демонтаж существующей цементно-песчаной стяжки",
+      "physicalResult": "Существующая цементно-песчаная стяжка демонтирована в заданной границе, отходы учтены для передачи",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_remove_wet_zone",
+      "definitionVersionId": "228a206d-f24c-5db7-bc38-1f3a24ef26df",
+      "definitionHash": "f97003d938a3fe4df63d052852813a04404717b30415fecef845d37ec658be02",
+      "groupId": "wg:base:demolition_interior_screed_remove",
+      "canonicalName": "Демонтаж существующей цементно-песчаной стяжки — влажная зона",
+      "physicalResult": "Подтверждённая площадь существующей цементно-песчаной стяжки влажной зоны демонтирована, а защита, оборудование и отходы учтены по прямым проектным данным",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_sort_large_area",
+      "definitionVersionId": "71e02898-2ab1-5630-b557-b4b13884d1bf",
+      "definitionHash": "97b5812dae06d96b4b621abfdd5992d4da86396bed41a2c0175e2c2b80b83045",
+      "groupId": "wg:base:demolition_interior_screed_sort",
+      "canonicalName": "сортировка демонтированного стяжки пола на большой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_sort_small_area",
+      "definitionVersionId": "556be07c-d807-5f12-ab29-7bf068366faf",
+      "definitionHash": "69d619154672a53f3c6928bf76f7fcf9e342458a69ac6ef251f5dd0c3c3e8dbe",
+      "groupId": "wg:base:demolition_interior_screed_sort",
+      "canonicalName": "сортировка демонтированного стяжки пола на малой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_sort_standard",
+      "definitionVersionId": "536b11ba-64ff-5f3e-8f32-2666b8ee9e5d",
+      "definitionHash": "d0093899fc8528460ecfe796be8b02661fdeef5ece2d4b971524f808fee0d2c5",
+      "groupId": "wg:base:demolition_interior_screed_sort",
+      "canonicalName": "сортировка демонтированного стяжки пола в стандартной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_strip_large_area",
+      "definitionVersionId": "e540796e-588e-5e9f-938f-454c897ad178",
+      "definitionHash": "2533797378c3fe7233155fef098cd73e8e23cc7c94adafb5a17f014d28d8d18b",
+      "groupId": "wg:base:demolition_interior_screed_strip",
+      "canonicalName": "снятие стяжки пола на большой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_strip_small_area",
+      "definitionVersionId": "461a279f-aca2-53b6-9c5d-9c78f88f04ff",
+      "definitionHash": "b562d6b538e1597f825a88077e3d4dcab4d5a465d601040a7df38f9ff451a2e9",
+      "groupId": "wg:base:demolition_interior_screed_strip",
+      "canonicalName": "снятие стяжки пола на малой площади",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_strip_standard",
+      "definitionVersionId": "2f410168-e416-53c0-b499-bbab5b9a418c",
+      "definitionHash": "444e37f6e2707f7bc7668ee3982d8dc434316658513692bd45efc52240d03dcd",
+      "groupId": "wg:base:demolition_interior_screed_strip",
+      "canonicalName": "снятие стяжки пола в стандартной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:base:demolition_interior_screed_strip_wet_zone",
+      "definitionVersionId": "2c258447-5c50-545f-94ce-de43349e4d6e",
+      "definitionHash": "0609a8e9e34b2286837f2f0dfeb0722cf88c7ad17b11c897c3c45a127b18bf56",
+      "groupId": "wg:base:demolition_interior_screed_strip",
+      "canonicalName": "снятие стяжки пола во влажной зоне",
+      "physicalResult": null,
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:expanded:bridge_asphalt",
+      "definitionVersionId": "28fd1bbb-7582-5009-87bb-b153318b9a54",
+      "definitionHash": "b144e2172de67ce86bb7ac2b1b8382ad344ed75de0ba7584dd5a9f352aab6d81",
+      "groupId": "wg:expanded:bridge_asphalt",
+      "canonicalName": "устройство полной системы асфальтобетонного покрытия мостового полотна",
+      "physicalResult": "На мостовом полотне 150 × 32 м выполнена полная система подготовки, гидроизоляции, армированной защитной стяжки, двух слоёв асфальтобетона, сопряжений, контроля и исполнительной документации",
+      "disposition": "DIFFERENT_COMPLETE_STRUCTURAL_OR_FINISHING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:expanded:foundation_pile_field",
+      "definitionVersionId": "8c6ac868-557f-5856-8894-632ece8e8502",
+      "definitionHash": "67ce8a5e4987bb959c4fc716f6e89db029fcabbf81dca336888972aaeb44f657",
+      "groupId": "wg:expanded:foundation_pile_field",
+      "canonicalName": "Устройство буронабивной железобетонной сваи",
+      "physicalResult": "Буронабивная железобетонная свая по явно заданным геометрии и проектной комплектации",
+      "disposition": "DIFFERENT_COMPLETE_STRUCTURAL_OR_FINISHING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:master:ceramic_tile_up_to_10cm_cm11_ct17_indoor_cement_floor_standard",
+      "definitionVersionId": "9aa2b934-057b-512c-98ef-dd177a145b59",
+      "definitionHash": "fd6c93b988309ac68a2001fa27656a8a910727d8e7aae24488fa599d48a9ea38",
+      "groupId": "wg:base:tile_stone_interior_ceramic_tile_lay",
+      "canonicalName": "Керамическая плитка до 10 см на CM11 PLUS, зуб 4 мм, по впитывающей цементной стяжке внутри помещения",
+      "physicalResult": "Раскрыты плитка по реальному артикулу, CM11, CT17, вода и кандидаты CE40/CS25; труд и полный состав швов остаются открытыми.",
+      "disposition": "DIFFERENT_COMPLETE_STRUCTURAL_OR_FINISHING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_large_area",
+      "definitionVersionId": "82488f19-b409-5935-8e95-4d58274b3ca3",
+      "definitionHash": "cf17ff60b8acedb5384287324636da34d0856ed3cc159fadb2d35355a9da319a",
+      "groupId": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+      "canonicalName": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — большая площадь",
+      "physicalResult": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (большая площадь) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_small_area",
+      "definitionVersionId": "968fdcde-155f-574f-83bc-80522181cf95",
+      "definitionHash": "897286789f02b5bbe39488ea36cd6f6b60de2d4162e8cf9c1011f28bfd3fb3b5",
+      "groupId": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+      "canonicalName": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — малая площадь",
+      "physicalResult": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (малая площадь) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_standard",
+      "definitionVersionId": "151ec095-b6e1-5096-83bb-d38021b0eb24",
+      "definitionHash": "f0522cbc032ddd28b256382baa36ec10e8b8e22bd875fda154ff5804c6917b7e",
+      "groupId": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+      "canonicalName": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде",
+      "physicalResult": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (стандартный вариант) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm_wet_zone",
+      "definitionVersionId": "60855796-aa03-5483-8e66-81fc22b12758",
+      "definitionHash": "599072deac71c7f2531ac37f8f91b8a2e382499bbd2e1b9fba071ef7ad464952",
+      "groupId": "wg:master:demolition_aggressive_environment_cement_or_concrete_floor_25mm",
+      "canonicalName": "Разборка цементного или бетонного покрытия пола по фактической толщине в агрессивной среде — влажная зона",
+      "physicalResult": "Подтверждённая площадь существующего цементного или бетонного покрытия из кислото- или жароупорного бетона в агрессивной среде (влажная зона) разобрана: базовые 25 мм по КРЕР 46-04-011-12, изменение толщины целыми шагами по 5 мм — по КРЕР 46-04-011-13",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_concrete_floor_base_brick_rubble_460400902_standard",
+      "definitionVersionId": "e49e50ac-2d63-5035-8e4c-3e283b2810b8",
+      "definitionHash": "b6d7f5702360de6e093f5be7f31996575c3c334075cb9dd4aa8178363d825295",
+      "groupId": "demolition_concrete_floor_bases_krer4604009_s2754",
+      "canonicalName": "Разборка бетонного основания под полом на кирпичном щебне",
+      "physicalResult": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    },
+    {
+      "catalogId": "canonical-work:master:demolition_concrete_floor_base_gravel_460400901_standard",
+      "definitionVersionId": "f3c46dcc-1a0c-5ac3-8aeb-ab0e1b529e5d",
+      "definitionHash": "d120eb253f188cc816f0978a4598c8283cd1b5c554d71819f87773d61dd2dda1",
+      "groupId": "demolition_concrete_floor_bases_krer4604009_s2754",
+      "canonicalName": "Разборка бетонного основания под полом на гравии",
+      "physicalResult": "Разобрано точное бетонное основание; нормативные труд/механизмы/включённое обращение учтены; проектное завершение ограничено.",
+      "disposition": "DIFFERENT_REMOVAL_OR_HANDLING_RESULT"
+    }
+  ],
+  "priorEightPassportsUnchangedInCurrentRead": true,
+  "publicationPerformed": false,
+  "newCompleteTypes": 0
+}

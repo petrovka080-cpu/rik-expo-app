@@ -1,0 +1,99 @@
+{
+  "schema": "s2767-roof-metal-trim-010-01-source-admission/v1",
+  "reviewedAt": "2026-10-12T17:33:00.225Z",
+  "primarySourceSha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+  "locator": "КРЕР12, PDF/печатная стр.22, таблица12-01-010, колонка010-01; техническая часть§1.1,1.3–1.4,1.8,2.1–2.4",
+  "sourceReadVisuallyBySol": true,
+  "measurementUnit": "m2",
+  "normBasis": "100m2 of small sheet-metal coverings, NOT the roof carpet",
+  "admittedPaidRates": [
+    [
+      "workers",
+      "000-1003-0",
+      "Рабочие-строители среднего разряда 3,0",
+      "man_hour",
+      "labor",
+      "112.75",
+      "чел.-ч",
+      "OWN_COST"
+    ],
+    [
+      "tower_crane_8t",
+      "02-0005",
+      "Краны башенные при работе на других видах строительства (кроме монтажа технологического оборудования) 8 т",
+      "machine_hour",
+      "equipment",
+      "0.20",
+      "маш.-ч",
+      "OWN_COST"
+    ],
+    [
+      "flatbed_truck_to_5t",
+      "40-0001",
+      "Автомобили бортовые грузоподъёмностью до 5 т",
+      "machine_hour",
+      "equipment",
+      "0.07",
+      "маш.-ч",
+      "OWN_COST"
+    ],
+    [
+      "roofing_nails_3x40",
+      "01-1113-0005",
+      "Гвозди толевые круглые 3,0×40 мм",
+      "t",
+      "material",
+      "0.004",
+      "т",
+      "OWN_COST"
+    ],
+    [
+      "galvanized_rope_wire_3mm",
+      "10-0105-0029",
+      "Проволока канатная оцинкованная диаметром 3 мм",
+      "t",
+      "material",
+      "0.012",
+      "т",
+      "OWN_COST"
+    ],
+    [
+      "galvanized_sheet_0_7mm",
+      "10-0208-0004",
+      "Сталь листовая оцинкованная толщиной 0,7 мм",
+      "t",
+      "material",
+      "0.57",
+      "т",
+      "OWN_COST"
+    ]
+  ],
+  "informationalRate": [
+    "included_machine_operators",
+    null,
+    "Затраты труда машинистов",
+    "man_hour",
+    "labor",
+    "0.2",
+    "чел.-ч",
+    "INFORMATIONAL_SCOPE"
+  ],
+  "restrictions": [
+    "Only the complete applicable edge/parapet small-covering scope in this section is exact 010-01, galvanized0.7mm sheets and specified fastening on a suitable ready base",
+    "No arbitrary sheet thickness/material/fastener substitution",
+    "No double payment for preparation/fabrication/installation/crane operators/ordinary transport",
+    "No main-field area or length fallback; no pack counts, geometry, reserve, trips, rental hours or historical source prices inferred",
+    "Waterproofing junctions, gutters, base manufacture/repair and other edge details remain separate"
+  ],
+  "independentGroupedReviewPending": false,
+  "fullRoofAccepted": false,
+  "review": {
+    "agent": "/root/flat_roof_next_scope_review",
+    "requestedModel": "gpt-6-astra",
+    "requestedReasoningEffort": "xhigh",
+    "reviewKind": "NEW_010_01_SOURCE_SCOPE_AND_MULTIPLE_REQUIREMENT_MIGRATION",
+    "sourceReadVisually": true,
+    "numericRatesConfirmed": true,
+    "ordinaryPriorPackagesReaudited": false
+  }
+}

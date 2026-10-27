@@ -1,0 +1,398 @@
+{
+  "schemaVersion": "knauf-protektor-composite-corner-locator-payload/v1",
+  "contract": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2",
+  "locatorKey": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2:corner-geometry-and-supply",
+  "primarySourceKey": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2:product",
+  "kind": "SCOPE_PLUS_BOUNDED_GEOMETRY_AND_SUPPLY",
+  "quantityBasis": "Product dimensions plus explicit site geometry and supplier facts; not a manufacturer per-area consumption rate.",
+  "logicalNormId": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2:bounded-geometry",
+  "ownerRowId": "plaster:knauf-materials:open-corner",
+  "ownerUnitId": "m",
+  "sources": [
+    {
+      "sourceArtifactId": "protektor-1007z-202608011635",
+      "officialUrl": "https://www2.protektor.de/wp-content/uploads/product/de_DE/1007z-de-de-202608011635_6a6e044d0c4e5.pdf",
+      "sha256": "408cd72f6bb8fd47898facf0b163250d37cec31b6a971309e8f0d4719665acf8",
+      "bytes": 111531,
+      "edition": "01.08.2026 | 16:35",
+      "exactLocator": "PDF 1: description, mortar compatibility, Putzdicke, Verzinkung, Schenkellänge; Anbruch Kennzeichnung; order row 105922. PDF 2: edition validity and application/installation/storage instructions.",
+      "facts": {
+        "article": "1007Z",
+        "orderSku": "105922",
+        "nominalLengthMm": 3000,
+        "profileMaterial": "Galvanized steel Z350",
+        "legLengthMm": 34,
+        "plasterMinimumMm": 10,
+        "compatibleMortar": "Interior gypsum and gypsum-containing plaster",
+        "barsPerBundle": 25,
+        "manufacturerSupply": "Full packaging units only",
+        "bundlesPerPalletInformational": 81
+      },
+      "doesNotProve": [
+        "Site corner geometry or required piece count",
+        "Installation hours, fixing count or mounting-mortar mass",
+        "Consumption per m2 or an automatic waste allowance",
+        "Jointly named KNAUF + Protektor system approval",
+        "Retail loose-bar sale, price, delivery cost or additional supplier multiples"
+      ],
+      "sourceRole": "PRIMARY_PRODUCT_DIMENSIONS_AND_PACKAGING",
+      "proposedSourceKey": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2:product"
+    },
+    {
+      "sourceArtifactId": "protektor-1007z-dop-20260925",
+      "officialUrl": "https://www2.protektor.de/wp-content/uploads/product/de_DE/p-putz-1007z-15901-de-de_6ab64cc7d4c1e.pdf",
+      "sha256": "8478e941bffe14e67aeeff5735fd20808ebb6b7657f7826fe92c9f63aaf7ffb2",
+      "bytes": 49883,
+      "edition": "P_1007Z_15901; signed 25.09.2026",
+      "exactLocator": "PDF 1: product identification, 1007Z and EN13658-1 internal plaster profiles.",
+      "facts": {
+        "product": "1007Z",
+        "identification": "Product/packaging/document labels",
+        "declaredIntendedFamily": "Metal profiles for interior plaster"
+      },
+      "doesNotProve": [
+        "A quantity norm",
+        "SKU equivalence",
+        "Named mixed-brand system approval"
+      ],
+      "sourceRole": "CORROBORATING_SCOPE_NOT_QUANTITY_NORM",
+      "proposedSourceKey": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2:declaration"
+    },
+    {
+      "sourceArtifactId": "knauf-rotband-information-sheet-072025",
+      "officialUrl": "https://www.knauf.ru/upload/iblock/bd3/2uoz7mmn70a8fuauoou7jqkk488pf708/01-IL-KNAUF_Rotband-_02_09_2025_-v03-Preview.pdf",
+      "sha256": "7d5f2b7883b765ba0e88b528f487472e1eb61fad2a5b602641fee6ad438a72b4",
+      "bytes": 1681308,
+      "edition": "07/2025; official filename 02_09_2025",
+      "exactLocator": "PDF 2: Подготовка поверхности; Грунтование; Установка маячковых профилей; Установка защитных угловых профилей.",
+      "facts": {
+        "base": "Clean, strong, dry internal concrete; concrete residual moisture no more than 3%",
+        "primer": "Betogrund on dense smooth low-absorbent concrete; allow drying",
+        "profileMounting": "Rotband or Perlfix mortar portions, spacing 30cm; align and press the corner profile",
+        "thicknessScope": "The selected current branch is manual Rotband at exactly 10mm"
+      },
+      "doesNotProve": [
+        "1007Z by name",
+        "Profile consumption from wall area",
+        "Mortar mass from the 30cm mounting interval",
+        "Any new labour-hour rate or fixing allowance",
+        "A full total mixing/cleaning-water quantity"
+      ],
+      "sourceRole": "CORROBORATING_SCOPE_NOT_QUANTITY_NORM",
+      "retainedHistoricalRegistryReference": {
+        "sourceKey": "rik-expo-app.s27-63.knauf-interior-plaster-material-six.v1:rotband",
+        "sourceId": "d81b6c9a-1fd8-5fcb-83be-38e00c109d47",
+        "artifactSha256": "7d5f2b7883b765ba0e88b528f487472e1eb61fad2a5b602641fee6ad438a72b4",
+        "locatorKey": "rik-expo-app.s27-63.knauf-interior-plaster-material-six.v1:rotband",
+        "locatorId": "5035eda0-2cdc-5d0a-89e4-d0168d4aeba5",
+        "observedExcerptSha256": "ca3e5fbea2609ab7164ebe23cd050e7ec25d4cf5e25c6d94feccc7a351f0d699"
+      },
+      "useInThisComposite": "Scope/preparation corroboration only; existing material-rate bindings remain independent and unchanged."
+    },
+    {
+      "sourceArtifactId": "knauf-betogrund-information-sheet-052026",
+      "officialUrl": "https://www.knauf.ru/upload/iblock/fd6/zm61hso7g8alejgjsnu6k8hkd0bemltp/41-IL-KNAUF_Betogrund-_23_06_2026_-v04-Preview.pdf",
+      "sha256": "4c15b575f388cd56916471fa51514f109ec564c0f85cc4878f1f19b9536dd3be",
+      "bytes": 584479,
+      "edition": "05/2026",
+      "exactLocator": "PDF 1: Область применения. PDF 2: Подготовка поверхности; Порядок работы; Время высыхания.",
+      "facts": {
+        "application": "Internal dense smooth low/non-absorbing substrates including concrete before gypsum plasters and gypsum mounting adhesives",
+        "preparation": "Dry, clean, unfrozen base; remove laitance, release agents, loose material and dust",
+        "drying": "Following operation only after drying, not earlier than 12h; temperature/humidity affect drying"
+      },
+      "doesNotProve": [
+        "A profile mounting rate",
+        "That profile installation labour is paid by the material owner",
+        "Permission to replace Betogrund with another brand"
+      ],
+      "sourceRole": "CORROBORATING_SCOPE_NOT_QUANTITY_NORM",
+      "retainedHistoricalRegistryReference": {
+        "sourceKey": "rik-expo-app.s27-63.knauf-interior-plaster-material-six.v1:betogrund",
+        "sourceId": "7a933206-aa31-5adc-899e-d1649c9e3c8a",
+        "artifactSha256": "4c15b575f388cd56916471fa51514f109ec564c0f85cc4878f1f19b9536dd3be",
+        "locatorKey": "rik-expo-app.s27-63.knauf-interior-plaster-material-six.v1:betogrund",
+        "locatorId": "be32f254-5acf-589f-880c-479043e62899",
+        "observedExcerptSha256": "1066c315361737213c65603bafb4e333b6f4307c714b54514758b236bd3a027a"
+      },
+      "useInThisComposite": "Scope/preparation corroboration only; existing material-rate bindings remain independent and unchanged."
+    },
+    {
+      "sourceArtifactId": "protektor-moisture-scope-20261015",
+      "officialUrl": "https://www2.protektor.de/de/sortiment/profile-fuer-feuchtraeume/",
+      "sha256": "ff69b7616eb95a542bc657c3573301124ecaefe29dba463ab9e8c95d8610ebbe",
+      "bytes": 239189,
+      "edition": "Undated live guidance retrieved 2026-10-15",
+      "exactLocator": "Section Immer die beste Lösung für Feuchträume; bullet on galvanized steel profiles in wet rooms and bullet on pasty top coats.",
+      "facts": {
+        "wetRooms": "Galvanized profiles only if removed after completion of the base plaster",
+        "pastyTopcoats": "Manufacturer prefers white-coated aluminium or stainless profiles"
+      },
+      "doesNotProve": [],
+      "sourceRole": "CORROBORATING_SCOPE_NOT_QUANTITY_NORM",
+      "proposedSourceKey": "rik-expo-app.knauf-protektor-1007z-105922-forward-seven.v2:moisture-scope"
+    }
+  ],
+  "retainedScopeProof": {
+    "sourceKey": "rik-expo-app.s27-63.knauf-interior-plaster-conditional-composition-five.v1:external_corner_scope",
+    "sourceId": "4f17dbc9-2ada-59c3-8408-d971f6194f0a",
+    "artifactSha256": "7d5f2b7883b765ba0e88b528f487472e1eb61fad2a5b602641fee6ad438a72b4",
+    "locatorId": "38ca7afc-82ac-5c39-87f8-3e80dbadc24f",
+    "locatorKey": "rik-expo-app.s27-63.knauf-interior-plaster-conditional-composition-five.v1:external_corner_scope",
+    "excerptSha256": "7d8446ee732bec3bc6fd07336ff9b94f376fbdb817d7a5bc127e624485791e66",
+    "fullLocatorPayload": {
+      "kind": "external_corner_scope",
+      "facts": {
+        "key": "external_corner_scope",
+        "rowId": "plaster:knauf-materials:open-corner",
+        "guideRu": "Можно исключить при явном отсутствии внешних углов в участке. Если углы есть, решение/длина остаются к уточнению. Нужна фактически предусмотренная длина; нет метров на м². Шаг30см — порции монтажного раствора, не расход профиля. Отдельно измеренная предусмотренная длина возможна как факт; раскрой/запас и коэффициент закупочного расхода не приняты.",
+        "titleRu": "Есть внешние углы под профиль?",
+        "pdfPages": [
+          2
+        ],
+        "choicesRu": [
+          "Есть",
+          "В этом участке нет внешних углов",
+          "Пока неизвестно"
+        ],
+        "parameterId": "knauf_scope_external_corner_scope",
+        "sourceLocatorRu": "Защитный профиль на внешнем углу",
+        "notApplicableValueRu": "В этом участке нет внешних углов"
+      },
+      "source": {
+        "id": "knauf_rotband_072025_s2763",
+        "sha256": "7d5f2b7883b765ba0e88b528f487472e1eb61fad2a5b602641fee6ad438a72b4",
+        "titleRu": "КНАУФ-Ротбанд: информационный лист07/2025",
+        "authority": "КНАУФ",
+        "reviewedAt": "2026-10-11T19:16:23.660011+00:00",
+        "officialUrl": "https://www.knauf.ru/upload/iblock/bd3/2uoz7mmn70a8fuauoou7jqkk488pf708/01-IL-KNAUF_Rotband-_02_09_2025_-v03-Preview.pdf",
+        "localArtifact": ".release-runtime/r568/s27-63/interior-plaster-conditional-composition/KNAUF-Rotband-information-sheet.pdf",
+        "printedEdition": "07/2025"
+      },
+      "scopeRu": "Только ручной Ротбанд ровно10мм на измеренном внутреннем бетонном участке. Явный факт может сделать отдельные маяки, угловой профиль, сетку или абразив неприменимыми. Неизвестные/положительные ответы сохраняют непроверенную потребность. Известные материалы и принятые базовые часы не изменяются.",
+      "contract": "rik-expo-app.s27-63.knauf-interior-plaster-conditional-composition-five.v1",
+      "exclusionsRu": [
+        "Не закрываются человеко-часы отдельного Бетогрунда, суммарная вода, число/износ инструментов/СИЗ, весьQ2/Q3/Q4 residual и коммерческие услуги.",
+        "Не переносить1.2м²сетки на1м²бетона;20см ширины полосы не объявлять полным закупочным количеством.",
+        "Primer-labour/primer-tool уже имеют guard; повторный учёт как нового исключения запрещён."
+      ],
+      "quantityAdmitted": false,
+      "completeEstimateAccepted": false,
+      "scopeNonApplicabilityOnly": true
+    },
+    "oldQuantityAdmitted": false,
+    "oldScopeNonApplicabilityOnly": true,
+    "oldScopePromotedToQuantitativeNorm": false,
+    "retainedOriginalCornerInclusionAst": {
+      "kind": "and",
+      "operands": [
+        {
+          "kind": "equals",
+          "value": "Ротбанд вручную, 10 мм по бетону",
+          "parameterId": "interior_plaster_material_system"
+        },
+        {
+          "kind": "not",
+          "operand": {
+            "kind": "equals",
+            "value": "В этом участке нет внешних углов",
+            "parameterId": "knauf_scope_external_corner_scope"
+          }
+        }
+      ]
+    }
+  },
+  "boundedConditions": {
+    "scopeRu": "Только выбранный ручной Ротбанд ровно 10 мм по внутреннему бетону, сухое помещение и минеральная гипсовая отделка. Профиль Protektor 1007Z, артикул 105922, длина 3 м; одинаковые прямые непрерывные углы длиннее 1,5 м и не длиннее 3 м. Пригодность каждого целого профиля подтверждается отдельно; стыки и допуски реза не предполагаются.",
+    "choiceRu": {
+      "manual": "Ротбанд вручную, 10 мм по бетону",
+      "legacy": "Исходная технология по проекту",
+      "hasCorners": "Есть",
+      "noCorners": "В этом участке нет внешних углов",
+      "unknown": "Пока неизвестно",
+      "product": "Protektor 1007Z, артикул 105922, 3 м",
+      "otherProduct": "Другое исполнение",
+      "exposure": "Сухое помещение, минеральная гипсовая отделка",
+      "otherExposure": "Другие условия",
+      "cutFit": "Да, углы прямые, одинаковые и без стыков; раскрой проверен",
+      "otherCutFit": "Нет, нужен другой раскрой или стыки"
+    },
+    "factParameterIds": {
+      "count": "knauf_corner_105922_count",
+      "lengthMm": "knauf_corner_105922_length_mm",
+      "usableStockBars": "knauf_corner_105922_usable_stock_bars",
+      "retainedReserveBars": "knauf_corner_105922_retained_reserve_bars",
+      "supplierBundleMultiple": "knauf_corner_105922_bundle_multiple",
+      "product": "knauf_corner_105922_product",
+      "exposureFinish": "knauf_corner_105922_exposure_finish",
+      "cutFit": "knauf_corner_105922_cut_fit"
+    },
+    "requiredOriginalScope": "Existing manual-Rotband branch AND NOT explicit no-corners; exact old AST remains a separate conjunct.",
+    "requiredPositiveFacts": [
+      "Explicit has-corners",
+      "Exact product/SKU105922/3000mm",
+      "Dry interior mineral gypsum finish",
+      "Each continuous corner fits one sound whole bar without an assumed joint/cutting allowance"
+    ],
+    "count": "N is an explicit integer >=1",
+    "lengthMm": "1500 < Lmm <= 3000; equal straight continuous corners",
+    "stock": "S is an explicit integer >=0 of usable whole bars of this exact SKU; no default or legacy generic-stock transfer",
+    "reserve": "R is an explicit integer >=0 of whole bars to retain; no default",
+    "supplierMultiple": "M is an explicit integer >=1 in factory packs of25 bars; no defaultM1 or automatic pallet81 multiple",
+    "allNewFactDefaults": null,
+    "unknownIsZeroOrFalse": false,
+    "falseNoCorners": "The owner and geometry rows are inapplicable even if all new facts/manualQ are supplied.",
+    "invalidKnownFacts": "Reject invalid negative/noninteger domain facts. Invalid manualQ never masks known-source or planned>consumed errors."
+  },
+  "dimensionFacts": {
+    "barMm": 3000,
+    "minimumPlasterMm": 10,
+    "barsPerBundle": 25,
+    "metresPerBundle": 75
+  },
+  "derivedGeometryAndSupply": {
+    "installedLengthMetres": "N*Lmm/1000",
+    "wholeBarsAllocated": "N",
+    "proofOfOneBarPerCorner": "Lmm>1500 prevents two required continuous corners fitting one3000mm bar; explicit cut-fit rules out unsupported assembly/joints.",
+    "allocatedWholeBarMetres": "3*N",
+    "cutRemainderMetres": "N*(3-Lmm/1000)",
+    "cutRemainderUse": "Informational geometric difference only; neither usable stock nor waste/haulage quantity.",
+    "stockMetres": "3*S",
+    "reserveMetres": "3*R",
+    "supplyQuantumMetres": "75*M",
+    "automaticOrderMetres": "75*M*ceil(max(0,3*N+3*R-3*S)/(75*M))",
+    "manualQuantityPolicy": {
+      "policy": "retain-raw-and-block-quantum",
+      "ownerRowId": "plaster:knauf-materials:open-corner",
+      "unitId": "m",
+      "automaticQuantitiesRemainStrict": true,
+      "rawManualQuantityPreserved": true,
+      "invalidSupplyDoesNotPublishPhysicalDerivedOrder": true,
+      "savedRevisionMigration": null,
+      "genericPriceAndStockAutomaticTransferAllowed": false,
+      "priceCompatibilityGate": null,
+      "requiresExplicitPriceCompatibility": [
+        "exact SKU 105922",
+        "metre unit",
+        "currency",
+        "tax basis",
+        "delivery basis"
+      ],
+      "commonSourceOnlyIntegratedTestsAndTypesAccepted": false
+    },
+    "physicalDerivedOrder": "Publish integer whole-bar/pack equivalents and supply balances only after actual common supply validation; no fractional physical-count/stock claim.",
+    "manualTitlePriceHistory": "Retain original manual title, exact raw quantity string, price provenance and history. Do not reprice, round, migrate or recompile a saved revision by publishing a successor."
+  },
+  "publicPresentation": {
+    "ownerNameRu": "Угловой профиль для штукатурки",
+    "ownerDetailsRu": [
+      "Расчёт этого варианта применим только к подтверждённому Protektor 1007Z, артикул 105922, длина 3 м, для внутренней гипсовой штукатурки от 10 мм.",
+      "Одна пачка содержит 25 профилей, или 75 м. Кратность поставки указывается в таких пачках.",
+      "Цена задаётся за метр выбранного профиля. Цена прежнего общего профиля не переносится без подтверждения артикула, единицы, валюты, налогов и доставки.",
+      "Неизвестные исполнение, условия, число и длина углов сохраняют потребность; ручной заказ не подтверждает эти факты.",
+      "Отделка плоских углов в прежнем базовом труде и остальные владельцы работ сохраняются. Отдельные часы, монтажный раствор и крепёж этим расчётом не определяются."
+    ],
+    "informationRows": [
+      {
+        "suffix": "installed-length",
+        "titleRu": "Длина профиля на углах",
+        "unitId": "m",
+        "detailRu": "Суммарная измеренная длина одинаковых непрерывных углов. Не расход по площади."
+      },
+      {
+        "suffix": "allocated-bars",
+        "titleRu": "Целые профили длиной 3 м для установки",
+        "unitId": "pcs",
+        "detailRu": "Один целый профиль на каждый подтверждённый угол длиннее 1,5 м. Пригодность раскроя проверена; стыки не предполагаются."
+      },
+      {
+        "suffix": "cut-remainder",
+        "titleRu": "Остатки после раскроя профилей",
+        "unitId": "m",
+        "detailRu": "Геометрическая разница между длиной целых профилей и установленной длиной. Это не автоматически пригодный запас и не автоматически отходы к вывозу."
+      },
+      {
+        "suffix": "ordered-bars",
+        "titleRu": "Заказ в пересчёте на профили по 3 м",
+        "unitId": "pcs",
+        "detailRu": "Пересчёт подтверждённого заказа в метрах. При неподтверждённой кратности ручного заказа физическое число целых профилей не выводится."
+      },
+      {
+        "suffix": "manufacturer-bundles",
+        "titleRu": "Заказ в пачках по 25 профилей",
+        "unitId": "pcs",
+        "detailRu": "Одна заводская пачка — 25 профилей по 3 м. Кратность поставщика не меняет размер пачки."
+      },
+      {
+        "suffix": "remaining",
+        "titleRu": "Остаток целых профилей после работ, в метрах",
+        "unitId": "m",
+        "detailRu": "Учитываются подтверждённые целые профили в наличии и пригодный заказ за вычетом выделенных целых профилей. Остатки раскроя сюда не добавляются."
+      },
+      {
+        "suffix": "free-after-reserve",
+        "titleRu": "Свободный остаток сверх резерва, в метрах",
+        "unitId": "m",
+        "detailRu": "Пригодный остаток после работ за вычетом сохраняемых целых профилей."
+      },
+      {
+        "suffix": "consumption-shortage",
+        "titleRu": "Не хватает профиля для установки",
+        "unitId": "m",
+        "detailRu": "Непокрытая потребность в целых профилях. При ненулевом дефиците закупка не готова."
+      },
+      {
+        "suffix": "reserve-deficit",
+        "titleRu": "Не покрыт сохраняемый резерв профиля",
+        "unitId": "m",
+        "detailRu": "Непокрытый резерв целых профилей после работ. При ненулевом дефиците закупка не готова."
+      }
+    ],
+    "plainSupplierWarningRu": "Если поставщик подтвердил отпуск только целыми заводскими пачками, учитывайте указанную им кратность поставки в пачках по 25 профилей. Неизвестная кратность не заменяется единицей; условия продажи отдельных профилей этим источником не подтверждены.",
+    "warningMustInclude": [
+      "Original manual title",
+      "Unchanged exact rawQ",
+      "Unit label from registry",
+      "Actual supplier multiple"
+    ],
+    "noGenericBulkOrServicePackagingRule": true
+  },
+  "installationCoverage": {
+    "baseOwnerRowIds": [
+      "plaster:krer15-manual-base:workers",
+      "plaster:krer15-manual-base:loader",
+      "plaster:krer15-manual-base:lift",
+      "plaster:krer15-manual-base:mixer",
+      "plaster:krer15-manual-base:operators"
+    ],
+    "retainedResidualRowIds": [
+      "plaster:knauf-materials:open-main-labour",
+      "plaster:knauf-materials:open-preparation"
+    ],
+    "observedIncludedScopeRu": "Приготовление раствора, ручное нанесение с затиркой и отделка плоских внутренних и наружных углов в принятом условном базовом владельце КРЕР.",
+    "specificProfileMountingOverlapProven": false,
+    "mountingMortarAdditionalToExistingMixProven": false,
+    "newLabourOrMortarRows": 0,
+    "newLabourHours": 0,
+    "gateRu": "Сохранить существующие владельцы и включённые работы. До публикации отдельно установить пересечение именно установки профиля и монтажного раствора с принятым составом; отсутствие отдельной нормы не создаёт дублирующую строку."
+  },
+  "excludedUnownedAssumptions": [
+    "Нет метров профиля на м², скрытого отхода, припуска реза или стыков.",
+    "Нет автоматических S=0, R=0, M=1 или выбора SKU.",
+    "Ручной заказ не превращает дробные метры в пригодные целые профили.",
+    "Не переносить старую общую цену и склад без совместимости артикула и условий.",
+    "Не добавлять дублирующие часы, раствор или крепёж и не уменьшать прежний труд.",
+    "Не пересчитывать сохранённые ревизии; source/locator и транзакционные проверки ещё отсутствуют."
+  ],
+  "evidenceLimits": {
+    "namedMixedBrandSystemApproval": false,
+    "universalConsumptionNorm": false,
+    "newInstallationLabourHours": null,
+    "additionalMountingMortarMass": null,
+    "fixingQuantity": null,
+    "completeEstimateAccepted": false,
+    "activationAllowed": false,
+    "productionEligible": false,
+    "sourceReadbackIsNotProjectFactOrSupplyAcceptance": true
+  }
+}

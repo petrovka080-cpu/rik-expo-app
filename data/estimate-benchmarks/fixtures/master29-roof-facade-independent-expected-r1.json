@@ -1,0 +1,948 @@
+{
+  "contract": "gox-build.master29.roof-facade-independent-expected.r1",
+  "authoredFromPrimarySourceAndGeometryNotRuntimeRows": true,
+  "demoOnly": true,
+  "newFullTechnologies": 0,
+  "roofProcurementPolicy": "Known normative material/labour/machine consumption remains a visible physical row with one cost owner; procurement false does not mean a hidden counter. Actual package order, rental and route remain unconfirmed. Machine operators informational, no second payment.",
+  "profiles": [
+    {
+      "profileKey": "gutter",
+      "targetCatalogIds": [
+        "canonical-work:base:roofing_interior_gutter_install_high_load",
+        "canonical-work:base:roofing_interior_gutter_install_standard",
+        "canonical-work:base:roofing_interior_gutter_install_technical_room",
+        "canonical-work:base:roofing_interior_gutter_install_wet_zone"
+      ],
+      "actualResultTitleRu": "Изготовление и монтаж подвесных желобов",
+      "primaryMeasureParameterId": "roof_hanging_gutter_length_m",
+      "primaryUnitId": "linear_m",
+      "knownResources": [
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:workers",
+          "ratePer100": "31.41",
+          "unitId": "man_hour",
+          "category": "labor",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:workers",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:included_machine_operators",
+          "ratePer100": "0.16",
+          "unitId": "man_hour",
+          "category": "labor",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:included_machine_operators",
+          "procurement": false,
+          "sourceNormQuantityAccepted": false,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:tower_crane_8t",
+          "ratePer100": "0.11",
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:tower_crane_8t",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:truck_crane_10t",
+          "ratePer100": "0.05",
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:truck_crane_10t",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:flatbed_truck_to_5t",
+          "ratePer100": "0.09",
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:flatbed_truck_to_5t",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:galvanized_nails_4_5x120",
+          "ratePer100": "0.0038",
+          "unitId": "t",
+          "category": "material",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:galvanized_nails_4_5x120",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:galvanized_forgings_2_825kg",
+          "ratePer100": "0.169",
+          "unitId": "t",
+          "category": "material",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:galvanized_forgings_2_825kg",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:galvanized_sheet_0_7mm",
+          "ratePer100": "0.33",
+          "unitId": "t",
+          "category": "material",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:galvanized_sheet_0_7mm",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        }
+      ],
+      "openNeeds": [
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:m29-open:hand-tools",
+          "needId": "gutter:open:hand-tools",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "category": "equipment",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:m29-open:hand-tools",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurement": false,
+          "reasonRu": "Таблица нормирует целую операцию, материалы и машины; полный набор ручного инструмента и его количество данным пакетом не подтверждены. Второй труд изготовления не добавляется."
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:m29-open:access-protection",
+          "needId": "gutter:open:access-protection",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "category": "equipment",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:m29-open:access-protection",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurement": false,
+          "reasonRu": "Высота до15м ограничивает применимость нормы; она не задаёт полный физический комплект доступа, коллективной и индивидуальной защиты."
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:m29-open:external-delivery",
+          "needId": "gutter:open:external-delivery",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "category": "service",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:m29-open:external-delivery",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurement": false,
+          "reasonRu": "Нормативные машино-часы остаются оплачены у своих владельцев. Внешний маршрут, реальная поставка и граница включённой доставки не установлены; повторная оплата не предполагается."
+        },
+        {
+          "rowId": "roof:hanging-gutters:krer12-009-02:m29-open:waste-handling",
+          "needId": "gutter:open:waste-handling",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "category": "service",
+          "costOwnerId": "roof:hanging-gutters:krer12-009-02:m29-open:waste-handling",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurement": false,
+          "reasonRu": "Табличный расход не превращается в норму отходов или число рейсов. Фактические остатки, обращение с обрезками и граница включённой уборки требуют отдельного подтверждения."
+        }
+      ],
+      "sourceTable": "12-01-009-02",
+      "sourceBasisQuantity": "100",
+      "sourceBasisUnitId": "linear_m",
+      "cases": [
+        {
+          "id": "DEMO_gutter_normal",
+          "demoOnly": true,
+          "kind": "normal",
+          "input": {
+            "roof_hanging_gutter_scope": "Подвесные желоба из оцинкованной стали 0,7 мм с изготовлением и креплением",
+            "m29_gutter_conditions": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+            "m29_gutter_measurement_scope": "Измерена самостоятельная длина подвесных желобов в метрах; площадь кровли и длина труб её не заменяют",
+            "roof_hanging_gutter_length_m": "100"
+          },
+          "expectedQuantities": {
+            "roof:hanging-gutters:krer12-009-02:workers": "31.41",
+            "roof:hanging-gutters:krer12-009-02:included_machine_operators": "0.16",
+            "roof:hanging-gutters:krer12-009-02:tower_crane_8t": "0.11",
+            "roof:hanging-gutters:krer12-009-02:truck_crane_10t": "0.05",
+            "roof:hanging-gutters:krer12-009-02:flatbed_truck_to_5t": "0.09",
+            "roof:hanging-gutters:krer12-009-02:galvanized_nails_4_5x120": "0.0038",
+            "roof:hanging-gutters:krer12-009-02:galvanized_forgings_2_825kg": "0.169",
+            "roof:hanging-gutters:krer12-009-02:galvanized_sheet_0_7mm": "0.33"
+          },
+          "expectedActiveNeedIds": [
+            "roof:hanging-gutters:krer12-009-02:m29-open:hand-tools",
+            "roof:hanging-gutters:krer12-009-02:m29-open:access-protection",
+            "roof:hanging-gutters:krer12-009-02:m29-open:external-delivery",
+            "roof:hanging-gutters:krer12-009-02:m29-open:waste-handling"
+          ],
+          "legacyActiveRows": 0
+        },
+        {
+          "id": "DEMO_gutter_small",
+          "demoOnly": true,
+          "kind": "small",
+          "input": {
+            "roof_hanging_gutter_scope": "Подвесные желоба из оцинкованной стали 0,7 мм с изготовлением и креплением",
+            "m29_gutter_conditions": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+            "m29_gutter_measurement_scope": "Измерена самостоятельная длина подвесных желобов в метрах; площадь кровли и длина труб её не заменяют",
+            "roof_hanging_gutter_length_m": "1"
+          },
+          "expectedQuantities": {
+            "roof:hanging-gutters:krer12-009-02:workers": "0.3141",
+            "roof:hanging-gutters:krer12-009-02:included_machine_operators": "0.0016",
+            "roof:hanging-gutters:krer12-009-02:tower_crane_8t": "0.0011",
+            "roof:hanging-gutters:krer12-009-02:truck_crane_10t": "0.0005",
+            "roof:hanging-gutters:krer12-009-02:flatbed_truck_to_5t": "0.0009",
+            "roof:hanging-gutters:krer12-009-02:galvanized_nails_4_5x120": "0.000038",
+            "roof:hanging-gutters:krer12-009-02:galvanized_forgings_2_825kg": "0.00169",
+            "roof:hanging-gutters:krer12-009-02:galvanized_sheet_0_7mm": "0.0033"
+          },
+          "expectedActiveNeedIds": [
+            "roof:hanging-gutters:krer12-009-02:m29-open:hand-tools",
+            "roof:hanging-gutters:krer12-009-02:m29-open:access-protection",
+            "roof:hanging-gutters:krer12-009-02:m29-open:external-delivery",
+            "roof:hanging-gutters:krer12-009-02:m29-open:waste-handling"
+          ],
+          "legacyActiveRows": 0
+        },
+        {
+          "id": "DEMO_gutter_boundary-zero",
+          "demoOnly": true,
+          "kind": "boundary-zero",
+          "input": {
+            "roof_hanging_gutter_scope": "Подвесные желоба из оцинкованной стали 0,7 мм с изготовлением и креплением",
+            "m29_gutter_conditions": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+            "m29_gutter_measurement_scope": "Измерена самостоятельная длина подвесных желобов в метрах; площадь кровли и длина труб её не заменяют",
+            "roof_hanging_gutter_length_m": "0"
+          },
+          "expectedQuantities": {
+            "roof:hanging-gutters:krer12-009-02:workers": "0",
+            "roof:hanging-gutters:krer12-009-02:included_machine_operators": "0",
+            "roof:hanging-gutters:krer12-009-02:tower_crane_8t": "0",
+            "roof:hanging-gutters:krer12-009-02:truck_crane_10t": "0",
+            "roof:hanging-gutters:krer12-009-02:flatbed_truck_to_5t": "0",
+            "roof:hanging-gutters:krer12-009-02:galvanized_nails_4_5x120": "0",
+            "roof:hanging-gutters:krer12-009-02:galvanized_forgings_2_825kg": "0",
+            "roof:hanging-gutters:krer12-009-02:galvanized_sheet_0_7mm": "0"
+          },
+          "expectedActiveNeedIds": [],
+          "legacyActiveRows": 0
+        },
+        {
+          "id": "DEMO_gutter_selector-negative",
+          "demoOnly": true,
+          "kind": "selector-negative",
+          "input": {
+            "roof_hanging_gutter_scope": "Другой материал или толщина; высота16м"
+          },
+          "expected": "REJECT_INVALID_SELECTOR"
+        },
+        {
+          "id": "DEMO_gutter_historical-q-only",
+          "demoOnly": true,
+          "kind": "missing-independent-measure",
+          "input": {
+            "roof_hanging_gutter_scope": "Подвесные желоба из оцинкованной стали 0,7 мм с изготовлением и креплением",
+            "m29_gutter_conditions": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+            "m29_gutter_measurement_scope": "Измерена самостоятельная длина подвесных желобов в метрах; площадь кровли и длина труб её не заменяют",
+            "q": 100
+          },
+          "expectedQuantities": {},
+          "expected": "NO_KNOWN_NORM_QUANTITY_FROM_Q"
+        }
+      ]
+    },
+    {
+      "profileKey": "metal-trim",
+      "targetCatalogIds": [
+        "canonical-work:base:roofing_interior_parapet_install_high_load",
+        "canonical-work:base:roofing_interior_parapet_install_standard",
+        "canonical-work:base:roofing_interior_parapet_install_technical_room",
+        "canonical-work:base:roofing_interior_parapet_install_wet_zone"
+      ],
+      "actualResultTitleRu": "Покрытие парапетов оцинкованной сталью",
+      "primaryMeasureParameterId": "roof_metal_trim_area_m2",
+      "primaryUnitId": "m2",
+      "knownResources": [
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:workers",
+          "ratePer100": "112.75",
+          "unitId": "man_hour",
+          "category": "labor",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:workers",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:included_machine_operators",
+          "ratePer100": "0.2",
+          "unitId": "man_hour",
+          "category": "labor",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:included_machine_operators",
+          "procurement": false,
+          "sourceNormQuantityAccepted": false,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:tower_crane_8t",
+          "ratePer100": "0.2",
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:tower_crane_8t",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+          "ratePer100": "0.07",
+          "unitId": "machine_hour",
+          "category": "equipment",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:flatbed_truck_to_5t",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:roofing_nails_3x40",
+          "ratePer100": "0.004",
+          "unitId": "t",
+          "category": "material",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:roofing_nails_3x40",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm",
+          "ratePer100": "0.012",
+          "unitId": "t",
+          "category": "material",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm",
+          "ratePer100": "0.57",
+          "unitId": "t",
+          "category": "material",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm",
+          "procurement": false,
+          "sourceNormQuantityAccepted": true,
+          "rowKind": null,
+          "notActualPurchaseOrRental": true
+        }
+      ],
+      "openNeeds": [
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:m29-open:hand-tools",
+          "needId": "metal-trim:open:hand-tools",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "category": "equipment",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:m29-open:hand-tools",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurement": false,
+          "reasonRu": "Таблица нормирует целую операцию, материалы и машины; полный набор ручного инструмента и его количество данным пакетом не подтверждены. Второй труд изготовления не добавляется."
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:m29-open:access-protection",
+          "needId": "metal-trim:open:access-protection",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "category": "equipment",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:m29-open:access-protection",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurement": false,
+          "reasonRu": "Высота до15м ограничивает применимость нормы; она не задаёт полный физический комплект доступа, коллективной и индивидуальной защиты."
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:m29-open:external-delivery",
+          "needId": "metal-trim:open:external-delivery",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "category": "service",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:m29-open:external-delivery",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurement": false,
+          "reasonRu": "Нормативные машино-часы остаются оплачены у своих владельцев. Внешний маршрут, реальная поставка и граница включённой доставки не установлены; повторная оплата не предполагается."
+        },
+        {
+          "rowId": "roof:metal-trim:krer12-010-01:m29-open:waste-handling",
+          "needId": "metal-trim:open:waste-handling",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "category": "service",
+          "costOwnerId": "roof:metal-trim:krer12-010-01:m29-open:waste-handling",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "procurement": false,
+          "reasonRu": "Табличный расход не превращается в норму отходов или число рейсов. Фактические остатки, обращение с обрезками и граница включённой уборки требуют отдельного подтверждения."
+        }
+      ],
+      "sourceTable": "12-01-010-01",
+      "sourceBasisQuantity": "100",
+      "sourceBasisUnitId": "m2",
+      "cases": [
+        {
+          "id": "DEMO_metal-trim_normal",
+          "demoOnly": true,
+          "kind": "normal",
+          "input": {
+            "roof_metal_trim_scope": "Покрытие парапетов оцинкованной сталью 0,7 мм с заготовкой и креплением картин",
+            "m29_metal_trim_conditions": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+            "m29_metal_trim_measurement_scope": "Измерена самостоятельная площадь металлического покрытия парапетов в квадратных метрах; длина парапета и площадь кровли её не заменяют",
+            "roof_metal_trim_area_m2": "100"
+          },
+          "expectedQuantities": {
+            "roof:metal-trim:krer12-010-01:workers": "112.75",
+            "roof:metal-trim:krer12-010-01:included_machine_operators": "0.2",
+            "roof:metal-trim:krer12-010-01:tower_crane_8t": "0.2",
+            "roof:metal-trim:krer12-010-01:flatbed_truck_to_5t": "0.07",
+            "roof:metal-trim:krer12-010-01:roofing_nails_3x40": "0.004",
+            "roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm": "0.012",
+            "roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm": "0.57"
+          },
+          "expectedActiveNeedIds": [
+            "roof:metal-trim:krer12-010-01:m29-open:hand-tools",
+            "roof:metal-trim:krer12-010-01:m29-open:access-protection",
+            "roof:metal-trim:krer12-010-01:m29-open:external-delivery",
+            "roof:metal-trim:krer12-010-01:m29-open:waste-handling"
+          ],
+          "legacyActiveRows": 0
+        },
+        {
+          "id": "DEMO_metal-trim_small",
+          "demoOnly": true,
+          "kind": "small",
+          "input": {
+            "roof_metal_trim_scope": "Покрытие парапетов оцинкованной сталью 0,7 мм с заготовкой и креплением картин",
+            "m29_metal_trim_conditions": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+            "m29_metal_trim_measurement_scope": "Измерена самостоятельная площадь металлического покрытия парапетов в квадратных метрах; длина парапета и площадь кровли её не заменяют",
+            "roof_metal_trim_area_m2": "1"
+          },
+          "expectedQuantities": {
+            "roof:metal-trim:krer12-010-01:workers": "1.1275",
+            "roof:metal-trim:krer12-010-01:included_machine_operators": "0.002",
+            "roof:metal-trim:krer12-010-01:tower_crane_8t": "0.002",
+            "roof:metal-trim:krer12-010-01:flatbed_truck_to_5t": "0.0007",
+            "roof:metal-trim:krer12-010-01:roofing_nails_3x40": "0.00004",
+            "roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm": "0.00012",
+            "roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm": "0.0057"
+          },
+          "expectedActiveNeedIds": [
+            "roof:metal-trim:krer12-010-01:m29-open:hand-tools",
+            "roof:metal-trim:krer12-010-01:m29-open:access-protection",
+            "roof:metal-trim:krer12-010-01:m29-open:external-delivery",
+            "roof:metal-trim:krer12-010-01:m29-open:waste-handling"
+          ],
+          "legacyActiveRows": 0
+        },
+        {
+          "id": "DEMO_metal-trim_boundary-zero",
+          "demoOnly": true,
+          "kind": "boundary-zero",
+          "input": {
+            "roof_metal_trim_scope": "Покрытие парапетов оцинкованной сталью 0,7 мм с заготовкой и креплением картин",
+            "m29_metal_trim_conditions": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+            "m29_metal_trim_measurement_scope": "Измерена самостоятельная площадь металлического покрытия парапетов в квадратных метрах; длина парапета и площадь кровли её не заменяют",
+            "roof_metal_trim_area_m2": "0"
+          },
+          "expectedQuantities": {
+            "roof:metal-trim:krer12-010-01:workers": "0",
+            "roof:metal-trim:krer12-010-01:included_machine_operators": "0",
+            "roof:metal-trim:krer12-010-01:tower_crane_8t": "0",
+            "roof:metal-trim:krer12-010-01:flatbed_truck_to_5t": "0",
+            "roof:metal-trim:krer12-010-01:roofing_nails_3x40": "0",
+            "roof:metal-trim:krer12-010-01:galvanized_rope_wire_3mm": "0",
+            "roof:metal-trim:krer12-010-01:galvanized_sheet_0_7mm": "0"
+          },
+          "expectedActiveNeedIds": [],
+          "legacyActiveRows": 0
+        },
+        {
+          "id": "DEMO_metal-trim_selector-negative",
+          "demoOnly": true,
+          "kind": "selector-negative",
+          "input": {
+            "roof_metal_trim_scope": "Другой материал или толщина; высота16м"
+          },
+          "expected": "REJECT_INVALID_SELECTOR"
+        },
+        {
+          "id": "DEMO_metal-trim_historical-q-only",
+          "demoOnly": true,
+          "kind": "missing-independent-measure",
+          "input": {
+            "roof_metal_trim_scope": "Покрытие парапетов оцинкованной сталью 0,7 мм с заготовкой и креплением картин",
+            "m29_metal_trim_conditions": "Подтверждены новое строительство, положительная температура, нормальные неосложнённые условия, высота до 15 м включительно и местность ниже 1500 м; непосредственное основание и проектное крепление готовы; тот же объём изготовления, крепления, обычного подъёма и нормативной перевозки оплачивается только здесь",
+            "m29_metal_trim_measurement_scope": "Измерена самостоятельная площадь металлического покрытия парапетов в квадратных метрах; длина парапета и площадь кровли её не заменяют",
+            "q": 100
+          },
+          "expectedQuantities": {},
+          "expected": "NO_KNOWN_NORM_QUANTITY_FROM_Q"
+        }
+      ]
+    },
+    {
+      "profileKey": "protection2600",
+      "targetCatalogIds": [
+        "canonical-work:base:facade_interior_facade_paint_apply_standard",
+        "canonical-work:base:facade_interior_facade_paint_apply_technical_room",
+        "canonical-work:base:facade_interior_facade_paint_install_standard",
+        "canonical-work:base:facade_interior_facade_paint_install_technical_room"
+      ],
+      "actualResultTitleRu": "Окраска подготовленного цементного фасада",
+      "primaryMeasureParameterId": "q",
+      "primaryUnitId": "m2",
+      "geometryIsIndependentOfPaintArea": true,
+      "stockReserveMultipleDemoOnly": {
+        "film": [
+          "0",
+          "0",
+          "1"
+        ],
+        "tape": [
+          "0",
+          "0",
+          "1"
+        ]
+      },
+      "knownResources": [
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:covered-area",
+          "unitId": "m2",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:covered-area",
+          "paidOwnerRowId": null,
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:film-strip-area",
+          "unitId": "m2",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:film-strip-area",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:film-tail",
+          "unitId": "m",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:film-tail",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:film-trim",
+          "unitId": "m2",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:film-trim",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:tape-length",
+          "unitId": "m",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:tape-length",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:tape-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:film-opened",
+          "unitId": "item",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:film-opened",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "unitId": "item",
+          "category": "material",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "procurement": true,
+          "rowKind": null
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:film-remaining",
+          "unitId": "item",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:film-remaining",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:film-free",
+          "unitId": "item",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:film-free",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:film-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:tape-opened",
+          "unitId": "item",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:tape-opened",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:tape-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:tape-order",
+          "unitId": "item",
+          "category": "material",
+          "costTreatment": "OWN_COST",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:tape-order",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:tape-order",
+          "procurement": true,
+          "rowKind": null
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:tape-remaining",
+          "unitId": "item",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:tape-remaining",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:tape-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        },
+        {
+          "rowId": "paint:ct54-rectangular-protection:tesa2600:tape-free",
+          "unitId": "item",
+          "category": "material",
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "costOwnerId": "paint:ct54-rectangular-protection:tesa2600:tape-free",
+          "paidOwnerRowId": "paint:ct54-rectangular-protection:tesa2600:tape-order",
+          "procurement": false,
+          "rowKind": "CALCULATION_DETAIL"
+        }
+      ],
+      "potentialInheritedNeedIds": [
+        "paint:ct54-simple-ready-facade:mixer-provision",
+        "paint:ct54-simple-ready-facade:brush",
+        "paint:ct54-simple-ready-facade:roller",
+        "paint:ct54-simple-ready-facade:protection-film",
+        "paint:ct54-simple-ready-facade:protection-tape",
+        "paint:ct54-simple-ready-facade:eye-protection",
+        "paint:ct54-simple-ready-facade:skin-protection",
+        "paint:ct54-simple-ready-facade:weather-protection",
+        "paint:ct54-simple-ready-facade:cleaning-water",
+        "paint:ct54-simple-ready-facade:quality-completion",
+        "paint:ct54-simple-ready-facade:extra-logistics",
+        "paint:ct54-simple-ready-facade:cleanup-waste",
+        "paint:ct54-simple-ready-facade:inherited-materials_39",
+        "paint:ct54-simple-ready-facade:inherited-consumables_43",
+        "paint:ct54-simple-ready-facade:inherited-equipment_51",
+        "paint:ct54-simple-ready-facade:inherited-equipment_52",
+        "paint:ct54-simple-ready-facade:inherited-preparation_45",
+        "paint:ct54-simple-ready-facade:inherited-preparation_46",
+        "paint:ct54-simple-ready-facade:inherited-preparation_47",
+        "paint:ct54-simple-ready-facade:inherited-overhead_35",
+        "paint:ct54-simple-ready-facade:inherited-tax_36"
+      ],
+      "conditionallyClosedNeedIds": [
+        "paint:ct54-simple-ready-facade:protection-film",
+        "paint:ct54-simple-ready-facade:protection-tape"
+      ],
+      "newPaidLabour": 0,
+      "cases": [
+        {
+          "id": "DEMO_facade2600_normal",
+          "demoOnly": true,
+          "kind": "normal",
+          "geometryInput": {
+            "ct54_tesa2600_rectangle_count": "3",
+            "ct54_tesa2600_cut_width_m": "1.2",
+            "ct54_tesa2600_cut_height_m": "2.2"
+          },
+          "expectedQuantities": {
+            "paint:ct54-rectangular-protection:tesa2600:covered-area": "7.92",
+            "paint:ct54-rectangular-protection:tesa2600:film-strip-area": "9.36",
+            "paint:ct54-rectangular-protection:tesa2600:film-tail": "10.4",
+            "paint:ct54-rectangular-protection:tesa2600:film-trim": "1.44",
+            "paint:ct54-rectangular-protection:tesa2600:tape-length": "16.8",
+            "paint:ct54-rectangular-protection:tesa2600:film-opened": "1",
+            "paint:ct54-rectangular-protection:tesa2600:film-order": "1",
+            "paint:ct54-rectangular-protection:tesa2600:film-remaining": "0",
+            "paint:ct54-rectangular-protection:tesa2600:film-free": "0",
+            "paint:ct54-rectangular-protection:tesa2600:tape-opened": "1",
+            "paint:ct54-rectangular-protection:tesa2600:tape-order": "1",
+            "paint:ct54-rectangular-protection:tesa2600:tape-remaining": "0",
+            "paint:ct54-rectangular-protection:tesa2600:tape-free": "0"
+          },
+          "conditionallyClosedNeedIds": [
+            "paint:ct54-simple-ready-facade:protection-film",
+            "paint:ct54-simple-ready-facade:protection-tape"
+          ],
+          "allOtherApplicableParentNeedsRemain": true,
+          "expectedActiveNeedIds": [
+            "paint:ct54-simple-ready-facade:mixer-provision",
+            "paint:ct54-simple-ready-facade:roller",
+            "paint:ct54-simple-ready-facade:eye-protection",
+            "paint:ct54-simple-ready-facade:skin-protection",
+            "paint:ct54-simple-ready-facade:weather-protection",
+            "paint:ct54-simple-ready-facade:cleaning-water",
+            "paint:ct54-simple-ready-facade:quality-completion",
+            "paint:ct54-simple-ready-facade:extra-logistics",
+            "paint:ct54-simple-ready-facade:cleanup-waste",
+            "paint:ct54-simple-ready-facade:inherited-materials_39",
+            "paint:ct54-simple-ready-facade:inherited-consumables_43",
+            "paint:ct54-simple-ready-facade:inherited-equipment_51",
+            "paint:ct54-simple-ready-facade:inherited-equipment_52",
+            "paint:ct54-simple-ready-facade:inherited-preparation_45",
+            "paint:ct54-simple-ready-facade:inherited-preparation_46",
+            "paint:ct54-simple-ready-facade:inherited-preparation_47",
+            "paint:ct54-simple-ready-facade:inherited-overhead_35",
+            "paint:ct54-simple-ready-facade:inherited-tax_36"
+          ]
+        },
+        {
+          "id": "DEMO_facade2600_small",
+          "demoOnly": true,
+          "kind": "small",
+          "geometryInput": {
+            "ct54_tesa2600_rectangle_count": "1",
+            "ct54_tesa2600_cut_width_m": "0.2",
+            "ct54_tesa2600_cut_height_m": "0.2"
+          },
+          "expectedQuantities": {
+            "paint:ct54-rectangular-protection:tesa2600:covered-area": "0.04",
+            "paint:ct54-rectangular-protection:tesa2600:film-strip-area": "0.52",
+            "paint:ct54-rectangular-protection:tesa2600:film-tail": "13.8",
+            "paint:ct54-rectangular-protection:tesa2600:film-trim": "0.48",
+            "paint:ct54-rectangular-protection:tesa2600:tape-length": "0.6",
+            "paint:ct54-rectangular-protection:tesa2600:film-opened": "1",
+            "paint:ct54-rectangular-protection:tesa2600:film-order": "1",
+            "paint:ct54-rectangular-protection:tesa2600:film-remaining": "0",
+            "paint:ct54-rectangular-protection:tesa2600:film-free": "0",
+            "paint:ct54-rectangular-protection:tesa2600:tape-opened": "1",
+            "paint:ct54-rectangular-protection:tesa2600:tape-order": "1",
+            "paint:ct54-rectangular-protection:tesa2600:tape-remaining": "0",
+            "paint:ct54-rectangular-protection:tesa2600:tape-free": "0"
+          },
+          "conditionallyClosedNeedIds": [
+            "paint:ct54-simple-ready-facade:protection-film",
+            "paint:ct54-simple-ready-facade:protection-tape"
+          ],
+          "allOtherApplicableParentNeedsRemain": true,
+          "expectedActiveNeedIds": [
+            "paint:ct54-simple-ready-facade:mixer-provision",
+            "paint:ct54-simple-ready-facade:roller",
+            "paint:ct54-simple-ready-facade:eye-protection",
+            "paint:ct54-simple-ready-facade:skin-protection",
+            "paint:ct54-simple-ready-facade:weather-protection",
+            "paint:ct54-simple-ready-facade:cleaning-water",
+            "paint:ct54-simple-ready-facade:quality-completion",
+            "paint:ct54-simple-ready-facade:extra-logistics",
+            "paint:ct54-simple-ready-facade:cleanup-waste",
+            "paint:ct54-simple-ready-facade:inherited-materials_39",
+            "paint:ct54-simple-ready-facade:inherited-consumables_43",
+            "paint:ct54-simple-ready-facade:inherited-equipment_51",
+            "paint:ct54-simple-ready-facade:inherited-equipment_52",
+            "paint:ct54-simple-ready-facade:inherited-preparation_45",
+            "paint:ct54-simple-ready-facade:inherited-preparation_46",
+            "paint:ct54-simple-ready-facade:inherited-preparation_47",
+            "paint:ct54-simple-ready-facade:inherited-overhead_35",
+            "paint:ct54-simple-ready-facade:inherited-tax_36"
+          ]
+        },
+        {
+          "id": "DEMO_facade2600_boundary",
+          "demoOnly": true,
+          "kind": "boundary",
+          "geometryInput": {
+            "ct54_tesa2600_rectangle_count": "1000",
+            "ct54_tesa2600_cut_width_m": "14",
+            "ct54_tesa2600_cut_height_m": "2.6"
+          },
+          "expectedQuantities": {
+            "paint:ct54-rectangular-protection:tesa2600:covered-area": "36400",
+            "paint:ct54-rectangular-protection:tesa2600:film-strip-area": "36400",
+            "paint:ct54-rectangular-protection:tesa2600:film-tail": "0",
+            "paint:ct54-rectangular-protection:tesa2600:film-trim": "0",
+            "paint:ct54-rectangular-protection:tesa2600:tape-length": "19200",
+            "paint:ct54-rectangular-protection:tesa2600:film-opened": "1000",
+            "paint:ct54-rectangular-protection:tesa2600:film-order": "1000",
+            "paint:ct54-rectangular-protection:tesa2600:film-remaining": "0",
+            "paint:ct54-rectangular-protection:tesa2600:film-free": "0",
+            "paint:ct54-rectangular-protection:tesa2600:tape-opened": "1000",
+            "paint:ct54-rectangular-protection:tesa2600:tape-order": "1000",
+            "paint:ct54-rectangular-protection:tesa2600:tape-remaining": "0",
+            "paint:ct54-rectangular-protection:tesa2600:tape-free": "0"
+          },
+          "conditionallyClosedNeedIds": [
+            "paint:ct54-simple-ready-facade:protection-film",
+            "paint:ct54-simple-ready-facade:protection-tape"
+          ],
+          "allOtherApplicableParentNeedsRemain": true,
+          "expectedActiveNeedIds": [
+            "paint:ct54-simple-ready-facade:mixer-provision",
+            "paint:ct54-simple-ready-facade:roller",
+            "paint:ct54-simple-ready-facade:eye-protection",
+            "paint:ct54-simple-ready-facade:skin-protection",
+            "paint:ct54-simple-ready-facade:weather-protection",
+            "paint:ct54-simple-ready-facade:cleaning-water",
+            "paint:ct54-simple-ready-facade:quality-completion",
+            "paint:ct54-simple-ready-facade:extra-logistics",
+            "paint:ct54-simple-ready-facade:cleanup-waste",
+            "paint:ct54-simple-ready-facade:inherited-materials_39",
+            "paint:ct54-simple-ready-facade:inherited-consumables_43",
+            "paint:ct54-simple-ready-facade:inherited-equipment_51",
+            "paint:ct54-simple-ready-facade:inherited-equipment_52",
+            "paint:ct54-simple-ready-facade:inherited-preparation_45",
+            "paint:ct54-simple-ready-facade:inherited-preparation_46",
+            "paint:ct54-simple-ready-facade:inherited-preparation_47",
+            "paint:ct54-simple-ready-facade:inherited-overhead_35",
+            "paint:ct54-simple-ready-facade:inherited-tax_36"
+          ]
+        },
+        {
+          "id": "DEMO_facade2600_packing-gap",
+          "demoOnly": true,
+          "kind": "partial-source-boundary",
+          "geometryInput": {
+            "ct54_tesa2600_rectangle_count": "3",
+            "ct54_tesa2600_cut_width_m": "10",
+            "ct54_tesa2600_cut_height_m": "2.6"
+          },
+          "expectedQuantities": {
+            "paint:ct54-rectangular-protection:tesa2600:film-order": "3",
+            "paint:ct54-rectangular-protection:tesa2600:tape-length": "45.6"
+          },
+          "mustBeAbsentRowIds": [
+            "paint:ct54-rectangular-protection:tesa2600:tape-order",
+            "paint:ct54-rectangular-protection:tesa2600:tape-opened",
+            "paint:ct54-rectangular-protection:tesa2600:tape-remaining",
+            "paint:ct54-rectangular-protection:tesa2600:tape-free"
+          ],
+          "activeNeedIds": [
+            "paint:ct54-simple-ready-facade:protection-tape"
+          ],
+          "conditionallyClosedNeedIds": [
+            "paint:ct54-simple-ready-facade:protection-film"
+          ],
+          "expectedActiveNeedIds": [
+            "paint:ct54-simple-ready-facade:mixer-provision",
+            "paint:ct54-simple-ready-facade:roller",
+            "paint:ct54-simple-ready-facade:eye-protection",
+            "paint:ct54-simple-ready-facade:skin-protection",
+            "paint:ct54-simple-ready-facade:weather-protection",
+            "paint:ct54-simple-ready-facade:cleaning-water",
+            "paint:ct54-simple-ready-facade:quality-completion",
+            "paint:ct54-simple-ready-facade:extra-logistics",
+            "paint:ct54-simple-ready-facade:cleanup-waste",
+            "paint:ct54-simple-ready-facade:inherited-materials_39",
+            "paint:ct54-simple-ready-facade:inherited-consumables_43",
+            "paint:ct54-simple-ready-facade:inherited-equipment_51",
+            "paint:ct54-simple-ready-facade:inherited-equipment_52",
+            "paint:ct54-simple-ready-facade:inherited-preparation_45",
+            "paint:ct54-simple-ready-facade:inherited-preparation_46",
+            "paint:ct54-simple-ready-facade:inherited-preparation_47",
+            "paint:ct54-simple-ready-facade:inherited-overhead_35",
+            "paint:ct54-simple-ready-facade:inherited-tax_36",
+            "paint:ct54-simple-ready-facade:protection-tape"
+          ]
+        },
+        {
+          "id": "DEMO_facade2600_selector-negative",
+          "demoOnly": true,
+          "kind": "selector-negative",
+          "input": {
+            "ct54_protection_method": "Другой размер рулона 12×2,6м"
+          },
+          "expected": "REJECT_INVALID_SELECTOR"
+        },
+        {
+          "id": "DEMO_facade2600_height-negative",
+          "demoOnly": true,
+          "kind": "boundary-negative",
+          "geometryInput": {
+            "ct54_tesa2600_cut_height_m": "2.601"
+          },
+          "expected": "REJECT_OUTSIDE_DECLARED_DIMENSIONS"
+        }
+      ],
+      "normalActiveNeedIds": [
+        "paint:ct54-simple-ready-facade:mixer-provision",
+        "paint:ct54-simple-ready-facade:roller",
+        "paint:ct54-simple-ready-facade:eye-protection",
+        "paint:ct54-simple-ready-facade:skin-protection",
+        "paint:ct54-simple-ready-facade:weather-protection",
+        "paint:ct54-simple-ready-facade:cleaning-water",
+        "paint:ct54-simple-ready-facade:quality-completion",
+        "paint:ct54-simple-ready-facade:extra-logistics",
+        "paint:ct54-simple-ready-facade:cleanup-waste",
+        "paint:ct54-simple-ready-facade:inherited-materials_39",
+        "paint:ct54-simple-ready-facade:inherited-consumables_43",
+        "paint:ct54-simple-ready-facade:inherited-equipment_51",
+        "paint:ct54-simple-ready-facade:inherited-equipment_52",
+        "paint:ct54-simple-ready-facade:inherited-preparation_45",
+        "paint:ct54-simple-ready-facade:inherited-preparation_46",
+        "paint:ct54-simple-ready-facade:inherited-preparation_47",
+        "paint:ct54-simple-ready-facade:inherited-overhead_35",
+        "paint:ct54-simple-ready-facade:inherited-tax_36"
+      ]
+    }
+  ]
+}

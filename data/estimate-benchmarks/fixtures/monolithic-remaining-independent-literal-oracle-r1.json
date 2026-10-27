@@ -1,0 +1,1721 @@
+{
+  "contract": "independent-monolithic-remaining-literal-oracle/r1",
+  "method": "Manual literal transcription from full primary columns. Decimal normalization only. Not generated from model/compiled rows.",
+  "sourceSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+  "cases": [
+    {
+      "profileKey": "column-107-01",
+      "normId": "06-01-107-01",
+      "sourceBasis": {
+        "quantity": "100",
+        "unitId": "m3"
+      },
+      "literals": [
+        {
+          "key": "workers",
+          "sourceCode": "000-1003-2",
+          "sourceUnit": "man_hour",
+          "literal": "1319.00",
+          "outputUnit": "man_hour",
+          "normalizedPer100M3": "1319.00",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "operators",
+          "sourceCode": null,
+          "sourceUnit": "man_hour",
+          "literal": "131.98",
+          "outputUnit": "man_hour",
+          "normalizedPer100M3": "131.98",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "sourceUnit": "machine_hour",
+          "literal": "129.2",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "129.2",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "truck-crane10t",
+          "sourceCode": "02-0075",
+          "sourceUnit": "machine_hour",
+          "literal": "1.79",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "1.79",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "forklift5t",
+          "sourceCode": "03-0020",
+          "sourceUnit": "machine_hour",
+          "literal": "0.99",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "0.99",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "arc-welder",
+          "sourceCode": "04-0444",
+          "sourceUnit": "machine_hour",
+          "literal": "7.6",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "7.6",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "vibrator",
+          "sourceCode": "11-0180",
+          "sourceUnit": "machine_hour",
+          "literal": "71.8",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "71.8",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "chain-saw",
+          "sourceCode": "33-0503",
+          "sourceUnit": "machine_hour",
+          "literal": "0.6",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "0.6",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "flatbed8t",
+          "sourceCode": "40-0002",
+          "sourceUnit": "machine_hour",
+          "literal": "2.7",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "2.7",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "sourceUnit": "m3",
+          "literal": "0.25",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "0.25",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "sourceUnit": "t",
+          "literal": "0.022",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "22.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "dornit",
+          "sourceCode": "01-1207-0001",
+          "sourceUnit": "10m2",
+          "literal": "32.6",
+          "outputUnit": "m2",
+          "normalizedPer100M3": "326.0",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "oil",
+          "sourceCode": "01-4504-0001",
+          "sourceUnit": "t",
+          "literal": "0.21",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "210.00",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "electrodes",
+          "sourceCode": "01-5005-0024",
+          "sourceUnit": "t",
+          "literal": "0.0075",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "7.5000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "deck",
+          "sourceCode": "01-6002-0001",
+          "sourceUnit": "m2",
+          "literal": "33.33",
+          "outputUnit": "m2",
+          "normalizedPer100M3": "33.33",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "unedged44II",
+          "sourceCode": "01-6304-0077",
+          "sourceUnit": "m3",
+          "literal": "0.09",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "0.09",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "sourceUnit": "t",
+          "literal": "25.1",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "25100.0",
+          "quantityRole": "PROJECT_BBS_COST_ONLY"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0060",
+          "sourceUnit": "m3",
+          "literal": "101.5",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "101.5",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "sourceUnit": "t",
+          "literal": "0.018",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "18.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "formMetal",
+          "sourceCode": null,
+          "sourceUnit": "set",
+          "literal": "П",
+          "outputUnit": "set",
+          "normalizedPer100M3": null,
+          "quantityRole": "PROJECT_P_HELD"
+        },
+        {
+          "key": "formMovable",
+          "sourceCode": "01-6003-0043*",
+          "sourceUnit": "set",
+          "literal": "П",
+          "outputUnit": "set",
+          "normalizedPer100M3": null,
+          "quantityRole": "PROJECT_P_HELD"
+        }
+      ],
+      "scenarios": [
+        {
+          "volumeM3": "1.25",
+          "expectedNormativeQuantities": {
+            "workers": "16.4875",
+            "operators": "1.64975",
+            "tower-crane8t": "1.615",
+            "truck-crane10t": "0.022375",
+            "forklift5t": "0.012375",
+            "arc-welder": "0.095",
+            "vibrator": "0.8975",
+            "chain-saw": "0.0075",
+            "flatbed8t": "0.03375",
+            "water": "0.003125",
+            "nails": "0.27500",
+            "dornit": "4.075",
+            "oil": "2.6250",
+            "electrodes": "0.093750",
+            "deck": "0.416625",
+            "unedged44II": "0.001125",
+            "rebar": null,
+            "concrete": "1.26875",
+            "wire": "0.22500",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "100",
+          "expectedNormativeQuantities": {
+            "workers": "1319.00",
+            "operators": "131.98",
+            "tower-crane8t": "129.2",
+            "truck-crane10t": "1.79",
+            "forklift5t": "0.99",
+            "arc-welder": "7.6",
+            "vibrator": "71.8",
+            "chain-saw": "0.6",
+            "flatbed8t": "2.7",
+            "water": "0.25",
+            "nails": "22.000",
+            "dornit": "326.0",
+            "oil": "210.00",
+            "electrodes": "7.5000",
+            "deck": "33.33",
+            "unedged44II": "0.09",
+            "rebar": null,
+            "concrete": "101.5",
+            "wire": "18.000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "250",
+          "expectedNormativeQuantities": {
+            "workers": "3297.50",
+            "operators": "329.95",
+            "tower-crane8t": "323.0",
+            "truck-crane10t": "4.475",
+            "forklift5t": "2.475",
+            "arc-welder": "19.0",
+            "vibrator": "179.5",
+            "chain-saw": "1.5",
+            "flatbed8t": "6.75",
+            "water": "0.625",
+            "nails": "55.000",
+            "dornit": "815.0",
+            "oil": "525.00",
+            "electrodes": "18.7500",
+            "deck": "83.325",
+            "unedged44II": "0.225",
+            "rebar": null,
+            "concrete": "253.75",
+            "wire": "45.000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "0",
+          "expectedNormativeQuantities": {
+            "workers": "0.00",
+            "operators": "0.00",
+            "tower-crane8t": "0.0",
+            "truck-crane10t": "0.00",
+            "forklift5t": "0.00",
+            "arc-welder": "0.0",
+            "vibrator": "0.0",
+            "chain-saw": "0.0",
+            "flatbed8t": "0.0",
+            "water": "0.00",
+            "nails": "0.000",
+            "dornit": "0.0",
+            "oil": "0.00",
+            "electrodes": "0.0000",
+            "deck": "0.00",
+            "unedged44II": "0.00",
+            "rebar": null,
+            "concrete": "0.0",
+            "wire": "0.000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": true
+        },
+        {
+          "volumeM3": "0.0",
+          "expectedNormativeQuantities": {
+            "workers": "0.000",
+            "operators": "0.000",
+            "tower-crane8t": "0.00",
+            "truck-crane10t": "0.000",
+            "forklift5t": "0.000",
+            "arc-welder": "0.00",
+            "vibrator": "0.00",
+            "chain-saw": "0.00",
+            "flatbed8t": "0.00",
+            "water": "0.000",
+            "nails": "0.0000",
+            "dornit": "0.00",
+            "oil": "0.000",
+            "electrodes": "0.00000",
+            "deck": "0.000",
+            "unedged44II": "0.000",
+            "rebar": null,
+            "concrete": "0.00",
+            "wire": "0.0000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": true
+        }
+      ],
+      "normalAndSmallExpectedPhysicalNeeds": [
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:formMetal",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:formMovable",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:setting-out-preparation",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:reinforcement-bom-fabrication",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:formwork-shoring-kit",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:tools-working-parts",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:rigging",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:energy-water-provision",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:external-delivery-feed",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:access-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:quality-acceptance",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:curing-physical-method",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:junctions-finish",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need:cleaning-waste",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:measuring-tape",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:level-instrument",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:inventory-prop",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:formwork-transom",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:formwork-beam",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:formwork-brace",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:formwork-connector",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:work-platform",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:project-bar-schedule",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:project-bar-spacer",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:chain-saw-chain",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:chain-saw-bar",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:hand-hammer",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:concrete-shovel",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:concrete-trowel",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:concrete-straightedge",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:welding-lead",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:welding-face-shield",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:concrete-bucket",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:lifting-sling",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:temporary-power-cable",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:electrical-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:water-feed-hose",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:external-concrete-delivery",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:access-stair",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:edge-guard",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:fall-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:test-sample-mould",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:concrete-testing",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:asbuilt-control",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:water-applicator",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:temperature-control",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:cleaning-scraper",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:cleaning-brush",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:washwater-container",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:solid-waste-container",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:waste-disposal",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:column-107-01:need-leaf:deep-vibrator-working-part",
+          "needState": "QUANTITY_REQUIRED"
+        }
+      ],
+      "expectedCountIsNotFull": true
+    },
+    {
+      "profileKey": "beam-109-02",
+      "normId": "06-01-109-02",
+      "sourceBasis": {
+        "quantity": "100",
+        "unitId": "m3"
+      },
+      "literals": [
+        {
+          "key": "workers",
+          "sourceCode": "000-1003-1",
+          "sourceUnit": "man_hour",
+          "literal": "1351.40",
+          "outputUnit": "man_hour",
+          "normalizedPer100M3": "1351.40",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "operators",
+          "sourceCode": null,
+          "sourceUnit": "man_hour",
+          "literal": "66.85",
+          "outputUnit": "man_hour",
+          "normalizedPer100M3": "66.85",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "sourceUnit": "machine_hour",
+          "literal": "61.2",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "61.2",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "truck-crane10t",
+          "sourceCode": "02-0075",
+          "sourceUnit": "machine_hour",
+          "literal": "2.75",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "2.75",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "forklift5t",
+          "sourceCode": "03-0020",
+          "sourceUnit": "machine_hour",
+          "literal": "2.9",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "2.9",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "arc-welder",
+          "sourceCode": "04-0444",
+          "sourceUnit": "machine_hour",
+          "literal": "15.73",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "15.73",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "vibrator",
+          "sourceCode": "11-0180",
+          "sourceUnit": "machine_hour",
+          "literal": "89.2",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "89.2",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "chain-saw",
+          "sourceCode": "33-0503",
+          "sourceUnit": "machine_hour",
+          "literal": "1.07",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "1.07",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "flatbed8t",
+          "sourceCode": "40-0002",
+          "sourceUnit": "machine_hour",
+          "literal": "4.14",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "4.14",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "sourceUnit": "m3",
+          "literal": "0.171",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "0.171",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "sourceUnit": "t",
+          "literal": "0.006",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "6.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "oil",
+          "sourceCode": "01-4504-0001",
+          "sourceUnit": "t",
+          "literal": "0.129",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "129.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "electrodes",
+          "sourceCode": "01-5005-0024",
+          "sourceUnit": "t",
+          "literal": "0.016",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "16.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "deck",
+          "sourceCode": "01-6002-0001",
+          "sourceUnit": "m2",
+          "literal": "25.31",
+          "outputUnit": "m2",
+          "normalizedPer100M3": "25.31",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "bars",
+          "sourceCode": "01-6302-0094",
+          "sourceUnit": "m3",
+          "literal": "1.29",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "1.29",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "boards25III",
+          "sourceCode": "01-6305-0090",
+          "sourceUnit": "m3",
+          "literal": "0.05",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "0.05",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "boards44III",
+          "sourceCode": "01-6305-0098",
+          "sourceUnit": "m3",
+          "literal": "0.6",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "0.6",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "sourceUnit": "t",
+          "literal": "31",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "31000",
+          "quantityRole": "PROJECT_BBS_COST_ONLY"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0060",
+          "sourceUnit": "m3",
+          "literal": "100",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "100",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "sourceUnit": "t",
+          "literal": "0.047",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "47.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "formMetal",
+          "sourceCode": null,
+          "sourceUnit": "set",
+          "literal": "П",
+          "outputUnit": "set",
+          "normalizedPer100M3": null,
+          "quantityRole": "PROJECT_P_HELD"
+        },
+        {
+          "key": "formMovable",
+          "sourceCode": "01-6003-0043*",
+          "sourceUnit": "set",
+          "literal": "П",
+          "outputUnit": "set",
+          "normalizedPer100M3": null,
+          "quantityRole": "PROJECT_P_HELD"
+        }
+      ],
+      "scenarios": [
+        {
+          "volumeM3": "1.25",
+          "expectedNormativeQuantities": {
+            "workers": "16.8925",
+            "operators": "0.835625",
+            "tower-crane8t": "0.765",
+            "truck-crane10t": "0.034375",
+            "forklift5t": "0.03625",
+            "arc-welder": "0.196625",
+            "vibrator": "1.115",
+            "chain-saw": "0.013375",
+            "flatbed8t": "0.05175",
+            "water": "0.0021375",
+            "nails": "0.07500",
+            "oil": "1.61250",
+            "electrodes": "0.20000",
+            "deck": "0.316375",
+            "bars": "0.016125",
+            "boards25III": "0.000625",
+            "boards44III": "0.0075",
+            "rebar": null,
+            "concrete": "1.25",
+            "wire": "0.58750",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "100",
+          "expectedNormativeQuantities": {
+            "workers": "1351.40",
+            "operators": "66.85",
+            "tower-crane8t": "61.2",
+            "truck-crane10t": "2.75",
+            "forklift5t": "2.9",
+            "arc-welder": "15.73",
+            "vibrator": "89.2",
+            "chain-saw": "1.07",
+            "flatbed8t": "4.14",
+            "water": "0.171",
+            "nails": "6.000",
+            "oil": "129.000",
+            "electrodes": "16.000",
+            "deck": "25.31",
+            "bars": "1.29",
+            "boards25III": "0.05",
+            "boards44III": "0.6",
+            "rebar": null,
+            "concrete": "100",
+            "wire": "47.000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "250",
+          "expectedNormativeQuantities": {
+            "workers": "3378.50",
+            "operators": "167.125",
+            "tower-crane8t": "153.0",
+            "truck-crane10t": "6.875",
+            "forklift5t": "7.25",
+            "arc-welder": "39.325",
+            "vibrator": "223.0",
+            "chain-saw": "2.675",
+            "flatbed8t": "10.35",
+            "water": "0.4275",
+            "nails": "15.000",
+            "oil": "322.500",
+            "electrodes": "40.000",
+            "deck": "63.275",
+            "bars": "3.225",
+            "boards25III": "0.125",
+            "boards44III": "1.5",
+            "rebar": null,
+            "concrete": "250",
+            "wire": "117.500",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "0",
+          "expectedNormativeQuantities": {
+            "workers": "0.00",
+            "operators": "0.00",
+            "tower-crane8t": "0.0",
+            "truck-crane10t": "0.00",
+            "forklift5t": "0.0",
+            "arc-welder": "0.00",
+            "vibrator": "0.0",
+            "chain-saw": "0.00",
+            "flatbed8t": "0.00",
+            "water": "0.000",
+            "nails": "0.000",
+            "oil": "0.000",
+            "electrodes": "0.000",
+            "deck": "0.00",
+            "bars": "0.00",
+            "boards25III": "0.00",
+            "boards44III": "0.0",
+            "rebar": null,
+            "concrete": "0",
+            "wire": "0.000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": true
+        },
+        {
+          "volumeM3": "0.0",
+          "expectedNormativeQuantities": {
+            "workers": "0.000",
+            "operators": "0.000",
+            "tower-crane8t": "0.00",
+            "truck-crane10t": "0.000",
+            "forklift5t": "0.00",
+            "arc-welder": "0.000",
+            "vibrator": "0.00",
+            "chain-saw": "0.000",
+            "flatbed8t": "0.000",
+            "water": "0.0000",
+            "nails": "0.0000",
+            "oil": "0.0000",
+            "electrodes": "0.0000",
+            "deck": "0.000",
+            "bars": "0.000",
+            "boards25III": "0.000",
+            "boards44III": "0.00",
+            "rebar": null,
+            "concrete": "0.0",
+            "wire": "0.0000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": true
+        }
+      ],
+      "normalAndSmallExpectedPhysicalNeeds": [
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:formMetal",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:formMovable",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:setting-out-preparation",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:reinforcement-bom-fabrication",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:formwork-shoring-kit",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:tools-working-parts",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:rigging",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:energy-water-provision",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:external-delivery-feed",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:access-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:quality-acceptance",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:curing-physical-method",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:junctions-finish",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need:cleaning-waste",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:measuring-tape",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:level-instrument",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:inventory-prop",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:formwork-transom",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:formwork-beam",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:formwork-brace",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:formwork-connector",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:work-platform",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:project-bar-schedule",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:project-bar-spacer",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:chain-saw-chain",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:chain-saw-bar",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:hand-hammer",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:concrete-shovel",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:concrete-trowel",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:concrete-straightedge",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:welding-lead",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:welding-face-shield",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:concrete-bucket",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:lifting-sling",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:temporary-power-cable",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:electrical-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:water-feed-hose",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:external-concrete-delivery",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:access-stair",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:edge-guard",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:fall-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:test-sample-mould",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:concrete-testing",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:asbuilt-control",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:water-applicator",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:temperature-control",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:cleaning-scraper",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:cleaning-brush",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:washwater-container",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:solid-waste-container",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:waste-disposal",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:beam-109-02:need-leaf:deep-vibrator-working-part",
+          "needState": "QUANTITY_REQUIRED"
+        }
+      ],
+      "expectedCountIsNotFull": true
+    },
+    {
+      "profileKey": "stair-111-02",
+      "normId": "06-01-111-02",
+      "sourceBasis": {
+        "quantity": "100",
+        "unitId": "m3"
+      },
+      "literals": [
+        {
+          "key": "workers",
+          "sourceCode": "000-1003-1",
+          "sourceUnit": "man_hour",
+          "literal": "3136.38",
+          "outputUnit": "man_hour",
+          "normalizedPer100M3": "3136.38",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "operators",
+          "sourceCode": null,
+          "sourceUnit": "man_hour",
+          "literal": "61.49",
+          "outputUnit": "man_hour",
+          "normalizedPer100M3": "61.49",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "tower-crane8t",
+          "sourceCode": "02-0005",
+          "sourceUnit": "machine_hour",
+          "literal": "56.6",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "56.6",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "truck-crane10t",
+          "sourceCode": "02-0075",
+          "sourceUnit": "machine_hour",
+          "literal": "2.35",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "2.35",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "forklift5t",
+          "sourceCode": "03-0020",
+          "sourceUnit": "machine_hour",
+          "literal": "2.54",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "2.54",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "arc-welder",
+          "sourceCode": "04-0444",
+          "sourceUnit": "machine_hour",
+          "literal": "11.2",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "11.2",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "vibrator",
+          "sourceCode": "11-0183",
+          "sourceUnit": "machine_hour",
+          "literal": "78",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "78",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "chain-saw",
+          "sourceCode": "33-0503",
+          "sourceUnit": "machine_hour",
+          "literal": "2.12",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "2.12",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "flatbed8t",
+          "sourceCode": "40-0002",
+          "sourceUnit": "machine_hour",
+          "literal": "1.53",
+          "outputUnit": "machine_hour",
+          "normalizedPer100M3": "1.53",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "water",
+          "sourceCode": "01-0601-0001",
+          "sourceUnit": "m3",
+          "literal": "0.3066",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "0.3066",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "nails",
+          "sourceCode": "01-1110-0002",
+          "sourceUnit": "t",
+          "literal": "0.016",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "16.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "oil",
+          "sourceCode": "01-4504-0001",
+          "sourceUnit": "t",
+          "literal": "0.277",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "277.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "electrodes",
+          "sourceCode": "01-5005-0024",
+          "sourceUnit": "t",
+          "literal": "0.013",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "13.000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "deck",
+          "sourceCode": "01-6002-0001",
+          "sourceUnit": "m2",
+          "literal": "57.6",
+          "outputUnit": "m2",
+          "normalizedPer100M3": "57.6",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "bars",
+          "sourceCode": "01-6302-0094",
+          "sourceUnit": "m3",
+          "literal": "0.82",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "0.82",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "boards25III",
+          "sourceCode": "01-6305-0090",
+          "sourceUnit": "m3",
+          "literal": "0.28",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "0.28",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "boards44III",
+          "sourceCode": "01-6305-0098",
+          "sourceUnit": "m3",
+          "literal": "1.22",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "1.22",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "matting",
+          "sourceCode": "01-7231-0001",
+          "sourceUnit": "m2",
+          "literal": "42.9",
+          "outputUnit": "m2",
+          "normalizedPer100M3": "42.9",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "rebar",
+          "sourceCode": "03-0102-0001",
+          "sourceUnit": "t",
+          "literal": "15.7",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "15700.0",
+          "quantityRole": "PROJECT_BBS_COST_ONLY"
+        },
+        {
+          "key": "concrete",
+          "sourceCode": "03-0206-0060",
+          "sourceUnit": "m3",
+          "literal": "101.5",
+          "outputUnit": "m3",
+          "normalizedPer100M3": "101.5",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "wire",
+          "sourceCode": "10-0105-0036",
+          "sourceUnit": "t",
+          "literal": "0.0236",
+          "outputUnit": "kg",
+          "normalizedPer100M3": "23.6000",
+          "quantityRole": "KNOWN_SOURCE"
+        },
+        {
+          "key": "formMetal",
+          "sourceCode": null,
+          "sourceUnit": "set",
+          "literal": "П",
+          "outputUnit": "set",
+          "normalizedPer100M3": null,
+          "quantityRole": "PROJECT_P_HELD"
+        },
+        {
+          "key": "formMovable",
+          "sourceCode": "01-6003-0043*",
+          "sourceUnit": "set",
+          "literal": "П",
+          "outputUnit": "set",
+          "normalizedPer100M3": null,
+          "quantityRole": "PROJECT_P_HELD"
+        }
+      ],
+      "scenarios": [
+        {
+          "volumeM3": "1.25",
+          "expectedNormativeQuantities": {
+            "workers": "39.20475",
+            "operators": "0.768625",
+            "tower-crane8t": "0.7075",
+            "truck-crane10t": "0.029375",
+            "forklift5t": "0.03175",
+            "arc-welder": "0.140",
+            "vibrator": "0.975",
+            "chain-saw": "0.0265",
+            "flatbed8t": "0.019125",
+            "water": "0.0038325",
+            "nails": "0.20000",
+            "oil": "3.46250",
+            "electrodes": "0.16250",
+            "deck": "0.720",
+            "bars": "0.01025",
+            "boards25III": "0.0035",
+            "boards44III": "0.01525",
+            "matting": "0.53625",
+            "rebar": null,
+            "concrete": "1.26875",
+            "wire": "0.295000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "100",
+          "expectedNormativeQuantities": {
+            "workers": "3136.38",
+            "operators": "61.49",
+            "tower-crane8t": "56.6",
+            "truck-crane10t": "2.35",
+            "forklift5t": "2.54",
+            "arc-welder": "11.2",
+            "vibrator": "78",
+            "chain-saw": "2.12",
+            "flatbed8t": "1.53",
+            "water": "0.3066",
+            "nails": "16.000",
+            "oil": "277.000",
+            "electrodes": "13.000",
+            "deck": "57.6",
+            "bars": "0.82",
+            "boards25III": "0.28",
+            "boards44III": "1.22",
+            "matting": "42.9",
+            "rebar": null,
+            "concrete": "101.5",
+            "wire": "23.6000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "250",
+          "expectedNormativeQuantities": {
+            "workers": "7840.95",
+            "operators": "153.725",
+            "tower-crane8t": "141.5",
+            "truck-crane10t": "5.875",
+            "forklift5t": "6.35",
+            "arc-welder": "28.0",
+            "vibrator": "195",
+            "chain-saw": "5.30",
+            "flatbed8t": "3.825",
+            "water": "0.7665",
+            "nails": "40.000",
+            "oil": "692.500",
+            "electrodes": "32.500",
+            "deck": "144.0",
+            "bars": "2.05",
+            "boards25III": "0.70",
+            "boards44III": "3.05",
+            "matting": "107.25",
+            "rebar": null,
+            "concrete": "253.75",
+            "wire": "59.0000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": false
+        },
+        {
+          "volumeM3": "0",
+          "expectedNormativeQuantities": {
+            "workers": "0.00",
+            "operators": "0.00",
+            "tower-crane8t": "0.0",
+            "truck-crane10t": "0.00",
+            "forklift5t": "0.00",
+            "arc-welder": "0.0",
+            "vibrator": "0",
+            "chain-saw": "0.00",
+            "flatbed8t": "0.00",
+            "water": "0.0000",
+            "nails": "0.000",
+            "oil": "0.000",
+            "electrodes": "0.000",
+            "deck": "0.0",
+            "bars": "0.00",
+            "boards25III": "0.00",
+            "boards44III": "0.00",
+            "matting": "0.0",
+            "rebar": null,
+            "concrete": "0.0",
+            "wire": "0.0000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": true
+        },
+        {
+          "volumeM3": "0.0",
+          "expectedNormativeQuantities": {
+            "workers": "0.000",
+            "operators": "0.000",
+            "tower-crane8t": "0.00",
+            "truck-crane10t": "0.000",
+            "forklift5t": "0.000",
+            "arc-welder": "0.00",
+            "vibrator": "0.0",
+            "chain-saw": "0.000",
+            "flatbed8t": "0.000",
+            "water": "0.00000",
+            "nails": "0.0000",
+            "oil": "0.0000",
+            "electrodes": "0.0000",
+            "deck": "0.00",
+            "bars": "0.000",
+            "boards25III": "0.000",
+            "boards44III": "0.000",
+            "matting": "0.00",
+            "rebar": null,
+            "concrete": "0.00",
+            "wire": "0.00000",
+            "formMetal": null,
+            "formMovable": null
+          },
+          "projectSteelTestOnlyKg": "2000",
+          "projectSteelNotSourceAverage": true,
+          "zeroHasNoPhysicalRowsOrNeeds": true
+        }
+      ],
+      "normalAndSmallExpectedPhysicalNeeds": [
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:formMetal",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:formMovable",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:setting-out-preparation",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:reinforcement-bom-fabrication",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:formwork-shoring-kit",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:tools-working-parts",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:rigging",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:energy-water-provision",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:external-delivery-feed",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:access-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:quality-acceptance",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:curing-physical-method",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:junctions-finish",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need:cleaning-waste",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:measuring-tape",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:level-instrument",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:inventory-prop",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:formwork-transom",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:formwork-beam",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:formwork-brace",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:formwork-connector",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:work-platform",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:project-bar-schedule",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:project-bar-spacer",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:chain-saw-chain",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:chain-saw-bar",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:hand-hammer",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:concrete-shovel",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:concrete-trowel",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:concrete-straightedge",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:welding-lead",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:welding-face-shield",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:concrete-bucket",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:lifting-sling",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:temporary-power-cable",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:electrical-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:water-feed-hose",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:external-concrete-delivery",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:access-stair",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:edge-guard",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:fall-protection",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:test-sample-mould",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:concrete-testing",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:asbuilt-control",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:water-applicator",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:temperature-control",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:cleaning-scraper",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:cleaning-brush",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:washwater-container",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:solid-waste-container",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:waste-disposal",
+          "needState": "QUANTITY_REQUIRED"
+        },
+        {
+          "rowId": "monolithic-remaining:krer06:r1:stair-111-02:need-leaf:surface-vibrator-working-plate",
+          "needState": "QUANTITY_REQUIRED"
+        }
+      ],
+      "expectedCountIsNotFull": true
+    }
+  ],
+  "newFULL": 0
+}

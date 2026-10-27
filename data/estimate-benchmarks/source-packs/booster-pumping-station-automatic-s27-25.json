@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "rik-expo-app.s27-25.booster-pumping-station-automatic-source-pack.v1",
+  "catalogId": "canonical-work:expanded:booster_pumping_station",
+  "scope": "Installation and commissioning of a selected factory-assembled potable-water booster skid in an existing prepared room. The ordinary route accepts only skid count and identity, hydraulic duty and measured suction, discharge and power-cable connection routes. Pump configuration, skid dimensions and mass, accessories, anchors, grout, electrical-controls, testing, labor, mechanisms, procurement balance and logistics are calculated through a visible editable preliminary manufacturer profile.",
+  "ordinaryFacts": [
+    "skidCount",
+    "skidDesignation",
+    "designFlowM3H",
+    "designHeadM",
+    "suctionTieInLengthM",
+    "dischargeTieInLengthM",
+    "powerCableRouteLengthM"
+  ],
+  "fixture": {
+    "skidCount": 1,
+    "skidDesignation": "BPS-SKID-Q90-H45-2D1S",
+    "designFlowM3H": 90,
+    "designHeadM": 45,
+    "suctionTieInLengthM": 6,
+    "dischargeTieInLengthM": 8,
+    "powerCableRouteLengthM": 160
+  },
+  "profileStatus": "VISIBLE_REPLACEABLE_PRELIMINARY_MANUFACTURER_AND_INSTALLATION_PROFILE_REQUIRES_CONFIRMATION",
+  "calculationPrinciples": [
+    "pump units and included accessories follow the selected skid profile, not separate ordinary questions",
+    "anchors and grout are calculated from skid footprint and visible anchor and grout-spacing rules",
+    "labor and mechanisms follow calculated equipment, connections, grout and cable quantities",
+    "power-cable order is recalculated from measured route, loss, spare, available stock and supplier drum length",
+    "room ventilation upgrade, floor strengthening and standby generation remain fail-closed"
+  ],
+  "exclusions": [
+    "freestanding station building, excavation and external networks",
+    "sewer and fire pumping stations",
+    "unconfirmed prices",
+    "claim that the preliminary profile is an approved universal norm"
+  ]
+}

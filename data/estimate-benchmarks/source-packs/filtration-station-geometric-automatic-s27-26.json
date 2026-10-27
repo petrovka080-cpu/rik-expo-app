@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "rik-expo-app.s27-26.filtration-station-geometric-automatic-source-pack.v1",
+  "catalogId": "canonical-work:expanded:filtration_station",
+  "scope": "Preliminary complete construction and commissioning of a rapid-gravity potable-water filtration station from primary cell geometry and selected process-package facts. Civil structures and envelope, filter media and underdrain, wash-water and air systems, internal pipework and valves, instrumentation, electrical and control systems, consumables, testing, labor, mechanisms, procurement balance and logistics are calculated by the canonical compiler from ten ordinary facts and a visible editable engineering profile.",
+  "ordinaryFacts": [
+    "stationCount",
+    "stationDesignation",
+    "designCapacityM3Day",
+    "filterCellCount",
+    "filterInternalLengthM",
+    "filterInternalWidthM",
+    "filterMediaDesignation",
+    "filterMediaDepthM",
+    "underdrainDesignation",
+    "backwashPackageDesignation"
+  ],
+  "calculatedScope": [
+    "excavation and backfill",
+    "reinforced-concrete filter cells and building envelope",
+    "formwork, waterstops, waterproofing, lining and curing",
+    "filter media, support gravel, underdrain blocks, nozzles and wash troughs",
+    "internal inlet, outlet, wash-water, air and drain pipework",
+    "process valves, joints, supports and installation consumables",
+    "backwash pumps, blowers, receiver and process instruments",
+    "MCC, PLC, power and control cabling, trays and earthing",
+    "test water, disinfection reagent, commissioning and records",
+    "civil, process, electrical and commissioning labor",
+    "earthmoving, concrete, lifting, welding and testing mechanisms",
+    "concrete, media, equipment and surplus-soil logistics",
+    "filter-media procurement need, packages, ordered quantity and remainder"
+  ],
+  "conditionalProjectFacts": [
+    "excavation shoring system and area",
+    "construction dewatering system and machine-hours",
+    "standby power package and rating"
+  ],
+  "excludedScope": [
+    "raw-water intake and pumping outside the filtration-station boundary",
+    "coagulation, flocculation, sedimentation and disinfection process blocks",
+    "clean-water reservoirs and external distribution pipelines",
+    "unconfirmed site shoring, groundwater control and standby generation",
+    "prices or manufacturer performance not supplied by a confirmed source"
+  ],
+  "baselineScenario": {
+    "stationDesignation": "FS-RGF-5000-4C",
+    "designCapacityM3Day": 5000,
+    "filterCellCount": 4,
+    "filterInternalLengthM": 8,
+    "filterInternalWidthM": 5,
+    "filterMediaDesignation": "DUAL-MEDIA-ANTHRACITE-SAND-POTABLE",
+    "filterMediaDepthM": 0.8,
+    "underdrainDesignation": "HDPE-BLOCK-UNDERDRAIN-AIR-WATER",
+    "backwashPackageDesignation": "BW-2P2B-AIR-WATER-5000"
+  },
+  "truthBoundary": "This is a visible preliminary engineering profile, not an approved universal design or rate. Every profile assumption remains editable and requires confirmation by the project, process designer or selected supplier before contract use. Derived final quantities are never ordinary questionnaire inputs."
+}

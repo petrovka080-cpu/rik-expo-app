@@ -1,0 +1,43 @@
+{
+  "schema": "ai-estimate-role-based-uat-go-no-go-policy-v1",
+  "p0_blockers": [
+    "empty_positions_after_valid_prompt",
+    "raw_dump_visible",
+    "pdf_mismatch",
+    "procurement_package_contains_work_helper_or_debug_rows",
+    "fake_final_total",
+    "wrong_unit_in_procurement",
+    "missing_source_for_trusted_row",
+    "android_emulator_uat_failed",
+    "web_uat_failed",
+    "support_package_secret_or_private_data_leak"
+  ],
+  "p1_blockers": [
+    "missing_formula_in_details",
+    "missing_assumption_for_preliminary_estimate",
+    "confusing_missing_price_display",
+    "role_permission_issue",
+    "pdf_missing_appendix"
+  ],
+  "pilot_can_proceed_only_if": {
+    "p0_defects": 0,
+    "p1_defects": 0,
+    "p1_owner_acceptance_required_if_nonzero": true,
+    "web_uat_passed": true,
+    "android_uat_passed": true,
+    "support_package_secret_scan_passed": true,
+    "feedback_queue_created": true
+  },
+  "human_signoff": {
+    "agent_must_not_fake_human_approval": true,
+    "allowed_technical_status": "READY_FOR_OWNER_REVIEW",
+    "business_signoff_status_without_owner_artifact": "PENDING_OWNER_REVIEW"
+  },
+  "acceptance": {
+    "uat_go_no_go_policy_created": true,
+    "p0_blocks_pilot": true,
+    "web_android_uat_required_for_go": true,
+    "support_package_secret_scan_required": true,
+    "owner_acceptance_required_for_p1": true
+  }
+}

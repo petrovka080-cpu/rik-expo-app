@@ -1,0 +1,43 @@
+{
+  "schema": "ai-estimate-pilot-launch-go-no-go-policy-v1",
+  "policy_id": "pilot-launch-go-no-go-v1",
+  "go_allowed_only_if": {
+    "p0_defects_count": 0,
+    "p1_defects_count_zero_or_owner_accepted": true,
+    "web_pilot_launch_smoke_passed": true,
+    "android_pilot_launch_smoke_passed": true,
+    "daily_regression_passed": true,
+    "no_pdf_snapshot_mismatch": true,
+    "no_buyer_invalid_handoff": true,
+    "no_raw_dump_visible": true,
+    "no_empty_positions_after_valid_prompt": true,
+    "no_fake_total_when_prices_missing": true,
+    "support_secret_scan_passed": true,
+    "kill_switch_rehearsal_passed": true,
+    "rollback_rehearsal_passed": true,
+    "artifact_lineage_audit_passed": true,
+    "owner_go_no_go_status_in": [
+      "PENDING_OWNER_REVIEW",
+      "APPROVED"
+    ]
+  },
+  "owner_controls": {
+    "owner_approval_must_not_be_faked": true,
+    "default_owner_go_no_go_status": "PENDING_OWNER_REVIEW",
+    "approval_requires_external_owner_artifact": true,
+    "agent_may_mark_technical_readiness_only": true
+  },
+  "hard_stop_statuses": {
+    "role_based_uat_not_ready": "STOP_PILOT_LAUNCH_READINESS_BLOCKED_BY_ROLE_BASED_UAT",
+    "dirty_worktree_before_start": "STOP_DIRTY_WORKTREE_BEFORE_PILOT_LAUNCH_READINESS",
+    "android_emulator_unavailable": "STOP_ANDROID_EMULATOR_NOT_AVAILABLE_FOR_PILOT_LAUNCH_NO_GREEN"
+  },
+  "acceptance": {
+    "go_no_go_policy_created": true,
+    "p0_blocks_go": true,
+    "p1_requires_owner_acceptance_if_nonzero": true,
+    "web_android_smoke_required": true,
+    "kill_switch_and_rollback_required": true,
+    "owner_approval_not_faked": true
+  }
+}

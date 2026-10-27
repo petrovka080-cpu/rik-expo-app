@@ -1,0 +1,70 @@
+{
+  "case_id": "supplemental-industrial-009-резервуар-стальной-2000-м3",
+  "prompt": "резервуар стальной 2000 м3",
+  "work_family_id": "steel_tank",
+  "work_family_group": "INDUSTRIAL",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "volume_m3": 2000
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "tank_foundation_m3",
+    "tank_coating_m2",
+    "tank_erection_labor_hours",
+    "steel_shell_t",
+    "crane_shifts",
+    "tank_testing"
+  ],
+  "reference_material_rows": [
+    "tank_foundation_m3",
+    "tank_coating_m2"
+  ],
+  "reference_work_rows": [
+    "tank_erection_labor_hours"
+  ],
+  "reference_service_rows": [
+    "tank_testing"
+  ],
+  "reference_equipment_rows": [
+    "steel_shell_t",
+    "crane_shifts"
+  ],
+  "reference_procurement_subset": [
+    "tank_foundation_m3",
+    "tank_coating_m2",
+    "steel_shell_t",
+    "crane_shifts",
+    "tank_testing"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_tanks_storage_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/supplemental-industrial-009-резервуар-стальной-2000-м3.json",
+  "critical": false,
+  "expected_row_codes": [
+    "tank_foundation_m3",
+    "tank_coating_m2",
+    "tank_erection_labor_hours",
+    "steel_shell_t",
+    "crane_shifts",
+    "tank_testing"
+  ]
+}

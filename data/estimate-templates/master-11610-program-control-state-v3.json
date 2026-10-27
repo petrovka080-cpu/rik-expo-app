@@ -1,0 +1,33 @@
+{
+  "contentComplete": false,
+  "counts": {
+    "GLOBAL_CATALOG": 11610,
+    "M1_ASPHALT_EXTERNAL_BENCHMARK": 8,
+    "M1_ASPHALT_GLOBAL_ADMITTED": 55,
+    "M5_GLOBAL_CUMULATIVE": 4060,
+    "M5_POST_ASPHALT_QUEUE": 4005,
+    "M6_GLOBAL_REMAINING": 7550,
+    "R63_BENCHMARK_CORPUS": 63
+  },
+  "exactBatchManifestCount": 0,
+  "foundationIdentityGroupPassportMutation": 0,
+  "predecessorHead": "ea262b018998cf7edf62ce239a0a60096efaf656",
+  "predecessorTree": "0526e4f80a4ec61f53c567a302aa09d27100b3a7",
+  "productionEstimateContentMutation": 0,
+  "schemaVersion": "master-11610-program-control-state-v3:v1",
+  "selectedGroups": 0,
+  "setHashes": {
+    "cumulative4060": "3394e31ab42cb9ab533b7b4682d526e5c34291abd8b66913e6e9a904b63d427b",
+    "global11610": "342bd64bf14ca63e50232b53301da71ecbdd52700d293511c7604a8c5a697085",
+    "m1Global55": "1cd99706fbcee7b030217a6fdc99aa0cf3df084aae386bed1f6c482d850ed6ad",
+    "m5PostAsphalt4005": "1be5052afdc1f8de56d41bd9abeb76b3a06207a4a1c878a2dd61dd2c94efc332",
+    "m6Remaining7550": "a91422917c802b0a23ddb4887f79ff7c173240dc1fd5959b6455b88e74af05d1",
+    "r63External8": "37e3d43027f2bd8adf2651d033f04f184582db27ada98ebef916a309a848eb8a"
+  },
+  "supersedes": [
+    "M1_ASPHALT_GLOBAL_63",
+    "M5_GLOBAL_CUMULATIVE_4068",
+    "M6_GLOBAL_REMAINING_7542"
+  ],
+  "verdict": "GREEN_PROGRAM_CONTROL_V3_REBASED"
+}

@@ -1,0 +1,58 @@
+import type { S2BDomainPack, S2BWave2Kind } from "../types";
+
+export const S2B_VENTILATION_PIPELINES_BOILERS_DOMAIN_PACKS: Pick<Record<S2BWave2Kind, S2BDomainPack>, "heating_ventilation" | "pipeline" | "boiler"> = {
+  heating_ventilation: {
+    prefix: "s2b_hvac",
+    workUnit: "m2",
+    components: [
+      { code: "load_airflow", titleRu: "тепловая нагрузка и воздухообмен", materialUnit: "set", materialKey: "hvac_load_airflow" },
+      { code: "heat_source", titleRu: "источник тепла", materialUnit: "set", materialKey: "heat_source" },
+      { code: "pipes", titleRu: "трубопроводы отопления", materialUnit: "m", materialKey: "heating_pipes" },
+      { code: "radiators", titleRu: "приборы отопления", materialUnit: "pcs", materialKey: "radiators" },
+      { code: "ducts", titleRu: "воздуховоды", materialUnit: "m", materialKey: "ventilation_ducts" },
+      { code: "fittings", titleRu: "фасонные изделия", materialUnit: "pcs", materialKey: "duct_fittings" },
+      { code: "fans", titleRu: "вентиляторы и агрегаты", materialUnit: "pcs", materialKey: "ventilation_fans" },
+      { code: "filters", titleRu: "фильтрация воздуха", materialUnit: "set", materialKey: "filters" },
+      { code: "valves_dampers", titleRu: "клапаны и заслонки", materialUnit: "pcs", materialKey: "valves_dampers" },
+      { code: "insulation", titleRu: "изоляция труб и воздуховодов", materialUnit: "m2", materialKey: "hvac_insulation" },
+      { code: "automation", titleRu: "автоматика и электропитание", materialUnit: "set", materialKey: "hvac_automation" },
+      { code: "balancing", titleRu: "балансировка и пусконаладка", materialUnit: "set", materialKey: "hvac_balancing" },
+    ],
+  },
+  pipeline: {
+    prefix: "s2b_pipeline",
+    workUnit: "m",
+    components: [
+      { code: "medium_category", titleRu: "среда, категория и давление", materialUnit: "set", materialKey: "pipeline_medium_category" },
+      { code: "route_supports", titleRu: "трасса и опоры", materialUnit: "m", materialKey: "pipeline_route_supports" },
+      { code: "pipe", titleRu: "труба технологического трубопровода", materialUnit: "m", materialKey: "process_pipe" },
+      { code: "fittings", titleRu: "отводы, тройники и переходы", materialUnit: "pcs", materialKey: "pipeline_fittings" },
+      { code: "valves", titleRu: "арматура трубопровода", materialUnit: "pcs", materialKey: "pipeline_valves" },
+      { code: "welds", titleRu: "сварные стыки", materialUnit: "pcs", materialKey: "pipeline_weld_consumables" },
+      { code: "ndt", titleRu: "контроль сварки", materialUnit: "set", materialKey: "pipeline_ndt" },
+      { code: "insulation", titleRu: "изоляция трубопровода", materialUnit: "m2", materialKey: "pipeline_insulation" },
+      { code: "supports", titleRu: "подвески и опоры", materialUnit: "pcs", materialKey: "pipeline_supports" },
+      { code: "painting", titleRu: "антикоррозионная защита", materialUnit: "m2", materialKey: "pipeline_painting" },
+      { code: "pressure_testing", titleRu: "испытания давлением", materialUnit: "set", materialKey: "pipeline_pressure_testing" },
+      { code: "handover", titleRu: "исполнительная документация", materialUnit: "set", materialKey: "pipeline_handover" },
+    ],
+  },
+  boiler: {
+    prefix: "s2b_boiler",
+    workUnit: "set",
+    components: [
+      { code: "heat_load", titleRu: "тепловая нагрузка котельной", materialUnit: "set", materialKey: "boiler_heat_load" },
+      { code: "civil_part", titleRu: "строительная часть котельной", materialUnit: "m3", materialKey: "boiler_civil_concrete" },
+      { code: "boilers", titleRu: "котлы без цены до спецификации", materialUnit: "set", materialKey: "boiler_units" },
+      { code: "pumps", titleRu: "насосные группы", materialUnit: "set", materialKey: "boiler_pumps" },
+      { code: "piping", titleRu: "обвязка котельной", materialUnit: "m", materialKey: "boiler_piping" },
+      { code: "gas_or_fuel", titleRu: "топливное хозяйство", materialUnit: "set", materialKey: "boiler_fuel_system" },
+      { code: "chimney", titleRu: "дымоход и газоходы", materialUnit: "m", materialKey: "boiler_chimney" },
+      { code: "water_treatment", titleRu: "водоподготовка", materialUnit: "set", materialKey: "boiler_water_treatment" },
+      { code: "automation", titleRu: "автоматика безопасности", materialUnit: "set", materialKey: "boiler_automation" },
+      { code: "ventilation", titleRu: "вентиляция котельной", materialUnit: "set", materialKey: "boiler_ventilation" },
+      { code: "fire_safety", titleRu: "пожарная система", materialUnit: "set", materialKey: "boiler_fire_safety" },
+      { code: "commissioning", titleRu: "режимная наладка и ПНР", materialUnit: "set", materialKey: "boiler_commissioning" },
+    ],
+  },
+};

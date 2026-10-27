@@ -1,0 +1,106 @@
+{
+  "case_id": "expanded-0003-скважина-насосная-станция-резервуар-100-м3",
+  "prompt": "скважина насосная станция резервуар 100 м3",
+  "work_family_id": "village_water_supply",
+  "work_family_group": "INDUSTRIAL",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 1000,
+    "diameter_mm": 110,
+    "houses": 13,
+    "trench_width_m": 0.6,
+    "trench_depth_m": 1.4,
+    "water_tower_required": false
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "bedding_sand_m3",
+    "pipe_lm",
+    "fittings_pcs",
+    "valves_pcs",
+    "manholes_pcs",
+    "hydrants_pcs",
+    "trench_excavation_m3",
+    "backfill_m3",
+    "labor_hours",
+    "excavator_shifts",
+    "crane_shifts",
+    "dump_truck_trips",
+    "surplus_soil_m3",
+    "pressure_testing_lm",
+    "disinfection_lm"
+  ],
+  "reference_material_rows": [
+    "bedding_sand_m3",
+    "pipe_lm",
+    "fittings_pcs",
+    "valves_pcs",
+    "manholes_pcs",
+    "hydrants_pcs"
+  ],
+  "reference_work_rows": [
+    "trench_excavation_m3",
+    "backfill_m3",
+    "labor_hours"
+  ],
+  "reference_service_rows": [
+    "surplus_soil_m3",
+    "pressure_testing_lm",
+    "disinfection_lm"
+  ],
+  "reference_equipment_rows": [
+    "excavator_shifts",
+    "crane_shifts",
+    "dump_truck_trips"
+  ],
+  "reference_procurement_subset": [
+    "bedding_sand_m3",
+    "pipe_lm",
+    "fittings_pcs",
+    "valves_pcs",
+    "manholes_pcs",
+    "hydrants_pcs",
+    "excavator_shifts",
+    "crane_shifts",
+    "dump_truck_trips",
+    "surplus_soil_m3",
+    "pressure_testing_lm",
+    "disinfection_lm"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_water_supply_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0003-скважина-насосная-станция-резервуар-100-м3.json",
+  "critical": true,
+  "expected_row_codes": [
+    "bedding_sand_m3",
+    "pipe_lm",
+    "fittings_pcs",
+    "valves_pcs",
+    "manholes_pcs",
+    "hydrants_pcs",
+    "trench_excavation_m3",
+    "backfill_m3",
+    "labor_hours",
+    "excavator_shifts",
+    "crane_shifts",
+    "dump_truck_trips"
+  ]
+}

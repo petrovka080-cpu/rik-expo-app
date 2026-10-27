@@ -1,0 +1,127 @@
+{
+  "contract": "monolithic-family-independent-numeric-oracle/r1",
+  "generatedByProductionFormulas": false,
+  "per100M3": {
+    "column-107-02": {
+      "workers": "1823",
+      "operators": "125.78",
+      "tower-crane8t-consumed": "122.3",
+      "truck-crane10t-consumed": "2.58",
+      "forklift5t-consumed": "0.9",
+      "arc-welder-consumed": "12.69",
+      "vibrator-consumed": "93.3",
+      "chain-saw-consumed": "0.7",
+      "flatbed8t-consumed": "3.81",
+      "water": "0.25",
+      "nails": "27",
+      "dornit": "326",
+      "oil": "210",
+      "electrodes": "12.5",
+      "deck": "33.33",
+      "unedged44II": "0.16",
+      "concrete": "101.5",
+      "wire": "38"
+    },
+    "beam-109-03": {
+      "workers": "1160.4",
+      "operators": "61.44",
+      "tower-crane8t-consumed": "56",
+      "truck-crane10t-consumed": "2.9",
+      "forklift5t-consumed": "2.54",
+      "arc-welder-consumed": "17.25",
+      "vibrator-consumed": "77.2",
+      "chain-saw-consumed": "0.68",
+      "flatbed8t-consumed": "4.35",
+      "water": "0.157",
+      "nails": "4.3",
+      "oil": "73",
+      "electrodes": "17",
+      "deck": "14.56",
+      "bars": "0.81",
+      "boards25III": "0.07",
+      "boards44III": "0.66",
+      "concrete": "100",
+      "wire": "47"
+    },
+    "stair-111-01": {
+      "workers": "2412.6",
+      "operators": "56.59",
+      "tower-crane8t-consumed": "51.7",
+      "truck-crane10t-consumed": "2.35",
+      "forklift5t-consumed": "2.54",
+      "arc-welder-consumed": "3.2",
+      "vibrator-consumed": "79",
+      "chain-saw-consumed": "1.21",
+      "flatbed8t-consumed": "1.51",
+      "water": "0.3066",
+      "nails": "15",
+      "oil": "173",
+      "electrodes": "13",
+      "deck": "29.2",
+      "bars": "0.82",
+      "boards25III": "0.26",
+      "boards44III": "1.02",
+      "matting": "42.9",
+      "concrete": "101.5",
+      "wire": "23.6"
+    }
+  },
+  "examples": [
+    {
+      "key": "column-107-02",
+      "volume": "9.6",
+      "geometry": "10×0.4×0.4×6=9.6m3;P1.6;h6",
+      "expected": {
+        "workers": "175.008",
+        "concrete": "9.744",
+        "dornit": "31.296",
+        "oil": "20.16",
+        "deck": "3.19968"
+      },
+      "physicalContactAreaM2": "96",
+      "deckConsumptionIsNotFullKit": true
+    },
+    {
+      "key": "beam-109-03",
+      "volume": "3.6",
+      "geometry": "2×0.3×1×6=3.6m3;depth1000mm;support5m",
+      "expected": {
+        "workers": "41.7744",
+        "concrete": "3.6",
+        "deck": "0.52416",
+        "nails": "0.1548"
+      },
+      "physicalContactAreaM2": "27.6",
+      "deckConsumptionIsNotFullKit": true
+    },
+    {
+      "key": "stair-111-01",
+      "volume": "2",
+      "geometry": "2m3 approved rectangularflighttakeoff;notinferredfromsteps",
+      "expected": {
+        "workers": "48.252",
+        "concrete": "2.03",
+        "nails": "0.3",
+        "vibrator-consumed": "1.58"
+      }
+    }
+  ],
+  "steelCostExampleKg": "2000",
+  "steelCostExampleDoesNotAdmitFullSupply": true,
+  "PIsUnknownNotZeroOrOne": true,
+  "wholePhysicalScope": "PARTIAL",
+  "knownPhysicalNeedsPerProfile": 12,
+  "unresolvedProjectAmortizationRowsPerProfile": 2,
+  "concreteLeafNeedCounts": {
+    "column": 45,
+    "beam": 45,
+    "stair": 45
+  },
+  "leafNeedsDoNotCountAsKnownSupplies": true,
+  "activeConcreteLeafNeedCounts": {
+    "column": 38,
+    "beam": 38,
+    "stair": 38
+  },
+  "activeLeafExampleProjectFacts": "TEST_ONLY sourcecrane bucket; no additionaltruckmixer/traverse/ties/anchors/embeds/specialbarjoints; no profile defaults"
+}

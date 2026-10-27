@@ -1,0 +1,165 @@
+import type {
+  AiBusinessDomain,
+  AiDomainKnowledgeEntry,
+  AiIntent,
+} from "./aiKnowledgeTypes";
+
+export const REQUIRED_AI_BUSINESS_DOMAINS: readonly AiBusinessDomain[] = [
+  "control",
+  "projects",
+  "procurement",
+  "marketplace",
+  "warehouse",
+  "finance",
+  "reports",
+  "documents",
+  "subcontracts",
+  "contractors",
+  "map",
+  "chat",
+  "office",
+];
+
+const READ_INTENTS: readonly AiIntent[] = ["find", "summarize", "compare", "explain", "check_status", "find_risk"];
+const DRAFT_INTENTS: readonly AiIntent[] = [...READ_INTENTS, "draft", "prepare_report", "prepare_act", "prepare_request", "submit_for_approval"];
+
+export const AI_DOMAIN_KNOWLEDGE_REGISTRY: readonly AiDomainKnowledgeEntry[] = [
+  {
+    domain: "control",
+    label: "Control",
+    professionalDescription: "Cross-domain director view for money, requests, suppliers, warehouse, reports, documents, project risk, and approval boundaries.",
+    primaryEntities: ["project", "request", "supplier", "warehouse_item", "payment", "company_debt", "report", "pdf_document", "subcontract", "contractor"],
+    commonUserQuestions: ["What needs attention today?", "Where are the procurement, finance, warehouse, and document risks?"],
+    allowedIntents: [...DRAFT_INTENTS, "approve", "execute_approved"],
+    requiresEvidenceFor: ["summarize", "compare", "find_risk", "approve", "execute_approved"],
+    defaultContextPolicy: "director_full",
+  },
+  {
+    domain: "projects",
+    label: "Projects",
+    professionalDescription: "Construction objects, status, project-scoped requests, reports, materials, acts, and unresolved work.",
+    primaryEntities: ["project", "request", "material", "report", "act", "subcontract"],
+    commonUserQuestions: ["What is open on this object?", "Which materials or acts need follow-up?"],
+    allowedIntents: DRAFT_INTENTS,
+    requiresEvidenceFor: ["summarize", "check_status", "find_risk"],
+    defaultContextPolicy: "role_scoped",
+  },
+  {
+    domain: "procurement",
+    label: "Procurement",
+    professionalDescription: "Materials, suppliers, requests, RFQ drafts, prices, schedules, supplier risk, and approval-ready purchasing steps.",
+    primaryEntities: ["request", "supplier", "material", "pdf_document"],
+    commonUserQuestions: ["Find suppliers for this material.", "Prepare a request draft and mark what needs approval."],
+    allowedIntents: DRAFT_INTENTS,
+    requiresEvidenceFor: ["find", "compare", "find_risk", "submit_for_approval"],
+    defaultContextPolicy: "role_scoped",
+  },
+  {
+    domain: "marketplace",
+    label: "Marketplace",
+    professionalDescription: "External market listings, supplier discovery, material comparison, and redacted market evidence.",
+    primaryEntities: ["supplier", "material", "map_object"],
+    commonUserQuestions: ["Which suppliers can match this request?", "What should I compare before drafting?"],
+    allowedIntents: READ_INTENTS,
+    requiresEvidenceFor: ["find", "compare", "find_risk"],
+    defaultContextPolicy: "redacted_marketplace",
+  },
+  {
+    domain: "warehouse",
+    label: "Warehouse",
+    professionalDescription: "Stock balance, movement, incoming and outgoing materials, shortage risk, replenishment drafts, and approval-required stock changes.",
+    primaryEntities: ["warehouse_item", "stock_movement", "request", "material", "report"],
+    commonUserQuestions: ["What is low in stock?", "Which request can be issued and which needs replenishment?"],
+    allowedIntents: DRAFT_INTENTS,
+    requiresEvidenceFor: ["summarize", "check_status", "find_risk", "submit_for_approval"],
+    defaultContextPolicy: "role_scoped",
+  },
+  {
+    domain: "finance",
+    label: "Finance",
+    professionalDescription: "Debts, payments, postings, acts, closing documents, financial discrepancy checks, and payment approval boundaries.",
+    primaryEntities: ["payment", "company_debt", "accounting_posting", "act", "pdf_document", "report"],
+    commonUserQuestions: ["Show debts and document risk.", "Which payment status needs approval?"],
+    allowedIntents: DRAFT_INTENTS,
+    requiresEvidenceFor: ["summarize", "check_status", "find_risk", "submit_for_approval", "approve"],
+    defaultContextPolicy: "redacted_finance",
+  },
+  {
+    domain: "reports",
+    label: "Reports",
+    professionalDescription: "Operational summaries, daily reports, finance reports, warehouse reports, project reports, and evidence-backed conclusions.",
+    primaryEntities: ["report", "pdf_document", "project", "request", "payment", "warehouse_item"],
+    commonUserQuestions: ["Which report should I open?", "What does this report mean?"],
+    allowedIntents: ["find", "summarize", "explain", "check_status", "find_risk", "prepare_report"],
+    requiresEvidenceFor: ["summarize", "find_risk", "prepare_report"],
+    defaultContextPolicy: "role_scoped",
+  },
+  {
+    domain: "documents",
+    label: "Documents",
+    professionalDescription: "PDF exports, acts, attachments, closing documents, request documents, and approval-required send/share boundaries.",
+    primaryEntities: ["pdf_document", "act", "report", "request", "subcontract"],
+    commonUserQuestions: ["Which document is relevant?", "Can you draft but not send this document?"],
+    allowedIntents: ["find", "summarize", "explain", "draft", "prepare_act", "submit_for_approval"],
+    requiresEvidenceFor: ["summarize", "prepare_act", "submit_for_approval"],
+    defaultContextPolicy: "role_scoped",
+  },
+  {
+    domain: "subcontracts",
+    label: "Subcontracts",
+    professionalDescription: "Subcontractors, agreements, work status, acts, reports, documents, and own-records boundaries for contractors.",
+    primaryEntities: ["subcontract", "contractor", "act", "report", "pdf_document"],
+    commonUserQuestions: ["What has this subcontractor closed?", "Which act or report should be prepared?"],
+    allowedIntents: DRAFT_INTENTS,
+    requiresEvidenceFor: ["summarize", "check_status", "find_risk", "prepare_act"],
+    defaultContextPolicy: "role_scoped",
+  },
+  {
+    domain: "contractors",
+    label: "Contractors",
+    professionalDescription: "Contractor tasks, own works, own acts, own documents, acceptance status, and internal data restrictions.",
+    primaryEntities: ["contractor", "subcontract", "act", "report", "pdf_document"],
+    commonUserQuestions: ["What does this contractor need to close?", "Which own documents are missing?"],
+    allowedIntents: ["find", "summarize", "explain", "draft", "prepare_act", "check_status", "submit_for_approval"],
+    requiresEvidenceFor: ["summarize", "check_status", "prepare_act"],
+    defaultContextPolicy: "own_records_only",
+  },
+  {
+    domain: "map",
+    label: "Map",
+    professionalDescription: "Objects, supplier geography, demand geography, and redacted location-based market context.",
+    primaryEntities: ["map_object", "supplier", "project", "material"],
+    commonUserQuestions: ["Where should I look on the map?", "Which region matters for this request?"],
+    allowedIntents: READ_INTENTS,
+    requiresEvidenceFor: ["find", "compare"],
+    defaultContextPolicy: "redacted_marketplace",
+  },
+  {
+    domain: "chat",
+    label: "Chat",
+    professionalDescription: "Conversation guidance, safe drafts, explanation of statuses, and approval routing without direct mutation.",
+    primaryEntities: ["chat_thread", "request", "supplier", "pdf_document"],
+    commonUserQuestions: ["Draft a message.", "What can I do next without changing data?"],
+    allowedIntents: ["find", "summarize", "explain", "draft", "submit_for_approval"],
+    requiresEvidenceFor: ["summarize", "submit_for_approval"],
+    defaultContextPolicy: "role_scoped",
+  },
+  {
+    domain: "office",
+    label: "Office",
+    professionalDescription: "Office members, invites, access routing, documents, and role-aware administrative context.",
+    primaryEntities: ["office_member", "invite", "pdf_document"],
+    commonUserQuestions: ["Who can be invited?", "Which office route should I use?"],
+    allowedIntents: ["find", "summarize", "explain", "draft", "submit_for_approval"],
+    requiresEvidenceFor: ["submit_for_approval"],
+    defaultContextPolicy: "role_scoped",
+  },
+];
+
+export function getAiDomainKnowledge(domain: AiBusinessDomain): AiDomainKnowledgeEntry | null {
+  return AI_DOMAIN_KNOWLEDGE_REGISTRY.find((entry) => entry.domain === domain) ?? null;
+}
+
+export function listAiDomainKnowledge(): AiDomainKnowledgeEntry[] {
+  return [...AI_DOMAIN_KNOWLEDGE_REGISTRY];
+}

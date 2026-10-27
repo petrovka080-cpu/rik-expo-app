@@ -1,0 +1,2328 @@
+{
+  "contract": "gox-build.master212.concrete-normative-completion/r1",
+  "sourceId": "master212_concrete_krer06_00122_whole_cycle_completion_r1",
+  "masterPath": "C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_12_2026-10-22.txt",
+  "masterSha256": "10ff85f13544fb0bb29194baa91da506f7de342f3e8d2b370f61017a14e81245",
+  "snapshotPath": "data/estimate-benchmarks/fixtures/master212-concrete-completion-master33-two-current-r1.json",
+  "snapshotSha256": "698dc36afcc0575b43f07d44328ece6965ab51ab42f04fdc85a5be92b4fa9862",
+  "parentFileSha256": "fe4b59ca8bdb124b2ed715294debfcf1d90f118c2e61ce55a3782ae8ec2b9c63",
+  "source": {
+    "titleRu": "КРЕР-2015, сборник06, бетонные и железобетонные конструкции монолитные",
+    "edition": "КРЕР06-2015; действующая применимая редакция подтверждается базой проекта",
+    "officialUrl": "https://minstroy.gov.kg/ru/kyzmat/422/show",
+    "path": "data/estimate-benchmarks/source-artifacts/kg-krer06-2015-monolithic-concrete-45c065fb.pdf",
+    "sha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+    "readOnlyOriginalInspectionPath": ".release-runtime/r568/s27-8/tmp-krer06-inspection/krer06.pdf",
+    "locatorRu": "PDF16 scope and measurement; PDF22 lower/23 upper entire22 column; technical PDF6 sections1.1-1.4 and PDF7 section1.17",
+    "visualReviewedPages": [
+      6,
+      7,
+      8,
+      9,
+      16,
+      20,
+      21,
+      22,
+      23
+    ],
+    "independentRootReview": "ROOT and author independently reviewed entire column22 PDF22 lower/23 upper and technical sections; nails0.013t and matting88.2m2 corrected after original raster review. Board25mm0090 independently resolved against official resourcebook01 page130. No historical prices imported. Column16 disputed labor/machines remain wholly unadmitted.",
+    "resourceCodesNotReadConfidentlyAreNull": true,
+    "historicalPricesImported": false
+  },
+  "officialCurrentVerification": {
+    "atUtc": "2026-10-22T14:38:22.421979+00:00",
+    "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no6betonnyeiz_bkonstrukciimonolitnye_compressed1-4856908323d4a14f5.19023983.pdf",
+    "httpStatus": 200,
+    "bytes": 1844801,
+    "sha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+    "exactSameAsCanonicalPinnedArtifact": true,
+    "pricesImported": false
+  },
+  "column": {
+    "normId": "06-01-001-22",
+    "sourceSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+    "locator": "PDF16 scope and measurement; PDF22 lower/23 upper entire22 column; technical PDF6 sections1.1-1.4 and PDF7 section1.17",
+    "measure": "100m3 reinforced concrete in place",
+    "scope": "Strip reinforced-concrete foundation, top width up to1000mm inclusive; ordinary reusable wooden formwork normative accounting, not under-column09 or Frami supply takeoff",
+    "status": "ROOT_AND_AUTHOR_EXACT_COLUMN22_RATES_ROSTER_CONFIRMED_TWO_CORRECTED_CELLS",
+    "rows": [
+      {
+        "key": "workers",
+        "sourceCode": "000-1003-3",
+        "rate": "446.04",
+        "titleRu": "Труд рабочих по устройству фундамента",
+        "unitId": "man_hour",
+        "category": "labor",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "machinists-info",
+        "sourceCode": null,
+        "rate": "28.77",
+        "titleRu": "Труд машинистов нормативного комплекса",
+        "unitId": "man_hour",
+        "category": "labor",
+        "costTreatment": "INFORMATIONAL_SCOPE"
+      },
+      {
+        "key": "tower-crane",
+        "sourceCode": "02-0005",
+        "rate": "22.25",
+        "titleRu": "Башенный кран 8 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "costTreatment": "OWN_COST",
+        "operator": "OPERATOR"
+      },
+      {
+        "key": "truck-crane",
+        "sourceCode": "02-0075",
+        "rate": "1.22",
+        "titleRu": "Автомобильный кран 10 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "costTreatment": "OWN_COST",
+        "operator": "OPERATOR"
+      },
+      {
+        "key": "forklift",
+        "sourceCode": "03-0020",
+        "rate": "0.27",
+        "titleRu": "Автопогрузчик 5 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "costTreatment": "OWN_COST",
+        "operator": "OPERATOR"
+      },
+      {
+        "key": "welder",
+        "sourceCode": "04-0444",
+        "rate": "123.76",
+        "titleRu": "Установка ручной дуговой сварки постоянного тока",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "costTreatment": "OWN_COST",
+        "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+      },
+      {
+        "key": "deep-vibrator",
+        "sourceCode": "11-0180",
+        "rate": "21.42",
+        "titleRu": "Глубинный вибратор",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "costTreatment": "OWN_COST",
+        "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+      },
+      {
+        "key": "chain-saw",
+        "sourceCode": "33-0503",
+        "rate": "0.81",
+        "titleRu": "Электрическая цепная пила",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "costTreatment": "OWN_COST",
+        "operator": "NO_ADDITIONAL_OPERATOR_NORM"
+      },
+      {
+        "key": "flatbed-truck",
+        "sourceCode": "40-0001",
+        "rate": "1.87",
+        "titleRu": "Бортовой автомобиль до 5 т",
+        "unitId": "machine_hour",
+        "category": "equipment",
+        "costTreatment": "OWN_COST",
+        "operator": "DRIVER"
+      },
+      {
+        "key": "water",
+        "sourceCode": "01-0601-0001",
+        "rate": "0.283",
+        "titleRu": "Вода для работ и ухода за бетоном",
+        "unitId": "m3",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "building-nails",
+        "sourceCode": "01-1110-0002",
+        "rate": "0.013",
+        "titleRu": "Строительные гвозди",
+        "unitId": "t",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "quicklime",
+        "sourceCode": "01-2309-0001",
+        "rate": "0.025",
+        "titleRu": "Негашёная комовая известь первого сорта",
+        "unitId": "t",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "electrodes-4mm-e42",
+        "sourceCode": "01-5005-0024",
+        "rate": "0.13",
+        "titleRu": "Электроды 4 мм типа Э42",
+        "unitId": "t",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "boards-25mm-grade3",
+        "sourceCode": "01-6305-0090",
+        "rate": "0.14",
+        "identityProof": "Official KG book01 PDF130: exact conifer edged boards4-6.5m,75-150mm,25mmIII grade; old0039/0059 visual hypotheses withdrawn, no prices imported",
+        "titleRu": "Обрезные хвойные доски 25 мм третьего сорта",
+        "unitId": "m3",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "boards-44mm-grade3",
+        "sourceCode": "01-6305-0098",
+        "rate": "0.47",
+        "titleRu": "Обрезные хвойные доски от 44 мм третьего сорта",
+        "unitId": "m3",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "matting",
+        "sourceCode": "01-7231-0001",
+        "rate": "88.2",
+        "titleRu": "Рогожа для ухода за бетоном",
+        "unitId": "m2",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "project-steel",
+        "sourceCode": "03-0102-0001",
+        "printedAverageRate": "6.6",
+        "automaticRate": null,
+        "rule": "section1.2 actual mass by project; no labor/machine adjustment",
+        "titleRu": "Арматурная сталь",
+        "unitId": "t",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "ready-concrete",
+        "sourceCode": "03-0206-0043",
+        "rate": "101.5",
+        "printedClass": "B15 aggregate20mm SOURCE_ONLY",
+        "projectSpecificationRequired": "section1.4 project class and aggregate; printed class is not project substitution",
+        "titleRu": "Товарный бетон",
+        "unitId": "m3",
+        "category": "material",
+        "costTreatment": "OWN_COST",
+        "sourceCodeIsNotProjectMaterialIdentity": true
+      },
+      {
+        "key": "wire-rod-6_3-6_5mm",
+        "sourceCode": "10-0105-0001",
+        "rate": "0.0303",
+        "titleRu": "Горячекатаная катанка 6,3–6,5 мм",
+        "unitId": "t",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      },
+      {
+        "key": "wood-shields-25mm",
+        "sourceCode": "12-0704-0002",
+        "rate": "29.2",
+        "titleRu": "Деревянные опалубочные щиты 25 мм",
+        "unitId": "m2",
+        "category": "material",
+        "costTreatment": "OWN_COST"
+      }
+    ],
+    "pricesImported": false,
+    "turnoverAlreadyInSourceNoSecondMultiplier": true,
+    "toolsPpeRiggingWasteRemainExplicitNeeds": true,
+    "sourceReview": "ROOT independently confirmed nails0.013t and matting88.2m2 after original-sized crops; first readings withdrawn.25mm board code0090 independently confirmed by official book01 PDF130 and author visual read."
+  },
+  "target": {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+    "definitionId": "531afe77-8bf5-54df-9771-09301846d029",
+    "definitionVersion": 14,
+    "definitionSha256": "8e759a8bb8ce96be2a9853238bea4fe50377ef78e24db9feb77490ce8584cd02",
+    "expectedParentShape": [
+      536,
+      240,
+      243
+    ]
+  },
+  "selectorId": "m212_foundation_cycle_profile",
+  "oldChoices": [
+    "Сохранённый исходный состав фундамента",
+    "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту"
+  ],
+  "newChoiceRu": "Ленточный фундамент шириной поверху до 1 м с деревянной щитовой опалубкой",
+  "primaryMeasureId": "m212_completion_structural_volume_m3",
+  "steelMassId": "m212_completion_project_steel_mass_kg",
+  "projectReferenceId": "m212_completion_project_design_reference",
+  "concreteSpecificationId": "m212_completion_project_concrete_specification",
+  "prefix": "master212:concrete-completion:krer06-01-001-22:r1",
+  "sourcePins": [
+    {
+      "path": "src/lib/estimate/v4/concreteMonolithicCycleM212R1.ts",
+      "sha256": "d820e39ea9b7ea4c67ad131af77010d7ac41b13494c9bf670b6ced57f4c4b5b8",
+      "reuse": "EXACT_EXISTING_PUBLISHED_SCOPE_AND_PREPARATION_ROWS_NO_NEW_DEFAULTS"
+    },
+    {
+      "path": "src/lib/estimate/v4/concretePreparationKrer0600101M212R1.ts",
+      "sha256": "fe6c8ba319f18e9cbc247ea31927699090765240a7321e90be3e412f45b126e3",
+      "reuse": "EXACT_EXISTING_PUBLISHED_SCOPE_AND_PREPARATION_ROWS_NO_NEW_DEFAULTS"
+    },
+    {
+      "path": "src/lib/estimate/v4/master212ConcreteFoundationSuccessorR1.ts",
+      "sha256": "2f4b5b5b227969f6bcc7ad3af51322bb8b87e4ad2254604ab042db67a92ffccf",
+      "reuse": "EXACT_EXISTING_PUBLISHED_SCOPE_AND_PREPARATION_ROWS_NO_NEW_DEFAULTS"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/concrete-monolithic-cycle-master212-r1.json",
+      "sha256": "d13ffda3d56e80fe8c5eab5730d9f0a2e1f4ea003cd591c1965a38d1cc28e1c8",
+      "reuse": "EXACT_EXISTING_PUBLISHED_SCOPE_AND_PREPARATION_ROWS_NO_NEW_DEFAULTS"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/concrete-preparation-krer06-001-01-master212-r1.json",
+      "sha256": "3e732a3545b6d0b805f95bc617c4faf3a4ec3cfa089a98ac0c029cf39286a95e",
+      "reuse": "EXACT_EXISTING_PUBLISHED_SCOPE_AND_PREPARATION_ROWS_NO_NEW_DEFAULTS"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/master212-concrete-foundation-successor-r1.json",
+      "sha256": "f1ddfee0b316e741ae2e8939a0c21d12f95fd052fe416021cb1fd22ab4bbd87b",
+      "reuse": "EXACT_EXISTING_PUBLISHED_SCOPE_AND_PREPARATION_ROWS_NO_NEW_DEFAULTS"
+    }
+  ],
+  "scopeRu": "Полный исходный результат ленточного фундамента сохраняется. Нормативный цикл включает обычную оборачиваемую деревянную опалубку, арматурные работы, укладку, уплотнение, обработку и уход; реальные проектные решения и всё нераскрытое физическое обеспечение остаются явными потребностями.",
+  "sourceOnlyBlockedAlternative": {
+    "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+    "normId": "06-01-001-16",
+    "status": "SOURCE_BLOCKED_EXACT_ALL_DISPUTED_LABOR_AND_MACHINE_CELLS",
+    "why": "Same official PDF compressed raster; competing readings across both author/root. No guessed or neighboring-column quantity admitted.",
+    "allUncertainQuantities": null,
+    "returnCriterion": "Читаемый официальный первичный экземпляр/точная независимая транскрипция всех спорных клеток полного16столбца.",
+    "priorPublishedWholeScopePreserved": true
+  },
+  "newFullTechnologies": 0,
+  "newPublicCards": 0,
+  "newWholePrimaryColumns": 1,
+  "materialIdentitySource": {
+    "path": "data/estimate-benchmarks/source-artifacts/kg-resource-materials-book01-4c06ea5b.pdf",
+    "sha256": "4c06ea5b428048cbf33872ded079306f21c2c7f5c798c99a03ec5c6249f9e837",
+    "officialPage": "https://minstroy.gov.kg/ru/kyzmat/253/show",
+    "officialPdf": "https://minstroy.gov.kg/ru/state_program/download-pdf/kniga01_compressed-18768f9f830b689f4.99664411.pdf",
+    "locator": "PDF/printed130; codes01-6305-0090 and0098",
+    "scope": "IDENTITY_ONLY_NO_PRICE_OR_CONSUMPTION_IMPORTED",
+    "freshOfficialPageVerification": "ROOT publicGET200 2026-10-22; author independently viewed exact official page130 rendered from these bytes"
+  },
+  "sourceIdentityCorrections": [
+    {
+      "resource": "boards25mm",
+      "withdrawnVisualHypotheses": [
+        "0039",
+        "0059"
+      ],
+      "acceptedCode": "01-6305-0090",
+      "basis": "Independent official resourcebook01 exact physicalspec page130; same source44mmIII0098 corroborates adjacent physicalspec; quantity0.14 onlyKRER22."
+    }
+  ],
+  "topWidthId": "m212_completion_strip_top_width_m",
+  "aggregateSizeId": "m212_completion_project_concrete_aggregate_mm",
+  "preparationReuse": {
+    "sourcePack": "data/estimate-benchmarks/source-packs/concrete-preparation-krer06-001-01-master212-r1.json",
+    "sourcePrefix": "master212:concrete-preparation:krer06-01-001-01:r1",
+    "measureId": "m212_preparation_net_volume_m3",
+    "methodId": "m212_preparation_normative_method",
+    "fitId": "m212_preparation_exact_profile",
+    "normId": "06-01-001-01",
+    "class": "B3.5",
+    "scope": "Known exact001-01 subwork selected within ready profile by its independently measured volume; all8source rows and30physical needs retained. Main construction volume never supplies preparation volume.",
+    "noSeparateNormConfirmationQuestions": true
+  },
+  "independentCategories": [
+    "materials",
+    "consumables",
+    "fasteners",
+    "tools",
+    "rigging",
+    "machines_and_operators",
+    "labor",
+    "services",
+    "delivery_feed",
+    "access_protection",
+    "control",
+    "cleaning_waste"
+  ],
+  "independentOperationCategoryMatrix": [
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:base",
+      "operationTitleRu": "Подготовить и принять основание",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:scope-base"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:survey-consumables",
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:survey-tools",
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:setting-out",
+      "operationTitleRu": "Разметить оси и отметки",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:setting-out"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:preparation",
+      "operationTitleRu": "Устроить бетонную подготовку",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:blinding"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-hand-tools",
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-lifting",
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:access-platforms",
+        "master212:concrete-cycle:r1:need:edge-protection",
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:formwork",
+      "operationTitleRu": "Установить опалубку и опоры",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-sufficiency",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:rebar-cutting-tool",
+        "master212:concrete-cycle:r1:need:rebar-tying-tool",
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:rebar-bending-tool",
+        "master212:concrete-cycle:r1:need:rebar-lifting",
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:reinforcement",
+      "operationTitleRu": "Подготовить и установить арматуру",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:reinforcement-design",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-weld-consumables",
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-fasteners",
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-tools",
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:embedded",
+      "operationTitleRu": "Установить закладные",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:embedded-completeness",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:pump-clamps",
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-bucket",
+        "master212:concrete-cycle:r1:need:concrete-slings",
+        "master212:concrete-cycle:r1:need:pump-line",
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:external-delivery",
+        "master212:concrete-cycle:r1:need:unloading-handling",
+        "master212:concrete-cycle:r1:need:mixer-additional-hours",
+        "master212:concrete-cycle:r1:need:additional-rehandling",
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:delivery",
+      "operationTitleRu": "Принять и подать бетон",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:concrete-supply",
+        "master212:concrete-cycle:r1:need:operators"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:placing-hand-tools",
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:vibrator-working-kit",
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:compacting",
+      "operationTitleRu": "Уложить и уплотнить бетон",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:operators",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:finish-rule",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:finish-machine-kit",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:finishing",
+      "operationTitleRu": "Обработать поверхность",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-feed",
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-monitor",
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:curing",
+      "operationTitleRu": "Выполнить уход",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:curing-materials",
+        "master212:concrete-cycle:r1:need:energy"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "materials",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "consumables",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-cleaning-inputs",
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "fasteners",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "tools",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:formwork-cleaner",
+        "master212:concrete-cycle:r1:need:stripping-tools",
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "rigging",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "machines_and_operators",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:access-platforms",
+        "master212:concrete-cycle:r1:need:edge-protection",
+        "master212:concrete-cycle:r1:need:ppe",
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:stripping",
+      "operationTitleRu": "Распалубить и переставить опоры",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:stripping-control"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "materials",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "consumables",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "fasteners",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "tools",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "rigging",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "labor",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:quality-lab"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "delivery_feed",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "access_protection",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "control",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:quality-sampling-kit",
+        "master212:concrete-cycle:r1:need:quality-geometry"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:quality",
+      "operationTitleRu": "Выполнить контроль и приёмку",
+      "category": "cleaning_waste",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "materials",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "consumables",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "fasteners",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "tools",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "rigging",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "machines_and_operators",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "labor",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:waste-loading"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "services",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:waste-disposal"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "delivery_feed",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:waste-transport"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "access_protection",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:ppe"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "control",
+      "needIds": [],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    },
+    {
+      "operationId": "master212:concrete-cycle:r1:operation:cleanup",
+      "operationTitleRu": "Очистить и убрать участок",
+      "category": "cleaning_waste",
+      "needIds": [
+        "master212:concrete-cycle:r1:need:washing-water",
+        "master212:concrete-cycle:r1:need:wash-containment",
+        "master212:concrete-cycle:r1:need:solid-waste"
+      ],
+      "wholeColumnReference": "06-01-001-22",
+      "entireNormIsSharedNotAllocatedToOperation": true,
+      "emptyCellMeansNotApplicable": false,
+      "reviewStatus": "FULL_PHYSICAL_CATEGORY_REQUIREMENT_RETAINED_NO_FULL_FROM_LABOR_SCOPE"
+    }
+  ],
+  "turnoverSupplyBoundary": {
+    "sourceSection": "KRER06 §1.17 PDF7",
+    "keys": [
+      "boards-25mm-grade3",
+      "boards-44mm-grade3",
+      "wood-shields-25mm"
+    ],
+    "normativeConsumptionAndOwnCostRetained": true,
+    "directProcurement": false,
+    "why": "Already-turnover-adjusted normative consumption is not the complete initial supply kit; no area, count or new turnover multiplier is inferred.",
+    "stableNeedId": "master212:concrete-cycle:r1:need:formwork-sufficiency",
+    "returnCriterion": "Actual complete compatible wooden-formwork layout, initial stock and turnover/supply plan; separately verified whole-kit quantity and ownership, no consumer-entered scalar replacing this missing plan."
+  }
+}

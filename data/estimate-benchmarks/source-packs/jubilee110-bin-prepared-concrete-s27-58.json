@@ -1,0 +1,492 @@
+{
+  "contract": "gox-build.s27-58.jubilee110-bin-prepared-concrete.v1",
+  "catalogId": "canonical-work:master:glasdon_jubilee110_metal_liner_prepared_concrete_standard",
+  "workKey": "glasdon_jubilee110_metal_liner_prepared_concrete_standard",
+  "titleRu": "Установка готовой уличной урны с вкладышем110л на готовое бетонное основание",
+  "sourceId": "glasdon:jubilee110:c000-0018:concrete",
+  "normId": "C000-0018-CONCRETE-JUBILEE110",
+  "technicalProductIdentity": {
+    "manufacturer": "Glasdon",
+    "model": "Jubilee110",
+    "sourceSpecificOnly": true,
+    "bodyVolumeL": 130,
+    "metalLinerCapacityL": 110,
+    "heightMm": 1158,
+    "widthMm": 598,
+    "depthMm": 553,
+    "massWithSteelLinerKg": 28,
+    "materials": "Корпус и дверца Durapol; выбранный стальной оцинкованный вкладыш. Готовность сборки, дверца, отверстия и цвет — факты проекта и поставки."
+  },
+  "sources": [
+    {
+      "role": "MANUFACTURER_CURRENT_PRODUCT_IDENTITY_AND_MANUAL_LINK",
+      "url": "https://www.glasdon.com/intl/litter-bins/restricted-aperture-outdoor-litter-bins/glasdon-jubilee-tm-110-litter-bin",
+      "path": ".release-runtime/r568/s27-58/jubilee110-source-recovery/current-intl-restricted-product.html",
+      "sha256": "3e3a426ce23bc9ece344cedea51bfcf5c798a2e56b1532a4dee3270ae1424648",
+      "locator": "Exact H1, option A concrete foundation fixing bolts x4, metal liner110L/body130L, dimensions and direct instructions links"
+    },
+    {
+      "role": "MANUFACTURER_CONCRETE_FIXING",
+      "url": "https://www.glasdon.com/intl/downloads/instructions/Glasdon-Concrete-and-Paving-Fixing-Instructions-C000-0018.pdf",
+      "path": ".release-runtime/r568/s27-58/jubilee110-source-recovery/C000-0018-current-linked-concrete-paving.pdf",
+      "sha256": "fe33b39e09d63d39719b5b52ac5b993cd1e121f3c0e5852e79815cb3080d67a7",
+      "edition": "C000/0018 Issue4 February2009",
+      "locator": "PDF1 upper concrete-only steps1–6 and diagram; lower paving branch excluded"
+    },
+    {
+      "role": "MANUFACTURER_OPERATING_REQUIREMENTS",
+      "url": "https://www.glasdon.com/intl/downloads/instructions/Glasdon%20Jubilee%20user%20manual.pdf",
+      "path": ".release-runtime/r568/s27-58/jubilee110-source-recovery/Jubilee-current-linked-operating-manual.pdf",
+      "sha256": "978f13a97cfcca1a515ac3a4c448dedfe43f48755082956f3761ec711d30f5aa",
+      "edition": "C000/0345 Issue2 November2010",
+      "locator": "PDF1 right/booklet1 level-ground requirement; PDF2 left/booklet2 door and liner checks; maintenance is not installation consumption"
+    }
+  ],
+  "scope": {
+    "preparedLevelConcreteOnly": true,
+    "foundationStrengthSource": "20–30N/mm²",
+    "foundationThicknessMm": null,
+    "fixingsPerInstalledBin": 4,
+    "minimumAnchorEdgeDistanceMm": 110,
+    "drillDiameterMm": 10,
+    "minimumCleanHoleDepthMm": 130,
+    "groundBolt": "M10×120mm",
+    "nut": "M10",
+    "washerOuterDiametersMm": [
+      20,
+      50
+    ],
+    "spannerMm": 17,
+    "maximumRecommendedTorqueNm": 27,
+    "exposedThreadsAboveNut": "2 or3",
+    "assembledReadyBinIsProjectFact": true
+  },
+  "excludedRu": [
+    "No Jubilee240/12mm hole substitution or Streamline identity borrowing.",
+    "No Fusion bench200mm concrete thickness or140mm hole-depth carry-over.",
+    "No paving/slab branch: source lists M10x75 in kit header but M10x70 in paving body; unresolved discrepancy cannot enter this concrete-only plan.",
+    "No tarmac or block paving; manufacturer strongly recommends against them.",
+    "No Ground-Lock, concrete-in anchors, internal ballast, new footing/excavation/rebar/concrete curing.",
+    "No conversion of20–30N/mm² into an assumed concrete B class.",
+    "No meaning assigned to schematic120–140mm as foundation thickness or replacement for explicit130mm minimum hole depth.",
+    "No guessed anchor coating/grade/SKU equivalence; supplied compatibility must be documented.",
+    "No optional ashtray, bait box, poster, replacement aperture panel, sack/elastic retention kit, or ongoing maintenance consumables automatically included.",
+    "No full wash detergent quantity derived from10% solution maintenance guidance; no volume supplied.",
+    "No28kg handling crew or machine hour inference; no one-kit placeholder.",
+    "No new norm or field quantity input that lets a customer resolve unknown labor/tool norms."
+  ],
+  "supplyChoices": [
+    "Четыре совместимых бетонных крепления включены в цену каждой урны",
+    "Совместимые бетонные крепления для урны закупаются отдельно"
+  ],
+  "materials": [
+    {
+      "id": "bin",
+      "unitId": "pcs",
+      "consumed": "bin_count",
+      "nameRu": "Готовая собранная уличная урна со стальным вкладышем110л",
+      "specificationRu": "Glasdon Jubilee110, корпус130л, стальной оцинкованный вкладыш110л;1158×598×553мм,28кг с этим вкладышем; выбранные дверца/отверстия/цвет подтверждены документом; готовая сборка — факт поставки."
+    },
+    {
+      "id": "ground-fixing-assembly",
+      "unitId": "pcs",
+      "consumed": "4*bin_count",
+      "nameRu": "Полный совместимый узел крепления урны к бетону",
+      "specificationRu": "Glasdon Jubilee110/C000-0018, один совместимый узел: болтM10×120мм, гайкаM10, обе шайбыM10/Ø20мм иM10/Ø50мм. Четыре узла на установленную урну; никакого универсального комплекта или повторных компонентных закупок."
+    }
+  ],
+  "components": {
+    "names": [
+      "БолтM10×120мм",
+      "ГайкаM10",
+      "ШайбаM10/Ø20мм",
+      "ШайбаM10/Ø50мм"
+    ],
+    "countPerFixingAssembly": 1,
+    "countEach": "4*bin_count",
+    "separateResourceRows": false,
+    "separatePurchaseOwners": false
+  },
+  "holes": {
+    "quantity": "4*bin_count",
+    "unitId": "pcs",
+    "payable": false,
+    "sourceOnlyGeometricCountNotMachineHours": true
+  },
+  "userInputs": [
+    {
+      "id": "bin_count",
+      "titleRu": "Количество устанавливаемых урн",
+      "consumerInputRole": "OBJECT_GEOMETRY",
+      "unitId": "pcs",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "object",
+      "integer": true,
+      "minimum": 1,
+      "valueType": "integer"
+    },
+    {
+      "id": "project_bin_configuration_reference",
+      "titleRu": "Проектное исполнение готовой урны и стального вкладыша",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "guide": "Укажите проект, редакцию и позицию выбранной готовой собранной Glasdon Jubilee110 со стальным оцинкованным вкладышем110л. Фактические дверца keyed/keyless, отверстия и цвет должны соответствовать выбранному изделию. Это сведения объекта; не выбор универсальной урны по названию.",
+      "valueType": "text"
+    },
+    {
+      "id": "prepared_foundation_acceptance_reference",
+      "titleRu": "Готовое бетонное основание: фактические замеры и подтверждение пригодности",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "guide": "Укажите реальный чертёж/акт/результат проверки готового ровного прочного бетонного основания с подтверждённой прочностью20–30Н/мм² и выбранными местами креплений. Плитка, асфальт, блочное мощение и новое устройство фундамента не входят в этот сценарий. Это факт объекта, а не подтверждение чтения инструкции.",
+      "valueType": "text"
+    },
+    {
+      "consumerInputRole": "OBJECT_GEOMETRY",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "valueType": "decimal",
+      "id": "actual_concrete_strength_n_mm2",
+      "titleRu": "Подтверждённая прочность готового бетона, Н/мм²",
+      "unitId": null,
+      "minimum": 20,
+      "maximum": 30,
+      "guide": "Фактический результат или проектная прочность выбранного готового бетона из указанного документа, вН/мм²; для этого точного сценария20–30. Не подставляйте местный классB как числовую прочность и не вводите условную норму вместо факта объекта."
+    },
+    {
+      "id": "safe_drilling_foundation_reference",
+      "titleRu": "Пригодность основания и зоны сверления",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "guide": "Укажите реальный чертёж, замер или акт: доступна безопасная очистка отверстийØ10мм глубиной не менее130мм, совместимая анкеровкаM10×120мм и отсутствуют мешающие коммуникации. Толщина основания не берётся из условного размера120–140мм рисунка; чужой минимум200мм не используется.",
+      "valueType": "text"
+    },
+    {
+      "consumerInputRole": "OBJECT_GEOMETRY",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "valueType": "decimal",
+      "id": "minimum_safe_drilling_depth_mm",
+      "titleRu": "Минимальная фактически доступная глубина безопасного сверления",
+      "unitId": "mm",
+      "minimum": 130,
+      "guide": "Наименьшая доступная безопасная глубина во всех выбранных точках по замеру/чертежу/акту. Должна позволять очищенное отверстие не менее130мм. Это доступная глубина сверления, не выдуманная минимальная толщина фундамента и не размер рисунка120–140мм."
+    },
+    {
+      "id": "minimum_anchor_edge_distance_mm",
+      "titleRu": "Наименьшее фактическое расстояние от оси крепления до края основания",
+      "consumerInputRole": "OBJECT_GEOMETRY",
+      "unitId": "mm",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "installation",
+      "minimum": 110,
+      "valueType": "decimal"
+    },
+    {
+      "id": "actual_bin_supply_specification",
+      "titleRu": "Исполнение и состав фактической поставки урны",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "bin-purchase",
+      "guide": "Точная фактическая поставка Glasdon Jubilee110: готовое собранное изделие, стальной оцинкованный вкладыш110л, выбранные дверца/отверстия/цвет. Документ отдельно подтверждает, включены ли четыре совместимых узла бетонного крепления в цену; карточка производителя не доказывает бесплатную поставку.",
+      "valueType": "text"
+    },
+    {
+      "id": "anchor_supply_scope",
+      "titleRu": "Входит ли штатный крепёж в поставку урны",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "fixing-price-ownership",
+      "choices": [
+        "Четыре совместимых бетонных крепления включены в цену каждой урны",
+        "Совместимые бетонные крепления для урны закупаются отдельно"
+      ],
+      "valueType": "enum"
+    },
+    {
+      "id": "bin_stock",
+      "titleRu": "Пригодные урны в наличии",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "bin-purchase",
+      "integer": true,
+      "minimum": 0,
+      "valueType": "integer"
+    },
+    {
+      "id": "bin_reserve",
+      "titleRu": "Сохраняемый резерв урн",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "bin-purchase",
+      "integer": true,
+      "minimum": 0,
+      "valueType": "integer"
+    },
+    {
+      "id": "bin_quantum",
+      "titleRu": "Кратность фактической поставки урн, шт.",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": true,
+      "default": null,
+      "valueSourceRole": "PROJECT_SPECIFIC_INPUT",
+      "requiredWhen": null,
+      "gate": "bin-purchase",
+      "integer": true,
+      "minimum": 1,
+      "valueType": "integer"
+    },
+    {
+      "id": "bin_stock_compatibility_reference",
+      "titleRu": "Пригодность и комплектность урн в наличии",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "greater_than",
+        "parameterId": "bin_stock",
+        "value": 0
+      },
+      "gate": "bin-purchase",
+      "guide": "Подтвердите точную Jubilee110 со стальным вкладышем, выбранное исполнение и пригодное состояние. При включённых креплениях учитывается полный подтверждённый комплект урны с четырьмя совместимыми узлами; неполный комплект не вычитается как полный.",
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+      "valueType": "text"
+    },
+    {
+      "id": "fixing_supply_specification",
+      "titleRu": "Спецификация отдельно поставляемого бетонного крепежа",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые бетонные крепления для урны закупаются отдельно"
+      },
+      "gate": "fixing-purchase",
+      "guide": "Фактически выбранный полный совместимый бетонный узел C000/0018 для Jubilee110: болтM10×120мм, гайкаM10, обе шайбыM10/Ø20мм иM10/Ø50мм. Артикул, марка и покрытие — по документу поставщика; не четыре отдельные повторные закупки.",
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+      "valueType": "text"
+    },
+    {
+      "id": "fixing_stock",
+      "titleRu": "Пригодные узлы крепления в наличии",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые бетонные крепления для урны закупаются отдельно"
+      },
+      "gate": "fixing-purchase",
+      "integer": true,
+      "minimum": 0,
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+      "valueType": "integer"
+    },
+    {
+      "id": "fixing_reserve",
+      "titleRu": "Сохраняемый резерв узлов крепления",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые бетонные крепления для урны закупаются отдельно"
+      },
+      "gate": "fixing-purchase",
+      "integer": true,
+      "minimum": 0,
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+      "valueType": "integer"
+    },
+    {
+      "id": "fixing_quantum",
+      "titleRu": "Кратность поставки целых узлов крепления, шт.",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": "pcs",
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "equals",
+        "parameterId": "anchor_supply_scope",
+        "value": "Совместимые бетонные крепления для урны закупаются отдельно"
+      },
+      "gate": "fixing-purchase",
+      "integer": true,
+      "minimum": 1,
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+      "valueType": "integer"
+    },
+    {
+      "id": "fixing_stock_compatibility_reference",
+      "titleRu": "Пригодность имеющихся узлов крепления",
+      "consumerInputRole": "OBJECT_FACT",
+      "unitId": null,
+      "required": false,
+      "default": null,
+      "valueSourceRole": "CONDITIONAL_PROJECT_FACT",
+      "requiredWhen": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "equals",
+            "parameterId": "anchor_supply_scope",
+            "value": "Совместимые бетонные крепления для урны закупаются отдельно"
+          },
+          {
+            "kind": "greater_than",
+            "parameterId": "fixing_stock",
+            "value": 0
+          }
+        ]
+      },
+      "gate": "fixing-purchase",
+      "conditionallyRequired": true,
+      "semantics": "Optional at top level; required only when canonical requiredWhen evaluates true. Retain actual conditional resource consumer.",
+      "valueType": "text"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "whole-installation-labor",
+      "category": "labor",
+      "specificationRu": "Цельный труд установки, сверления, крепления и проверки урны",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "UNRESOLVED_APPLICATION_NORM",
+      "note": "No manufacturer labor hours, crew size or productivity; covers sequence without splitting arbitrary per-step hours"
+    },
+    {
+      "id": "drill-and-bit-provision",
+      "category": "equipment",
+      "specificationRu": "Обеспечение электрической дрелью и сверлом по бетонуØ10мм",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "UNRESOLVED_APPLICATION_NORM",
+      "note": "Electric drill and10mm masonry bit required; no machine time, wear, replacement or rental norm"
+    },
+    {
+      "id": "spanner-and-torque-control",
+      "category": "tool",
+      "specificationRu": "Ключ17мм и средство соблюдения предела затяжки27Н·м",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "UNRESOLVED_APPLICATION_NORM",
+      "note": "17mm spanner specified, max27Nm. Means of ensuring limit and provision/quantity not priced by source; do not invent1set or a separately specified torque wrench model"
+    },
+    {
+      "id": "electrical-supply-and-work-area",
+      "category": "work",
+      "specificationRu": "Питание дрели и обеспечение рабочей зоны",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "UNRESOLVED_APPLICATION_NORM",
+      "note": "Practical drill power/access and work-area requirements need actual project scope; no kWh or temporary supply norm"
+    },
+    {
+      "id": "ppe-and-protection",
+      "category": "safety",
+      "specificationRu": "Применимые СИЗ и защита зоны установки",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "UNRESOLVED_APPLICATION_NORM",
+      "note": "No source quantity for PPE, dust/noise/protection measures; project method required"
+    },
+    {
+      "id": "delivery-unloading-handling",
+      "category": "service",
+      "specificationRu": "Доставка и разгрузка готовых урн и крепежа",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "UNRESOLVED_APPLICATION_NORM",
+      "note": "Exact product28kg with steel liner is descriptive mass, not a crew, lifting-equipment or time norm; no supplier delivery inclusion"
+    },
+    {
+      "id": "hole-cleaning-and-installation-waste",
+      "category": "completion",
+      "specificationRu": "Очистка отверстий, удаление пыли и упаковки установки",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "UNRESOLVED_APPLICATION_NORM",
+      "note": "Holes must be cleaned; installation debris/packaging and method quantities/disposal ownership not specified. Operating maintenance detergent procedure is not an installation consumption norm"
+    },
+    {
+      "id": "functional-check-and-handover",
+      "category": "service",
+      "specificationRu": "Проверка дверцы, вкладыша, креплений и передача инструкции",
+      "unitId": null,
+      "quantityRule": null,
+      "status": "UNRESOLVED_APPLICATION_NORM",
+      "note": "Door alignment/function, liner access, secure fixings and manual handover required; no test time/service rate or parent price inclusion proved"
+    }
+  ],
+  "sourceAdmission": {
+    "sourcePlanPath": ".release-runtime/r568/s27-58/jubilee110-source-recovery/review/source-plan.json",
+    "sourcePlanSha256": "ea4af09ca3904a71238473a68746825927752541a90da4f8624e158caa473fd5",
+    "outlineSha256": "69cd20cd711557b53237de0022f08de7cdcdd17e5996a3e31ff8ffe3f1d0e771"
+  },
+  "fullTechnicalAcceptance": false,
+  "acceptedCompleteTypes": 0,
+  "verifiedAt": "2026-10-10T23:20:36.334Z"
+}

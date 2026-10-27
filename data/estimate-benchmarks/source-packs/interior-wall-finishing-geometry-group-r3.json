@@ -1,0 +1,2059 @@
+{
+  "contract": "rik-expo-app.interior-wall-finishing-geometry-group.r3",
+  "namespace": "wall_finish_ready_krer150400701_r3_",
+  "verifiedAt": "2026-10-21",
+  "titleRu": "Грунтование, финишная шпаклёвка и акриловая окраска VGT по уже ровной штукатурке",
+  "selectedExistingCatalogId": "canonical-work:base:plaster_paint_interior_paint_wall_paint_standard",
+  "predecessorSubjectContract": "rik-expo-app.interior-wall-finishing-cement-finish-r502.v3",
+  "areaId": "net_wall_area_m2",
+  "normId": "15-04-007-01",
+  "measurementM2": 100,
+  "physicalScopeRu": "Уже ровная, сухая, прочная, чистая цементная штукатурка без трещин/раковин, не загрунтованная и принятая к отделке. Исходная штукатурка уже ровная, без трещин/раковин. Первичное грунтование VGT0301 включено отдельным этапом перед шпаклёвкой; выравнивание штукатурки заново не выполняется. После высыхания первичного грунта: одно ручное сплошное нанесение готовой универсальной шпаклёвки VGT оптимальным слоем около1мм, шлифование после полного высыхания, один слой готовой укрывающей грунтовки VGT, затем два слоя акриловой краски VGT ВД-АК2180 «Супербелая». Продукты нормальной консистенции применяются без разбавления/колеровки. Плоские внутренние стены без проёмов и откосов; новое строительство, обычные условия и доступ при высоте помещения до3,5м. Внешняя доставка поставщика до приобъектного склада вне этой локальной ветви; нормативная внутриобъектная подача учтена отдельно от неё. Для трёх жидких составов выбран кистевой способ одним последовательным ручным постом; рабочая ёмкость/очистка не исключены из состава. Для жидкихVGT выбран один рабочийPelican8619 с отдельной крышкой8659 и последовательными доливами в пределах пользовательской ёмкости; очистка между продуктами остаётся обязательной открытой потребностью.",
+  "normativeSupplyScopeRu": "Конкретные готовые продукты одного изготовителя. Верхние опубликованные ориентировочные нормы производителя задают план: первичный глубокий грунтVGT0301 0,12кг/м²; шпаклёвка1,4кг/м²; один укрывающий грунт0,2кг/м²; краска0,18кг/м² за слой, итого0,36кг/м². Это явный выбор верхней границы паспортного планирования, а не придуманная средняя норма. Исторические0,03т краски и0,051т шпаклёвки на100м² сохранены только как исходные ресурсные показатели КРЕР, для нынешней закупки ими не подменяются нормы изготовителя. Труд43,56чел.-ч/100м² по15-04-007-01 и дополнительное первичное грунтование6,55чел.-ч/100м² по15-04-006-03 сохранены целиком; часы не уменьшаются из-за принятого готового основания и не распределяются произвольно по этапам. Глубокий грунт0,013т/100м² старой006-03 остаётся справочной базой, не выдаётся за расход или потериVGT. Это составительский выбор продуктов для расчёта, а не заявление о письменном разрешении производителя изменить государственную норму.",
+  "wholeWorkScopeRu": "Один владелец результата в м² охватывает цельный труд43,56чел.-ч/100м² поКРЕР15-04-007-01 и отдельный труд первичного грунтования6,55чел.-ч/100м² по15-04-006-03, нормативные машины, обычный инвентарь/доступ/СИЗ и опубликованный накладной состав, мелкие сопутствующие операции и обычную уборку/подготовку рабочего места к передаче. Обычная промывка инструмента чистой водой — сопутствующий результат очистки в этом владельце; отдельный литровый заказ не выдуман. Обеспечение обычным инструментом не означает его покупку на каждыйм². Нормируемые шкурка0,84м² и общая ветошь0,4кг на100м² (0,1первичный грунт+0,3отделка) рассчитаны и включены здесь один раз. Четыре основных продукта закупаются отдельно по настоящим фасовкам. Нормативные машинисты/водитель уже в эксплуатации машин, а машины уже в этой одной цене; вторых платных часов нет. Произвольный процент накладных не назначается. ВАЖНО: этот накладной/ценовой состав ещё не доказывает физическую обеспеченность конкретным инструментом, водой промывки, СИЗ, доступом и исполнением подачи. Пять обязательных предметных зависимостей остаются открытыми поMASTER2.7§10Д; нулевым количеством или числом1 они не закрываются. Конкретный цельный шпательSTAYER10041-12 раскрыт отдельно:1одновременно используемый предмет на выбранный последовательный пост, общие ссылки нанесения/очистки и один владелец цены; это не1неизвестный комплект и не новая покупка на каждый этап. КистьЗУБР4-01013-100100мм раскрывается как один одновременно пригодный предмет с четырьмя устойчивыми связями и одним владельцем цены. Для жидких составов определён самостоятельный рабочий сосуд; пять обязательных физических зависимостей ещё препятствуютFULL; рабочая тараPelican8619 и отдельная крышка8659 раскрыты по1шт на последовательный пост в одномwhole-work; изготовитель не объявляет крышку частью артикула8619; число доливов не является новой закупкой тары.",
+  "excludedRu": [
+    "Оштукатуривание от необработанного бетона/кладки, первичное выравнивание, демонтаж/ремонт трещин, сырости/плесени и непригодной штукатурки: исходное основание уже принято.",
+    "Откосы, потолки, фасады, криволинейные/архитектурные поверхности, уголки/маяки/сетка и специальный доступ либо высота свыше3,5м.",
+    "Сухие CT225/CT29, цементное увлажнение, отдельная вода затворения/ухода, иной слой шпаклёвки и механизированное нанесение.",
+    "Загустевшие материалы, необходимость разведения/колеровки, дополнительные грунтовочные/окрасочные слои, специальная защита смежных изделий и отдельная генеральная уборка всего объекта.",
+    "Внешняя доставка от поставщика и самостоятельный вывоз строительных отходов за пределы объекта; нормативные0,15маш.-ч автомобиля не являются рейсами или тонно-километрами поставщика.",
+    "Фактическое наличие ресурсов, завершение стройки и инженерная приёмка не подтверждаются расчётом плановой обеспеченности."
+  ],
+  "sources": [
+    {
+      "id": "kg-krer15-ready-acrylic-wall-150400701-r3",
+      "title": "КРЕР2015, сборник15 «Отделочные работы»",
+      "edition": "приказ28.03.2016 №2-нпа; КРЕР-2015",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/no15otdelocnyeraboty_compressed-1690836cdcb7429.33503474.pdf",
+      "path": ".release-runtime/r568/next-wave/interior-wall-ready-finish-r502/primary/KRER-15.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+      "locatorRu": "PDF/печатные173–174, таблица15-04-007, только колонка01; с173 полный состав и рабочие43,56; с174 все машины/материалы. С11§1.17 — готовые шпаклёвки, грунтовки, краски; с8§1.2а — обычные столики, стремянки, приставные лестницы до3,5м. PDFс172–173, только15-04-006-03: однократное грунтование стен,6,55чел.-ч,0,01машинисты,0,01маш.-ч подъёмника03-0327до45м,0,01маш.-ч автомобиля40-0001,0,1кгветоши,0,013тобщего грунта на100м².",
+      "quantityVerifiedVisually": true,
+      "historicalPricesImported": false
+    },
+    {
+      "id": "kg-krer-general-application-guidance-r3",
+      "title": "Указания по применению КРЕР на строительные и специальные строительные работы",
+      "edition": "КРЕР-2015",
+      "url": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+      "path": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "locatorRu": "PDFс3§1.7: рабочие без машинистов; эксплуатация машин включает обслуживающий труд. PDFс6§2.8: мелкие и второстепенные сопутствующие операции учтены, хотя обычно не названы в кратком составе; §2.10 — водитель в эксплуатации автомобиля, не второй платёж.",
+      "quantityVerifiedVisually": true,
+      "historicalPricesImported": false
+    },
+    {
+      "id": "vgt-current-ready-putty-r3",
+      "title": "VGT: шпатлёвка универсальная готовая",
+      "edition": "Официальная страница изготовителя, снимок2026-10-21",
+      "url": "https://vgtkraska.ru/katalog/shpatlevki/shpatlevka-universalnaya",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/vgt-putty.html",
+      "sha256": "a62bc322a1dcb638921480a20d2bc7ff360fcc98691ca401ff9df6d5d08fafa5",
+      "locatorRu": "Разделы «Подготовка поверхности», «Способ нанесения», «Расход», «Доступные фасовки»: готова к применению, первичный грунтVGT рекомендуется, оптимальный слой около1мм;0,5–1,4кг/м²;1кг существует среди0,33/1/1,7/3,6/7,5/18/50кг; шлифование через24ч после полного высыхания.",
+      "quantityVerifiedFromOfficialHtml": true,
+      "pricesImported": false
+    },
+    {
+      "id": "vgt-current-covering-primer-r3",
+      "title": "VGT: грунтовка для внутренних работ укрывающая",
+      "edition": "Официальная страница изготовителя, снимок2026-10-21",
+      "url": "https://vgtkraska.ru/katalog/gruntovki/gruntovki-universalnye/ukryvayushchaya",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/vgt-covering-primer.html",
+      "sha256": "e899ae693fdf8370a27f0296d2cc6d069b8c434745b044d659212cdda4edf03c",
+      "locatorRu": "«Применение/Свойства»: допускает все водные краскиVGT; минеральные оштукатуренные поверхности. «Способ»:1–2слоя; выбран1. «Расход»:150–200г/м², выбран верх200г. «Доступные фасовки»:3/15кг; выбраны3кг. Полное высыхание24ч.",
+      "quantityVerifiedFromOfficialHtml": true,
+      "pricesImported": false
+    },
+    {
+      "id": "vgt-current-wall-paint-2180-r3",
+      "title": "VGT: краска для стен ВД-АК2180 Супербелая",
+      "edition": "Официальная страница изготовителя, снимок2026-10-21",
+      "url": "https://vgtkraska.ru/katalog/interjernye-kraski-emali/interjernye-kraski/dlya-sten-superbelaya-vd-ak-2180",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/vgt-wall-paint.html",
+      "sha256": "ca6e538695d6056399f39190f4a824fd3af3c04dcbc62e142bd5bf1211847896",
+      "locatorRu": "«Подготовка»: прочные основания — укрывающий грунтVGT. «Способ»: два слоя с1чмежслойной сушкой. «Расход»:160–180г/м²/слой на гладком основании, верх180×2=360г/м². «Фасовки»:1,5/3/7/15/45кг; выбраны1,5кг. Не переносить300г/м² старой таблицы в этот нынешний продукт.",
+      "quantityVerifiedFromOfficialHtml": true,
+      "pricesImported": false
+    },
+    {
+      "id": "kg-overhead-tools-and-cleanup-r3",
+      "title": "Методические указания по определению накладных расходов в строительстве",
+      "edition": "Официальный источник Госстроя КР",
+      "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/nakladnyerashodyvstroitelstv-938692055ac0ce2a6.16153263.pdf",
+      "path": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/kr-overheads-method.pdf",
+      "sha256": "89afde6f0135bb465db576dc8e6d1a1154054df6887e8011447e6fcdee114a76",
+      "locatorRu": "PDFс22, приложение6 II.4 иIII.1–2: СИЗ, износ/ремонт инструмента, инвентарь/обычный доступ; PDFс24III.11–12: содержание/очистка площадки и уборка при подготовке к сдаче. Никакой индивидуальный процент или число инструментов не выведены.",
+      "quantityVerifiedVisually": true
+    },
+    {
+      "id": "kg-material-resource-method-r3",
+      "title": "Методика определения стоимости строительства в Кыргызской Республике",
+      "edition": "Приказ10-нпа05.12.2017; регистрация10915.01.2018",
+      "url": "https://www.gosstroy.gov.kg/ru/state_program/download-pdf/opredeleniastoimosti-466920560ea4a901.89801061.pdf",
+      "path": ".release-runtime/r568/ct29-indoor-geometry-r1/sources/kr-estimate-method-changes.pdf",
+      "sha256": "acb9ba73163ad48fb41d2bce073d4a75d8b7f20bf65842988ce2d3ae4ded1c03",
+      "locatorRu": "PDFс15§4.22–4.23: физическая потребность и сопоставление ресурсных показателей с ведомостями/спецификациями; не разрешение произвольно поменять труд. Здесь материал выбран составителем как конкретная технологическая ветвь, проектная приёмка не заявлена.",
+      "quantityVerifiedVisually": true
+    },
+    {
+      "id": "vgt-current-deep-primer0301-r3",
+      "title": "VGT: грунтовка глубокого проникновения ВД-АК0301 для внутренних работ",
+      "edition": "Официальная страница изготовителя, снимок2026-10-21",
+      "url": "https://vgtkraska.ru/katalog/gruntovki/gruntovki-glubokogo-proniknovenija/glubokogo-proniknoveniya-vd-ak-0301",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/vgt-primer.html",
+      "sha256": "ea6a3af26c368824a94559ff38a7532b831b8b97093e797ecb656d650813ec94",
+      "locatorRu": "Назначение: перед шпаклеванием/окраской. «Способ нанесения»: один слой; сильно впитывающие дважды, эта ветвь исключена. «Расход»:80–120г/м²; верх120г. Доступная фасовка1кг. Последующий слой после полного высыхания24ч.",
+      "quantityVerifiedFromOfficialHtml": true,
+      "pricesImported": false
+    },
+    {
+      "id": "stayer10041-12-stainless-hand-spatula-r3",
+      "title": "STAYER HERCULES10041-12: шпатель120мм с нержавеющим полотном и двухкомпонентной рукоятью",
+      "edition": "Официальная страница STAYER, снимок2026-10-21",
+      "url": "https://stayer-tools.com/malyarno-shtukaturnye-instrumenty/shtukaturnyy-instrument/shpateli/shpateli-metallicheskie/10041-lah/?ID=966973",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/stayer10041-putty-spatula.html",
+      "sha256": "ee00c81fad4df4975167658f43fdd548c1a0d36d5fb3fcab9a211e20d710dc86",
+      "locatorRu": "Вариант10041-12: ширина полотна120мм, нержавеющая сталь; рукоятьТПР+ПП. Разделы применения/описания: нанесение и выравнивание строительных смесей. Полотно и рукоять — части одного названного изделия; комплект не заменяется неизвестным набором.",
+      "quantityVerifiedFromOfficialHtml": false,
+      "specificationVerifiedFromOfficialHtml": true,
+      "stationCountPublishedByManufacturer": false,
+      "pricesImported": false
+    },
+    {
+      "id": "zubr4-01013-brush-r3",
+      "title": "ЗУБР МАСТЕР АКВА4-01013-100: цельная кисть для водных ЛКМ",
+      "edition": "Официальный изготовитель; снимок2026-10-21",
+      "url": "https://zubr.ru/malyarno-shtukaturnye-instrumenty/malyarnye-instrumenty/kisti/kisti-ploskie/4-01013-c23/?ID=514076",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/zubr4-01013-brush.html",
+      "sha256": "7ac53e7074c5604aa8c2bb2ff50f839481bfe6fd56df4ffa7379748ff750f5ad",
+      "locatorRu": "Официальная страница семейства; строка/встроенная карточка4-01013-100(data-item514082), искусственная щетина, пластмассовая рукоять, никелированный стальной бандаж; воднодисперсионные и акриловые ЛКМ. Самостоятельный URL сID514082 возвращает404 и источником не считается.",
+      "specificationVerifiedFromPrimary": true,
+      "quantityPublishedByManufacturer": false,
+      "pricesImported": false
+    },
+    {
+      "id": "zubr-brush-manufacturer-guide-r3",
+      "title": "ЗУБР16-0183: кисти плоские, техническая брошюра изготовителя",
+      "edition": "Официальный изготовитель; снимок2026-10-21",
+      "url": "https://zubr.ru/upload/iblock/ab6/16_0183_web.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/zubr-brush-manufacturer-guide.pdf",
+      "sha256": "c57e19c92f01a2c90ae9f5bd07d1dd9909172b0f4930604a640c82d09aff1132",
+      "locatorRu": "PDFс2: щетина АКВА для воднодисперсионных/акриловых ЛКМ, функциональные части кисти, модель4-01013 с пластиковой ручкой. PDFс3 нижний правый блокМАСТЕР.АКВА: точный артикул4-01013-100, номинальная ширина100мм/4дюйма, искусственная щетина, никелированный стальной бандаж; готовое изделие, не сборка неизвестного комплекта. С2–3 визуально проверены.",
+      "specificationVerifiedFromPrimary": true,
+      "quantityPublishedByManufacturer": false,
+      "pricesImported": false
+    },
+    {
+      "id": "wooster-pelican8619-pail8659-lid-r3",
+      "title": "Wooster Pelican8619 и отдельная крышка8659",
+      "edition": "ОфициальныйWooster; страница2026-10-21, брошюраC-202105R4/2026",
+      "url": "https://www.woosterbrush.com/buckets-trays/pelican/",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/wooster-pelican-primary.html",
+      "sha256": "f324e25e2dca51ff313c589c3dc43907b2f36dffdaf3a652bb44974d20f6818f",
+      "locatorRu": "PELICAN: brush&roll; рабочая область для роликовдо4½дюймов, встроенный magnetic brush holder. ТаблицаCat.No.8619Pail: пользовательскаяCapacity1Quart, case6. Отдельные строки8629Liner и8659Lid(case12); крышка не объявляется входящей в8619, case не считается квантом новой закупки.",
+      "specificationVerifiedFromPrimary": true,
+      "manufacturerCrewNormClaimed": false,
+      "pricesImported": false
+    },
+    {
+      "id": "wooster-pelican8619-brochure-c202105r-2026-r3",
+      "title": "Wooster BUCKETS,TRAYS,LINERS&LIDS,C-202105R4/2026",
+      "edition": "ОфициальныйWooster; страница2026-10-21, брошюраC-202105R4/2026",
+      "url": "https://www.woosterbrush.com/wp-content/uploads/C-202105-BUCKETS-TRAYS-V2.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/wooster-buckets-trays-primary.pdf",
+      "sha256": "1ad18c67c5ed47213754e827dc8d2bed257ba9e489fb4b1745f2fedd123669d8",
+      "locatorRu": "PDFс1 нижний блокPELICAN: brush&roll from onepail, roll-offдо4½дюймов, magnetic brushholder, lidkeepspaintwet;8619HandheldPail1Qt, отдельные8629Liner3pack и8659Lid. PDFс2 imprintC-202105R4/2026. Свойство solvent-resistantplastic наPDFс2 относится MiniRollerTrays и наPelican не переносится. PDFс1 визуально проверена. PDFс1 верхний/правый блок4-GALLON:8616Bucket, пользовательскаяCapacity4Gal.; отдельная8626Lid. Использование отдельного такого ведра для локального сбора сухих отходов — инженерная адаптация, не заявление изготовителя о пылегерметичности или обращении с опасной пылью.",
+      "specificationVerifiedFromPrimary": true,
+      "manufacturerCrewNormClaimed": false,
+      "pricesImported": false
+    },
+    {
+      "id": "stayer3566-sanding-holder-r3",
+      "title": "STAYER3566: ручной держатель шлифовальной бумаги",
+      "edition": "Первичный источник; снимок2026-10-21",
+      "url": "https://stayer-tools.com/malyarno-shtukaturnye-instrumenty/shtukaturnyy-instrument/terki/plastmassovye/3566-12o/?ID=964331",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/stayer3566-sanding-block.html",
+      "sha256": "f24e6d54f6f90a9a04897c26f4b5ec5ece4c2c459ee14b4309b31f2591e322ef",
+      "locatorRu": "Вариант3566-212:212×105мм; пластмассовый корпус и металлический зажим для бумаги/сетки. Состав и геометрия изделия, не норма количества на звено.",
+      "manufacturerCrewNormClaimed": false,
+      "pricesImported": false
+    },
+    {
+      "id": "baz-hand-abrasive-primary-r3",
+      "title": "БАЗ: каталог гибкого абразивного инструмента",
+      "edition": "Первичный источник; снимок2026-10-21",
+      "url": "https://belabraziv.ru/upload/iblock/70a/m8cc0ifaia2mlys47qibz7lkdsp6w2k2.pdf",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/BAZ-manufacturer-catalog.pdf",
+      "sha256": "b38bb6abca8f9165bbc62c5ac87011a5f3cc06e4bac6f0b58f877550212f1b5d",
+      "locatorRu": "PDFс5/печатные8–9: основной и закрепляющий слои связующего; PDFс61/120–121: стандартный лист230×280мм; PDFс62/122–123:KT10CW для ручной обработки шпаклёвки, грунтов/краски, зерноP60; PDFс74/147: условное соответствие25-Н→P60. Это спецификация/назначение, не опубликованный изготовителем ресурс м²/м². PDFс75–76/148–150: хранение/перевозка/срок12месяцев, осмотр и инструкции/обучение/СИЗ; условия не считаются исполненными автоматически.",
+      "manufacturerCrewNormClaimed": false,
+      "pricesImported": false
+    },
+    {
+      "id": "kg-painter-qualification-primary-r3",
+      "title": "Министерство образования КР: квалификация маляра строительного",
+      "edition": "Первичный источник; снимок2026-10-21",
+      "url": "https://edu.gov.kg/announcements/482/",
+      "path": ".release-runtime/r568/interior-wall-finishing-geometry-r3/sources/KG-painter-qualification.html",
+      "sha256": "bf0cc10cdc33c170a3dc4b5bd2868378ae51ab48d26b96231aa6901a9aad192c",
+      "locatorRu": "КомпетенцияПК-11: очистка инструментов, оборудования и рабочего места; перечень оснащения учебно-производственной мастерской включает стальные шпатели, щётки, СИЗ. Подтверждён класс/метод, не состав или количество бригады.",
+      "manufacturerCrewNormClaimed": false,
+      "pricesImported": false
+    }
+  ],
+  "operations": [
+    {
+      "id": "preparation",
+      "ordinal": 5,
+      "titleRu": "Проверить и обеспылить уже ровную прочную штукатурку",
+      "criterionRu": "Ровная сухая прочная штукатурка без трещин/раковин принята и обеспылена перед входящим в пакет грунтованием.",
+      "materialIds": [],
+      "sourceLocator": "VGT готовая шпаклёвка: сухая чистая поверхность; исходное состояние явно названо"
+    },
+    {
+      "id": "preputty-prime",
+      "ordinal": 10,
+      "titleRu": "Загрунтовать VGT0301 перед шпаклёвкой и высушить",
+      "criterionRu": "Один слой готового грунта нанесён; полное высыхание24ч в паспортных условиях. Сильно впитывающее основание/второй проход в эту ветвь не входит.",
+      "materialIds": [
+        "preputty-primer",
+        "rags"
+      ],
+      "sourceLocator": "VGT0301; КРЕР15-04-006-03 PDF172–173"
+    },
+    {
+      "id": "full-putty",
+      "ordinal": 30,
+      "titleRu": "Сплошь зашпаклевать принятую штукатурку",
+      "criterionRu": "Плоская стена зашпаклёвана готовым водно-дисперсионным составом в пределах исходной улучшенной отделки.",
+      "materialIds": [
+        "ready-putty"
+      ],
+      "sourceLocator": "КРЕР15 с173 состав03"
+    },
+    {
+      "id": "full-sand",
+      "ordinal": 40,
+      "titleRu": "Шлифовать зашпаклёванную поверхность",
+      "criterionRu": "Поверхность отшлифована и подготовлена к предусмотренному нормой грунтованию.",
+      "materialIds": [
+        "abrasive"
+      ],
+      "sourceLocator": "КРЕР15 с173 состав04"
+    },
+    {
+      "id": "prime",
+      "ordinal": 50,
+      "titleRu": "Загрунтовать готовым акриловым грунтом",
+      "criterionRu": "Грунтование выполнено и высушено перед последующей окраской.",
+      "materialIds": [
+        "primer"
+      ],
+      "sourceLocator": "КРЕР15 с173 состав05"
+    },
+    {
+      "id": "primer-sand",
+      "ordinal": 60,
+      "titleRu": "Шлифовать прогрунтованную поверхность",
+      "criterionRu": "Подготовка грунтованного слоя выполнена согласно исходному составу.",
+      "materialIds": [
+        "abrasive"
+      ],
+      "sourceLocator": "КРЕР15 с173 состав06"
+    },
+    {
+      "id": "two-coat-paint",
+      "ordinal": 70,
+      "titleRu": "Окрасить стену акриловой краской за два раза",
+      "criterionRu": "Выполнена улучшенная окраска двумя слоями. Норма0,03т/100м² относится ко всему результату; второй раз на2 не умножается.",
+      "materialIds": [
+        "paint"
+      ],
+      "sourceLocator": "КРЕР15 с173 состав07"
+    },
+    {
+      "id": "ordinary-completion",
+      "ordinal": 80,
+      "titleRu": "Выполнить обычные сопутствующие операции и убрать рабочее место",
+      "criterionRu": "Небольшие сопутствующие действия в составе источника завершены; самостоятельный вывоз/специальная защита за пределами нормы не приписаны ей.",
+      "materialIds": [
+        "rags"
+      ],
+      "sourceLocator": "Указания КРЕР с6§2.8; ветошь КРЕР15 с174"
+    }
+  ],
+  "materials": [
+    {
+      "id": "preputty-primer",
+      "resourceCode": "MANUFACTURER_VGT0301_DEEP_READY",
+      "titleRu": "VGT ВД-АК0301 глубокого проникновения, готовый грунт перед шпаклёвкой, тара1кг",
+      "sourceUnitId": "kg",
+      "sourcePer100M2": "12",
+      "unitId": "kg",
+      "perM2": "0.12",
+      "package": "1",
+      "sourceIndex": 7,
+      "rateBasis": "upper manufacturer80–120g/m2, one coat; not generic KRER130g/m2",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "quantityIncludesAllUsingOperations": true
+    },
+    {
+      "id": "primer",
+      "resourceCode": "01-1702-0005",
+      "titleRu": "VGT грунтовка для внутренних работ укрывающая, ведро3кг",
+      "sourceUnitId": "kg",
+      "sourcePer100M2": "20",
+      "unitId": "kg",
+      "perM2": "0.2",
+      "operationIds": [
+        "prime"
+      ],
+      "quantityIncludesAllUsingOperations": true,
+      "package": "3",
+      "sourceIndex": 3,
+      "rateBasis": "upper manufacturer range for one selected coat"
+    },
+    {
+      "id": "paint",
+      "resourceCode": "01-3802-0001",
+      "titleRu": "VGT ВД-АК2180 Супербелая, для стен, ведро1,5кг",
+      "sourceUnitId": "t",
+      "sourcePer100M2": "0.03",
+      "unitId": "kg",
+      "perM2": "0.36",
+      "operationIds": [
+        "two-coat-paint"
+      ],
+      "quantityIncludesAllUsingOperations": true,
+      "package": "1.5",
+      "sourceIndex": 4,
+      "rateBasis": "0.18kg/m2 per coat * 2 coats"
+    },
+    {
+      "id": "abrasive",
+      "resourceCode": "01-6109-0001",
+      "titleRu": "Шкурка шлифовальная двухслойная с зернистостью40/25",
+      "sourceUnitId": "m2",
+      "sourcePer100M2": "0.84",
+      "unitId": "m2",
+      "perM2": "0.0084",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "quantityIncludesAllUsingOperations": true,
+      "package": null,
+      "sourceIndex": 0,
+      "rateBasis": "exact source aggregate included in whole work owner"
+    },
+    {
+      "id": "rags",
+      "resourceCode": "01-7204-0001",
+      "titleRu": "Ветошь для отделочных работ",
+      "sourceUnitId": "kg",
+      "sourcePer100M2": "0.4",
+      "unitId": "kg",
+      "perM2": "0.004",
+      "operationIds": [
+        "preputty-prime",
+        "ordinary-completion"
+      ],
+      "quantityIncludesAllUsingOperations": true,
+      "package": null,
+      "sourceIndex": 0,
+      "rateBasis": "exact source aggregate included in whole work owner"
+    },
+    {
+      "id": "ready-putty",
+      "resourceCode": "01-8903-0069",
+      "titleRu": "VGT шпатлёвка универсальная готовая, тара1кг",
+      "sourceUnitId": "t",
+      "sourcePer100M2": "0.051",
+      "unitId": "kg",
+      "perM2": "1.4",
+      "operationIds": [
+        "full-putty"
+      ],
+      "quantityIncludesAllUsingOperations": true,
+      "package": "1",
+      "sourceIndex": 2,
+      "rateBasis": "upper declared0.5–1.4kg/m2; one optimal about1mm finish"
+    }
+  ],
+  "labour": {
+    "workersPer100M2": "43.56",
+    "workersGrade": "3.2",
+    "operatorsPer100M2": "0.02",
+    "hoursPartitioned": false,
+    "preputtyWorkersPer100M2": "6.55",
+    "preputtyWorkersGrade": "4.0",
+    "preputtyOperatorsPer100M2": "0.01",
+    "totalWorkersPer100M2": "50.11",
+    "totalOperatorsPer100M2": "0.03",
+    "preputtyNormId": "15-04-006-03"
+  },
+  "machines": [
+    {
+      "id": "lift",
+      "resourceCode": "03-0325",
+      "titleRu": "Подъёмник одномачтовый грузоподъёмностью до500кг, высота подъёма25м",
+      "per100M2": "0.02",
+      "unitId": "machine_hour"
+    },
+    {
+      "id": "lift-preputty",
+      "resourceCode": "03-0327",
+      "titleRu": "Подъёмник одномачтовый до500кг, высота45м: первичный грунт",
+      "per100M2": "0.01",
+      "unitId": "machine_hour",
+      "operationIds": [
+        "preputty-prime"
+      ]
+    },
+    {
+      "id": "truck",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобиль бортовой грузоподъёмностью до5т: эксплуатация внутри исходной нормы",
+      "per100M2": "0.16",
+      "unitId": "machine_hour"
+    }
+  ],
+  "supplyDecision": {
+    "quantityMode": "source_packages_plus_included_consumables",
+    "retailPackSizesAdmitted": true,
+    "packageCountEmitted": true,
+    "stockCredited": "OPTIONAL_ASSIGNED_WHOLE_COMPATIBLE_PACKS_ONCE_PER_MATERIAL",
+    "normativeLossesAlreadyInSourceNoExtraPercent": true,
+    "automaticProcurementReady": true,
+    "reasonRu": "Четыре готовых продукта: реальные фасовки изготовителя1/1/3/1,5кг. Потребности суммируются до единого округления по каждому продукту; необязательный выделенный остаток применяется один раз. Шкурка и ветошь имеют рассчитанное обеспечение в одном владельце работ и не создают вторую закупку."
+  },
+  "openSourceNeeds": [
+    {
+      "id": "stirring-tool",
+      "titleRu": "Средство перемешивания готовой шпаклёвки с подходящей оснасткой",
+      "unitId": "item",
+      "operationIds": [
+        "full-putty"
+      ],
+      "sourceIndex": 2,
+      "reasonRu": "Перед использованием шпаклёвку требуется перемешать. Тип/оснастка/количество и режим последовательного применения должны быть подтверждены профилем, не случайным миксером из нормы сухой штукатурки."
+    },
+    {
+      "id": "washing-water",
+      "titleRu": "Чистая вода для очистки ручного малярного инструмента",
+      "unitId": "l",
+      "operationIds": [
+        "preputty-prime",
+        "full-putty",
+        "prime",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceIndex": 4,
+      "reasonRu": "Изготовитель прямо указывает очистку инструмента водой. Литровая норма/подтверждённая включённая подача и тара для выбранного последовательного режима не найдены. Это не вода затворения и не остаток от общей нормы."
+    },
+    {
+      "id": "access",
+      "titleRu": "Конкретный безопасный доступ к стене в пределах высоты3,5м",
+      "unitId": "item",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceIndex": 0,
+      "reasonRu": "Источник включает обычный доступ в стоимость, но не подтверждает конкретную подходящую площадку/стремянку, её рабочую высоту, комплектность и режим использования для этой ветви."
+    },
+    {
+      "id": "ppe",
+      "titleRu": "СИЗ маляра: конкретное обеспечение и совместимость с операциями",
+      "unitId": "item",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceIndex": 2,
+      "reasonRu": "Рабочая одежда и одна пара перчаток одного исполнителя представлены отдельными инвентарными строками. Полный принятый профиль пылезащиты/защиты глаз и кожи, совместимость материала перчаток и требуемые пасты/средства при попадании в глаза/на кожу остаются неподтверждёнными; стоимость включения не выдаётся за физическое закрытие. БАЗ требует обученный персонал, инструктаж и соответствующие риску средства защиты; универсальный класс респиратора/частота его замены из каталога не выведены."
+    },
+    {
+      "id": "handling-profile",
+      "titleRu": "Подтвердить исполнение подачи, соответствующее нормативным машинам",
+      "unitId": "item",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "sourceIndex": 0,
+      "reasonRu": "Нормативные доли машино-часов сохранены, но не подтверждают фактическую обеспеченность подъёмом/перемещением. Нужен совместимый организационный профиль с оснасткой, оператором и условиями предоставления. После введения локального уборочного инвентаря здесь также остаются принятые путь и получатель собранных отходов;1рейс/1смена или объём вывоза не назначены. Для шкурки также не подтверждены принятие сухого склада/исходной упаковки, срок хранения и исполнение рекомендуемой выдержки; работоспособный футляр поста эти условия не заменяет."
+    }
+  ],
+  "normativeResourceQuantitiesComplete": true,
+  "retailProcurementComplete": false,
+  "selectedScopeQuantitiesComplete": false,
+  "fullTechnicalAcceptance": false,
+  "published": false,
+  "independentExpected": [
+    {
+      "area": "20.1",
+      "preputty-primerConsumed": "2.412",
+      "preputty-primerPackages": "3",
+      "preputty-primerOrder": "3",
+      "primerConsumed": "4.02",
+      "primerPackages": "2",
+      "primerOrder": "6",
+      "paintConsumed": "7.236",
+      "paintPackages": "5",
+      "paintOrder": "7.5",
+      "abrasiveConsumed": "0.16884",
+      "ragsConsumed": "0.0804",
+      "ready-puttyConsumed": "28.14",
+      "ready-puttyPackages": "29",
+      "ready-puttyOrder": "29",
+      "workersManH": "8.75556",
+      "preputtyWorkersManH": "1.31655",
+      "totalWorkersManH": "10.07211",
+      "operatorsManH": "0.00603",
+      "liftMachineH": "0.00402",
+      "preputtyLiftMachineH": "0.00201",
+      "truckMachineH": "0.03216"
+    },
+    {
+      "area": "100",
+      "preputty-primerConsumed": "12.00",
+      "preputty-primerPackages": "12",
+      "preputty-primerOrder": "12",
+      "primerConsumed": "20.0",
+      "primerPackages": "7",
+      "primerOrder": "21",
+      "paintConsumed": "36.00",
+      "paintPackages": "24",
+      "paintOrder": "36.0",
+      "abrasiveConsumed": "0.8400",
+      "ragsConsumed": "0.400",
+      "ready-puttyConsumed": "140.0",
+      "ready-puttyPackages": "140",
+      "ready-puttyOrder": "140",
+      "workersManH": "43.5600",
+      "preputtyWorkersManH": "6.5500",
+      "totalWorkersManH": "50.1100",
+      "operatorsManH": "0.0300",
+      "liftMachineH": "0.0200",
+      "preputtyLiftMachineH": "0.0100",
+      "truckMachineH": "0.1600"
+    },
+    {
+      "area": "0.01",
+      "preputty-primerConsumed": "0.0012",
+      "preputty-primerPackages": "1",
+      "preputty-primerOrder": "1",
+      "primerConsumed": "0.002",
+      "primerPackages": "1",
+      "primerOrder": "3",
+      "paintConsumed": "0.0036",
+      "paintPackages": "1",
+      "paintOrder": "1.5",
+      "abrasiveConsumed": "0.000084",
+      "ragsConsumed": "0.00004",
+      "ready-puttyConsumed": "0.014",
+      "ready-puttyPackages": "1",
+      "ready-puttyOrder": "1",
+      "workersManH": "0.004356",
+      "preputtyWorkersManH": "0.000655",
+      "totalWorkersManH": "0.005011",
+      "operatorsManH": "0.000003",
+      "liftMachineH": "0.000002",
+      "preputtyLiftMachineH": "0.000001",
+      "truckMachineH": "0.000016"
+    },
+    {
+      "area": "15",
+      "preputty-primerConsumed": "1.80",
+      "preputty-primerPackages": "2",
+      "preputty-primerOrder": "2",
+      "primerConsumed": "3.0",
+      "primerPackages": "1",
+      "primerOrder": "3",
+      "paintConsumed": "5.40",
+      "paintPackages": "4",
+      "paintOrder": "6.0",
+      "abrasiveConsumed": "0.1260",
+      "ragsConsumed": "0.060",
+      "ready-puttyConsumed": "21.0",
+      "ready-puttyPackages": "21",
+      "ready-puttyOrder": "21",
+      "workersManH": "6.5340",
+      "preputtyWorkersManH": "0.9825",
+      "totalWorkersManH": "7.5165",
+      "operatorsManH": "0.0045",
+      "liftMachineH": "0.0030",
+      "preputtyLiftMachineH": "0.0015",
+      "truckMachineH": "0.0240"
+    },
+    {
+      "area": "15.000001",
+      "preputty-primerConsumed": "1.80000012",
+      "preputty-primerPackages": "2",
+      "preputty-primerOrder": "2",
+      "primerConsumed": "3.0000002",
+      "primerPackages": "2",
+      "primerOrder": "6",
+      "paintConsumed": "5.40000036",
+      "paintPackages": "4",
+      "paintOrder": "6.0",
+      "abrasiveConsumed": "0.1260000084",
+      "ragsConsumed": "0.060000004",
+      "ready-puttyConsumed": "21.0000014",
+      "ready-puttyPackages": "22",
+      "ready-puttyOrder": "22",
+      "workersManH": "6.5340004356",
+      "preputtyWorkersManH": "0.9825000655",
+      "totalWorkersManH": "7.5165005011",
+      "operatorsManH": "0.0045000003",
+      "liftMachineH": "0.0030000002",
+      "preputtyLiftMachineH": "0.0015000001",
+      "truckMachineH": "0.0240000016"
+    }
+  ],
+  "exactLegacyNormMaterials": [
+    {
+      "id": "primer",
+      "resourceCode": "01-1702-0005",
+      "titleRu": "Готовая грунтовка акриловая НОРТЕКС-ГРУНТ",
+      "sourceUnitId": "kg",
+      "sourcePer100M2": "20",
+      "unitId": "kg",
+      "perM2": "0.2",
+      "operationIds": [
+        "prime"
+      ],
+      "quantityIncludesAllUsingOperations": true
+    },
+    {
+      "id": "paint",
+      "resourceCode": "01-3802-0001",
+      "titleRu": "Готовая краска акриловая ВД-АК2180, ВГТ, для двух окрасок",
+      "sourceUnitId": "t",
+      "sourcePer100M2": "0.03",
+      "unitId": "kg",
+      "perM2": "0.3",
+      "operationIds": [
+        "two-coat-paint"
+      ],
+      "quantityIncludesAllUsingOperations": true
+    },
+    {
+      "id": "abrasive",
+      "resourceCode": "01-6109-0001",
+      "titleRu": "Шкурка шлифовальная двухслойная с зернистостью40/25",
+      "sourceUnitId": "m2",
+      "sourcePer100M2": "0.84",
+      "unitId": "m2",
+      "perM2": "0.0084",
+      "operationIds": [
+        "local-sand",
+        "full-sand",
+        "primer-sand"
+      ],
+      "quantityIncludesAllUsingOperations": true
+    },
+    {
+      "id": "rags",
+      "resourceCode": "01-7204-0001",
+      "titleRu": "Ветошь для отделочных работ",
+      "sourceUnitId": "kg",
+      "sourcePer100M2": "0.3",
+      "unitId": "kg",
+      "perM2": "0.003",
+      "operationIds": [
+        "ordinary-completion"
+      ],
+      "quantityIncludesAllUsingOperations": true
+    },
+    {
+      "id": "ready-putty",
+      "resourceCode": "01-8903-0069",
+      "titleRu": "Готовая шпаклёвка водно-дисперсионная",
+      "sourceUnitId": "t",
+      "sourcePer100M2": "0.051",
+      "unitId": "kg",
+      "perM2": "0.51",
+      "operationIds": [
+        "local-fill",
+        "full-putty"
+      ],
+      "quantityIncludesAllUsingOperations": true
+    }
+  ],
+  "sourceSelectionBoundary": {
+    "readySubstrateScopeExplicit": true,
+    "requiredPreparationNotSilentlyDeleted": true,
+    "actualCurrentVgtProductConsumptionNotLegacyNorm": true,
+    "conservativeUpperPlanningBoundaryNotEngineeringGuarantee": true,
+    "additionalPreputtyPrimerNotCalculatedAgain": false,
+    "manufacturerWrittenCompositeSystemApprovalClaimed": false,
+    "preputtyPrimerFullyIncluded": true,
+    "manualBrushMethodExplicit": true
+  },
+  "preputtyLegacyNormMaterial": {
+    "genericPrimerTonnesPer100M2": "0.013",
+    "manufacturerDemandNotThisGeneric": "0.12kg/m2"
+  },
+  "sharedResources": {
+    "rags": {
+      "per100M2": "0.4",
+      "contributions": [
+        {
+          "normId": "15-04-006-03",
+          "per100M2": "0.1",
+          "operationId": "preputty-prime"
+        },
+        {
+          "normId": "15-04-007-01",
+          "per100M2": "0.3",
+          "operationId": "ordinary-completion"
+        }
+      ],
+      "costOwner": "whole-work"
+    },
+    "truck": {
+      "per100M2": "0.16",
+      "contributions": [
+        {
+          "normId": "15-04-006-03",
+          "per100M2": "0.01",
+          "operationId": "preputty-prime"
+        },
+        {
+          "normId": "15-04-007-01",
+          "per100M2": "0.15",
+          "operationId": "preparation"
+        }
+      ],
+      "costOwner": "whole-work"
+    },
+    "operators": {
+      "per100M2": "0.03",
+      "contributions": [
+        {
+          "normId": "15-04-006-03",
+          "per100M2": "0.01"
+        },
+        {
+          "normId": "15-04-007-01",
+          "per100M2": "0.02"
+        }
+      ],
+      "costOwner": "whole-work"
+    },
+    "ordinaryTools": {
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "coverage": "Published overhead wear/repair/provision; no invented purchase count",
+      "costOwner": "whole-work"
+    }
+  },
+  "physicalResourceCoverageComplete": false,
+  "mainProductProcurementComplete": true,
+  "sourceSearchVerdict": {
+    "status": "CONCRETE_SERIAL_PAIL_AND_MATCHING_LID_PROPOSED_SEVEN_PHYSICAL_NEEDS_OPEN",
+    "primaryLeadsInspected": [
+      "VGT manufacturer current ready product pages",
+      "admitted KRER15 and general/overhead sources",
+      "https://pktipromstroi.ru/"
+    ],
+    "discoveryOnlyNotAdmitted": [
+      "107-05ТК, authorПКТИпромстрой; historical mirror with no verified author distribution; preparation only, not complete paint+cleaning profile",
+      "46-03ТК facade crew17; scope not interior ready VGT, not transferred",
+      "old author domainpkti.co.ru DNSunknown"
+    ],
+    "currentAuthorWebsiteSaved": "work/master25-b/pkti-current-official-catalogue.html",
+    "currentAuthorPageHasDirectTechnicalCardDocuments": false,
+    "missingPrimaryContent": "Applicable interior ready-water-dispersion finish profile: explicit crew/sequence, complete suitable tools and accessories/PPE/access/cleaning/dosing, quantities or real included provision, reuse and replacements; exact norm cost ownership. No source-confirmed modern full profile found in bounded inspection.",
+    "externalMessagesSent": false,
+    "customerTechnicalQuestions": 0,
+    "noClaimNoSuchSourceExists": true,
+    "newBoundedPrimaryLead": "STAYER official10041-12 product specification + VGT ready-putty manual application instruction; no old107-05/facade tool counts transferred.",
+    "rejectedNewLead": "STAYER3569-10 hand sander spec230x105mm/clamps found, but abrasive cut/overlap and profile were not proved; manual-sandingneed stays.",
+    "newApplicationLead": "Official ZUBR4-01013 familyHTML and linked16-0183PDF pp2–3; exact100mm synthetic brush for waterborne/acrylic coatings; direct VGT brush method and water cleanup. No retail quantity/pack imported.",
+    "woosterVesselLead": "OfficialPelican8619 page andC-202105R4/2026 brochurep1 pinned;1quart user capacity,4.5inroller functional width, magnetic holder, separate8659lid. Engineeringinference to100mmbrush and selectedVGT waterdispersions explicit. STAYER06092 remains finiteblocked and is not admitted."
+  },
+  "masterVersion": "MASTER2.7",
+  "masterSha256": "28089a66fa72e574dc730ed67beaec81e320380ee3dc8206561437c5cdcb9239",
+  "notApplicableCategories": [
+    {
+      "category": "dry-mix-batch-water",
+      "reason": "Selected products are ready and normal consistency; no dry product or source-directed wetting. Optional thinning is not selected; washing water remains a real open requirement."
+    },
+    {
+      "category": "fasteners-reinforcing-mesh-corner-beads",
+      "reason": "Flat existing sound level plaster without cracks, corners/reveals or structural repair; no source operation requiring these products."
+    },
+    {
+      "category": "sprayer-compressor",
+      "reason": "Selected manual brush/roller application; these are source alternatives, not mandatory simultaneous machines. Manual-applicator profile remains open."
+    },
+    {
+      "category": "new-independent-tool-purchases",
+      "reason": "Intended provision is contractor inventory through one work owner. This avoids duplicate purchase but does not resolve currently unproved physical equipment."
+    },
+    {
+      "category": "external-delivery-distance",
+      "reason": "Declared local finish starts from products at the on-site store. Source truck hours are not external trips; full from-supplier delivery is not claimed."
+    }
+  ],
+  "independentExpectedBindings": [
+    {
+      "key": "whole-work",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "preputty-primer-order",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "ready-putty-order",
+      "operationIds": [
+        "full-putty"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "primer-order",
+      "operationIds": [
+        "prime"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "paint-order",
+      "operationIds": [
+        "two-coat-paint"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "abrasive-consumed",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "rags-consumed",
+      "operationIds": [
+        "preputty-prime",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "workers",
+      "operationIds": [
+        "preparation",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "workers-preputty",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "workers-total",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "operators",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "lift",
+      "operationIds": [
+        "preparation",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "lift-preputty",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "truck",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "rags-contribution-preputty",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "rags-contribution-finish",
+      "operationIds": [
+        "preparation",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "truck-contribution-preputty",
+      "operationIds": [
+        "preputty-prime"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "truck-contribution-finish",
+      "operationIds": [
+        "preparation",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "ordinary-access",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "ordinary-accompanying",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "open-stirring-tool",
+      "operationIds": [
+        "full-putty"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "open-washing-water",
+      "operationIds": [
+        "preputty-prime",
+        "full-putty",
+        "prime",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "open-access",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "open-ppe",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "open-handling-profile",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": false
+    },
+    {
+      "key": "tool-putty-spatula",
+      "operationIds": [
+        "full-putty",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-waterborne-brush",
+      "operationIds": [
+        "preputty-prime",
+        "prime",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-application-pail",
+      "operationIds": [
+        "preputty-prime",
+        "prime",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-application-pail-lid",
+      "operationIds": [
+        "preputty-prime",
+        "prime",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-sanding-holder",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-paper-shears",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-paper-rule",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-paper-mark",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-dedust-brush",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-floor-brush",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-dustpan",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-waste-bin",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-work-clothing",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-waterproof-gloves",
+      "operationIds": [
+        "preparation",
+        "preputty-prime",
+        "full-putty",
+        "full-sand",
+        "prime",
+        "primer-sand",
+        "two-coat-paint",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "abrasive-sheet-provision",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-waste-bin-lid",
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "includedComponent": true
+    },
+    {
+      "key": "tool-abrasive-storage",
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "includedComponent": true
+    }
+  ],
+  "independentExpectedProcessIds": [
+    "preparation",
+    "preputty-prime",
+    "full-putty",
+    "full-sand",
+    "prime",
+    "primer-sand",
+    "two-coat-paint",
+    "ordinary-completion"
+  ],
+  "handToolProfile": {
+    "contract": "selected-ready-vgt-one-serial-hand-putty-station-r3/v1",
+    "profileAuthority": "AUTHOR_SELECTED_ORGANISATIONAL_BOUNDARY_WITH_PRIMARY_PRODUCT_SPECIFICATIONS",
+    "manufacturerCrewNormClaimed": false,
+    "workMode": "ONE_SERIAL_MANUAL_WORKING_POSITION",
+    "parallelWorkOrMultipleBrigadesAdmitted": false,
+    "simultaneousPositions": 1,
+    "quantityDerivation": "На одном последовательном посту один исполнитель выполняет один проход шпателем; нужен один цельный рабочий шпатель. Тот же предмет затем передаётся на очистку. Пик одновременно используемых рабочих предметов1, а не сумма двух ссылок2 и не количество покупок на м².",
+    "resourceKey": "tool-putty-spatula",
+    "model": "STAYER HERCULES10041-12",
+    "sourceIndex": 8,
+    "methodSourceIndex": 2,
+    "quantityUnitId": "item",
+    "completeItemSpecification": {
+      "bladeWidthMm": 120,
+      "bladeMaterial": "stainless_steel",
+      "handleMaterial": "TPR_PP",
+      "integralParts": [
+        "stainless_blade120mm",
+        "two_component_handle"
+      ],
+      "independentMachineDriveRequired": false,
+      "separatePowerSupplyRequired": false,
+      "unprovedAccessoriesSubstitutedByKit": false
+    },
+    "uses": [
+      {
+        "operationId": "full-putty",
+        "processOrdinal": 30,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "role": "Нанесение и выравнивание готовой шпаклёвкиVGT на плоской стене; изготовительVGT допускает шпатель, STAYER предназначает этот инструмент для строительных смесей."
+      },
+      {
+        "operationId": "ordinary-completion",
+        "processOrdinal": 80,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "role": "Тот же шпатель поступает на очистку после нанесения; отдельный второй шпатель для этой ссылки не требуется. Вода/организация промывки остаются отдельным обязательнымgap."
+      }
+    ],
+    "geometryAndCapacityChecks": [
+      "Это ручное плоское полотно120мм для заявленного плоского участка. Объём ёмкости или вместимость замеса не выводятся из ширины полотна.",
+      "Шпатель не назначается средством затворения, перемешивания или дозирования; отдельный gap этих средств сохраняется.",
+      "Норма/геометрия комнаты не превращается в гарантированную производительность этого инструмента. Календарный срок и параллельное выполнение не обещаны.",
+      "Конкретная доступная рабочая позиция/высота и СИЗ остаются вsource needs: ширина полотна не закрывает безопасный доступ."
+    ],
+    "renewalAndAvailabilityBoundary": "1шт — требуемое число одновременно действующих пригодных предметов, не ресурс износа и не доказательство наличия на объекте. Цельная работа имеет одного владельца предоставления/износа/ремонта по опубликованному накладному составу; число новых покупок/срок службы из площади не выдумываются.",
+    "quantityAndCompatibilityCausallyChecked": true,
+    "actualSiteInventoryConfirmed": false,
+    "runtimeAccepted": false,
+    "sourceNeedsRemaining": [
+      "stirring-tool",
+      "washing-water",
+      "ppe",
+      "access",
+      "handling-profile"
+    ],
+    "costOwnerKey": "whole-work",
+    "procurement": false,
+    "provisionSufficiencyContract": {
+      "existingContract": "resource_graph.purchaseBalanceV1",
+      "unitId": "item",
+      "requiredFunctionalItems": "1",
+      "separatelyCreditedItems": "0",
+      "reserveItems": "0",
+      "integerItemQuantum": "1",
+      "zeroProvision": "RAW_ZERO_KEPT_PERSONAL_CONSUMPTION_SHORTAGE_ONE",
+      "fractionalProvision": "ROW_AMENDMENT_INVALID",
+      "procurementEligible": false,
+      "separateCostOwnerCreated": false,
+      "physicalBalanceNotRetailPurchase": true,
+      "inventoryAvailabilityIsNotAssumed": true
+    }
+  },
+  "manualApplicationProfile": {
+    "contract": "selected-ready-vgt-one-serial-waterborne-brush-station-r3/v1",
+    "profileAuthority": "AUTHOR_SELECTED_ORGANISATIONAL_BOUNDARY_WITH_PRIMARY_PRODUCT_SPECIFICATIONS",
+    "manufacturerCrewNormClaimed": false,
+    "workMode": "ONE_SERIAL_MANUAL_WORKING_POSITION",
+    "simultaneousPositions": 1,
+    "parallelWorkOrMultipleBrigadesAdmitted": false,
+    "resourceKey": "tool-waterborne-brush",
+    "model": "ЗУБР МАСТЕР АКВА4-01013-100",
+    "sourceIndex": 9,
+    "supplementarySourceIndices": [
+      10
+    ],
+    "methodSourceIndices": [
+      7,
+      3,
+      4
+    ],
+    "quantityUnitId": "item",
+    "completeItemSpecification": {
+      "nominalWorkingWidthMm": 100,
+      "nominalWorkingWidthInches": "4",
+      "widthSourceIsManufacturerNominalNotInchConversion": true,
+      "bristleMaterial": "synthetic",
+      "ferruleMaterial": "nickel_plated_steel",
+      "handleMaterial": "plastic",
+      "integralParts": [
+        "synthetic_bristle",
+        "nickel_plated_steel_ferrule",
+        "plastic_handle"
+      ],
+      "factoryCompleteFunctionalItem": true,
+      "separateHandleOrSleeveRequired": false,
+      "independentMachineDriveRequired": false,
+      "separatePowerSupplyRequired": false,
+      "workingVesselIncluded": false,
+      "unprovedAccessoriesSubstitutedByKit": false
+    },
+    "uses": [
+      {
+        "operationId": "preputty-prime",
+        "processOrdinal": 10,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "sequentialApplications": 1,
+        "role": "Первичное нанесениеVGT0301 кистью; последующая очистка водой и сохранение пригодного предмета."
+      },
+      {
+        "operationId": "prime",
+        "processOrdinal": 50,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "sequentialApplications": 1,
+        "role": "Укрывающий грунтVGT: та же очищенная кисть; остатки первичного грунта в следующий продукт не переносятся."
+      },
+      {
+        "operationId": "two-coat-paint",
+        "processOrdinal": 70,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "sequentialApplications": 2,
+        "role": "Два последовательных слояVGT2180; кисть одна, межслойная сушка по изготовителю, параллельных исполнителей нет."
+      },
+      {
+        "operationId": "ordinary-completion",
+        "processOrdinal": 80,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "sequentialApplications": 1,
+        "role": "Тот же предмет поступает на заключительную очистку. Вода/ёмкость/организация очистки не считаются доказанными наличием кисти."
+      }
+    ],
+    "quantityDerivation": "На одном выбранном последовательном ручном посту в каждый момент действует одна цельная кисть. Пикmax(1,1,1,1)=1; два слоя и четыре операции не превращаются в четыре/пять новых покупок. Это организационно выбранная одновременная потребность, не опубликованная норма численности бригады или износа.",
+    "geometryAndCapacityChecks": [
+      "Номинальная рабочая ширина100мм прямо опубликована вPDFс3 для4-01013-100; это не вычисленные101,6мм из4дюймов. Кисть плоская, основание принято плоским; производительность/календарный срок из ширины не выводятся.",
+      "Рабочий сосуд и отдельная крышка раскрыты в профилеPelican8619/8659; пользовательская ёмкость и доливы не выводятся из ширины кисти. Промывка и пригодность при смене продукта остаются отдельнымиneeds.",
+      "Валик, сменная шубка, бюгель и ванночка в выбранном кистевом способе не требуются как части кисти. Сама рабочая ёмкость этим не исключается.",
+      "Все выбранныеVGT содержат водную дисперсию, изготовитель допускает кисть и очистку инструмента водой. Совместимость применения выведена из этих прямых свойств; отдельное письменное одобрение совместной системы не заявлено."
+    ],
+    "renewalAndAvailabilityBoundary": "1шт означает один одновременно действующий пригодный предмет; срок службы/новые покупки по площади и фактический остаток на объекте не выдуманы. Очистка между продуктами обязательна выбранному повторному использованию; её вода и исполнение остаются needs. Стоимость предоставления/износа имеет единственного существующего владельцаwhole-work, отдельной второй оплаты нет.",
+    "costOwnerKey": "whole-work",
+    "procurement": false,
+    "actualSiteInventoryConfirmed": false,
+    "runtimeAccepted": false,
+    "provisionSufficiencyContract": {
+      "existingContract": "resource_graph.purchaseBalanceV1",
+      "unitId": "item",
+      "requiredFunctionalItems": "1",
+      "separatelyCreditedItems": "0",
+      "reserveItems": "0",
+      "integerItemQuantum": "1",
+      "zeroProvision": "RAW_ZERO_KEPT_PERSONAL_CONSUMPTION_SHORTAGE_ONE",
+      "fractionalProvision": "ROW_AMENDMENT_INVALID",
+      "physicalBalanceNotRetailPurchase": true,
+      "procurementEligible": false
+    },
+    "sourceNeedsRemaining": [
+      "washing-water",
+      "dedust-cleanup",
+      "access",
+      "ppe",
+      "handling-profile"
+    ]
+  },
+  "publicPhysicalScopeDetailsRu": [
+    "Уже ровная, сухая, прочная, чистая цементная штукатурка без трещин/раковин, не загрунтованная и принятая к отделке. Исходная штукатурка уже ровная, без трещин/раковин. Первичное грунтование VGT0301 включено отдельным этапом перед шпаклёвкой; выравнивание штукатурки заново не выполняется. После высыхания первичного грунта: одно ручное сплошное нанесение готовой универсальной шпаклёвки VGT оптимальным слоем около1мм, шлифование после полного высыхания, один слой готовой укрывающей грунтовки VGT, затем два слоя акриловой краски VGT ВД-АК2180 «Супербелая». Продукты нормальной консистенции применяются без разбавления/колеровки. Плоские внутренние стены без проёмов и откосов; новое строительство, обычные условия и доступ при высоте помещения до3,5м. Внешняя доставка поставщика до приобъектного склада вне этой локальной ветви; нормативная внутриобъектная подача учтена отдельно от неё.",
+    "Для трёх жидких составов выбран кистевой способ одним последовательным ручным постом; рабочая ёмкость/очистка не исключены из состава.",
+    "Для жидкихVGT выбран один рабочийPelican8619 с отдельной крышкой8659 и последовательными доливами в пределах пользовательской ёмкости; очистка между продуктами остаётся обязательной открытой потребностью."
+  ],
+  "manualApplicationVesselProfile": {
+    "contract": "selected-ready-vgt-one-serial-pelican8619-vessel-r3/v1",
+    "profileAuthority": "AUTHOR_SELECTED_ORGANISATIONAL_PROFILE_WITH_PRIMARY_PRODUCT_SCOPE_AND_ENGINEERING_WIDTH_INFERENCE",
+    "workMode": "ONE_SERIAL_MANUAL_WORKING_POSITION",
+    "simultaneousPositions": 1,
+    "parallelWorkOrMultipleBrigadesAdmitted": false,
+    "manufacturerCrewNormClaimed": false,
+    "model": "Wooster Pelican8619 + matching lid8659",
+    "quantityUnitId": "item",
+    "sourceIndex": 11,
+    "supplementarySourceIndices": [
+      12
+    ],
+    "methodSourceIndices": [
+      7,
+      3,
+      4
+    ],
+    "components": [
+      {
+        "resourceKey": "tool-application-pail",
+        "model": "Wooster Pelican8619",
+        "titleRu": "Ручная рабочая ёмкость Wooster Pelican8619,1USquart",
+        "role": "PAIL",
+        "countPerPosition": 1
+      },
+      {
+        "resourceKey": "tool-application-pail-lid",
+        "model": "Wooster Pelican8659",
+        "titleRu": "Крышка Wooster Pelican8659 для рабочего сосуда8619",
+        "role": "LID",
+        "countPerPosition": 1
+      }
+    ],
+    "requiredFunctionalCountPerComponent": 1,
+    "retailProcurement": false,
+    "costOwnerKey": "whole-work",
+    "completeItemSpecification": {
+      "pailSku": "8619",
+      "lidSku": "8659",
+      "integralPailParts": [
+        "pail_body",
+        "hand_grip",
+        "magnetic_brush_holder",
+        "roll_off_area"
+      ],
+      "lidIncludedInPailSku": false,
+      "selectedLinerSku": null,
+      "lidSelectedForWetPaintPauses": true,
+      "declaredUserPaintCapacityUSQuart": "1",
+      "declaredUserPaintCapacityLExact": "0.946352946",
+      "capacityBelongsToPail8619NotLiner": true,
+      "grossOrRimVolumeClaimed": false,
+      "maximumPublishedCompatibleRollerWidthInches": "4.5",
+      "publishedCompatibleRollerWidthMm": "114.3",
+      "selectedBrushNominalWidthMm": 100,
+      "manufacturerExplicitZubrBrushApprovalClaimed": false,
+      "actualInnerDiameterClaimed": false,
+      "externalDimensionsUsedAsInnerGeometry": false,
+      "waterborneCompatibilityBasis": "INTENDED_PAINT_PAIL_SCOPE_APPLIED_TO_SELECTED_ORDINARY_VGT_WATER_DISPERSIONS",
+      "solventResistanceTransferredFromAnotherProduct": false,
+      "manufacturerCertifiedMaximumCarriedKgClaimed": false
+    },
+    "uses": [
+      {
+        "operationId": "preputty-prime",
+        "processOrdinal": 10,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "sequentialApplications": 1
+      },
+      {
+        "operationId": "prime",
+        "processOrdinal": 50,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "sequentialApplications": 1
+      },
+      {
+        "operationId": "two-coat-paint",
+        "processOrdinal": 70,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "sequentialApplications": 2
+      },
+      {
+        "operationId": "ordinary-completion",
+        "processOrdinal": 80,
+        "simultaneousPositions": 1,
+        "toolsPerPosition": 1,
+        "sequentialApplications": 1
+      }
+    ],
+    "workingChargeMode": "REPLENISH_WHILE_USING_WITHIN_DECLARED_USER_PAINT_CAPACITY_NOT_WHOLE_FACTORY_PACK_PER_CHARGE",
+    "workingChargeBoundaryRu": "Пользовательская ёмкость именно8619 —1USquart. Доливать по расходу в пределах этой заявленной ёмкости, оставляя возможность нормальной работы кисти; необязательно заполнять до предела. Весь3кггрунт сразу не заливается. Геометрический объём до кромки, литры одной обязательной порции и норма числа доливов не заявлены.",
+    "quantityDerivation": "На одном последовательном ручном посту требуется один рабочий сосуд8619 и одна отдельная совместимая крышка8659. Тот же сосуд обслуживает три жидкихVGT и два последовательных слоя краски; доливы/повторные ссылки не умножают число предметов. Это число одновременно пригодных предметов, не износ и не заказcase6/case12.",
+    "geometryAndCapacityChecks": [
+      "Прямое указаниеWooster brush&roll и рабочей области дляроликадо4½дюймов(114,3мм) служит инженерным основанием доступа выбранной100ммкисти. Точный внутренний диаметр и письменная совместимость именноЗУБР не выдуманы.",
+      "Capacity1Quart опубликована в строке8619Pail; отдельные liner8629 и lid8659 имеют свои строки. Это пользовательская ёмкость рабочего изделия; геометрический объём до кромки не рассчитан из внешнего габарита.",
+      "Одновременно загружается один продукт; применяются доливы по мере расхода. Factory1/3/1,5кг задают закупочные упаковки, а не обязательный объём одного налива.",
+      "Обычные водныеVGT соответствуют назначению paintpail. Химическая сертификация/стойкостьклюбымрастворителям не заявлены; свойство другого изделия MiniRollerTray не перенесено.",
+      "Отдельная крышка8659 выбрана для сохранения влажного остатка на паузах, включая межслойную сушку. Вкладыши8629 не выбраны. Полное очищение/пригодность сосуда до смены продукта обязательны, но литры и исполнение промывки остаются открытыми."
+    ],
+    "renewalAndAvailabilityBoundary": "Один пригодный сосуд и одна совместимая крышка обеспечиваются существующимwhole-work; наличие на объекте не утверждается. После продукта сосуд должен быть очищен и пригоден для следующего; вода, место и исполнение очистки остаются реальнымиneeds. Потери, новый срок службы, масса грязной воды и новая покупка на каждый долив не назначаются.",
+    "inferenceBoundary": {
+      "widthAccess": "ENGINEERING_INFERENCE_FROM_MANUFACTURER_FUNCTIONAL_ROLLER_WIDTH_NOT_INNER_DIAMETER",
+      "selectedWaterborneUse": "ENGINEERING_APPLICATION_OF_REAL_PAINT_PAIL_SCOPE_NOT_CHEMICAL_CERTIFICATE",
+      "sequentialAssetCount": "AUTHOR_SELECTED_ONE_POST_PEAK_CONCURRENCY_NOT_MANUFACTURER_CREW_NORM"
+    },
+    "provisionSufficiencyContract": {
+      "existingContract": "resource_graph.purchaseBalanceV1",
+      "unitId": "item",
+      "requiredPerComponent": "1",
+      "separatelyCreditedItems": "0",
+      "reserveItems": "0",
+      "integerItemQuantum": "1",
+      "zeroProvision": "RETAIN_ZERO_WITH_PERSONAL_SHORTAGE_ONE",
+      "fractionalProvision": "ROW_AMENDMENT_INVALID"
+    },
+    "actualSiteInventoryConfirmed": false,
+    "runtimeAccepted": false,
+    "fullTechnicalAcceptance": false,
+    "sourceNeedsRemaining": [
+      "washing-water",
+      "dedust-cleanup",
+      "access",
+      "ppe",
+      "handling-profile"
+    ]
+  },
+  "manualFinishingCrewProfile": {
+    "contract": "rik-expo-app.manual-finishing-serial-crew-profile.v1",
+    "workMode": "ONE_SERIAL_MANUAL_WORKING_POSITION",
+    "simultaneousPositions": 1,
+    "simultaneousWorkers": 1,
+    "parallelWorkOrMultipleBrigadesAdmitted": false,
+    "manufacturerCrewNormClaimed": false,
+    "resourceDemandBasis": "MAX_SIMULTANEOUS_FUNCTIONAL_ITEMS_NOT_SUM_OF_STAGE_REFERENCES",
+    "ownerKey": "whole-work",
+    "components": [
+      {
+        "resourceKey": "tool-sanding-holder",
+        "titleRu": "Держатель STAYER3566-212,105×212мм",
+        "model": "STAYER3566-212",
+        "specificationRu": "212×105мм; цельный пластмассовый корпус, металлические зажимы бумаги.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 13,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "full-sand",
+          "primer-sand"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Лист230×280 делится по ширине пополам:2×115×280; ширина115>105, длина280>212. При центрировании кромки5мм по бокам и34мм на каждом торце для загиба под зажим. До работы закрепить обе кромки без скольжения/разрыва; это инженерная проверка, не сертификат пары изготовителем."
+        ]
+      },
+      {
+        "resourceKey": "tool-paper-shears",
+        "titleRu": "Ножницы для шлифовальной бумаги",
+        "model": "GENERIC_PAPER_SHEARS",
+        "specificationRu": "Ручные ножницы с двумя режущими лезвиями и рукоятями; рабочее раскрытие для листовой бумаги; без сменного лезвия.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 14,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "full-sand",
+          "primer-sand"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Один инструмент последовательно используется на одном посту; его функциональность проверяется перед применением."
+        ]
+      },
+      {
+        "resourceKey": "tool-paper-rule",
+        "titleRu": "Линейка металлическая300мм",
+        "model": "GENERIC_STEEL_RULE300",
+        "specificationRu": "Цельная металлическая линейка со шкалой0–300мм; длина не меньше280мм линии раскроя.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 14,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "full-sand",
+          "primer-sand"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Один инструмент последовательно используется на одном посту; его функциональность проверяется перед применением."
+        ]
+      },
+      {
+        "resourceKey": "tool-paper-mark",
+        "titleRu": "Карандаш разметочный",
+        "model": "GENERIC_MARKING_PENCIL",
+        "specificationRu": "Действующий карандаш для одной линии115мм от кромки листа; восстановление работоспособности внутри обеспечения подрядчика.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 14,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "full-sand",
+          "primer-sand"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Один инструмент последовательно используется на одном посту; его функциональность проверяется перед применением."
+        ]
+      },
+      {
+        "resourceKey": "tool-abrasive-storage",
+        "titleRu": "Футляр для рабочих листов шкурки",
+        "model": "GENERIC_DRY_FLAT_ABRASIVE_CASE",
+        "specificationRu": "Повторно закрываемый плоский жёсткий футляр с полезным просветом не меньше230×280мм; вмещает один целый рабочий лист и полученные из него половины без сгиба, защищает от смятия и брызг. Остальная шкурка хранится в исходной упаковке в принятом сухом складе.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 14,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "full-sand",
+          "primer-sand"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Полезный просвет не меньше230×280мм задан относительно точного листа, а не внешнего размера футляра. На одном посту открывается один лист; исчерпав его, пополняют тот же футляр. Это активная вместимость, не требование вместить весь ресурс проекта."
+        ]
+      },
+      {
+        "resourceKey": "tool-dedust-brush",
+        "titleRu": "Щётка ручная для обеспыливания",
+        "model": "GENERIC_DEDUST_SOFT_BRUSH",
+        "specificationRu": "Сухая ручная щётка с мягким неметаллическим ворсом и цельной рукоятью; отдельная от кисти для жидких составов.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 15,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "preparation",
+          "full-sand",
+          "primer-sand",
+          "ordinary-completion"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Один инструмент последовательно используется на одном посту; его функциональность проверяется перед применением."
+        ]
+      },
+      {
+        "resourceKey": "tool-floor-brush",
+        "titleRu": "Щётка для уборки пола",
+        "model": "GENERIC_FLOOR_BRUSH",
+        "specificationRu": "Ручная щётка с неметаллическим ворсом и цельной рукоятью для локального сбора осевшей пыли/упаковки.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 15,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "preparation",
+          "full-sand",
+          "primer-sand",
+          "ordinary-completion"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Один инструмент последовательно используется на одном посту; его функциональность проверяется перед применением."
+        ]
+      },
+      {
+        "resourceKey": "tool-dustpan",
+        "titleRu": "Совок для уборки",
+        "model": "GENERIC_DUSTPAN",
+        "specificationRu": "Цельный совок с рукоятью, непрерывной прилегающей кромкой и бортами для приёма собранной щёткой пыли.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 15,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "preparation",
+          "full-sand",
+          "primer-sand",
+          "ordinary-completion"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Один инструмент последовательно используется на одном посту; его функциональность проверяется перед применением."
+        ]
+      },
+      {
+        "resourceKey": "tool-waste-bin",
+        "titleRu": "Ведро Wooster8616,4USgal",
+        "model": "WOOSTER8616",
+        "specificationRu": "Wooster8616: отдельное многоразовое ведро, пользовательская ёмкость4USgal. Используется как отдельная рабочая тара локальных сухих отходов; подтверждённый изготовителем артикул предназначен для малярных работ. Пылегерметичность/опасные отходы не сертифицированы этим профилем.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 12,
+        "methodSourceIndices": [
+          15,
+          5
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "preparation",
+          "full-sand",
+          "primer-sand",
+          "ordinary-completion"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Пользовательская ёмкость4USgal из первичной таблицы изготовителя, не внешний габарит. Выбранный предел заполнения1USgal — организационное ограничение ниже номинала, не расход отходов/площадь. При достижении предела очистить и вернуть ту же тару; принятый получатель/путь удаления ещё открыт."
+        ]
+      },
+      {
+        "resourceKey": "tool-waste-bin-lid",
+        "titleRu": "Крышка Wooster8626 для8616",
+        "model": "WOOSTER8626",
+        "specificationRu": "Отдельная штатная крышка8626 для ведраWooster8616 из той же таблицы изготовителя; не включена в артикул8616. Без обязательного одноразового вкладыша.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 12,
+        "methodSourceIndices": [
+          15,
+          5
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "preparation",
+          "full-sand",
+          "primer-sand",
+          "ordinary-completion"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Пользовательская ёмкость4USgal из первичной таблицы изготовителя, не внешний габарит. Выбранный предел заполнения1USgal — организационное ограничение ниже номинала, не расход отходов/площадь. При достижении предела очистить и вернуть ту же тару; принятый получатель/путь удаления ещё открыт."
+        ]
+      },
+      {
+        "resourceKey": "tool-work-clothing",
+        "titleRu": "Рабочая одежда маляра",
+        "model": "GENERIC_REUSABLE_WORK_CLOTHING",
+        "specificationRu": "Многоразовая рабочая одежда по размеру одного исполнителя, закрывает туловище, руки и ноги; не заменяет пылезащиту дыхания.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 2,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "preparation",
+          "preputty-prime",
+          "full-putty",
+          "full-sand",
+          "prime",
+          "primer-sand",
+          "two-coat-paint",
+          "ordinary-completion"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Один инструмент последовательно используется на одном посту; его функциональность проверяется перед применением."
+        ]
+      },
+      {
+        "resourceKey": "tool-waterproof-gloves",
+        "titleRu": "Перчатки защитные многоразовые, пара",
+        "model": "GENERIC_REUSABLE_WATERPROOF_GLOVES",
+        "specificationRu": "Одна целая пара непроницаемых перчаток по размеру исполнителя для ручного контакта с водными составами; совместимость защитного материала/состояния должна быть принята до применения.",
+        "quantityUnitId": "item",
+        "countPerPosition": 1,
+        "sourceIndex": 2,
+        "methodSourceIndices": [
+          2,
+          3,
+          4,
+          7
+        ],
+        "supplementarySourceIndices": [],
+        "operationIds": [
+          "preparation",
+          "preputty-prime",
+          "full-putty",
+          "full-sand",
+          "prime",
+          "primer-sand",
+          "two-coat-paint",
+          "ordinary-completion"
+        ],
+        "quantityDerivation": "Один выбранный последовательный ручной пост, один исполнитель. Один действующий предмет (для перчаток — одна пара) на единственный одновременно используемый пост; повторные операции не суммируются. Это инженерная организация, не опубликованная норма изготовителя.",
+        "renewalAndAvailabilityBoundary": "Подрядчик обеспечивает работоспособный предмет на время каждого применения, осмотр и замену неисправного внутри того же владельца стоимости. Фактическое наличие на объекте и срок износа не утверждаются; отдельная закупка и расход/м² не назначены.",
+        "geometryAndCapacityChecks": [
+          "Один инструмент последовательно используется на одном посту; его функциональность проверяется перед применением."
+        ]
+      }
+    ],
+    "reusedExistingComponentKeys": [
+      "tool-putty-spatula",
+      "tool-waterborne-brush",
+      "tool-application-pail",
+      "tool-application-pail-lid"
+    ],
+    "sandingSupply": {
+      "holderKey": "tool-sanding-holder",
+      "providedKey": "abrasive-sheet-provision",
+      "sourceIndex": 14,
+      "series": "KT10CW ALOX STANDART",
+      "grain": "P60",
+      "sheetWidthMm": 230,
+      "sheetLengthMm": 280,
+      "sheetAreaM2": "0.0644",
+      "cutWidthMm": 115,
+      "cutLengthMm": 280,
+      "chargeAreaM2": "0.0322",
+      "chargesPerSheet": 2,
+      "minimumUsableCharges": 1,
+      "cutKerfM2": "0",
+      "grossNormPer100M2": "0.84",
+      "quantityBasisRu": "Исходная0,84м²/100м² — ресурсная строка01-6109-0001 с единицейм², физическое количество закупленной шкурки, не площадь рабочего контакта держателя. Норма остаётся общей для двух шлифований; не выведена изP60 или изнашивания активной площади. Выбран лист того же класса гибкого ручного абразива; изготовитель подтверждает назначение/зерно/строение, но не собственную норму износа.",
+      "wholeSheetExpression": "ceil(max(1,ceil(AREA*0.0084/0.0322))/2)",
+      "noAssignedStockCredit": true,
+      "retailPackAssumption": false,
+      "stockTreatmentRu": "Кромки под зажимами — часть пригодного заряда, не отход. Центральный разрез ножницами не задаёт технологического пропила. Неиспользованная половина и превышение нормы остаются одним остатком владельца; второй зачёт между этапами запрещён. Целые листы обеспечиваются подрядчиком, наружная торговая упаковка не предположена.",
+      "supplierWearRateClaimed": false,
+      "storageAndSafetySourceBoundary": {
+        "sourceIndex": 14,
+        "locatorRu": "PDFс75/148–149: крытый транспорт, защита от повреждений, сухое отапливаемое проветриваемое хранение в упаковке,18°C и45–65%RH, срок12месяцев; PDFс76/150: подбор и осмотр инструмента, рекомендуемая24чвыдержка приусловияхиспользования, квалификация/инструктаж/СИЗ.",
+        "selectedProfileRu": "На рабочем посту один лист в защитном футляре; остаток сохраняется тем же владельцем. До выдачи проверяются дата/условия хранения, отсутствие повреждений и действующие инструкции. Склад/перемещение/условия24чвыдержки остаются условиями handling-profile, не объявлены выполненными. Указания для вращающихся дисков, насадок, скоростей и фланцев на ручной держатель не переносятся. ЗначкиСИЗ наPDFс76 являются легендой, а не основанием назначить одинаковые наушники всем изделиям."
+      }
+    },
+    "dustCollectionProfile": {
+      "method": "LOCAL_MANUAL_DRY_DEDUST_AND_COLLECTION_NO_COMPRESSED_AIR",
+      "activeReceivingBins": 1,
+      "fillIsAuthorOperatingLimitNotManufacturerCapacityOrWasteNorm": true,
+      "emptyAndReuseBetweenCycles": true,
+      "wasteQuantityNormClaimed": false,
+      "boundaryRu": "Локально собирать осевшую пыль отдельными щётками/совком в отдельное ведро8616 и закрывать штатной крышкой8626; не сдувать сжатым воздухом. Наполнение ограничено1USgal при пользовательской ёмкости4USgal — выбранный рабочий режим, не норма объёма отходов и не утверждение пылегерметичности. Достигнув уровня, передать содержимое принятому получателю и вернуть ту же тару. Путь/получатель и безопасная пылезащита ещё открыты вhandling-profile/PPE; одна тара не доказывает эти условия.",
+      "nominalBinUSGallons": 4,
+      "maximumSelectedWorkingFillUSGallons": 1,
+      "binSku": "8616",
+      "separateLidSku": "8626",
+      "adaptationToDryWasteIsEngineeringSelectionNotManufacturerDustCertification": true
+    },
+    "safetyBoundaryRu": "Рабочая одежда и пара перчаток представлены отдельными частями, но не выдают весьСИЗ за принятый. Материал перчаток, пылезащита, защита глаз/кожи и средства при случайном попадании в глаза/на кожу требуют законченного профиля. Вода не заменяется условным сервисом.",
+    "globalReadinessRequiresAllOpenNeeds": true
+  },
+  "closedPhysicalNeeds": [
+    {
+      "id": "manual-sanding",
+      "closure": "MODELED_SELECTED_SERIAL_MANUAL_SANDING_PROVISION",
+      "componentKeys": [
+        "tool-sanding-holder",
+        "tool-paper-shears",
+        "tool-paper-rule",
+        "tool-paper-mark",
+        "abrasive-sheet-provision",
+        "tool-abrasive-storage"
+      ],
+      "operationIds": [
+        "full-sand",
+        "primer-sand"
+      ],
+      "sourceIds": [
+        "kg-krer15-ready-acrylic-wall-150400701-r3",
+        "stayer3566-sanding-holder-r3",
+        "baz-hand-abrasive-primary-r3"
+      ],
+      "manufacturerWearRateClaimed": false
+    },
+    {
+      "id": "dedust-cleanup",
+      "closure": "MECHANICAL_SERIAL_DEDUST_COLLECTION_INVENTORY_MODELED_WITH_EXPLICIT_OPEN_DEPENDENCIES",
+      "componentKeys": [
+        "tool-dedust-brush",
+        "tool-floor-brush",
+        "tool-dustpan",
+        "tool-waste-bin",
+        "tool-waste-bin-lid"
+      ],
+      "operationIds": [
+        "preparation",
+        "full-sand",
+        "primer-sand",
+        "ordinary-completion"
+      ],
+      "sourceIds": [
+        "vgt-current-ready-putty-r3",
+        "kg-painter-qualification-primary-r3",
+        "wooster-pelican8619-brochure-c202105r-2026-r3",
+        "kg-overhead-tools-and-cleanup-r3"
+      ],
+      "requiredUnresolvedDependencyIds": [
+        "ppe",
+        "handling-profile",
+        "washing-water"
+      ],
+      "closureScopeRu": "Закрыта прежняя неопределённость механического инвентаря: отдельные ручные щётки, совок, конкретное ведро и крышка, один последовательный пост. Дыхательная/кожная защита, получатель/путь отходов и водная очистка не дублируются вторым неизвестным комплектом: они сохраняются обязательными открытыми строками PPE/handling/washing. Группа и этап не объявлены готовыми до этих зависимостей."
+    }
+  ],
+  "reuseAuditMaster27": [
+    {
+      "candidate": "interiorWallFinishingGeometryGroupR3",
+      "version": "current frozen canonical R3 + Pelican8619/8659",
+      "verdict": "REUSE_WITH_PROVEN_ADAPTATION",
+      "reasonRu": "Исходные8операций/4материальных заказа/целые нормы труда и машин сохранены. Добавлен единый ручнойкомплект; нормыPPE/воды/доступа не выдуманы."
+    },
+    {
+      "candidate": "interiorWallFinishingGroupR502",
+      "version": "closed current prototype baseline",
+      "verdict": "INCOMPATIBLE",
+      "reasonRu": "Другая штукатурная технология; историческая definition/sourcepack не изменена."
+    },
+    {
+      "candidate": "knauf-hand-plaster-tool-profiles-five-s27-63",
+      "version": "current sourcepack",
+      "verdict": "INCOMPATIBLE",
+      "reasonRu": "quantityAdmitted:false; спецификации для сухогоRotband не переносятся на readyVGT."
+    },
+    {
+      "candidate": "knauf-included-dedusting-seven-s27-71",
+      "version": "current sourcepack",
+      "verdict": "INCOMPATIBLE",
+      "reasonRu": "Подтверждает включённую стоимость другого процесса, не физическое количество VGTзвена."
+    },
+    {
+      "candidate": "threeSubworkPhysicalResourceCompletionR3",
+      "version": "CANDIDATE_NOT_PUBLISHED",
+      "verdict": "MISSING",
+      "reasonRu": "Нет принятого готового комплектаVGT; projectcontrolled потребности не стали нормами."
+    },
+    {
+      "candidate": "canonical purchaseBalanceV1 + independent completeness map + automatic owner",
+      "version": "current canonical helpers",
+      "verdict": "REUSE_EXACT",
+      "reasonRu": "Существующие контракты личного баланса и operation refs без нового движка/валидатора."
+    }
+  ]
+}

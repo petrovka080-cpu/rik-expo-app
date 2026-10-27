@@ -1,0 +1,128 @@
+{
+  "contract": "gox-build.ceramic-m150-selectable-format-and-drying.r5",
+  "namespace": "ceramic-floor:cement-mortar:krer11-01-027-03:r5",
+  "publicationSourceId": "ceramic_m150_selectable_format_and_hand_drying_r5",
+  "publishedParentSourceId": "ceramic_m150_hand_preparation_supply_r4",
+  "componentFactory": "ceramicFloorM150SelectableFormatDefinitionR1",
+  "catalogId": "canonical-work:master:ceramic_floor_unglazed_single_colour_cement_m150_krer11_01_027_03",
+  "titleRu": "Керамические полы и прямой плинтус на растворе М150",
+  "primaryParameterId": "net_ceramic_floor_area_m2",
+  "skirtingParameterId": "ceramic_m150_skirting_length_m",
+  "sharedHelper": "normalHandPreparationDryingExpressionsR1",
+  "sharedProfile": "data/estimate-benchmarks/source-packs/normal-hand-preparation-drying-r1.json",
+  "primaryEvidence": [
+    {
+      "name": "arhai-surgical-hand-antisepsis-v6-2-20231018.pdf",
+      "url": "https://www.nipcm.hps.scot.nhs.uk/web-resources-container/literature-review-hand-hygiene-surgical-hand-antisepsis-in-the-clinical-setting/",
+      "path": ".release-runtime/r568/normal-hand-preparation-drying-r1/sources/arhai-surgical-hand-antisepsis-v6-2-20231018.pdf",
+      "sha256": "2521d19d4286c1c32f97724e8e18f74792ca00068bb9dad615cf8039b15afa66",
+      "bytes": 516180,
+      "id": "arhai-two-fresh-towel-physical-drying-method-r1",
+      "title": "ARHAI Scotland Surgical hand antisepsis literature review v6.2,18October2023",
+      "locatorRu": "PDF33; PDF42–43: дать воде стечь; промакивать свежим одноразовым полотенцем одну руку/предплечье от пальцев к локтю; вторым повторить для другой стороны; после предплечья не возвращаться к кисти, сразу выбросить. Два полотенца — выбранный физический метод сушки, не строительная медицинская норма.",
+      "role": "PHYSICAL_DRYING_METHOD_TWO_SEPARATE_TOWELS_NO_CLINICAL_NORM_TRANSFER"
+    },
+    {
+      "name": "medline-proxima-catalogue-202607.pdf",
+      "url": "https://assets.medline.eu/Docs/Products/BRO_EN%20Proxima_Catalogue_2026_ML1215_EN_July_2026.pdf",
+      "path": ".release-runtime/r568/normal-hand-preparation-drying-r1/sources/medline-proxima-catalogue-202607.pdf",
+      "sha256": "15a967446142b4e819e12fd2c41ceb2f0f12eb6d1f888dde01f8da4908265d6c",
+      "bytes": 52710372,
+      "id": "medline-paired-hand-towel-dynjpe2220a-2026-r1",
+      "title": "Medline Proxima Catalogue,July2026",
+      "locatorRu": "PDF164,Hand towels:DYNJPE2220A,HNTOM3,Hand towel with scrim,componentquantity2,37×69см,cellulose,100pairedpacks/case. Количество в carton не назначается потребностью проекта.",
+      "role": "EXACT_PAIRED_HAND_TOWEL_SPECIFICATION_AND_TWO_PIECE_SUPPLY_QUANTUM"
+    }
+  ],
+  "drying": {
+    "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels",
+    "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:hand-drying-towels",
+    "parameterId": "ceramic_m150_r3_hand_drying_towels_qty",
+    "titleRu": "Одноразовые полотенца для сушки рук перед нанесением защиты кожи",
+    "unitId": "pcs",
+    "reasonRu": "Выбран конечный физический метод: после стекания свободной воды каждую руку сушат отдельным свежим полотенцем Medline DYNJPE2220A37×69см; на каждую принятую подготовку предусмотрены2шт. Старый ID сохраняет эффективный расход, поставка округляется целыми парными упаковками; ручные количества не теряются. Промышленное отмывание, вода и отдельное обращение с отходами этим методом не закрываются.",
+    "preparationsExpression": "6*2*(ceil((net_ceramic_floor_area_m2*119.78/100+ceramic_m150_skirting_length_m*23.60/100)/48)+1+min(1,ceil(ceramic_m150_skirting_length_m)))",
+    "order": {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r5:hand-drying-supply",
+      "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r5:formula:hand-drying-supply",
+      "titleRu": "Полотенца для сушки рук Medline DYNJPE2220A, 37 × 69 см",
+      "category": "material",
+      "unitId": "pcs",
+      "quantityRule": "WHOLE_PAIRED_TWO_PIECE_PACKS_FROM_EFFECTIVE_CONSUMED_TOWELS"
+    },
+    "costOwnerRowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r2:provision-owner",
+    "requiredOperationIds": [
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:preparation",
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:delivery",
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:placing",
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:skirting",
+      "ceramic-floor:cement-mortar:krer11-01-027-03:r2:operation:cleanup"
+    ],
+    "quantityStatus": "CALCULATED_SELECTED_FINITE_DRYING_METHOD_AND_PAIRED_SUPPLY"
+  },
+  "independentExpected": [
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:hand-drying-towels",
+      "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:formula:hand-drying-towels",
+      "category": "material",
+      "unitId": "pcs",
+      "quantityRule": "TWO_FRESH_EXACT_HAND_TOWELS_PER_ACCEPTED_PREPARATION_EFFECTIVE_DRIVER"
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r5:hand-drying-supply",
+      "formulaId": "ceramic-floor:cement-mortar:krer11-01-027-03:r5:formula:hand-drying-supply",
+      "titleRu": "Полотенца для сушки рук Medline DYNJPE2220A, 37 × 69 см",
+      "category": "material",
+      "unitId": "pcs",
+      "quantityRule": "WHOLE_PAIRED_TWO_PIECE_PACKS_FROM_EFFECTIVE_CONSUMED_TOWELS"
+    }
+  ],
+  "remaining": [
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:deformation-junctions",
+      "resourceRu": "Деформационные сопряжения",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Для применимых узлов нужны самостоятельная геометрия и выбранная совместимая система. Обычныецементныемежплиточныешвы уже включены."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:additional-logistics-waste",
+      "resourceRu": "Обращение с внешними отходами",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "ТК§4.15требует удаленияотходов; не установлены количество/тара/масса и внешниймаршрут внеисходныхмашин/очистки. Покупкаилипоездка1штнеподставляется."
+    },
+    {
+      "rowId": "ceramic-floor:cement-mortar:krer11-01-027-03:r3:handwash-water",
+      "resourceRu": "Вода для мытья рук перед нанесением защиты кожи",
+      "status": "SOURCE_BLOCKED",
+      "reasonRu": "Производитель требует мыть руки перед применением. Число нанесений известно, применимый расход воды не подтверждён; исходная вода для пола не присваивается мытью рук."
+    }
+  ],
+  "physicalResourceCoverageComplete": false,
+  "fullTechnicalAcceptance": false,
+  "published": false,
+  "scope": {
+    "normalPreparationOnly": true,
+    "sourceMethodNotClinicalConstructionNorm": true,
+    "noNewWorkersOrPreparations": true,
+    "wasteContainerRouteRecipientStillOpen": true,
+    "noNewCatalogOrRequiredInput": true,
+    "selectorSameCatalogAndLegacyDefaultPreserved": true
+  },
+  "sharedDependencyPins": [
+    {
+      "path": "src/lib/estimate/v4/normalHandPreparationDryingProfileR1.ts",
+      "sha256": "065c5a01943eccdc25c20f173ec90c1b47c4b8d9ec0db3d9a2113a2a356d71c3",
+      "owner": "B"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-packs/normal-hand-preparation-drying-r1.json",
+      "sha256": "576eff8fa64e48e3d8ce4b8643e5f85960b2b5f724d10c9bb3def9a664cc2de8",
+      "owner": "B"
+    }
+  ],
+  "formatComponentParameterIds": [
+    "ceramic_m150_r2_technology_profile",
+    "ceramic_m150_selected_tile_format_ru"
+  ],
+  "formatComponentSeparatelyPublished": false
+}

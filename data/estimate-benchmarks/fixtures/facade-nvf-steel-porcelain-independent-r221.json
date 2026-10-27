@@ -1,0 +1,149 @@
+{
+  "contract": "gox.facade.existing-nvf.steel-porcelain-independent/r221",
+  "generatedFromImplementation": false,
+  "source": "Exact accepted steelREV06 and immutable porcelainR214/R3/R59 independent source oracles;no core output used as quantity oracle",
+  "expectedWholeShape": {
+    "parameters": 197,
+    "formulas": 260,
+    "resources": 260,
+    "mapEntries": 204,
+    "definitionWideProtectedNeeds": 51,
+    "sourceOwners": 2,
+    "sourceAliasKeys": 0
+  },
+  "steel": {
+    "nativeParameters": 65,
+    "nativeFormulas": 64,
+    "nativeResources": 64,
+    "mapEntries": 53,
+    "knownNewParameters": 33,
+    "derivedNewParameters": 11,
+    "protectedNeeds": 21,
+    "boundRows": 43,
+    "paidOwners": 16,
+    "procurementOwnersHired": 15,
+    "procurementOwnersOwn": 11
+  },
+  "porcelain": {
+    "nativeParameters": 80,
+    "nativeFormulas": 120,
+    "nativeResources": 120,
+    "mapEntries": 120,
+    "knownNewParameters": 36,
+    "derivedNewParameters": 39,
+    "protectedNeeds": 5,
+    "boundRows": 115,
+    "paidOwners": 44,
+    "procurementOwnersOwn": 23,
+    "procurementOwnersHiredBuy": 39
+  },
+  "parent": {
+    "nativeParameters": 52,
+    "nativeFormulas": 76,
+    "nativeResources": 76,
+    "mapEntries": 31,
+    "protectedNeeds": 25,
+    "bindings": 4,
+    "definitionId": "301c5e16-0784-51ea-a6a0-cb6f889c464d",
+    "version": 6
+  },
+  "expectedEntryPhases": [
+    "01-steel-unpriced100",
+    "02-steel-double200-sameBOM",
+    "03-steel-priced-hired",
+    "04-porcelain-unpriced100",
+    "05-porcelain-half50-sameBOM",
+    "06-porcelain-priced-own",
+    "07-porcelain-priced-hired",
+    "08-porcelain-priced-buy",
+    "09-zero-porcelain",
+    "10-porcelain-missing-readback",
+    "11-steel-missing-readback",
+    "12-porcelain-partial-bracket",
+    "13-reject-steel-with-porcelain-readback",
+    "14-reject-porcelain-with-steel-readback",
+    "15-reject-cross-profile-public-measure",
+    "16-reject-wrong-steel-source",
+    "17-reject-wrong-porcelain-source",
+    "18-reject-old-primary-for-steel",
+    "19-reject-steel-primary-for-porcelain",
+    "20-reject-protected-quantity-edit"
+  ],
+  "plannedCountsNotActual": {
+    "entries": 20,
+    "savedResults": 12,
+    "strictRejects": 8,
+    "preCoreRejects": 7,
+    "actualCoreAttempts": 13
+  },
+  "currentCommonBoundary": {
+    "primaryNewSources": 1,
+    "additionalCapturedExistingKnownParametersMaximum": 16,
+    "additionalCapturedExistingRowsMaximum": 32
+  },
+  "actualTypes": 0,
+  "actualCore": 0,
+  "ordinaryConfig": "HOLD_SHARED_SOURCE_AUTHORITY_CONTRACT",
+  "normalLocked": "UNRUN",
+  "actualSourceClosures": 0,
+  "actualObjectApproved": false,
+  "READY": false,
+  "FULL": false,
+  "sourceArtifactPins": [
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KRER15-2015-official.pdf",
+      "sha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-bolix-mw120-krer15-r1/KG-material-resource-book01-official.pdf",
+      "sha256": "4c06ea5b428048cbf33872ded079306f21c2c7f5c798c99a03ec5c6249f9e837"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/KG-material-resource-book09-official.pdf",
+      "sha256": "1e3d810e36f6752bfd9d9dec2f9baa9cd51796b85aec76a8b65ac627080587b8"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/SP-KR53-101-2025-official.pdf",
+      "sha256": "279ad74a648a122a62ccb8bdc1a601c8c14138ef37fcb71fb7692c1bafdcdd31"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-steel-siding-06501-r2/steel-sheet-handling-cutting-primary2019.pdf",
+      "sha256": "131cd0b440db7b5e5a543821a6eea36586defefe6fe37f00baf084922acfdd43"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-ETICS2025-full-primary.pdf",
+      "sha256": "12425a25026f07eb1a19876df0c3741ad9b688d7814078d17a6cb250f23c1102"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-ETICS-STO2025-full-primary.pdf",
+      "sha256": "1196d223fb0210f8842d8b2d209297591a7453018ff3b9519e1e630c19670514"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-full-primary.pdf",
+      "sha256": "726daf4928c2c3e98fc85aa16be6dfb2d276a856d5382fc8a3f6e73a1ef4d763"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-STO2024-full-primary.pdf",
+      "sha256": "8d19a93533a64d82a2fec06e061fd9545d4bc7c8a6b691372b8ce1fcd995d687"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/TN-VHF-system-current-primary.pdf",
+      "sha256": "131b423186beb0de8057817c2d2b16a2ab2ff0a17e06a113b3c24b9ec0102d87"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/SP-KR65-101-2025-full-primary.pdf",
+      "sha256": "d80e0d65fcf4c269f044381eac13a2b6c8b376878d60e439a41e6296f9901fa1"
+    },
+    {
+      "path": "data/estimate-benchmarks/source-artifacts/facade-current-family-r3/SP-KR53-101-2025-official.pdf",
+      "sha256": "279ad74a648a122a62ccb8bdc1a601c8c14138ef37fcb71fb7692c1bafdcdd31"
+    }
+  ],
+  "strictCoreRejectCode": "ROW_AMENDMENT_INVALID",
+  "currentCanonicalMetadataOnly": {
+    "activeKey": "currentCanonicalRootDeltaR222",
+    "paths": 175,
+    "checkpointSha256": "d7451ec8aa19faf2bd0053cb0b14b848a9ee974409673a33a051857e2d708e5b",
+    "sourceDeltaRecheckRequiredBeforeRootMaterializer": true
+  }
+}

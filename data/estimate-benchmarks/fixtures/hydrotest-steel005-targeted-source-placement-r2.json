@@ -1,0 +1,116 @@
+{
+  "contract": "hydrotest-steel-targeted-source-placement/v4",
+  "status": "HYDROTEST_STEEL_TARGETED_SOURCE_PLACEMENT_CAPTURED_ROOT_REVIEW_REQUIRED",
+  "executionContext": {
+    "definitionReleaseId": "aca4fa71-60c2-57db-83c8-5c8be93175a7",
+    "searchReleaseId": "0c4a0ed7-a579-57ae-9104-4e088dd09963",
+    "sourceHead": "d5bdb3e7722a020b0e4f81770847a7fcd6b01a12",
+    "recordedReleaseSourceCommit": "9bab72d75ed0b0aff9323d8cab5644563fbfa6b6"
+  },
+  "sourceHeadAtPreparation": "d5bdb3e7722a020b0e4f81770847a7fcd6b01a12",
+  "actualQueryHead": "d5bdb3e7722a020b0e4f81770847a7fcd6b01a12",
+  "sets": {
+    "exactProposedSourceConsumerIdentityHeaders": {
+      "rowCount": 1,
+      "rawRows": [
+        "{\"exact_emitted_source_count\":0,\"casefold_source_count\":0,\"source_headers\":[],\"current_consumer_count\":0,\"current_consumer_headers\":[],\"identity_hit_count\":0,\"identity_headers\":[],\"manifest_hit_count\":0,\"manifest_headers\":[],\"search_hit_count\":0,\"search_headers\":[],\"membership_hit_count\":0,\"membership_headers\":[],\"exact_locator_count\":0,\"locator_headers\":[]}"
+      ],
+      "sha256": "73867cae83ba2783c4a419aad37743053ed2fcf20d2e0698e5a1dea01caa1956"
+    },
+    "exactExistingWaterTestGroupPlacement": {
+      "rowCount": 1,
+      "rawRows": [
+        "{\"search_release_id\":\"0c4a0ed7-a579-57ae-9104-4e088dd09963\",\"group_id\":\"wg:base:plumbing_interior_water_pipe_pressure_test\",\"group_name_ru\":\"опрессовка водопровода на большой площади\",\"domain_id\":\"plumbing\",\"system_id\":\"plumbing\",\"subsystem_id\":\"wg:base:plumbing_interior_water_pipe_pressure_test\",\"assembly_id\":\"wg:base:plumbing_interior_water_pipe_pressure_test\",\"work_family_id\":\"wg:base:plumbing_interior_water_pipe_pressure_test\",\"breadcrumb\":[\"опрессовка водопровода на большой площади\"],\"member_count\":5,\"member_set_sha256\":\"e761f25dfee5e733be1dc27bac892a5e9038619950467f7db972ba518fba58e9\",\"oracle_disposition\":{\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"disposition\": \"EXACT_PHYSICAL_WORK_GROUP\", \"memberCatalogIdsSha256\": \"e761f25dfee5e733be1dc27bac892a5e9038619950467f7db972ba518fba58e9\"},\"current_membership_count\":5,\"maximum_ordinal\":4,\"next_ordinal\":5,\"membership_headers\":[{\"ordinal\": 0, \"group_id\": \"wg:base:plumbing_interior_water_pipe_pressure_test\", \"domain_id\": \"plumbing\", \"system_id\": \"plumbing\", \"catalog_id\": \"canonical-work:base:plumbing_interior_water_pipe_pressure_test_large_area\", \"primary_uom\": \"точка\", \"subgroup_id\": null, \"element_type\": \"WORK\", \"operation_kind\": \"TESTING\", \"work_family_id\": \"plumbing\", \"document_sha256\": \"f8c43dd9b9deffdc0da4cafda288ac9379462639ad577b567bbbaea6aaedb312\", \"canonical_name_ru\": \"опрессовка водопровода на большой площади\", \"construction_state\": \"EXISTING_OR_NEW\", \"technology_variant\": \"Каноническая технологическая работа версии 5.5.5\", \"independent_disposition\": {\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}}, {\"ordinal\": 1, \"group_id\": \"wg:base:plumbing_interior_water_pipe_pressure_test\", \"domain_id\": \"plumbing\", \"system_id\": \"plumbing\", \"catalog_id\": \"canonical-work:base:plumbing_interior_water_pipe_pressure_test_small_area\", \"primary_uom\": \"точка\", \"subgroup_id\": null, \"element_type\": \"WORK\", \"operation_kind\": \"TESTING\", \"work_family_id\": \"plumbing\", \"document_sha256\": \"7ae2e3bb3731cef1791bbc24ddc998e235a86309c9a89b440d83f830ed93377a\", \"canonical_name_ru\": \"опрессовка водопровода на малой площади\", \"construction_state\": \"EXISTING_OR_NEW\", \"technology_variant\": \"Каноническая технологическая работа версии 5.5.5\", \"independent_disposition\": {\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}}, {\"ordinal\": 2, \"group_id\": \"wg:base:plumbing_interior_water_pipe_pressure_test\", \"domain_id\": \"plumbing\", \"system_id\": \"plumbing\", \"catalog_id\": \"canonical-work:base:plumbing_interior_water_pipe_pressure_test_standard\", \"primary_uom\": \"точка\", \"subgroup_id\": null, \"element_type\": \"WORK\", \"operation_kind\": \"TESTING\", \"work_family_id\": \"plumbing\", \"document_sha256\": \"cb362a9dc960f198918792f812fef324a7f3915ee9d140ccd3741e107ac43fe5\", \"canonical_name_ru\": \"опрессовка водопровода в стандартной зоне\", \"construction_state\": \"EXISTING_OR_NEW\", \"technology_variant\": \"Каноническая технологическая работа версии 5.5.5\", \"independent_disposition\": {\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}}, {\"ordinal\": 3, \"group_id\": \"wg:base:plumbing_interior_water_pipe_pressure_test\", \"domain_id\": \"plumbing\", \"system_id\": \"plumbing\", \"catalog_id\": \"canonical-work:base:plumbing_interior_water_pipe_pressure_test_technical_room\", \"primary_uom\": \"точка\", \"subgroup_id\": null, \"element_type\": \"WORK\", \"operation_kind\": \"TESTING\", \"work_family_id\": \"plumbing\", \"document_sha256\": \"94165b24df8ec974c6028bcfa62eb70b1a7313a6cb7ab2e8bc860afcb632f0d1\", \"canonical_name_ru\": \"опрессовка водопровода в техническом помещении\", \"construction_state\": \"EXISTING_OR_NEW\", \"technology_variant\": \"Каноническая технологическая работа версии 5.5.5\", \"independent_disposition\": {\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}}, {\"ordinal\": 4, \"group_id\": \"wg:base:plumbing_interior_water_pipe_pressure_test\", \"domain_id\": \"plumbing\", \"system_id\": \"plumbing\", \"catalog_id\": \"canonical-work:base:plumbing_interior_water_pipe_pressure_test_wet_zone\", \"primary_uom\": \"точка\", \"subgroup_id\": null, \"element_type\": \"WORK\", \"operation_kind\": \"TESTING\", \"work_family_id\": \"plumbing\", \"document_sha256\": \"60695dfa8fbbf9dd8d629173770e7e471282c98aee9f438fdc8a4b383926d75e\", \"canonical_name_ru\": \"опрессовка водопровода во влажной зоне\", \"construction_state\": \"EXISTING_OR_NEW\", \"technology_variant\": \"Каноническая технологическая работа версии 5.5.5\", \"independent_disposition\": {\"contract\": \"rik-expo-app-r555.full-cumulative-successor-db.v1\", \"classification\": \"CANONICAL_VISIBLE\", \"exactPhysicalIdentity\": true}}]}"
+      ],
+      "sha256": "d9dc6cb7c638ba32fc277df82cde69164b48db00e65de11a7dbaabfa15dec767"
+    }
+  },
+  "metrics": {
+    "identities": 0,
+    "currentDefinitions": 0,
+    "resources": 0,
+    "rawBytes": 5667,
+    "exactProposedSourceConsumerIdentityHeadersObservedRows": 1,
+    "exactExistingWaterTestGroupPlacementObservedRows": 1
+  },
+  "deepScope": "Two new exacttargetedsets only: proposedemittedsource/currentconsumer/identitycollision headers; exactexistinggroupplacement. Accepted27/17 not repeated; noresource/price/saved/historygraph.",
+  "globalResourceJsonRead": false,
+  "globalAbsenceProved": false,
+  "newCatalogIdentityAccepted": false,
+  "appJobs": false,
+  "databaseWrites": false,
+  "caps": {
+    "queryRows": 128,
+    "embeddedHeaders": 128,
+    "rowBytes": 262144,
+    "totalRawBytes": 8388608
+  },
+  "expectedReadSets": 2,
+  "rootExecutionProofSha256": "c856e403e312efaf23821649d48979bb828a077dfe68aea7faa4c17f3e37dc0b",
+  "session": {
+    "db": "rik_r4_runtime_b5_v2",
+    "address": "127.0.0.1",
+    "port": 55432,
+    "pid": 13940,
+    "snapshot": "536849:536849:",
+    "read_only": "on",
+    "isolation": "repeatable read"
+  },
+  "headers": {
+    "definition": {
+      "id": "aca4fa71-60c2-57db-83c8-5c8be93175a7",
+      "status": "prepared",
+      "source_commit": "9bab72d75ed0b0aff9323d8cab5644563fbfa6b6",
+      "source_tree": "4e00d0ffa3bd00c33f5b5f19e8450c035ca92bda",
+      "source_manifest_sha256": "b757683642b83b05c618a48eb76e196644d1774b528b1ff5ef8d32ae76c4d18c",
+      "activated_at": null
+    },
+    "search": {
+      "id": "0c4a0ed7-a579-57ae-9104-4e088dd09963",
+      "status": "draft",
+      "source_commit": "9bab72d75ed0b0aff9323d8cab5644563fbfa6b6",
+      "source_tree": "4e00d0ffa3bd00c33f5b5f19e8450c035ca92bda",
+      "snapshot_sha256": "b7ef19ef26a5f955e811e46d83edac28df2bf5fd8664283148021935d805c107",
+      "activated_at": null,
+      "sealed_at": null,
+      "definition_release_id": "aca4fa71-60c2-57db-83c8-5c8be93175a7"
+    }
+  },
+  "proposedQueryTargets": {
+    "status": "QUERY_TARGETS_PROPOSED_ONLY_ROOT_IDENTITY_DECISION_PENDING",
+    "persisted": false,
+    "rootApproved": false,
+    "workKey": "internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+    "catalogId": "canonical-work:master:internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+    "namespace": "global",
+    "domain": "plumbing",
+    "sourceIdentity": "master-work:internal_steel_water_hydraulic_test_dn50_krer16_07_005_01",
+    "titleRu": "Гидравлическое испытание внутреннего стального водопровода DN до50мм",
+    "emittedSourceKey": "kg_krer16_internal_pipelines_2015_steel_hydrotest_005_01",
+    "frozenQuantityOriginSourceId": "KG_KRER16_INTERNAL_PIPELINES_2015_STEEL_HYDROTEST_005_01",
+    "locatorKey": "krer16-07-005-01-internal-steel-dn50-water-hydrotest-r1",
+    "preferredExistingGroupId": "wg:base:plumbing_interior_water_pipe_pressure_test",
+    "requiredPlacementDomain": "plumbing",
+    "requiredPlacementSystem": "plumbing",
+    "membershipOrdinal": null,
+    "noGroupRename": true,
+    "classificationEvidence": {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-water-hydrotest-r1/current-classification-targeted-v4/hydrotest-actual17-classification-v4.json",
+      "sha256": "921501f21f5a550436cc53c85b01cd69693f89e31931c61b0e0eccc8f0590125",
+      "bytes": 25337
+    },
+    "sourceEmissionRule": "Sharedpublisher writes config.sourceId verbatim, not lowercased automatically. A future rootreviewedconfig/sourcepacksuccessor must use EXACT emittedSourceKey consistently for registry,trace,bindings andabsenceguard; frozenuppercasequantitypack unchanged."
+  },
+  "exactAbsenceCaptured": true,
+  "groupPlacementCaptured": true,
+  "groupPlacementRequiresRootDecision": true,
+  "compatibleConsumerAdmitted": false,
+  "appendAdmissionAllowed": false,
+  "unitRewriteAllowed": false,
+  "error": null,
+  "transactionRolledBack": true,
+  "connectionClosed": true,
+  "completeReadSet": true,
+  "decision": "Root reviews exactabsence/casefoldsourceconsumers/groupplacement againstaccepted17classification before anyappenddecision. Querytargets areproposedonly, no newidentity/unitrewrite/paidmachineadmission.",
+  "inputsSha256": "b310c9347b50e7407fa4243551f6986b59f2a48874fa6603f3303f23b6961d9a"
+}

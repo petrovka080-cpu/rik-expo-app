@@ -1,0 +1,3995 @@
+{
+  "contract": "gox-build.master30.complete-factory-material-kits.r1-independent-expected",
+  "independentlyAuthoredFrom": "Exact manufacturer whole kit composition, accepted complete material subwork and closed 63-row legacy function inventory; not calculated from candidate output",
+  "counts": {
+    "wholeFactoryMaterialKits": 2,
+    "consumers": 5,
+    "typedCurrentNeedClosures": 0,
+    "newFullTechnologies": 0,
+    "newMissingFullKitPaidOwners": 5,
+    "legacyFrameFunctionCovered": 2
+  },
+  "profiles": [
+    {
+      "profileKey": "plumbing",
+      "targetCatalogIds": [
+        "canonical-work:base:plumbing_interior_mixer_install_high_load",
+        "canonical-work:base:plumbing_interior_mixer_install_technical_room",
+        "canonical-work:base:plumbing_interior_mixer_install_wet_zone"
+      ],
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "unitId": "item",
+      "paidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order",
+      "knownResources": {
+        "plumbing:basin-mixer:ready-site:r3:kit-consumed": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": null,
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "quantityRule": "N_COMPLETE_ITEMS",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-order": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": true,
+          "costOwnerId": "plumbing:basin-mixer:ready-site:r3:kit-order",
+          "costTreatment": "OWN_COST",
+          "quantityRule": "N_COMPLETE_ITEMS",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:installation",
+            "master30:plumbing:mounting",
+            "master30:plumbing:water-connection",
+            "master30:plumbing:waste-connection"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-remaining": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": null,
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "quantityRule": "0_NEW_ORDER_BALANCE_SCOPE",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-free": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": null,
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "quantityRule": "0_NEW_ORDER_BALANCE_SCOPE",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-shortage": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": null,
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "quantityRule": "0_NEW_ORDER_BALANCE_SCOPE",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-reserve-deficit": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": null,
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "quantityRule": "0_NEW_ORDER_BALANCE_SCOPE",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        },
+        "plumbing:basin-mixer:ready-site:r3:flexible-hoses-reference": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": "plumbing:basin-mixer:ready-site:r3:kit-order",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "quantityRule": "N_COMPLETE_ITEMS",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:water-connection"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        },
+        "plumbing:basin-mixer:ready-site:r3:waste-set-reference": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": "plumbing:basin-mixer:ready-site:r3:kit-order",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "quantityRule": "N_COMPLETE_ITEMS",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:waste-connection"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        },
+        "plumbing:basin-mixer:ready-site:r3:mounting-set-reference": {
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": "plumbing:basin-mixer:ready-site:r3:kit-order",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "quantityRule": "N_COMPLETE_ITEMS",
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:mounting"
+          ],
+          "onePaidProcurementOwnerRowId": "plumbing:basin-mixer:ready-site:r3:kit-order"
+        }
+      },
+      "openNeeds": [
+        {
+          "rowId": "master30:plumbing:open:pipes",
+          "nameRu": "Трубы для подключения смесителя",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_01"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:fittings",
+          "nameRu": "Фитинги, муфты и угольники подключения",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_02",
+            "components_07",
+            "components_08"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:seals",
+          "nameRu": "Уплотнители и уплотнительная лента",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_03",
+            "consumables_11"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:pipe-fixings",
+          "nameRu": "Крепёж труб",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_04"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:isolating-valves",
+          "nameRu": "Запорная арматура",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_05"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:pipe-insulation",
+          "nameRu": "Изоляция труб",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_06"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:additional-supports",
+          "nameRu": "Дополнительные кронштейны и закладные детали",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "components_09",
+            "components_46"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:trap",
+          "nameRu": "Сифон и подключение слива",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "components_10"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:interfaces",
+          "nameRu": "Примыкания, ремонтные вставки и доборные детали",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "components_44",
+            "components_45"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:contingency",
+          "nameRu": "Дополнительный запас материалов трубопровода",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_41",
+            "waste_30"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:surface-protection",
+          "nameRu": "Защита зоны работ и готовых поверхностей",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_42",
+            "consumables_48"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:preparation"
+        },
+        {
+          "rowId": "master30:plumbing:open:marking",
+          "nameRu": "Маркировочные материалы",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_43"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:tool-consumables",
+          "nameRu": "Паяльные расходники и расходные материалы инструмента",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "consumables_12",
+            "consumables_47"
+          ],
+          "category": "material",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:personal-protection",
+          "nameRu": "Средства индивидуальной защиты монтажника",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "consumables_13"
+          ],
+          "category": "equipment",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:mixer-mounting-key",
+          "nameRu": "Ключ для крепления смесителя",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [],
+          "category": "equipment",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:waste-valve-key",
+          "nameRu": "Ключ для донного клапана",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [],
+          "category": "equipment",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:tool-25",
+          "nameRu": "Паяльник для труб",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_25"
+          ],
+          "category": "equipment",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:tool-26",
+          "nameRu": "Пресс-инструмент",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_26"
+          ],
+          "category": "equipment",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:tool-27",
+          "nameRu": "Опрессовочный насос",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_27"
+          ],
+          "category": "equipment",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:tool-55",
+          "nameRu": "Измерительный инструмент",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_55"
+          ],
+          "category": "equipment",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:tool-56",
+          "nameRu": "Механизированное оснащение монтажника",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_56"
+          ],
+          "category": "equipment",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:site-preparation",
+          "nameRu": "Подготовка и организация места монтажа",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "preparation_14",
+            "preparation_15",
+            "preparation_16",
+            "preparation_17",
+            "preparation_49",
+            "preparation_50",
+            "preparation_51"
+          ],
+          "category": "service",
+          "operationId": "master30:plumbing:preparation"
+        },
+        {
+          "rowId": "master30:plumbing:open:installation-labour",
+          "nameRu": "Труд монтажа, подключения и завершения участка",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "labor_18",
+            "labor_19",
+            "labor_20",
+            "labor_21",
+            "labor_22",
+            "labor_23",
+            "labor_24",
+            "labor_52",
+            "labor_53",
+            "labor_54"
+          ],
+          "category": "labor",
+          "operationId": "master30:plumbing:installation"
+        },
+        {
+          "rowId": "master30:plumbing:open:delivery-unloading",
+          "nameRu": "Доставка и разгрузка материалов и приборов",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "logistics_28",
+            "logistics_29"
+          ],
+          "category": "service",
+          "operationId": "master30:plumbing:logistics"
+        },
+        {
+          "rowId": "master30:plumbing:open:on-site-supply",
+          "nameRu": "Комплектация и подача материалов на участке",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "logistics_57"
+          ],
+          "category": "service",
+          "operationId": "master30:plumbing:logistics"
+        },
+        {
+          "rowId": "master30:plumbing:open:returnable-packaging",
+          "nameRu": "Обратная логистика тары",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "logistics_58"
+          ],
+          "category": "service",
+          "operationId": "master30:plumbing:completion"
+        },
+        {
+          "rowId": "master30:plumbing:open:waste-handling",
+          "nameRu": "Сбор, сортировка и передача отходов и упаковки",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "waste_31",
+            "waste_59"
+          ],
+          "category": "service",
+          "operationId": "master30:plumbing:completion"
+        },
+        {
+          "rowId": "master30:plumbing:open:site-cleanup",
+          "nameRu": "Уборка рабочей зоны",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "waste_60"
+          ],
+          "category": "service",
+          "operationId": "master30:plumbing:completion"
+        },
+        {
+          "rowId": "master30:plumbing:open:testing-handover",
+          "nameRu": "Проверки, испытания и сдача участка",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "quality_control_32",
+            "quality_control_33",
+            "quality_control_34",
+            "quality_control_35",
+            "quality_control_36",
+            "quality_control_37",
+            "quality_control_38",
+            "quality_control_61",
+            "quality_control_62",
+            "quality_control_63"
+          ],
+          "category": "service",
+          "operationId": "master30:plumbing:acceptance"
+        },
+        {
+          "rowId": "master30:plumbing:open:quantity-review",
+          "nameRu": "Сметное сопровождение и проверка объёмов",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "overhead_39"
+          ],
+          "category": "service",
+          "operationId": "master30:plumbing:acceptance"
+        }
+      ],
+      "typedCurrentNeedClosures": [],
+      "newMissingFullKitPaidOwnerCount": 3,
+      "closedLegacyPhysicalFunctionSuffixes": [],
+      "scopeRemainsFullOriginalOnsiteWork": true,
+      "fullTechnicalAcceptance": false,
+      "operationUseEvidence": {
+        "installation": {
+          "sourceDefinition": "basinMixerReadySiteMinimumInputDefinitionR3",
+          "sourceRowId": "plumbing:basin-mixer:ready-site:r3:complete-installation-work",
+          "sourceLocator": "Accepted R3 whole mounting/water-connection/waste-connection scope; manufacturer exact complete kit instruction pp3–4."
+        },
+        "mounting": {
+          "sourceOperationId": "mounting",
+          "sourceComponentId": "mounting-set-reference"
+        },
+        "water-connection": {
+          "sourceOperationId": "water-connection",
+          "sourceComponentId": "flexible-hoses-reference"
+        },
+        "waste-connection": {
+          "sourceOperationId": "waste-connection",
+          "sourceComponentId": "waste-set-reference"
+        }
+      }
+    },
+    {
+      "profileKey": "electrical",
+      "targetCatalogIds": [
+        "canonical-work:base:electrical_interior_lighting_install_high_load",
+        "canonical-work:base:electrical_interior_lighting_install_technical_room"
+      ],
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "unitId": "pcs",
+      "paidProcurementOwnerRowId": "led-grid:dvo6560-6562:opal-4000",
+      "knownResources": {
+        "led-grid:dvo6560-6562:opal-4000": {
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": true,
+          "costOwnerId": "led-grid:dvo6560-6562:opal-4000",
+          "costTreatment": "OWN_COST",
+          "quantityRule": "N_COMPLETE_ITEMS",
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ],
+          "onePaidProcurementOwnerRowId": "led-grid:dvo6560-6562:opal-4000"
+        },
+        "led-grid:dvo6560-6562:opal-4000-consumed": {
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": null,
+          "costTreatment": "INFORMATIONAL_SCOPE",
+          "quantityRule": "N_COMPLETE_ITEMS",
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply"
+          ],
+          "onePaidProcurementOwnerRowId": "led-grid:dvo6560-6562:opal-4000"
+        },
+        "led-grid:dvo6560-6562:opal-4000-included": {
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "costOwnerId": "led-grid:dvo6560-6562:opal-4000",
+          "costTreatment": "INCLUDED_IN_RESOURCE_ROWS",
+          "quantityRule": "N_COMPLETE_ITEMS",
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ],
+          "onePaidProcurementOwnerRowId": "led-grid:dvo6560-6562:opal-4000"
+        }
+      },
+      "openNeeds": [
+        {
+          "rowId": "master30:electrical:open:supply-line-materials",
+          "nameRu": "Кабель, гофротруба и канал питающей линии",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_01",
+            "materials_02",
+            "materials_03"
+          ],
+          "category": "material",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:connection-materials",
+          "nameRu": "Клеммы, наконечники и изоляционные материалы подключения",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_04",
+            "consumables_11",
+            "consumables_13"
+          ],
+          "category": "material",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:distribution-components",
+          "nameRu": "Щитовые элементы, автоматика и распределительные коробки",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_05",
+            "components_09",
+            "components_10"
+          ],
+          "category": "material",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:marking",
+          "nameRu": "Маркировочные материалы",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_06",
+            "materials_43"
+          ],
+          "category": "material",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:contingency",
+          "nameRu": "Дополнительный запас материалов питающей линии",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_41",
+            "waste_30"
+          ],
+          "category": "material",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:surface-protection",
+          "nameRu": "Защита зоны работ и готовых поверхностей",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "materials_42",
+            "consumables_48"
+          ],
+          "category": "material",
+          "operationId": "master30:electrical:preparation"
+        },
+        {
+          "rowId": "master30:electrical:open:additional-mounting",
+          "nameRu": "Внешние механизмы крепления, примыкания и закладные детали",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "components_07",
+            "components_44",
+            "components_45",
+            "components_46"
+          ],
+          "category": "material",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:installation-consumables",
+          "nameRu": "Стяжки и расходные материалы инструмента",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "consumables_12",
+            "consumables_47"
+          ],
+          "category": "material",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:personal-protection",
+          "nameRu": "Средства индивидуальной защиты электромонтажника",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [],
+          "category": "equipment",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:access",
+          "nameRu": "Средство безопасного доступа к потолочной решётке",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [],
+          "category": "equipment",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:tool-25",
+          "nameRu": "Штроборез",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_25"
+          ],
+          "category": "equipment",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:tool-26",
+          "nameRu": "Перфоратор",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_26"
+          ],
+          "category": "equipment",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:tool-27",
+          "nameRu": "Электрический тестер",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_27"
+          ],
+          "category": "equipment",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:tool-55",
+          "nameRu": "Измерительный инструмент",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_55"
+          ],
+          "category": "equipment",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:tool-56",
+          "nameRu": "Механизированное оснащение электромонтажника",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "equipment_56"
+          ],
+          "category": "equipment",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:site-preparation",
+          "nameRu": "Подготовка и организация места монтажа",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "preparation_14",
+            "preparation_15",
+            "preparation_16",
+            "preparation_17",
+            "preparation_49",
+            "preparation_50",
+            "preparation_51"
+          ],
+          "category": "service",
+          "operationId": "master30:electrical:preparation"
+        },
+        {
+          "rowId": "master30:electrical:open:installation-labour",
+          "nameRu": "Труд монтажа, подключения и завершения участка",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "labor_18",
+            "labor_19",
+            "labor_20",
+            "labor_21",
+            "labor_22",
+            "labor_23",
+            "labor_24",
+            "labor_52",
+            "labor_53",
+            "labor_54"
+          ],
+          "category": "labor",
+          "operationId": "master30:electrical:installation"
+        },
+        {
+          "rowId": "master30:electrical:open:delivery-unloading",
+          "nameRu": "Доставка и разгрузка материалов и приборов",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "logistics_28",
+            "logistics_29"
+          ],
+          "category": "service",
+          "operationId": "master30:electrical:logistics"
+        },
+        {
+          "rowId": "master30:electrical:open:on-site-supply",
+          "nameRu": "Комплектация и подача материалов на участке",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "logistics_57"
+          ],
+          "category": "service",
+          "operationId": "master30:electrical:logistics"
+        },
+        {
+          "rowId": "master30:electrical:open:returnable-packaging",
+          "nameRu": "Обратная логистика тары",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "logistics_58"
+          ],
+          "category": "service",
+          "operationId": "master30:electrical:completion"
+        },
+        {
+          "rowId": "master30:electrical:open:waste-handling",
+          "nameRu": "Сбор, сортировка и передача отходов и упаковки",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "waste_31",
+            "waste_59"
+          ],
+          "category": "service",
+          "operationId": "master30:electrical:completion"
+        },
+        {
+          "rowId": "master30:electrical:open:site-cleanup",
+          "nameRu": "Уборка рабочей зоны",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "waste_60"
+          ],
+          "category": "service",
+          "operationId": "master30:electrical:completion"
+        },
+        {
+          "rowId": "master30:electrical:open:testing-handover",
+          "nameRu": "Проверки, испытания и сдача участка",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "quality_control_32",
+            "quality_control_33",
+            "quality_control_34",
+            "quality_control_35",
+            "quality_control_36",
+            "quality_control_37",
+            "quality_control_38",
+            "quality_control_61",
+            "quality_control_62",
+            "quality_control_63"
+          ],
+          "category": "service",
+          "operationId": "master30:electrical:acceptance"
+        },
+        {
+          "rowId": "master30:electrical:open:quantity-review",
+          "nameRu": "Сметное сопровождение и проверка объёмов",
+          "unitId": null,
+          "quantity": null,
+          "quantityUnitUnconfirmed": true,
+          "legacySuffixes": [
+            "overhead_39"
+          ],
+          "category": "service",
+          "operationId": "master30:electrical:acceptance"
+        }
+      ],
+      "typedCurrentNeedClosures": [],
+      "newMissingFullKitPaidOwnerCount": 2,
+      "closedLegacyPhysicalFunctionSuffixes": [
+        "components_08"
+      ],
+      "scopeRemainsFullOriginalOnsiteWork": true,
+      "fullTechnicalAcceptance": false,
+      "operationUseEvidence": {
+        "installation": {
+          "sourceDefinition": "ledGridPanelDefinitionS2754",
+          "sourceRowId": "led-grid:dvo6560-6562:installed-scope",
+          "sourceLocator": "Existing installed-scope operation installation (installation in ready grid and factory lead connection); manufacturer PDF3§4.3–4.4/PDF4§4.7. No connector consumption or mounting labor norm supplied."
+        }
+      }
+    }
+  ],
+  "runtimeValidationCases": [
+    {
+      "caseId": "normal-plumbing_interior_mixer_install_high_load",
+      "kind": "normal",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "3"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "item",
+      "expectedPrimaryValue": "3",
+      "expectedRows": {
+        "plumbing:basin-mixer:ready-site:r3:kit-consumed": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-order": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:installation",
+            "master30:plumbing:mounting",
+            "master30:plumbing:water-connection",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-remaining": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-free": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-shortage": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-reserve-deficit": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:flexible-hoses-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:water-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:waste-set-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:mounting-set-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:mounting"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:plumbing:open:pipes",
+        "master30:plumbing:open:fittings",
+        "master30:plumbing:open:seals",
+        "master30:plumbing:open:pipe-fixings",
+        "master30:plumbing:open:isolating-valves",
+        "master30:plumbing:open:pipe-insulation",
+        "master30:plumbing:open:additional-supports",
+        "master30:plumbing:open:trap",
+        "master30:plumbing:open:interfaces",
+        "master30:plumbing:open:contingency",
+        "master30:plumbing:open:surface-protection",
+        "master30:plumbing:open:marking",
+        "master30:plumbing:open:tool-consumables",
+        "master30:plumbing:open:personal-protection",
+        "master30:plumbing:open:mixer-mounting-key",
+        "master30:plumbing:open:waste-valve-key",
+        "master30:plumbing:open:tool-25",
+        "master30:plumbing:open:tool-26",
+        "master30:plumbing:open:tool-27",
+        "master30:plumbing:open:tool-55",
+        "master30:plumbing:open:tool-56",
+        "master30:plumbing:open:site-preparation",
+        "master30:plumbing:open:installation-labour",
+        "master30:plumbing:open:delivery-unloading",
+        "master30:plumbing:open:on-site-supply",
+        "master30:plumbing:open:returnable-packaging",
+        "master30:plumbing:open:waste-handling",
+        "master30:plumbing:open:site-cleanup",
+        "master30:plumbing:open:testing-handover",
+        "master30:plumbing:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "normal-plumbing_interior_mixer_install_technical_room",
+      "kind": "normal",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "3"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "item",
+      "expectedPrimaryValue": "3",
+      "expectedRows": {
+        "plumbing:basin-mixer:ready-site:r3:kit-consumed": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-order": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:installation",
+            "master30:plumbing:mounting",
+            "master30:plumbing:water-connection",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-remaining": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-free": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-shortage": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-reserve-deficit": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:flexible-hoses-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:water-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:waste-set-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:mounting-set-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:mounting"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:plumbing:open:pipes",
+        "master30:plumbing:open:fittings",
+        "master30:plumbing:open:seals",
+        "master30:plumbing:open:pipe-fixings",
+        "master30:plumbing:open:isolating-valves",
+        "master30:plumbing:open:pipe-insulation",
+        "master30:plumbing:open:additional-supports",
+        "master30:plumbing:open:trap",
+        "master30:plumbing:open:interfaces",
+        "master30:plumbing:open:contingency",
+        "master30:plumbing:open:surface-protection",
+        "master30:plumbing:open:marking",
+        "master30:plumbing:open:tool-consumables",
+        "master30:plumbing:open:personal-protection",
+        "master30:plumbing:open:mixer-mounting-key",
+        "master30:plumbing:open:waste-valve-key",
+        "master30:plumbing:open:tool-25",
+        "master30:plumbing:open:tool-26",
+        "master30:plumbing:open:tool-27",
+        "master30:plumbing:open:tool-55",
+        "master30:plumbing:open:tool-56",
+        "master30:plumbing:open:site-preparation",
+        "master30:plumbing:open:installation-labour",
+        "master30:plumbing:open:delivery-unloading",
+        "master30:plumbing:open:on-site-supply",
+        "master30:plumbing:open:returnable-packaging",
+        "master30:plumbing:open:waste-handling",
+        "master30:plumbing:open:site-cleanup",
+        "master30:plumbing:open:testing-handover",
+        "master30:plumbing:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "normal-plumbing_interior_mixer_install_wet_zone",
+      "kind": "normal",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "3"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "item",
+      "expectedPrimaryValue": "3",
+      "expectedRows": {
+        "plumbing:basin-mixer:ready-site:r3:kit-consumed": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-order": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:installation",
+            "master30:plumbing:mounting",
+            "master30:plumbing:water-connection",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-remaining": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-free": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-shortage": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-reserve-deficit": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:flexible-hoses-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:water-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:waste-set-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:mounting-set-reference": {
+          "quantity": "3",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:mounting"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:plumbing:open:pipes",
+        "master30:plumbing:open:fittings",
+        "master30:plumbing:open:seals",
+        "master30:plumbing:open:pipe-fixings",
+        "master30:plumbing:open:isolating-valves",
+        "master30:plumbing:open:pipe-insulation",
+        "master30:plumbing:open:additional-supports",
+        "master30:plumbing:open:trap",
+        "master30:plumbing:open:interfaces",
+        "master30:plumbing:open:contingency",
+        "master30:plumbing:open:surface-protection",
+        "master30:plumbing:open:marking",
+        "master30:plumbing:open:tool-consumables",
+        "master30:plumbing:open:personal-protection",
+        "master30:plumbing:open:mixer-mounting-key",
+        "master30:plumbing:open:waste-valve-key",
+        "master30:plumbing:open:tool-25",
+        "master30:plumbing:open:tool-26",
+        "master30:plumbing:open:tool-27",
+        "master30:plumbing:open:tool-55",
+        "master30:plumbing:open:tool-56",
+        "master30:plumbing:open:site-preparation",
+        "master30:plumbing:open:installation-labour",
+        "master30:plumbing:open:delivery-unloading",
+        "master30:plumbing:open:on-site-supply",
+        "master30:plumbing:open:returnable-packaging",
+        "master30:plumbing:open:waste-handling",
+        "master30:plumbing:open:site-cleanup",
+        "master30:plumbing:open:testing-handover",
+        "master30:plumbing:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "small-plumbing",
+      "kind": "small",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "1"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "item",
+      "expectedPrimaryValue": "1",
+      "expectedRows": {
+        "plumbing:basin-mixer:ready-site:r3:kit-consumed": {
+          "quantity": "1",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-order": {
+          "quantity": "1",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:installation",
+            "master30:plumbing:mounting",
+            "master30:plumbing:water-connection",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-remaining": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-free": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-shortage": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-reserve-deficit": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:flexible-hoses-reference": {
+          "quantity": "1",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:water-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:waste-set-reference": {
+          "quantity": "1",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:mounting-set-reference": {
+          "quantity": "1",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:mounting"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:plumbing:open:pipes",
+        "master30:plumbing:open:fittings",
+        "master30:plumbing:open:seals",
+        "master30:plumbing:open:pipe-fixings",
+        "master30:plumbing:open:isolating-valves",
+        "master30:plumbing:open:pipe-insulation",
+        "master30:plumbing:open:additional-supports",
+        "master30:plumbing:open:trap",
+        "master30:plumbing:open:interfaces",
+        "master30:plumbing:open:contingency",
+        "master30:plumbing:open:surface-protection",
+        "master30:plumbing:open:marking",
+        "master30:plumbing:open:tool-consumables",
+        "master30:plumbing:open:personal-protection",
+        "master30:plumbing:open:mixer-mounting-key",
+        "master30:plumbing:open:waste-valve-key",
+        "master30:plumbing:open:tool-25",
+        "master30:plumbing:open:tool-26",
+        "master30:plumbing:open:tool-27",
+        "master30:plumbing:open:tool-55",
+        "master30:plumbing:open:tool-56",
+        "master30:plumbing:open:site-preparation",
+        "master30:plumbing:open:installation-labour",
+        "master30:plumbing:open:delivery-unloading",
+        "master30:plumbing:open:on-site-supply",
+        "master30:plumbing:open:returnable-packaging",
+        "master30:plumbing:open:waste-handling",
+        "master30:plumbing:open:site-cleanup",
+        "master30:plumbing:open:testing-handover",
+        "master30:plumbing:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "boundary-zero-plumbing",
+      "kind": "boundary-zero",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "0"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "item",
+      "expectedPrimaryValue": "0",
+      "expectedRows": {},
+      "expectedActiveNeedIds": [],
+      "demoOnly": true
+    },
+    {
+      "caseId": "boundary-max-plumbing",
+      "kind": "boundary-max",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "1000000"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "item",
+      "expectedPrimaryValue": "1000000",
+      "expectedRows": {
+        "plumbing:basin-mixer:ready-site:r3:kit-consumed": {
+          "quantity": "1000000",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-order": {
+          "quantity": "1000000",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:installation",
+            "master30:plumbing:mounting",
+            "master30:plumbing:water-connection",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-remaining": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-free": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-shortage": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:kit-reserve-deficit": {
+          "quantity": "0",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:flexible-hoses-reference": {
+          "quantity": "1000000",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:water-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:waste-set-reference": {
+          "quantity": "1000000",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:waste-connection"
+          ]
+        },
+        "plumbing:basin-mixer:ready-site:r3:mounting-set-reference": {
+          "quantity": "1000000",
+          "unitId": "item",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:plumbing:factory-supply",
+            "master30:plumbing:mounting"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:plumbing:open:pipes",
+        "master30:plumbing:open:fittings",
+        "master30:plumbing:open:seals",
+        "master30:plumbing:open:pipe-fixings",
+        "master30:plumbing:open:isolating-valves",
+        "master30:plumbing:open:pipe-insulation",
+        "master30:plumbing:open:additional-supports",
+        "master30:plumbing:open:trap",
+        "master30:plumbing:open:interfaces",
+        "master30:plumbing:open:contingency",
+        "master30:plumbing:open:surface-protection",
+        "master30:plumbing:open:marking",
+        "master30:plumbing:open:tool-consumables",
+        "master30:plumbing:open:personal-protection",
+        "master30:plumbing:open:mixer-mounting-key",
+        "master30:plumbing:open:waste-valve-key",
+        "master30:plumbing:open:tool-25",
+        "master30:plumbing:open:tool-26",
+        "master30:plumbing:open:tool-27",
+        "master30:plumbing:open:tool-55",
+        "master30:plumbing:open:tool-56",
+        "master30:plumbing:open:site-preparation",
+        "master30:plumbing:open:installation-labour",
+        "master30:plumbing:open:delivery-unloading",
+        "master30:plumbing:open:on-site-supply",
+        "master30:plumbing:open:returnable-packaging",
+        "master30:plumbing:open:waste-handling",
+        "master30:plumbing:open:site-cleanup",
+        "master30:plumbing:open:testing-handover",
+        "master30:plumbing:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "fraction-negative-plumbing",
+      "kind": "fraction-negative",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "1.5"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedError": true,
+      "demoOnly": true
+    },
+    {
+      "caseId": "negative-count-plumbing",
+      "kind": "negative-count",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "-1"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedError": true,
+      "demoOnly": true
+    },
+    {
+      "caseId": "over-boundary-negative-plumbing",
+      "kind": "over-boundary-negative",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новый заводской комплект смесителя на одно отверстие со штатной подводкой, креплением и донным клапаном 1¼ для подготовленного места",
+        "m30_fixture_count": "1000001"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedError": true,
+      "demoOnly": true
+    },
+    {
+      "caseId": "incompatible-technology-plumbing",
+      "kind": "selector-negative",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Иная неподтверждённая комплектация или несовместимое место монтажа",
+        "m30_fixture_count": "3"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedError": true,
+      "demoOnly": true
+    },
+    {
+      "caseId": "normal-electrical_interior_lighting_install_high_load",
+      "kind": "normal",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+        "m30_fixture_count": "3"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "pcs",
+      "expectedPrimaryValue": "3",
+      "expectedRows": {
+        "led-grid:dvo6560-6562:opal-4000": {
+          "quantity": "3",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ]
+        },
+        "led-grid:dvo6560-6562:opal-4000-consumed": {
+          "quantity": "3",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply"
+          ]
+        },
+        "led-grid:dvo6560-6562:opal-4000-included": {
+          "quantity": "3",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:electrical:open:supply-line-materials",
+        "master30:electrical:open:connection-materials",
+        "master30:electrical:open:distribution-components",
+        "master30:electrical:open:marking",
+        "master30:electrical:open:contingency",
+        "master30:electrical:open:surface-protection",
+        "master30:electrical:open:additional-mounting",
+        "master30:electrical:open:installation-consumables",
+        "master30:electrical:open:personal-protection",
+        "master30:electrical:open:access",
+        "master30:electrical:open:tool-25",
+        "master30:electrical:open:tool-26",
+        "master30:electrical:open:tool-27",
+        "master30:electrical:open:tool-55",
+        "master30:electrical:open:tool-56",
+        "master30:electrical:open:site-preparation",
+        "master30:electrical:open:installation-labour",
+        "master30:electrical:open:delivery-unloading",
+        "master30:electrical:open:on-site-supply",
+        "master30:electrical:open:returnable-packaging",
+        "master30:electrical:open:waste-handling",
+        "master30:electrical:open:site-cleanup",
+        "master30:electrical:open:testing-handover",
+        "master30:electrical:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "normal-electrical_interior_lighting_install_technical_room",
+      "kind": "normal",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_technical_room",
+      "parameters": {
+        "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+        "m30_fixture_count": "3"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "pcs",
+      "expectedPrimaryValue": "3",
+      "expectedRows": {
+        "led-grid:dvo6560-6562:opal-4000": {
+          "quantity": "3",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ]
+        },
+        "led-grid:dvo6560-6562:opal-4000-consumed": {
+          "quantity": "3",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply"
+          ]
+        },
+        "led-grid:dvo6560-6562:opal-4000-included": {
+          "quantity": "3",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:electrical:open:supply-line-materials",
+        "master30:electrical:open:connection-materials",
+        "master30:electrical:open:distribution-components",
+        "master30:electrical:open:marking",
+        "master30:electrical:open:contingency",
+        "master30:electrical:open:surface-protection",
+        "master30:electrical:open:additional-mounting",
+        "master30:electrical:open:installation-consumables",
+        "master30:electrical:open:personal-protection",
+        "master30:electrical:open:access",
+        "master30:electrical:open:tool-25",
+        "master30:electrical:open:tool-26",
+        "master30:electrical:open:tool-27",
+        "master30:electrical:open:tool-55",
+        "master30:electrical:open:tool-56",
+        "master30:electrical:open:site-preparation",
+        "master30:electrical:open:installation-labour",
+        "master30:electrical:open:delivery-unloading",
+        "master30:electrical:open:on-site-supply",
+        "master30:electrical:open:returnable-packaging",
+        "master30:electrical:open:waste-handling",
+        "master30:electrical:open:site-cleanup",
+        "master30:electrical:open:testing-handover",
+        "master30:electrical:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "small-electrical",
+      "kind": "small",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+        "m30_fixture_count": "1"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "pcs",
+      "expectedPrimaryValue": "1",
+      "expectedRows": {
+        "led-grid:dvo6560-6562:opal-4000": {
+          "quantity": "1",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ]
+        },
+        "led-grid:dvo6560-6562:opal-4000-consumed": {
+          "quantity": "1",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply"
+          ]
+        },
+        "led-grid:dvo6560-6562:opal-4000-included": {
+          "quantity": "1",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:electrical:open:supply-line-materials",
+        "master30:electrical:open:connection-materials",
+        "master30:electrical:open:distribution-components",
+        "master30:electrical:open:marking",
+        "master30:electrical:open:contingency",
+        "master30:electrical:open:surface-protection",
+        "master30:electrical:open:additional-mounting",
+        "master30:electrical:open:installation-consumables",
+        "master30:electrical:open:personal-protection",
+        "master30:electrical:open:access",
+        "master30:electrical:open:tool-25",
+        "master30:electrical:open:tool-26",
+        "master30:electrical:open:tool-27",
+        "master30:electrical:open:tool-55",
+        "master30:electrical:open:tool-56",
+        "master30:electrical:open:site-preparation",
+        "master30:electrical:open:installation-labour",
+        "master30:electrical:open:delivery-unloading",
+        "master30:electrical:open:on-site-supply",
+        "master30:electrical:open:returnable-packaging",
+        "master30:electrical:open:waste-handling",
+        "master30:electrical:open:site-cleanup",
+        "master30:electrical:open:testing-handover",
+        "master30:electrical:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "boundary-zero-electrical",
+      "kind": "boundary-zero",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+        "m30_fixture_count": "0"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "pcs",
+      "expectedPrimaryValue": "0",
+      "expectedRows": {},
+      "expectedActiveNeedIds": [],
+      "demoOnly": true
+    },
+    {
+      "caseId": "boundary-max-electrical",
+      "kind": "boundary-max",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+        "m30_fixture_count": "1000000"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedPrimaryUnitId": "pcs",
+      "expectedPrimaryValue": "1000000",
+      "expectedRows": {
+        "led-grid:dvo6560-6562:opal-4000": {
+          "quantity": "1000000",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": true,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ]
+        },
+        "led-grid:dvo6560-6562:opal-4000-consumed": {
+          "quantity": "1000000",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply"
+          ]
+        },
+        "led-grid:dvo6560-6562:opal-4000-included": {
+          "quantity": "1000000",
+          "unitId": "pcs",
+          "category": "material",
+          "procurementEligible": false,
+          "requiredOperationIds": [
+            "master30:electrical:factory-supply",
+            "master30:electrical:installation"
+          ]
+        }
+      },
+      "expectedActiveNeedIds": [
+        "master30:electrical:open:supply-line-materials",
+        "master30:electrical:open:connection-materials",
+        "master30:electrical:open:distribution-components",
+        "master30:electrical:open:marking",
+        "master30:electrical:open:contingency",
+        "master30:electrical:open:surface-protection",
+        "master30:electrical:open:additional-mounting",
+        "master30:electrical:open:installation-consumables",
+        "master30:electrical:open:personal-protection",
+        "master30:electrical:open:access",
+        "master30:electrical:open:tool-25",
+        "master30:electrical:open:tool-26",
+        "master30:electrical:open:tool-27",
+        "master30:electrical:open:tool-55",
+        "master30:electrical:open:tool-56",
+        "master30:electrical:open:site-preparation",
+        "master30:electrical:open:installation-labour",
+        "master30:electrical:open:delivery-unloading",
+        "master30:electrical:open:on-site-supply",
+        "master30:electrical:open:returnable-packaging",
+        "master30:electrical:open:waste-handling",
+        "master30:electrical:open:site-cleanup",
+        "master30:electrical:open:testing-handover",
+        "master30:electrical:open:quantity-review"
+      ],
+      "demoOnly": true
+    },
+    {
+      "caseId": "fraction-negative-electrical",
+      "kind": "fraction-negative",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+        "m30_fixture_count": "1.5"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedError": true,
+      "demoOnly": true
+    },
+    {
+      "caseId": "negative-count-electrical",
+      "kind": "negative-count",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+        "m30_fixture_count": "-1"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedError": true,
+      "demoOnly": true
+    },
+    {
+      "caseId": "over-boundary-negative-electrical",
+      "kind": "over-boundary-negative",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Новая заводская панель 595 × 595 × 20 мм, 36 Вт, 4000 К, IP40, опаловый рассеиватель для готовой решётки 600 × 600 мм",
+        "m30_fixture_count": "1000001"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedError": true,
+      "demoOnly": true
+    },
+    {
+      "caseId": "incompatible-technology-electrical",
+      "kind": "selector-negative",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Иная неподтверждённая комплектация или несовместимое место монтажа",
+        "m30_fixture_count": "3"
+      },
+      "primaryMeasureParameterId": "m30_fixture_count",
+      "expectedError": true,
+      "demoOnly": true
+    },
+    {
+      "caseId": "legacy-exact-electrical_interior_lighting_install_high_load",
+      "kind": "legacy-exact",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Прежняя общая монтажная ветвь без нового заводского комплекта",
+        "q": "100"
+      },
+      "primaryMeasureParameterId": "q",
+      "expectedPrimaryUnitId": "point",
+      "expectedPrimaryValue": "100",
+      "expectedRowsOracle": "DIRECT_FROZEN_CURRENT_PARENT_COMPILE_ROWS_NEEDS_TOTALS_EXACT",
+      "expectedDeclaredLegacyRows": 63,
+      "expectedActiveLegacyRows": 62,
+      "expectedExcludedLiteralFalseRowId": "electrical_interior_lighting_install_high_load_materials_41",
+      "expectedActiveNeedIds": [],
+      "demoOnly": true,
+      "expectedRows": {
+        "electrical_interior_lighting_install_high_load_materials_01": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_materials_02": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_materials_03": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_materials_04": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_materials_05": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_materials_06": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_materials_42": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_materials_43": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_components_07": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_components_08": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_components_09": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_components_10": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_components_44": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_components_45": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_components_46": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_consumables_11": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_consumables_12": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_consumables_13": {
+          "quantity": "20",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_consumables_47": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_consumables_48": {
+          "quantity": "2",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_preparation_14": {
+          "quantity": "100",
+          "unitId": "linear_m",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_preparation_15": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_preparation_16": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_preparation_17": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_preparation_49": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_preparation_50": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_preparation_51": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_18": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_19": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_20": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_21": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_22": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_23": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_24": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_52": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_53": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_labor_54": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_equipment_25": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_equipment_26": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_equipment_27": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_equipment_55": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_equipment_56": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_logistics_28": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_logistics_29": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_logistics_57": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_logistics_58": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_waste_30": {
+          "quantity": "3",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_waste_31": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_waste_59": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_waste_60": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_32": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_33": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_34": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_35": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_36": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_37": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_38": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_61": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_62": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_quality_control_63": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_overhead_39": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_high_load_tax_40": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        }
+      },
+      "independentLegacyQuantityOracle": "Ten captured simple q expressions evaluated with Decimal(q=100); direct real compiler additionally compares complete rows, needs and totals in Jest."
+    },
+    {
+      "caseId": "legacy-exact-electrical_interior_lighting_install_technical_room",
+      "kind": "legacy-exact",
+      "catalogId": "canonical-work:base:electrical_interior_lighting_install_technical_room",
+      "parameters": {
+        "m30_material_technology": "Прежняя общая монтажная ветвь без нового заводского комплекта",
+        "q": "100"
+      },
+      "primaryMeasureParameterId": "q",
+      "expectedPrimaryUnitId": "point",
+      "expectedPrimaryValue": "100",
+      "expectedRowsOracle": "DIRECT_FROZEN_CURRENT_PARENT_COMPILE_ROWS_NEEDS_TOTALS_EXACT",
+      "expectedDeclaredLegacyRows": 63,
+      "expectedActiveLegacyRows": 62,
+      "expectedExcludedLiteralFalseRowId": "electrical_interior_lighting_install_technical_room_materials_41",
+      "expectedActiveNeedIds": [],
+      "demoOnly": true,
+      "expectedRows": {
+        "electrical_interior_lighting_install_technical_room_materials_01": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_materials_02": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_materials_03": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_materials_04": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_materials_05": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_materials_06": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_materials_42": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_materials_43": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_components_07": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_components_08": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_components_09": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_components_10": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_components_44": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_components_45": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_components_46": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_consumables_11": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_consumables_12": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_consumables_13": {
+          "quantity": "20",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_consumables_47": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_consumables_48": {
+          "quantity": "2",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_preparation_14": {
+          "quantity": "100",
+          "unitId": "linear_m",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_preparation_15": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_preparation_16": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_preparation_17": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_preparation_49": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_preparation_50": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_preparation_51": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_18": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_19": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_20": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_21": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_22": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_23": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_24": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_52": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_53": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_labor_54": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_equipment_25": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_equipment_26": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_equipment_27": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_equipment_55": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_equipment_56": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_logistics_28": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_logistics_29": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_logistics_57": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_logistics_58": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_waste_30": {
+          "quantity": "3",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_waste_31": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_waste_59": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_waste_60": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_32": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_33": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_34": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_35": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_36": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_37": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_38": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_61": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_62": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_quality_control_63": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_overhead_39": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "electrical_interior_lighting_install_technical_room_tax_40": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        }
+      },
+      "independentLegacyQuantityOracle": "Ten captured simple q expressions evaluated with Decimal(q=100); direct real compiler additionally compares complete rows, needs and totals in Jest."
+    },
+    {
+      "caseId": "legacy-exact-plumbing_interior_mixer_install_high_load",
+      "kind": "legacy-exact",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_high_load",
+      "parameters": {
+        "m30_material_technology": "Прежняя общая монтажная ветвь без нового заводского комплекта",
+        "q": "100"
+      },
+      "primaryMeasureParameterId": "q",
+      "expectedPrimaryUnitId": "point",
+      "expectedPrimaryValue": "100",
+      "expectedRowsOracle": "DIRECT_FROZEN_CURRENT_PARENT_COMPILE_ROWS_NEEDS_TOTALS_EXACT",
+      "expectedDeclaredLegacyRows": 63,
+      "expectedActiveLegacyRows": 62,
+      "expectedExcludedLiteralFalseRowId": "plumbing_interior_mixer_install_high_load_materials_41",
+      "expectedActiveNeedIds": [],
+      "demoOnly": true,
+      "expectedRows": {
+        "plumbing_interior_mixer_install_high_load_materials_01": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_materials_02": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_materials_03": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_materials_04": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_materials_05": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_materials_06": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_materials_42": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_materials_43": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_components_07": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_components_08": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_components_09": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_components_10": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_components_44": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_components_45": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_components_46": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_consumables_11": {
+          "quantity": "20",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_consumables_12": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_consumables_13": {
+          "quantity": "2",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_consumables_47": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_consumables_48": {
+          "quantity": "2",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_preparation_14": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_preparation_15": {
+          "quantity": "100",
+          "unitId": "linear_m",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_preparation_16": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_preparation_17": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_preparation_49": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_preparation_50": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_preparation_51": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_18": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_19": {
+          "quantity": "100",
+          "unitId": "linear_m",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_20": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_21": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_22": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_23": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_24": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_52": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_53": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_labor_54": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_equipment_25": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_equipment_26": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_equipment_27": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_equipment_55": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_equipment_56": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_logistics_28": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_logistics_29": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_logistics_57": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_logistics_58": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_waste_30": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_waste_31": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_waste_59": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_waste_60": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_32": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_33": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_34": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_35": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_36": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_37": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_38": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_61": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_62": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_quality_control_63": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_overhead_39": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_high_load_tax_40": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        }
+      },
+      "independentLegacyQuantityOracle": "Ten captured simple q expressions evaluated with Decimal(q=100); direct real compiler additionally compares complete rows, needs and totals in Jest."
+    },
+    {
+      "caseId": "legacy-exact-plumbing_interior_mixer_install_technical_room",
+      "kind": "legacy-exact",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_technical_room",
+      "parameters": {
+        "m30_material_technology": "Прежняя общая монтажная ветвь без нового заводского комплекта",
+        "q": "100"
+      },
+      "primaryMeasureParameterId": "q",
+      "expectedPrimaryUnitId": "point",
+      "expectedPrimaryValue": "100",
+      "expectedRowsOracle": "DIRECT_FROZEN_CURRENT_PARENT_COMPILE_ROWS_NEEDS_TOTALS_EXACT",
+      "expectedDeclaredLegacyRows": 63,
+      "expectedActiveLegacyRows": 62,
+      "expectedExcludedLiteralFalseRowId": "plumbing_interior_mixer_install_technical_room_materials_41",
+      "expectedActiveNeedIds": [],
+      "demoOnly": true,
+      "expectedRows": {
+        "plumbing_interior_mixer_install_technical_room_materials_01": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_materials_02": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_materials_03": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_materials_04": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_materials_05": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_materials_06": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_materials_42": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_materials_43": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_components_07": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_components_08": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_components_09": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_components_10": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_components_44": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_components_45": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_components_46": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_consumables_11": {
+          "quantity": "20",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_consumables_12": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_consumables_13": {
+          "quantity": "2",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_consumables_47": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_consumables_48": {
+          "quantity": "2",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_preparation_14": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_preparation_15": {
+          "quantity": "100",
+          "unitId": "linear_m",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_preparation_16": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_preparation_17": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_preparation_49": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_preparation_50": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_preparation_51": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_18": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_19": {
+          "quantity": "100",
+          "unitId": "linear_m",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_20": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_21": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_22": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_23": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_24": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_52": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_53": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_labor_54": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_equipment_25": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_equipment_26": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_equipment_27": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_equipment_55": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_equipment_56": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_logistics_28": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_logistics_29": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_logistics_57": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_logistics_58": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_waste_30": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_waste_31": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_waste_59": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_waste_60": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_32": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_33": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_34": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_35": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_36": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_37": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_38": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_61": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_62": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_quality_control_63": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_overhead_39": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_technical_room_tax_40": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        }
+      },
+      "independentLegacyQuantityOracle": "Ten captured simple q expressions evaluated with Decimal(q=100); direct real compiler additionally compares complete rows, needs and totals in Jest."
+    },
+    {
+      "caseId": "legacy-exact-plumbing_interior_mixer_install_wet_zone",
+      "kind": "legacy-exact",
+      "catalogId": "canonical-work:base:plumbing_interior_mixer_install_wet_zone",
+      "parameters": {
+        "m30_material_technology": "Прежняя общая монтажная ветвь без нового заводского комплекта",
+        "q": "100"
+      },
+      "primaryMeasureParameterId": "q",
+      "expectedPrimaryUnitId": "point",
+      "expectedPrimaryValue": "100",
+      "expectedRowsOracle": "DIRECT_FROZEN_CURRENT_PARENT_COMPILE_ROWS_NEEDS_TOTALS_EXACT",
+      "expectedDeclaredLegacyRows": 63,
+      "expectedActiveLegacyRows": 62,
+      "expectedExcludedLiteralFalseRowId": "plumbing_interior_mixer_install_wet_zone_materials_41",
+      "expectedActiveNeedIds": [],
+      "demoOnly": true,
+      "expectedRows": {
+        "plumbing_interior_mixer_install_wet_zone_materials_01": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_materials_02": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_materials_03": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_materials_04": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_materials_05": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_materials_06": {
+          "quantity": "110",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_materials_42": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_materials_43": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_components_07": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_components_08": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_components_09": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_components_10": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_components_44": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_components_45": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_components_46": {
+          "quantity": "3",
+          "unitId": "piece",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_consumables_11": {
+          "quantity": "20",
+          "unitId": "linear_m",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_consumables_12": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_consumables_13": {
+          "quantity": "2",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_consumables_47": {
+          "quantity": "2",
+          "unitId": "set",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_consumables_48": {
+          "quantity": "2",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_preparation_14": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_preparation_15": {
+          "quantity": "100",
+          "unitId": "linear_m",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_preparation_16": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_preparation_17": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_preparation_49": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_preparation_50": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_preparation_51": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "work",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_18": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_19": {
+          "quantity": "100",
+          "unitId": "linear_m",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_20": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_21": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_22": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_23": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_24": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_52": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_53": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_labor_54": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "labor",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_equipment_25": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_equipment_26": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_equipment_27": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_equipment_55": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_equipment_56": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "equipment",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_logistics_28": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_logistics_29": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_logistics_57": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_logistics_58": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "transport",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_waste_30": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_waste_31": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_waste_59": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_waste_60": {
+          "quantity": "3",
+          "unitId": "point",
+          "category": "material",
+          "procurementEligible": true
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_32": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_33": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_34": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_35": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_36": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_37": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_38": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_61": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_62": {
+          "quantity": "100",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_quality_control_63": {
+          "quantity": "10",
+          "unitId": "point",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_overhead_39": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        },
+        "plumbing_interior_mixer_install_wet_zone_tax_40": {
+          "quantity": "1",
+          "unitId": "set",
+          "category": "service",
+          "procurementEligible": false
+        }
+      },
+      "independentLegacyQuantityOracle": "Ten captured simple q expressions evaluated with Decimal(q=100); direct real compiler additionally compares complete rows, needs and totals in Jest."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "status": "PASS_ROOT_CANONICAL_MERGED_THREE_SUITES_100_TESTS_R75",
+  "suiteCounts": {
+    "floorCementScreed20mmKrer11Column01R1.test.ts": 41,
+    "facadeCeresitCt190MaterialSubworksR1.test.ts": 54,
+    "facadeMineralWoolInstallationR1.contract.test.ts": 5
+  },
+  "passed": 100,
+  "failed": 0,
+  "pending": 0,
+  "sourceFreeze": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/screed-facade-canonical-integration-r75/actual-source-freeze-r75.json",
+    "sha256": "06a2cf525a455942ccb6a36699022cb991570b3ecfde3673c4da741bcac05c4d",
+    "bytes": 804986
+  },
+  "guardReceipt": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/screed-facade-canonical-integration-r75/owned-merged-checks/00-receipt.json",
+    "sha256": "9ee1eedf0f2570865a56e94ec39ed3501f2bb82a6389afe62ed384691f8f389a",
+    "bytes": 1354
+  },
+  "jestResult": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/screed-facade-canonical-integration-r75/merged-screed-facade-100tests-r75.json",
+    "sha256": "be1edae5e7ca1a89bcc306825e2fdfe7110b6091d251f5d6d072cf1851b26607",
+    "bytes": 37080
+  },
+  "sourcePinsStillExact": 5529,
+  "noOwnedProcessStillRunning": true,
+  "rawReportsRewritten": false,
+  "harnessSummaryLimitation": "Inherited B summary assumed exactly one test suite; actual owned process exited0 with three explicitly named suites and100/100 passed. Root validates exact3suite counts41+54+5 without rerunning unchanged tests.",
+  "databaseWrites": false,
+  "publication": false,
+  "astraCalls": 0
+}

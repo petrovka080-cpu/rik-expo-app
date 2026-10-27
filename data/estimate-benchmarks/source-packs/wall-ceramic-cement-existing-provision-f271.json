@@ -1,0 +1,111 @@
+{
+  "contract": "existing-wall-ceramic-whole-provision/f271",
+  "catalogId": "canonical-work:base:tile_stone_interior_tile_wall_lay_standard",
+  "status": "SOURCE_ONLY_PARAMETRIC_NATIVE_WITH_SIX_EXPLICIT_PROVISION_HOLDS",
+  "needs": [
+    {
+      "key": "substrate",
+      "rowId": "tile-wall:kg15-01901:need:substrate",
+      "section": "Подготовка основания",
+      "category": "service",
+      "nameRu": "Подготовка основания под облицовку",
+      "parameterId": "wall019_need_substrate_scope",
+      "reasonRu": "Степень готовности и объём насечки/выравнивания должны быть установлены для фактической стены. §1.9 не задаёт положительную норму этих работ в01.",
+      "historicalNeedSuffixes": [
+        "preparation_15"
+      ],
+      "parameterSourceKind": "UNRESOLVED",
+      "parameterSourceIds": [],
+      "physicalQuantityKnown": false,
+      "procurement": false
+    },
+    {
+      "key": "install-tools",
+      "rowId": "tile-wall:kg15-01901:need:install-tools",
+      "section": "Инструмент",
+      "category": "equipment",
+      "nameRu": "Ручной инструмент для нанесения раствора и заполнения швов",
+      "parameterId": "wall019_need_install_tools",
+      "reasonRu": "Колонка01 не задаёт физический состав,количество и обеспеченность ручного рабочего поста. Нельзя вывести1комплект из228чел.-ч.",
+      "historicalNeedSuffixes": [
+        "equipment_52",
+        "components_10"
+      ],
+      "parameterSourceKind": "UNRESOLVED",
+      "parameterSourceIds": [],
+      "physicalQuantityKnown": false,
+      "procurement": false
+    },
+    {
+      "key": "cut-tools",
+      "rowId": "tile-wall:kg15-01901:need:cut-tools",
+      "section": "Инструмент",
+      "category": "equipment",
+      "nameRu": "Инструмент для перерубки плиток и приточки кромок",
+      "parameterId": "wall019_need_cut_tools",
+      "reasonRu": "Операция включена в труд; физический инструмент,ёмкость/размер и количество требуют применимого комплекта. НапольныйTK36-03 и floorcrew не перенесены.",
+      "historicalNeedSuffixes": [
+        "equipment_25",
+        "components_10"
+      ],
+      "parameterSourceKind": "UNRESOLVED",
+      "parameterSourceIds": [],
+      "physicalQuantityKnown": false,
+      "procurement": false
+    },
+    {
+      "key": "cleaning-post",
+      "rowId": "tile-wall:kg15-01901:need:cleaning-post",
+      "section": "Очистка",
+      "category": "equipment",
+      "nameRu": "Инвентарь очистки и промывки облицовки",
+      "parameterId": "wall019_need_cleaning_post",
+      "reasonRu": "Нативныеветошь/опилки/вода известны; количество и состав инвентаря мойки не нормированы этимистроками.",
+      "historicalNeedSuffixes": [
+        "consumables_11",
+        "equipment_52"
+      ],
+      "parameterSourceKind": "UNRESOLVED",
+      "parameterSourceIds": [],
+      "physicalQuantityKnown": false,
+      "procurement": false
+    },
+    {
+      "key": "access",
+      "rowId": "tile-wall:kg15-01901:need:access",
+      "section": "Доступ",
+      "category": "equipment",
+      "nameRu": "Инвентарь доступа к облицовываемой стене",
+      "parameterId": "wall019_need_access",
+      "reasonRu": "§1.2а включает условия работы до3,5м; количество,состояние и наличие столиков/лестниц не вытекают измашино-часов подъёмника.",
+      "historicalNeedSuffixes": [
+        "equipment_52"
+      ],
+      "parameterSourceKind": "UNRESOLVED",
+      "parameterSourceIds": [],
+      "physicalQuantityKnown": false,
+      "procurement": false
+    },
+    {
+      "key": "ppe",
+      "rowId": "tile-wall:kg15-01901:need:ppe",
+      "section": "Защита работника",
+      "category": "material",
+      "nameRu": "Средства индивидуальной защиты при облицовке",
+      "parameterId": "wall019_need_ppe",
+      "reasonRu": "Нужен применимый целый профиль защиты отцемента,резания/приточки и загрязнения,с физическимиколичествами. Существующие generic59 и дозы floorkit не являются источником.",
+      "historicalNeedSuffixes": [
+        "consumables_13"
+      ],
+      "parameterSourceKind": "UNRESOLVED",
+      "parameterSourceIds": [],
+      "physicalQuantityKnown": false,
+      "procurement": false
+    }
+  ],
+  "notActualProjectDocumentation": true,
+  "notSixNewNorms": true,
+  "newPaidOwners": 0,
+  "quantityClosures": 0,
+  "FULL": false
+}

@@ -1,0 +1,1951 @@
+{
+  "capturedParent": {
+    "definition": {
+      "id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+      "release_id": "928ddd80-3d50-5950-8d43-4e8572ea578e",
+      "catalog_id": "canonical-work:base:insulation_interior_facade_install_standard",
+      "definition_version": 4,
+      "passport": {
+        "workKey": "insulation_interior_facade_install_standard",
+        "catalogId": "canonical-work:base:insulation_interior_facade_install_standard",
+        "canonicalRuName": "Монтаж фасадного минераловатного утеплителя 120 мм",
+        "projectSourceId": "project_facade_mineral_wool_system_v1",
+        "physicalResultRu": "Смонтированная фасадная теплоизоляция из минераловатных плит толщиной 120 мм с креплением по проектной системе"
+      },
+      "applicability": {
+        "country": "KG",
+        "materialSystem": "PROJECT_FACADE_MINERAL_WOOL_120MM_DOWEL_200MM_SYSTEM",
+        "operationClass": "INSTALL_FACADE_MINERAL_WOOL_INSULATION",
+        "geometryParameters": [
+          "area_m2"
+        ],
+        "primaryMeasureParameterId": "area_m2",
+        "conditionalScopeFailClosed": true,
+        "universalConsumptionClaimed": false,
+        "universalProductivityClaimed": false,
+        "adjacentDecorativeFacadeLayersExcluded": true,
+        "projectScheduleRequiredForNonGeometricQuantities": true
+      },
+      "definition_sha256": "0e9798db5f884130e610692cb7be84a9220fc3a618d34dc219b02a9d76400373",
+      "source_metadata": {
+        "normId": "norm:project:facade_mineral_wool:system:v1",
+        "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+        "sourceId": "project_facade_mineral_wool_system_v1",
+        "masterSha256": "f02577c56d436913fd347a480a9ec45b25d25f25cc2b31eae2d0c2ae29c79fde",
+        "activationAllowed": false,
+        "sourceFingerprint": "6a00c308755a0e352ce0c941475626ce978fe1e899a96d82a560be7ec6f323e6",
+        "productionEligible": false,
+        "invalidSuppliedValuePolicy": "REJECT",
+        "knownGeometryFirstEstimate": true,
+        "missingProjectQuantityPolicy": "PRELIMINARY_NEED"
+      },
+      "created_at": "2026-09-19T16:12:02.985748+00:00",
+      "content_status": "CANDIDATE_READY",
+      "content_gate_status": "GREEN"
+    },
+    "baseline": {
+      "id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087",
+      "baseline_key": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1:6a00c308755a0e35:canonical-work:base:insulation_interior_facade_install_standard",
+      "catalog_id": "canonical-work:base:insulation_interior_facade_install_standard",
+      "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+      "source_definition_version_id": "e32d62aa-dd16-5b08-a01a-7027b48c815f",
+      "parameter_schema_sha256": "1950d2122d083ec87eb9a266c892e064c5dbb9ad449d88141ac782879f0ce3de",
+      "input_values": {
+        "area_m2": 300,
+        "facade_lift_shift": 12,
+        "start_profile_mode": "NOT_REQUIRED",
+        "disc_dowel_designation": "Тарельчатый дюбель 200 мм с металлическим стержнем по расчёту ветровых зон",
+        "facade_adhesive_mass_kg": 1500,
+        "facade_lift_designation": "Фасадный подъёмник по ППР монтажа утепления",
+        "disc_dowel_quantity_piece": 1800,
+        "fire_barrier_lamella_mode": "NOT_REQUIRED",
+        "pullout_control_count_test": 8,
+        "facade_adhesive_designation": "Клеевой состав совместимой фасадной системы",
+        "pullout_control_designation": "План испытаний фасадных дюбелей на вырыв",
+        "mineral_wool_board_designation": "Фасадная минераловатная плита 120 мм по утверждённой системе",
+        "mineral_wool_board_quantity_m2": 315
+      },
+      "input_classification": {
+        "area_m2": "VALIDATION_FIXTURE",
+        "facade_lift_shift": "VALIDATION_FIXTURE",
+        "start_profile_mode": "VALIDATION_FIXTURE",
+        "disc_dowel_designation": "VALIDATION_FIXTURE",
+        "start_profile_length_m": "VALIDATION_FIXTURE",
+        "facade_adhesive_mass_kg": "VALIDATION_FIXTURE",
+        "facade_lift_designation": "VALIDATION_FIXTURE",
+        "disc_dowel_quantity_piece": "VALIDATION_FIXTURE",
+        "fire_barrier_lamella_mode": "VALIDATION_FIXTURE",
+        "start_profile_designation": "VALIDATION_FIXTURE",
+        "pullout_control_count_test": "VALIDATION_FIXTURE",
+        "facade_adhesive_designation": "VALIDATION_FIXTURE",
+        "pullout_control_designation": "VALIDATION_FIXTURE",
+        "fire_barrier_lamella_length_m": "VALIDATION_FIXTURE",
+        "mineral_wool_board_designation": "VALIDATION_FIXTURE",
+        "mineral_wool_board_quantity_m2": "VALIDATION_FIXTURE",
+        "fire_barrier_lamella_designation": "VALIDATION_FIXTURE"
+      },
+      "uom_by_parameter": {
+        "area_m2": "m2",
+        "facade_lift_shift": "shift",
+        "start_profile_mode": null,
+        "disc_dowel_designation": null,
+        "start_profile_length_m": "m",
+        "facade_adhesive_mass_kg": "kg",
+        "facade_lift_designation": null,
+        "disc_dowel_quantity_piece": "piece",
+        "fire_barrier_lamella_mode": null,
+        "start_profile_designation": null,
+        "pullout_control_count_test": "test",
+        "facade_adhesive_designation": null,
+        "pullout_control_designation": null,
+        "fire_barrier_lamella_length_m": "m",
+        "mineral_wool_board_designation": null,
+        "mineral_wool_board_quantity_m2": "m2",
+        "fire_barrier_lamella_designation": null
+      },
+      "formula_consumer_ids": {
+        "area_m2": [
+          "facade_mineral_wool_install_area_v1"
+        ],
+        "facade_lift_shift": [
+          "facade_insulation_lift_shift_v1"
+        ],
+        "start_profile_mode": [],
+        "disc_dowel_designation": [],
+        "start_profile_length_m": [
+          "facade_start_profile_length_v1"
+        ],
+        "facade_adhesive_mass_kg": [
+          "facade_mineral_wool_adhesive_mass_v1"
+        ],
+        "facade_lift_designation": [],
+        "disc_dowel_quantity_piece": [
+          "facade_disc_dowel_quantity_v1"
+        ],
+        "fire_barrier_lamella_mode": [],
+        "start_profile_designation": [],
+        "pullout_control_count_test": [
+          "facade_insulation_pullout_control_count_v1"
+        ],
+        "facade_adhesive_designation": [],
+        "pullout_control_designation": [],
+        "fire_barrier_lamella_length_m": [
+          "mineral_wool_fire_barrier_lamella_length_v1"
+        ],
+        "mineral_wool_board_designation": [],
+        "mineral_wool_board_quantity_m2": [
+          "facade_mineral_wool_board_quantity_v1"
+        ],
+        "fire_barrier_lamella_designation": []
+      },
+      "resource_consumer_row_ids": {
+        "area_m2": [
+          "rc09:facade_mineral_wool_install",
+          "rc09:facade_mineral_wool_board_120mm",
+          "rc09:facade_mineral_wool_adhesive",
+          "rc09:facade_disc_dowel_200mm_metal_pin",
+          "rc09:facade_insulation_lift",
+          "rc09:facade_insulation_pullout_control",
+          "rc09:mineral_wool_fire_barrier_lamella",
+          "rc09:facade_start_profile"
+        ],
+        "facade_lift_shift": [
+          "rc09:facade_insulation_lift"
+        ],
+        "start_profile_mode": [
+          "rc09:facade_start_profile"
+        ],
+        "disc_dowel_designation": [
+          "rc09:facade_disc_dowel_200mm_metal_pin"
+        ],
+        "start_profile_length_m": [
+          "rc09:facade_start_profile"
+        ],
+        "facade_adhesive_mass_kg": [
+          "rc09:facade_mineral_wool_adhesive"
+        ],
+        "facade_lift_designation": [
+          "rc09:facade_insulation_lift"
+        ],
+        "disc_dowel_quantity_piece": [
+          "rc09:facade_disc_dowel_200mm_metal_pin"
+        ],
+        "fire_barrier_lamella_mode": [
+          "rc09:mineral_wool_fire_barrier_lamella"
+        ],
+        "start_profile_designation": [
+          "rc09:facade_start_profile"
+        ],
+        "pullout_control_count_test": [
+          "rc09:facade_insulation_pullout_control"
+        ],
+        "facade_adhesive_designation": [
+          "rc09:facade_mineral_wool_adhesive"
+        ],
+        "pullout_control_designation": [
+          "rc09:facade_insulation_pullout_control"
+        ],
+        "fire_barrier_lamella_length_m": [
+          "rc09:mineral_wool_fire_barrier_lamella"
+        ],
+        "mineral_wool_board_designation": [
+          "rc09:facade_mineral_wool_board_120mm"
+        ],
+        "mineral_wool_board_quantity_m2": [
+          "rc09:facade_mineral_wool_board_120mm"
+        ],
+        "fire_barrier_lamella_designation": [
+          "rc09:mineral_wool_fire_barrier_lamella"
+        ]
+      },
+      "normative_source_ids": {
+        "area_m2": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "facade_lift_shift": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "start_profile_mode": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "disc_dowel_designation": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "start_profile_length_m": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "facade_adhesive_mass_kg": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "facade_lift_designation": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "disc_dowel_quantity_piece": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "fire_barrier_lamella_mode": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "start_profile_designation": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "pullout_control_count_test": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "facade_adhesive_designation": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "pullout_control_designation": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "fire_barrier_lamella_length_m": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "mineral_wool_board_designation": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "mineral_wool_board_quantity_m2": [
+          "project_facade_mineral_wool_system_v1"
+        ],
+        "fire_barrier_lamella_designation": [
+          "project_facade_mineral_wool_system_v1"
+        ]
+      },
+      "guide_provenance_ru": {
+        "area_m2": "Площадь монтажа минераловатного утеплителя фасада: укажите чистую площадь утепления по обмеру или проекту.",
+        "facade_lift_shift": "Количество смен фасадного подъёмника: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "start_profile_mode": "Фасадный стартовый профиль требуется в границе пакета: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "disc_dowel_designation": "Фасадный тарельчатый дюбель 200 мм с металлическим стержнем: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "start_profile_length_m": "Длина стартового профиля: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "facade_adhesive_mass_kg": "Масса клеевого состава: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "facade_lift_designation": "Фасадный подъёмник по ППР: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "disc_dowel_quantity_piece": "Количество фасадных тарельчатых дюбелей: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "fire_barrier_lamella_mode": "Минераловатная противопожарная рассечка требуется в границе пакета: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "start_profile_designation": "Стартовый профиль фасадной системы: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "pullout_control_count_test": "Количество испытаний дюбелей на вырыв: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "facade_adhesive_designation": "Клеевой состав фасадной теплоизоляционной системы: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "pullout_control_designation": "План контроля вырыва фасадных дюбелей: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "fire_barrier_lamella_length_m": "Длина противопожарной рассечки: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "mineral_wool_board_designation": "Фасадная минераловатная плита толщиной 120 мм по спецификации системы: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "mineral_wool_board_quantity_m2": "Закупочная площадь фасадной минераловатной плиты по раскладке: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+        "fire_barrier_lamella_designation": "Минераловатная ламель противопожарной рассечки: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля."
+      },
+      "proposal_source_refs": [
+        {
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "sourceId": "project_facade_mineral_wool_system_v1",
+          "sourceKind": "PROJECT_DOCUMENTATION_REQUIRED",
+          "exactLocator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль"
+        }
+      ],
+      "validation_scenario_refs": [
+        {
+          "fixture": {
+            "area_m2": 300,
+            "facade_lift_shift": 12,
+            "start_profile_mode": "NOT_REQUIRED",
+            "disc_dowel_designation": "Тарельчатый дюбель 200 мм с металлическим стержнем по расчёту ветровых зон",
+            "facade_adhesive_mass_kg": 1500,
+            "facade_lift_designation": "Фасадный подъёмник по ППР монтажа утепления",
+            "disc_dowel_quantity_piece": 1800,
+            "fire_barrier_lamella_mode": "NOT_REQUIRED",
+            "pullout_control_count_test": 8,
+            "facade_adhesive_designation": "Клеевой состав совместимой фасадной системы",
+            "pullout_control_designation": "План испытаний фасадных дюбелей на вырыв",
+            "mineral_wool_board_designation": "Фасадная минераловатная плита 120 мм по утверждённой системе",
+            "mineral_wool_board_quantity_m2": 315
+          },
+          "scenario": "MASTER_BENCHMARK_09_FACADE_MINERAL_WOOL_INSTALLATION",
+          "shortInput": {
+            "area_m2": 300
+          },
+          "coreAcceptance": {
+            "short": {
+              "rowCount": 1,
+              "knownAreaM2": 300,
+              "visibleRowIds": [
+                "rc09:facade_mineral_wool_install"
+              ],
+              "preliminaryNeedCount": 7,
+              "preliminaryNeedRowIds": [
+                "rc09:facade_mineral_wool_board_120mm",
+                "rc09:facade_mineral_wool_adhesive",
+                "rc09:facade_disc_dowel_200mm_metal_pin",
+                "rc09:facade_insulation_lift",
+                "rc09:facade_insulation_pullout_control",
+                "rc09:mineral_wool_fire_barrier_lamella",
+                "rc09:facade_start_profile"
+              ]
+            },
+            "status": "GREEN_MASTER_FACADE_MINERAL_WOOL_INSTALLATION_CORE",
+            "complete": {
+              "rowCount": 6,
+              "preliminaryNeedCount": 0
+            },
+            "conditional": {
+              "rowCount": 8,
+              "preliminaryNeedCount": 0
+            },
+            "serializedSha256": "52d518c10098c26519e1c5ddcf30f0386358b2fcdf19a628bfa1ab84a2877407"
+          },
+          "acceptanceEvidenceSha256": "a24d1a855efc2ca48edd16ef40025daadbd11a37e622cc37be58b536174a4f01"
+        }
+      ],
+      "acceptance_evidence_sha256": "a24d1a855efc2ca48edd16ef40025daadbd11a37e622cc37be58b536174a4f01",
+      "accepted_release_id": "928ddd80-3d50-5950-8d43-4e8572ea578e",
+      "accepted_at": "2026-09-19T16:12:03.845932+00:00",
+      "supersedes_baseline_id": "73cd26e7-24f4-508e-a1ba-cd6f4fe68bb8",
+      "contract_version": "APPROVED_TEMPLATE_BASELINE_R54_V1"
+    },
+    "parameters": [
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "area_m2",
+        "ordinal": 0,
+        "value_type": "decimal",
+        "unit_id": "m2",
+        "title_ru": "Площадь монтажа минераловатного утеплителя фасада",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "min": 0.000001
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "MEASUREMENT_RULE",
+            "source_role": "USER_MEASURED_OR_APPROVED_DRAWING",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Площадь монтажа минераловатного утеплителя фасада: укажите чистую площадь утепления по обмеру или проекту.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [
+            "facade_mineral_wool_install_area_v1"
+          ],
+          "value_source_role": "USER_INPUT",
+          "input_origin_class": "KNOWN_WORK_SCOPE",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:area_m2",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_mineral_wool_install",
+            "rc09:facade_mineral_wool_board_120mm",
+            "rc09:facade_mineral_wool_adhesive",
+            "rc09:facade_disc_dowel_200mm_metal_pin",
+            "rc09:facade_insulation_lift",
+            "rc09:facade_insulation_pullout_control",
+            "rc09:mineral_wool_fire_barrier_lamella",
+            "rc09:facade_start_profile"
+          ],
+          "source_confirmation_required": false,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "disc_dowel_designation",
+        "ordinal": 5,
+        "value_type": "text",
+        "unit_id": null,
+        "title_ru": "Фасадный тарельчатый дюбель 200 мм с металлическим стержнем",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Фасадный тарельчатый дюбель 200 мм с металлическим стержнем: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:disc_dowel_designation",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_disc_dowel_200mm_metal_pin"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "disc_dowel_quantity_piece",
+        "ordinal": 6,
+        "value_type": "decimal",
+        "unit_id": "piece",
+        "title_ru": "Количество фасадных тарельчатых дюбелей",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "min": 0.000001
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Количество фасадных тарельчатых дюбелей: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [
+            "facade_disc_dowel_quantity_v1"
+          ],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:disc_dowel_quantity_piece",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_disc_dowel_200mm_metal_pin"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "facade_adhesive_designation",
+        "ordinal": 3,
+        "value_type": "text",
+        "unit_id": null,
+        "title_ru": "Клеевой состав фасадной теплоизоляционной системы",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Клеевой состав фасадной теплоизоляционной системы: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:facade_adhesive_designation",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_mineral_wool_adhesive"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "facade_adhesive_mass_kg",
+        "ordinal": 4,
+        "value_type": "decimal",
+        "unit_id": "kg",
+        "title_ru": "Масса клеевого состава",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "min": 0.000001
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Масса клеевого состава: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [
+            "facade_mineral_wool_adhesive_mass_v1"
+          ],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:facade_adhesive_mass_kg",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_mineral_wool_adhesive"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "facade_lift_designation",
+        "ordinal": 7,
+        "value_type": "text",
+        "unit_id": null,
+        "title_ru": "Фасадный подъёмник по ППР",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Фасадный подъёмник по ППР: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:facade_lift_designation",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_insulation_lift"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "facade_lift_shift",
+        "ordinal": 8,
+        "value_type": "decimal",
+        "unit_id": "shift",
+        "title_ru": "Количество смен фасадного подъёмника",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "min": 0.000001
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Количество смен фасадного подъёмника: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [
+            "facade_insulation_lift_shift_v1"
+          ],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:facade_lift_shift",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_insulation_lift"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "fire_barrier_lamella_designation",
+        "ordinal": 12,
+        "value_type": "text",
+        "unit_id": null,
+        "title_ru": "Минераловатная ламель противопожарной рассечки",
+        "required": false,
+        "default_value": null,
+        "constraints_json": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "requiredWhen": {
+            "kind": "equals",
+            "value": "REQUIRED",
+            "parameterId": "fire_barrier_lamella_mode"
+          },
+          "forbiddenWhen": {
+            "kind": "equals",
+            "value": "NOT_REQUIRED",
+            "parameterId": "fire_barrier_lamella_mode"
+          }
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Минераловатная ламель противопожарной рассечки: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:fire_barrier_lamella_designation",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:mineral_wool_fire_barrier_lamella"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "fire_barrier_lamella_length_m",
+        "ordinal": 13,
+        "value_type": "decimal",
+        "unit_id": "m",
+        "title_ru": "Длина противопожарной рассечки",
+        "required": false,
+        "default_value": null,
+        "constraints_json": {
+          "min": 0.000001,
+          "requiredWhen": {
+            "kind": "equals",
+            "value": "REQUIRED",
+            "parameterId": "fire_barrier_lamella_mode"
+          },
+          "forbiddenWhen": {
+            "kind": "equals",
+            "value": "NOT_REQUIRED",
+            "parameterId": "fire_barrier_lamella_mode"
+          }
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Длина противопожарной рассечки: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [
+            "mineral_wool_fire_barrier_lamella_length_v1"
+          ],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:fire_barrier_lamella_length_m",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:mineral_wool_fire_barrier_lamella"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "fire_barrier_lamella_mode",
+        "ordinal": 11,
+        "value_type": "enum",
+        "unit_id": null,
+        "title_ru": "Минераловатная противопожарная рассечка требуется в границе пакета",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "values": [
+            "NOT_REQUIRED",
+            "REQUIRED"
+          ]
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Минераловатная противопожарная рассечка требуется в границе пакета: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:fire_barrier_lamella_mode",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:mineral_wool_fire_barrier_lamella"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "mineral_wool_board_designation",
+        "ordinal": 1,
+        "value_type": "text",
+        "unit_id": null,
+        "title_ru": "Фасадная минераловатная плита толщиной 120 мм по спецификации системы",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Фасадная минераловатная плита толщиной 120 мм по спецификации системы: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:mineral_wool_board_designation",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_mineral_wool_board_120mm"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "mineral_wool_board_quantity_m2",
+        "ordinal": 2,
+        "value_type": "decimal",
+        "unit_id": "m2",
+        "title_ru": "Закупочная площадь фасадной минераловатной плиты по раскладке",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "min": 0.000001
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Закупочная площадь фасадной минераловатной плиты по раскладке: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [
+            "facade_mineral_wool_board_quantity_v1"
+          ],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:mineral_wool_board_quantity_m2",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_mineral_wool_board_120mm"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "pullout_control_count_test",
+        "ordinal": 10,
+        "value_type": "decimal",
+        "unit_id": "test",
+        "title_ru": "Количество испытаний дюбелей на вырыв",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "min": 0.000001
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Количество испытаний дюбелей на вырыв: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [
+            "facade_insulation_pullout_control_count_v1"
+          ],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:pullout_control_count_test",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_insulation_pullout_control"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "pullout_control_designation",
+        "ordinal": 9,
+        "value_type": "text",
+        "unit_id": null,
+        "title_ru": "План контроля вырыва фасадных дюбелей",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "План контроля вырыва фасадных дюбелей: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:pullout_control_designation",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_insulation_pullout_control"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "start_profile_designation",
+        "ordinal": 15,
+        "value_type": "text",
+        "unit_id": null,
+        "title_ru": "Стартовый профиль фасадной системы",
+        "required": false,
+        "default_value": null,
+        "constraints_json": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "requiredWhen": {
+            "kind": "equals",
+            "value": "REQUIRED",
+            "parameterId": "start_profile_mode"
+          },
+          "forbiddenWhen": {
+            "kind": "equals",
+            "value": "NOT_REQUIRED",
+            "parameterId": "start_profile_mode"
+          }
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Стартовый профиль фасадной системы: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:start_profile_designation",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_start_profile"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "start_profile_length_m",
+        "ordinal": 16,
+        "value_type": "decimal",
+        "unit_id": "m",
+        "title_ru": "Длина стартового профиля",
+        "required": false,
+        "default_value": null,
+        "constraints_json": {
+          "min": 0.000001,
+          "requiredWhen": {
+            "kind": "equals",
+            "value": "REQUIRED",
+            "parameterId": "start_profile_mode"
+          },
+          "forbiddenWhen": {
+            "kind": "equals",
+            "value": "NOT_REQUIRED",
+            "parameterId": "start_profile_mode"
+          }
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Длина стартового профиля: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [
+            "facade_start_profile_length_v1"
+          ],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:start_profile_length_m",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_start_profile"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "parameter_id": "start_profile_mode",
+        "ordinal": 14,
+        "value_type": "enum",
+        "unit_id": null,
+        "title_ru": "Фасадный стартовый профиль требуется в границе пакета",
+        "required": true,
+        "default_value": null,
+        "constraints_json": {
+          "values": [
+            "NOT_REQUIRED",
+            "REQUIRED"
+          ]
+        },
+        "truth_metadata": {
+          "guide": {
+            "guide_kind": "PROJECT_DEFINED",
+            "source_role": "APPROVED_PROJECT_PRODUCT_OR_METHOD_DOCUMENTATION",
+            "verified_at": "2026-09-19T00:00:00+06:00",
+            "applicability": "Только для монтажа фасадной минераловатной плиты толщиной 120 мм с дюбелем 200 мм без декоративной отделки и базового армирующего слоя.",
+            "guide_version": "facade-mineral-wool-installation-r1",
+            "guide_short_ru": "Фасадный стартовый профиль требуется в границе пакета: укажите по раскладке плит, схеме дюбелирования, узлам, ППР или плану контроля.",
+            "source_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+            "source_document": "project_facade_mineral_wool_system_v1",
+            "source_snapshot_hash": "27274767064715de1a2dfa3dfa66201af949041857013fc70e6a0f51771390e7",
+            "guide_validation_policy": "DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE"
+          },
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "synthetic": false,
+          "visibility_role": "USER_INPUT",
+          "formula_consumers": [],
+          "value_source_role": "PROJECT_SPECIFIC_INPUT",
+          "input_origin_class": "APPROVED_FACADE_SYSTEM_LAYOUT_FASTENING_PLAN_METHOD_STATEMENT_OR_CONTROL_PLAN",
+          "semantic_parameter_key": "canonical-work:base:insulation_interior_facade_install_standard:start_profile_mode",
+          "hidden_default_forbidden": true,
+          "resource_branch_consumers": [
+            "rc09:facade_start_profile"
+          ],
+          "source_confirmation_required": true,
+          "preliminary_compilation_allowed": true
+        },
+        "approved_template_baseline_id": "a415f7d6-7b3c-5c9f-92b4-8625df55a087"
+      }
+    ],
+    "formulas": [
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "formula_id": "facade_disc_dowel_quantity_v1",
+        "output_unit_id": "piece",
+        "expression_source": "disc_dowel_quantity_piece",
+        "ast": {
+          "id": "disc_dowel_quantity_piece",
+          "kind": "parameter"
+        },
+        "input_parameter_ids": [
+          "disc_dowel_quantity_piece"
+        ],
+        "ast_sha256": "b6c58ce79af10937c8367ced8659194f46e4bbfa38f3b210b1605e2eaad2bfa7"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "formula_id": "facade_insulation_lift_shift_v1",
+        "output_unit_id": "shift",
+        "expression_source": "facade_lift_shift",
+        "ast": {
+          "id": "facade_lift_shift",
+          "kind": "parameter"
+        },
+        "input_parameter_ids": [
+          "facade_lift_shift"
+        ],
+        "ast_sha256": "f16c38484af600790c072324d2a32583e368afa93d61b6cabb8d0c0e6eee7e16"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "formula_id": "facade_insulation_pullout_control_count_v1",
+        "output_unit_id": "test",
+        "expression_source": "pullout_control_count_test",
+        "ast": {
+          "id": "pullout_control_count_test",
+          "kind": "parameter"
+        },
+        "input_parameter_ids": [
+          "pullout_control_count_test"
+        ],
+        "ast_sha256": "9325c669102832907ab2e676e110f42cfa275fb9ccb46e5e5a6b05486292c44a"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "formula_id": "facade_mineral_wool_adhesive_mass_v1",
+        "output_unit_id": "kg",
+        "expression_source": "facade_adhesive_mass_kg",
+        "ast": {
+          "id": "facade_adhesive_mass_kg",
+          "kind": "parameter"
+        },
+        "input_parameter_ids": [
+          "facade_adhesive_mass_kg"
+        ],
+        "ast_sha256": "b9ace11741e693b6430733ff0bd44a9c515381bd659c36b789129762ea899468"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "formula_id": "facade_mineral_wool_board_quantity_v1",
+        "output_unit_id": "m2",
+        "expression_source": "mineral_wool_board_quantity_m2",
+        "ast": {
+          "id": "mineral_wool_board_quantity_m2",
+          "kind": "parameter"
+        },
+        "input_parameter_ids": [
+          "mineral_wool_board_quantity_m2"
+        ],
+        "ast_sha256": "533f41219f5c9953e80076191b543069e9553cc8f857c4a9973c8607e7805573"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "formula_id": "facade_mineral_wool_install_area_v1",
+        "output_unit_id": "m2",
+        "expression_source": "area_m2",
+        "ast": {
+          "id": "area_m2",
+          "kind": "parameter"
+        },
+        "input_parameter_ids": [
+          "area_m2"
+        ],
+        "ast_sha256": "ca02fe8e37afc21cd5ae24b166a194a6810408f463d25b3ffa280c6ebf375f68"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "formula_id": "facade_start_profile_length_v1",
+        "output_unit_id": "m",
+        "expression_source": "start_profile_length_m",
+        "ast": {
+          "id": "start_profile_length_m",
+          "kind": "parameter"
+        },
+        "input_parameter_ids": [
+          "start_profile_length_m"
+        ],
+        "ast_sha256": "b16ddf557f566d0427272d8c790dfe939adfc65148812588ffcdad95e22d0ce8"
+      },
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "formula_id": "mineral_wool_fire_barrier_lamella_length_v1",
+        "output_unit_id": "m",
+        "expression_source": "fire_barrier_lamella_length_m",
+        "ast": {
+          "id": "fire_barrier_lamella_length_m",
+          "kind": "parameter"
+        },
+        "input_parameter_ids": [
+          "fire_barrier_lamella_length_m"
+        ],
+        "ast_sha256": "3347e926a96eb7d7e4e7d911ec9cf1d1b635900e9124e5866adace2f20e2df1b"
+      }
+    ],
+    "resources": [
+      {
+        "id": "22ad2573-5081-5580-9748-73b0e11eac76",
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "row_id": "rc09:facade_disc_dowel_200mm_metal_pin",
+        "ordinal": 3,
+        "section": "Материалы",
+        "category": "material",
+        "title_ru": "Дюбель фасадный тарельчатый 200 мм с металлическим стержнем",
+        "row_type": "material",
+        "unit_id": "piece",
+        "formula_id": "facade_disc_dowel_quantity_v1",
+        "inclusion_ast": {
+          "kind": "literal",
+          "value": true
+        },
+        "resource_graph": {
+          "costOwner": "resource",
+          "formulaId": "facade_disc_dowel_quantity_v1",
+          "normalizedUom": "piece",
+          "semanticOwnerId": "facade-mineral-wool-installation:rc09:facade_disc_dowel_200mm_metal_pin",
+          "titleSpecificationMode": "APPEND",
+          "scopeContextParameterIds": [
+            "area_m2"
+          ],
+          "titleSpecificationSeparator": " ",
+          "titleSpecificationParameterIds": [
+            "disc_dowel_designation"
+          ]
+        },
+        "semantic_owner": "canonical-work:base:insulation_interior_facade_install_standard:rc09:facade_disc_dowel_200mm_metal_pin",
+        "cost_owner_id": "rc09:facade_disc_dowel_200mm_metal_pin",
+        "procurement_eligible": true,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "APPROVED_WIND_ZONE_FASTENING_PLAN",
+          "normativeTrace": [
+            {
+              "normId": "norm:project:facade_mineral_wool:system:v1",
+              "norm_id": "norm:project:facade_mineral_wool:system:v1",
+              "sourceId": "project_facade_mineral_wool_system_v1",
+              "source_id": "project_facade_mineral_wool_system_v1",
+              "sourceRole": "APPROVED_WIND_ZONE_FASTENING_PLAN",
+              "normVersion": "PROJECT_FACADE_SYSTEM_LAYOUT_FASTENING_AND_CONTROL_REVISION_EXPLICIT",
+              "source_title": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+              "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+              "source_definition_hash": "eh_project_facade_mineral_wool_system_r1"
+            }
+          ],
+          "truth_contract_version": "R3",
+          "excludedUnownedAssumptions": [
+            "automatic board reserve or waste factor",
+            "automatic adhesive consumption",
+            "automatic dowel density or wind-zone layout",
+            "automatic lift productivity or pullout-test interval",
+            "automatic fire-barrier or start-profile length",
+            "decorative plaster, facade paint or base-coat reinforcement mesh",
+            "invented price"
+          ]
+        },
+        "row_sha256": "704b28a1da2fbe7b0abf32ea2e1a5e301c56c01111d0438d70708c78d5108809",
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      },
+      {
+        "id": "3f3dc3ed-33a1-520f-a8b3-35f8475f5fbc",
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "row_id": "rc09:facade_insulation_lift",
+        "ordinal": 4,
+        "section": "Оборудование",
+        "category": "equipment",
+        "title_ru": "Подъёмник фасадный для монтажа теплоизоляции",
+        "row_type": "equipment",
+        "unit_id": "shift",
+        "formula_id": "facade_insulation_lift_shift_v1",
+        "inclusion_ast": {
+          "kind": "literal",
+          "value": true
+        },
+        "resource_graph": {
+          "costOwner": "resource",
+          "formulaId": "facade_insulation_lift_shift_v1",
+          "normalizedUom": "shift",
+          "semanticOwnerId": "facade-mineral-wool-installation:rc09:facade_insulation_lift",
+          "titleSpecificationMode": "APPEND",
+          "scopeContextParameterIds": [
+            "area_m2"
+          ],
+          "titleSpecificationSeparator": " ",
+          "titleSpecificationParameterIds": [
+            "facade_lift_designation"
+          ]
+        },
+        "semantic_owner": "canonical-work:base:insulation_interior_facade_install_standard:rc09:facade_insulation_lift",
+        "cost_owner_id": "rc09:facade_insulation_lift",
+        "procurement_eligible": true,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "APPROVED_METHOD_STATEMENT",
+          "normativeTrace": [
+            {
+              "normId": "norm:project:facade_mineral_wool:system:v1",
+              "norm_id": "norm:project:facade_mineral_wool:system:v1",
+              "sourceId": "project_facade_mineral_wool_system_v1",
+              "source_id": "project_facade_mineral_wool_system_v1",
+              "sourceRole": "APPROVED_METHOD_STATEMENT",
+              "normVersion": "PROJECT_FACADE_SYSTEM_LAYOUT_FASTENING_AND_CONTROL_REVISION_EXPLICIT",
+              "source_title": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+              "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+              "source_definition_hash": "eh_project_facade_mineral_wool_system_r1"
+            }
+          ],
+          "truth_contract_version": "R3",
+          "excludedUnownedAssumptions": [
+            "automatic board reserve or waste factor",
+            "automatic adhesive consumption",
+            "automatic dowel density or wind-zone layout",
+            "automatic lift productivity or pullout-test interval",
+            "automatic fire-barrier or start-profile length",
+            "decorative plaster, facade paint or base-coat reinforcement mesh",
+            "invented price"
+          ]
+        },
+        "row_sha256": "9eeb70de5c622e01d67a954918366d2f50aefeb5bdfedc6ee6a06bdbe190bdcc",
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      },
+      {
+        "id": "4e5912b7-127d-554e-b55e-2557353d0e97",
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "row_id": "rc09:mineral_wool_fire_barrier_lamella",
+        "ordinal": 6,
+        "section": "Условные материалы",
+        "category": "material",
+        "title_ru": "Минераловатная ламель противопожарной рассечки",
+        "row_type": "material",
+        "unit_id": "m",
+        "formula_id": "mineral_wool_fire_barrier_lamella_length_v1",
+        "inclusion_ast": {
+          "kind": "equals",
+          "value": "REQUIRED",
+          "parameterId": "fire_barrier_lamella_mode"
+        },
+        "resource_graph": {
+          "costOwner": "resource",
+          "formulaId": "mineral_wool_fire_barrier_lamella_length_v1",
+          "normalizedUom": "m",
+          "semanticOwnerId": "facade-mineral-wool-installation:rc09:mineral_wool_fire_barrier_lamella",
+          "titleSpecificationMode": "APPEND",
+          "scopeContextParameterIds": [
+            "area_m2"
+          ],
+          "titleSpecificationSeparator": " ",
+          "titleSpecificationParameterIds": [
+            "fire_barrier_lamella_designation"
+          ]
+        },
+        "semantic_owner": "canonical-work:base:insulation_interior_facade_install_standard:rc09:mineral_wool_fire_barrier_lamella",
+        "cost_owner_id": "rc09:mineral_wool_fire_barrier_lamella",
+        "procurement_eligible": true,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "APPROVED_FIRE_SAFETY_FACADE_DETAILS",
+          "normativeTrace": [
+            {
+              "normId": "norm:project:facade_mineral_wool:system:v1",
+              "norm_id": "norm:project:facade_mineral_wool:system:v1",
+              "sourceId": "project_facade_mineral_wool_system_v1",
+              "source_id": "project_facade_mineral_wool_system_v1",
+              "sourceRole": "APPROVED_FIRE_SAFETY_FACADE_DETAILS",
+              "normVersion": "PROJECT_FACADE_SYSTEM_LAYOUT_FASTENING_AND_CONTROL_REVISION_EXPLICIT",
+              "source_title": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+              "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+              "source_definition_hash": "eh_project_facade_mineral_wool_system_r1"
+            }
+          ],
+          "truth_contract_version": "R3",
+          "excludedUnownedAssumptions": [
+            "automatic board reserve or waste factor",
+            "automatic adhesive consumption",
+            "automatic dowel density or wind-zone layout",
+            "automatic lift productivity or pullout-test interval",
+            "automatic fire-barrier or start-profile length",
+            "decorative plaster, facade paint or base-coat reinforcement mesh",
+            "invented price"
+          ]
+        },
+        "row_sha256": "038f1aaa7f398ee4f7ecdcf9549535a942717fc84a290f660809bbf7629cb5d6",
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      },
+      {
+        "id": "75d65d8d-5d7d-54d1-9207-aa39e2db7590",
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "row_id": "rc09:facade_insulation_pullout_control",
+        "ordinal": 5,
+        "section": "Контроль и услуги",
+        "category": "service",
+        "title_ru": "Контроль вырыва фасадных дюбелей",
+        "row_type": "service",
+        "unit_id": "test",
+        "formula_id": "facade_insulation_pullout_control_count_v1",
+        "inclusion_ast": {
+          "kind": "literal",
+          "value": true
+        },
+        "resource_graph": {
+          "costOwner": "resource",
+          "formulaId": "facade_insulation_pullout_control_count_v1",
+          "normalizedUom": "test",
+          "semanticOwnerId": "facade-mineral-wool-installation:rc09:facade_insulation_pullout_control",
+          "titleSpecificationMode": "APPEND",
+          "scopeContextParameterIds": [
+            "area_m2"
+          ],
+          "titleSpecificationSeparator": " ",
+          "titleSpecificationParameterIds": [
+            "pullout_control_designation"
+          ]
+        },
+        "semantic_owner": "canonical-work:base:insulation_interior_facade_install_standard:rc09:facade_insulation_pullout_control",
+        "cost_owner_id": "rc09:facade_insulation_pullout_control",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "APPROVED_FASTENER_CONTROL_PLAN",
+          "normativeTrace": [
+            {
+              "normId": "norm:project:facade_mineral_wool:system:v1",
+              "norm_id": "norm:project:facade_mineral_wool:system:v1",
+              "sourceId": "project_facade_mineral_wool_system_v1",
+              "source_id": "project_facade_mineral_wool_system_v1",
+              "sourceRole": "APPROVED_FASTENER_CONTROL_PLAN",
+              "normVersion": "PROJECT_FACADE_SYSTEM_LAYOUT_FASTENING_AND_CONTROL_REVISION_EXPLICIT",
+              "source_title": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+              "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+              "source_definition_hash": "eh_project_facade_mineral_wool_system_r1"
+            }
+          ],
+          "truth_contract_version": "R3",
+          "excludedUnownedAssumptions": [
+            "automatic board reserve or waste factor",
+            "automatic adhesive consumption",
+            "automatic dowel density or wind-zone layout",
+            "automatic lift productivity or pullout-test interval",
+            "automatic fire-barrier or start-profile length",
+            "decorative plaster, facade paint or base-coat reinforcement mesh",
+            "invented price"
+          ]
+        },
+        "row_sha256": "43d3bd8294beab3e1149ff4fb365175066425a307536f73365a47bd33b2bcb35",
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      },
+      {
+        "id": "9008a904-db64-5e5d-9c85-46dd3748f4d7",
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "row_id": "rc09:facade_mineral_wool_adhesive",
+        "ordinal": 2,
+        "section": "Материалы",
+        "category": "material",
+        "title_ru": "Клеевой состав для фасадных минераловатных плит",
+        "row_type": "material",
+        "unit_id": "kg",
+        "formula_id": "facade_mineral_wool_adhesive_mass_v1",
+        "inclusion_ast": {
+          "kind": "literal",
+          "value": true
+        },
+        "resource_graph": {
+          "costOwner": "resource",
+          "formulaId": "facade_mineral_wool_adhesive_mass_v1",
+          "normalizedUom": "kg",
+          "semanticOwnerId": "facade-mineral-wool-installation:rc09:facade_mineral_wool_adhesive",
+          "titleSpecificationMode": "APPEND",
+          "scopeContextParameterIds": [
+            "area_m2"
+          ],
+          "titleSpecificationSeparator": " ",
+          "titleSpecificationParameterIds": [
+            "facade_adhesive_designation"
+          ]
+        },
+        "semantic_owner": "canonical-work:base:insulation_interior_facade_install_standard:rc09:facade_mineral_wool_adhesive",
+        "cost_owner_id": "rc09:facade_mineral_wool_adhesive",
+        "procurement_eligible": true,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "APPROVED_FACADE_PRODUCT_SYSTEM",
+          "normativeTrace": [
+            {
+              "normId": "norm:project:facade_mineral_wool:system:v1",
+              "norm_id": "norm:project:facade_mineral_wool:system:v1",
+              "sourceId": "project_facade_mineral_wool_system_v1",
+              "source_id": "project_facade_mineral_wool_system_v1",
+              "sourceRole": "APPROVED_FACADE_PRODUCT_SYSTEM",
+              "normVersion": "PROJECT_FACADE_SYSTEM_LAYOUT_FASTENING_AND_CONTROL_REVISION_EXPLICIT",
+              "source_title": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+              "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+              "source_definition_hash": "eh_project_facade_mineral_wool_system_r1"
+            }
+          ],
+          "truth_contract_version": "R3",
+          "excludedUnownedAssumptions": [
+            "automatic board reserve or waste factor",
+            "automatic adhesive consumption",
+            "automatic dowel density or wind-zone layout",
+            "automatic lift productivity or pullout-test interval",
+            "automatic fire-barrier or start-profile length",
+            "decorative plaster, facade paint or base-coat reinforcement mesh",
+            "invented price"
+          ]
+        },
+        "row_sha256": "a90fbb5288085de5457c79060383b96f74ef5fda9374c8cd9e81d38ba3eef020",
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      },
+      {
+        "id": "95fea638-eff2-5f68-baad-fb9785b1b6c5",
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "row_id": "rc09:facade_mineral_wool_board_120mm",
+        "ordinal": 1,
+        "section": "Материалы",
+        "category": "material",
+        "title_ru": "Плита минераловатная фасадная толщиной 120 мм",
+        "row_type": "material",
+        "unit_id": "m2",
+        "formula_id": "facade_mineral_wool_board_quantity_v1",
+        "inclusion_ast": {
+          "kind": "literal",
+          "value": true
+        },
+        "resource_graph": {
+          "costOwner": "resource",
+          "formulaId": "facade_mineral_wool_board_quantity_v1",
+          "normalizedUom": "m2",
+          "semanticOwnerId": "facade-mineral-wool-installation:rc09:facade_mineral_wool_board_120mm",
+          "titleSpecificationMode": "APPEND",
+          "scopeContextParameterIds": [
+            "area_m2"
+          ],
+          "titleSpecificationSeparator": " ",
+          "titleSpecificationParameterIds": [
+            "mineral_wool_board_designation"
+          ]
+        },
+        "semantic_owner": "canonical-work:base:insulation_interior_facade_install_standard:rc09:facade_mineral_wool_board_120mm",
+        "cost_owner_id": "rc09:facade_mineral_wool_board_120mm",
+        "procurement_eligible": true,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "APPROVED_FACADE_SYSTEM_AND_BOARD_LAYOUT",
+          "normativeTrace": [
+            {
+              "normId": "norm:project:facade_mineral_wool:system:v1",
+              "norm_id": "norm:project:facade_mineral_wool:system:v1",
+              "sourceId": "project_facade_mineral_wool_system_v1",
+              "source_id": "project_facade_mineral_wool_system_v1",
+              "sourceRole": "APPROVED_FACADE_SYSTEM_AND_BOARD_LAYOUT",
+              "normVersion": "PROJECT_FACADE_SYSTEM_LAYOUT_FASTENING_AND_CONTROL_REVISION_EXPLICIT",
+              "source_title": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+              "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+              "source_definition_hash": "eh_project_facade_mineral_wool_system_r1"
+            }
+          ],
+          "truth_contract_version": "R3",
+          "excludedUnownedAssumptions": [
+            "automatic board reserve or waste factor",
+            "automatic adhesive consumption",
+            "automatic dowel density or wind-zone layout",
+            "automatic lift productivity or pullout-test interval",
+            "automatic fire-barrier or start-profile length",
+            "decorative plaster, facade paint or base-coat reinforcement mesh",
+            "invented price"
+          ]
+        },
+        "row_sha256": "f937e54d883150c381fe187276c4bb50723b1088ad96ac690ab095d6276c59fc",
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      },
+      {
+        "id": "bc37c5e2-3c79-57aa-8dd3-550bc4ec3859",
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "row_id": "rc09:facade_start_profile",
+        "ordinal": 7,
+        "section": "Условные материалы",
+        "category": "material",
+        "title_ru": "Профиль стартовый фасадной теплоизоляционной системы",
+        "row_type": "material",
+        "unit_id": "m",
+        "formula_id": "facade_start_profile_length_v1",
+        "inclusion_ast": {
+          "kind": "equals",
+          "value": "REQUIRED",
+          "parameterId": "start_profile_mode"
+        },
+        "resource_graph": {
+          "costOwner": "resource",
+          "formulaId": "facade_start_profile_length_v1",
+          "normalizedUom": "m",
+          "semanticOwnerId": "facade-mineral-wool-installation:rc09:facade_start_profile",
+          "titleSpecificationMode": "APPEND",
+          "scopeContextParameterIds": [
+            "area_m2"
+          ],
+          "titleSpecificationSeparator": " ",
+          "titleSpecificationParameterIds": [
+            "start_profile_designation"
+          ]
+        },
+        "semantic_owner": "canonical-work:base:insulation_interior_facade_install_standard:rc09:facade_start_profile",
+        "cost_owner_id": "rc09:facade_start_profile",
+        "procurement_eligible": true,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "APPROVED_FACADE_START_DETAIL",
+          "normativeTrace": [
+            {
+              "normId": "norm:project:facade_mineral_wool:system:v1",
+              "norm_id": "norm:project:facade_mineral_wool:system:v1",
+              "sourceId": "project_facade_mineral_wool_system_v1",
+              "source_id": "project_facade_mineral_wool_system_v1",
+              "sourceRole": "APPROVED_FACADE_START_DETAIL",
+              "normVersion": "PROJECT_FACADE_SYSTEM_LAYOUT_FASTENING_AND_CONTROL_REVISION_EXPLICIT",
+              "source_title": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+              "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+              "source_definition_hash": "eh_project_facade_mineral_wool_system_r1"
+            }
+          ],
+          "truth_contract_version": "R3",
+          "excludedUnownedAssumptions": [
+            "automatic board reserve or waste factor",
+            "automatic adhesive consumption",
+            "automatic dowel density or wind-zone layout",
+            "automatic lift productivity or pullout-test interval",
+            "automatic fire-barrier or start-profile length",
+            "decorative plaster, facade paint or base-coat reinforcement mesh",
+            "invented price"
+          ]
+        },
+        "row_sha256": "22795aff619df80f3c6f93aee0cf127c7a41af6df898dba9095cb65339194765",
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      },
+      {
+        "id": "e7275bfa-d10e-5b67-8360-0df177269f16",
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "row_id": "rc09:facade_mineral_wool_install",
+        "ordinal": 0,
+        "section": "Работы",
+        "category": "construction_work",
+        "title_ru": "Монтаж фасадного минераловатного утеплителя толщиной 120 мм",
+        "row_type": "labor",
+        "unit_id": "m2",
+        "formula_id": "facade_mineral_wool_install_area_v1",
+        "inclusion_ast": {
+          "kind": "literal",
+          "value": true
+        },
+        "resource_graph": {
+          "costOwner": "resource",
+          "formulaId": "facade_mineral_wool_install_area_v1",
+          "normalizedUom": "m2",
+          "semanticOwnerId": "facade-mineral-wool-installation:rc09:facade_mineral_wool_install",
+          "scopeContextParameterIds": [
+            "area_m2"
+          ]
+        },
+        "semantic_owner": "canonical-work:base:insulation_interior_facade_install_standard:rc09:facade_mineral_wool_install",
+        "cost_owner_id": "rc09:facade_mineral_wool_install",
+        "procurement_eligible": false,
+        "source_metadata": {
+          "synthetic": false,
+          "sourceRole": "USER_MEASURED_OR_APPROVED_DRAWING",
+          "normativeTrace": [
+            {
+              "normId": "norm:project:facade_mineral_wool:system:v1",
+              "norm_id": "norm:project:facade_mineral_wool:system:v1",
+              "sourceId": "project_facade_mineral_wool_system_v1",
+              "source_id": "project_facade_mineral_wool_system_v1",
+              "sourceRole": "USER_MEASURED_OR_APPROVED_DRAWING",
+              "normVersion": "PROJECT_FACADE_SYSTEM_LAYOUT_FASTENING_AND_CONTROL_REVISION_EXPLICIT",
+              "source_title": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+              "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+              "source_definition_hash": "eh_project_facade_mineral_wool_system_r1"
+            }
+          ],
+          "truth_contract_version": "R3",
+          "excludedUnownedAssumptions": [
+            "automatic board reserve or waste factor",
+            "automatic adhesive consumption",
+            "automatic dowel density or wind-zone layout",
+            "automatic lift productivity or pullout-test interval",
+            "automatic fire-barrier or start-profile length",
+            "decorative plaster, facade paint or base-coat reinforcement mesh",
+            "invented price"
+          ]
+        },
+        "row_sha256": "552f3d61c4ba1c198e2c86049922fcd6a5c8a26613947f336d8991f51f6a5482",
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      }
+    ],
+    "bindings": [
+      {
+        "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+        "resource_spec_id": "e7275bfa-d10e-5b67-8360-0df177269f16",
+        "locator_id": "e10b9698-22b8-528f-a58e-b22f701a55c5",
+        "applicability": {
+          "norm_id": "norm:project:facade_mineral_wool:system:v1",
+          "source_id": "project_facade_mineral_wool_system_v1",
+          "scope_mode": "KNOWN_AREA_AND_DIRECT_PROJECT_PRODUCT_METHOD_QUANTITIES",
+          "exact_locator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+          "quantity_basis": "KNOWN_FACADE_AREA_PLUS_APPROVED_BOARD_LAYOUT_ADHESIVE_FASTENING_METHOD_AND_CONTROL_PLANS",
+          "material_system": "PROJECT_FACADE_MINERAL_WOOL_120MM_DOWEL_200MM_SYSTEM",
+          "operation_class": "INSTALL_FACADE_MINERAL_WOOL_INSULATION",
+          "technology_class": "FACADE_MINERAL_WOOL_INSTALLATION",
+          "universal_consumption_claimed": false,
+          "universal_productivity_claimed": false,
+          "area_based_consumption_or_productivity_rates_claimed": false
+        }
+      }
+    ],
+    "normativeSources": [
+      {
+        "id": "1bc344a3-d6a3-59c1-8248-3671fa235520",
+        "source_key": "project_facade_mineral_wool_system_v1",
+        "title_ru": "Утверждённая фасадная система, раскладка минераловатных плит, схема дюбелирования и план контроля",
+        "authority": "Проектная организация, изготовитель фасадной системы и утверждающий инженер проекта",
+        "official_url": null,
+        "artifact_sha256": null,
+        "effective_from": null,
+        "effective_to": null,
+        "metadata": {
+          "contract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+          "sourceKind": "PROJECT_DOCUMENTATION_REQUIRED",
+          "useRestriction": "Известная площадь определяет только объём монтажной работы; закупочное количество плит, клей, дюбели, подъёмник, контроль и условные элементы берутся из утверждённой фасадной системы, раскладки, расчёта крепления и плана контроля",
+          "activationAllowed": false,
+          "universalConsumptionClaimed": false,
+          "universalProductivityClaimed": false
+        },
+        "created_at": "2026-09-19T16:12:02.985748+00:00"
+      }
+    ],
+    "normativeLocators": [
+      {
+        "id": "e10b9698-22b8-528f-a58e-b22f701a55c5",
+        "source_id": "1bc344a3-d6a3-59c1-8248-3671fa235520",
+        "locator_key": "facade-mineral-wool-installation-project-package-required-v1",
+        "locator": {
+          "kind": "PROJECT_DOCUMENT_PACKAGE_REQUIRED",
+          "exactLocator": "Площадь утепления, раскладка плит 120 мм, клей, дюбели 200 мм по ветровым зонам, подъём, контроль вырыва, противопожарные рассечки и стартовый профиль",
+          "geometryInputs": [
+            "area_m2"
+          ],
+          "conditionalInputs": [
+            "fire_barrier_lamella_mode",
+            "start_profile_mode"
+          ],
+          "directScheduleInputs": [
+            "mineral_wool_board_quantity_m2",
+            "facade_adhesive_mass_kg",
+            "disc_dowel_quantity_piece",
+            "facade_lift_shift",
+            "pullout_control_count_test"
+          ]
+        },
+        "excerpt_sha256": "050da2c913e2af1405664f919490c1ca5be56eab71a5287f76815f2044baf205"
+      }
+    ]
+  },
+  "capturedParentSha256": "28f9158004df154f8f545ed4719b82159e8fff58e968d8f94787906c389b9fb7",
+  "parentPassport": {
+    "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99",
+    "release_id": "928ddd80-3d50-5950-8d43-4e8572ea578e",
+    "catalog_id": "canonical-work:base:insulation_interior_facade_install_standard",
+    "contract_version": "real-professional-estimates-r3.content-passport.v1",
+    "identity_mode": "WORK",
+    "redirect_catalog_id": null,
+    "physical_result_ru": "Монтаж фасадной теплоизоляции из минераловатных плит 120 мм с креплением по проектной системе",
+    "included_scope_ru": [
+      "монтаж фасадных минераловатных плит толщиной 120 мм по известной площади",
+      "плиты, клей и тарельчатые дюбели 200 мм только по утверждённой фасадной системе, раскладке и расчёту ветровых зон",
+      "фасадный подъёмник и контроль вырыва дюбелей только по ППР и плану контроля",
+      "противопожарные минераловатные рассечки и стартовый профиль только по условным проектным ветвям"
+    ],
+    "excluded_scope_ru": [
+      "декоративная штукатурка, окраска фасада и базовый армирующий слой с сеткой",
+      "автоматический запас плит, расход клея или количество дюбелей по площади без утверждённой системы и раскладки",
+      "автоматическая производительность подъёмника и автоматическая частота контроля вырыва дюбелей",
+      "неподтверждённые цены и неуказанные условные элементы"
+    ],
+    "capability_matrix": [
+      {
+        "status": "GREEN",
+        "capability": "PARAMETERS"
+      },
+      {
+        "status": "GREEN",
+        "capability": "FORMULAS_AND_PHYSICAL_PARITY"
+      },
+      {
+        "status": "GREEN",
+        "capability": "FULL_APPLICABLE_SCOPE"
+      },
+      {
+        "status": "GREEN_UNKNOWN_IS_NULL",
+        "capability": "PRICE"
+      }
+    ],
+    "parameter_count": 17,
+    "formula_count": 8,
+    "resource_count": 8,
+    "decision": {
+      "status": "GREEN",
+      "allowed": true,
+      "contract": "real-professional-estimates-r3.content-passport.v1",
+      "priceState": "PARTIAL_NEEDS_PRICE",
+      "waveContract": "rik-expo-app.r4-a13-6.master-facade-mineral-wool-installation-successor.v1",
+      "quantityScope": "FULL",
+      "activationAllowed": false,
+      "productionEligible": false
+    },
+    "payload_sha256": "31f0fc4d521b1a9f063ca2c56fc9e515142164f38723d13cb7ed5fa57118035d",
+    "source_head": "17a78b5967c188bcb13975bc4c4269e7cdecbad8",
+    "source_tree": "63bfc17ade4bb2d75c8263269cd073d8fabe3ece",
+    "created_at": "2026-09-19T16:12:02.985748+00:00"
+  },
+  "parentSearch": {
+    "search_release_id": "bcdc1239-b9b0-5c8b-98e8-f40c478942fa",
+    "catalog_id": "canonical-work:base:insulation_interior_facade_install_standard",
+    "domain_id": "insulation",
+    "system_id": "insulation",
+    "subsystem_id": "wg:base:insulation_interior_facade_install",
+    "assembly_id": "wg:base:insulation_interior_facade_install",
+    "work_family_id": "insulation",
+    "group_id": "wg:base:insulation_interior_facade_install",
+    "subgroup_id": null,
+    "element_type": "WORK",
+    "operation_kind": "NEW_INSTALLATION",
+    "technology_variant": "Каноническая технологическая работа версии 5.5.5",
+    "construction_state": "EXISTING_OR_NEW",
+    "primary_uom": "m2",
+    "canonical_name_ru": "Монтаж фасадного минераловатного утеплителя 120 мм",
+    "aliases": [
+      "монтаж минераловатного утеплителя фасада",
+      "фасадная минеральная вата 120 мм",
+      "монтаж фасадных минераловатных плит с дюбелями 200 мм",
+      "facade mineral wool installation"
+    ],
+    "normative_classifiers": [],
+    "applicability_tags": [],
+    "publication_state": "ADMITTED_BACKEND",
+    "catalog_origin": "GLOBAL",
+    "definition_release_id": "563858d8-a6b3-5522-affd-956d00e94647",
+    "short_scope_ru": "Монтаж фасадного минераловатного утеплителя 120 мм с дюбелем 200 мм; известная площадь сразу даёт объём работы, а раскладка плит, клей, крепление, подъёмник и контроль уточняются по проекту и системе производителя.",
+    "key_distinguishing_parameters": [
+      "area_m2"
+    ],
+    "required_inputs_count": 1,
+    "clarification_fields": [
+      "mineral_wool_board_quantity_m2",
+      "facade_adhesive_mass_kg",
+      "disc_dowel_quantity_piece",
+      "facade_lift_shift",
+      "pullout_control_count_test",
+      "fire_barrier_lamella_mode",
+      "start_profile_mode"
+    ],
+    "included_boundaries": [
+      "монтаж минераловатных плит 120 мм",
+      "фасадные минераловатные плиты",
+      "клей фасадной системы",
+      "тарельчатые дюбели 200 мм",
+      "фасадный подъёмник",
+      "контроль вырыва",
+      "условные противопожарная рассечка и стартовый профиль"
+    ],
+    "excluded_boundaries": [
+      "декоративная штукатурка",
+      "окраска фасада",
+      "базовый армирующий слой с сеткой",
+      "автоматические нормы запаса плит, клея, дюбелей, подъёмника или контроля"
+    ],
+    "replacement_catalog_id": null,
+    "normalized_catalog_id": "canonical work base insulation interior facade install standard",
+    "normalized_canonical_name": "монтаж фасадного минераловатного утеплителя 120 мм",
+    "normalized_aliases": [
+      "монтаж минераловатного утеплителя фасада",
+      "фасадная минеральная вата 120 мм",
+      "монтаж фасадных минераловатных плит с дюбелями 200 мм",
+      "facade mineral wool installation"
+    ],
+    "normalized_search_terms": [
+      "монтаж фасадного минераловатного утеплителя 120 мм",
+      "монтаж минераловатного утеплителя фасада",
+      "фасадная минеральная вата 120 мм",
+      "монтаж фасадных минераловатных плит с дюбелями 200 мм",
+      "facade mineral wool installation",
+      "минераловатная плита фасад клей тарельчатый дюбель подъемник контроль вырыва"
+    ],
+    "normalized_search_blob": "монтаж фасадного минераловатного утеплителя 120 мм монтаж минераловатного утеплителя фасада фасадная минеральная вата 120 мм монтаж фасадных минераловатных плит с дюбелями 200 мм facade mineral wool installation минераловатная плита фасад клей тарельчатый дюбель подъемник контроль вырыва",
+    "source_provenance": {
+      "contract": "floor-cement-screed20mm-krer11-011-01/r1",
+      "sourceTree": "83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05",
+      "payloadContract": "rik-expo-app-r555.cumulative-successor.v1",
+      "searchReleaseId": "02b3df75-ba42-5534-98b4-2cea3cf6ca15",
+      "activationAllowed": false,
+      "sourceFingerprint": "9da9e655712a5c60471324d3b7cfa83cd498f70366036a9e883743e61151a894",
+      "sourceIdentityIds": [
+        "base-work:insulation_interior_facade_install_standard"
+      ],
+      "productionEligible": false,
+      "definitionReleaseId": "563858d8-a6b3-5522-affd-956d00e94647",
+      "sourceDocumentSha256": "db3f900fdfbee26c2d2adfb81c6c2f8ba096a753b64a312848452c831931741f",
+      "ownerSourceIdentityId": "base-work:insulation_interior_facade_install_standard",
+      "parentSearchReleaseId": "3e982465-576e-5f93-92af-d3c829cf1619",
+      "firstEstimateThenRefine": true,
+      "knownGeometryFirstEstimate": true,
+      "conditionalTechnologyFailClosed": true,
+      "exactFacadeMineralWoolInstallationOwner": true,
+      "exactProjectAndMethodPackageRequiredForNonGeometricQuantities": true
+    },
+    "document_sha256": "f7bfaa1084197682b20b598f64fcaa71813c7dd5d71085b98c195e4626e68968",
+    "adjudication_class": "EFFECTIVE_WORK",
+    "selectable": true,
+    "canonical_target_catalog_id": null,
+    "definition_version_id": "b81c1af8-53a6-5be6-86b9-3d2396734e99"
+  },
+  "parentPriceBindings": []
+}

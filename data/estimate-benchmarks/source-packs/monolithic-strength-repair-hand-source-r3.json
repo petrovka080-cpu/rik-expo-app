@@ -1,0 +1,269 @@
+{
+  "contract": "gox.monolithic-strength-repair-hand.source-candidate/r3",
+  "sourceId": "monolithic-repair-gb4200-hand-exact-programme-r3",
+  "status": "UNPUBLISHED_TECHNICAL_COMPOSITION_WITH_EXPLICIT_METHOD_NEEDS",
+  "territory": "GB",
+  "internationalProfile": true,
+  "localRegulatoryAcceptance": "NOT_ASSERTED_SEPARATE_FROM_TECHNICAL_PROFILE_EXECUTION",
+  "fullTechnicalAcceptance": false,
+  "newFull": 0,
+  "sourceArtifacts": [
+    {
+      "file": "sika-monotop4200-multiuse-gb-pds-202504.pdf",
+      "sha256": "e328203e9ba51cbb3922d9a6fb2668e8d98f502e8b6e52a1e2e24ddb4fe2b228",
+      "url": "https://gbr.sika.com/content/dam/dms/gb01/k/sika-monotop-4200multiuse.pdf",
+      "locator": "April2025 v01.02 pp2-4; local restrictions p5"
+    },
+    {
+      "file": "sika-monotop4200-multiuse-gb-sds-current.pdf",
+      "sha256": "d746517247e0c625132cb93edcec0e2cc8b645fd697dfaa5134c299fe6fa20fb",
+      "url": "https://gbr.sika.com/dam/dms/gb01/w/sds-sika-monotop-4200multiuse.pdf",
+      "locator": "24Sep2026 v2.2; exact product only"
+    },
+    {
+      "file": "bosch-grw18-2e-current-linked-202205.pdf",
+      "sha256": "ed54028d1328407d3199f15a448c39b045db6de718b4b3ba1255316cbffdbb06",
+      "url": "https://www.bosch-professional.com/binary/manualsmedia/o390450v21_160992A7YB_202205.pdf",
+      "locator": "RU89-91; mechanical gear I; disconnected assembly and cleaning"
+    },
+    {
+      "file": "bosch-stirrer-paddle-table-20261023.html",
+      "path": "data/estimate-benchmarks/source-artifacts/bosch-stirrer-paddle-table-20261023.html",
+      "sha256": "f272d2ebc02011c1c52b33f1980387f1c1b1d83f77c3539878275fbc16ee7b8d",
+      "url": "https://www.bosch-professional.com/gb/en/pro-multi-material-viscous-and-dense-stirrer-basket-3093241-ocs-ac/",
+      "locator": "Exact3609201038 140mm/25-40kg; compare supplied160mm2607990017 30-60kg"
+    }
+  ],
+  "paddlePrimary": {
+    "url": "https://www.bosch-professional.com/gb/en/pro-multi-material-viscous-and-dense-stirrer-basket-3093241-ocs-ac/",
+    "partNumber": "3609201038",
+    "diameterMm": 140,
+    "thread": "M14",
+    "mixingQuantityKg": [
+      25,
+      40
+    ],
+    "selectedProgramme": "One whole25kg dry charge plus3.5-3.7L water; both25kg dry and28.5-28.7kg fresh fall in25-40kg. No general dry/fresh convention inferred. Actual batch/container/pot-life qualification remains held.",
+    "notTransferred": "Supplied160mm2607990017 has30-60kg range and is not used for this single25kg charge. No powered Collomix cleaning procedure transferred."
+  },
+  "rules": {
+    "dryKgPerM2PerMm": 1.8,
+    "bagKg": 25,
+    "handLayerMinM": 0.005,
+    "handLayerMaxM": 0.08,
+    "waterMinLPerBag": 3.5,
+    "waterMaxLPerBag": 3.7,
+    "ambientMinC": 5,
+    "ambientMaxC": 30,
+    "mixerGear": 1,
+    "mixerVoltageV": 230,
+    "mixerIdleMaxRpm": 450,
+    "mixerRequiredBelowRpm": 500,
+    "minimumMixMinutes": 3
+  },
+  "scope": "One cohort of actually measured identical prepared rectangular patches, one hand-applied layer, sound roughened concrete with no exposed reinforcement and no separate bonding primer or smoothing system. Scratch coat, compaction and immediate compatible curing remain required. No hole/cone/test-count geometry inference.",
+  "initialStationKit": [
+    {
+      "key": "mixer",
+      "titleRu": "Миксер двухскоростной 230 В, 1600 Вт",
+      "operation": "mix"
+    },
+    {
+      "key": "paddle",
+      "titleRu": "Мешалка для густого раствора 140 мм, М14",
+      "operation": "mix"
+    },
+    {
+      "key": "shaft-key",
+      "titleRu": "Ключ гаечный 24 мм",
+      "operation": "mix"
+    },
+    {
+      "key": "paddle-key",
+      "titleRu": "Ключ гаечный для мешалки",
+      "operation": "mix"
+    },
+    {
+      "key": "mixing-container",
+      "titleRu": "Ёмкость для замешивания ремонтного раствора",
+      "operation": "mix"
+    },
+    {
+      "key": "hawk",
+      "titleRu": "Сокол штукатурный",
+      "operation": "apply"
+    },
+    {
+      "key": "trowel",
+      "titleRu": "Кельма для ремонтного раствора",
+      "operation": "apply"
+    },
+    {
+      "key": "float",
+      "titleRu": "Тёрка деревянная",
+      "operation": "finish"
+    },
+    {
+      "key": "sponge",
+      "titleRu": "Губка для удаления излишка воды",
+      "operation": "wet"
+    }
+  ],
+  "unresolvedRoles": [
+    {
+      "key": "substrate-tools",
+      "titleRu": "Инструмент подготовки бетона",
+      "unitId": "set",
+      "category": "equipment",
+      "operation": "prepare"
+    },
+    {
+      "key": "preparation-labour",
+      "titleRu": "Труд по подготовке бетона к ремонту",
+      "unitId": "man_hour",
+      "category": "work",
+      "operation": "prepare"
+    },
+    {
+      "key": "wetting-water",
+      "titleRu": "Вода для увлажнения бетона",
+      "unitId": "m3",
+      "category": "material",
+      "operation": "wet"
+    },
+    {
+      "key": "mixing-water",
+      "titleRu": "Вода для затворения ремонтного раствора",
+      "unitId": "m3",
+      "category": "material",
+      "operation": "mix"
+    },
+    {
+      "key": "extra-dry-material",
+      "titleRu": "Дополнительный ремонтный состав для неровностей и потерь",
+      "unitId": "kg",
+      "category": "material",
+      "operation": "apply"
+    },
+    {
+      "key": "repair-labour",
+      "titleRu": "Труд по нанесению ремонтного раствора",
+      "unitId": "man_hour",
+      "category": "work",
+      "operation": "apply"
+    },
+    {
+      "key": "curing-cover",
+      "titleRu": "Материал защиты от высыхания",
+      "unitId": "m2",
+      "category": "material",
+      "operation": "cure"
+    },
+    {
+      "key": "curing-labour",
+      "titleRu": "Труд по уходу за ремонтным составом",
+      "unitId": "man_hour",
+      "category": "work",
+      "operation": "cure"
+    },
+    {
+      "key": "cleaning-water",
+      "titleRu": "Вода для очистки инструмента",
+      "unitId": "m3",
+      "category": "material",
+      "operation": "clean"
+    },
+    {
+      "key": "cleaning-labour",
+      "titleRu": "Труд по очистке инструмента",
+      "unitId": "man_hour",
+      "category": "work",
+      "operation": "clean"
+    },
+    {
+      "key": "waste-containment",
+      "titleRu": "Тара для отходов ремонтного состава",
+      "unitId": "piece",
+      "category": "equipment",
+      "operation": "clean"
+    },
+    {
+      "key": "waste-transport",
+      "titleRu": "Вывоз отходов локального ремонта",
+      "unitId": "trip",
+      "category": "service",
+      "operation": "handle"
+    },
+    {
+      "key": "access",
+      "titleRu": "Средства доступа к месту ремонта",
+      "unitId": "set",
+      "category": "equipment",
+      "operation": "handle"
+    },
+    {
+      "key": "power",
+      "titleRu": "Электроснабжение ремонтного поста",
+      "unitId": "set",
+      "category": "equipment",
+      "operation": "handle"
+    },
+    {
+      "key": "ppe",
+      "titleRu": "Средства защиты при ремонте бетона",
+      "unitId": "set",
+      "category": "equipment",
+      "operation": "handle"
+    },
+    {
+      "key": "quality",
+      "titleRu": "Контроль выполненного локального ремонта",
+      "unitId": "man_hour",
+      "category": "work",
+      "operation": "control"
+    }
+  ],
+  "operationTitles": {
+    "prepare": "Подготовить место ремонта",
+    "wet": "Увлажнить основание",
+    "mix": "Приготовить ремонтный раствор",
+    "apply": "Заполнить подготовленный участок",
+    "finish": "Обработать поверхность ремонта",
+    "cure": "Обеспечить уход за ремонтом",
+    "clean": "Очистить инструмент и собрать отходы",
+    "handle": "Обеспечить доступ, подачу и защиту",
+    "control": "Проверить локальный ремонт"
+  },
+  "notTransferred": [
+    "GB product sheet is not KG admission.",
+    "Theoretical dry material excludes substrate variation and waste; it is not total procurement.",
+    "Water bounds for one whole charge are not an exact consumption or total water demand.",
+    "Initial actual station inventory is not labour, wear, throughput or whole-method readiness.",
+    "Approximate consumption, yield and fresh density are not interchangeable exact coefficients.",
+    "No retail price, supplier or source confirmation is created. One dry-material supply owner covers the documented whole charges; theoretical patch consumption is not a second paid owner. Inventory and reserve are actual facts, never assumed zero."
+  ],
+  "mixingProgramme": {
+    "status": "EXACT_WATER_ALGORITHM_REQUIRES_ACTUAL_APPROVED_WHOLE_CHARGE_PROGRAMME",
+    "chargeKg": 25,
+    "doseBoundsLPerCharge": [
+      3.5,
+      3.7
+    ],
+    "actualWholeChargeCountAuthority": "IMPORTED_PROGRAMME_NOT_PATCH_OR_STATION_COUNT",
+    "actualDoseAuthority": "IMPORTED_PROGRAMME_WITHIN_SOURCE_INTERVAL_NOT_A_DEFAULT",
+    "containerAndActualMixerFitRequired": true,
+    "waterFormulaM3": "whole_charge_count*water_l_per_charge/1000",
+    "intervalLimitsAreAdditionalConsumption": false,
+    "noAutomaticWholeRepairAcceptance": true
+  },
+  "wholeChargeSupplyBalance": {
+    "ownerRowKey": "dry-material-order",
+    "consumed": "actualWholeChargeCount*25kg",
+    "stock": "actualUsableWholeBagCount*25kg",
+    "reserve": "actualRetainedWholeBagCount*25kg",
+    "quantumKg": 25,
+    "manualOrderPolicy": "retain-raw-and-block-quantum",
+    "wetSurplusReturnedToDryStock": false,
+    "otherWholeRepairNeedsPreserved": true
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "status": "PASS_SCREED_SAVED_DOCUMENTS_PDF2_PROCUREMENT2_AND_SIX_PAGES_VISUALLY_REVIEWED_R107",
+  "at": "2026-10-19T15:50:29.164048+00:00",
+  "rawArtifacts": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-api-acceptance-b-r106/artifact-result-r106.json",
+    "sha256": "b6224653cc8ffd962cee695440913833b5c9cb56a59ce6a57c3085d6088f78aa",
+    "bytes": 11167
+  },
+  "closedGuard": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-docs-runtime-r107/android-fresh-runtime-capture-r106-receipt.json",
+    "sha256": "fc9e2ad3e9e36e65a5f004340d90cb8f584d02c58305d37a4d6c93a726a65b40",
+    "bytes": 940126
+  },
+  "artifacts": [
+    {
+      "label": "manual125-price77",
+      "kind": "pdf",
+      "revisionId": "9dd2cd0f-6f1a-47ca-9bb6-150e4a6a3913",
+      "artifactId": "9c2f393b-4478-471f-9fb8-efc1f485eab7",
+      "file": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/outputs/GOX-screed-CONTROL-manual125-price77-pdf.pdf",
+      "sha256": "51b97616abca938e5b6e7aecde5dd245a7e705418d7c8368859a4448fd920d64",
+      "bytes": 76512,
+      "sourceChecksumSha256": "b1ebc74f82924981e205ec4f03163d11555f888e1c227806070cd1f4ffcbb88f",
+      "sourceRequestHash": "8457bd3f945d7f2147f37e2492d0e9f6d93ec08cf69e2a78a1bed4cde73d91ea",
+      "totals": {
+        "amount": "3802.84",
+        "currencyCode": "KGS",
+        "pricedRowCount": 1,
+        "excludedRowCount": 26,
+        "includedRowCount": 3,
+        "unpricedRowCount": 2
+      },
+      "sourcePreliminaryNeeds": 5,
+      "visualReviewRequired": true
+    },
+    {
+      "label": "excluded150",
+      "kind": "pdf",
+      "revisionId": "238f8ede-b8db-4528-b71a-d0c7e5ff3353",
+      "artifactId": "cfd5d672-a182-4924-87a6-8764c540e867",
+      "file": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/outputs/GOX-screed-CONTROL-excluded150-pdf.pdf",
+      "sha256": "94608a37fda7a959318bbf0f278f53ade0299e7fd37d3ea96c37a7e5898504df",
+      "bytes": 76687,
+      "sourceChecksumSha256": "75e18dd3be4549e33b9e32eb052d886750d2fd42af0538055c92081c7fa1315a",
+      "sourceRequestHash": "8457bd3f945d7f2147f37e2492d0e9f6d93ec08cf69e2a78a1bed4cde73d91ea",
+      "totals": {
+        "amount": "0",
+        "currencyCode": "KGS",
+        "pricedRowCount": 0,
+        "excludedRowCount": 27,
+        "includedRowCount": 2,
+        "unpricedRowCount": 2
+      },
+      "sourcePreliminaryNeeds": 5,
+      "visualReviewRequired": true
+    },
+    {
+      "label": "area150-price77-preserved",
+      "kind": "procurement",
+      "revisionId": "7ac684c6-fc15-46ad-8130-79d22a1580a6",
+      "artifactId": "2f7cd8de-8464-4a78-8197-1dab02dfecbc",
+      "file": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/outputs/GOX-screed-CONTROL-area150-price77-preserved-procurement.json",
+      "sha256": "aac5f1ad2a90e37bbb2972350d1247e547822893a2066a00c9b472144c8cf265",
+      "bytes": 41611,
+      "sourceChecksumSha256": "33163e9a165763538899b59bdb63f1fa5bd20277a5f8333e53a508037a3040ff",
+      "sourceRequestHash": "8457bd3f945d7f2147f37e2492d0e9f6d93ec08cf69e2a78a1bed4cde73d91ea",
+      "totals": {
+        "amount": "4563.41",
+        "currencyCode": "KGS",
+        "pricedRowCount": 1,
+        "excludedRowCount": 26,
+        "includedRowCount": 3,
+        "unpricedRowCount": 2
+      },
+      "sourcePreliminaryNeeds": 5,
+      "visualReviewRequired": false
+    },
+    {
+      "label": "machine77-info-only",
+      "kind": "procurement",
+      "revisionId": "2fad855f-ce75-457d-ab35-ad9118be79b4",
+      "artifactId": "8fc08926-8e18-4b58-9212-1add2e7f208c",
+      "file": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/outputs/GOX-screed-CONTROL-machine77-info-only-procurement.json",
+      "sha256": "963e7f7853737b90389a0395a183e861ca921526504e7e38e636ac33e43c327f",
+      "bytes": 41891,
+      "sourceChecksumSha256": "6c1ad08c991cb94e6ab6f5a4bec3bc8cbfb781ec0d4d6cfdbd51aec67bcccf86",
+      "sourceRequestHash": "8457bd3f945d7f2147f37e2492d0e9f6d93ec08cf69e2a78a1bed4cde73d91ea",
+      "totals": {
+        "amount": "4563.41",
+        "currencyCode": "KGS",
+        "pricedRowCount": 1,
+        "excludedRowCount": 26,
+        "includedRowCount": 3,
+        "unpricedRowCount": 2
+      },
+      "sourcePreliminaryNeeds": 5,
+      "visualReviewRequired": false
+    }
+  ],
+  "visualReview": {
+    "method": "Native Poppler rendered every page at1400px; visually inspected allsix fullpageimages",
+    "pages": 6,
+    "passed": true,
+    "checks": [
+      "No clipped/overlapped rows or footer",
+      "Manual125 area/rate77/49.3875h/3802.84 visible",
+      "Excluded150 saved rate77 marked informational and not summed; unknown prices not zero",
+      "Five unresolved needs and two unpriced material owners remain explicit",
+      "Machine/operator rows not summed; estimate remains preliminary"
+    ],
+    "images": [
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-pdf-qa-r107/excluded-1.png",
+        "sha256": "67a2a86a00020a7910d2c0dc33b513ffa42b90e3340e50401abf3594086f5f57",
+        "bytes": 280290
+      },
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-pdf-qa-r107/excluded-2.png",
+        "sha256": "f85df00271cfb3892eff177343c616a69745bd3f01b9c5c4a7757087bafae431",
+        "bytes": 248111
+      },
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-pdf-qa-r107/excluded-3.png",
+        "sha256": "15df5c6626ab523e7ab7e9bffce6d5e142c38732f91de2fb0f1a67430c2ac7c3",
+        "bytes": 34618
+      },
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-pdf-qa-r107/manual-1.png",
+        "sha256": "df330603fa8791d5d3b09ec28b045f7058ca15ac276ef578e4e60d927bdbe8d8",
+        "bytes": 284370
+      },
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-pdf-qa-r107/manual-2.png",
+        "sha256": "aeb7441edfbcc05f57c90f88b88671dd0c0404c91324b78009abbe937c41a407",
+        "bytes": 249756
+      },
+      {
+        "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-pdf-qa-r107/manual-3.png",
+        "sha256": "17c83cfd2ccf830bb60f0f1c7f25bdf7b8f4b1a8b054b822c82cd4ea5f9a4fcf",
+        "bytes": 24594
+      }
+    ]
+  },
+  "protected82FullColumnsUnchanged": true,
+  "newFiveSavedChecksumsUnchanged": true,
+  "peakRssBytes": 792879104,
+  "minimumPhysicalFreeBytes": 7528423424,
+  "fullTechnicalAcceptance": false,
+  "webUiAccepted": false,
+  "androidUiAccepted": false
+}

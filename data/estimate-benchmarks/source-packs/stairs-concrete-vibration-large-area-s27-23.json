@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "rik-expo-app.s27-23.stairs-concrete-vibration-large-area-source-pack.v1",
+  "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_vibrate_large_area",
+  "contextKey": "LARGE_AREA",
+  "contextRu": "большая захватка лестничных маршей и площадок",
+  "contextSlug": "large-area",
+  "rowPrefix": "concrete-stairs-vibration-large-area",
+  "sharedTechnologySourcePackSha256": "248c48012ed587514fa90d6ca7ef4eae59604aed3b8fcc04a09e4a4cbdbf57ac",
+  "sources": [
+    {
+      "sourceId": "ACI_309_CONSOLIDATION_PREVIEW_2026_10_01",
+      "authority": "American Concrete Institute",
+      "officialUrl": "https://www.concrete.org/Portals/0/Files/PDF/Previews/30905_2pager.pdf",
+      "artifactSha256": "20b986aa1c5905745dc5fceec4ab42921e56dec48952c2bfc8b38161dbb555de",
+      "exactLocator": "Public preview pp. 1-2: method applicability, internal vibrators, procedure and quality control; no universal productivity."
+    },
+    {
+      "sourceId": "WACKER_NEUSON_IRFU_TECHNICAL_DATA_2026_10_01",
+      "authority": "Wacker Neuson",
+      "officialUrl": "https://www.wackerneuson.com/ru/en/products/concrete-technology/internal-vibrators/irfu/technical-data/tab",
+      "artifactSha256": "e72748781710b261244489c21e53944be476c9d0325a2b7d8269e1054440cf51",
+      "exactLocator": "IRFU45/230/5 technical-data row: 0.88 kW, 45 mm head, 5 m hose, 15 m cable, 12,000 1/min and IP67."
+    }
+  ],
+  "acceptanceFixture": {
+    "consolidatedConcreteVolumeM3": 54,
+    "changedConcreteVolumeM3": 72
+  },
+  "contextPolicy": "Large area changes the measured volume and schedule context, not the ACI method authority. The preliminary single-active-vibrator plan is visible and must be replaced when the pour schedule requires parallel equipment."
+}

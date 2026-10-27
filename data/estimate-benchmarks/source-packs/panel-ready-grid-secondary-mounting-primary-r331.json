@@ -1,0 +1,90 @@
+{
+  "contract": "electrical.current-ready-grid.secondary-mounting-primary/r331",
+  "catalogId": "canonical-work:base:electrical_interior_lighting_install_technical_room",
+  "existingMainSourcePack": "data/estimate-benchmarks/source-packs/panel-ready-grid-whole-post-project-r287.json",
+  "existingMainSourcePackSha256": "3a82d0d4ebba442737fe98c309d0510ed787e192bb8e1861c85afd1ffd0a7360",
+  "mainPassportPreserved": {
+    "officialUrl": "https://cdn-01.iek.ru/media/original/cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca.pdf",
+    "sha256": "cbe47a51d5727edf98648ff110070bd8a31798f4e93f423a3b3f57fba5e41fca",
+    "edition": 5
+  },
+  "supportingArtifacts": [
+    {
+      "logicalPath": "data/estimate-benchmarks/source-artifacts/panel-ready-grid-secondary-mounting-r331/DVO6560_6562_MANUAL5_MOUNTING_DETAIL_OFFICIAL.pdf",
+      "officialUrl": "https://cdn-01.iek.ru/media/original/53ebafeb75d06e6f859b4bdeff2b6a544e74951f39c65e5d65c8b4b64412d1d1.pdf",
+      "sha256": "53ebafeb75d06e6f859b4bdeff2b6a544e74951f39c65e5d65c8b4b64412d1d1",
+      "bytes": 1465143,
+      "sourceKind": "LINKED_SECONDARY_MANUFACTURER_MOUNTING_INSTRUCTIONS",
+      "pdfPagesRead": [
+        1,
+        2
+      ]
+    },
+    {
+      "logicalPath": "data/estimate-benchmarks/source-artifacts/panel-ready-grid-secondary-mounting-r331/IEK_EXACT_DVO6561_OPAL4000_PRIMARY.html",
+      "officialUrl": "https://www.iek.ru/products/catalog/svetotekhnika/kommercheskoe_osveshchenie/paneli_svetodiodnye/svetodiodnye_paneli_20mm/svetilnik_svetodiodnyy_dvo_6561_o_36vt_4000k_595kh595_opal_iek",
+      "sha256": "9742edebe90d2733c162301ef8edfafa9d6cf6f89c04dd294f304e24cfb33630",
+      "sourceKind": "EXACT_MANUFACTURER_PUBLIC_PRODUCT_HTML"
+    }
+  ],
+  "appliesOnlyToExistingFactoryOwner": "led-grid:dvo6560-6562:opal-4000",
+  "existingPaidToolOwner": "master32:panel:tool-post:r1:provision-owner",
+  "allowedOperationReferences": [
+    "electrical:technical-room:ready-grid-post:r287:readback",
+    "electrical:technical-room:ready-grid-post:r287:mount",
+    "electrical:technical-room:ready-grid-post:r287:connect"
+  ],
+  "supportingFacts": [
+    {
+      "id": "RECESSED_EXISTING_GRID_METHOD",
+      "locator": "MountingPDF2 paragraph7 lines2–7,figure2",
+      "scope": "Luminaire replaces600x600 ceiling tile; ceiling guide suspension is identified as ceiling structure. No new hanger count, capacity, actual grid acceptance or hours are specified.",
+      "existingResourceRows": [
+        "led-grid:dvo6560-6562:opal-4000",
+        "electrical:technical-room:ready-grid-post:r287:mount-included",
+        "electrical:technical-room:ready-grid-post:r287:readiness-included"
+      ]
+    },
+    {
+      "id": "BUILTIN_FACTORY_CONTENT",
+      "locator": "ExactHTML __NEXT_DATA__ $.props.pageProps.apiProduct.complectations[0].text / etim.features[EF007556]",
+      "scope": "Built-in supply, manual and model-specific diffuser support same whole assembly; no second driver/diffuser order.",
+      "existingResourceRows": [
+        "led-grid:dvo6560-6562:opal-4000"
+      ]
+    },
+    {
+      "id": "FACTORY_OUTGOING_CABLE_TERMINATIONS",
+      "locator": "MountingPDF1 paragraph4 lines10–15",
+      "scope": "Factory lead colour/function L/N/PE only; no connector quantity, cable length, circuit/protection/safe-isolation or accepted test result.",
+      "existingResourceRows": [
+        "electrical:technical-room:ready-grid-post:r287:connection-included"
+      ]
+    },
+    {
+      "id": "SURFACE_ONLY_EXTERNAL_FIXING",
+      "locator": "MountingPDF1 paragraph6 lines19–27; PDF2 figure1 legendlines9–14",
+      "scope": "Item5 surface-mount fixing explicitly not supplied; frame screws item4 are distinct. This is outside current recessed profile, not a mandatory new purchase or count for it.",
+      "existingResourceRows": [],
+      "activeInRecessedProfile": false
+    }
+  ],
+  "doesNotEstablish": [
+    "Actual lot/grid/circuit/access/safety/competence/price/inventory acceptance",
+    "Additional suspension/anchor/fastener type,count or need absence",
+    "Labour rate,test count,connector consumption or supply quantum",
+    "Activation of surface/hanging/emergency profiles or a new public work"
+  ],
+  "sourceBindingStatus": "UNADMITTED_SUPPLEMENTARY_MANUFACTURER_METHOD_EVIDENCE",
+  "registrySourceId": null,
+  "registryLocatorId": null,
+  "additionalMountingQuantity": null,
+  "preservedProtectedNeed": "master30:electrical:open:additional-mounting",
+  "protected17Closed": 0,
+  "formulaResourceOwnerChanges": 0,
+  "sourceAuthorityPromoted": false,
+  "projectAuthenticated": false,
+  "publicationAllowed": false,
+  "full": false,
+  "ready": false
+}

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "rik-expo-app.s27-26.valves-chambers-geometric-automatic-source-pack.v1",
+  "catalogId": "canonical-work:expanded:valves_chambers",
+  "scope": "Preliminary complete construction and commissioning of rectangular cast-in-place reinforced-concrete potable-water valve chambers. The ordinary route accepts only chamber count and identity, internal dimensions, installed valve count and identity, nominal diameter and selected internal spool material. Excavation, reinforced-concrete construction, waterproofing, access components, pipework, fittings, supports, consumables, testing, labor, mechanisms, procurement balance and logistics are calculated from those primary facts and a visible editable engineering profile.",
+  "ordinaryFacts": [
+    "chamberCount",
+    "chamberDesignation",
+    "internalLengthM",
+    "internalWidthM",
+    "clearDepthM",
+    "installedValveCount",
+    "valveDesignation",
+    "nominalDiameterMm",
+    "pipelineSpoolDesignation"
+  ],
+  "fixture": {
+    "chamberCount": 4,
+    "chamberDesignation": "VCH-RC-2.4X1.8-H2.2-DN200",
+    "internalLengthM": 2.4,
+    "internalWidthM": 1.8,
+    "clearDepthM": 2.2,
+    "installedValveCount": 4,
+    "valveDesignation": "GATE-VALVE-DN200-PN16-EPDM",
+    "nominalDiameterMm": 200,
+    "pipelineSpoolDesignation": "STEEL-SPOOL-DN200-PN16-EPOXY"
+  },
+  "profileStatus": "VISIBLE_REPLACEABLE_PRELIMINARY_ENGINEERING_AND_SUPPLIER_PROFILE_REQUIRES_PROJECT_CONFIRMATION",
+  "calculationPrinciples": [
+    "outer dimensions and excavation are derived from internal dimensions, wall and slab thicknesses and working clearance",
+    "structural concrete, reinforcement, formwork, waterproofing, backfill and spoil are derived from primary chamber geometry",
+    "standard through-main spool, penetrations, puddle flanges, supports, dismantling joints and flange sets are derived from chamber and valve topology",
+    "labor and mechanisms follow calculated physical quantities and visible productivity factors",
+    "valve purchase is recalculated from installed count, retained spare, available stock and supplier package quantity",
+    "temporary shoring, groundwater dewatering and pavement reinstatement remain fail-closed conditional branches"
+  ],
+  "exclusions": [
+    "external distribution pipeline beyond the chamber wall",
+    "water-meter chamber, pumping station, reservoir or treatment plant",
+    "automatic inference of branch topology or valve duty from network length or capacity",
+    "unconfirmed prices",
+    "claim that the preliminary profile is an approved universal norm or project design"
+  ]
+}

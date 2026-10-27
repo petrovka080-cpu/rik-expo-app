@@ -1,0 +1,151 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква",
+  "prompt": "подстанция 10/0.4 кВ 630 кВА",
+  "generated_from": "expanded_complex",
+  "rows": [
+    {
+      "row_id": "supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква:transformer_foundation_m3",
+      "code": "transformer_foundation_m3",
+      "title": "Фундамент под трансформатор / оборудование",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 12,
+      "unit": "m3",
+      "quantity_formula": "voltage class foundation coefficient",
+      "formula_ref": "transformerSubstationCalculator_transformer_foundation_m3_formula_v1",
+      "source_ref": "src_expanded_complex_electrical_infrastructure_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Электроснабжение, ЛЭП и подстанции\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква:grounding_system_set",
+      "code": "grounding_system_set",
+      "title": "Контур заземления",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "1 grounding system",
+      "formula_ref": "transformerSubstationCalculator_grounding_system_set_formula_v1",
+      "source_ref": "src_expanded_complex_electrical_infrastructure_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Электроснабжение, ЛЭП и подстанции\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква:cable_trench_m",
+      "code": "cable_trench_m",
+      "title": "Кабельные траншеи подстанции",
+      "line_type": "work",
+      "group": "earthworks",
+      "quantity": 60,
+      "unit": "m",
+      "quantity_formula": "voltage class cable trench allowance",
+      "formula_ref": "transformerSubstationCalculator_cable_trench_m_formula_v1",
+      "source_ref": "src_expanded_complex_electrical_infrastructure_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Электроснабжение, ЛЭП и подстанции\"",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква:switchgear_equipment_set",
+      "code": "switchgear_equipment_set",
+      "title": "Комплект РУ / КТП",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "1 set; price missing until equipment specification",
+      "formula_ref": "transformerSubstationCalculator_switchgear_equipment_set_formula_v1",
+      "source_ref": "src_expanded_complex_electrical_infrastructure_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Электроснабжение, ЛЭП и подстанции\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква:crane_shifts",
+      "code": "crane_shifts",
+      "title": "Кран для монтажа оборудования",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "shift",
+      "quantity_formula": "voltage class crane allowance",
+      "formula_ref": "transformerSubstationCalculator_crane_shifts_formula_v1",
+      "source_ref": "src_expanded_complex_electrical_infrastructure_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Электроснабжение, ЛЭП и подстанции\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "supplemental-electrical_utilities-020-подстанция-10-0-4-кв-630-ква:electrical_testing_commissioning",
+      "code": "electrical_testing_commissioning",
+      "title": "Испытания и ПНР подстанции",
+      "line_type": "service",
+      "group": "commissioning",
+      "quantity": 1,
+      "unit": "set",
+      "quantity_formula": "commissioning set",
+      "formula_ref": "transformerSubstationCalculator_electrical_testing_commissioning_formula_v1",
+      "source_ref": "src_expanded_complex_electrical_infrastructure_reference_formula_v1",
+      "source_title": "Инженерная справочная формула для блока \"Электроснабжение, ЛЭП и подстанции\"",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "secondary"
+    }
+  ],
+  "material_rows": [
+    "transformer_foundation_m3",
+    "grounding_system_set"
+  ],
+  "work_rows": [
+    "cable_trench_m"
+  ],
+  "service_rows": [
+    "electrical_testing_commissioning"
+  ],
+  "equipment_rows": [
+    "switchgear_equipment_set",
+    "crane_shifts"
+  ],
+  "procurement_subset": [
+    "transformer_foundation_m3",
+    "grounding_system_set",
+    "switchgear_equipment_set",
+    "crane_shifts",
+    "electrical_testing_commissioning"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_expanded_complex_electrical_infrastructure_reference_formula_v1"
+  ],
+  "snapshot_hash": "h1735545990"
+}

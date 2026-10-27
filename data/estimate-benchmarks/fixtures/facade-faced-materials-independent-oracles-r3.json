@@ -1,0 +1,151 @@
+{
+  "contract": "gox-build.facade-faced-materials-whole-krer/r3",
+  "generatedFromImplementation": false,
+  "execution": "UNRUN",
+  "cases": [
+    {
+      "caseId": "face-brick-aac_100",
+      "profileKey": "face-brick-aac",
+      "areaM2": "100",
+      "expectedRaw": {
+        "labour": "144.19",
+        "operators": "0.76",
+        "tower-crane": "0.42",
+        "mobile-crane": "0.34",
+        "angle-grinder": "5",
+        "truck": "0.34",
+        "face-brick": "5070",
+        "anchor-steel-comparator": "50",
+        "ready-mortar": "2.33",
+        "reinforcement-mesh-comparator": "151",
+        "binding-wire": "9.6"
+      },
+      "PStayedProjectNotArea": true,
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "face-brick-aac_12_5",
+      "profileKey": "face-brick-aac",
+      "areaM2": "12.5",
+      "expectedRaw": {
+        "labour": "18.02375",
+        "operators": "0.095",
+        "tower-crane": "0.0525",
+        "mobile-crane": "0.0425",
+        "angle-grinder": "0.625",
+        "truck": "0.0425",
+        "face-brick": "633.75",
+        "anchor-steel-comparator": "6.25",
+        "ready-mortar": "0.29125",
+        "reinforcement-mesh-comparator": "18.875",
+        "binding-wire": "1.20"
+      },
+      "PStayedProjectNotArea": true,
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "limestone-mortar_100",
+      "profileKey": "limestone-mortar",
+      "areaM2": "100",
+      "expectedRaw": {
+        "labour": "557.50",
+        "operators": "11.46",
+        "forklift": "0.39",
+        "hoist": "2.66",
+        "compressor": "8.41",
+        "abrasive-blaster": "16.82",
+        "water": "0.9",
+        "clay": "1.7",
+        "sand": "0.5",
+        "ready-mortar": "3.6",
+        "wood-wedges": "0.00139",
+        "limestone-slabs": "99"
+      },
+      "PStayedProjectNotArea": true,
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "limestone-mortar_12_5",
+      "profileKey": "limestone-mortar",
+      "areaM2": "12.5",
+      "expectedRaw": {
+        "labour": "69.6875",
+        "operators": "1.4325",
+        "forklift": "0.04875",
+        "hoist": "0.3325",
+        "compressor": "1.05125",
+        "abrasive-blaster": "2.1025",
+        "water": "0.1125",
+        "clay": "0.2125",
+        "sand": "0.0625",
+        "ready-mortar": "0.45",
+        "wood-wedges": "0.00017375",
+        "limestone-slabs": "12.375"
+      },
+      "PStayedProjectNotArea": true,
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "ceramic-tile-mortar_100",
+      "profileKey": "ceramic-tile-mortar",
+      "areaM2": "100",
+      "expectedRaw": {
+        "labour": "290.70",
+        "operators": "1.32",
+        "forklift": "0.11",
+        "hoist": "1.21",
+        "cement": "40",
+        "ceramic-tile": "100",
+        "rags": "0.5",
+        "ready-mortar": "2"
+      },
+      "PStayedProjectNotArea": true,
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "ceramic-tile-mortar_12_5",
+      "profileKey": "ceramic-tile-mortar",
+      "areaM2": "12.5",
+      "expectedRaw": {
+        "labour": "36.3375",
+        "operators": "0.165",
+        "forklift": "0.01375",
+        "hoist": "0.15125",
+        "cement": "5.0",
+        "ceramic-tile": "12.5",
+        "rags": "0.0625",
+        "ready-mortar": "0.25"
+      },
+      "PStayedProjectNotArea": true,
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "plain-render_100",
+      "profileKey": "plain-render",
+      "areaM2": "100",
+      "expectedRaw": {
+        "labour": "70.88",
+        "operators": "2.78",
+        "winch": "0.90",
+        "mortar-pump": "2.78",
+        "water": "0.35",
+        "ready-mortar": "1.89"
+      },
+      "execution": "UNRUN"
+    },
+    {
+      "caseId": "plain-render_12_5",
+      "profileKey": "plain-render",
+      "areaM2": "12.5",
+      "expectedRaw": {
+        "labour": "8.860",
+        "operators": "0.3475",
+        "winch": "0.1125",
+        "mortar-pump": "0.3475",
+        "water": "0.04375",
+        "ready-mortar": "0.23625"
+      },
+      "execution": "UNRUN"
+    }
+  ]
+}

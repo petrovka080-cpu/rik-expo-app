@@ -1,0 +1,102 @@
+{
+  "case_id": "supplemental-hydraulic_dams-002-дамба-земляная-500-м-высота-6-м",
+  "prompt": "дамба земляная 500 м высота 6 м",
+  "work_family_id": "earth_dam",
+  "work_family_group": "HYDRAULIC_DAMS",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 500,
+    "height_m": 6,
+    "crest_width_m": 6
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "embankment_fill_m3",
+    "core_material_m3",
+    "geomembrane_m2",
+    "geotextile_m2",
+    "riprap_m3",
+    "drainage_pipe_lm",
+    "spillway_concrete_m3",
+    "rebar_t",
+    "excavation_m3",
+    "slope_area_m2",
+    "formwork_m2",
+    "compactor_shifts",
+    "excavator_shifts",
+    "bulldozer_shifts",
+    "dump_truck_trips"
+  ],
+  "reference_material_rows": [
+    "embankment_fill_m3",
+    "core_material_m3",
+    "geomembrane_m2",
+    "geotextile_m2",
+    "riprap_m3",
+    "drainage_pipe_lm",
+    "spillway_concrete_m3",
+    "rebar_t"
+  ],
+  "reference_work_rows": [
+    "excavation_m3",
+    "slope_area_m2",
+    "formwork_m2"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "compactor_shifts",
+    "excavator_shifts",
+    "bulldozer_shifts",
+    "dump_truck_trips"
+  ],
+  "reference_procurement_subset": [
+    "embankment_fill_m3",
+    "core_material_m3",
+    "geomembrane_m2",
+    "geotextile_m2",
+    "riprap_m3",
+    "drainage_pipe_lm",
+    "spillway_concrete_m3",
+    "rebar_t",
+    "compactor_shifts",
+    "excavator_shifts",
+    "bulldozer_shifts",
+    "dump_truck_trips"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_hydraulic_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/supplemental-hydraulic_dams-002-дамба-земляная-500-м-высота-6-м.json",
+  "critical": true,
+  "expected_row_codes": [
+    "embankment_fill_m3",
+    "core_material_m3",
+    "geomembrane_m2",
+    "geotextile_m2",
+    "riprap_m3",
+    "drainage_pipe_lm",
+    "spillway_concrete_m3",
+    "rebar_t",
+    "excavation_m3",
+    "slope_area_m2",
+    "formwork_m2",
+    "compactor_shifts"
+  ]
+}

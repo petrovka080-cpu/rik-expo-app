@@ -1,0 +1,324 @@
+{
+  "contract": "curb03-root-physical-profile-classification/v1",
+  "status": "ROOT_ACCEPTED_DISTINCT_PHYSICAL_PROFILE_FOR_PREPARATION_NOT_PUBLICATION",
+  "at": "2026-10-18T12:48:32.623461+00:00",
+  "decision": "ADMIT_DISTINCT_PHYSICAL_PROFILE",
+  "proposedIdentity": {
+    "catalogId": "canonical-work:master:granite_kerb_1gp_install_cement_concrete_pavement_standard",
+    "workKey": "granite_kerb_1gp_install_cement_concrete_pavement_standard",
+    "persisted": false,
+    "status": "PROPOSAL_ONLY_PENDING_ROOT_CURRENT_DEDUP_AND_CLASSIFICATION"
+  },
+  "executionContext": {
+    "definitionReleaseId": "77fb927f-72aa-5981-b243-c0a5e68bc3d9",
+    "searchReleaseId": "089161ff-00ab-5d96-9aa1-58f91e6139a2",
+    "recordedReleaseSourceCommit": "741bf109ebf57bd6aeaaab71ca5cf1d8bd0f2abe",
+    "sourceHead": "4bddeadf24d23ded2708a285733a6abdcf028d4f"
+  },
+  "boundedCandidateScopeSufficientForPhysicalDuplicateReview": true,
+  "globalAbsenceProved": false,
+  "existingConsumersUnchanged": true,
+  "historicPricesAndManualOwnersTransferred": false,
+  "reasonRu": "Один самостоятельный профиль гранитного1ГП при цементобетонном покрытии по03. Generic curb/edge площадныеq:m2 не становятся линейными. Expanded69 комбинирует дорожные операции/две стороны линии. Бетонные01/02 отличаются материалом/трудом; гранитный04 явно исключает цементобетон и имеет5.9м³ бетона/100м вместо3.9 у03. Сам иной номер источника не основание новогоID.",
+  "additional35HeaderDecisions": [
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_compact_large_area",
+      "definitionId": "ab86db77-341a-5c55-8427-75a06d70548f",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_compact_small_area",
+      "definitionId": "ebea632e-b558-55e7-921f-8795fb81cecf",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_compact_standard",
+      "definitionId": "aad940e0-036c-5bba-8aef-085a8f5a6574",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_compact_technical_room",
+      "definitionId": "389db7e6-b5a5-5a17-b158-5153dd6df503",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_compact_wet_zone",
+      "definitionId": "5da281ee-6984-58f8-8abf-e978d93328c8",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_drain_large_area",
+      "definitionId": "e00dce08-f37d-5667-a990-720d96e6a446",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_drain_small_area",
+      "definitionId": "668f2dbc-0090-5b9a-8a86-8dd37fc7a64d",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_drain_standard",
+      "definitionId": "71a51b5d-89e6-5330-bd5e-1b41921a3005",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_drain_wet_zone",
+      "definitionId": "e961087d-9117-539d-b538-7c152e52a694",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_finish_large_area",
+      "definitionId": "36720c5a-015a-5169-9d04-63082b50d92c",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_finish_small_area",
+      "definitionId": "ab9cd265-1585-5250-b016-b0ff97636e8e",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_finish_standard",
+      "definitionId": "156758f2-778a-54a6-b6d5-646fe81aaca0",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_finish_wet_zone",
+      "definitionId": "8670b180-6d21-5352-be6b-2d61e0a6e72b",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_install_large_area",
+      "definitionId": "2665c435-7fe9-53a1-8900-197c027152fe",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_install_small_area",
+      "definitionId": "2604b96d-64d0-517e-9e53-686db3149a17",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_install_standard",
+      "definitionId": "1adc9ae6-3228-5451-9055-01920261d173",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_install_technical_room",
+      "definitionId": "d38f2046-2de7-5d1c-a1df-989f79d7b891",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_install_wet_zone",
+      "definitionId": "4251a673-a872-5d56-a214-571c8955290f",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_lay_large_area",
+      "definitionId": "81ecd01b-d151-5084-9717-c46097335359",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_lay_small_area",
+      "definitionId": "d646c27d-1d2a-5381-be7e-75d5fed8a9a9",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_lay_standard",
+      "definitionId": "0eecf599-a874-554e-8755-dfdf55e44dc6",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_lay_technical_room",
+      "definitionId": "f1403b43-5e61-572b-9057-9979c71f57bc",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_lay_wet_zone",
+      "definitionId": "c594275c-e695-5004-86fb-f364026814f3",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_level_large_area",
+      "definitionId": "a6bdbcc0-2bb0-5e79-b2df-19953437a31f",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_level_small_area",
+      "definitionId": "56074766-45fe-5b60-856f-2ff295eca026",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_level_standard",
+      "definitionId": "ba5ff138-4feb-5c4b-baee-2b1ef63cdbb2",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_level_wet_zone",
+      "definitionId": "b43f8ddd-eee8-5fe3-8202-c3ae1c7e27e8",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_prepare_large_area",
+      "definitionId": "90c70566-3ae4-5d1f-bc45-e267f83baab1",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_prepare_small_area",
+      "definitionId": "28466f9d-b46c-5ddb-badd-70cd157320fc",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_prepare_standard",
+      "definitionId": "2bf4c458-bf20-5614-8a4b-4ff2b6fc3ced",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_prepare_wet_zone",
+      "definitionId": "807e8c76-391a-5793-84b8-ee0e9c30405e",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_repair_large_area",
+      "definitionId": "b0e09077-eca4-5de0-84ca-391ee9abfc81",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_repair_small_area",
+      "definitionId": "c23af61d-19df-5c37-8bbb-f5ba8b99997a",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_repair_standard",
+      "definitionId": "8a7b9455-c6bc-5756-a575-a165b018eb08",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    },
+    {
+      "catalogId": "canonical-work:base:paving_roads_landscape_interior_edge_repair_wet_zone",
+      "definitionId": "cac4df83-e6d1-5d0d-88f7-518ef85127cd",
+      "primaryUnitId": "m2",
+      "decision": "PRESERVE_GENERIC_AREA_SCOPE_NO_METRE_REINTERPRETATION",
+      "reasonRu": "Заголовки и реальные различающие параметры задают толькоq:m2 без принятого03-классификатора. Это общие операции поребрика; не доказан гранит1ГП/цементобетон/чистая линия в метрах. Не менять первичную меру или существующие цены."
+    }
+  ],
+  "source15Sets": 15,
+  "supplementalSets": 2,
+  "deepDefinitionsReviewed": 14,
+  "deepResourcesReviewed": 740,
+  "allCheapCurrentAliasHeaders": 75,
+  "independentReadTransactionsAcknowledged": true,
+  "sameImmutableSelectedDefinitionSearchHeadersVerified": true,
+  "searchPlacement": {
+    "groupMode": "existing",
+    "groupId": "wg:expanded:curbs",
+    "groupTitleRu": "Дороги, транспорт и площадки: установка бортового камня",
+    "domainId": "transport",
+    "systemId": "transport",
+    "membershipOrdinal": 3,
+    "breadcrumb": [
+      "Дороги, транспорт и площадки: установка бортового камня"
+    ],
+    "existingMembershipHash": "c6dade600873ca5246f31d45ed2893a6fa3b3aa19d7415b76c362dad2111b132",
+    "existingMembershipCount": 3,
+    "existing04GroupRenamed": false,
+    "aliasPolicy": "Only explicit granite1GP/cement-concrete/column03 aliases; never redirect a generic area or other-pavement04 request."
+  },
+  "remainingBeforeProductAcceptance": [
+    "Exact4machine-owner helper admission and foreigncatalog/price/definition/snapshot checks",
+    "Root canonical source adoption and actual compiler/tests/full affected TypeScript",
+    "Existing governed publisher dry/apply/independent preservation readback",
+    "Ordinary saved revisions/procurement/PDF/client wave"
+  ],
+  "newCompleteTypesAccepted": 0,
+  "fullTechnicalAcceptance": false,
+  "published": false,
+  "canonicalChanged": false,
+  "evidence": [
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-current-reads-r1/curb03-current-r3-result.json",
+      "sha256": "7ce507714dde404d3cd61176dd75d34f5af330e9e4dc2417f82c9411cc3948e5"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-current-reads-r1/curb-alias-placement-current-r5-result.json",
+      "sha256": "733646f2332a55bc6687d5bdcf36c9adc2d55f9ac778ecf716d9679467f92d84"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-engineering-a/next-kerb27-03-r1/current-result-review-v1/granite-kerb03-actual-classification-proposal-v1.json",
+      "sha256": "3114b12087a59167aafa1a7785aad493da146e45e708b4e9752c329aa7d87aa6"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-current-reads-r1/remaining-curb-current-owned-read-r3-receipt.json",
+      "sha256": "48a80c2b5ebe0b4a3ea0b2d1c67312f59946edb540c6edde3de9749254b67416"
+    },
+    {
+      "path": "C:/Users/User/Documents/Codex/2026-10-18/files-pasted-by-the-user-andro/work/next-wave-current-reads-r1/targeted-identity-current-owned-read-r5-receipt.json",
+      "sha256": "85e9c61137df1066920a3efd25799c1d3b366f1de92ec64916f8a03c23be1493"
+    }
+  ]
+}

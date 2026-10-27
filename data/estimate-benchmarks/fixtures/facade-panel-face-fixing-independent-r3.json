@@ -1,0 +1,50 @@
+{
+  "status": "PREPARED_UNRUN",
+  "independentFromGeneratedResourceRows": true,
+  "examples": [
+    {
+      "key": "fibre-seven-panels-eight-points-each",
+      "profile": "fibre-cement-uni8",
+      "panels": "7",
+      "approvedPointsPerPanel": "8",
+      "expected": {
+        "fixed": "14",
+        "sliding": "42",
+        "total": "56"
+      }
+    },
+    {
+      "key": "hpl-seven-panels-eight-points-each",
+      "profile": "hpl-rivet8-aluminium",
+      "panels": "7",
+      "approvedPointsPerPanel": "8",
+      "expected": {
+        "fixed": "7",
+        "sliding": "49",
+        "total": "56"
+      }
+    },
+    {
+      "key": "hpl-three-panels-six-points-each",
+      "profile": "hpl-rivet8-aluminium",
+      "panels": "3",
+      "approvedPointsPerPanel": "6",
+      "expected": {
+        "fixed": "3",
+        "sliding": "15",
+        "total": "18"
+      }
+    }
+  ],
+  "negativeExamples": [
+    "Fibre-cement layout with one fixed point per panel.",
+    "HPL layout with two fixed points per panel.",
+    "Duplicate panel IDs or point IDs within one panel.",
+    "Source hash/territory/method mismatch.",
+    "Non8mm panel or generic frame substitution.",
+    "Missing actual approved layout evidence.",
+    "One-point schedule cannot demonstrate required fixing/movement.",
+    "Attempt to submit0,1,77 as unresolved application norm."
+  ],
+  "noSourceLabourOrToolCountInferred": true
+}

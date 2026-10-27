@@ -1,0 +1,430 @@
+{
+  "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+  "sourceKind": "NORMATIVE_OPERATION_MAP",
+  "generatedFromCurrentRows": false,
+  "operationResourceBindingRequired": true,
+  "evidenceSha256": "58d744b089e279151eb5ef57d4ff9d3a925597742093a800146d4190c5c037bc",
+  "evidenceReferences": [
+    "КРЕР15-2015,15-01-019-01,PDF56–58;technical§1.2а/1.4/1.9/2.3"
+  ],
+  "fullTechnicalAcceptance": false,
+  "entries": [
+    {
+      "expectedResourceId": "15-01-019-01:whole-labour",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution",
+        "tile-wall:kg15-01901:operation:sort",
+        "tile-wall:kg15-01901:operation:face",
+        "tile-wall:kg15-01901:operation:cut-fit",
+        "tile-wall:kg15-01901:operation:fill-joints",
+        "tile-wall:kg15-01901:operation:dust-rub",
+        "tile-wall:kg15-01901:operation:clean-wash"
+      ],
+      "category": "labor",
+      "unitId": "man_hour",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Труд облицовщика среднего разряда 3,6",
+      "quantityRule": "228.00/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:whole-labour:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:whole-labour"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:operator-labour",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "labor",
+      "unitId": "man_hour",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Труд машинистов",
+      "quantityRule": "0.86/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:operator-labour:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:operator-labour"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:loader",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Автопогрузчик грузоподъёмностью 5 т",
+      "quantityRule": "0.05/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:loader:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:loader"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:hoist",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "equipment",
+      "unitId": "machine_hour",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Одномачтовый подъёмник грузоподъёмностью до 500 кг, высота подъёма до 45 м",
+      "quantityRule": "0.81/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:hoist:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:hoist"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:water",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "material",
+      "unitId": "m3",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Вода",
+      "quantityRule": "0.463/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:water:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:water"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:cement",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "material",
+      "unitId": "t",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Портландцемент общестроительный бездобавочный марки 400",
+      "quantityRule": "0.04/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:cement:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:cement"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:tile",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "material",
+      "unitId": "m2",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Плитка керамическая глазурованная для внутренней облицовки стен, гладкая, без завала, белая",
+      "quantityRule": "100/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:tile:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:tile"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:rags",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "material",
+      "unitId": "kg",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Ветошь",
+      "quantityRule": "0.5/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:rags:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:rags"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:sawdust",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "material",
+      "unitId": "m3",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Древесные опилки",
+      "quantityRule": "0.1/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:sawdust:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:sawdust"
+      }
+    },
+    {
+      "expectedResourceId": "15-01-019-01:ready-mortar",
+      "operationId": "tile-wall:kg15-01901:whole-operation:execution",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:whole-operation:execution"
+      ],
+      "category": "material",
+      "unitId": "m3",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Готовый тяжёлый цементный отделочный раствор состава 1:3",
+      "quantityRule": "1.5/100*OWN_MEASURED_M2",
+      "formulaId": "tile-wall:kg15-01901:ready-mortar:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:ready-mortar"
+      }
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:operation:sort",
+      "operationId": "tile-wall:kg15-01901:operation:sort",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:operation:sort"
+      ],
+      "category": "labor",
+      "unitId": "m2",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Сортировка плиток",
+      "quantityRule": "SOURCE_INCLUDED_OPERATION_MARKER;NO_SECOND_PAYMENT",
+      "formulaId": "tile-wall:kg15-01901:operation:sort:quantity",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "tile-wall:kg15-01901:operation:sort",
+        "parentRowId": "tile-wall:kg15-01901:whole-labour"
+      }
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:operation:face",
+      "operationId": "tile-wall:kg15-01901:operation:face",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:operation:face"
+      ],
+      "category": "labor",
+      "unitId": "m2",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Облицовка поверхности",
+      "quantityRule": "SOURCE_INCLUDED_OPERATION_MARKER;NO_SECOND_PAYMENT",
+      "formulaId": "tile-wall:kg15-01901:operation:face:quantity",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "tile-wall:kg15-01901:operation:face",
+        "parentRowId": "tile-wall:kg15-01901:whole-labour"
+      }
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:operation:cut-fit",
+      "operationId": "tile-wall:kg15-01901:operation:cut-fit",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:operation:cut-fit"
+      ],
+      "category": "labor",
+      "unitId": "m2",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Перерубка плиток и приточка кромок",
+      "quantityRule": "SOURCE_INCLUDED_OPERATION_MARKER;NO_SECOND_PAYMENT",
+      "formulaId": "tile-wall:kg15-01901:operation:cut-fit:quantity",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "tile-wall:kg15-01901:operation:cut-fit",
+        "parentRowId": "tile-wall:kg15-01901:whole-labour"
+      }
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:operation:fill-joints",
+      "operationId": "tile-wall:kg15-01901:operation:fill-joints",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:operation:fill-joints"
+      ],
+      "category": "labor",
+      "unitId": "m2",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Заполнение швов",
+      "quantityRule": "SOURCE_INCLUDED_OPERATION_MARKER;NO_SECOND_PAYMENT",
+      "formulaId": "tile-wall:kg15-01901:operation:fill-joints:quantity",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "tile-wall:kg15-01901:operation:fill-joints",
+        "parentRowId": "tile-wall:kg15-01901:whole-labour"
+      }
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:operation:dust-rub",
+      "operationId": "tile-wall:kg15-01901:operation:dust-rub",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:operation:dust-rub"
+      ],
+      "category": "labor",
+      "unitId": "m2",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Распудривание облицованных поверхностей",
+      "quantityRule": "SOURCE_INCLUDED_OPERATION_MARKER;NO_SECOND_PAYMENT",
+      "formulaId": "tile-wall:kg15-01901:operation:dust-rub:quantity",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "tile-wall:kg15-01901:operation:dust-rub",
+        "parentRowId": "tile-wall:kg15-01901:whole-labour"
+      }
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:operation:clean-wash",
+      "operationId": "tile-wall:kg15-01901:operation:clean-wash",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:operation:clean-wash"
+      ],
+      "category": "labor",
+      "unitId": "m2",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Очистка и промывка поверхности облицовки",
+      "quantityRule": "SOURCE_INCLUDED_OPERATION_MARKER;NO_SECOND_PAYMENT",
+      "formulaId": "tile-wall:kg15-01901:operation:clean-wash:quantity",
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "tile-wall:kg15-01901:operation:clean-wash",
+        "parentRowId": "tile-wall:kg15-01901:whole-labour"
+      }
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:need:substrate",
+      "operationId": "tile-wall:kg15-01901:need:substrate",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:need:substrate"
+      ],
+      "category": "service",
+      "unitId": "",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Подготовка основания под облицовку",
+      "quantityRule": "UNRESOLVED_NO_POSITIVE_RATE_NO_KIT1",
+      "formulaId": "tile-wall:kg15-01901:need:substrate:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:need:substrate"
+      },
+      "needStatus": "SOURCE_OR_APPLICABLE_PROVISION_REQUIRED_NOT_PROJECT_DOCUMENT_AUTHORITY"
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:need:install-tools",
+      "operationId": "tile-wall:kg15-01901:need:install-tools",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:need:install-tools"
+      ],
+      "category": "equipment",
+      "unitId": "",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Ручной инструмент для нанесения раствора и заполнения швов",
+      "quantityRule": "UNRESOLVED_NO_POSITIVE_RATE_NO_KIT1",
+      "formulaId": "tile-wall:kg15-01901:need:install-tools:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:need:install-tools"
+      },
+      "needStatus": "SOURCE_OR_APPLICABLE_PROVISION_REQUIRED_NOT_PROJECT_DOCUMENT_AUTHORITY"
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:need:cut-tools",
+      "operationId": "tile-wall:kg15-01901:need:cut-tools",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:need:cut-tools"
+      ],
+      "category": "equipment",
+      "unitId": "",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Инструмент для перерубки плиток и приточки кромок",
+      "quantityRule": "UNRESOLVED_NO_POSITIVE_RATE_NO_KIT1",
+      "formulaId": "tile-wall:kg15-01901:need:cut-tools:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:need:cut-tools"
+      },
+      "needStatus": "SOURCE_OR_APPLICABLE_PROVISION_REQUIRED_NOT_PROJECT_DOCUMENT_AUTHORITY"
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:need:cleaning-post",
+      "operationId": "tile-wall:kg15-01901:need:cleaning-post",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:need:cleaning-post"
+      ],
+      "category": "equipment",
+      "unitId": "",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Инвентарь очистки и промывки облицовки",
+      "quantityRule": "UNRESOLVED_NO_POSITIVE_RATE_NO_KIT1",
+      "formulaId": "tile-wall:kg15-01901:need:cleaning-post:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:need:cleaning-post"
+      },
+      "needStatus": "SOURCE_OR_APPLICABLE_PROVISION_REQUIRED_NOT_PROJECT_DOCUMENT_AUTHORITY"
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:need:access",
+      "operationId": "tile-wall:kg15-01901:need:access",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:need:access"
+      ],
+      "category": "equipment",
+      "unitId": "",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Инвентарь доступа к облицовываемой стене",
+      "quantityRule": "UNRESOLVED_NO_POSITIVE_RATE_NO_KIT1",
+      "formulaId": "tile-wall:kg15-01901:need:access:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:need:access"
+      },
+      "needStatus": "SOURCE_OR_APPLICABLE_PROVISION_REQUIRED_NOT_PROJECT_DOCUMENT_AUTHORITY"
+    },
+    {
+      "expectedResourceId": "tile-wall:kg15-01901:need:ppe",
+      "operationId": "tile-wall:kg15-01901:need:ppe",
+      "requiredOperationIds": [
+        "tile-wall:kg15-01901:need:ppe"
+      ],
+      "category": "material",
+      "unitId": "",
+      "sourceId": "wall_ceramic_glazed_cement_mortar_krer15_01_019_01_f266",
+      "condition": "{\"kind\":\"equals\",\"parameterId\":\"wall019_requested_physical_method\",\"value\":\"Облицовка плоской кирпичной или бетонной стены белой глазурованной плиткой на цементном растворе\"}",
+      "specification": "Средства индивидуальной защиты при облицовке",
+      "quantityRule": "UNRESOLVED_NO_POSITIVE_RATE_NO_KIT1",
+      "formulaId": "tile-wall:kg15-01901:need:ppe:quantity",
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "tile-wall:kg15-01901:need:ppe"
+      },
+      "needStatus": "SOURCE_OR_APPLICABLE_PROVISION_REQUIRED_NOT_PROJECT_DOCUMENT_AUTHORITY"
+    }
+  ],
+  "current59DispositionReference": "source02-exact-operation05/wall-ceramic-cement-existing-map-f266.json",
+  "wholeProvisionUnknownCount": 6,
+  "actualQuantitativeClosures": 0
+}

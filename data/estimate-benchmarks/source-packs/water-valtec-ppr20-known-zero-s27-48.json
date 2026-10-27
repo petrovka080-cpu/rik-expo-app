@@ -1,0 +1,26 @@
+{
+  "contract": "rik-expo-app.s27-48.valtec-ppr20-known-zero.v1",
+  "sourceId": "VALTEC_PPR20_KNOWN_ZERO_OWNERS_S2748",
+  "previousSourcePack": "data/estimate-benchmarks/source-packs/water-valtec-ppr20-mixed-endpoints-s27-47.json",
+  "previousSourcePackSha256": "bac17c1b4f0d9af5af57b5fd633a6b77710bed98fabdc0d996337e0840ac7a79",
+  "scope": "Five existing discrete fitting owners in the PP-R20 profile: exclude payment and procurement only when calculated consumption and final ordered quantity are both known zero. Retain the physical row and audit trace.",
+  "rowIds": [
+    "water-ppr20:04:component:straight-couplings",
+    "water-ppr20:05:component:elbows",
+    "water-ppr20:05:component:tees",
+    "water-ppr20:05:component:threaded-transitions",
+    "water-ppr20:05:component:terminal-caps"
+  ],
+  "independentRequirements": [
+    "For the declared straight 100m route with two caps, 24 interior couplings and two caps remain active; zero elbows, tees and threaded transitions require neither purchase nor price.",
+    "For a declared straight route no longer than one 4m section, no interior coupling is installed.",
+    "Unknown geometry remains unknown; no missing count is replaced with zero.",
+    "Explicit positive spare orders remain selected and require a complete product specification.",
+    "A zero order against positive consumption remains a visible shortage.",
+    "Former sealed definitions and saved revisions retain their original semantics; this policy is opt-in on a new successor only."
+  ],
+  "limitations": [
+    "This finite ownership correction adds no engineering norm or product model and accepts no new catalog type.",
+    "Full G7 engineering, applicability of insulation and penetrations, valves and completion remain open."
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "mandatory_count": 20,
+  "description": "Critical product-flow estimate prompts that must not be accepted by route-marker-only checks.",
+  "critical_cases": [
+    {
+      "case_id": "capital_renovation_apartment_98",
+      "prompt": "капитальный ремонт квартиры 98 м² потолок 3 м 2 санузла",
+      "expected_flow": "grouped_snapshot_pdf_buyer_handoff"
+    },
+    {
+      "case_id": "apartment_repair_54",
+      "prompt": "ремонт квартиры 54 м²",
+      "expected_flow": "professional_or_missing_params_form"
+    },
+    {
+      "case_id": "gas_block_masonry_400",
+      "prompt": "кладка 400 м² газоблок 300 мм",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "screed_100_50mm",
+      "prompt": "стяжка 100 м² толщина 50 мм",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "diamond_drilling_d110_12",
+      "prompt": "алмазное бурение 12 отверстий d110 глубина 250 мм железобетон",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "profile_sheet_fence_50m",
+      "prompt": "забор из профлиста 50 м высота 2 м шаг столбов 2.5 м",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "mansard_roof_200",
+      "prompt": "мансардная крыша 200 м² металлочерепица утепление 200 мм",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "slab_rebar_100",
+      "prompt": "армирование плиты 100 м² d12 шаг 200 два слоя",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "plaster_300_20mm",
+      "prompt": "штукатурка 300 м² слой 20 мм",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "tile_45",
+      "prompt": "плитка 45 м²",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "paint_200_two_coats",
+      "prompt": "покраска 200 м² 2 слоя",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "gkl_partition_80",
+      "prompt": "ГКЛ перегородка 80 м²",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "electric_points_78",
+      "prompt": "электрика 78 точек",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "plumbing_two_bathrooms",
+      "prompt": "сантехника 2 санузла",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "facade_insulation_150",
+      "prompt": "фасад утепление 150 м² минвата 100 мм",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "metal_tile_roof_200",
+      "prompt": "кровля 200 м² металлочерепица",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "concrete_slab_100_120mm",
+      "prompt": "бетонная плита 100 м² толщина 120 мм",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "foundation_formwork_20",
+      "prompt": "опалубка фундамента 20 м длина 0.6 м высота две стороны",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "earthworks_trench_30",
+      "prompt": "земляные работы траншея 30 м ширина 0.4 м глубина 0.8 м",
+      "expected_flow": "professional_grouped_estimate"
+    },
+    {
+      "case_id": "interior_doors_6",
+      "prompt": "монтаж 6 межкомнатных дверей",
+      "expected_flow": "professional_grouped_estimate"
+    }
+  ]
+}

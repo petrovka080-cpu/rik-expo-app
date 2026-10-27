@@ -1,0 +1,267 @@
+{
+  "schema": "ai-estimate-role-based-uat-scenarios-v1",
+  "scenario_set_id": "role-based-uat-v1",
+  "minimum_required_count": 150,
+  "web_android_required_count": 60,
+  "category_minimums": {
+    "CORE_REPAIR": 30,
+    "APARTMENT_HOUSE": 15,
+    "STRUCTURAL": 20,
+    "INFRASTRUCTURE": 25,
+    "ROADS_DAMS_WATER_POWER": 20,
+    "HIGH_RISE_FACADE_ROOF": 15,
+    "INDUSTRIAL_ENERGY": 20,
+    "NEGATIVE_MISSING_INPUTS": 10,
+    "PRICEBOOK_MISSING_PRICE": 10
+  },
+  "mandatory_source_cases": [
+    "CORE-001-capital-renovation-98",
+    "CORE-002-apartment-repair-54",
+    "CORE-003-gas-block-masonry-400",
+    "CORE-004-screed-100-50",
+    "CORE-009-diamond-drilling-d110",
+    "CORE-010-profile-sheet-fence",
+    "COMPLEX-029-mansard-roof",
+    "INFRA-011-village-water-supply",
+    "INFRA-015-asphalt-road",
+    "INFRA-017-earth-dam",
+    "INFRA-018-power-line-10kv",
+    "ENERGY-034-substation-110kv",
+    "COMPLEX-021-bridge",
+    "COMPLEX-022-tunnel",
+    "COMPLEX-024-multistorey-building",
+    "COMPLEX-028-high-rise-glazing",
+    "ENERGY-031-thermal-power-plant",
+    "ENERGY-033-hydro-power-plant",
+    "COMPLEX-025-industrial-shed",
+    "COMPLEX-027-technological-pipeline"
+  ],
+  "critical_scenario_sources": [
+    "CORE-001-capital-renovation-98",
+    "CORE-002-apartment-repair-54",
+    "CORE-003-gas-block-masonry-400",
+    "CORE-004-screed-100-50",
+    "CORE-005-plaster-300-20",
+    "CORE-006-tile-45",
+    "CORE-007-paint-200-two-coats",
+    "CORE-008-gkl-partition-80",
+    "CORE-009-diamond-drilling-d110",
+    "CORE-010-profile-sheet-fence",
+    "INFRA-011-village-water-supply",
+    "INFRA-012-sewer-network",
+    "INFRA-013-wastewater-treatment",
+    "INFRA-014-pumping-station",
+    "INFRA-015-asphalt-road",
+    "INFRA-016-concrete-road",
+    "INFRA-017-earth-dam",
+    "INFRA-018-power-line-10kv",
+    "INFRA-019-transformer-substation",
+    "INFRA-020-utility-connections",
+    "COMPLEX-021-bridge",
+    "COMPLEX-022-tunnel",
+    "COMPLEX-023-retaining-wall",
+    "COMPLEX-024-multistorey-building",
+    "COMPLEX-025-industrial-shed",
+    "COMPLEX-026-equipment-foundation",
+    "COMPLEX-027-technological-pipeline",
+    "COMPLEX-028-high-rise-glazing",
+    "COMPLEX-029-mansard-roof",
+    "COMPLEX-030-facade-glazing",
+    "ENERGY-031-thermal-power-plant",
+    "ENERGY-032-boiler-house",
+    "ENERGY-033-hydro-power-plant",
+    "ENERGY-034-substation-110kv",
+    "ENERGY-035-solar-power",
+    "RANDOM-036-strip-foundation",
+    "RANDOM-037-foundation-slab",
+    "RANDOM-038-foundation-waterproofing",
+    "RANDOM-039-roof-waterproofing",
+    "RANDOM-040-laminate-floor",
+    "RANDOM-041-linoleum-floor",
+    "RANDOM-042-door-blocks",
+    "RANDOM-043-pvc-windows",
+    "RANDOM-044-short-water-supply",
+    "RANDOM-045-ventilation",
+    "RANDOM-046-radiator-heating",
+    "RANDOM-047-fire-alarm",
+    "RANDOM-048-wet-facade",
+    "RANDOM-049-sewer-trench",
+    "RANDOM-050-construction-waste",
+    "CORE-001-capital-renovation-98",
+    "CORE-002-apartment-repair-54",
+    "INFRA-011-village-water-supply",
+    "INFRA-015-asphalt-road",
+    "COMPLEX-021-bridge",
+    "COMPLEX-029-mansard-roof",
+    "ENERGY-031-thermal-power-plant",
+    "ENERGY-033-hydro-power-plant",
+    "RANDOM-036-strip-foundation",
+    "RANDOM-049-sewer-trench"
+  ],
+  "scenario_generation": [
+    {
+      "category": "CORE_REPAIR",
+      "count": 30,
+      "source_controlled_pilot_case_ids": [
+        "CORE-001-capital-renovation-98",
+        "CORE-002-apartment-repair-54",
+        "CORE-004-screed-100-50",
+        "CORE-005-plaster-300-20",
+        "CORE-006-tile-45",
+        "CORE-007-paint-200-two-coats",
+        "CORE-008-gkl-partition-80"
+      ],
+      "role_focus": [
+        "ESTIMATOR",
+        "DIRECTOR",
+        "CLIENT_VIEWER"
+      ]
+    },
+    {
+      "category": "APARTMENT_HOUSE",
+      "count": 15,
+      "source_controlled_pilot_case_ids": [
+        "CORE-001-capital-renovation-98",
+        "CORE-002-apartment-repair-54",
+        "RANDOM-040-laminate-floor",
+        "RANDOM-041-linoleum-floor",
+        "RANDOM-042-door-blocks",
+        "RANDOM-043-pvc-windows"
+      ],
+      "role_focus": [
+        "ESTIMATOR",
+        "FOREMAN",
+        "CLIENT_VIEWER"
+      ]
+    },
+    {
+      "category": "STRUCTURAL",
+      "count": 20,
+      "source_controlled_pilot_case_ids": [
+        "CORE-003-gas-block-masonry-400",
+        "CORE-009-diamond-drilling-d110",
+        "CORE-010-profile-sheet-fence",
+        "RANDOM-036-strip-foundation",
+        "RANDOM-037-foundation-slab",
+        "RANDOM-038-foundation-waterproofing"
+      ],
+      "role_focus": [
+        "ESTIMATOR",
+        "FOREMAN",
+        "PROCUREMENT_BUYER"
+      ]
+    },
+    {
+      "category": "INFRASTRUCTURE",
+      "count": 25,
+      "source_controlled_pilot_case_ids": [
+        "INFRA-011-village-water-supply",
+        "INFRA-012-sewer-network",
+        "INFRA-013-wastewater-treatment",
+        "INFRA-014-pumping-station",
+        "INFRA-020-utility-connections",
+        "RANDOM-044-short-water-supply",
+        "RANDOM-049-sewer-trench"
+      ],
+      "role_focus": [
+        "DIRECTOR",
+        "PROCUREMENT_BUYER",
+        "SUPPORT_ADMIN"
+      ]
+    },
+    {
+      "category": "ROADS_DAMS_WATER_POWER",
+      "count": 20,
+      "source_controlled_pilot_case_ids": [
+        "INFRA-015-asphalt-road",
+        "INFRA-016-concrete-road",
+        "INFRA-017-earth-dam",
+        "INFRA-018-power-line-10kv",
+        "INFRA-019-transformer-substation",
+        "ENERGY-034-substation-110kv"
+      ],
+      "role_focus": [
+        "DIRECTOR",
+        "FOREMAN",
+        "PROCUREMENT_BUYER"
+      ]
+    },
+    {
+      "category": "HIGH_RISE_FACADE_ROOF",
+      "count": 15,
+      "source_controlled_pilot_case_ids": [
+        "COMPLEX-028-high-rise-glazing",
+        "COMPLEX-029-mansard-roof",
+        "COMPLEX-030-facade-glazing",
+        "RANDOM-048-wet-facade",
+        "RANDOM-039-roof-waterproofing"
+      ],
+      "role_focus": [
+        "ESTIMATOR",
+        "DIRECTOR",
+        "CLIENT_VIEWER"
+      ]
+    },
+    {
+      "category": "INDUSTRIAL_ENERGY",
+      "count": 20,
+      "source_controlled_pilot_case_ids": [
+        "COMPLEX-021-bridge",
+        "COMPLEX-022-tunnel",
+        "COMPLEX-024-multistorey-building",
+        "COMPLEX-025-industrial-shed",
+        "COMPLEX-026-equipment-foundation",
+        "COMPLEX-027-technological-pipeline",
+        "ENERGY-031-thermal-power-plant",
+        "ENERGY-032-boiler-house",
+        "ENERGY-033-hydro-power-plant",
+        "ENERGY-035-solar-power"
+      ],
+      "role_focus": [
+        "DIRECTOR",
+        "PROCUREMENT_BUYER",
+        "SUPPORT_ADMIN"
+      ]
+    },
+    {
+      "category": "NEGATIVE_MISSING_INPUTS",
+      "count": 10,
+      "source_controlled_pilot_case_ids": [
+        "COMPLEX-021-bridge",
+        "COMPLEX-022-tunnel",
+        "ENERGY-031-thermal-power-plant",
+        "ENERGY-033-hydro-power-plant",
+        "INFRA-017-earth-dam"
+      ],
+      "negative_missing_inputs": true,
+      "role_focus": [
+        "ESTIMATOR",
+        "SUPPORT_ADMIN"
+      ]
+    },
+    {
+      "category": "PRICEBOOK_MISSING_PRICE",
+      "count": 10,
+      "source_controlled_pilot_case_ids": [
+        "INFRA-011-village-water-supply",
+        "INFRA-015-asphalt-road",
+        "COMPLEX-028-high-rise-glazing",
+        "ENERGY-034-substation-110kv",
+        "RANDOM-050-construction-waste"
+      ],
+      "price_missing_case": true,
+      "role_focus": [
+        "DIRECTOR",
+        "PROCUREMENT_BUYER",
+        "CLIENT_VIEWER"
+      ]
+    }
+  ],
+  "acceptance": {
+    "uat_scenarios_created": true,
+    "mandatory_uat_scenarios_included": true,
+    "all_major_work_groups_represented": true,
+    "negative_missing_input_cases_included": true,
+    "price_missing_cases_included": true
+  }
+}

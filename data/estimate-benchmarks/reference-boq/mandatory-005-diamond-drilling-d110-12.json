@@ -1,0 +1,110 @@
+{
+  "schema": "ai-estimate-golden-reference-boq-v1",
+  "case_id": "mandatory-005-diamond-drilling-d110-12",
+  "prompt": "алмазное бурение 12 отверстий d110 глубина 250 мм железобетон",
+  "generated_from": "p0_diamond_drilling",
+  "rows": [
+    {
+      "row_id": "mandatory-005-diamond-drilling-d110-12:diamond_drilling_labor_01",
+      "code": "diamond_drilling_labor_01",
+      "title": "diamond drilling labor 01",
+      "line_type": "work",
+      "group": "labor",
+      "quantity": 3,
+      "unit": "linear_m",
+      "quantity_formula": "template=p0_diamond_drilling_calculator; templateVersion=1.0.0; formula=holes_count * drilling_depth_mm / 1000; normSource=src_professional_norm_pack_diamond_drilling_critical_calculator_v1; result=3 linear_m",
+      "formula_ref": "diamond_drilling_diamond_drilling_labor_01_p0_formula_v1",
+      "source_ref": "src_professional_norm_pack_diamond_drilling_critical_calculator_v1",
+      "source_title": "src_professional_norm_pack_diamond_drilling_critical_calculator_v1",
+      "included_in_procurement": false,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "mandatory-005-diamond-drilling-d110-12:diamond_drilling_consumables_02",
+      "code": "diamond_drilling_consumables_02",
+      "title": "diamond drilling consumables 02",
+      "line_type": "material",
+      "group": "consumables",
+      "quantity": 0.24,
+      "unit": "piece",
+      "quantity_formula": "template=p0_diamond_drilling_calculator; templateVersion=1.0.0; formula=max(0.1, total_depth_m * segment_wear_norm); normSource=src_professional_norm_pack_diamond_drilling_critical_calculator_v1; result=0.24 piece",
+      "formula_ref": "diamond_drilling_diamond_drilling_consumables_02_p0_formula_v1",
+      "source_ref": "src_professional_norm_pack_diamond_drilling_critical_calculator_v1",
+      "source_title": "src_professional_norm_pack_diamond_drilling_critical_calculator_v1",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "mandatory-005-diamond-drilling-d110-12:diamond_drilling_materials_03",
+      "code": "diamond_drilling_materials_03",
+      "title": "diamond drilling materials 03",
+      "line_type": "material",
+      "group": "materials",
+      "quantity": 30,
+      "unit": "l",
+      "quantity_formula": "template=p0_diamond_drilling_calculator; templateVersion=1.0.0; formula=total_depth_m * technical_water_allowance; normSource=src_professional_norm_pack_diamond_drilling_critical_calculator_v1; result=30 l",
+      "formula_ref": "diamond_drilling_diamond_drilling_materials_03_p0_formula_v1",
+      "source_ref": "src_professional_norm_pack_diamond_drilling_critical_calculator_v1",
+      "source_title": "src_professional_norm_pack_diamond_drilling_critical_calculator_v1",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    },
+    {
+      "row_id": "mandatory-005-diamond-drilling-d110-12:diamond_drilling_equipment_04",
+      "code": "diamond_drilling_equipment_04",
+      "title": "diamond drilling equipment 04",
+      "line_type": "equipment",
+      "group": "equipment",
+      "quantity": 1,
+      "unit": "day",
+      "quantity_formula": "template=p0_diamond_drilling_calculator; templateVersion=1.0.0; formula=max(1, ceil(total_depth_m / 12)); normSource=src_professional_norm_pack_diamond_drilling_critical_calculator_v1; result=1 day",
+      "formula_ref": "diamond_drilling_diamond_drilling_equipment_04_p0_formula_v1",
+      "source_ref": "src_professional_norm_pack_diamond_drilling_critical_calculator_v1",
+      "source_title": "src_professional_norm_pack_diamond_drilling_critical_calculator_v1",
+      "included_in_procurement": true,
+      "unit_price": null,
+      "total": null,
+      "price_state": "PRICE_MISSING",
+      "importance": "key"
+    }
+  ],
+  "material_rows": [
+    "diamond_drilling_consumables_02",
+    "diamond_drilling_materials_03"
+  ],
+  "work_rows": [
+    "diamond_drilling_labor_01"
+  ],
+  "service_rows": [],
+  "equipment_rows": [
+    "diamond_drilling_equipment_04"
+  ],
+  "procurement_subset": [
+    "diamond_drilling_consumables_02",
+    "diamond_drilling_materials_03",
+    "diamond_drilling_equipment_04"
+  ],
+  "pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "source_refs": [
+    "src_professional_norm_pack_diamond_drilling_critical_calculator_v1"
+  ],
+  "snapshot_hash": "h1876698418"
+}

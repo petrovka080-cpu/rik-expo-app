@@ -1,0 +1,900 @@
+{
+  "contract": "monolithic-simple-geometry-source-profiles/r3",
+  "status": "SOURCE_CONFIG_PENDING_RUNTIME_GATES_NOT_PUBLISHED_NOT_FULL",
+  "purpose": "Choose an existing bounded cost-estimation source profile from measured geometry, and copy the same measured facts into that profile. No new rates, design approval, PPR facts, equipment counts or engineering design.",
+  "sourceJurisdiction": "Existing source country/edition retained. Application profile is not a claim of local compliance or approved object design.",
+  "unknownScope": "Unsupported geometry remains a source gap. Reinforcement, concrete specification, PPR, formwork layout and equipment counts remain unresolved unless independently confirmed.",
+  "historicalProfiles": "All old enum branches, definitions and saved versions remain preserved. A registered engineering-specific variant is not guessed from volume alone.",
+  "targets": [
+    {
+      "kind": "slab",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "parentDefinitionId": "974aa5c7-f363-5424-a153-b65af40f52cb",
+      "parentDefinitionSha256": "7d2d7e9facc31cc1ddb52a250178c0b7b87b83c70f062dd9b1e5296832d75352",
+      "geometry": [
+        {
+          "parameterId": "m212_concrete_net_volume_m3",
+          "templateParameterId": "m212_concrete_net_volume_m3",
+          "titleRu": "Проектный объём бетона по геометрии",
+          "unitId": "m3",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "requiredWhen": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "equals",
+                    "value": "Монолитная бетонная фундаментная плита без армирования",
+                    "parameterId": "m212_foundation_cycle_profile"
+                  }
+                },
+                {
+                  "kind": "equals",
+                  "value": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+                  "parameterId": "m212_foundation_cycle_profile"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "parameterId": "m212_preparation_net_volume_m3",
+          "templateParameterId": "m212_preparation_net_volume_m3",
+          "titleRu": "Чистый объём бетонной подготовки",
+          "unitId": "m3",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0
+          }
+        }
+      ],
+      "unitCorrections": [],
+      "selection": {
+        "contract": "canonical-source-profile-selection/v1",
+        "selectorParameterId": "m212_foundation_cycle_profile",
+        "geometryParameterIds": [
+          "m212_concrete_net_volume_m3",
+          "m212_preparation_net_volume_m3"
+        ],
+        "profiles": [
+          {
+            "selectorValue": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+            "sources": [
+              {
+                "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                "artifactSha256": "f1ddfee0b316e741ae2e8939a0c21d12f95fd052fe416021cb1fd22ab4bbd87b",
+                "locator": "MASTER2.12 §2Б; complete accepted component arrays; КРЕР06-01-001-01 exact column"
+              }
+            ],
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "m212_concrete_net_volume_m3",
+                  "unitId": "m3",
+                  "value": 0
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "parameterId": "m212_preparation_net_volume_m3",
+                      "value": 0
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "expression": "m212_preparation_net_volume_m3",
+                      "unitId": "m3",
+                      "value": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "geometryCopies": []
+          }
+        ]
+      }
+    },
+    {
+      "kind": "strip",
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "parentDefinitionId": "60bca5c0-cc41-5b8b-b754-18ce115a4d14",
+      "parentDefinitionSha256": "4979f59ddcce65dc063ad007a90e369aee0f943fdc9bcd3c72158b1799e7ad53",
+      "geometry": [
+        {
+          "parameterId": "m212_concrete_net_volume_m3",
+          "templateParameterId": "m212_concrete_net_volume_m3",
+          "titleRu": "Проектный объём бетона по геометрии",
+          "unitId": "m3",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "requiredWhen": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "equals",
+                    "value": "Ленточный фундамент шириной поверху до 1 м с деревянной щитовой опалубкой",
+                    "parameterId": "m212_foundation_cycle_profile"
+                  }
+                },
+                {
+                  "kind": "equals",
+                  "value": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+                  "parameterId": "m212_foundation_cycle_profile"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "parameterId": "m212_preparation_net_volume_m3",
+          "templateParameterId": "m212_preparation_net_volume_m3",
+          "titleRu": "Чистый объём бетонной подготовки",
+          "unitId": "m3",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0
+          }
+        }
+      ],
+      "unitCorrections": [],
+      "selection": {
+        "contract": "canonical-source-profile-selection/v1",
+        "selectorParameterId": "m212_foundation_cycle_profile",
+        "geometryParameterIds": [
+          "m212_concrete_net_volume_m3",
+          "m212_preparation_net_volume_m3"
+        ],
+        "profiles": [
+          {
+            "selectorValue": "Полный цикл фундамента с отдельной бетонной подготовкой по подтверждённому проекту",
+            "sources": [
+              {
+                "sourceId": "master212_concrete_foundation_cycle_and_preparation_r1",
+                "artifactSha256": "f1ddfee0b316e741ae2e8939a0c21d12f95fd052fe416021cb1fd22ab4bbd87b",
+                "locator": "MASTER2.12 §2Б; complete accepted component arrays; КРЕР06-01-001-01 exact column"
+              }
+            ],
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "m212_concrete_net_volume_m3",
+                  "unitId": "m3",
+                  "value": 0
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "parameterId": "m212_preparation_net_volume_m3",
+                      "value": 0
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "expression": "m212_preparation_net_volume_m3",
+                      "unitId": "m3",
+                      "value": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "geometryCopies": []
+          }
+        ]
+      }
+    },
+    {
+      "kind": "beam",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "parentDefinitionId": "f0b798f2-dc0d-53ad-9989-9b3118f28dee",
+      "parentDefinitionSha256": "4b76637c8cbd578e9e48fc6f697a6840472fefc2749a40be1c591b6ae1cd7a70",
+      "geometry": [
+        {
+          "parameterId": "monolithic_geometry_r3_beam_volume_m3",
+          "templateParameterId": "mono_r1_beam_volume_m3",
+          "titleRu": "Чистый объём железобетона в деле по геометрии проекта",
+          "unitId": "m3",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "exclusiveMin": 0
+          }
+        },
+        {
+          "parameterId": "monolithic_geometry_r3_beam_depth_mm",
+          "templateParameterId": "mono_r1_beam_depth_mm",
+          "titleRu": "Высота балки",
+          "unitId": "mm",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "exclusiveMin": 0
+          }
+        },
+        {
+          "parameterId": "monolithic_geometry_r3_beam_support_height_m",
+          "templateParameterId": "mono_r1_beam_support_height_m",
+          "titleRu": "Высота от опорной площадки",
+          "unitId": "m",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "exclusiveMin": 0
+          }
+        },
+        {
+          "parameterId": "monolithic_geometry_r3_beam_work_elevation_m",
+          "templateParameterId": "mono_r1_beam_work_elevation_m",
+          "titleRu": "Отметка выполнения работ",
+          "unitId": "m",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0
+          }
+        }
+      ],
+      "unitCorrections": [
+        {
+          "parameterId": "mono_remaining_r1_beam_109_02_depth_mm",
+          "beforeUnitId": null,
+          "afterUnitId": "mm",
+          "basis": "The existing exact 06-01-109-02 source scope and parameter title already specify depth in millimetres. Identity copy requires the explicit same unit; no numeric conversion."
+        }
+      ],
+      "selection": {
+        "contract": "canonical-source-profile-selection/v1",
+        "selectorParameterId": "mono_family_source_method_r1",
+        "geometryParameterIds": [
+          "monolithic_geometry_r3_beam_volume_m3",
+          "monolithic_geometry_r3_beam_depth_mm",
+          "monolithic_geometry_r3_beam_support_height_m",
+          "monolithic_geometry_r3_beam_work_elevation_m"
+        ],
+        "profiles": [
+          {
+            "selectorValue": "Исходная система КРЕР06-2015, индустриальная опалубка",
+            "sources": [
+              {
+                "sourceId": "gox-monolithic-family-krer06-10702-10903-11101-r1:beam",
+                "artifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+                "locator": "06-01-109-03"
+              }
+            ],
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_beam_volume_m3",
+                  "unitId": "m3",
+                  "value": 0
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "parameterId": "monolithic_geometry_r3_beam_work_elevation_m",
+                      "value": 0
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "expression": "monolithic_geometry_r3_beam_work_elevation_m",
+                      "unitId": "m",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_beam_work_elevation_m",
+                    "unitId": "m",
+                    "value": 15
+                  }
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_beam_support_height_m",
+                  "unitId": "m",
+                  "value": 0
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_beam_support_height_m",
+                    "unitId": "m",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_beam_depth_mm",
+                  "unitId": "mm",
+                  "value": 800
+                }
+              ]
+            },
+            "geometryCopies": [
+              {
+                "fromParameterId": "monolithic_geometry_r3_beam_volume_m3",
+                "toParameterId": "mono_r1_beam_volume_m3"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_beam_depth_mm",
+                "toParameterId": "mono_r1_beam_depth_mm"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_beam_support_height_m",
+                "toParameterId": "mono_r1_beam_support_height_m"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_beam_work_elevation_m",
+                "toParameterId": "mono_r1_beam_work_elevation_m"
+              }
+            ]
+          },
+          {
+            "selectorValue": "Прямолинейная балка высотой более 500 до 800 мм, опоры до 6 м",
+            "sources": [
+              {
+                "sourceId": "gox_monolithic_family_physical_provision_r2:card6",
+                "artifactSha256": "87b2e90e977ec5fba294a0fb9e49fa0d295d98b954f1386f4508f90e293a9562",
+                "locator": "06-01-109-02"
+              }
+            ],
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_beam_volume_m3",
+                  "unitId": "m3",
+                  "value": 0
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "parameterId": "monolithic_geometry_r3_beam_work_elevation_m",
+                      "value": 0
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "expression": "monolithic_geometry_r3_beam_work_elevation_m",
+                      "unitId": "m",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_beam_work_elevation_m",
+                    "unitId": "m",
+                    "value": 15
+                  }
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_beam_support_height_m",
+                  "unitId": "m",
+                  "value": 0
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_beam_support_height_m",
+                    "unitId": "m",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_beam_depth_mm",
+                  "unitId": "mm",
+                  "value": 500
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_beam_depth_mm",
+                    "unitId": "mm",
+                    "value": 800
+                  }
+                }
+              ]
+            },
+            "geometryCopies": [
+              {
+                "fromParameterId": "monolithic_geometry_r3_beam_volume_m3",
+                "toParameterId": "mono_remaining_r1_beam_109_02_volume_m3"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_beam_depth_mm",
+                "toParameterId": "mono_remaining_r1_beam_109_02_depth_mm"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_beam_support_height_m",
+                "toParameterId": "mono_remaining_r1_beam_109_02_support_height_m"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_beam_work_elevation_m",
+                "toParameterId": "mono_remaining_r1_beam_109_02_work_elevation_m"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "column",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+      "parentDefinitionId": "28803151-4a5a-57ae-b288-28c500695c0a",
+      "parentDefinitionSha256": "a2052439e98a20a9878932581169e1cd7fa8570aeaccfc2e60cb1987e5e0d6c0",
+      "geometry": [
+        {
+          "parameterId": "monolithic_geometry_r3_column_volume_m3",
+          "templateParameterId": "mono_r1_column_volume_m3",
+          "titleRu": "Чистый объём железобетона в деле по геометрии проекта",
+          "unitId": "m3",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "exclusiveMin": 0
+          }
+        },
+        {
+          "parameterId": "monolithic_geometry_r3_column_height_m",
+          "templateParameterId": "mono_r1_column_height_m",
+          "titleRu": "Высота колонны",
+          "unitId": "m",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "exclusiveMin": 0
+          }
+        },
+        {
+          "parameterId": "monolithic_geometry_r3_column_perimeter_m",
+          "templateParameterId": "mono_r1_column_perimeter_m",
+          "titleRu": "Периметр сечения колонны",
+          "unitId": "m",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "exclusiveMin": 0
+          }
+        },
+        {
+          "parameterId": "monolithic_geometry_r3_column_work_elevation_m",
+          "templateParameterId": "mono_r1_column_work_elevation_m",
+          "titleRu": "Отметка выполнения работ",
+          "unitId": "m",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0
+          }
+        }
+      ],
+      "unitCorrections": [],
+      "selection": {
+        "contract": "canonical-source-profile-selection/v1",
+        "selectorParameterId": "mono_family_source_method_r1",
+        "geometryParameterIds": [
+          "monolithic_geometry_r3_column_volume_m3",
+          "monolithic_geometry_r3_column_height_m",
+          "monolithic_geometry_r3_column_perimeter_m",
+          "monolithic_geometry_r3_column_work_elevation_m"
+        ],
+        "profiles": [
+          {
+            "selectorValue": "Исходная система КРЕР06-2015, индустриальная опалубка",
+            "sources": [
+              {
+                "sourceId": "gox-monolithic-family-krer06-10702-10903-11101-r1:column",
+                "artifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+                "locator": "06-01-107-02"
+              }
+            ],
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_column_volume_m3",
+                  "unitId": "m3",
+                  "value": 0
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "parameterId": "monolithic_geometry_r3_column_work_elevation_m",
+                      "value": 0
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "expression": "monolithic_geometry_r3_column_work_elevation_m",
+                      "unitId": "m",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_column_work_elevation_m",
+                    "unitId": "m",
+                    "value": 15
+                  }
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_column_height_m",
+                  "unitId": "m",
+                  "value": 0
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_column_perimeter_m",
+                  "unitId": "m",
+                  "value": 0
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_column_perimeter_m",
+                    "unitId": "m",
+                    "value": 2
+                  }
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_column_height_m",
+                  "unitId": "m",
+                  "value": 4
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_column_height_m",
+                    "unitId": "m",
+                    "value": 6
+                  }
+                }
+              ]
+            },
+            "geometryCopies": [
+              {
+                "fromParameterId": "monolithic_geometry_r3_column_volume_m3",
+                "toParameterId": "mono_r1_column_volume_m3"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_column_height_m",
+                "toParameterId": "mono_r1_column_height_m"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_column_perimeter_m",
+                "toParameterId": "mono_r1_column_perimeter_m"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_column_work_elevation_m",
+                "toParameterId": "mono_r1_column_work_elevation_m"
+              }
+            ]
+          },
+          {
+            "selectorValue": "Колонна высотой до 4 м, периметр сечения до 2 м",
+            "sources": [
+              {
+                "sourceId": "gox_monolithic_family_physical_provision_r2:card7",
+                "artifactSha256": "87b2e90e977ec5fba294a0fb9e49fa0d295d98b954f1386f4508f90e293a9562",
+                "locator": "06-01-107-01"
+              }
+            ],
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_column_volume_m3",
+                  "unitId": "m3",
+                  "value": 0
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "parameterId": "monolithic_geometry_r3_column_work_elevation_m",
+                      "value": 0
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "expression": "monolithic_geometry_r3_column_work_elevation_m",
+                      "unitId": "m",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_column_work_elevation_m",
+                    "unitId": "m",
+                    "value": 15
+                  }
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_column_height_m",
+                  "unitId": "m",
+                  "value": 0
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "monolithic_geometry_r3_column_perimeter_m",
+                  "unitId": "m",
+                  "value": 0
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_column_perimeter_m",
+                    "unitId": "m",
+                    "value": 2
+                  }
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "monolithic_geometry_r3_column_height_m",
+                    "unitId": "m",
+                    "value": 4
+                  }
+                }
+              ]
+            },
+            "geometryCopies": [
+              {
+                "fromParameterId": "monolithic_geometry_r3_column_volume_m3",
+                "toParameterId": "mono_remaining_r1_column_107_01_volume_m3"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_column_height_m",
+                "toParameterId": "mono_remaining_r1_column_107_01_height_m"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_column_perimeter_m",
+                "toParameterId": "mono_remaining_r1_column_107_01_perimeter_m"
+              },
+              {
+                "fromParameterId": "monolithic_geometry_r3_column_work_elevation_m",
+                "toParameterId": "mono_remaining_r1_column_107_01_work_elevation_m"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "wall",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+      "parentDefinitionId": "f5cbff31-80c2-5799-831b-5b97e560a14b",
+      "parentDefinitionSha256": "4d3c4501515134d7785869dcaacb49d90ff6077d2f2780df3fec1ab7a9797ca4",
+      "geometry": [
+        {
+          "parameterId": "m212_family_b_wall04_net_concrete_volume_m3",
+          "templateParameterId": "m212_family_b_wall04_net_concrete_volume_m3",
+          "titleRu": "Чистый проектный объём бетона в конструкции",
+          "unitId": "m3",
+          "valueType": "decimal",
+          "constraints": {
+            "min": 0,
+            "requiredWhen": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "greater_than",
+                  "value": 0,
+                  "parameterId": "m212_family_b_wall04_net_concrete_volume_m3"
+                },
+                {
+                  "kind": "equals",
+                  "value": "Монолитная железобетонная стена 300 мм высотой до 3 м",
+                  "parameterId": "m212_family_b_profile"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "parameterId": "m212_family_b_wall04_thickness_m",
+          "templateParameterId": "m212_family_b_wall04_thickness_m",
+          "titleRu": "Фактическая толщина стены",
+          "unitId": "m",
+          "valueType": "decimal",
+          "constraints": {
+            "max": 0.3,
+            "min": 0.3,
+            "requiredWhen": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "greater_than",
+                  "value": 0,
+                  "parameterId": "m212_family_b_wall04_net_concrete_volume_m3"
+                },
+                {
+                  "kind": "equals",
+                  "value": "Монолитная железобетонная стена 300 мм высотой до 3 м",
+                  "parameterId": "m212_family_b_profile"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "parameterId": "m212_family_b_wall04_height_from_support_m",
+          "templateParameterId": "m212_family_b_wall04_height_from_support_m",
+          "titleRu": "Высота от опорной площадки",
+          "unitId": "m",
+          "valueType": "decimal",
+          "constraints": {
+            "max": 3,
+            "min": 0,
+            "exclusiveMin": 0,
+            "requiredWhen": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "greater_than",
+                  "value": 0,
+                  "parameterId": "m212_family_b_wall04_net_concrete_volume_m3"
+                },
+                {
+                  "kind": "equals",
+                  "value": "Монолитная железобетонная стена 300 мм высотой до 3 м",
+                  "parameterId": "m212_family_b_profile"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "parameterId": "m212_family_b_wall04_work_elevation_m",
+          "templateParameterId": "m212_family_b_wall04_work_elevation_m",
+          "titleRu": "Рабочая отметка относительно поверхности земли",
+          "unitId": "m",
+          "valueType": "decimal",
+          "constraints": {
+            "max": 15,
+            "min": -15,
+            "requiredWhen": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "greater_than",
+                  "value": 0,
+                  "parameterId": "m212_family_b_wall04_net_concrete_volume_m3"
+                },
+                {
+                  "kind": "equals",
+                  "value": "Монолитная железобетонная стена 300 мм высотой до 3 м",
+                  "parameterId": "m212_family_b_profile"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "unitCorrections": [],
+      "selection": {
+        "contract": "canonical-source-profile-selection/v1",
+        "selectorParameterId": "m212_family_b_profile",
+        "geometryParameterIds": [
+          "m212_family_b_wall04_net_concrete_volume_m3",
+          "m212_family_b_wall04_thickness_m",
+          "m212_family_b_wall04_height_from_support_m",
+          "m212_family_b_wall04_work_elevation_m"
+        ],
+        "profiles": [
+          {
+            "selectorValue": "Монолитная железобетонная стена 300 мм высотой до 3 м",
+            "sources": [
+              {
+                "sourceId": "master212_family_b_krer06_01_031_04_r1",
+                "artifactSha256": "45c065fb0e35586948fdb06cd21fe331358e2c454c25a4dc83d4a686bf9f3e4b",
+                "locator": "KG KRER06 exact06-01-031-04 PDF62,64"
+              }
+            ],
+            "when": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "m212_family_b_wall04_net_concrete_volume_m3",
+                  "unitId": "m3",
+                  "value": 0
+                },
+                {
+                  "kind": "equals",
+                  "parameterId": "m212_family_b_wall04_thickness_m",
+                  "value": 0.3
+                },
+                {
+                  "kind": "formula_greater_than",
+                  "expression": "m212_family_b_wall04_height_from_support_m",
+                  "unitId": "m",
+                  "value": 0
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "m212_family_b_wall04_height_from_support_m",
+                    "unitId": "m",
+                    "value": 3
+                  }
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "equals",
+                      "parameterId": "m212_family_b_wall04_work_elevation_m",
+                      "value": 0
+                    },
+                    {
+                      "kind": "formula_greater_than",
+                      "expression": "m212_family_b_wall04_work_elevation_m",
+                      "unitId": "m",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "formula_greater_than",
+                    "expression": "m212_family_b_wall04_work_elevation_m",
+                    "unitId": "m",
+                    "value": 15
+                  }
+                }
+              ]
+            },
+            "geometryCopies": []
+          }
+        ]
+      }
+    }
+  ]
+}

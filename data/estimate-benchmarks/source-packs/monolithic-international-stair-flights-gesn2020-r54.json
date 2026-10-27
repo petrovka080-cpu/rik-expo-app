@@ -1,0 +1,898 @@
+{
+  "contract": "monolithic-international-stair-flights-gesn2020-whole-0619005/r54",
+  "status": "PRIVATE_EXACT_WHOLE_SOURCE_DATA_NORMAL_ROUTING_AND_PHYSICAL_FIT_UNRUN",
+  "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+  "sourceId": "gox-monolithic-stair-flights-gesn06-2020-0619005-r54",
+  "source": {
+    "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\data\\estimate-benchmarks\\source-artifacts\\gesn06-2020-871pr-original-copy.pdf",
+    "sha256": "6bf1fbac1c69cf519d1bc9c8a0c3402628848d8cdf54341e1cf24f651ef637be",
+    "edition": "ГЭСН81-02-06-2020;871/пр26.12.2019",
+    "jurisdiction": "RU",
+    "pdfPages": [
+      72,
+      73
+    ],
+    "sourceScope": "Лестничные марши в инвентарной опалубке, подача бетона в бадьях",
+    "currentLegalComplianceClaim": false,
+    "sameExistingInternationalArtifactAsAcceptedBeamAndLanding": true
+  },
+  "operations": [
+    "Устройство и разборка инвентарных элементов опалубки, стоек, прогонов и опалубочных балок",
+    "Раскрой и крепление щитов из бакелизированной фанеры",
+    "Установка арматуры",
+    "Укладка бетона",
+    "Уход за бетоном"
+  ],
+  "columns": [
+    {
+      "normId": "06-19-005-01",
+      "shape": "RECTANGULAR_FLIGHT",
+      "choiceRu": "Прямоугольный марш в инвентарной опалубке с подачей бетона в бадьях",
+      "workGradeEvidenceOnly": "3.1",
+      "rows": [
+        {
+          "key": "workers",
+          "sourceCode": null,
+          "titleRu": "Работы по устройству монолитного лестничного марша",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "2412.6",
+          "normalizedRatePer100M3": "2412.6",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "operators",
+          "sourceCode": null,
+          "titleRu": "Машинист — справочное время в составе эксплуатации механизмов",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "60.12",
+          "normalizedRatePer100M3": "60.12",
+          "quantityRole": "INCLUDED_MACHINE_OPERATOR",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "tower-crane8t",
+          "sourceCode": "91.05.01-017",
+          "titleRu": "Кран башенный, грузоподъёмность 8 т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "51.7",
+          "normalizedRatePer100M3": "51.7",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "truck-crane16t",
+          "sourceCode": "91.05.05-015",
+          "titleRu": "Кран автомобильный, грузоподъёмность 16 т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.35",
+          "normalizedRatePer100M3": "2.35",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "forklift5t",
+          "sourceCode": "91.06.05-011",
+          "titleRu": "Погрузчик, грузоподъёмность 5 т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.54",
+          "normalizedRatePer100M3": "2.54",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "surface-vibrator",
+          "sourceCode": "91.07.04-002",
+          "titleRu": "Вибратор поверхностный",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "78",
+          "normalizedRatePer100M3": "78",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "flatbed8t",
+          "sourceCode": "91.14.02-002",
+          "titleRu": "Автомобиль бортовой, грузоподъёмность до 8 т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "3.53",
+          "normalizedRatePer100M3": "3.53",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "arc-welder",
+          "sourceCode": "91.17.04-233",
+          "titleRu": "Установка для ручной дуговой сварки постоянным током",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "13.2",
+          "normalizedRatePer100M3": "13.2",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "anthracene-oil",
+          "sourceCode": "01.3.04.08-0012",
+          "titleRu": "Масло антраценовое",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.173",
+          "normalizedRatePer100M3": "173.000",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "water",
+          "sourceCode": "01.7.03.01-0001",
+          "titleRu": "Вода",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.2066",
+          "normalizedRatePer100M3": "0.2066",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "poly-film-015mm",
+          "sourceCode": "01.7.07.12-0024",
+          "titleRu": "Плёнка полиэтиленовая, толщина 0,15 мм",
+          "category": "material",
+          "sourceUnit": "m2",
+          "unitId": "m2",
+          "literalRate": "42.9",
+          "normalizedRatePer100M3": "42.9",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "electrodes-e42-4mm",
+          "sourceCode": "01.7.11.07-0032",
+          "titleRu": "Электроды сварочные класса Э42, диаметр 4 мм",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.013",
+          "normalizedRatePer100M3": "13.000",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "construction-nails",
+          "sourceCode": "01.7.15.06-0111",
+          "titleRu": "Гвозди строительные",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.015",
+          "normalizedRatePer100M3": "15.000",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "wire-11mm",
+          "sourceCode": "08.3.03.04-0012",
+          "titleRu": "Проволока светлая, диаметр 1,1 мм",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.0236",
+          "normalizedRatePer100M3": "23.6000",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "timber-bars",
+          "sourceCode": "11.1.03.01-0079",
+          "titleRu": "Бруски обрезные хвойных пород, длина 4–6,5 м, ширина 75–150 мм, толщина 40–75 мм, сорт III",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.82",
+          "normalizedRatePer100M3": "0.82",
+          "quantityRole": "TURNOVER_CONSUMPTION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "boards-25mm",
+          "sourceCode": "11.1.03.06-0087",
+          "titleRu": "Доска обрезная хвойных пород, ширина 75–150 мм, толщина 25 мм, длина 4–6,5 м, сорт III",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.26",
+          "normalizedRatePer100M3": "0.26",
+          "quantityRole": "TURNOVER_CONSUMPTION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "boards-44mm",
+          "sourceCode": "11.1.03.06-0095",
+          "titleRu": "Доска обрезная хвойных пород, ширина 75–150 мм, толщина от 44 мм, длина 4–6,5 м, сорт III",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "1.02",
+          "normalizedRatePer100M3": "1.02",
+          "quantityRole": "TURNOVER_CONSUMPTION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "bakelized-plywood",
+          "sourceCode": "01.7.16.03",
+          "titleRu": "Палуба опалубки из бакелизированной фанеры",
+          "category": "material",
+          "sourceUnit": "m2",
+          "unitId": "m2",
+          "literalRate": "29.2",
+          "normalizedRatePer100M3": "29.2",
+          "quantityRole": "TURNOVER_CONSUMPTION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "metal-formwork-amortization",
+          "sourceCode": "01.7.16.04",
+          "titleRu": "Опалубка металлическая инвентарная — амортизация",
+          "category": "equipment",
+          "sourceUnit": "set",
+          "unitId": "set",
+          "literalRate": "П",
+          "normalizedRatePer100M3": null,
+          "quantityRole": "PROJECT_AMORTIZATION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "heavy-concrete",
+          "sourceCode": "04.1.02.05",
+          "titleRu": "Смесь тяжёлого бетона",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "101.5",
+          "normalizedRatePer100M3": "101.5",
+          "quantityRole": "PROJECT_CONCRETE_SPEC",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "reinforcing-steel",
+          "sourceCode": "08.4.03.03",
+          "titleRu": "Арматура по проекту",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "15.7",
+          "normalizedRatePer100M3": "15700.0",
+          "quantityRole": "PROJECT_MASS_REFERENCE_ONLY",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        }
+      ]
+    },
+    {
+      "normId": "06-19-005-02",
+      "shape": "CURVED_FLIGHT",
+      "choiceRu": "Криволинейный марш в инвентарной опалубке с подачей бетона в бадьях",
+      "workGradeEvidenceOnly": "3.1",
+      "rows": [
+        {
+          "key": "workers",
+          "sourceCode": null,
+          "titleRu": "Работы по устройству монолитного лестничного марша",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "3136.38",
+          "normalizedRatePer100M3": "3136.38",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "operators",
+          "sourceCode": null,
+          "titleRu": "Машинист — справочное время в составе эксплуатации механизмов",
+          "category": "labor",
+          "sourceUnit": "man_hour",
+          "unitId": "man_hour",
+          "literalRate": "65.02",
+          "normalizedRatePer100M3": "65.02",
+          "quantityRole": "INCLUDED_MACHINE_OPERATOR",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "tower-crane8t",
+          "sourceCode": "91.05.01-017",
+          "titleRu": "Кран башенный, грузоподъёмность 8 т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "56.6",
+          "normalizedRatePer100M3": "56.6",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "truck-crane16t",
+          "sourceCode": "91.05.05-015",
+          "titleRu": "Кран автомобильный, грузоподъёмность 16 т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.35",
+          "normalizedRatePer100M3": "2.35",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "forklift5t",
+          "sourceCode": "91.06.05-011",
+          "titleRu": "Погрузчик, грузоподъёмность 5 т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "2.54",
+          "normalizedRatePer100M3": "2.54",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "surface-vibrator",
+          "sourceCode": "91.07.04-002",
+          "titleRu": "Вибратор поверхностный",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "78",
+          "normalizedRatePer100M3": "78",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "flatbed8t",
+          "sourceCode": "91.14.02-002",
+          "titleRu": "Автомобиль бортовой, грузоподъёмность до 8 т",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "3.53",
+          "normalizedRatePer100M3": "3.53",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "arc-welder",
+          "sourceCode": "91.17.04-233",
+          "titleRu": "Установка для ручной дуговой сварки постоянным током",
+          "category": "equipment",
+          "sourceUnit": "machine_hour",
+          "unitId": "machine_hour",
+          "literalRate": "13.2",
+          "normalizedRatePer100M3": "13.2",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "anthracene-oil",
+          "sourceCode": "01.3.04.08-0012",
+          "titleRu": "Масло антраценовое",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.277",
+          "normalizedRatePer100M3": "277.000",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "water",
+          "sourceCode": "01.7.03.01-0001",
+          "titleRu": "Вода",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.2066",
+          "normalizedRatePer100M3": "0.2066",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "poly-film-015mm",
+          "sourceCode": "01.7.07.12-0024",
+          "titleRu": "Плёнка полиэтиленовая, толщина 0,15 мм",
+          "category": "material",
+          "sourceUnit": "m2",
+          "unitId": "m2",
+          "literalRate": "42.9",
+          "normalizedRatePer100M3": "42.9",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "electrodes-e42-4mm",
+          "sourceCode": "01.7.11.07-0032",
+          "titleRu": "Электроды сварочные класса Э42, диаметр 4 мм",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.013",
+          "normalizedRatePer100M3": "13.000",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "construction-nails",
+          "sourceCode": "01.7.15.06-0111",
+          "titleRu": "Гвозди строительные",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.016",
+          "normalizedRatePer100M3": "16.000",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "wire-11mm",
+          "sourceCode": "08.3.03.04-0012",
+          "titleRu": "Проволока светлая, диаметр 1,1 мм",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "0.0236",
+          "normalizedRatePer100M3": "23.6000",
+          "quantityRole": "NORM",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "timber-bars",
+          "sourceCode": "11.1.03.01-0079",
+          "titleRu": "Бруски обрезные хвойных пород, длина 4–6,5 м, ширина 75–150 мм, толщина 40–75 мм, сорт III",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.82",
+          "normalizedRatePer100M3": "0.82",
+          "quantityRole": "TURNOVER_CONSUMPTION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "boards-25mm",
+          "sourceCode": "11.1.03.06-0087",
+          "titleRu": "Доска обрезная хвойных пород, ширина 75–150 мм, толщина 25 мм, длина 4–6,5 м, сорт III",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "0.28",
+          "normalizedRatePer100M3": "0.28",
+          "quantityRole": "TURNOVER_CONSUMPTION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "boards-44mm",
+          "sourceCode": "11.1.03.06-0095",
+          "titleRu": "Доска обрезная хвойных пород, ширина 75–150 мм, толщина от 44 мм, длина 4–6,5 м, сорт III",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "1.12",
+          "normalizedRatePer100M3": "1.12",
+          "quantityRole": "TURNOVER_CONSUMPTION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "bakelized-plywood",
+          "sourceCode": "01.7.16.03",
+          "titleRu": "Палуба опалубки из бакелизированной фанеры",
+          "category": "material",
+          "sourceUnit": "m2",
+          "unitId": "m2",
+          "literalRate": "87.6",
+          "normalizedRatePer100M3": "87.6",
+          "quantityRole": "TURNOVER_CONSUMPTION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "metal-formwork-amortization",
+          "sourceCode": "01.7.16.04",
+          "titleRu": "Опалубка металлическая инвентарная — амортизация",
+          "category": "equipment",
+          "sourceUnit": "set",
+          "unitId": "set",
+          "literalRate": "П",
+          "normalizedRatePer100M3": null,
+          "quantityRole": "PROJECT_AMORTIZATION",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "heavy-concrete",
+          "sourceCode": "04.1.02.05",
+          "titleRu": "Смесь тяжёлого бетона",
+          "category": "material",
+          "sourceUnit": "m3",
+          "unitId": "m3",
+          "literalRate": "101.5",
+          "normalizedRatePer100M3": "101.5",
+          "quantityRole": "PROJECT_CONCRETE_SPEC",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        },
+        {
+          "key": "reinforcing-steel",
+          "sourceCode": "08.4.03.03",
+          "titleRu": "Арматура по проекту",
+          "category": "material",
+          "sourceUnit": "t",
+          "unitId": "kg",
+          "literalRate": "15.7",
+          "normalizedRatePer100M3": "15700.0",
+          "quantityRole": "PROJECT_MASS_REFERENCE_ONLY",
+          "operation": "whole-cycle",
+          "operationAllocation": "WHOLE_COLUMN_NOT_SPLIT_INTO_INVENTED_SUBOPERATION_RATES",
+          "directProjectSupplyAdmitted": false
+        }
+      ]
+    }
+  ],
+  "sourceMeasureM3": 100,
+  "scope": {
+    "formwork": "INVENTORY_POSTS_TRANSOMS_FORMWORK_BEAMS_BAKELIZED_PLYWOOD",
+    "feed": "CONCRETE_BUCKETS",
+    "workElevationMinM": 0,
+    "workElevationMaxM": 15,
+    "sourceAverageSteelTPer100M3EvidenceOnly": "15.7",
+    "projectMassMayNotBeInferred": true,
+    "reinforcementExcess10PercentAdjustment": "UNRESOLVED_ADDITIONAL_INSTALLATION_SCOPE"
+  },
+  "ordinaryFields": [
+    {
+      "key": "volume_m3",
+      "titleRu": "Объём лестничных маршей по обмеру или чертежу",
+      "unitId": "m3",
+      "valueType": "decimal",
+      "exclusiveMin": 0
+    },
+    {
+      "key": "work_elevation_m",
+      "titleRu": "Высота работ над землёй",
+      "unitId": "m",
+      "valueType": "decimal",
+      "min": 0,
+      "max": 15
+    }
+  ],
+  "ordinaryInputPolicy": {
+    "countIncludingExistingPhysicalChoice": 3,
+    "allDefaultsNull": true,
+    "volumeIsMeasuredObjectFact": true,
+    "stairGeometryFormulaInvented": false,
+    "technicalQuantitiesOrNormEditionRequestedFromUser": false
+  },
+  "needs": [
+    {
+      "key": "whole-inventory-formwork-shoring",
+      "operations": [
+        0,
+        1
+      ],
+      "titleRu": "Полный комплект инвентарной опалубки и опор",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Реальная проектная раскладка, стойки, опалубочные балки, связи, крепления, геометрия контакта и оборачиваемость. Расход фанеры и древесины не задаёт начальный комплект."
+    },
+    {
+      "key": "whole-rebar-bbs",
+      "operations": [
+        2
+      ],
+      "titleRu": "Арматура по полной ведомости, заготовка и поставка",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2:BBS",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Полная реальная ведомость арматуры, классы, массы, раскрой, заготовка, фиксаторы и баланс; печатные 15,7 т на 100 м³ не заменяют проект."
+    },
+    {
+      "key": "whole-bucket-rigging",
+      "operations": [
+        0,
+        2,
+        3
+      ],
+      "titleRu": "Полный комплект подачи бетона в бадьях и строповки",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Реальная бадья, совместимые грузозахватные приспособления, тара, размещение и схема безопасной подачи; часы крана не определяют физическое количество."
+    },
+    {
+      "key": "whole-surface-placement",
+      "operations": [
+        3
+      ],
+      "titleRu": "Физический комплект укладки и поверхностного уплотнения бетона",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2:surface",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Целый поверхностный узел уплотнения с реальной совместимостью со смесью, арматурой и питанием. Прежний11-0183 не считается автоматически допущенным к RU91.07.04-002; глубинный91.07.04-001 сюда не переносится."
+    },
+    {
+      "key": "whole-arc-reinforcement-post",
+      "operations": [
+        2
+      ],
+      "titleRu": "Комплект поста дуговой сварки арматуры",
+      "existingWholeOwnerCandidate": "existing-whole-welding-post-owner",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Реальный метод, свариваемость проектной арматуры, полный пост постоянного тока, кабели, держатели, заземление и защита; часы установки и электроды не определяют целый комплект."
+    },
+    {
+      "key": "whole-curing",
+      "operations": [
+        4
+      ],
+      "titleRu": "Оснащение ухода за бетоном",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Реальный метод ухода, укрытие, подача и сбор воды, оснащение и совместимость дальнейших работ; нормативные вода и плёнка не задают весь физический комплект."
+    },
+    {
+      "key": "whole-access-power-protection",
+      "operations": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "titleRu": "Доступ, питание и средства защиты",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Реальная схема доступа, ограждения, рабочие площадки, защита и временное питание; количество комплектов не принимается равным1 на объём."
+    },
+    {
+      "key": "whole-control-and-strength",
+      "operations": [
+        0,
+        2,
+        3,
+        4
+      ],
+      "titleRu": "Контроль геометрии, смеси и прочности",
+      "existingWholeOwnerCandidate": "monolithic-strength-direct:r2",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Реальная программа контроля геометрии, смеси и прочности. Нормативное число испытаний не выводится из объёма маршей."
+    },
+    {
+      "key": "whole-cleaning-waste",
+      "operations": [
+        0,
+        1,
+        4
+      ],
+      "titleRu": "Очистка, сбор и удаление отходов",
+      "existingWholeOwnerCandidate": "monolithic-physical:r2",
+      "existingWholeOwnerFitAdmitted": false,
+      "missingRu": "Реальный целый метод очистки, совместимые расходники, сбор промывки и отходов, маршрут и количество."
+    }
+  ],
+  "wholePageVisualEvidence": [
+    {
+      "pdfPage": 72,
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c-2\\work\\monolithic-whole-stair-flights-r54\\tmp\\pdfs\\source-page-072.png",
+      "sha256": "05d78c7c2165702a2e1c58fb6914a84fabdeac2234755733acbfab27c2a8637e",
+      "wholePageManuallyViewed": true
+    },
+    {
+      "pdfPage": 73,
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c-2\\work\\monolithic-next-existing-source-r53\\source-pdf73-whole-stair-landing-062000101.png",
+      "sha256": "c76fe413133dad77dff63d97f789a58693e2737526e70838b006d90fee7efa3e",
+      "wholePageManuallyViewed": true
+    }
+  ],
+  "applicableGeneralClauses": [
+    {
+      "id": "1.6.1",
+      "pages": [
+        1
+      ],
+      "effect": "Source whole labor includes its cycle; no repeated independent labor for the same operations."
+    },
+    {
+      "id": "1.6.2",
+      "pages": [
+        1
+      ],
+      "effect": "Actual project steel mass/classes replace printed15.7t average; no BBS or procurement from that average and no automatic labor/machine changes."
+    },
+    {
+      "id": "1.6.4",
+      "pages": [
+        1,
+        89
+      ],
+      "effect": "Project concrete class/aggregate are separate project facts. Appendix6.1 is preliminary source evidence only, not a structural design or automatic order SKU."
+    },
+    {
+      "id": "1.6.6+appendix6.5",
+      "pages": [
+        1,
+        90,
+        91
+      ],
+      "effect": "Base profile is limited to actual work elevation0..15m. No elevated coefficient is applied or inferred; higher work requires its own exact allowance."
+    },
+    {
+      "id": "1.6.17+appendices6.2/6.3",
+      "pages": [
+        2,
+        89
+      ],
+      "effect": "Formwork amortization needs actual system/contact area/price/turnover, separate from complete initial physical kit. Rental excludes amortization and has its own documented charge; no default set1 or double charge."
+    },
+    {
+      "id": "1.6.39/40/43",
+      "pages": [
+        4
+      ],
+      "effect": "Mixer trucks/reserve pumps/additional carrying are conditional actual project scope; no invented leading-machine time, method or repeated handling."
+    },
+    {
+      "id": "1.6.41",
+      "pages": [
+        4
+      ],
+      "effect": "Project reinforcement excess>=10% needs independent additional installation scope; do not silently retain unadjusted whole-column labor in that case."
+    },
+    {
+      "id": "1.6.42",
+      "pages": [
+        4
+      ],
+      "effect": "Rectangular and curved constructions keep their own complete06-19-005-01/02 columns; no resource or rate mixing."
+    },
+    {
+      "id": "1.6.44",
+      "pages": [
+        4
+      ],
+      "effect": "25/25/45/5 percentages describe acceptance acts; they do not partition labor/resource quantities or create new paid rows."
+    },
+    {
+      "id": "1.6.45+appendix6.5",
+      "pages": [
+        4,
+        90,
+        91
+      ],
+      "effect": "No coefficient from neighbouring methods or AЭС06-22 is imported."
+    }
+  ],
+  "generalEvidenceReused": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-23\\files-pasted-by-the-user-c-2\\work\\monolithic-next-existing-source-r53\\GENERAL_WHOLE_PAGE_RENDER_INDEX_R53.json",
+    "sha256": "bdca4ea44191501f7bcf65d22fda93f6ee6a90fb22b064fefc0cf3fdc0a19e8e",
+    "sameArtifactPages": [
+      1,
+      2,
+      4,
+      89,
+      90,
+      91
+    ],
+    "noUnchangedPageRerender": true
+  },
+  "machinePriceRequirements": {
+    "requiredScope": "FULL_SOURCE_OPERATION",
+    "actualPrice": null,
+    "operatorAdditionalPaidOwnerAdmitted": false,
+    "exactSourceCodes": [
+      "91.05.01-017",
+      "91.05.05-015",
+      "91.06.05-011",
+      "91.07.04-002",
+      "91.14.02-002",
+      "91.17.04-233"
+    ],
+    "status": "EXACT_OWNER_ADMISSION_NOT_YET_INTEGRATED_PRICE_UNCONFIRMED"
+  },
+  "passportCorrectionRequired": {
+    "reason": "Current stairs16 copied a global rectangular-flight-only exclusion that contradicts retained curved and landing branches.",
+    "immutableHistoricalDefinitionWillNotBeUpdated": true,
+    "nextNormalRetainedSuccessorWillQualifyScopesPerPhysicalBranch": true
+  },
+  "fullTechnicalAcceptance": false,
+  "newFull": 0,
+  "newPublicCards": 0,
+  "normalTypesCorePublisherApiWebAndroidPdfProcurement": "UNRUN_NEW_TWO_PROFILE_COMPOSITION"
+}

@@ -1,0 +1,176 @@
+import { StyleSheet } from "react-native";
+
+export const UI = {
+  card: "#0F172A",
+  cardSoft: "#020617",
+  text: "#F8FAFC",
+  sub: "#9CA3AF",
+  border: "#1F2937",
+  button: "#22C55E",
+  buttonText: "#052E16",
+  secondaryButton: "#111827",
+};
+
+export const styles = StyleSheet.create({
+  section: {
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  card: {
+    backgroundColor: UI.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 10,
+  },
+  headerTitleWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  headerTitle: {
+    color: UI.text,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  badge: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  grid: {
+    backgroundColor: UI.cardSoft,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: UI.border,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  row: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: UI.border,
+  },
+  rowLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 0,
+  },
+  rowLabel: {
+    color: UI.sub,
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 0.7,
+  },
+  rowValue: {
+    marginTop: 3,
+    color: UI.text,
+    fontSize: 13,
+  },
+  callout: {
+    marginTop: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  calloutText: {
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 18,
+  },
+  blockTitle: {
+    marginTop: 12,
+    marginBottom: 6,
+    color: UI.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  listItem: {
+    color: UI.sub,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  runbookCard: {
+    marginTop: 12,
+    backgroundColor: UI.cardSoft,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: UI.border,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  runbookTitle: {
+    color: UI.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  runbookText: {
+    marginTop: 6,
+    color: UI.sub,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 12,
+  },
+  primaryButton: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    backgroundColor: UI.button,
+  },
+  primaryButtonText: {
+    color: UI.buttonText,
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  secondaryButton: {
+    minHeight: 42,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 14,
+    backgroundColor: UI.secondaryButton,
+    borderWidth: 1,
+    borderColor: UI.border,
+  },
+  secondaryButtonText: {
+    color: UI.text,
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  messageBox: {
+    marginTop: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: UI.border,
+    backgroundColor: UI.cardSoft,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  messageText: {
+    color: UI.text,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+});

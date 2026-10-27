@@ -1,0 +1,28 @@
+{
+  "schema": "ai-estimate-role-based-uat-dashboard-schema-v1",
+  "required_metrics": [
+    "uat_scenarios_total",
+    "uat_scenarios_passed",
+    "uat_scenarios_failed",
+    "web_cases_total",
+    "web_cases_passed",
+    "android_cases_total",
+    "android_cases_passed",
+    "p0_defects_count",
+    "p1_defects_count",
+    "feedback_items_count",
+    "support_packages_exported_count",
+    "pdf_pass_rate",
+    "procurement_pass_rate",
+    "role_permission_pass_rate",
+    "average_prompt_to_snapshot_ms",
+    "average_pdf_generation_ms"
+  ],
+  "acceptance": {
+    "uat_dashboard_created": true,
+    "uat_dashboard_tracks_web_android": true,
+    "uat_dashboard_tracks_defects": true,
+    "uat_dashboard_tracks_role_permissions": true,
+    "uat_dashboard_tracks_pdf_procurement": true
+  }
+}

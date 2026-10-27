@@ -1,0 +1,19 @@
+{
+  "contract": "master-scoped-normative-registry-preimage/r1",
+  "projection": "pg-jsonb-text-utc-microseconds/r1",
+  "scope": {
+    "artifactSha256": "58b52276c77deb9d2835cf5464d26506b17e8be7a89b3a31bdca064c0368cdca",
+    "normId": "manufacturer:ct190:kz:material-coverage:2025-11-27",
+    "sourceKey": "manufacturer_ceresit_ct190_kz_tds_20251127_r1",
+    "generatedSourceId": "fa783dea-da00-52ff-95f5-e0a1067b05af",
+    "generatedLocatorIds": [
+      "e9732165-1ae9-5c27-a94b-94d72d67a48a"
+    ],
+    "generatedLocatorKeys": [
+      "CERESIT-CT190-KZ-20251127-MATERIAL-COVERAGE-ATTACHMENT-AND-BASE-COAT"
+    ]
+  },
+  "sourceRows": [],
+  "locatorRows": [],
+  "captureSha256": "4e8ec942c9dd8bf7a89ecfc184064ba4bc78ae4328b0232051abcbeb11144b3f"
+}

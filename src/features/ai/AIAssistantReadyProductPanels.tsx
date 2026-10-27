@@ -1,0 +1,605 @@
+import { Ionicons } from "@expo/vector-icons";
+import React, { type MutableRefObject } from "react";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import type { RequestEstimateLaunchPayloadV1 } from "../../lib/navigation/requestEstimateLaunchPayload";
+import type { AssistantScopedFacts } from "./assistantScopeContext";
+import type { AssistantMessage } from "./assistant.types";
+import type { AiAssistantResolvedUserContext } from "./assistantUx/aiAssistantContextResolver";
+import {
+  AIAssistantEstimatePdfActions,
+  AIAssistantEstimateTable,
+} from "./AIAssistantEstimatePdfActions";
+import {
+  NO_INTERNAL_SUPPLIERS_MESSAGE,
+  type ProcurementReadySupplierProposalBundle,
+} from "./procurement/aiApprovedRequestSupplierOptions";
+import type { ProcurementReadyBuyOptionBundle } from "./procurement/aiProcurementReadyBuyOptionTypes";
+import { NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE } from "./procurement/aiProcurementReadyBuyOptionTypes";
+import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantTypes";
+import { AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY } from "./realAssistants/aiRoleScreenAssistantUserCopy";
+import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
+import { buildAiScreenMagicClickPayload } from "./screenMagic/aiScreenMagicButtonResolver";
+import { buildAiScreenMagicPackFromWorkflowPack } from "./screenMagic/aiScreenMagicEngine";
+import {
+  buildAiScreenMagicForbiddenNotice,
+  getAiScreenMagicVisibleButtons,
+} from "./screenMagic/aiScreenMagicRealUserButtons";
+import type { AiScreenWorkflowPack } from "./screenWorkflows/aiScreenWorkflowTypes";
+import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTypes";
+import {
+  acknowledgeAiUiLaunch,
+  recordAssistantScreenFallback,
+} from "./AIAssistantScreen.helpers";
+import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
+
+export { AIAssistantShortcutRows } from "./AIAssistantShortcutRows";
+
+export function AIAssistantBootView() {
+  return (
+    <SafeAreaView testID="ai.assistant.screen" style={styles.bootContainer} edges={["top", "bottom"]}>
+      <ActivityIndicator size="large" color="#2563EB" />
+      <Text style={styles.bootText}>Загружаем AI-ассистента...</Text>
+    </SafeAreaView>
+  );
+}
+
+export function AIAssistantMessageList({
+  messages,
+  hasAnyUserPrompt,
+  autoEstimateLaunchPayloadRef,
+  onAppendMessage,
+}: {
+  messages: AssistantMessage[];
+  hasAnyUserPrompt: boolean;
+  autoEstimateLaunchPayloadRef: MutableRefObject<RequestEstimateLaunchPayloadV1 | null>;
+  onAppendMessage: (message: AssistantMessage) => void;
+}) {
+  const maxVisibleMessages = 200;
+  const visibleOffset = Math.max(0, messages.length - maxVisibleMessages);
+  const visibleMessages = messages.slice(visibleOffset);
+  return visibleMessages.map((message, visibleIndex) => {
+    const index = visibleOffset + visibleIndex;
+    const hasPriorUserPrompt = messages
+      .slice(0, index)
+      .some((historyMessage) => historyMessage.role === "user");
+    const isLatestAssistantReply =
+      message.role === "assistant" && hasPriorUserPrompt && index === messages.length - 1;
+    const shouldCompactAssistantHistory =
+      message.role === "assistant" && hasAnyUserPrompt && !isLatestAssistantReply;
+    const responseTestId = isLatestAssistantReply
+      ? "ai.assistant.response"
+      : message.role === "assistant"
+        ? "ai.assistant.response.history"
+        : undefined;
+
+    return (
+      <React.Fragment key={message.id}>
+        <View
+          testID={responseTestId}
+          style={[
+            styles.messageBubble,
+            message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
+          ]}
+        >
+          <Text
+            style={[
+              styles.messageText,
+              message.role === "assistant" ? styles.assistantText : styles.userText,
+            ]}
+            numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}
+            ellipsizeMode="tail"
+          >
+            {message.content}
+          </Text>
+        </View>
+        {message.role === "assistant" && message.estimatePdfSource ? (
+          <AIAssistantEstimateTable
+            source={message.estimatePdfSource}
+            presentation={message.estimatePresentation}
+          />
+        ) : null}
+        <AIAssistantEstimatePdfActions
+          message={message}
+          onAppendMessage={onAppendMessage}
+          onFallback={recordAssistantScreenFallback}
+        />
+        {message.role === "assistant" &&
+        message.estimatePdfSource &&
+        isLatestAssistantReply ? (
+          <View
+            collapsable={false}
+            style={styles.runtimeInlineMarker}
+            onLayout={() => {
+              const payload = autoEstimateLaunchPayloadRef.current;
+              if (payload) acknowledgeAiUiLaunch(payload, "ai_estimate_projection");
+            }}
+          />
+        ) : null}
+      </React.Fragment>
+    );
+  });
+}
+
+export function AIAssistantProductHeader({
+  domain,
+  onBack,
+  onClear,
+}: {
+  domain: string;
+  onBack: () => void;
+  onClear: () => void;
+}) {
+  const title = resolveAssistantHeaderTitle(domain);
+
+  return (
+    <View style={styles.header}>
+      <Pressable
+        style={styles.headerIconButton}
+        onPress={onBack}
+        accessibilityLabel="ai.assistant.back"
+        testID="ai.assistant.back"
+      >
+        <Ionicons name="arrow-back" size={20} color="#0F172A" />
+      </Pressable>
+
+      <View style={styles.headerText}>
+        <Text style={styles.headerTitle}>{title}</Text>
+        <Text style={styles.headerSubtitle}>
+          Ответы по текущему экрану, безопасные черновики и маршруты согласования.
+        </Text>
+      </View>
+
+      <Pressable
+        style={styles.headerIconButton}
+        onPress={onClear}
+        accessibilityLabel="ai.assistant.clear"
+        testID="ai.assistant.clear"
+      >
+        <Ionicons name="refresh" size={18} color="#0F172A" />
+      </Pressable>
+    </View>
+  );
+}
+
+function resolveAssistantHeaderTitle(domain: string): string {
+  if (domain === "chat") return "Чат";
+  switch (domain) {
+    case "finance":
+      return "Финансы сегодня";
+    case "procurement":
+    case "marketplace":
+      return "Снабжение сегодня";
+    case "warehouse":
+      return "Склад сегодня";
+    case "control":
+    case "reports":
+      return "Решения на сегодня";
+    case "projects":
+    case "subcontracts":
+      return "Работы сегодня";
+    default:
+      return "Рабочая сводка";
+  }
+}
+
+function safeLivePanelTitle(value: string): string {
+  const title = String(value || "").trim();
+  const legacyAiTitle = ["AI", "помощник"].join(" ");
+  const legacyMojibakeAiTitle = ["AI", "РїРѕРјРѕС‰РЅРёРє"].join(" ");
+  const safeTitle = "Рабочая сводка";
+  if (!title || title.includes(legacyAiTitle) || title.includes(legacyMojibakeAiTitle)) return safeTitle;
+  return title.replace(new RegExp(legacyAiTitle, "g"), safeTitle).replace(new RegExp(legacyMojibakeAiTitle, "g"), safeTitle);
+}
+export function AIAssistantReadyProductPanels({
+  resolvedUserContext,
+  readyProposals,
+  screenNativeAssistantPack,
+  screenWorkflowPack,
+  roleScreenAssistantPack,
+  readyBuyBundle,
+  approvedSupplierBundle,
+  debugAiContext,
+  scopedFacts,
+  scopedFactsError,
+  scopedFactsLoading,
+  onReadyProposalPress,
+}: {
+  resolvedUserContext: Pick<
+    AiAssistantResolvedUserContext,
+    "debugReason" | "userFacingNotice" | "userFacingScopeLabel"
+  >;
+  readyProposals: AiReadyProposal[];
+  screenNativeAssistantPack: AiScreenNativeAssistantPack | null;
+  screenWorkflowPack: AiScreenWorkflowPack | null;
+  roleScreenAssistantPack: AiRoleScreenAssistantPack | null;
+  readyBuyBundle: ProcurementReadyBuyOptionBundle | null;
+  approvedSupplierBundle: ProcurementReadySupplierProposalBundle | null;
+  debugAiContext: boolean;
+  scopedFacts: AssistantScopedFacts | null;
+  scopedFactsError: string | null;
+  scopedFactsLoading: boolean;
+  onReadyProposalPress: (text: string) => void;
+}) {
+  const knowledgePreview = scopedFacts?.knowledgePreview ?? null;
+  const screenMagicPack = screenWorkflowPack
+    ? buildAiScreenMagicPackFromWorkflowPack(screenWorkflowPack)
+    : null;
+  const screenMagicButtons = screenMagicPack ? getAiScreenMagicVisibleButtons(screenMagicPack) : [];
+  const forbiddenNotice = screenMagicPack ? buildAiScreenMagicForbiddenNotice(screenMagicPack) : null;
+
+  return (
+    <>
+      {debugAiContext && (scopedFactsLoading || scopedFacts || scopedFactsError) ? (
+        <View
+          style={styles.scopeCard}
+          testID={knowledgePreview ? "ai.knowledge.preview" : undefined}
+          accessibilityLabel={knowledgePreview ? "AI knowledge preview" : undefined}
+        >
+          <View style={styles.scopeCardHeader}>
+            <Text style={styles.scopeCardTitle}>Data-aware context</Text>
+            {scopedFactsLoading ? <ActivityIndicator size="small" color="#2563EB" /> : null}
+          </View>
+          <Text style={styles.scopeCardMeta} numberOfLines={2}>{resolvedUserContext.debugReason}</Text>
+          {knowledgePreview ? (
+            <>
+              <Text style={styles.scopeCardText} numberOfLines={1} testID="ai.knowledge.role" accessibilityLabel={`AI role ${knowledgePreview.role}`}>{`role: ${knowledgePreview.role}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.screen" accessibilityLabel={`AI screen ${knowledgePreview.screenId}`}>{`screen: ${knowledgePreview.screenId} | policy: ${knowledgePreview.contextPolicy}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.domain" accessibilityLabel={`AI domain ${knowledgePreview.domain}`}>{`domain: ${knowledgePreview.domain} | entities: ${knowledgePreview.allowedEntities.join(", ") || "none"} | documents: ${knowledgePreview.documentSources.join(", ") || "none"}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.allowed-intents" accessibilityLabel="AI allowed intents">{`allowedIntents: ${knowledgePreview.allowedIntents.join(", ") || "none"}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.blocked-intents" accessibilityLabel="AI blocked intents">{`blockedIntents: ${knowledgePreview.blockedIntents.join(", ") || "none"}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.approval-boundary" accessibilityLabel="AI approval boundary">{`Согласование: ${knowledgePreview.approvalBoundary}`}</Text>
+            </>
+          ) : null}
+          {!scopedFacts && scopedFactsError ? (
+            <Text style={styles.scopeCardError}>{`Context was not loaded: ${scopedFactsError}`}</Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      {!screenMagicPack && screenNativeAssistantPack ? (
+        <View style={styles.roleAssistantBlock} testID="ai.screen_native_value_pack">
+          <View style={styles.roleAssistantHeaderRow}>
+            <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
+            <Text style={styles.roleAssistantDomain}>{screenNativeAssistantPack.title}</Text>
+          </View>
+          <Text style={styles.roleAssistantSummary}>{screenNativeAssistantPack.summary}</Text>
+          {screenNativeAssistantPack.today ? (
+            <View style={styles.roleAssistantMetricRow}>
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.count ?? screenNativeAssistantPack.readyOptions.length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>в срезе</Text>
+              </View>
+              {screenNativeAssistantPack.today.amountLabel ? (
+                <View style={styles.roleAssistantMetric}>
+                  <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.amountLabel}</Text>
+                  <Text style={styles.roleAssistantMetricLabel}>сумма</Text>
+                </View>
+              ) : null}
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.criticalCount ?? screenNativeAssistantPack.criticalItems.length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>критич.</Text>
+              </View>
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.pendingApprovalCount ?? screenNativeAssistantPack.nextActions.filter((action) => action.requiresApproval).length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>соглас.</Text>
+              </View>
+            </View>
+          ) : null}
+          {screenNativeAssistantPack.criticalItems.length > 0 || screenNativeAssistantPack.readyOptions.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Критические пункты и варианты</Text>
+              {screenNativeAssistantPack.criticalItems.slice(0, 2).map((item) => (
+                <View key={item.id} style={styles.roleAssistantItem}>
+                  <Text style={styles.roleAssistantItemTitle}>{item.title}</Text>
+                  <Text style={styles.roleAssistantItemText}>{item.reason}</Text>
+                </View>
+              ))}
+              {screenNativeAssistantPack.readyOptions.slice(0, 3).map((item) => (
+                <View key={item.id} style={styles.roleAssistantItem}>
+                  <Text style={styles.roleAssistantItemTitle}>{item.title}</Text>
+                  <Text style={styles.roleAssistantItemText}>{item.description}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {screenNativeAssistantPack.risks.length > 0 || screenNativeAssistantPack.missingData.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Риски и недостающие данные</Text>
+              {screenNativeAssistantPack.risks.slice(0, 2).map((risk) => (
+                <Text key={risk.id} style={styles.roleAssistantRiskText}>{`${risk.title}: ${risk.reason}`}</Text>
+              ))}
+              {screenNativeAssistantPack.missingData.slice(0, 2).map((item) => (
+                <Text key={item.id} style={styles.roleAssistantRiskText}>{`Не хватает: ${item.label}`}</Text>
+              ))}
+            </View>
+          ) : null}
+          <ScrollView
+            horizontal
+            style={styles.roleAssistantActionScroller}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.roleAssistantActionRow}
+          >
+            {screenNativeAssistantPack.nextActions.slice(0, 5).map((action) => (
+              <Pressable
+                key={action.id}
+                style={styles.roleAssistantActionChip}
+                onPress={() => onReadyProposalPress(action.label)}
+                testID="ai.screen_native_value.action"
+              >
+                <Text style={styles.roleAssistantActionText}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
+      {screenMagicPack ? (
+        <View style={styles.roleAssistantBlock} testID="ai.screen_magic_pack">
+          <View style={styles.roleAssistantHeaderRow}>
+            <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
+            <Text style={styles.roleAssistantDomain}>{safeLivePanelTitle(screenMagicPack.userHeader)}</Text>
+          </View>
+          <View style={styles.roleAssistantSection}>
+            <Text style={styles.roleAssistantSectionTitle}>Главное</Text>
+            <Text style={styles.roleAssistantSummary}>{screenMagicPack.userGoal}</Text>
+          </View>
+          <View style={styles.roleAssistantSection}>
+            <Text style={styles.roleAssistantSectionTitle}>Что мешает</Text>
+            {[...screenMagicPack.riskSummary, ...screenMagicPack.missingDataSummary].slice(0, 3).length > 0 ? (
+              [...screenMagicPack.riskSummary, ...screenMagicPack.missingDataSummary].slice(0, 3).map((item) => (
+                <Text key={item} style={styles.roleAssistantRiskText}>{item}</Text>
+              ))
+            ) : (
+              <Text style={styles.roleAssistantRiskText}>Нет блокеров в доступной сводке.</Text>
+            )}
+          </View>
+          <View style={styles.roleAssistantSection}>
+            <Text style={styles.roleAssistantSectionTitle}>Что можно сделать</Text>
+            <ScrollView
+              horizontal
+              style={styles.roleAssistantActionScroller}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.roleAssistantActionRow}
+            >
+              {screenMagicButtons.map((button) => (
+                <Pressable
+                  key={button.id}
+                  style={styles.roleAssistantActionChip}
+                  onPress={() => onReadyProposalPress(buildAiScreenMagicClickPayload(button))}
+                  testID="ai.screen_magic.action"
+                >
+                  <Text style={styles.roleAssistantActionText}>{button.label}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+            {forbiddenNotice ? (
+              <Text style={styles.roleAssistantRiskText} testID="ai.screen_magic.forbidden_notice">
+                {forbiddenNotice}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      ) : screenWorkflowPack ? (
+        <View style={styles.roleAssistantBlock} testID="ai.screen_workflow_pack">
+          <View style={styles.roleAssistantHeaderRow}>
+            <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
+            <Text style={styles.roleAssistantDomain}>{screenWorkflowPack.title}</Text>
+          </View>
+          <Text style={styles.roleAssistantSummary}>{screenWorkflowPack.userGoal}</Text>
+          {screenWorkflowPack.readyBlocks.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Что подготовлено</Text>
+              {screenWorkflowPack.readyBlocks.slice(0, 2).map((block) => (
+                <View key={block.id} style={styles.roleAssistantItem}>
+                  <Text style={styles.roleAssistantItemTitle}>{block.title}</Text>
+                  <Text style={styles.roleAssistantItemText}>{block.body}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {screenWorkflowPack.missingData.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Чего не хватает</Text>
+              {screenWorkflowPack.missingData.slice(0, 2).map((item) => (
+                <Text key={item.id} style={styles.roleAssistantRiskText}>{item.label}</Text>
+              ))}
+            </View>
+          ) : null}
+          <ScrollView
+            horizontal
+            style={styles.roleAssistantActionScroller}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.roleAssistantActionRow}
+          >
+            {screenWorkflowPack.actions.slice(0, 6).map((action) => (
+              <Pressable
+                key={action.id}
+                style={styles.roleAssistantActionChip}
+                onPress={() => onReadyProposalPress(
+                  action.actionKind === "forbidden"
+                    ? `${action.label}: ${action.forbiddenReason ?? action.exactBlocker ?? "Недоступно"}`
+                    : action.label,
+                )}
+                testID="ai.screen_workflow.action"
+              >
+                <Text style={styles.roleAssistantActionText}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
+      {!screenMagicPack && !screenNativeAssistantPack && roleScreenAssistantPack ? (
+        <View style={styles.roleAssistantBlock} testID="ai.role_screen_assistant_pack">
+          <View style={styles.roleAssistantHeaderRow}>
+            <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
+            <Text style={styles.roleAssistantDomain}>{roleScreenAssistantPack.title}</Text>
+          </View>
+          <Text style={styles.roleAssistantSummary}>{roleScreenAssistantPack.summary}</Text>
+          {roleScreenAssistantPack.today ? (
+            <View style={styles.roleAssistantMetricRow}>
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{roleScreenAssistantPack.today.count}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>в срезе</Text>
+              </View>
+              {roleScreenAssistantPack.today.amountLabel ? (
+                <View style={styles.roleAssistantMetric}>
+                  <Text style={styles.roleAssistantMetricValue}>{roleScreenAssistantPack.today.amountLabel}</Text>
+                  <Text style={styles.roleAssistantMetricLabel}>сумма</Text>
+                </View>
+              ) : null}
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{roleScreenAssistantPack.today.criticalCount ?? roleScreenAssistantPack.risks.length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>критич.</Text>
+              </View>
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{roleScreenAssistantPack.today.overdueCount ?? roleScreenAssistantPack.missingData.length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>требуют</Text>
+              </View>
+            </View>
+          ) : null}
+          {roleScreenAssistantPack.readyItems.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Самое важное</Text>
+              {roleScreenAssistantPack.readyItems.slice(0, 3).map((item) => (
+                <View key={item.id} style={styles.roleAssistantItem}>
+                  <Text style={styles.roleAssistantItemTitle}>{item.title}</Text>
+                  <Text style={styles.roleAssistantItemText}>{item.description}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {roleScreenAssistantPack.risks.length > 0 || roleScreenAssistantPack.missingData.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Риски и недостающие данные</Text>
+              {roleScreenAssistantPack.risks.slice(0, 2).map((risk) => (
+                <Text key={risk.id} style={styles.roleAssistantRiskText}>{`${risk.title}: ${risk.reason}`}</Text>
+              ))}
+              {roleScreenAssistantPack.missingData.slice(0, 2).map((item) => (
+                <Text key={item.id} style={styles.roleAssistantRiskText}>{`Не хватает: ${item.label}`}</Text>
+              ))}
+            </View>
+          ) : null}
+          <ScrollView
+            horizontal
+            style={styles.roleAssistantActionScroller}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.roleAssistantActionRow}
+          >
+            {roleScreenAssistantPack.nextActions.slice(0, 5).map((action) => (
+              <Pressable
+                key={action.id}
+                style={styles.roleAssistantActionChip}
+                onPress={() => onReadyProposalPress(action.label)}
+                testID="ai.role_screen_assistant.action"
+              >
+                <Text style={styles.roleAssistantActionText}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
+      {!screenMagicPack ? (
+        <View style={styles.productStatusCard}>
+          <Text style={styles.productStatusText}>
+            {resolvedUserContext.userFacingNotice
+              ?? AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY}
+          </Text>
+        </View>
+      ) : null}
+
+      {!screenMagicPack && readyProposals.length > 0 ? (
+        <View style={styles.readyProposalBlock} testID="ai.ready_proposals">
+          <Text style={styles.readyProposalTitle}>Готовые предложения</Text>
+          <ScrollView
+            horizontal
+            style={styles.readyProposalScroller}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.readyProposalRow}
+          >
+            {readyProposals.map((proposal) => (
+              <Pressable
+                key={proposal.id}
+                style={styles.readyProposalChip}
+                onPress={() => onReadyProposalPress(proposal.primaryActionLabel ?? proposal.title)}
+                testID="ai.ready_proposal.chip"
+              >
+                <Text style={styles.readyProposalChipText}>
+                  {proposal.primaryActionLabel ?? proposal.title}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
+      {!screenMagicPack && readyBuyBundle ? (
+        <View style={styles.supplierProposalBlock} testID="ai.buyer_ready_buy_options">
+          <Text style={styles.readyProposalTitle}>Готовые варианты закупки</Text>
+          {readyBuyBundle.options.length > 0 ? (
+            readyBuyBundle.options.slice(0, 3).map((option, index) => (
+              <View key={option.id} style={styles.supplierOptionCard}>
+                <Text style={styles.supplierOptionTitle}>{`${index + 1}. ${option.supplierName}`}</Text>
+                <Text style={styles.supplierOptionText}>
+                  {`Покрывает: ${option.coverageLabel}`}
+                </Text>
+                {option.priceSignal || option.deliverySignal || option.reliabilitySignal ? (
+                  <Text style={styles.supplierOptionMeta}>
+                    {[option.priceSignal, option.deliverySignal, option.reliabilitySignal].filter(Boolean).join(" · ")}
+                  </Text>
+                ) : null}
+                <Text style={styles.supplierOptionMeta}>
+                  {`Риски: ${option.risks.join(", ") || "нет отмеченных рисков"}`}
+                </Text>
+                <Text style={styles.supplierOptionMeta}>
+                  {`Не хватает: ${option.missingData.join(", ") || "нет"}`}
+                </Text>
+                <Text style={styles.supplierOptionMeta}>
+                  {`Следующий шаг: ${option.recommendedAction}`}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.supplierOptionText}>{NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE}</Text>
+          )}
+        </View>
+      ) : null}
+
+      {!screenMagicPack && approvedSupplierBundle ? (
+        <View style={styles.supplierProposalBlock} testID="ai.approved_request_supplier_options">
+          <Text style={styles.readyProposalTitle}>Готовые варианты по утверждённой заявке</Text>
+          {approvedSupplierBundle.supplierOptions.length > 0 ? (
+            approvedSupplierBundle.supplierOptions.slice(0, 3).map((option, index) => (
+              <View key={`${option.source}:${option.supplierName}:${index}`} style={styles.supplierOptionCard}>
+                <Text style={styles.supplierOptionTitle}>{`${index + 1}. ${option.supplierName}`}</Text>
+                <Text style={styles.supplierOptionText}>
+                  {`Покрывает: ${option.matchedItems.join(", ") || "требуется уточнение"}`}
+                </Text>
+                {option.priceSignal || option.deliverySignal ? (
+                  <Text style={styles.supplierOptionMeta}>
+                    {[option.priceSignal, option.deliverySignal].filter(Boolean).join(" · ")}
+                  </Text>
+                ) : null}
+                <Text style={styles.supplierOptionMeta}>
+                  {`Риски: ${option.risks.join(", ") || "нет отмеченных рисков"}`}
+                </Text>
+                <Text style={styles.supplierOptionMeta}>
+                  {`Не хватает: ${option.missingData.join(", ") || "нет"}`}
+                </Text>
+                <Text style={styles.supplierOptionMeta}>
+                  {`Следующий шаг: ${option.recommendedNextAction}`}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.supplierOptionText}>{NO_INTERNAL_SUPPLIERS_MESSAGE}</Text>
+          )}
+        </View>
+      ) : null}
+
+    </>
+  );
+}

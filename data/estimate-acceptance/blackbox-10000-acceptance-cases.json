@@ -1,0 +1,99 @@
+{
+  "schema": "blackbox-10000-acceptance-cases-v1",
+  "program": "S_CEO_AI_ESTIMATE_10000_BLACK_BOX_ACCEPTANCE_AND_TRUST_AUDIT_NO_MARKETPLACE_NO_BUILDS",
+  "created_at": "2026-07-04T00:00:00.000Z",
+  "mandatory_broken_history_cases": [
+    {
+      "case_id": "diamond_drilling_bare",
+      "prompt": "алмазное бурение бетона",
+      "expected_outcome": "missing_params_blocked"
+    },
+    {
+      "case_id": "diamond_drilling_full",
+      "prompt": "алмазное бурение бетона 12 отверстий диаметр 110 мм толщина 250 мм железобетон",
+      "expected_outcome": "professional_snapshot"
+    },
+    {
+      "case_id": "profile_sheet_fence_bare",
+      "prompt": "забор из профлиста 50 метров",
+      "expected_outcome": "missing_params_blocked"
+    },
+    {
+      "case_id": "profile_sheet_fence_full",
+      "prompt": "забор из профлиста 50 м высота 2 м столбы 60x60 шаг 2.5 м профлист 0.45 мм",
+      "expected_outcome": "professional_snapshot"
+    },
+    {
+      "case_id": "mansard_roof_bare",
+      "prompt": "мансардная крыша 200 кв метра",
+      "expected_outcome": "missing_params_blocked"
+    },
+    {
+      "case_id": "mansard_roof_full",
+      "prompt": "мансардная крыша 200 м2 металлочерепица угол 35 градусов утепление 200 мм",
+      "expected_outcome": "professional_snapshot"
+    },
+    {
+      "case_id": "apartment_54",
+      "prompt": "ремонт квартиры 54 м2",
+      "expected_outcome": "missing_params_blocked"
+    },
+    {
+      "case_id": "masonry_400_gas_block",
+      "prompt": "кладка 400 м2 газоблок 300 мм",
+      "expected_outcome": "professional_snapshot"
+    },
+    {
+      "case_id": "screed_100_50",
+      "prompt": "стяжка 100 м2 толщина 50 мм",
+      "expected_outcome": "professional_snapshot"
+    },
+    {
+      "case_id": "reinforcement_slab_100_12_200",
+      "prompt": "армирование плиты 100 м2 арматура 12 мм шаг 200 мм два слоя",
+      "expected_outcome": "professional_snapshot",
+      "fallback_work_key": "concrete_foundation_interior_reinforcement_frame_reinforce_standard",
+      "quantity": 100
+    }
+  ],
+  "representative_categories": [
+    "demolition",
+    "earthworks",
+    "concrete_foundation",
+    "masonry",
+    "waterproofing",
+    "roofing",
+    "insulation",
+    "facade",
+    "plaster_paint",
+    "drywall_ceiling",
+    "tile_stone",
+    "flooring",
+    "doors_windows",
+    "carpentry_metal",
+    "electrical",
+    "plumbing",
+    "heating_hvac",
+    "ventilation",
+    "paving_roads_landscape",
+    "special_repair"
+  ],
+  "random_sample": {
+    "seed": "blackbox-10000-acceptance-2026-07-03-v1",
+    "minimum_template_count": 500,
+    "selection_source": "PRODUCTION_WORK_DEFINITIONS_10000",
+    "coverage_policy": "include_every_production_category_before_global_hash_fill",
+    "no_easy_case_bias": true
+  },
+  "acceptance_contract": {
+    "ai_is_parser_not_quantity_source": true,
+    "llm_does_not_generate_material_rows": true,
+    "llm_does_not_generate_quantities": true,
+    "llm_does_not_generate_prices": true,
+    "user_confirmation_required": true,
+    "estimate_rows_not_auto_applied": true,
+    "pdf_from_snapshot_required": true,
+    "buyer_handoff_procurement_subset_only": true,
+    "env_flags_cannot_prove_browser_green": true
+  }
+}

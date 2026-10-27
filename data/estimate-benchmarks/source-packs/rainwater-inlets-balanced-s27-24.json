@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.rainwater-inlets-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:rainwater_inlets",
+  "scope": "Installation, testing and acceptance of 28 explicitly selected DB2 precast reinforced-concrete rainwater-inlet assemblies with ductile-iron D400 gratings and DN 200 outlets. Bodies, gratings, frames, outlet connectors, seals, silt baskets, bedding, mortar, earthworks, labor, mechanisms, QA and logistics are direct project inputs.",
+  "sourceAuthority": "Approved stormwater design organization, precast-inlet and grating manufacturers, geotechnical engineer, construction laboratory and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved inlet layout, elevations and connection schedule",
+    "approved inlet-body, grating, frame, load-class and outlet specification",
+    "approved connector, seal and silt-basket schedule",
+    "approved excavation, bedding, mortar, backfill and excess-soil quantities",
+    "installation method with labor and mechanism quantities",
+    "flow-testing, survey and acceptance program",
+    "as-built and acceptance-document schedule",
+    "delivery and waste-removal plan",
+    "conditional dewatering, excavation-shoring and pavement-restoration schedules",
+    "supplier body-package quantity and approved retained spare-body quantity"
+  ],
+  "ordinaryFixture": {
+    "inletCount": 28,
+    "bodyDesignation": "DB2",
+    "bodyMaterial": "PRECAST_RC",
+    "gratingMaterial": "DUCTILE_IRON",
+    "gratingLoadClass": "D400",
+    "outletDiameterMm": 200,
+    "assemblyDesignation": "DB2-RC-D400-DN200"
+  },
+  "procurementBalance": {
+    "inletBodies": {
+      "installedQuantity": "rwi_inlet_count",
+      "retainedSpareQuantity": "rwi_body_retained_spare_piece",
+      "supplierPackageQuantity": "rwi_body_supplier_package_quantity_piece"
+    },
+    "rules": {
+      "totalNeed": "installed quantity + retained spare quantity",
+      "packageCount": "ceil(total need / supplier package quantity)",
+      "order": "package count * supplier package quantity",
+      "remainderAfterInstallation": "order - installed quantity",
+      "surplusBeyondSpare": "remainder - retained spare quantity"
+    },
+    "visiblePreliminaryProfile": {
+      "rwi_body_retained_spare_piece": 0,
+      "rwi_body_supplier_package_quantity_piece": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "stormwater pipe, manhole, silt-trap or full outlet scope inherited from a network template",
+    "earthwork, material, labor or mechanism quantities derived from route-length coefficients",
+    "automatic inlet spacing or quantity from route length",
+    "automatic dewatering, shoring or pavement restoration",
+    "universal spare-body or supplier package quantity",
+    "invented price"
+  ]
+}

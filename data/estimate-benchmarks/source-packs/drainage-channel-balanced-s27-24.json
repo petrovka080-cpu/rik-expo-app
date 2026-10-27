@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.drainage-channel-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:drainage_channel",
+  "scope": "Complete construction, inspection and acceptance of one explicitly designed open drainage channel: 450 m of selected precast reinforced-concrete U600x600-C35/45 channel at slope 0.003 and design flow 250 l/s. Earthworks, foundation layers, channel elements, joints, transitions, erosion protection, labor, mechanisms, QA and logistics are direct project inputs.",
+  "sourceAuthority": "Approved surface-drainage design organization, hydraulic and geotechnical engineers, precast-channel manufacturer, construction laboratory and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved catchment calculation, plan, longitudinal profile and channel cross-section",
+    "approved channel type, material, internal geometry, slope and design-flow schedule",
+    "approved excavation, subbase, bedding, backfill and excess-soil quantities",
+    "approved geotextile, joint, concrete, grating, inlet-transition, outlet-transition and erosion-protection schedules",
+    "installation method with labor and mechanism quantities",
+    "flow-testing, survey and acceptance program",
+    "as-built and acceptance-document schedule",
+    "delivery and waste-removal plan",
+    "conditional dewatering, excavation-shoring and road-restoration schedules",
+    "supplier channel-element length and approved retained spare length"
+  ],
+  "ordinaryFixture": {
+    "channelCount": 1,
+    "routeLengthM": 450,
+    "channelType": "PRECAST_U_CHANNEL",
+    "channelMaterial": "RC_C35_45",
+    "internalWidthMm": 600,
+    "internalDepthMm": 600,
+    "slopeMPerM": 0.003,
+    "designFlowLps": 250,
+    "channelDesignation": "U600x600-C35/45"
+  },
+  "procurementBalance": {
+    "channelElements": {
+      "installedNetLength": "dch_route_length_m",
+      "retainedSpareLength": "dch_channel_retained_spare_m",
+      "supplierElementLength": "dch_channel_supplier_element_length_m"
+    },
+    "rules": {
+      "totalNeed": "installed net length + retained spare length",
+      "elementCount": "ceil(total need / supplier element length)",
+      "order": "element count * supplier element length",
+      "remainderAfterInstallation": "order - installed net length",
+      "surplusBeyondSpare": "remainder - retained spare length"
+    },
+    "visiblePreliminaryProfile": {
+      "dch_channel_retained_spare_m": 0,
+      "dch_channel_supplier_element_length_m": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "pipe, inlet, manhole, silt-trap or complete outlet scope inherited from a stormwater-network template",
+    "excavation, lining, restoration, labor or mechanism quantities derived from generic length coefficients",
+    "automatic inlet-transition, outlet-transition or joint spacing",
+    "automatic dewatering, shoring or road restoration",
+    "universal channel-element spare or supplier element length",
+    "invented price"
+  ]
+}

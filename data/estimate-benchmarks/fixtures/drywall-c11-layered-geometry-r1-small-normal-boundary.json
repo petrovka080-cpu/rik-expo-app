@@ -1,0 +1,144 @@
+{
+  "contract": "drywall-c11-layered-independent-numeric-oracle/r1",
+  "sourceGeometryCountedIndependently": true,
+  "cases": [
+    {
+      "profile": "two-layer",
+      "case": "small",
+      "facts": {
+        "partition_length_m": "1.2",
+        "partition_height_m": "2.75"
+      },
+      "expected": {
+        "area": "3.3",
+        "board": 4,
+        "track": 2,
+        "stud": 3,
+        "anchor": 16,
+        "screw25": 35,
+        "screw35": 84,
+        "screw55": null,
+        "jointCompoundConsumedKg": 3.3,
+        "jointCompoundOrderKg": 5,
+        "mixingWaterL": 2.3099999999999996,
+        "outerJointTapeM": 2.75,
+        "boardOffcutsM2": 1.200000000000001
+      }
+    },
+    {
+      "profile": "two-layer",
+      "case": "normal",
+      "facts": {
+        "partition_length_m": "4",
+        "partition_height_m": "2.75"
+      },
+      "expected": {
+        "area": "11.0",
+        "board": 16,
+        "track": 4,
+        "stud": 8,
+        "anchor": 24,
+        "screw25": 110,
+        "screw35": 264,
+        "screw55": null,
+        "jointCompoundConsumedKg": 11.0,
+        "jointCompoundOrderKg": 15,
+        "mixingWaterL": 7.699999999999999,
+        "outerJointTapeM": 16.5,
+        "boardOffcutsM2": 13.600000000000001
+      }
+    },
+    {
+      "profile": "two-layer",
+      "case": "boundary",
+      "facts": {
+        "partition_length_m": "15",
+        "partition_height_m": "3"
+      },
+      "expected": {
+        "area": "45",
+        "board": 52,
+        "track": 10,
+        "stud": 26,
+        "anchor": 48,
+        "screw25": 380,
+        "screw35": 988,
+        "screw55": null,
+        "jointCompoundConsumedKg": 45.0,
+        "jointCompoundOrderKg": 45,
+        "mixingWaterL": 31.499999999999996,
+        "outerJointTapeM": 72,
+        "boardOffcutsM2": 7.200000000000017
+      }
+    },
+    {
+      "profile": "three-layer",
+      "case": "small",
+      "facts": {
+        "partition_length_m": "1.2",
+        "partition_height_m": "2.75"
+      },
+      "expected": {
+        "area": "3.3",
+        "board": 6,
+        "track": 2,
+        "stud": 3,
+        "anchor": 16,
+        "screw25": 35,
+        "screw35": 49,
+        "screw55": 84,
+        "jointCompoundConsumedKg": 4.949999999999999,
+        "jointCompoundOrderKg": 5,
+        "mixingWaterL": 3.4649999999999994,
+        "outerJointTapeM": 2.75,
+        "boardOffcutsM2": 1.8000000000000043
+      }
+    },
+    {
+      "profile": "three-layer",
+      "case": "normal",
+      "facts": {
+        "partition_length_m": "4",
+        "partition_height_m": "2.75"
+      },
+      "expected": {
+        "area": "11.0",
+        "board": 24,
+        "track": 4,
+        "stud": 8,
+        "anchor": 24,
+        "screw25": 110,
+        "screw35": 154,
+        "screw55": 264,
+        "jointCompoundConsumedKg": 16.5,
+        "jointCompoundOrderKg": 20,
+        "mixingWaterL": 11.549999999999999,
+        "outerJointTapeM": 16.5,
+        "boardOffcutsM2": 20.400000000000006
+      }
+    },
+    {
+      "profile": "three-layer",
+      "case": "boundary",
+      "facts": {
+        "partition_length_m": "15",
+        "partition_height_m": "3"
+      },
+      "expected": {
+        "area": "45",
+        "board": 78,
+        "track": 10,
+        "stud": 26,
+        "anchor": 48,
+        "screw25": 380,
+        "screw35": 532,
+        "screw55": 988,
+        "jointCompoundConsumedKg": 67.5,
+        "jointCompoundOrderKg": 70,
+        "mixingWaterL": 47.25,
+        "outerJointTapeM": 72,
+        "boardOffcutsM2": 10.800000000000011
+      }
+    }
+  ]
+}

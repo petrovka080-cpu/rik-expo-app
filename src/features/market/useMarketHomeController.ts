@@ -1,0 +1,501 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Alert,
+  Linking,
+  type FlatList,
+  type LayoutChangeEvent,
+  useWindowDimensions,
+} from "react-native";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useMarketFeedReturnPosition } from "./useMarketFeedReturnPosition";
+
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { getCategoryLabel, MARKET_HOME_BANNERS } from "./marketHome.config";
+import {
+  buildMarketAssistantPrompt,
+  buildMarketMapParams,
+  EMPTY_MARKET_HOME_CATEGORY_COUNTS,
+  filterMarketHomeListings,
+  getCategoryKind,
+  uniqueMarketHomeListingsById,
+} from "./marketHome.data";
+import type {
+  MarketHomeCategoryCounts,
+  MarketHomeCategoryKey,
+  MarketHomeListingCard,
+} from "./marketHome.types";
+import type { MarketplaceAuctionSummary } from "./marketplace.auctions.service";
+import {
+  loadMarketplaceHomeFeedStage,
+  loadMarketplaceHomeStage1,
+} from "./marketplace.home.service";
+import {
+  MARKET_AI_ROUTE,
+  MARKET_AUCTIONS_ROUTE,
+  MARKET_PROFILE_ROUTE,
+  buildMarketProductRoute,
+  buildMarketSupplierMapRoute,
+} from "./market.routes";
+import {
+  getMarketFeedForInstantOpen,
+  storeMarketListingForInstantOpen,
+  storeMarketFeedForInstantOpen,
+  storeMarketListingsForInstantOpen,
+} from "./marketListingInstantCache";
+import { useMarketHeaderProfile } from "./useMarketHeaderProfile";
+import { useMarketUiStore } from "./marketUi.store";
+
+type FeedState = {
+  listings: MarketHomeListingCard[];
+  totalCount: number;
+  categoryCounts: MarketHomeCategoryCounts;
+  hasMore: boolean;
+  offset: number;
+};
+
+type FeedPhase = "loading" | "ready" | "empty" | "error";
+
+const DEFAULT_FEED_STATE: FeedState = {
+  listings: [],
+  totalCount: 0,
+  categoryCounts: EMPTY_MARKET_HOME_CATEGORY_COUNTS,
+  hasMore: true,
+  offset: 0,
+};
+
+const MARKET_HOME_SURFACE = "home_feed";
+const MARKET_HOME_FOCUS_REFRESH_TTL_MS = 30_000;
+type MarketHomeBanner = (typeof MARKET_HOME_BANNERS)[number];
+
+export function useMarketHomeController() {
+  const { width } = useWindowDimensions();
+  const routeParams = useLocalSearchParams<{ refresh?: string | string[] }>();
+  const listRef = useRef<FlatList<MarketHomeListingCard>>(null);
+  const lastFeedLoadKeyRef = useRef<string | null>(null);
+  const lastFeedLoadedAtRef = useRef(0);
+  const lastStage1LoadedAtRef = useRef(0);
+  const headerProfile = useMarketHeaderProfile();
+
+  const activeCategory = useMarketUiStore((state) => state.activeCategory);
+  const query = useMarketUiStore((state) => state.query);
+  const side = useMarketUiStore((state) => state.side);
+  const kind = useMarketUiStore((state) => state.kind);
+  const loadingMore = useMarketUiStore((state) => state.loadingMore);
+  const setActiveCategory = useMarketUiStore((state) => state.setActiveCategory);
+  const setQuery = useMarketUiStore((state) => state.setQuery);
+  const setSide = useMarketUiStore((state) => state.setSide);
+  const setKind = useMarketUiStore((state) => state.setKind);
+  const setLoadingMore = useMarketUiStore((state) => state.setLoadingMore);
+
+  const initialInstantFeed = useMemo(
+    () => getMarketFeedForInstantOpen({ side, kind, category: activeCategory }),
+    [activeCategory, kind, side],
+  );
+
+  const [feed, setFeed] = useState<FeedState>(() => initialInstantFeed ?? DEFAULT_FEED_STATE);
+  const [feedPhase, setFeedPhase] = useState<FeedPhase>(() =>
+    initialInstantFeed?.listings.length ? "ready" : "loading",
+  );
+  const [feedErrorText, setFeedErrorText] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [auctionsSummary, setAuctionsSummary] = useState<MarketplaceAuctionSummary | null>(null);
+  const [auctionsLoading, setAuctionsLoading] = useState(false);
+  const [feedAnchorOffset, setFeedAnchorOffset] = useState(640);
+
+  const filters = useMemo(
+    () => ({
+      query,
+      side,
+      kind,
+      category: activeCategory,
+    }),
+    [activeCategory, kind, query, side],
+  );
+  const feedLoadKey = `${side}:${kind}:${activeCategory}`;
+  const {
+    recordFeedScrollOffset,
+    restoreFeedScrollOffset,
+    saveListingReturnOffset,
+    cancelFeedScrollRestore,
+  } = useMarketFeedReturnPosition(listRef, `${feedLoadKey}:${query}`);
+
+  const numColumns = 1;
+  const horizontalPadding = 0;
+  const columnWidth = useMemo(() => {
+    const usableWidth = width - horizontalPadding * 2;
+    return Math.max(280, usableWidth);
+  }, [horizontalPadding, width]);
+
+  const openPhone = useCallback(async (phone: string | null) => {
+    const cleaned = String(phone || "").replace(/[^\d+]/g, "");
+    if (!cleaned) return;
+    const url = `tel:${cleaned}`;
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      Alert.alert("Маркет", "Не удалось открыть звонок.");
+      return;
+    }
+    await Linking.openURL(url);
+  }, []);
+
+  const openWhatsApp = useCallback(async (phone: string | null) => {
+    const cleaned = String(phone || "").replace(/[^\d]/g, "");
+    if (!cleaned) return;
+    const url = `https://wa.me/${cleaned}`;
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      Alert.alert("Маркет", "Не удалось открыть WhatsApp.");
+      return;
+    }
+    await Linking.openURL(url);
+  }, []);
+
+  const pushSupplierMap = useCallback(
+    (row?: MarketHomeListingCard, sideOverride?: "offer" | "demand") => {
+      const params = buildMarketMapParams(
+        { side: filters.side, kind: filters.kind },
+        {
+          row: row ?? null,
+          side: sideOverride,
+        },
+      );
+      router.push(buildMarketSupplierMapRoute(params));
+    },
+    [filters.kind, filters.side],
+  );
+
+  const openAssistant = useCallback((prompt: string) => {
+    router.push(MARKET_AI_ROUTE(prompt));
+  }, []);
+
+  const loadStage1 = useCallback(async () => {
+    setAuctionsLoading(true);
+    try {
+      const stage1 = await loadMarketplaceHomeStage1();
+      setAuctionsSummary(stage1.auctionsSummary);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось подготовить маркет.";
+      recordPlatformObservability({
+        screen: "market",
+        surface: "home_stage1",
+        category: "fetch",
+        event: "market_home_stage1_set_state",
+        result: "error",
+        errorStage: "screen_state",
+        errorMessage: message,
+      });
+      setAuctionsSummary({
+        activeCount: 0,
+        pendingCount: 0,
+        hasVisibleAuctions: false,
+        primaryCtaRoute: MARKET_AUCTIONS_ROUTE,
+        updatedAt: null,
+        state: "error",
+        message,
+        sourceKind: "canonical:auctions.summary",
+      });
+    } finally {
+      lastStage1LoadedAtRef.current = Date.now();
+      setAuctionsLoading(false);
+    }
+  }, []);
+
+  const loadFeedStage = useCallback(
+    async (mode: "initial" | "refresh" = "initial") => {
+      const cachedFeed = mode === "initial" ? getMarketFeedForInstantOpen({ side, kind, category: activeCategory }) : null;
+      const hasCachedFeed = Boolean(cachedFeed?.listings.length);
+      if (cachedFeed?.listings.length) {
+        setFeed(cachedFeed);
+        setFeedErrorText(null);
+        setFeedPhase("ready");
+      } else if (mode === "refresh") {
+        setRefreshing(true);
+      } else {
+        setFeedPhase("loading");
+      }
+
+      try {
+        const page = await loadMarketplaceHomeFeedStage(
+          { side, kind },
+          {
+            offset: 0,
+          },
+        );
+        const nextFeed = {
+          listings: uniqueMarketHomeListingsById(page.listings),
+          totalCount: page.totalCount,
+          categoryCounts: page.categoryCounts,
+          hasMore: page.hasMore && page.rawWindowRowCount > 0 && page.listings.length > 0,
+          offset: page.pageOffset + page.rawWindowRowCount,
+        };
+        setFeed(nextFeed);
+        storeMarketListingsForInstantOpen(nextFeed.listings);
+        storeMarketFeedForInstantOpen({ side, kind, category: activeCategory }, nextFeed);
+        setFeedErrorText(null);
+        setFeedPhase(page.listings.length > 0 ? "ready" : "empty");
+        lastFeedLoadKeyRef.current = feedLoadKey;
+        lastFeedLoadedAtRef.current = Date.now();
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Не удалось загрузить маркет.";
+        setFeedErrorText(message);
+        setFeedPhase(hasCachedFeed ? "ready" : "error");
+      } finally {
+        setRefreshing(false);
+      }
+    },
+    [activeCategory, feedLoadKey, kind, side],
+  );
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || feedPhase === "loading" || refreshing || !feed.hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = await loadMarketplaceHomeFeedStage(
+        { side, kind },
+        {
+          offset: feed.offset,
+        },
+      );
+      setFeed((prev) => {
+        const nextListings = [...prev.listings];
+        const seen = new Set(prev.listings.map((item) => item.id));
+        const newUniqueListings: MarketHomeListingCard[] = [];
+        nextPage.listings.forEach((item) => {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            nextListings.push(item);
+            newUniqueListings.push(item);
+          }
+        });
+        storeMarketListingsForInstantOpen(newUniqueListings);
+        const nextOffset = nextPage.pageOffset + nextPage.rawWindowRowCount;
+        const madeProgress = nextOffset > prev.offset;
+        const visibleFilterActive = filters.category !== "all" || filters.query.trim().length > 0;
+        const visibleNewListings = visibleFilterActive
+          ? filterMarketHomeListings(newUniqueListings, filters).length
+          : newUniqueListings.length;
+        const madeVisibleProgress = visibleNewListings > 0;
+        const nextFeedState = {
+          listings: nextListings,
+          totalCount: nextPage.totalCount,
+          categoryCounts: nextPage.categoryCounts,
+          hasMore:
+            madeProgress
+            && nextPage.hasMore
+            && nextPage.rawWindowRowCount > 0
+            && madeVisibleProgress,
+          offset: Math.max(prev.offset, nextOffset),
+        };
+        storeMarketFeedForInstantOpen({ side, kind, category: activeCategory }, nextFeedState);
+        return nextFeedState;
+      });
+      setFeedPhase("ready");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось догрузить маркет.";
+      Alert.alert("Маркет", message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [
+    activeCategory,
+    feed.hasMore,
+    feed.offset,
+    feedPhase,
+    filters,
+    kind,
+    loadingMore,
+    refreshing,
+    setLoadingMore,
+    side,
+  ]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const now = Date.now();
+      if (
+        lastFeedLoadKeyRef.current !== feedLoadKey ||
+        now - lastFeedLoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS
+      ) {
+        void loadFeedStage("initial").finally(() => {
+          if (Date.now() - lastStage1LoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS) {
+            void loadStage1();
+          }
+        });
+        return;
+      }
+      if (now - lastStage1LoadedAtRef.current > MARKET_HOME_FOCUS_REFRESH_TTL_MS) {
+        void loadStage1();
+      }
+    }, [feedLoadKey, loadFeedStage, loadStage1]),
+  );
+
+  const filteredListings = useMemo(
+    () => filterMarketHomeListings(feed.listings, filters),
+    [feed.listings, filters],
+  );
+
+  const feedData = useMemo(
+    () => (feedPhase === "ready" || feed.listings.length > 0 ? filteredListings : []),
+    [feed.listings.length, feedPhase, filteredListings],
+  );
+
+  const handleCategorySelect = useCallback(
+    (category: "all" | MarketHomeCategoryKey) => {
+      if (activeCategory === category) {
+        setActiveCategory("all");
+        setKind("all");
+        return;
+      }
+      setActiveCategory(category);
+      setKind(getCategoryKind(category));
+    },
+    [activeCategory, setActiveCategory, setKind],
+  );
+
+  const handleBannerPress = useCallback(
+    (action: "scroll_feed" | "open_map" | "open_offer_map") => {
+      if (action === "scroll_feed") {
+        cancelFeedScrollRestore();
+        listRef.current?.scrollToOffset({ offset: feedAnchorOffset, animated: true });
+        return;
+      }
+      if (action === "open_offer_map") {
+        pushSupplierMap(undefined, "offer");
+        return;
+      }
+      pushSupplierMap();
+    },
+    [cancelFeedScrollRestore, feedAnchorOffset, pushSupplierMap],
+  );
+
+  const handleBannerItemPress = useCallback(
+    (banner: MarketHomeBanner) => handleBannerPress(banner.action),
+    [handleBannerPress],
+  );
+
+  const handleOpenAuctions = useCallback(() => {
+    const route = auctionsSummary?.primaryCtaRoute ?? MARKET_AUCTIONS_ROUTE;
+    recordPlatformObservability({
+      screen: "market",
+      surface: "auctions_entry",
+      category: "ui",
+      event: "marketplace_auctions_open",
+      result: "success",
+      extra: {
+        state: auctionsSummary?.state ?? "loading",
+        activeCount: auctionsSummary?.activeCount ?? 0,
+        pendingCount: auctionsSummary?.pendingCount ?? 0,
+      },
+    });
+    router.push(route);
+  }, [auctionsSummary]);
+
+  const handleOpenListing = useCallback((listing: MarketHomeListingCard) => {
+    storeMarketListingForInstantOpen(listing);
+    recordPlatformObservability({
+      screen: "market",
+      surface: MARKET_HOME_SURFACE,
+      category: "ui",
+      event: "market_open_item",
+      result: "success",
+      extra: {
+        listingId: listing.id,
+        source: listing.source,
+      },
+    });
+    saveListingReturnOffset();
+    router.push(buildMarketProductRoute(listing.id));
+  }, [saveListingReturnOffset]);
+
+  const handleResetFeedFilters = useCallback(() => {
+    setActiveCategory("all");
+    setQuery("");
+    setSide("all");
+    setKind("all");
+  }, [setActiveCategory, setKind, setQuery, setSide]);
+
+  const handleOpenProfile = useCallback(() => {
+    router.push(MARKET_PROFILE_ROUTE);
+  }, []);
+
+  const handleOpenMap = useCallback(() => {
+    pushSupplierMap();
+  }, [pushSupplierMap]);
+
+  const handleOpenAssistant = useCallback(() => {
+    openAssistant(buildMarketAssistantPrompt(filters));
+  }, [filters, openAssistant]);
+
+  const handleFeedHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    setFeedAnchorOffset(event.nativeEvent.layout.y);
+  }, []);
+
+  const handleRefreshFeed = useCallback(() => {
+    void loadFeedStage("refresh").finally(() => {
+      void loadStage1();
+    });
+  }, [loadFeedStage, loadStage1]);
+
+  useEffect(() => {
+    const refreshToken = Array.isArray(routeParams.refresh) ? routeParams.refresh[0] : routeParams.refresh;
+    if (!refreshToken) return;
+    handleRefreshFeed();
+  }, [handleRefreshFeed, routeParams.refresh]);
+
+  const handleEndReached = useCallback(() => {
+    if (feedData.length < 1) return;
+    void loadMore();
+  }, [feedData.length, loadMore]);
+
+  const feedSubtitleText =
+    feedPhase === "loading" && feed.listings.length === 0
+      ? "Подбираем предложения для первой выдачи."
+      : activeCategory === "all"
+        ? `${filteredListings.length} объявлений`
+        : `${getCategoryLabel(activeCategory)} • ${filteredListings.length} объявлений`;
+
+  return {
+    activeCategory,
+    auctionsLoading,
+    auctionsSummary,
+    columnWidth,
+    feed,
+    feedData,
+    feedErrorText,
+    feedPhase,
+    feedSubtitleText,
+    filters,
+    handleBannerItemPress,
+    handleBannerPress,
+    handleCategorySelect,
+    handleFeedHeaderLayout,
+    handleOpenAssistant,
+    handleOpenAuctions,
+    handleOpenListing,
+    handleOpenMap,
+    handleOpenProfile,
+    handleRefreshFeed,
+    handleResetFeedFilters,
+    handleEndReached,
+    headerProfile,
+    listRef,
+    loadFeedStage,
+    loadMore,
+    loadStage1,
+    loadingMore,
+    numColumns,
+    openPhone,
+    openWhatsApp,
+    pushSupplierMap,
+    query,
+    refreshing,
+    recordFeedScrollOffset,
+    restoreFeedScrollOffset,
+    cancelFeedScrollRestore,
+    side,
+    kind,
+    setKind,
+    setQuery,
+    setSide,
+  };
+}

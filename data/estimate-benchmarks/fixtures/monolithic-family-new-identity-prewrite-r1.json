@@ -1,0 +1,88 @@
+{
+  "contract": "monolithic-family-bounded-new-identity-read/r1",
+  "status": "PASS_THREE_EXACT_RESERVED_IDENTITIES_ABSENT_NOT_PUBLICATION_ADMISSION",
+  "createdAtUtc": "2026-10-22T16:47:07.401Z",
+  "parent": {
+    "id": "658381e0-8ba1-5cf0-b275-6e2050bf0eff",
+    "status": "prepared",
+    "activated_at": null
+  },
+  "parentSearch": {
+    "id": "fe0357f0-98ff-5f2d-b5d3-f141d85d6d06",
+    "status": "draft",
+    "activated_at": null,
+    "sealed_at": null
+  },
+  "proofs": [
+    {
+      "kind": "wall",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+      "identity": {
+        "namespace": "global",
+        "domain": "concrete_foundation",
+        "sourceIdentity": "master-work:monolithic_reinforced_concrete_wall_standard",
+        "workKey": "monolithic_reinforced_concrete_wall_standard",
+        "titleRu": "Монолитная железобетонная стена 300 мм высотой до 3 м",
+        "denominatorEligible": true
+      },
+      "groupId": "wg:master:monolithic-reinforced-concrete-walls",
+      "sourceKey": "master212_family_b_krer06_01_031_04_r1",
+      "identities": [],
+      "counts": {
+        "allDefinitionHistory": 0,
+        "parentManifest": 0,
+        "parentSearch": 0,
+        "group": 0,
+        "ordinal": 0,
+        "sourceKey": 0
+      }
+    },
+    {
+      "kind": "column",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+      "identity": {
+        "namespace": "global",
+        "domain": "concrete_foundation",
+        "sourceIdentity": "master-work:monolithic_reinforced_concrete_column_standard",
+        "workKey": "monolithic_reinforced_concrete_column_standard"
+      },
+      "groupId": "wg:master:monolithic_reinforced_concrete_column_standard",
+      "sourceKey": "gox-monolithic-family-krer06-10702-10903-11101-r1:column",
+      "identities": [],
+      "counts": {
+        "allDefinitionHistory": 0,
+        "parentManifest": 0,
+        "parentSearch": 0,
+        "group": 0,
+        "ordinal": 0,
+        "sourceKey": 0
+      }
+    },
+    {
+      "kind": "beam",
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "identity": {
+        "namespace": "global",
+        "domain": "concrete_foundation",
+        "sourceIdentity": "master-work:monolithic_reinforced_concrete_beam_standard",
+        "workKey": "monolithic_reinforced_concrete_beam_standard"
+      },
+      "groupId": "wg:master:monolithic_reinforced_concrete_beam_standard",
+      "sourceKey": "gox-monolithic-family-krer06-10702-10903-11101-r1:beam",
+      "identities": [],
+      "counts": {
+        "allDefinitionHistory": 0,
+        "parentManifest": 0,
+        "parentSearch": 0,
+        "group": 0,
+        "ordinal": 0,
+        "sourceKey": 0
+      }
+    }
+  ],
+  "normalLockedPublisherChecksStillRequired": true,
+  "successorReleaseAbsenceNotClaimed": true,
+  "universalPhysicalIdentityAbsenceNotClaimed": true,
+  "databaseWrites": false,
+  "newFull": 0
+}

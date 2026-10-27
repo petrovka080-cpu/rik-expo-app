@@ -1,0 +1,112 @@
+{
+  "case_id": "expanded-0014-тротуар-1-км-ширина-2-м",
+  "prompt": "тротуар 1 км ширина 2 м",
+  "work_family_id": "sidewalks",
+  "work_family_group": "ROADS_HEAVY_CIVIL",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 1000,
+    "width_m": 2,
+    "road_area_m2": 2000,
+    "thickness_m": null
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "sand_gravel_subbase_m3",
+    "crushed_stone_base_m3",
+    "asphalt_t",
+    "bitumen_emulsion_l",
+    "curbs_lm",
+    "drainage_lm",
+    "culverts_lm",
+    "signs_pcs",
+    "guardrails_lm",
+    "road_area_m2",
+    "earthworks_m3",
+    "subgrade_preparation_m2",
+    "shoulders_m2",
+    "roller_shifts",
+    "paver_shifts",
+    "grader_shifts",
+    "asphalt_truck_trips",
+    "road_marking_m2_or_lm"
+  ],
+  "reference_material_rows": [
+    "sand_gravel_subbase_m3",
+    "crushed_stone_base_m3",
+    "asphalt_t",
+    "bitumen_emulsion_l",
+    "curbs_lm",
+    "drainage_lm",
+    "culverts_lm",
+    "signs_pcs",
+    "guardrails_lm"
+  ],
+  "reference_work_rows": [
+    "road_area_m2",
+    "earthworks_m3",
+    "subgrade_preparation_m2",
+    "shoulders_m2"
+  ],
+  "reference_service_rows": [
+    "road_marking_m2_or_lm"
+  ],
+  "reference_equipment_rows": [
+    "roller_shifts",
+    "paver_shifts",
+    "grader_shifts",
+    "asphalt_truck_trips"
+  ],
+  "reference_procurement_subset": [
+    "sand_gravel_subbase_m3",
+    "crushed_stone_base_m3",
+    "asphalt_t",
+    "bitumen_emulsion_l",
+    "curbs_lm",
+    "drainage_lm",
+    "culverts_lm",
+    "signs_pcs",
+    "guardrails_lm",
+    "roller_shifts",
+    "paver_shifts",
+    "grader_shifts",
+    "asphalt_truck_trips",
+    "road_marking_m2_or_lm"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_transport_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/expanded-0014-тротуар-1-км-ширина-2-м.json",
+  "critical": true,
+  "expected_row_codes": [
+    "sand_gravel_subbase_m3",
+    "crushed_stone_base_m3",
+    "asphalt_t",
+    "bitumen_emulsion_l",
+    "curbs_lm",
+    "drainage_lm",
+    "culverts_lm",
+    "signs_pcs",
+    "guardrails_lm",
+    "road_area_m2",
+    "earthworks_m3",
+    "subgrade_preparation_m2"
+  ]
+}

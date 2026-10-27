@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "rik-expo-app.source-pack.drywall-ceiling-bulkhead-frame-preliminary.v1",
+  "authoredIndependentlyFromDefinitionRows": true,
+  "scope": "Frame-only ceiling bulkhead, 20 m long, 1.5 m bottom face and two 0.5 m side faces. The profile is preliminary: support count, compatible system, structural anchorage and access method are visible replaceable inputs and are not a structural design.",
+  "sources": [
+    {
+      "sourceId": "MASTER_S27_21_A6",
+      "sourceRole": "USER_SCOPE_AND_GEOMETRY",
+      "exactLocator": "MASTER S27.21 section 20.23 queue Q3/A6: 50 m2 frame-only bulkhead; 20 m length; 1.5 m bottom; two 0.5 m sides; four 20 m longitudinal lines; cross sections at 0.5 m including ends; supports must not be inferred from cross sections."
+    },
+    {
+      "sourceId": "S2721_VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE_R1",
+      "sourceRole": "PRELIMINARY_ASSUMPTION_POLICY",
+      "exactLocator": "All support, package, reserve, productivity and logistics values are exposed in the estimate input profile and must be replaced by the selected compatible system, structural check, PPR or supplier package data."
+    }
+  ],
+  "geometryChecks": {
+    "developedAreaM2": "20 * (1.5 + 2 * 0.5) = 50",
+    "longitudinalProfileNetM": "4 * 20 = 80",
+    "crossSectionCount": "ceil(20 / 0.5) + 1 = 41",
+    "horizontalCrossProfileNetM": "41 * 1.5 = 61.5",
+    "verticalProfileNetM": "41 * 2 * 0.5 = 41",
+    "supportPolicy": "support_point_count is a separate visible preliminary input; it is not equal to cross_section_count"
+  },
+  "requiredComposition": [
+    { "rowKey": "longitudinal_profile_packages", "category": "material", "quantityBasis": "ceil(longitudinal_line_count * bulkhead_length_m * reserve / selected_piece_length)" },
+    { "rowKey": "horizontal_profile_packages", "category": "material", "quantityBasis": "ceil(cross_section_count * bottom_width_m * reserve / selected_piece_length)" },
+    { "rowKey": "vertical_profile_packages", "category": "material", "quantityBasis": "ceil(cross_section_count * side_count * side_height_m * reserve / selected_piece_length)" },
+    { "rowKey": "suspension_hangers", "category": "material", "quantityBasis": "separate visible support_point_count" },
+    { "rowKey": "structural_support_anchors", "category": "material", "quantityBasis": "separate visible support_point_count" },
+    { "rowKey": "profile_intersection_connectors", "category": "material", "quantityBasis": "cross_section_count * longitudinal_line_count" },
+    { "rowKey": "profile_screw_packages", "category": "material", "quantityBasis": "ceil(intersections * screws_per_intersection / selected_package_size)" },
+    { "rowKey": "substrate_sealing_tape_rolls", "category": "material", "quantityBasis": "ceil(substrate_contact_length * reserve / selected_roll_length)" },
+    { "rowKey": "cut_edge_protection_packages", "category": "material", "quantityBasis": "ceil(cut_end_count * selected_consumption / selected_package_size)" },
+    { "rowKey": "axis_setting_out", "category": "labor", "quantityBasis": "developed area" },
+    { "rowKey": "longitudinal_profile_installation", "category": "labor", "quantityBasis": "80 m net geometry" },
+    { "rowKey": "horizontal_profile_installation", "category": "labor", "quantityBasis": "61.5 m net geometry" },
+    { "rowKey": "vertical_profile_installation", "category": "labor", "quantityBasis": "41 m net geometry" },
+    { "rowKey": "support_installation", "category": "labor", "quantityBasis": "separate visible support_point_count" },
+    { "rowKey": "connector_installation", "category": "labor", "quantityBasis": "profile intersections" },
+    { "rowKey": "sealing_tape_installation", "category": "labor", "quantityBasis": "substrate contact length" },
+    { "rowKey": "cut_edge_protection_application", "category": "labor", "quantityBasis": "cut end count" },
+    { "rowKey": "frame_alignment", "category": "labor", "quantityBasis": "developed area" },
+    { "rowKey": "internal_material_handling", "category": "labor", "quantityBasis": "developed area" },
+    { "rowKey": "access_operations", "category": "labor", "quantityBasis": "ceil(area / visible access productivity)" },
+    { "rowKey": "laser_level", "category": "equipment", "quantityBasis": "access shifts" },
+    { "rowKey": "rotary_hammer", "category": "equipment", "quantityBasis": "access shifts" },
+    { "rowKey": "screwdriver", "category": "equipment", "quantityBasis": "access shifts" },
+    { "rowKey": "profile_cutting_tool", "category": "equipment", "quantityBasis": "access shifts" },
+    { "rowKey": "access_equipment", "category": "equipment", "quantityBasis": "access shifts" },
+    { "rowKey": "material_delivery", "category": "transport", "quantityBasis": "visible trip count" },
+    { "rowKey": "access_delivery", "category": "transport", "quantityBasis": "visible trip count" },
+    { "rowKey": "access_return", "category": "transport", "quantityBasis": "visible trip count" },
+    { "rowKey": "waste_removal", "category": "transport", "quantityBasis": "visible trip count" }
+  ],
+  "conditionalComposition": [
+    { "rowKey": "opening_reinforcement_profile_packages", "category": "material", "condition": "reinforcement_profile_length_m > 0" },
+    { "rowKey": "opening_reinforcement_installation", "category": "labor", "condition": "reinforcement_profile_length_m > 0" }
+  ]
+}

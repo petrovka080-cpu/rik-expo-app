@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.settlement-water-network-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:settlement_water_network",
+  "scope": "Complete construction, testing, flushing and disinfection of one explicitly designed settlement water-supply network: 1200 m of selected PE100-RC SDR17 OD 160 PN10 pressure pipe. Pipe-system materials, trench quantities, valves, hydrants, chambers, labor, mechanisms, QA and logistics are direct project inputs.",
+  "sourceAuthority": "Approved water-supply design organization, geotechnical engineer, pressure-pipe manufacturer, accredited water laboratory and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved water-network plan and profile",
+    "approved pressure-pipe material, grade, SDR, diameter and pressure-class schedule",
+    "approved trench, bedding, surround, backfill and excess-soil quantities",
+    "approved joints, fittings, valves, hydrants, chambers and cover schedule",
+    "installation and jointing method with labor and mechanism quantities",
+    "pressure-testing, flushing, disinfection and laboratory-control program",
+    "as-built survey and acceptance-document schedule",
+    "delivery and waste-removal plan",
+    "conditional crossing-casing, dewatering and road-restoration schedules",
+    "supplier pipe-segment length and approved retained spare length"
+  ],
+  "ordinaryFixture": {
+    "networkCount": 1,
+    "routeLengthM": 1200,
+    "pipeMaterial": "HDPE",
+    "pipeGrade": "PE100-RC",
+    "sdrClass": "SDR17",
+    "outsideDiameterMm": 160,
+    "pressureClass": "PN10",
+    "pipeDesignation": "PE100-RC-SDR17-OD160-PN10"
+  },
+  "procurementBalance": {
+    "pipe": {
+      "installedNetLength": "swn_route_length_m",
+      "retainedSpareLength": "swn_pipe_retained_spare_m",
+      "supplierSegmentLength": "swn_pipe_supplier_segment_length_m"
+    },
+    "rules": {
+      "totalNeed": "installed net length + retained spare length",
+      "segmentCount": "ceil(total need / supplier segment length)",
+      "order": "segment count * supplier segment length",
+      "remainderAfterInstallation": "order - installed net length",
+      "surplusBeyondSpare": "remainder - retained spare length"
+    },
+    "visiblePreliminaryProfile": {
+      "swn_pipe_retained_spare_m": 0,
+      "swn_pipe_supplier_segment_length_m": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "trench or material quantities derived from generic length coefficients",
+    "automatic valve, hydrant, fitting or chamber spacing",
+    "automatic casing, dewatering or road restoration",
+    "universal pipe spare or supplier segment length",
+    "building plumbing or sewer and stormwater networks included",
+    "invented price"
+  ]
+}

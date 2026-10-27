@@ -1,0 +1,502 @@
+{
+  "contract": "next-wave-engineering-a-elecor60x40-handoff/v1",
+  "status": "WORK_SOURCE_FACTORY_27_JEST_PASS_ACTUAL_BOUNDED_READ_PASS_CLASSIFICATION_DRAFT_NOT_ADOPTED",
+  "baseline": {
+    "canonicalRoot": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7",
+    "head": "b56e311d5a34094d19cd2a38b8cecbb386aef304",
+    "tree": "ad51cc019d39640b6d311a0694b141a087c1df8e",
+    "sharedCanonicalFilesEdited": false,
+    "databaseAccessedByAgent": false,
+    "heavyProcessesRunByAgent": false,
+    "workingTreeContext": "Root reported adoption of11road+EUROFLEX files while HEAD staysB56; currentdefinition/search unchanged. One old transitive coverage helper changed. These are root-owned; this agent does not assert whole worktree clean."
+  },
+  "boundedComparison": "Only3engineeringcandidates plus actualregistered6installbranches. No fullcatalog/historyaudit.",
+  "investigation": "elecor-family-unit-owner-decision-v1.json",
+  "comparison": "engineering-candidate-comparison-v1.json",
+  "rejectedReplays": [
+    "Standardv6=40x25 current/reference; no newcontent credit.",
+    "Fivepointstubs cannotbe changed to measuredmetres without realobjectrole.",
+    "KNAUF checkpoint retained; no continuing finishing.",
+    "No existing HEp2O/earthing/drainage wave reissued."
+  ],
+  "realProposedDelta": "One distinct60x40whiteSKU physicalprofile, material-only, ordinarymeasuredm,2msections/18mfactorypacks9sections; exactmatchingKMS4set. Identity is proposalonly; novelcurrentmembership notyetproved.",
+  "claimedNewCompleteTypes": 0,
+  "proposedPhysicalProfiles": 1,
+  "acceptedNewCatalogIds": 0,
+  "stagedFiles": [
+    {
+      "stagedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\candidate\\data\\estimate-benchmarks\\source-packs\\elecor-60x40-single-route-materials-r1.json",
+      "canonicalDestination": "data/estimate-benchmarks/source-packs/elecor-60x40-single-route-materials-r1.json",
+      "bytes": 20535,
+      "sha256": "a15b2f85ba83d790f7582bc2db7e62fc08e4ea4bc022d46c0ff3dccf6d496210",
+      "operation": "PROPOSED_NEW_FILE_ONLY_NOT_INTEGRATED",
+      "canonicalFileExists": false,
+      "status": "ROOT_ACTUAL_27_JEST_PASS_WORK_NOT_ADOPTED"
+    },
+    {
+      "stagedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\candidate\\src\\lib\\estimate\\v4\\elecorSingleRouteMaterialR1.ts",
+      "canonicalDestination": "src/lib/estimate/v4/elecorSingleRouteMaterialR1.ts",
+      "bytes": 13090,
+      "sha256": "2006e830eb5c5b00b40091e2d68dfd8be89d3146980178a0b0fbd816ac7e12db",
+      "operation": "PROPOSED_NEW_FILE_ONLY_NOT_INTEGRATED",
+      "canonicalFileExists": false,
+      "status": "ROOT_ACTUAL_27_JEST_PASS_WORK_NOT_ADOPTED"
+    },
+    {
+      "stagedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\candidate\\src\\lib\\estimate\\v4\\elecorSingleRouteMaterialR1.test.ts",
+      "canonicalDestination": "src/lib/estimate/v4/elecorSingleRouteMaterialR1.test.ts",
+      "bytes": 10745,
+      "sha256": "04d676d8deac4f79a8fedeed62b98338743d8478210bc1d54b30e2bf68ff22ef",
+      "operation": "PROPOSED_NEW_FILE_ONLY_NOT_INTEGRATED",
+      "canonicalFileExists": false,
+      "status": "ROOT_ACTUAL_27_JEST_PASS_WORK_NOT_ADOPTED"
+    },
+    {
+      "stagedPath": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\v2\\candidate\\scripts\\estimate\\r4a13\\prepareElecor60x40SingleRouteMaterialsR1.ts",
+      "canonicalDestination": "scripts/estimate/r4a13/prepareElecor60x40SingleRouteMaterialsR1.ts",
+      "bytes": 15920,
+      "sha256": "c2993cce65b47febb471ffe0fa34c7056124ad8ab457a9dea69adc94af955399",
+      "operation": "PROPOSED_NEW_FILE_ONLY_NOT_INTEGRATED",
+      "canonicalFileExists": false,
+      "status": "V2_MASTER10_ACTUAL_V4_PINS_READY_FOR_ROOT_REVIEW_NOT_RUN"
+    }
+  ],
+  "canonicalDependencies": [
+    {
+      "path": "src/lib/estimate/v4/electricalElecorCableChannelStandardS2723.ts",
+      "bytes": 35588,
+      "sha256": "4a62e6a7c779fe61ea2ad79c12df86f3f0f0d4f0e8c057f46d4e637d6c961767"
+    },
+    {
+      "path": "src/lib/estimate/v4/automaticConstructionOwnerR1.ts",
+      "bytes": 18358,
+      "sha256": "d4c2192d1d5c4ef0285668b3c1aeb2994c2b57c3e8b9d8d6a776ee4c3e10d7ae"
+    },
+    {
+      "path": "src/lib/estimate/v4/effectivePurchaseBalanceR1.ts",
+      "bytes": 6309,
+      "sha256": "021602e3309f07ab67db0dbd369b731535319509380b5297077a9fb3244d1bb7"
+    },
+    {
+      "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
+      "bytes": 90408,
+      "sha256": "4b5abc5b4eba6c74b8d58e554a6353a461f50f9b8e4396d85c56485f87e6579f"
+    },
+    {
+      "path": "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts",
+      "bytes": 84463,
+      "sha256": "bd7380ae9c120ec44914223a841e8ca002ef4e8656535af423a64ae4cf2bbac2"
+    },
+    {
+      "path": "scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts",
+      "bytes": 10539,
+      "sha256": "12c106d6b937d20f8976c22aeb803b8dcb7d527cf7086a34115902c8667d85ea"
+    },
+    {
+      "path": "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts",
+      "bytes": 48383,
+      "sha256": "1d12f21feb20097d87b18433c269c3688456c2b88b30e752dec92070821cd4a1"
+    }
+  ],
+  "readonlyProbe": {
+    "status": "PREPARED_NOT_RUN_FROZEN",
+    "export": "readElecor60x40CurrentDedupV1(client)",
+    "pins": [
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\read_elecor_60x40_current_dedup_v1.mjs",
+        "sha256": "f283cfb6ac3e73f05f1581b97b309a2e31ad835a50e0eed349237fd1132b31f4"
+      },
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\elecor-60x40-current-dedup-v1.sql",
+        "sha256": "0b4210cbd4489c962833be1bbf8b8c9d15429f1899d2dfc341c687852663c542"
+      },
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\elecor-60x40-current-dedup-v1-inputs.json",
+        "sha256": "05bafa462393bbcbc35ec8e78fbc9fc16c18269482c571d91ce1daa6d9c60f85"
+      }
+    ],
+    "scope": "Current039c/756 only;exact2SKU/60x40title+key/sourceIdentity; includes current40x25reference and actualsearch/group/identity, nofullreleasemetadata/history.",
+    "execution": "Root oneownedPGclient; host127.0.0.1 port55432; readonlyrepeatableread,20sstatementtimeout,rollbackalways,noappjobs,noDBwrites.",
+    "resultIfMatch": "NO_APPEND_OR_REPLAY: inspect exactmatchedSKU/method/owner; do not inventnewID.",
+    "resultIfAbsent": "NotpublicationPASS. Explicit reviewerphysicalnovelty+searchplacementclassification required; then adapter pins actualprobe result and review. Existingpublisher rechecks uniqueness undertransactionlocks.",
+    "v1Outcome": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\elecor60x40-current-dedup-v1-result.json",
+      "sha256": "5a677b37c4ffa6398bbe1100c174be61b145b43a55b5fe49f96b60d670bfca66",
+      "status": "NOT_ACCEPTED_TIMEOUT20S",
+      "absenceProved": false,
+      "cleanup": "Root reported PASS / owned0"
+    },
+    "v2Outcome": {
+      "status": "NOT_ACCEPTED_BOUNDED_HEADER_SCOPE_CAP_BEFORE_DEEP",
+      "durationSecondsReportedByRoot": 8.15,
+      "absenceProved": false,
+      "metrics": "Not retained by v2 on cap error; root preparing diagnostic header read; no threshold/timeout increase authorized."
+    },
+    "v2PreparedFiles": [
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\v2\\read_elecor_60x40_current_dedup_v2.mjs",
+        "sha256": "0122124e06e74a0f975575adc6c2b397aafd911f9cd91ce40255402cdfd22f5d"
+      },
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\v2\\elecor-60x40-current-header-v2.sql",
+        "sha256": "34934fbebc65032263760ae4003b7cbd6564637f9fedcc9a32485439b98173ce"
+      },
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\v2\\elecor-60x40-current-deep-v2.sql",
+        "sha256": "a4158f91d1da75fb2893a1e01ba4e16cbf36f0a310683c45821e684cba47ca83"
+      },
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\v2\\elecor-60x40-current-dedup-v2-inputs.json",
+        "sha256": "51ee6179836abb249bb30dbd8119d64b90b7071a3128f81a26a7ce9dacb8d67e"
+      }
+    ],
+    "latestOutcome": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\elecor60x40-current-dedup-v4-result.json",
+      "sha256": "ef7ff3f0f8b855c7d605b163ffe58b387723161b5046b23d41359c68782b2881",
+      "payloadSha256": "90251598dd60c25aaa57703479c86c73f34efd3886ff246c7de9487befde6abe",
+      "status": "PASS_ELECOR60X40_CURRENT_PHYSICAL_DEDUP_READ",
+      "decision": "NO_MATCH_IN_DECLARED_CABLE_CHANNEL_SCOPE_CLASSIFICATION_REQUIRED",
+      "transactionRolledBack": true,
+      "scopeMetrics": {
+        "deepJsonScope": "NOT_READ_IN_HEADER",
+        "candidateDefinitions": 48,
+        "candidateResourceRows": 2998,
+        "searchClassifiedCatalogs": 48,
+        "currentManifestDefinitions": 10458,
+        "globalResourceJsonFieldsRead": false,
+        "globalTitleMatchingDefinitions": 0,
+        "globalTitleMatchingResourceRows": 0,
+        "identityClassifiedRowsIncludingNoncurrent": 142
+      },
+      "deepMetrics": {
+        "deepNotGlobal": true,
+        "resourceRowsRead": 2998,
+        "matchingResourceRows": 0,
+        "requestedDefinitions": 48,
+        "resourceJsonLogicalBytes": 7417661,
+        "definitionsWithResourceRows": 48
+      },
+      "globalDeepAbsenceProved": false,
+      "completeDeclaredReadSet": true,
+      "boundary": "48 current cable-channel definitions,2998 resource rows and142 classified identities; hidden or misclassified models outside that declared scope are not disproved.",
+      "cleanup": "Root reported5.64s,cleanup[],owned0"
+    }
+  },
+  "sourceBoundaries": {
+    "channel": "PinnedPDF10printed8 CKK10-060-040-1-K01-01818m; PDF12printed10section2m andexactKMSpair.",
+    "kms": "CachedofficialHTML __NEXT_DATA__.props.pageProps.apiListing.products[10], exactarticle/name4шт/компл andETIMIEK_F000480=4. Cachedfilename40X25not productidentity.",
+    "applicability": "PDF9printed7 residential/office exposedrouting; profileexplicitlynormaldryindoor with actualenvironment/cablefill/projectacceptance. No IP/fire/load/wet/inindustrialfitness claimed.",
+    "quantities": "Only existinggeometry2expressions and purchasebalance; oneKMSperinternaljoint is explicitprojectmap, notuniversalconsumptionnorm. No professional applicationnorm invented."
+  },
+  "payment": "Two new independent OWN_COST SKUorderowners initem(factorypack/set), freshprices unknown. Informationalsection/joint/tail/balance rows notsecondpayment. Unknownoverlap with aggregateexistingpaidmaterials requires reconciliationbefore usingboth profiles.",
+  "preservation": "Separateappend cannotadopt/rename/replace any6existingdefinitions/rows/needs/owner/manualprices/quantities/exclusions. Newmanualorder usesexistingeffectivepurchasebalance; sourceownedgaps cannotbe entered manually.",
+  "unknowns": [
+    "Actualcurrent60x40samephysicalprofileabsence/identitykeydedup pendingrootprobe.",
+    "Independentphysicalprofileclassification/searchplacement decision pending; no group/domain IDs invented.",
+    "Exactactualprojectscope/layout/reference/usablewholepackstock/reserve/suppliermultiple forbothproducts alwaysrequired; fixturefacts notdefaults.",
+    "Eight source/applicationneeds remain: labour;fixings;end/nodeparts;tools;access/protection;acceptance;delivery/handling;cleanup/disposal. No manufacturerdimensioncloses them.",
+    "CandidateJest/TSC andsharedpublisher guards notrun. NoDBdraft/appjob/publicationpreparedbyagent."
+  ],
+  "nextConcreteStep": "Root reviews/adopts the draft classification and exact placement; integrates the three27-PASS files plus V2 config and pinned evidence. Existing publisher preflight/dry guards then verify key/history/source identity/ordinal and unchanged current parent under locks. No-match48scope is not a global JSON absence proof. Keep eight visible full-cycle tasks; mount/fixing source intake next is explicit.",
+  "integration": "Use three original candidate files with hashes a15/2006/04d plus the V2 config from v2/candidate. Old Master9/V1 config is historical and must not be adopted. Root alone edits canonical/publisher/DB. Config has no CLI/connection/run-on-import and needs three repo-relative pinned evidence paths (actual probe, reviewed classification, cycle dossier).",
+  "scenarios": "elecor-60x40-scenarios-v1.json",
+  "supersededInitialDrafts": [
+    "elecor-install-family-source-candidate-v1.json is historical40x25 initialhypothesis, NOT selecteddelta.",
+    "prepare_elecor_install_family_v1.py mustnotrerun while frozenfamily/dedupprobe pins are used.",
+    "prepare_elecor_60x40_evidence_v1.py alreadyexecuted; sourcepackanddecision nowpinnedby frozenprobe, donotregenerate during rootread."
+  ],
+  "fullCyclePlan": {
+    "master": {
+      "path": "C:/Users/User/Downloads/MASTER_TZ_GOX_BUILD_PRODUCTION (10).md",
+      "sha256": "90e84fbfbf17321f1dd935f5e56a090f31619a3336e582bfabe1e66fcdfa48d7",
+      "sections": [
+        "20.82.3",
+        "20.82.4",
+        "20.82.5",
+        "20.82.7",
+        "20.82.16"
+      ]
+    },
+    "declaredCycle": "Открытый монтаж нового прямого пластикового кабель-канала ELECOR60×40 в принятом сухом жилом/офисном помещении — от подготовки до проверки/завершения. Текущий принимаемый delta покрывает только два материальных снабжения и геометрию, полный цикл не принят.",
+    "currentDeliverable": "PARTIAL_MATERIAL_PROFILE_WITH_EIGHT_VISIBLE_OPEN_NEEDS",
+    "phases": [
+      {
+        "stage": "Подготовка и принятие применимости",
+        "coverage": "PARTIAL_PROJECT_FACTS_ONLY",
+        "known": "Измеренный один новый прямой участок; подтверждённая карта секций/КМС, среда и кабельное заполнение; ссылка на проект. Это обязательные факты, не часы.",
+        "rowsOrFacts": [
+          "elecor_route_m",
+          "elecor_route_scope",
+          "elecor_route_layout",
+          "elecor_route_document_reference"
+        ],
+        "openNeeds": [
+          "access-protection",
+          "fixings",
+          "installation-labour"
+        ]
+      },
+      {
+        "stage": "Поставка материалов и раскрой",
+        "coverage": "SOURCE_BOUND_MATERIAL_GEOMETRY_ONLY",
+        "known": "CKK10-060-040-1-K01-018: секции2м, заводская упаковка18м/9секций. Раскрой одного нового участка; пригодный концевой отрезок отдельно от отхода.",
+        "paidOwner": "electrical:elecor-60x40-single-route:channel-order",
+        "unit": "item = одна заводская упаковка18м",
+        "openNeeds": [
+          "installation-labour",
+          "tools",
+          "cleanup-disposal"
+        ]
+      },
+      {
+        "stage": "Крепление к фактическому основанию",
+        "coverage": "OPEN_NO_ACCEPTED_FIXING_RULE",
+        "known": "Сечение/фасовка канала не задают узел крепления. Стальной Legrand P3175–300мм и его8M6/стык несовместимы с пластиковым ELECOR60×40.",
+        "openNeeds": [
+          "fixings",
+          "installation-labour",
+          "tools",
+          "access-protection"
+        ]
+      },
+      {
+        "stage": "Прямые сопряжения и концы",
+        "coverage": "INTERNAL_KMS_MATERIALS_ONLY",
+        "known": "CKMP10D-S-060-040-K01:4шт/комплект. Один КМС на каждый внутренний стык — только по принятой карте. Концы и иные узлы этой формулой не закрыты.",
+        "paidOwner": "electrical:elecor-60x40-single-route:kms-order",
+        "unit": "item = заводской комплект4КМС",
+        "openNeeds": [
+          "end-node-components",
+          "installation-labour",
+          "tools"
+        ]
+      },
+      {
+        "stage": "Монтаж основания канала, КМС и крышек",
+        "coverage": "OPEN_LABOR_AND_TECHNOLOGY",
+        "known": "Известная геометрия материалов; отсутствуют применимые часы и принятая технологическая норма полного монтажа.",
+        "openNeeds": [
+          "installation-labour",
+          "fixings",
+          "tools"
+        ]
+      },
+      {
+        "stage": "Проверка и приёмка",
+        "coverage": "OPEN_PROGRAM_AND_PAYMENT_BOUNDARY",
+        "openNeeds": [
+          "acceptance"
+        ]
+      },
+      {
+        "stage": "Доставка, разгрузка, перемещение",
+        "coverage": "OPEN_ACTUAL_LOGISTICS_AND_SERVICE_BOUNDARY",
+        "openNeeds": [
+          "delivery-handling"
+        ]
+      },
+      {
+        "stage": "Уборка, отходы и сохранение остатков",
+        "coverage": "MATERIAL_BALANCE_ONLY_COMPLETION_OPEN",
+        "openNeeds": [
+          "cleanup-disposal"
+        ]
+      }
+    ],
+    "openNeedTasks": [
+      {
+        "rowId": "electrical:elecor-60x40-single-route:open-installation-labour",
+        "titleRu": "Труд монтажа",
+        "state": "OPEN_NO_SOURCE_QUANTITY_OR_ACCEPTED_SCOPE",
+        "taskId": "ELECOR60_INTAKE_INSTALLATION_LABOUR",
+        "nextTaskRu": "Получить применимую ресурсную таблицу монтажа пластикового короба/кабель-канала вместе с технической частью, составом работ и условиями. Сопоставить резку, крепление, КМС, установку крышки и проверку; применить единожды.",
+        "requiredPrimaryOrProjectEvidenceRu": "Официальный сборник КРЕРм по электротехническим установкам: точные таблица/колонка, измеритель, часы рабочих, машины, учтённые/неучтённые материалы и ограничения. Точный код таблицы пока не установлен. Cached guidance26страниц — общие Указания КРЕРм, а не подтверждённая ресурсная таблица ELECOR.",
+        "accountableRoleRu": "Sol A — адресный source intake и предметный adapter; root — единственная интеграция. Проектировщик/сметчик объекта — подтверждение фактических условий и применимости.",
+        "acceptanceRu": "Нормативные часы из primary с locator/hash и проверенными единицами; явная карта включённых операций исключает двойной труд. Если нормы нет — quantity остаётся неизвестной, без4м/ч.",
+        "pricePolicyRu": "Неизвестная цена пустая; источник нормы и цена раздельны. Возможное включение в общий договор/услугу проверять по exact persisted owner, включая selected preliminary needs и ручные исключения."
+      },
+      {
+        "rowId": "electrical:elecor-60x40-single-route:open-fixings",
+        "titleRu": "Крепёж к основанию",
+        "state": "OPEN_NO_SOURCE_QUANTITY_OR_ACCEPTED_SCOPE",
+        "taskId": "ELECOR60_INTAKE_FIXINGS",
+        "nextTaskRu": "Запросить конкретную инструкцию крепления ELECOR60×40 и принятую карту основания/крепёжных точек. После выбора крепежа создать узкий source-bound вариант по координатам/шагу и концевым расстояниям; не переносить старый0,5м.",
+        "requiredPrimaryOrProjectEvidenceRu": "Первичная инструкция IEK для CKK10-060-040-1-K01-018 с расположением креплений/концевыми расстояниями, либо утверждённый проектный узел с точной ведомостью точек. Паспорт выбранного анкера/дюбеля для фактического материала и нагрузки; упаковка/кратность отдельно. В текущих inspected IEK PDF9/10/12 и cached accessory records такой крепёжный норматив не доказан.",
+        "accountableRoleRu": "Sol A — инструкция/артикулы/adapter; инженер объекта — основание, нагрузки и принятый узел. Root — интеграция после доказательств.",
+        "acceptanceRu": "Количество точек, расход конкретного крепежа и единицы доказаны; оснастка/бурение и труд включены в одного declared owner или отдельно обоснованы. Норма Legrand P31 M6 не применяется к пластиковому ELECOR.",
+        "pricePolicyRu": "Неизвестная цена пустая; источник нормы и цена раздельны. Возможное включение в общий договор/услугу проверять по exact persisted owner, включая selected preliminary needs и ручные исключения."
+      },
+      {
+        "rowId": "electrical:elecor-60x40-single-route:open-end-node-components",
+        "titleRu": "Концы и сопряжения",
+        "state": "OPEN_NO_SOURCE_QUANTITY_OR_ACCEPTED_SCOPE",
+        "taskId": "ELECOR60_INTAKE_END_NODE_COMPONENTS",
+        "nextTaskRu": "Уточнить две границы участка и сопряжения. По карте выбрать заглушки/переходы/иные необходимые элементы; не предполагать две заглушки для любого прямого отрезка.",
+        "requiredPrimaryOrProjectEvidenceRu": "IEK PDF12/печатная10 уже даёт совместимый КМЗ60×40 CKMP10D-Z-060-040-K01 и другие узлы; нужны конкретная схема концов, число применимых элементов и первичное подтверждение единицы поставки/комплекта выбранного артикула. КМС CKMP10D-S-060-040-K01 покрывает только внутренние прямые стыки.",
+        "accountableRoleRu": "Инженер объекта — карта концов/узлов; Sol A — exact manufacturer product intake и количественный adapter; root — интеграция.",
+        "acceptanceRu": "Каждый выбранный узел имеет exact SKU, количество по принятой схеме и одного оплачиваемого owner; непроверенные принадлежности остаются needs.",
+        "pricePolicyRu": "Неизвестная цена пустая; источник нормы и цена раздельны. Возможное включение в общий договор/услугу проверять по exact persisted owner, включая selected preliminary needs и ручные исключения."
+      },
+      {
+        "rowId": "electrical:elecor-60x40-single-route:open-tools",
+        "titleRu": "Инструмент и оснастка",
+        "state": "OPEN_NO_SOURCE_QUANTITY_OR_ACCEPTED_SCOPE",
+        "taskId": "ELECOR60_INTAKE_TOOLS",
+        "nextTaskRu": "После технологического выбора получить состав резки/сверления/сборки и решить границу обеспечения. Для машин проверить, включает ли тариф оператора/энергию/расходники.",
+        "requiredPrimaryOrProjectEvidenceRu": "Применимая монтажная технологическая карта/ресурсная норма и выбранный инструмент. Расход полотен/сверл и machine_hour нельзя вывести из метража без первичного правила; существующие60точек/маш-ч и120м/смену не принимаются.",
+        "accountableRoleRu": "Sol A — source mapping; производитель инструмента/поставщик — техническое обеспечение; сметчик/договорной владелец — тарифная граница. Root — интеграция.",
+        "acceptanceRu": "Точные часы/расходники либо доказанное включение в единственный монтажный owner. При отсутствии основы сохраняется need, а не нулевой инструмент.",
+        "pricePolicyRu": "Неизвестная цена пустая; источник нормы и цена раздельны. Возможное включение в общий договор/услугу проверять по exact persisted owner, включая selected preliminary needs и ручные исключения."
+      },
+      {
+        "rowId": "electrical:elecor-60x40-single-route:open-access-protection",
+        "titleRu": "Подготовка, доступ и защита",
+        "state": "OPEN_NO_SOURCE_QUANTITY_OR_ACCEPTED_SCOPE",
+        "taskId": "ELECOR60_INTAKE_ACCESS_PROTECTION",
+        "nextTaskRu": "Зафиксировать обследование/разметку, допустимое основание, свободный доступ и защиту зоны. Установить, что уже обеспечено, что включено в монтаж и что отдельно требуется.",
+        "requiredPrimaryOrProjectEvidenceRu": "Актуальные факты объекта: схема трассы/редакция, рабочая высота, состояние поверхности, безопасный доступ и границы подготовки. Для оплачиваемых часов/материалов — применимая технологическая/ресурсная норма, либо exact документированное включение в parent owner.",
+        "accountableRoleRu": "Инженер/ответственный за производство работ — факты и подготовка; Sol A — source-bound состав; root — интеграция.",
+        "acceptanceRu": "Известные факты видны; завершённая/включённая подготовка не оплачивается повторно. Невыполненная подготовка и её часы остаются явно открытыми.",
+        "pricePolicyRu": "Неизвестная цена пустая; источник нормы и цена раздельны. Возможное включение в общий договор/услугу проверять по exact persisted owner, включая selected preliminary needs и ручные исключения."
+      },
+      {
+        "rowId": "electrical:elecor-60x40-single-route:open-acceptance",
+        "titleRu": "Проверка и приёмка",
+        "state": "OPEN_NO_SOURCE_QUANTITY_OR_ACCEPTED_SCOPE",
+        "taskId": "ELECOR60_INTAKE_ACCEPTANCE",
+        "nextTaskRu": "Составить применимую проверку механического монтажа: крепление, крышки/стыки, края, размеры и соответствие принятой схеме. Определить документ приёмки и оплачиваемую границу.",
+        "requiredPrimaryOrProjectEvidenceRu": "Инструкция производителя и принятая программа объекта; cached KG electrical acceptance/safety edition — источник требований после адресной проверки применимых пунктов, не источник автоматической нормы количества испытаний. Протяжка кабеля, оконцевание, электроизмерения и подача напряжения исключены из данного материального scope.",
+        "accountableRoleRu": "Инженер объекта/ответственный за приёмку — программа; Sol A — источники и состав; root — интеграция.",
+        "acceptanceRu": "Точные проверки и scope оплаты раскрыты; одна услуга не дублирует входящую проверку монтажного owner. Габариты/упаковки не доказывают электрическую безопасность.",
+        "pricePolicyRu": "Неизвестная цена пустая; источник нормы и цена раздельны. Возможное включение в общий договор/услугу проверять по exact persisted owner, включая selected preliminary needs и ручные исключения."
+      },
+      {
+        "rowId": "electrical:elecor-60x40-single-route:open-delivery-handling",
+        "titleRu": "Доставка, разгрузка и перемещение",
+        "state": "OPEN_NO_SOURCE_QUANTITY_OR_ACCEPTED_SCOPE",
+        "taskId": "ELECOR60_INTAKE_DELIVERY_HANDLING",
+        "nextTaskRu": "Уточнить поставляемые заводские упаковки, gross массу/объём, маршрут и способ разгрузки/переноса. Проверить старый/новый aggregate service owner и возможное включение в цену поставщика.",
+        "requiredPrimaryOrProjectEvidenceRu": "Первичные gross масса/транспортные габариты exactSKU упаковок от IEK/поставщика, план объекта, договорная граница перевозки/разгрузки. Существующий shared delivery mechanism может быть рассмотрен позже только по его допущенным фактам и payment fence;18м не означает рейс.",
+        "accountableRoleRu": "Логист/поставщик и инженер объекта — факты; Sol A — ограниченная совместимость existing delivery/handling; root — единственный writer/интегратор.",
+        "acceptanceRu": "Доставка, разгрузка и перемещение имеют собственные единицы/назначение. Нет двойной оплаты с aggregate owner, в том числе при положительной потребности с неизвестной ценой. Неизвестное остаётся need.",
+        "pricePolicyRu": "Неизвестная цена пустая; источник нормы и цена раздельны. Возможное включение в общий договор/услугу проверять по exact persisted owner, включая selected preliminary needs и ручные исключения."
+      },
+      {
+        "rowId": "electrical:elecor-60x40-single-route:open-cleanup-disposal",
+        "titleRu": "Уборка и обращение с отходами",
+        "state": "OPEN_NO_SOURCE_QUANTITY_OR_ACCEPTED_SCOPE",
+        "taskId": "ELECOR60_INTAKE_CLEANUP_DISPOSAL",
+        "nextTaskRu": "Отделить пригодные целые секции/КМС, пригодный концевой отрезок, упаковку и действительные отходы. Определить уборку рабочей зоны, тару и маршрут отходов.",
+        "requiredPrimaryOrProjectEvidenceRu": "Фактическая ведомость пригодных остатков/отходов и принятая технология уборки/вывоза; применимая ресурсная норма/договорное включение, масса и место приёма. Геометрический tail1м не становится автоматически мусором, мешками или рейсами.",
+        "accountableRoleRu": "Производитель работ/ответственный за отходы — ведомость и граница; Sol A — source intake и состав; root — интеграция.",
+        "acceptanceRu": "Пригодные остатки сохранены отдельно от отходов; оплачиваемая уборка/вывоз учитываются единожды. Материальные18м/4шт не подменяют норму уборки.",
+        "pricePolicyRu": "Неизвестная цена пустая; источник нормы и цена раздельны. Возможное включение в общий договор/услугу проверять по exact persisted owner, включая selected preliminary needs и ручные исключения."
+      }
+    ],
+    "sourceIntakeFinding": {
+      "installationQuantityAvailable": false,
+      "fixingQuantityAvailable": false,
+      "meaning": "В ограниченно проверенных действующих источниках не закреплена применимая норма монтажа/крепежа60×40. Это не заявление об отсутствии такой нормы во всём каталоге/интернете.",
+      "cachedKrerm": {
+        "path": ".release-runtime/r568/s27-23/q4-electrical-official-sources/KG_KRERM_2015_GUIDANCE.pdf",
+        "sha256": "a0c3a8684c66a3d7ce5b30b5340562972e11f6a0df92a2240770af46fdae2c54",
+        "actualTitle": "Указания по применению Кыргызских единичных расценок на монтаж оборудования (КРЕРм-2015)",
+        "pageCount": 26,
+        "inspectedPages": [
+          1,
+          2,
+          25,
+          26
+        ],
+        "notTheRequiredResourceTable": true,
+        "sourceIntakeNext": "Официальная публикация https://minstroy.gov.kg/ru/kyzmat/353/show в cached snapshot ведёт только на эти Указания. Нужен отдельный официальный сборник электротехнических установок с точной таблицей пластиковых коробов и технической частью; не угадывать номер/колонку по сходству с российским сборником."
+      },
+      "manufacturerKnown": {
+        "path": ".release-runtime/r568/s27-23/q4-electrical-cable-channel-official-sources/IEK_PLASTIC_CABLE_SYSTEMS.pdf",
+        "pages": [
+          9,
+          10,
+          12
+        ],
+        "accepted": "Область жилых/офисных открытых трасс, exact SKU60×40,2м/18м, совместимыйКМС. Нет принятого по этим страницам шага/схемы крепления или трудозатрат."
+      },
+      "nearestExistingFixingNorm": {
+        "path": "data/estimate-norms/professional/electrical.json",
+        "normId": "electrical_legrand_p31_tray_joint_m6_fasteners_piece_joint_v1",
+        "decision": "INCOMPATIBLE_NO_REUSE",
+        "why": "Стальной симметричный лоток Legrand P31 шириной75–300мм, муфтыEP/ER,8M6 и11Нм. Не монтаж пластикового короба IEK60×40 и не крепление к основанию."
+      },
+      "nextBoundedSubjectModule": "После первичного крепёжного правила/принятой карты создать узкий ELECOR60×40 fixing/layout adapter на existing geometry/inclusion/purchase helpers, без нового API. First consumer — proposed metre work после actual identity/dedup/classification. До источника никаких spacing/productivity defaults."
+    },
+    "unresolvedCount": 8,
+    "acceptedNewCompleteTypes": 0,
+    "noNewNormOrCostOwnerInvented": true
+  },
+  "currentMaster": {
+    "path": "C:/Users/User/Downloads/MASTER_TZ_GOX_BUILD_PRODUCTION (10).md",
+    "sha256": "90e84fbfbf17321f1dd935f5e56a090f31619a3336e582bfabe1e66fcdfa48d7",
+    "sections": [
+      "20.82.3",
+      "20.82.4",
+      "20.82.5",
+      "20.82.7",
+      "20.82.16"
+    ]
+  },
+  "testCount": {
+    "status": "ROOT_EXECUTED_27_PASS",
+    "ordinaryCases": 16,
+    "parameterizedGroups": [
+      {
+        "name": "missing scope/layout/reference",
+        "cases": 3
+      },
+      {
+        "name": "positive stock evidence",
+        "cases": 2
+      },
+      {
+        "name": "invalid/excluded facts",
+        "cases": 6
+      }
+    ],
+    "expandedCases": 27,
+    "groupCount": 19,
+    "sourceGapAssertions": "8source needs × submitted/manual rejection inside one case; not16 separate cases",
+    "factsRequiredWhen": "Scope/layout/reference and stock/reserve/quantum require elecor_route_m>0. Stock evidence ref is required/visible only if its own stock_packages>0.",
+    "manualOperation": "All rowOverride tests use shared core operation=recalculate; no separate calculator.",
+    "rootReceipts": [
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-landscape-b\\candidate-jest-elecor60x40-v2-result.json",
+        "bytes": 13543,
+        "sha256": "614d6462978d0f804efe58eadba3537c7dddb3b5e90ec08bdb8347f429a3a3d1"
+      },
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-landscape-b\\candidate-jest-elecor60x40-v2-receipt.json",
+        "bytes": 2645,
+        "sha256": "cb5ec88138bbe0dc2b3144f52de7d73f19a1656861b80e97edc649b4ee7f5a07"
+      },
+      {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-landscape-b\\candidate-jest-guard-elecor60x40-v2-receipt.json",
+        "bytes": 1296,
+        "sha256": "f121046ae27bc12130f56dd85d9afdae85fb1da58ff0896086f03a18dddfc984"
+      }
+    ],
+    "cleanup": "Root reported cleanup=[] and owned0"
+  },
+  "rootReportedIntegration": {
+    "adoptionPath": "T/work/next-construction-wave-integration-v1/adoption.json",
+    "changedExistingFile": "canonicalMachineHourPriceCoverageV1.ts",
+    "reportedSha256": "42dfbd873a159dc7e58735851da0466cf485ea1a0eb9957ede003bbee511dd31",
+    "stage": "Root-owned canonical adoption; not executed or edited by this agent"
+  },
+  "classificationProposal": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-18\\files-pasted-by-the-user-andro\\work\\next-wave-engineering-a\\v2\\elecor-60x40-classification-search-placement-v2-draft.json",
+    "sha256": "a0ee3d2e933d6de3772afee7ffaacec7d3dbeafb6a44a42da06a39ab9ce4316c",
+    "status": "DRAFT_ROOT_REVIEW_REQUIRED",
+    "fullCyclePlanSha256": "683fef164bd9ee8c2d37c41b8410b7b18cb244a4149bb9995aeada89c612d85a",
+    "requires": "Root must explicitly review bounded classification coverage and exact physical novelty/search placement. Draft PROPOSE/null is rejected by config.",
+    "joinProposal": "Existing observed electrical cable-channel group; title high-load is routing only and supplies no applicability. Shared append guards still require exact key/history/source identity/ordinal absence under locks.",
+    "membershipOrdinal": "6 proposed, not read as absent; collision is STOP before any write."
+  }
+}

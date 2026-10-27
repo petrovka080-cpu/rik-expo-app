@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "r568-r4-a5-formula-successor-contract.v1",
+  "masterSha256": "2e668d93b531acab14636f02df9528164ba844404021d5c96ce93533c180e7a1",
+  "predecessorDefinitionReleaseId": "ef7e4516-82e0-5a12-a495-22c3900034cc",
+  "predecessorSearchReleaseId": "af2ccc6e-7739-500a-af96-8f763f74d05c",
+  "repairedCatalogId": "canonical-work:expanded:battens_counterbattens",
+  "sourceDefinitionVersionId": "c62da232-b503-5f36-87cb-9d7a74f28004",
+  "primaryMeasureParameterId": "area_m2",
+  "referenceInputs": {
+    "area_m2": 200,
+    "insulation_mm": 200,
+    "roof_windows_count": 4
+  },
+  "sensitivityInputs": [
+    {
+      "area_m2": 100,
+      "insulation_mm": 200,
+      "roof_windows_count": 4
+    },
+    {
+      "area_m2": 200,
+      "insulation_mm": 200,
+      "roof_windows_count": 4
+    },
+    {
+      "area_m2": 300,
+      "insulation_mm": 200,
+      "roof_windows_count": 4
+    }
+  ],
+  "parameters": [
+    {
+      "id": "area_m2",
+      "valueType": "decimal",
+      "unitId": "m2",
+      "titleRu": "Площадь",
+      "required": true,
+      "defaultValue": 200,
+      "constraints": {
+        "min": 0.01,
+        "max": 10000000
+      },
+      "guideKind": "MEASUREMENT_RULE",
+      "sourceRole": "USER_MEASURED",
+      "guideRu": "Укажите фактическую площадь кровли по обмеру или проектной документации."
+    },
+    {
+      "id": "insulation_mm",
+      "valueType": "decimal",
+      "unitId": "mm",
+      "titleRu": "Толщина утеплителя",
+      "required": true,
+      "defaultValue": 200,
+      "constraints": {
+        "min": 1,
+        "max": 1000
+      },
+      "guideKind": "PROJECT_DEFINED",
+      "sourceRole": "PROJECT_DOCUMENTATION",
+      "guideRu": "Укажите проектную толщину утеплителя в миллиметрах."
+    },
+    {
+      "id": "roof_windows_count",
+      "valueType": "integer",
+      "unitId": "pcs",
+      "titleRu": "Количество кровельных окон",
+      "required": true,
+      "defaultValue": 4,
+      "constraints": {
+        "min": 0,
+        "max": 10000
+      },
+      "guideKind": "PROJECT_DEFINED",
+      "sourceRole": "PROJECT_DOCUMENTATION",
+      "guideRu": "Укажите количество кровельных окон по проекту или спецификации."
+    }
+  ],
+  "policy": {
+    "unresolvedFormulaParameter": "REJECT",
+    "baselineNumberSubstitution": "FORBIDDEN",
+    "calibratedFormulaSubstitution": "FORBIDDEN",
+    "unrepairedFrozenDefinitions": "QUARANTINE",
+    "preserveResourceRows": "EXACT_45_BY_ROW_ID_AND_ORDINAL",
+    "preservePriceRoutes": true
+  }
+}

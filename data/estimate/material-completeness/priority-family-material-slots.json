@@ -1,0 +1,209 @@
+{
+  "schema": "professional_boq_material_completeness_priority_slots_v1",
+  "policies": [
+    {
+      "family": "diamond_core_drilling_concrete",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "diamond_work_drilling", "expectedNames": ["алмазное бурение"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "diamond_drilling_rig", "expectedNames": ["установка алмазного бурения", "бурильная установка"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "diamond_crown_wear", "expectedNames": ["алмазной коронки", "коронка"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "diamond_water_cooling", "expectedNames": ["вода для охлаждения", "охлаждения"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "diamond_slurry_removal", "expectedNames": ["шлама", "вынос бетонного шлама"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "diamond_equipment_mobilization", "expectedNames": ["мобилизация оборудования", "доставка установки", "доставка и вывоз бурильного оборудования"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "optionalButExpectedSlots": [
+        { "slotKey": "diamond_anchor_consumables", "expectedNames": ["анкеровки станка", "крепления станка"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "minWorkRows": 1,
+      "minMaterialRows": 2,
+      "minEquipmentRows": 1,
+      "minServiceRows": 1,
+      "allowsServiceOnlyEstimate": false
+    },
+    {
+      "family": "dynamic_fencing_estimate",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "fence_profile_sheet", "expectedNames": ["профлист", "профнастил"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_posts", "expectedNames": ["столбы забора", "металлические столбы"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_lags", "expectedNames": ["горизонтальные лаги", "профильной трубы"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_fasteners", "expectedNames": ["саморезы", "крепеж профлиста"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_caps", "expectedNames": ["заглушки", "колпаки столбов"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_post_concrete", "expectedNames": ["бетон для бетонирования столбов", "бетон для столбов"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_motor_auger", "expectedNames": ["мотобур", "бурение лунок"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_material_delivery", "expectedNames": ["доставка профлиста", "доставка материалов"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_gate_kit", "expectedNames": ["комплект ворот", "ворота распашные", "калитка комплект"], "expectedUnits": [], "minMatchedRows": 1, "requiredWhen": "prompt_mentions_gate_or_wicket" }
+      ],
+      "optionalButExpectedSlots": [
+        { "slotKey": "fence_bedding", "expectedNames": ["песок", "щебень", "подсыпка"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "fence_anticorrosion", "expectedNames": ["антикоррозион", "грунтовка"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "minWorkRows": 1,
+      "minMaterialRows": 5,
+      "minEquipmentRows": 1,
+      "minServiceRows": 1,
+      "allowsServiceOnlyEstimate": false
+    },
+    {
+      "family": "ventilated_facade",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "facade_brackets", "expectedNames": ["кронштейны"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_profiles", "expectedNames": ["направляющие профили", "профили подсистемы"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_anchors", "expectedNames": ["анкера", "анкерный крепеж"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_insulation", "expectedNames": ["утеплитель", "теплоизоляция"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_insulation_dowels", "expectedNames": ["дюбели для утеплителя"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_membrane", "expectedNames": ["мембрана", "ветрозащитная"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_cladding_panels", "expectedNames": ["облицовочные панели"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_sealant", "expectedNames": ["герметик"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_tape", "expectedNames": ["уплотнительная лента", "лента"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "facade_access_equipment", "expectedNames": ["леса", "люлька", "подъемник", "подъёмник"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "optionalButExpectedSlots": [
+        { "slotKey": "facade_flashings", "expectedNames": ["примыкания", "планки"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "minWorkRows": 1,
+      "minMaterialRows": 8,
+      "minEquipmentRows": 1,
+      "minServiceRows": 1,
+      "allowsServiceOnlyEstimate": false
+    },
+    {
+      "family": "village_water_supply",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "water_pipe_110", "expectedNames": ["труба пнд", "пнд", "труба водопроводная", "d110"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_fittings", "expectedNames": ["фитинги", "муфты", "отводы", "тройники"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_valves", "expectedNames": ["задвижки", "краны", "арматура запорная", "запорная арматура"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_wells", "expectedNames": ["колодцы"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_lids", "expectedNames": ["люки"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_sand_bedding", "expectedNames": ["песчаное основание", "песок"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_warning_tape", "expectedNames": ["сигнальная лента"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_tower", "expectedNames": ["водонапорная башня", "бак 25"], "expectedUnits": [], "minMatchedRows": 1, "requiredWhen": "prompt_mentions_water_tower_or_tank" },
+        { "slotKey": "water_welding_machine", "expectedNames": ["сварочный аппарат", "сварка пнд"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_hydraulic_test", "expectedNames": ["гидравлическое испытание"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "water_disinfection", "expectedNames": ["дезинфекция"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "optionalButExpectedSlots": [],
+      "minWorkRows": 1,
+      "minMaterialRows": 8,
+      "minEquipmentRows": 1,
+      "minServiceRows": 2,
+      "allowsServiceOnlyEstimate": false
+    },
+    {
+      "family": "road_construction",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "road_sand", "expectedNames": ["песок", "песчан"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "road_crushed_stone", "expectedNames": ["щебень", "щебеночное"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "road_asphalt_lower", "expectedNames": ["нижний слой", "нижнего слоя", "асфальтобетон ниж"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "road_asphalt_upper", "expectedNames": ["верхний слой", "верхнего слоя", "асфальтобетон верх"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "road_bitumen_emulsion", "expectedNames": ["битумная эмульсия"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "road_grader", "expectedNames": ["автогрейдер"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "road_roller", "expectedNames": ["каток"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "road_paver", "expectedNames": ["асфальтоукладчик"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "road_dump_truck", "expectedNames": ["самосвал"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "optionalButExpectedSlots": [
+        { "slotKey": "road_geotextile", "expectedNames": ["геотекстиль"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "minWorkRows": 1,
+      "minMaterialRows": 5,
+      "minEquipmentRows": 3,
+      "minServiceRows": 1,
+      "allowsServiceOnlyEstimate": false
+    },
+    {
+      "family": "earth_dam",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "dam_geotextile", "expectedNames": ["геотекстиль"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "dam_gabion_boxes", "expectedNames": ["габионные короба", "габионные сетки"], "expectedUnits": [], "minMatchedRows": 1, "requiredWhen": "prompt_mentions_gabion" },
+        { "slotKey": "dam_gabion_fill", "expectedNames": ["камень для габионов", "заполнитель габионов"], "expectedUnits": [], "minMatchedRows": 1, "requiredWhen": "prompt_mentions_gabion" },
+        { "slotKey": "dam_drainage_pipe", "expectedNames": ["дренажная труба", "дренажные трубы"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "dam_filter_material", "expectedNames": ["фильтрующий материал"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "dam_gabion_fasteners", "expectedNames": ["проволока", "спирали", "крепеж габионов"], "expectedUnits": [], "minMatchedRows": 1, "requiredWhen": "prompt_mentions_gabion" },
+        { "slotKey": "dam_compaction_control", "expectedNames": ["контроль уплотнения"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "optionalButExpectedSlots": [],
+      "minWorkRows": 1,
+      "minMaterialRows": 6,
+      "minEquipmentRows": 2,
+      "minServiceRows": 1,
+      "allowsServiceOnlyEstimate": false
+    },
+    {
+      "family": "overhead_power_line_10kv",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "power_poles", "expectedNames": ["опоры"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "power_wire_or_cable", "expectedNames": ["провод сип", "кабель"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "power_insulators", "expectedNames": ["изоляторы"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "power_sip_fittings", "expectedNames": ["арматура сип", "зажимы"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "power_grounding", "expectedNames": ["заземляющий комплект", "заземление", "комплекты заземления"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "power_testing", "expectedNames": ["испытания", "пусконаладка"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "power_bucket_truck", "expectedNames": ["автовышка"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "optionalButExpectedSlots": [],
+      "minWorkRows": 1,
+      "minMaterialRows": 5,
+      "minEquipmentRows": 1,
+      "minServiceRows": 1,
+      "allowsServiceOnlyEstimate": false
+    },
+    {
+      "family": "high_rise_glazing",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "glazing_glass_units", "expectedNames": ["стеклопакеты"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "glazing_aluminum_profile", "expectedNames": ["алюминиевые профили", "алюминиевый профиль"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "glazing_fasteners", "expectedNames": ["крепеж", "анкера"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "glazing_gaskets", "expectedNames": ["уплотнители"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "glazing_sealant", "expectedNames": ["герметик"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "glazing_access_equipment", "expectedNames": ["люлька", "подъемник", "подъёмник", "леса"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "glazing_delivery", "expectedNames": ["доставка стеклопакетов"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "optionalButExpectedSlots": [
+        { "slotKey": "glazing_flashings", "expectedNames": ["примыкания", "нащельники"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "minWorkRows": 1,
+      "minMaterialRows": 5,
+      "minEquipmentRows": 1,
+      "minServiceRows": 1,
+      "allowsServiceOnlyEstimate": false
+    },
+    {
+      "family": "mansard_roof_with_windows",
+      "appliesToTemplateIds": [],
+      "materialRequired": true,
+      "requiredSlots": [
+        { "slotKey": "roof_lumber", "expectedNames": ["пиломатериал", "строп"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_insulation", "expectedNames": ["утеплитель", "утепление"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_vapor_barrier", "expectedNames": ["пароизоляция"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_waterproof_membrane", "expectedNames": ["гидроизоляционная мембрана", "мембрана"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_battens", "expectedNames": ["контробрешетка", "контробрешётка", "обрешетка", "обрешётка"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_metal_tiles", "expectedNames": ["металлочерепица"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_fasteners", "expectedNames": ["крепеж", "саморезы"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_windows", "expectedNames": ["мансардные окна", "кровельные окна"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_window_flashing", "expectedNames": ["оклады", "планки для окон"], "expectedUnits": [], "minMatchedRows": 1 },
+        { "slotKey": "roof_delivery", "expectedNames": ["доставка кровельных материалов"], "expectedUnits": [], "minMatchedRows": 1 }
+      ],
+      "optionalButExpectedSlots": [],
+      "minWorkRows": 1,
+      "minMaterialRows": 8,
+      "minEquipmentRows": 0,
+      "minServiceRows": 1,
+      "allowsServiceOnlyEstimate": false
+    }
+  ]
+}

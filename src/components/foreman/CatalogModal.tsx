@@ -1,0 +1,417 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Modal,
+  Platform,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Keyboard,
+  Animated,
+  InteractionManager,
+  StyleSheet,
+} from 'react-native';
+import { FlashList } from '@/src/ui/FlashList';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { UI } from '../../screens/foreman/foreman.ui';
+import IconSquareButton from '../../ui/IconSquareButton';
+import { s } from './CatalogModal.styles';
+
+type CatalogItem = {
+  rik_code: string;
+  name_human_ru?: string | null;
+  name_human?: string | null;
+  name_ru?: string | null;
+  display_name?: string | null;
+  uom_code?: string | null;
+  kind?: string | null;
+  apps?: string[] | null;
+};
+
+export type PickedRow = {
+  rik_code: string;
+  name: string;
+  uom?: string | null;
+  kind?: string | null;
+  qty: string;
+  app_code?: string | null;
+  note: string;
+  appsFromItem?: string[];
+};
+
+const toSelectorToken = (value: string) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+/**
+ * Component to render text with highlighted parts matching the search query
+ */
+const HighlightedText = ({ text, highlight, style, highlightStyle }: {
+  text: string;
+  highlight: string;
+  style: any;
+  highlightStyle: any;
+}) => {
+  if (!highlight.trim() || !text) return <Text style={style}>{text}</Text>;
+
+  const tokens = highlight.trim().split(/\s+/).filter(t => t.length >= 2);
+  if (tokens.length === 0) return <Text style={style}>{text}</Text>;
+
+  // Create a regex that matches any of the tokens
+  const escapedTokens = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const regex = new RegExp(`(${escapedTokens.join('|')})`, 'gi');
+  const parts = text.split(regex);
+
+  return (
+    <Text style={style}>
+      {parts.map((part, i) => {
+        const isMatch = tokens.some(t => part.toLowerCase() === t.toLowerCase());
+        return (
+          <Text key={i} style={isMatch ? highlightStyle : undefined}>
+            {part}
+          </Text>
+        );
+      })}
+    </Text>
+  );
+};
+
+export default function CatalogModal(props: {
+  visible: boolean;
+  onClose: () => void;
+  rikQuickSearch: (q: string, limit?: number) => Promise<CatalogItem[]>;
+  onCommitToDraft: (rows: PickedRow[]) => void | Promise<void>;
+  onOpenDraft: () => void;
+  draftCount: number;
+}) {
+  const insets = useSafeAreaInsets();
+  const { visible, onClose, rikQuickSearch, onCommitToDraft, onOpenDraft, draftCount } = props;
+
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<CatalogItem[]>([]);
+
+  const [qtyByCode, setQtyByCode] = useState<Record<string, string>>({});
+  const [addBusyByCode, setAddBusyByCode] = useState<Record<string, boolean>>({});
+
+  const tRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<TextInput>(null);
+  const focusTaskRef = useRef<{ cancel?: () => void } | null>(null);
+
+  const toastY = useRef(new Animated.Value(-24)).current;
+  const [toastText, setToastText] = useState<string>('');
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = (text: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToastText(text);
+    Animated.timing(toastY, { toValue: 0, duration: 200, useNativeDriver: true }).start();
+    toastTimerRef.current = setTimeout(() => {
+      Animated.timing(toastY, { toValue: -24, duration: 200, useNativeDriver: true }).start(() => { setToastText(''); });
+    }, 2000);
+  };
+
+  const canSearch = query.trim().length >= 2;
+  const HEADER_PAD_TOP = Platform.OS === 'web' ? 16 : insets.top + 8;
+
+  const scheduleInputFocus = () => {
+    focusTaskRef.current?.cancel?.();
+    focusTaskRef.current = InteractionManager.runAfterInteractions(() => {
+      inputRef.current?.focus?.();
+    });
+  };
+
+  useEffect(() => {
+    if (!visible) return;
+    setQuery('');
+    setRows([]);
+    setQtyByCode({});
+    setAddBusyByCode({});
+    setToastText('');
+    scheduleInputFocus();
+    return () => {
+      focusTaskRef.current?.cancel?.();
+      focusTaskRef.current = null;
+    };
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    if (tRef.current) clearTimeout(tRef.current);
+
+    if (!canSearch) {
+      setRows([]);
+      return;
+    }
+
+    tRef.current = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const list = await rikQuickSearch(query, 80);
+        setRows(Array.isArray(list) ? list : []);
+      } catch {
+        setRows([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => { if (tRef.current) clearTimeout(tRef.current); };
+  }, [query, canSearch, visible, rikQuickSearch]);
+
+  // Smart Sorting & Filtering on client side
+  const sortedRows = useMemo(() => {
+    if (!rows.length) return [];
+    const seen = new Set<string>();
+    const q = query.trim().toLowerCase();
+    const tokens = q.split(/\s+/).filter(t => t.length >= 2);
+
+    const filtered = rows.filter((r) => {
+      const code = String(r?.rik_code ?? '').trim();
+      if (!code || seen.has(code)) return false;
+      seen.add(code);
+      return true;
+    });
+
+    if (!tokens.length) return filtered;
+
+    return filtered.sort((a, b) => {
+      const nameA = (a.name_human_ru || a.name_ru || a.name_human || '').toLowerCase();
+      const nameB = (b.name_human_ru || b.name_ru || b.name_human || '').toLowerCase();
+
+      // Priority 1: Exact match
+      if (nameA === q && nameB !== q) return -1;
+      if (nameB === q && nameA !== q) return 1;
+
+      // Priority 2: Starts with query
+      if (nameA.startsWith(q) && !nameB.startsWith(q)) return -1;
+      if (nameB.startsWith(q) && !nameA.startsWith(q)) return 1;
+
+      // Priority 3: Count matched tokens
+      const matchesA = tokens.filter(t => nameA.includes(t)).length;
+      const matchesB = tokens.filter(t => nameB.includes(t)).length;
+      if (matchesA !== matchesB) return matchesB - matchesA;
+
+      return 0;
+    });
+  }, [rows, query]);
+
+  const titleOf = (it: CatalogItem) =>
+    (it.name_human_ru || it.name_ru || it.name_human || it.display_name || it.rik_code || '-').trim();
+
+  const handleCommit = async (item: CatalogItem) => {
+    const code = String(item.rik_code || '').trim();
+    if (!code || addBusyByCode[code]) return;
+
+    const rawQty = String(qtyByCode[code] || '').trim();
+    const qValue = rawQty ? Number(rawQty.replace(',', '.')) : 0;
+    if (!Number.isFinite(qValue) || qValue < 0) {
+      alert('Укажите корректное количество');
+      return;
+    }
+    if (qValue === 0) {
+      alert('Количество должно быть больше 0');
+      return;
+    }
+
+    const title = titleOf(item);
+    const apps = Array.isArray(item.apps) ? item.apps.filter(Boolean) : [];
+    const appDefault = apps[0] || null;
+
+    try {
+      setAddBusyByCode(p => ({ ...p, [code]: true }));
+      if (Platform.OS !== 'web') Keyboard.dismiss();
+
+      await onCommitToDraft([{
+        rik_code: code,
+        name: title,
+        uom: item.uom_code ?? null,
+        kind: item.kind ?? null,
+        qty: String(qValue),
+        app_code: appDefault,
+        note: '',
+        appsFromItem: apps.length ? apps : undefined,
+      }]);
+
+      showToast(`Добавлено: ${title}`);
+      setQtyByCode(p => ({ ...p, [code]: '' }));
+    } catch (e) {
+      if (__DEV__) console.warn('Commit error:', e);
+    } finally {
+      setAddBusyByCode(p => ({ ...p, [code]: false }));
+    }
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent={false} statusBarTranslucent>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: UI.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={{ flex: 1 }} testID="foreman-catalog-modal" accessibilityLabel="foreman-catalog-modal">
+          <View style={[s.header, { paddingTop: HEADER_PAD_TOP }]}>
+            <View style={s.headerRow}>
+              <Text testID="foreman-catalog-title" style={s.hTitle}>Каталог</Text>
+
+              <Pressable onPress={onOpenDraft} style={s.hDraftPill} testID="foreman-catalog-draft-open" accessibilityLabel="Открыть черновик из каталога">
+                <Ionicons name="cart" size={18} color={UI.accent} />
+                <View style={s.badge}>
+                  <Text style={s.badgeText}>{draftCount ?? 0}</Text>
+                </View>
+              </Pressable>
+
+              <Pressable
+                accessible
+                testID="foreman-catalog-close"
+                accessibilityLabel="foreman-catalog-close"
+                onPress={() => { Keyboard.dismiss(); onClose(); }}
+                style={s.closeBtn}
+              >
+                <Ionicons name="close" size={26} color={UI.text} />
+              </Pressable>
+            </View>
+
+            <View style={s.searchWrap}>
+              <Ionicons name="search" size={20} color={UI.sub} style={{ marginLeft: 12 }} />
+              <TextInput
+                accessible
+                testID="foreman-catalog-search-input"
+                accessibilityLabel="foreman-catalog-search-input"
+                ref={inputRef}
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Что ищем? (бетон, арматура...)"
+                placeholderTextColor={UI.sub}
+                style={s.searchInput}
+                returnKeyType="search"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {!!query && (
+                <Pressable onPress={() => { setQuery(''); setRows([]); }} style={s.clearSearch}>
+                  <Ionicons name="close-circle" size={20} color={UI.sub} />
+                </Pressable>
+              )}
+            </View>
+
+            {loading && (
+              <View style={s.loaderBar}>
+                <ActivityIndicator size="small" color={UI.accent} />
+                <Text style={s.loaderText}>Поиск в базе РИК...</Text>
+              </View>
+            )}
+          </View>
+
+          {toastText ? (
+            <Animated.View style={[s.toastContainer, styles.pointerNone, { transform: [{ translateY: toastY }] }]}>
+              <View style={s.toast}>
+                <Ionicons name="checkmark-circle" size={18} color="#fff" />
+                <Text style={s.toastText}>{toastText}</Text>
+              </View>
+            </Animated.View>
+          ) : null}
+
+          <FlashList
+            data={sortedRows}
+            keyExtractor={(it) => `rk:${it.rik_code}`}
+            contentContainerStyle={[s.listContent, { paddingBottom: insets.bottom + 20 }]}
+            keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
+              <View style={s.empty}>
+                <Ionicons
+                  name={canSearch ? "search-outline" : "construct-outline"}
+                  size={64}
+                  color={UI.border}
+                />
+                <Text style={s.emptyText}>
+                  {canSearch
+                    ? loading ? "" : "Ничего не найдено\nПопробуйте изменить запрос"
+                    : "Введите название материала\nминимум 2 символа"}
+                </Text>
+              </View>
+            }
+            renderItem={({ item }) => {
+              const title = titleOf(item);
+              const code = String(item.rik_code || '').trim();
+              const token = toSelectorToken(code) || 'empty';
+              const qty = qtyByCode[code] ?? '';
+              const adding = !!addBusyByCode[code];
+
+              return (
+                <Animated.View
+                  style={s.card}
+                  testID={`foreman-catalog-row-${token}`}
+                  accessibilityLabel={`foreman-catalog-row-${token}`}
+                >
+                  <View style={s.cardHeader}>
+                    <HighlightedText
+                      text={title}
+                      highlight={query}
+                      style={s.cardTitle}
+                      highlightStyle={s.highlight}
+                    />
+                    <Text style={s.cardCode}>{code}</Text>
+                  </View>
+
+                  <View style={s.cardFooter}>
+                    <View style={s.metaRow}>
+                      <View style={s.tag}>
+                        <Text style={s.tagText}>{item.uom_code || 'ед'}</Text>
+                      </View>
+                      {!!item.kind && (
+                        <View style={[s.tag, { backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+                          <Text style={[s.tagText, { color: UI.sub }]}>{item.kind}</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    <View style={s.actionRow}>
+                      <TextInput
+                        accessible
+                        testID={`foreman-catalog-qty-${token}`}
+                        accessibilityLabel={`foreman-catalog-qty-${token}`}
+                        value={qty}
+                        onChangeText={(v) => setQtyByCode(p => ({ ...p, [code]: v }))}
+                        keyboardType="decimal-pad"
+                        placeholder="0"
+                        placeholderTextColor={UI.sub}
+                        style={s.qtyInput}
+                        selectTextOnFocus
+                      />
+                      <IconSquareButton
+                        testID={`foreman-catalog-add-${token}`}
+                        accessibilityLabel={`foreman-catalog-add-${token}`}
+                        disabled={adding}
+                        loading={adding}
+                        onPress={() => handleCommit(item)}
+                        width={46}
+                        height={46}
+                        radius={14}
+                        bg={UI.accent}
+                        bgPressed="#16a34a"
+                        bgDisabled={UI.border}
+                        spinnerColor="#fff"
+                        luxGreen
+                      >
+                        <Ionicons name="checkmark" size={20} color="#fff" />
+                      </IconSquareButton>
+                    </View>
+                  </View>
+                </Animated.View>
+              );
+            }}
+          />
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  pointerNone: {
+    pointerEvents: "none",
+  },
+});

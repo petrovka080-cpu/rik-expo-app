@@ -1,0 +1,954 @@
+{
+  "contract": "gox-build.facade-steel-siding-historical-06501/r2",
+  "status": "UNRUN",
+  "candidateBoundAtROOTExecution": true,
+  "caseCount": 19,
+  "saveCases": 8,
+  "rejectCases": 11,
+  "caseArraySha256": "3b14d6532aeb51065b532e871fc2248b126b1ff6c039c72fe0f90be4ed06ec8a",
+  "newFULL": 0,
+  "existingHarnessOnly": true,
+  "fixtureIsSyntheticNotRealProject": true,
+  "cases": [
+    {
+      "caseId": "STEEL06501_100",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "SOURCE_INDEPENDENT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "needIds": [
+          "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+          "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+          "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+          "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+          "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+          "facade:steel-siding:krer15-06501:r2:need:qc-services",
+          "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+          "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+          "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+          "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+          "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+          "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+          "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+          "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+          "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+        ],
+        "raw": {
+          "labour": "175.61",
+          "screwdriver": "57.2",
+          "electric-grinding-machine": "1.07",
+          "perforator": "26.89",
+          "flatbed": "0.97",
+          "dowel-screw": "217.400",
+          "screw": "913.00",
+          "levelling-bracket": "402.98",
+          "stud-profile": "236.89",
+          "weather-membrane": "120"
+        },
+        "projectSupplies": {
+          "dowel-screw": "300",
+          "levelling-bracket": "450",
+          "stud-profile": "250",
+          "expansion-dowel": "900",
+          "steel-siding": "460",
+          "insulation": "12",
+          "cover-strip": "20",
+          "starter-strip": "40",
+          "corner-strip": "30"
+        }
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL06501_12_5",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "SOURCE_INDEPENDENT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "12.5",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "needIds": [
+          "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+          "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+          "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+          "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+          "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+          "facade:steel-siding:krer15-06501:r2:need:qc-services",
+          "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+          "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+          "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+          "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+          "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+          "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+          "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+          "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+          "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+        ],
+        "raw": {
+          "labour": "21.95125",
+          "screwdriver": "7.15",
+          "electric-grinding-machine": "0.13375",
+          "perforator": "3.36125",
+          "flatbed": "0.12125",
+          "dowel-screw": "27.1750",
+          "screw": "114.125",
+          "levelling-bracket": "50.3725",
+          "stud-profile": "29.61125",
+          "weather-membrane": "15.0"
+        },
+        "projectSupplies": {
+          "dowel-screw": "300",
+          "levelling-bracket": "450",
+          "stud-profile": "250",
+          "expansion-dowel": "900",
+          "steel-siding": "460",
+          "insulation": "12",
+          "cover-strip": "20",
+          "starter-strip": "40",
+          "corner-strip": "30"
+        }
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL06501_200",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "SOURCE_INDEPENDENT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "200",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "needIds": [
+          "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+          "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+          "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+          "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+          "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+          "facade:steel-siding:krer15-06501:r2:need:qc-services",
+          "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+          "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+          "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+          "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+          "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+          "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+          "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+          "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+          "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+        ],
+        "raw": {
+          "labour": "351.22",
+          "screwdriver": "114.4",
+          "electric-grinding-machine": "2.14",
+          "perforator": "53.78",
+          "flatbed": "1.94",
+          "dowel-screw": "434.800",
+          "screw": "1826.00",
+          "levelling-bracket": "805.96",
+          "stud-profile": "473.78",
+          "weather-membrane": "240"
+        },
+        "projectSupplies": {
+          "dowel-screw": "300",
+          "levelling-bracket": "450",
+          "stud-profile": "250",
+          "expansion-dowel": "900",
+          "steel-siding": "460",
+          "insulation": "12",
+          "cover-strip": "20",
+          "starter-strip": "40",
+          "corner-strip": "30"
+        }
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_OWN_SCREWDRIVER",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "SOURCE_INDEPENDENT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Собственная полная эксплуатация",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "needIds": [
+          "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+          "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+          "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+          "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+          "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+          "facade:steel-siding:krer15-06501:r2:need:qc-services",
+          "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+          "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+          "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+          "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+          "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+          "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+          "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+          "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+          "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+        ],
+        "raw": {
+          "labour": "175.61",
+          "screwdriver": "57.2",
+          "electric-grinding-machine": "1.07",
+          "perforator": "26.89",
+          "flatbed": "0.97",
+          "dowel-screw": "217.400",
+          "screw": "913.00",
+          "levelling-bracket": "402.98",
+          "stud-profile": "236.89",
+          "weather-membrane": "120"
+        }
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ],
+      "expectedMachineOwnKey": "screwdriver"
+    },
+    {
+      "caseId": "STEEL_OWN_ELECTRIC_GRINDING_MACHINE",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "SOURCE_INDEPENDENT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Собственная полная эксплуатация",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "needIds": [
+          "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+          "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+          "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+          "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+          "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+          "facade:steel-siding:krer15-06501:r2:need:qc-services",
+          "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+          "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+          "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+          "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+          "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+          "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+          "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+          "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+          "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+        ],
+        "raw": {
+          "labour": "175.61",
+          "screwdriver": "57.2",
+          "electric-grinding-machine": "1.07",
+          "perforator": "26.89",
+          "flatbed": "0.97",
+          "dowel-screw": "217.400",
+          "screw": "913.00",
+          "levelling-bracket": "402.98",
+          "stud-profile": "236.89",
+          "weather-membrane": "120"
+        }
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ],
+      "expectedMachineOwnKey": "electric-grinding-machine"
+    },
+    {
+      "caseId": "STEEL_OWN_PERFORATOR",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "SOURCE_INDEPENDENT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Собственная полная эксплуатация",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "needIds": [
+          "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+          "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+          "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+          "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+          "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+          "facade:steel-siding:krer15-06501:r2:need:qc-services",
+          "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+          "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+          "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+          "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+          "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+          "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+          "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+          "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+          "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+        ],
+        "raw": {
+          "labour": "175.61",
+          "screwdriver": "57.2",
+          "electric-grinding-machine": "1.07",
+          "perforator": "26.89",
+          "flatbed": "0.97",
+          "dowel-screw": "217.400",
+          "screw": "913.00",
+          "levelling-bracket": "402.98",
+          "stud-profile": "236.89",
+          "weather-membrane": "120"
+        }
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ],
+      "expectedMachineOwnKey": "perforator"
+    },
+    {
+      "caseId": "STEEL_OWN_FLATBED",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "SOURCE_INDEPENDENT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Собственная полная эксплуатация"
+      },
+      "expected": {
+        "needIds": [
+          "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+          "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+          "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+          "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+          "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+          "facade:steel-siding:krer15-06501:r2:need:qc-services",
+          "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+          "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+          "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+          "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+          "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+          "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+          "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+          "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+          "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+        ],
+        "raw": {
+          "labour": "175.61",
+          "screwdriver": "57.2",
+          "electric-grinding-machine": "1.07",
+          "perforator": "26.89",
+          "flatbed": "0.97",
+          "dowel-screw": "217.400",
+          "screw": "913.00",
+          "levelling-bracket": "402.98",
+          "stud-profile": "236.89",
+          "weather-membrane": "120"
+        }
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ],
+      "expectedMachineOwnKey": "flatbed"
+    },
+    {
+      "caseId": "STEEL_SAME_PRIMARY_INFO_PRICE200",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "SOURCE_INDEPENDENT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "needIds": [
+          "facade:steel-siding:krer15-06501:r2:need:source-component-identity",
+          "facade:steel-siding:krer15-06501:r2:need:fire-ventilation",
+          "facade:steel-siding:krer15-06501:r2:need:anchor-tests",
+          "facade:steel-siding:krer15-06501:r2:need:access-rigging-power",
+          "facade:steel-siding:krer15-06501:r2:need:workstation-wear",
+          "facade:steel-siding:krer15-06501:r2:need:qc-services",
+          "facade:steel-siding:krer15-06501:r2:need:cleanup-logistics",
+          "facade:steel-siding:krer15-06501:r2:need-tool:screwdriver-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:drill-anchor-bits",
+          "facade:steel-siding:krer15-06501:r2:need-tool:hole-brush-pump",
+          "facade:steel-siding:krer15-06501:r2:need-tool:nonabrasive-sheet-cutter",
+          "facade:steel-siding:krer15-06501:r2:need-tool:cutter-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:insulation-knife",
+          "facade:steel-siding:krer15-06501:r2:need-tool:layout-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:rivet-tool",
+          "facade:steel-siding:krer15-06501:r2:need-tool:torque-key-heads",
+          "facade:steel-siding:krer15-06501:r2:need-tool:feeler01",
+          "facade:steel-siding:krer15-06501:r2:need-tool:survey-instruments",
+          "facade:steel-siding:krer15-06501:r2:need-tool:lifting-working-parts",
+          "facade:steel-siding:krer15-06501:r2:need-tool:storage-bearers",
+          "facade:steel-siding:krer15-06501:r2:need-tool:ppe"
+        ],
+        "raw": {
+          "labour": "175.61",
+          "screwdriver": "57.2",
+          "electric-grinding-machine": "1.07",
+          "perforator": "26.89",
+          "flatbed": "0.97",
+          "dowel-screw": "217.400",
+          "screw": "913.00",
+          "levelling-bracket": "402.98",
+          "stud-profile": "236.89",
+          "weather-membrane": "120"
+        },
+        "savedReferencePrices": {
+          "facade:steel-siding:krer15-06501:r2:levelling-bracket-consumed": "200"
+        },
+        "savedRawInfoAmounts": {
+          "facade:steel-siding:krer15-06501:r2:levelling-bracket-consumed": "80596"
+        }
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/recalculate"
+      ],
+      "parentCaseId": "STEEL06501_100",
+      "rowOverrides": {
+        "facade:steel-siding:krer15-06501:r2:levelling-bracket-consumed": {
+          "unitPrice": "200",
+          "includedInEstimate": true,
+          "provenance": {
+            "kind": "manual",
+            "reason": "TEST_ONLY INFO reference price"
+          }
+        }
+      }
+    },
+    {
+      "caseId": "STEEL_REJECT_MODERN_FRAME",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "СОВРЕМЕННАЯ_КК_КПГ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_FOREIGN_BASE",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "RU_GESN",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_WRONG_CONDITIONS",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "MW120_30M",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_NEGATIVE_AREA",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "-1",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_FRACTIONAL_BRACKET",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "1.5",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_NEGATIVE_P",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "-1",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_UNKNOWN_WATER",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации",
+        "mixing_water_l": "20"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_INTERNAL_0",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации",
+        "steel_unresolved_general_source_component_identity": "0"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_INTERNAL_1",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации",
+        "steel_unresolved_general_source_component_identity": "1"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_REJECT_INTERNAL_77",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "100",
+        "kg_project_basis": "KG:КРЕР15-2015:15-01-065-01:ПРЯМО_ПРИНЯТО_ПРОЕКТОМ",
+        "source_system_conformance": "ТОЧНЫЙ_ИСТОРИЧЕСКИЙ_МЕТОД_06501_H200_T1_2_СТОЕЧНЫЙ_ПРОФИЛЬ",
+        "source_conditions": "ИСХОДНЫЕ_НОРМАЛЬНЫЕ_УСЛОВИЯ_КРЕР15_ПРИНЯТЫ_ПРОЕКТОМ",
+        "approved_facade_project_reference": "TEST_ONLY реальный объектный документ отсутствует; контрольная синтетическая ведомость",
+        "project_dowel_screw": "300",
+        "project_levelling_bracket": "450",
+        "project_stud_profile": "250",
+        "project_expansion_dowel": "900",
+        "project_steel_siding": "460",
+        "project_insulation": "12",
+        "project_cover_strip": "20",
+        "project_starter_strip": "40",
+        "project_corner_strip": "30",
+        "machine_fulfillment_screwdriver": "Услуга полной эксплуатации",
+        "machine_fulfillment_electric_grinding_machine": "Услуга полной эксплуатации",
+        "machine_fulfillment_perforator": "Услуга полной эксплуатации",
+        "machine_fulfillment_flatbed": "Услуга полной эксплуатации",
+        "steel_unresolved_general_source_component_identity": "77"
+      },
+      "expected": {
+        "code": "PARAMETER_VALIDATION_FAILED"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    },
+    {
+      "caseId": "STEEL_ZERO_WRITER",
+      "catalogId": "canonical-work:master:facade_steel_siding_insulated_krer15_01_065_01",
+      "mode": "REJECT",
+      "primaryMeasureParameterId": "steel_siding_cladding_area_m2",
+      "submittedParameters": {
+        "steel_siding_cladding_area_m2": "0"
+      },
+      "expected": {
+        "code": "EMPTY_ESTIMATE_COMPOSITION"
+      },
+      "execution": "UNRUN",
+      "endpoints": [
+        "jobs/compile"
+      ]
+    }
+  ]
+}

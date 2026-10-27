@@ -1,0 +1,1871 @@
+{
+  "status": "CAPTURED_FRESH_KNOWN87_FULL_COLUMNS_AFTER_COMPLETE_SCREED_DOCUMENTS",
+  "count": 87,
+  "ids": [
+    "02ba63b0-856c-451d-85b4-90ca7f375ba8",
+    "035fd879-244a-441e-a87b-8c42472893f0",
+    "0cd5ae99-2a0f-4902-8342-d7967d1cb054",
+    "0eb126f2-e534-4cbe-969e-f945f9dbca84",
+    "12a8e036-3351-4922-9975-c6c75cdaa116",
+    "13e42c70-6393-4e15-a4b2-ca27a1a0437e",
+    "1452015c-9002-4f42-9dd5-f847dca45ccc",
+    "1808fad4-6680-47d9-aebc-c0c78d7d81c6",
+    "1b6f4050-7f34-430f-9ca0-891a6856ff92",
+    "1d4e6d07-eb22-4e65-8195-270011608936",
+    "201df44c-c46d-44ad-9565-9132aaea1dc3",
+    "2362aed9-94fc-466f-8a99-aaad81fc7eaa",
+    "238f8ede-b8db-4528-b71a-d0c7e5ff3353",
+    "285fe163-09d7-4bb8-864f-db96fb0d99f8",
+    "2a117d6a-dc7f-41bc-9b45-68cf8b0ffd89",
+    "2f573bef-b439-487d-87f9-69140d7286b6",
+    "2fad855f-ce75-457d-ab35-ad9118be79b4",
+    "3081643d-f908-4ed1-afb1-7259a6b76744",
+    "36d6acc9-138f-4a56-9c0a-fba504f6e984",
+    "39d4ab01-ce20-4029-9405-3a7afd4ea226",
+    "3b499b3e-efa4-4924-847f-f6a5234773d6",
+    "3fb0c57d-b7fc-441d-b858-cfac7a43ad3c",
+    "3fe0d25b-fb34-43bb-8c3e-11f37f1ada87",
+    "41dd61d6-58c7-4e64-b471-9414a53e29f2",
+    "44692275-88b3-4b57-9417-1dafd32a6a58",
+    "4535a237-baf4-47d4-b3cb-730c36fb2b66",
+    "466a2aff-f991-41e1-b228-325a9a2d9442",
+    "4850e9c5-b865-46ea-8d0d-5581a2689b5c",
+    "4bbe7502-4e75-4d16-a5bc-4815363df802",
+    "4cd92956-9a8c-42c1-be9b-0434d37030cf",
+    "4ddb77b8-75da-41d0-9fac-8449ad78b362",
+    "4ef795e5-98f3-4bc9-94b5-4d6d55b65c3d",
+    "50c79abf-e362-4eb2-99fb-ddf904a4aac8",
+    "51c6d2df-b5b0-40df-ac1a-1435eb41e748",
+    "59325371-1759-4768-acd9-1cf2c02dcf82",
+    "595648c1-7ef8-45c7-8f34-be93cbfd749d",
+    "5c85793b-b98c-454b-a792-8e71f0cf9f58",
+    "6151d4d4-3b9f-4f21-86bc-839d50a04a55",
+    "63688ae4-a60f-4ae4-9f81-d333191aebcb",
+    "648b6f1b-3c5a-4b60-bcd9-e076e4ddefd6",
+    "64ad8120-0fce-4fbe-a0c1-736c4045d2d8",
+    "67caa785-5de6-4df4-8554-dbf26bff0560",
+    "69b242da-9994-40e5-900e-cae9c31e5d05",
+    "6add0b51-6a24-49d5-b27c-37e99e5c05c4",
+    "6b57b076-7d99-47e9-8d87-d9f2327270b6",
+    "6bd164d5-9bcd-4543-8b73-919e261018a7",
+    "6eca18e8-5185-472a-9556-54496620d155",
+    "70722c46-d146-41be-aed7-0800f8ab2484",
+    "74185cd6-3bbd-4959-bc2e-4e2781c88c66",
+    "75835d6c-5ab5-4bd0-9b55-9a651142d187",
+    "7a6892b9-cbd0-432e-b741-66160524892d",
+    "7ac684c6-fc15-46ad-8130-79d22a1580a6",
+    "7d3493b8-b6a6-4527-9a2b-e55f5b69e8f7",
+    "7d5f3f5c-b050-46bf-bc2b-5ed215abe06e",
+    "87a665dd-87bf-4fe0-9cd3-8064b0a2885c",
+    "895ea770-b25f-4a3d-b039-db94e70ac230",
+    "8ccad6de-eaaa-4897-a096-91371feff0c4",
+    "8e1b650a-1798-437e-950b-a0e8631b03f9",
+    "8e74120d-8784-4bb4-a6bb-172ee71123b9",
+    "96b32a27-3014-4208-ad98-fff7d26656bd",
+    "978acc66-4e52-402b-8558-5cfaadf7e7ba",
+    "993a93a2-556e-4da9-8a6c-78c40e925c0d",
+    "9a6b90d3-879b-45fd-b762-d5c5b0884c14",
+    "9dd2cd0f-6f1a-47ca-9bb6-150e4a6a3913",
+    "9e87d378-fbe8-439c-aa5c-dc915c8e99bd",
+    "a350d80c-7aa9-4b7b-958e-ab3d83a4b719",
+    "aa2f2764-045f-4326-b1b2-89087b9a3d42",
+    "b2fb16de-af74-40f2-9f6b-16fd82bfcf4c",
+    "b63e036e-bf17-4c4e-9b1f-e31b5ce46aba",
+    "b8d650bd-34b1-402c-a2ec-cc33b6d9dbe6",
+    "bfeb3ef9-474f-4eef-8e9d-1dfaff757897",
+    "c7184e21-cd08-4ec0-bd78-4b1ece65b24f",
+    "c793c8e1-90aa-456d-9819-93e6ba9ae8d3",
+    "c8e5226c-fc19-4fd0-89a5-5e8eb7897da2",
+    "ca1ade34-65a8-459a-9aa8-62f4750c4a98",
+    "cc7af3ce-1603-4faa-8ccb-f0cc15545afa",
+    "d2abafa2-e773-477b-844c-7ffa49ab79ec",
+    "d2ad9298-1170-4e17-b2cd-868554a5d07c",
+    "d81937f0-29f1-451a-a493-986f5838a0e0",
+    "df64cd7a-15ec-437a-8217-797a075fa2bc",
+    "e4fb22db-98c1-4654-9390-e1242a6ecb4b",
+    "e922db19-4afa-4af2-99e5-dd4cf813895f",
+    "eac9c2c9-6e21-41dd-813d-1cbc7a88118d",
+    "f2bc54de-390b-4569-bfa9-bf7450aef2be",
+    "f72425cf-ae39-4109-af4f-252d015d1aea",
+    "fb31867d-e385-4395-aa33-a8ae0ef35cc8",
+    "fdc98936-4b65-4229-a1c4-fc361e69de84"
+  ],
+  "rows": [
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "4ee8de46dc51b9b720441707ade98de2f3c2cd088e2ef8dea9bd4e503b4c4369"
+        },
+        "resource": {
+          "rowCount": 16,
+          "allColumnsRowsSha256": "800c6286765711f9527cff9b08308ac7eda8948835b876ff452c8176f59a71ef"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "7450265a0cbc42ed9f47d4c334f87c502548ae896272498a374a45848e6783a7"
+        },
+        "row_price": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "0ee68089bf921473c3c39972ef610e6b717fc087417453a9e43c1d4d963911a5"
+        }
+      },
+      "revision_id": "02ba63b0-856c-451d-85b4-90ca7f375ba8",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "3df1938a52486d65c1be37aa8e539eccbde5efdbb91caa6bf3676ca888ec2e77"
+        },
+        "resource": {
+          "rowCount": 42,
+          "allColumnsRowsSha256": "3f4f20a806225864b2157845ca4697511af16f8d4d6fa81e92af7f8007463721"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "66acb2615e2947f323df284819dd9eee495c8c091de3d39e8310490da2dfb38c"
+        }
+      },
+      "revision_id": "035fd879-244a-441e-a87b-8c42472893f0",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 22,
+          "allColumnsRowsSha256": "043346f378c4612e287f7cf4f4191f355256752ad5a28c35148f2b7af2ce4d8a"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "89a12acb49799b6a660db1f7302b9819c94b72318de95b07c1496a283b2e65eb"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "045511dfc8808acae61731c1bb43fe880eb7cd798567812e49f90b7db5646d1e"
+        }
+      },
+      "revision_id": "0cd5ae99-2a0f-4902-8342-d7967d1cb054",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d0f041801bb3e703667df6fec35510d41bcbfb8f82502dbdeb1668dfa65c7fb7"
+        },
+        "resource": {
+          "rowCount": 7,
+          "allColumnsRowsSha256": "6c311a6190ae724eb03582c5843ce388051601738a2de2c20451edf388131341"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "b93281cb63d3d169682d21836c3b7500beb5d323d0a925d13e47eb7a88728720"
+        }
+      },
+      "revision_id": "0eb126f2-e534-4cbe-969e-f945f9dbca84",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "32fc9aa1fce913e0981d20d36c4e272a39b9bbbdddb9f4c4e174ce61c918003d"
+        },
+        "resource": {
+          "rowCount": 20,
+          "allColumnsRowsSha256": "79bf850c2ed57ee224f868fe3602e74ee6b0cf2e439d21aa3f03b01a56c02705"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "4660ae240b15f12bd3c91556a50359bb686c0e52bb2d63c93da77ee78677af03"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "2b2ba1248415894151b8cc4e6ed95490dd32c860258daad77c1fc47d9263336b"
+        }
+      },
+      "revision_id": "12a8e036-3351-4922-9975-c6c75cdaa116",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "014056d6e276652ccdd96b2e94282789ee3637f73dd29b38115377e2450d769e"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "704c823bef4d838e202b340d1b4d0a33c323bff8ef350196171885a164f23f0e"
+        },
+        "row_price": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "49c6b0e6647803e7def2799bb07b193bd2c1001437edfade711d877bd4dfd8fc"
+        }
+      },
+      "revision_id": "13e42c70-6393-4e15-a4b2-ca27a1a0437e",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "ba9600312a50182ec580315e035d925fc7418e557cf3f45050c25b72bb56b65a"
+        },
+        "resource": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "c16d17383dd907d5bd0cd5dcb2d0e40432f0c4cfb9936f31f42508f38f94fc69"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "21071ed28a41c9bb4cddf466e95cf04d7bb00a8ba2d13ee891f09afece99d40c"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "3cab934b7c218ae7e1016bfaece9ef3fac5e05073e433e6fbe08209cee2eb64d"
+        }
+      },
+      "revision_id": "1452015c-9002-4f42-9dd5-f847dca45ccc",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 17,
+          "allColumnsRowsSha256": "232032c79a34dc52cc99b7baf7a911cc582255ed34af2f95c4b7802eb10a0f7f"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "b573c9aad82c9854889f7483f6b5551969da420b348c79de4731c24db710a608"
+        }
+      },
+      "revision_id": "1808fad4-6680-47d9-aebc-c0c78d7d81c6",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 16,
+          "allColumnsRowsSha256": "04111ec9b0d4ba844079a06e875fd936dd4c3a7254506f1991e0e6a6e738eecb"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "124eb8be357010bbc75608d861a32147ce1f038798d16ab73e26a256fa3b2dd5"
+        },
+        "row_price": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "b093a113bda0c2ea3a738b447884e3e293e9934531c893e61b65a0cb54a9cfd1"
+        }
+      },
+      "revision_id": "1b6f4050-7f34-430f-9ca0-891a6856ff92",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "a74d528af2a65666361a8541781b84622ba60c96bdb3c0928af3b408529ed4ca"
+        },
+        "resource": {
+          "rowCount": 6,
+          "allColumnsRowsSha256": "f2b43776020315e68b6ad23950ac55aaefef1ae79f76db8f822d09d28e9a9c5d"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "f41798abcd9f1c624588d845883a9dd4eb4f91b17fdafc46a981cbb637a37649"
+        },
+        "row_price": {
+          "rowCount": 6,
+          "allColumnsRowsSha256": "8d97122021958d229047f316c0e33c0775ac132fc8281d9fe84367444fe188fb"
+        }
+      },
+      "revision_id": "1d4e6d07-eb22-4e65-8195-270011608936",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8b0d6cbab233ae573f2b56383d4d64ecefd14b639673820fb583cbab06e205f3"
+        },
+        "resource": {
+          "rowCount": 7,
+          "allColumnsRowsSha256": "0a62d85a3d58b669a4d75fbc47ae61ef91582e5c11a4555c2fc8c023c39cf58b"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d82c68cf6b27ab14794f6d00662d6bd1966a3ba2a09aedf743641ccd06fa12d9"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "b19fc02cbc8bf717c966539524058591e05ab9e8d3a1e585e378366a823d8ad1"
+        }
+      },
+      "revision_id": "201df44c-c46d-44ad-9565-9132aaea1dc3",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "9ad7d39f5a0decbc532cbcfc43960336cdf7ce9a144f9da8e11f6b0ccd7e7db8"
+        },
+        "resource": {
+          "rowCount": 42,
+          "allColumnsRowsSha256": "9dfebba6f071abfa0f4fb64cff2bc30a5a0cf2d5b56699c570b926703f334dd5"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "9042c89184cde37dc4d4039085271fe7d9ece3d869089b9ad1962e43f79ba3ac"
+        },
+        "row_price": {
+          "rowCount": 10,
+          "allColumnsRowsSha256": "e5656675a1a7a9feb545c2d597c0eba2d2578d0b16964747fd854fe51eaf40ba"
+        }
+      },
+      "revision_id": "2362aed9-94fc-466f-8a99-aaad81fc7eaa",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "a56c65fc89af7c78a20f6ed2a28eb0be5ba11a179677bc16dd0c8157a841804d"
+        },
+        "resource": {
+          "rowCount": 29,
+          "allColumnsRowsSha256": "fae756a181e5b91c3dd5f9a3ff3ee31b46579a4497601ae57fa7f55b50e6ff8c"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "24ef64b377f07fb0f91425c54cf67804253e211ff7ab0060c4bbfd2e8deb83c3"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8b158748f7e9b42b827d8139e6ef01b98f52f3930f12274d48f4e8be2fd4aa2c"
+        }
+      },
+      "revision_id": "238f8ede-b8db-4528-b71a-d0c7e5ff3353",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8d72ca55e1b4e3c9d0af1d02efd0f6cd348ddedd444e36b6a970c71982e077c3"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "418b45916914801d63fd209c85791d760bcf9f0a73396e6487c69b95c507b9e3"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "15cae84bdf73fea9fc5fd908239123aff48ef782e466f0810e45a3508834b41f"
+        }
+      },
+      "revision_id": "285fe163-09d7-4bb8-864f-db96fb0d99f8",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "635ee40fa7eb874583e524c9f76f82834d318f5c12f4816b0ebb8b39516cce7c"
+        },
+        "resource": {
+          "rowCount": 24,
+          "allColumnsRowsSha256": "63d4c9ad651ff220a53e68cda42c37c03a7f36808244aeedf1b345dc4f17ea86"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "68b970b3f15a52dbfc623c352f3d74c7f51042b84d162f097eeb1d499ffba2ad"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "fce837ae2a1e9ed33265da005692b64421b83b2d6358f2eb5ac90727ac99da87"
+        }
+      },
+      "revision_id": "2a117d6a-dc7f-41bc-9b45-68cf8b0ffd89",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "36177f157b0fe61564011718cece461f7130294baf5d1845a9d2bcf810d06ae5"
+        },
+        "resource": {
+          "rowCount": 30,
+          "allColumnsRowsSha256": "2b870cdff86486f5ab3bca46a8dc487e01e85c14c325dd1d16ad62973d85057a"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "f06835d5cfcb86d0a82f5898ed9e1df0382cdb4a1b698ac6862a9ec71f8af7b0"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "474668189f778f6c53382339d75516c5fa4b77759838375a332a597fd9a727f2"
+        }
+      },
+      "revision_id": "2f573bef-b439-487d-87f9-69140d7286b6",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "22d298f18b107acf13a7c6f38483807a7a38bb1ec7fff4c8e2d5525ca2df6737"
+        },
+        "resource": {
+          "rowCount": 29,
+          "allColumnsRowsSha256": "ef5085b14b928f7ad0d59fc7642b4f29b3a2ff5df84c5ca4e67fccc7b5d32e66"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "ed97d5234b8bfbc10eb12db544af7da7a9f4b1d17cf3b7d766be8406b70f32f2"
+        },
+        "row_price": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "9e063f08031f557f56e23382dc56a0fea87443f891dc1f7b138e5a38ca34f22f"
+        }
+      },
+      "revision_id": "2fad855f-ce75-457d-ab35-ad9118be79b4",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "ef7b7923b5dec8ce5887ed378cfcd4d92055a962156b41b3f046c32a2de5b119"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "35784566aa597fdafd6204473b8beb48472c57f82818f23e6479ff4ccafb58e6"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "93984580e19de93ea5d5877fe73c00fce24621e24583919b23e98cec3027d02d"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "6feeb7e4b00f5e7322fc384c99f5423ed1d9d7c38cc7cf0c333d254c1bcf3aa9"
+        }
+      },
+      "revision_id": "3081643d-f908-4ed1-afb1-7259a6b76744",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "818fc8f5af7d9c58bdc4470e4c5efce3298a3562fe0c7ecda0c9a5ff95bc3944"
+        },
+        "resource": {
+          "rowCount": 31,
+          "allColumnsRowsSha256": "fe6ffa908f61c41e75c27e28917daf4de76b5afccd34ecebd74f72e32b8716bc"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "950a97161c6878fd920350f6f8c3cf98c78f020db6fa4bfeba6486cb3bcd8719"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "69429c985be97f17bce1520a8ace90e4c31a8cf01ae632813994abf1071f88f3"
+        }
+      },
+      "revision_id": "36d6acc9-138f-4a56-9c0a-fba504f6e984",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 15,
+          "allColumnsRowsSha256": "49955aec95f25b6cf978a238fbe7b7295b8181640e82502185bbd9f6a1b09a82"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "e5f00957ee0fb8d7cd98e2d7ff47ca4a8efb384e61f01b52fe88ca383709f9e0"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "7351a6d0d5273a31a11e0d48ff1f6b2f937ce52f37ded985f41292bea098a6dc"
+        }
+      },
+      "revision_id": "39d4ab01-ce20-4029-9405-3a7afd4ea226",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "be8e1ec2a642b4423f6b00f1e15340a9cdd9d297d11d511346164093c3c05fe6"
+        },
+        "resource": {
+          "rowCount": 47,
+          "allColumnsRowsSha256": "717d7de900d0d64597bf42dee6cd33574041bf0c476d355009c9f7c05c704ff8"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "46c3bd11fb5958ab284c2d616f4a3da4f8e31ed7b6be525059c0abd8cc500092"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "702d14de1d0fda348f0f626727e4529d9b8362954b9aca101834398686447a2a"
+        }
+      },
+      "revision_id": "3b499b3e-efa4-4924-847f-f6a5234773d6",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "157e13f8d41186a4a2a007db9d423064c8a78aca6e1f3074cab064cc05be1b2d"
+        },
+        "resource": {
+          "rowCount": 42,
+          "allColumnsRowsSha256": "198b8ff7f82b08ce0ad63fef78d06c23fee90ba90816509b713a7720fd25f8fa"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8f512c874aad224fd9cf2be8ab2cd4053d582f721a08c6b659134dbaf8593da9"
+        },
+        "row_price": {
+          "rowCount": 4,
+          "allColumnsRowsSha256": "a68278747718cd24c48bcd9a9aef384da164cd166db5c55e40b4077056cbee98"
+        }
+      },
+      "revision_id": "3fb0c57d-b7fc-441d-b858-cfac7a43ad3c",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "4601d78ca94794f99f9f56ea8533211674c40102ad9d8fa5d59bb303fb36ce53"
+        },
+        "resource": {
+          "rowCount": 22,
+          "allColumnsRowsSha256": "671d08ab8cd183a4ef339bd3d7dffde32eb4b2e13aeb686f29608edf7e86206d"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "c1fbd57ab20c6a22995c6522bbe0217aa8ae20dfedb8730e4fa77ce60937bd9c"
+        }
+      },
+      "revision_id": "3fe0d25b-fb34-43bb-8c3e-11f37f1ada87",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "a87b05a79ed202f4623227bebeb96ee34c8c516a480c212dd3e5f3e7d1720250"
+        },
+        "resource": {
+          "rowCount": 15,
+          "allColumnsRowsSha256": "53148e167770bcb21103c0a3f50ffb21adb5191b235e8167e3438b9759ba23ab"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "79afd7a20c33ba8d36c9f5827941499ae4423c8bc5355b589b675e93346a8ccb"
+        }
+      },
+      "revision_id": "41dd61d6-58c7-4e64-b471-9414a53e29f2",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "6bc556c755367609fb03463d20863b95c6878d6f5427ff41043986660ccb985c"
+        },
+        "resource": {
+          "rowCount": 24,
+          "allColumnsRowsSha256": "25b9791ac2cbc8dc1945f02926c8c022cd834e3916e79ffcb4bc234a3aa05814"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "c7750804ebb97d4466dff3a9736f24c85b49b6d2a7f423c2db9249950e974a78"
+        },
+        "row_price": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "18dc83bdbdf71938ec9e0c1f58eb7fc7e1fafd8c99a467c4b2b51220e3c4b331"
+        }
+      },
+      "revision_id": "44692275-88b3-4b57-9417-1dafd32a6a58",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "04745da6be74ac8f6303e5b0160d748b4f340d602e7aeacef23da9f029511d7a"
+        },
+        "resource": {
+          "rowCount": 6,
+          "allColumnsRowsSha256": "b9a9cc3bf87dd4e1d9790c6b195e3bb0ec3459a795cfa1f29e46c064dbda1346"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "34a52fa06dab8f1c5491d1487ceabd7335e82331f72873a1bb71099da8da825c"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "0b9cf514df2a8d0a9b74a51e04fa9faf9311d88bde05e7998d027fb33bdec020"
+        }
+      },
+      "revision_id": "4535a237-baf4-47d4-b3cb-730c36fb2b66",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "03aac7fc42f0f5b752fef84a1254cd39153bead10c2422aa64432a11d10fd15c"
+        },
+        "resource": {
+          "rowCount": 4,
+          "allColumnsRowsSha256": "40bc493be2837a0c976f1a4f8545fcd744880eeb18bb2c89a85fe9299fbe0a02"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "e1625c8c633c4bd90e01025df02839db40a2849fad3aa92720e89a151b3a0a29"
+        },
+        "row_price": {
+          "rowCount": 4,
+          "allColumnsRowsSha256": "bbf4fbcbc41cd95f4d4c143e32b4c4721c305b74bd6fad2f478a24beb079558b"
+        }
+      },
+      "revision_id": "466a2aff-f991-41e1-b228-325a9a2d9442",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "3d5411b9901103d5c7f94d625605a83abcc71a37aa3e26540a9a0e79dec584b4"
+        },
+        "resource": {
+          "rowCount": 6,
+          "allColumnsRowsSha256": "10676e236f90f90bb36a455910d0deaa40a7bc3988fb1cbc078799e1676e1118"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "713c72c2c52494b4d8bc567ff1c94ae4e0c62e20d7ddfad940ca238f96687378"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "9054b09ec6e8a1b40b21a408f7b863a50150d41e22240a1b41c76cc6b271ebd8"
+        }
+      },
+      "revision_id": "4850e9c5-b865-46ea-8d0d-5581a2689b5c",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 24,
+          "allColumnsRowsSha256": "b77283a6d7fe7d5772571e947f5b60c8740d2bc8dab68c4b6b499aa39a704017"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "5cf7484db341b6a46c688b5342e17b79eb63ab4f2b5b046ac042e53adffb1b51"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "109a348f850f07849f36f3733678402b5f5b12caa5b44fc069dc2e1887aa5bdd"
+        }
+      },
+      "revision_id": "4bbe7502-4e75-4d16-a5bc-4815363df802",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "4ef13eeed5cb7c94b48f93426d465dcf4131b762de7e2175bbbc1cfb28cdb724"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "b1bf3051c1e46d906ac66167566d369a13d6a6c29cd4030112d22b6c4e8d7e5a"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "34405e9ab6827bf21fc86229375aca0ef4e6c062fa6888854b8aa74662ecff90"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "42c3a69f95f6a950839eb1076ee9011350bb12fbeef93e15b436c69b24c854c8"
+        }
+      },
+      "revision_id": "4cd92956-9a8c-42c1-be9b-0434d37030cf",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 47,
+          "allColumnsRowsSha256": "bc1fde68656657fcb744a1660a1893789ca40fb48837b8675580bdcadabc474d"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "dc4d8c10a82f8c24fdfc37c7a308e7a6ed142944c6b9e9da618704b03c47f196"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "93de6fcdce0d40950dfbbbffc68a131f377223e462acf3e18505bf8fed3a9b9d"
+        }
+      },
+      "revision_id": "4ddb77b8-75da-41d0-9fac-8449ad78b362",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "09dc2f8524e4a71ccc09ff301c0a94e544adfe630447a1c1c297ff3cc232c2fd"
+        },
+        "resource": {
+          "rowCount": 7,
+          "allColumnsRowsSha256": "dbc9355d4fc58e30a052d6e064ab3ecf9069d311f55e39c820b4341132a3d1a3"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "e0916ccc5f5d20ad01c05bace99f50d1d1f4f766c73c14541e2cce7d5fbb2dc7"
+        },
+        "row_price": {
+          "rowCount": 7,
+          "allColumnsRowsSha256": "0c4fea467896e32a53ccde7f546b35e80ead50eb19da7621a4616199a0ec1db7"
+        }
+      },
+      "revision_id": "4ef795e5-98f3-4bc9-94b5-4d6d55b65c3d",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "bb19201e94c9b182e4f92a00d2ce9b3d42d8593d74bdca78f89c626b8ce8ccd7"
+        },
+        "resource": {
+          "rowCount": 25,
+          "allColumnsRowsSha256": "1800a97c6635f7dfe64b1d4cd8a4d167e0d80308fc89ca95dd27629d0328d574"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "b3262c6e72b824c5bfe8e98be80c2d433f6990db74fca1baa64b58f88252a8dc"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "477c05bd2d156bb84f355737c623fc44369acfc568dc9b5b3aa342e5448635a1"
+        }
+      },
+      "revision_id": "50c79abf-e362-4eb2-99fb-ddf904a4aac8",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "ada600ef96d09cb1a16e6a447025a668058baf1ec546241e36d22a98f9ce6b3b"
+        },
+        "resource": {
+          "rowCount": 15,
+          "allColumnsRowsSha256": "29e2b2d542d8ce85b4c67e03dc4350942d1f706e57b3e9c7652a7e414af1d2dc"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "6be642e09f2ef8bc4b9f7530767c4312ea21c8399653446cfd48ccb0d998647a"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "bff54b65928c52f8a6aceaaa7db571da2c748aa53ccfe774faf7f34e22364d9d"
+        }
+      },
+      "revision_id": "51c6d2df-b5b0-40df-ac1a-1435eb41e748",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 29,
+          "allColumnsRowsSha256": "9e445993b33e43b6920c0b185ec085e32df4744082259b883be0b84b0085bf57"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "4705fc6fccce843761a1ae89c7c31bb0509feec02e7ab104f0f1f67085797082"
+        }
+      },
+      "revision_id": "59325371-1759-4768-acd9-1cf2c02dcf82",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "3172c3f608c7d6f9914b0dd0b0d7c8e362f80be9df163236e11d13aa02bce42d"
+        },
+        "resource": {
+          "rowCount": 42,
+          "allColumnsRowsSha256": "430910e3dc0b5d373452d1d7e360c5cfdb5069df408256a2f6da8dcb7c911832"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "f0c1d7a10e34731975955fb44991985801c5ad2e4a896e1454b24897d908ce9e"
+        },
+        "row_price": {
+          "rowCount": 3,
+          "allColumnsRowsSha256": "77b4cb9306a6a6934e59a945d7d4377280a1c82e9fa1cb5277394f5c60e1d79d"
+        }
+      },
+      "revision_id": "595648c1-7ef8-45c7-8f34-be93cbfd749d",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 16,
+          "allColumnsRowsSha256": "6e609d82aea2a53ac22251a4d814c239b916add83cf080b56c634f516ac886a2"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "ef5e439e8d222ff8e50692e5930f60bed0eb97392907af614102a2e50b243c2a"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8f532c33628e95c2743f104a52fe329f84910b686d38b010826762f16ee57d55"
+        }
+      },
+      "revision_id": "5c85793b-b98c-454b-a792-8e71f0cf9f58",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "9cf22dc53f8b6405bef3a2d99763427dcf793af511c329321e6d3d1bb1a34c4b"
+        },
+        "resource": {
+          "rowCount": 15,
+          "allColumnsRowsSha256": "f45934f8919f23ea9dd52458024d31c540f0172eccdbcd8e76b608bbcca5c9f6"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "726f199d241eb2d6bfb2dc8901e2aca12f3d1caab95c99a770fdd1c7954ac6fe"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "3fce9bb1658dc8b61457fc72cbd41e00d4074e70149d7b7a12735f7759c7a00b"
+        }
+      },
+      "revision_id": "6151d4d4-3b9f-4f21-86bc-839d50a04a55",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 6,
+          "allColumnsRowsSha256": "b374f778d513aa67ac4914378764809556e03a05c81595d11e5400ec735a6711"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8b960ec77c33ac30a1c4542cd8bbff50a69d618e518ffddbab24f2713bda618a"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d91259ddcac9ce00879c256835a907aa2cfe633c9cc696d19b86bfe86a38a2a6"
+        }
+      },
+      "revision_id": "63688ae4-a60f-4ae4-9f81-d333191aebcb",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 47,
+          "allColumnsRowsSha256": "135b4013706300f945e2a6530e64c097e6b8dd127c24f02fdff973e89baaa265"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "1d7067d174b237c97a14f453ef6138c8803f9eb6726b24787cfd41a590d4e5f3"
+        }
+      },
+      "revision_id": "648b6f1b-3c5a-4b60-bcd9-e076e4ddefd6",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "0c3bda226b9d5be0bd038243277d9189ea80387c6bb3215c71f3b58b953d1209"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8a4948e85a738dd4d2fa5501fa4051a7e9d7f9cd49dc742f64a369151b73e5ce"
+        },
+        "row_price": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "942d3fec8f950784b349925e76a550bf78d6001e37d7c52225fb35efc0bae785"
+        }
+      },
+      "revision_id": "64ad8120-0fce-4fbe-a0c1-736c4045d2d8",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "b747ae99bdd007159c5dc2e5726feaed4728d5a80722631c6241ca68b95f47a0"
+        },
+        "resource": {
+          "rowCount": 22,
+          "allColumnsRowsSha256": "7e89969f9c80229fe7cb4e5ef1ffbee22cbe5ad7dc972259c7013bac7d44e65a"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "971be922c2468e1e8f7d60294d9098039f183119accad25ce10be32a5eacc859"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "abd5611995e6cb170e039163fc119266b72d2def987f543994e433ffab6614ac"
+        }
+      },
+      "revision_id": "67caa785-5de6-4df4-8554-dbf26bff0560",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "e71972c84a1479eed2e501db124f6b1630c446433ed2ce50c107f2ddb59e439b"
+        },
+        "resource": {
+          "rowCount": 47,
+          "allColumnsRowsSha256": "3d2733bcfa14ece79ab254692ed53d1b3d9a710503bc742bfa56114a5aca8387"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "c4aa5d602cd9b7d10b43a1d4c86ba5bdf145ea68abda4074af6b6eb67b28c281"
+        },
+        "row_price": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "315a65067b8f6d9a6b3fca705f8c2fb2d1d6659a96b734983935dff007e4aba0"
+        }
+      },
+      "revision_id": "69b242da-9994-40e5-900e-cae9c31e5d05",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 17,
+          "allColumnsRowsSha256": "0691c5f37de2b49f04f999bf934942a6d2e741ba9725f17dd4400039610dcdca"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "c002f7cdc65b3925f2366a71016a90f0a77622a978582a93fcd99074bb09518a"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "4612d43f2c7753eb21f27b9c5f81c36c9d6b7292382a101cab61636d808c2ef6"
+        }
+      },
+      "revision_id": "6add0b51-6a24-49d5-b27c-37e99e5c05c4",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "63bac8e4e5e7df01edd30343197106407dcfced84b78abd39237b3a19f22bd52"
+        },
+        "resource": {
+          "rowCount": 47,
+          "allColumnsRowsSha256": "5544d3b4d91e0b583cfadf6d8c13b2ccd73906a64f83e36a811b1187482607e1"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "37194dc0befa4920e4762bc38588bf7eb8773f4c9820ca8ea9247c1de0387f4c"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "45333e2eef5fac72f13d4115c7e6d86dba0047565cbc020652bb40f43412aa39"
+        }
+      },
+      "revision_id": "6b57b076-7d99-47e9-8d87-d9f2327270b6",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "8fd9c2b6d7fdcbc9e6001e115ac5962415ef8d8fe75ca91b302c3d666d27d7cb"
+        },
+        "resource": {
+          "rowCount": 22,
+          "allColumnsRowsSha256": "14f5f8f081e5987208bc1f6c8fce8430ab9a9cebffd5f7dcc995a080952c714c"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "9f0111b9b3239fc7123dfdc673281ad0e7edc3f8d474d4c815b1557ac9366b33"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "9101f061f193f8382549f01472d872a35bbf3552fd14ae03ac8f53e09435b814"
+        }
+      },
+      "revision_id": "6bd164d5-9bcd-4543-8b73-919e261018a7",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "7629a39a1ebd3bae2a775e874d210ec7bb219b4c437ec3eac4a2a1d3d5ea7dd7"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "5c81c7312ccc1f547f4ec707cac844abc3cd4b87bdd54b60f3784d8e899c281d"
+        },
+        "row_price": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "49aa46d52b3d9dff1e480cae4e84e1f5de9a58807c5309902a8b3d6ffcad9f27"
+        }
+      },
+      "revision_id": "6eca18e8-5185-472a-9556-54496620d155",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "da1b5f1bc184f2dc33baa012433dc9c2bfdab41021c516c5d40eca61d2e5124d"
+        },
+        "resource": {
+          "rowCount": 20,
+          "allColumnsRowsSha256": "81076a93bf241e0b4451b10ab225d51d635e5649a447423a90f7eddb23e9995d"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d8a144b83c15f5e2f53985ccaacf429b41948395895a4ef54c97f91d736df2ae"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "285dd703221a18dfe7d8fa3661325179177aec27ee11049aea9184923d953f99"
+        }
+      },
+      "revision_id": "70722c46-d146-41be-aed7-0800f8ab2484",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "abe379238d488da73f30d096a055f959a78cb7d14e236f2145dc9d29e086dbc4"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "29f58ad03d87a2119ee35c1922dd7bb138a4293e8294ed0666aeda9184fd509a"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "f1dbbb65589a2fc18b265ee86f384b5437962a880b2a255f65970625b99dc25a"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "fd8c3c5c77eb4bcd1569d77c3e3b54aaf880bd1f8c25992efcdcb6da01a33f6b"
+        }
+      },
+      "revision_id": "74185cd6-3bbd-4959-bc2e-4e2781c88c66",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "b60953a9160a713cca97310e132f963fd640a94ca0a64de6f0a8beadf3a29802"
+        },
+        "resource": {
+          "rowCount": 4,
+          "allColumnsRowsSha256": "a4f07fe4eeb84ce2a0fe0c6aba801c8d6aaf4bf36cfee0084e12d970a7a7164d"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d2124d36e14de095f15bb4af3fbc86f5546beb1a37b9b75f827b87b09d4ec502"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "223d0389ca5a12dc3e673b0c56ed38913a75b58ef63958523af205d65ee694fe"
+        }
+      },
+      "revision_id": "75835d6c-5ab5-4bd0-9b55-9a651142d187",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "54d05440d90646121e0e4c08f59a4ee60b733e0fd3aa97e543effc25f2d0dcd0"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "4841ef75ed3272b9f358413670f13748277d66916a5917810f7f98f41e01df05"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "76d204a8ad7b1f052d545749ba52eb9aabd63e9859bc9c6aff55e5f15bd930e8"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "6fb739f04f2d2c1078868164db4ea3017ad1b30e767a135b873a9df20ed06a64"
+        }
+      },
+      "revision_id": "7a6892b9-cbd0-432e-b741-66160524892d",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "89df91ea38f32c438f54c415db86771ae589d23543c7ac20fd7a9d5aea3bbeaf"
+        },
+        "resource": {
+          "rowCount": 29,
+          "allColumnsRowsSha256": "19f688fb3dce55620e057771cefca0f341e4fcc4b93752f6b2eafc9931ee571a"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "a7e3b64d9cddfedc4f27b25d2ec3229b3780ad3833e63f700b6dbada7705ea5e"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "2bbb2f79d2d85e1993704b36078a404032e066aef2c445b8eed496f630c4f88a"
+        }
+      },
+      "revision_id": "7ac684c6-fc15-46ad-8130-79d22a1580a6",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "bac36dd243f4c920f32df82560aa635f50d8e5b7da55fdda2dab7b9590e38a29"
+        },
+        "resource": {
+          "rowCount": 15,
+          "allColumnsRowsSha256": "e80ef67df54d666e965fd581f681326dbe4bd2356f99df311c449b1e15fd358e"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "4dce12bfcf2b22de100a35459ffda6c1eec9a40ff858f2ec1edf1a7ef2b65579"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "f7bc0202edfb1ad03db0fdeb15e1a5da8e12eb3399958efa33d058aa20b925be"
+        }
+      },
+      "revision_id": "7d3493b8-b6a6-4527-9a2b-e55f5b69e8f7",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "e2a5f0ceba0e66129ce3b1a5fb1a34ea400df848955adeb4ffb11cb9c1441ecf"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "1f4c89401ad2977d2ecc9ef0558b1df701be37a187570b3a7697520af1e87a9d"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "4702622ef66852e0cd23bd08cd037c2e7fe58152378a8b87465ecdac434b3652"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "5fe1037d52f87bf52668fbb88eca6797fe55e6c4fca8f540d799004494228a44"
+        }
+      },
+      "revision_id": "7d5f3f5c-b050-46bf-bc2b-5ed215abe06e",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "5d6d8ed136eae9baf8536b87c981ec636473047b0e348d9311112c02de82e5c1"
+        },
+        "resource": {
+          "rowCount": 20,
+          "allColumnsRowsSha256": "d3ca4d9b1a9ffef2d5bfc8bfb0a95c1d5ebfa841f342ee2ee1e3c86d8db564a6"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "e2973a1e9bc06f27e42ab76e554f15712be06e26135464a7de51d1f10e8f9595"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8252c5ce3273d123b307927fb33e8e45db500a41e5d0c81c8703f73c6949f2d4"
+        }
+      },
+      "revision_id": "87a665dd-87bf-4fe0-9cd3-8064b0a2885c",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "aba82f19074c7885d4d2bb2046fc6a197073339c9f11a8b2bb5b8cae2e89b605"
+        },
+        "resource": {
+          "rowCount": 4,
+          "allColumnsRowsSha256": "def87ee79a89f34906b7caf66301b5c7e6140914fefcc8bcc1fe2ab985bb3e2f"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "dcd87fc9e0a594864c6236130c9be481d78be005abbb8a50fce9710c17c184e1"
+        }
+      },
+      "revision_id": "895ea770-b25f-4a3d-b039-db94e70ac230",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 17,
+          "allColumnsRowsSha256": "6ca97b884a5b158da5069b6d8490b66e35344c570c9ca9f51cd0d8d73f80c15e"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "cbc31924027d3b966adc06cf07d7ea4ba4e12c027368f59e4b4499a6fedd4228"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "2ffd163a261f55475a79c2b3310f2c71ce5f701728527739bbe40e58f5f30f1d"
+        }
+      },
+      "revision_id": "8ccad6de-eaaa-4897-a096-91371feff0c4",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "a33ff9464274bf18b8cc30617b19485717faad620e5938b07c16ac142e36e774"
+        },
+        "resource": {
+          "rowCount": 24,
+          "allColumnsRowsSha256": "27a6734b2484bb8adf28c9ffe9653a4ba374afc027e157e1c8b5ae4b7db0e00f"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "882dc76f482d4fa1cba591d11fbf694a6ea5810a170dcc2ff7f2c544eb4f0068"
+        }
+      },
+      "revision_id": "8e1b650a-1798-437e-950b-a0e8631b03f9",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "5b61dc97bb76a96ab3876326627ac5ff7e95b533dc340e9747fd375774c59e7d"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "cb2a731063086c154c87564ae891c2cc330dc5ccb344d0286eaca4d02aefbd4e"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "f2a7117ff893df35efbe82f1c9d7d8de10a88e461c1072f2d5479d99d04fefb2"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "fe5eb6b65cf57fbde7f33d7f911865e9f1b6b5d986ae7c094826976b5aad9ef2"
+        }
+      },
+      "revision_id": "8e74120d-8784-4bb4-a6bb-172ee71123b9",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "eb51f9ed5d803bd1506dd190172305c322636f77a2dd3def535c48428820148f"
+        },
+        "resource": {
+          "rowCount": 25,
+          "allColumnsRowsSha256": "1b112161ac6cbd460bc020a440468eef03998018e15c9e56b52a9ff4d408cec9"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "3b4a49c12dc8fa7d16b2d9b53664ebf467b0ffec0e241dd9d70d363024d6dafd"
+        }
+      },
+      "revision_id": "96b32a27-3014-4208-ad98-fff7d26656bd",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "484c1b60b165a1879127e9c59711c0ca0a48bae3574757db8e952162b007f6b9"
+        },
+        "resource": {
+          "rowCount": 31,
+          "allColumnsRowsSha256": "e400983d09c494bf99211598e754b5846e64cf5e2c2fb59667b4fc8edbf994cd"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "46c7ed93a4bddc2362107d13cc5bf28d10aa6f2e54586df41dfe7341e1482900"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "4a7ced15bf14aacc11ffc903842b0aeeebe5d9518e7402426dce64af9f4f1c62"
+        }
+      },
+      "revision_id": "978acc66-4e52-402b-8558-5cfaadf7e7ba",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 47,
+          "allColumnsRowsSha256": "bb60bb182fba1ea3af5769d7d3ab88d692523349b620e8dd39d16708c24c5f7d"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "3bb56b13dbb34e72095e2cab72f0f08aa435d547e7e177091ab65df5b1b3d42e"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "68871f7e0f9fd3dfe5d85c650ab77c746e066d26990dc413f00edf04adbd70d6"
+        }
+      },
+      "revision_id": "993a93a2-556e-4da9-8a6c-78c40e925c0d",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "4a6b50acea5978251f320e7465f6d69a9f04bb1e0642ac2500fdf188d841d285"
+        },
+        "resource": {
+          "rowCount": 6,
+          "allColumnsRowsSha256": "55bc4476c03d2d6756f0755e5ae7a174a89699981b4ce1f68c1e8c7623f42067"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "a23fd107a5c2948dff0140fa8d4000a2fe2cbfd94717569f357cf80e0f5aeff4"
+        }
+      },
+      "revision_id": "9a6b90d3-879b-45fd-b762-d5c5b0884c14",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "79ddb6c3a4b904d4b412ac42ccdac19d35af397c3320965dfbfae6ab6af71e34"
+        },
+        "resource": {
+          "rowCount": 29,
+          "allColumnsRowsSha256": "10fbe58e505ef5685262d82d4730e70d95951f4732be22471141ffb151a60f42"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "194f5e764d18a00c5cd02bc93c34051535e1630834a8d46fb668769f68506e1d"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "ddfeaed95627cac1c2fbff8ff7d70186441dcb48a1d7e5f87cc6f616e7e48f00"
+        }
+      },
+      "revision_id": "9dd2cd0f-6f1a-47ca-9bb6-150e4a6a3913",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "d340789651efd2ad545abd10fc5ada487ed25caa2f788125465beb90fb9a1d12"
+        },
+        "resource": {
+          "rowCount": 15,
+          "allColumnsRowsSha256": "fab4a83b306d80063ed4003d1ee9e2219be5ce78a1a2cd34a3384b3945b43e8e"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "ef86b806d30b6f21616da15eda34ae3fdf9c8a3f933482db85883e07bf18645b"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "992653ce215e2eeeec1e921485de5efc09781a19a75c9483974136096a3e4a77"
+        }
+      },
+      "revision_id": "9e87d378-fbe8-439c-aa5c-dc915c8e99bd",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "97064daba9a5b560908f8d336de9f888895deafc41a2b73fd5b093b3f8dd59a7"
+        },
+        "resource": {
+          "rowCount": 17,
+          "allColumnsRowsSha256": "87d2071727f5e664091e7b63f685c839349abc7097591111aba45cfb3210bdb9"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "8aa14ed03e9575d96b70e41ef40c855c234ed1106ba101d6def057bd8ba9c7dd"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "c88b5000034573930c75402a71748523f69535bbd378ca114d17c864421f9b31"
+        }
+      },
+      "revision_id": "a350d80c-7aa9-4b7b-958e-ab3d83a4b719",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "a533aff9269786db4ee2e2273879555459b8679571614baa1f1ba3b620271fec"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "a7c83ba4ec91559e3b4fbe2b553e399c9adc2d864646723c7b6395b765e7ef6c"
+        },
+        "row_price": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "aeeb4943eb84f651b0e7a122ce19969d040dc38f3895fd7ebb60243d101eca61"
+        }
+      },
+      "revision_id": "aa2f2764-045f-4326-b1b2-89087b9a3d42",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "6064f08cf49f76186464e4eb79ea43f2e2385c171b3e45ecd5b5245988999327"
+        },
+        "resource": {
+          "rowCount": 7,
+          "allColumnsRowsSha256": "899bd2720df19111bb23f59791fc18259d50e12bd58892d5b41edaec0ff32087"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "7262c31d4c0268be8eb6e10fc02a136c284195cac9eafc70bef6597692dc2dd9"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d5a83087bc54315c89a522c8b3cae3b126448dd8f8d683f1f8421a08f51d5934"
+        }
+      },
+      "revision_id": "b2fb16de-af74-40f2-9f6b-16fd82bfcf4c",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "3cdc816c3d1ff99d0174e6c123bb6049495afbae7d3df9046927a0ff474090d2"
+        },
+        "resource": {
+          "rowCount": 16,
+          "allColumnsRowsSha256": "736abb424eb99936bac9c9dca0d99b6b77eed3a295ca07808c868f93636dd020"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d649cff98f90d031abdfa3d9d00158880ed93e8098a54d3a6eadf3eaf3d3cb38"
+        },
+        "row_price": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "e19e30e41a2a21435f3b954695e01c9ddc36dd7a370b6e3c777db700f6043376"
+        }
+      },
+      "revision_id": "b63e036e-bf17-4c4e-9b1f-e31b5ce46aba",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "bad4bded8812019a761667ce9639f81ba762175ed9fbef5a2ba588ac231e319a"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "4e6b7142ae02a94acb400c860231875bacc24c1e8e06c03585917e1c4a5a626e"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "65bc5056acd9fb497a7b2266e883dda1f8e176e7982d0b9598d7ce83681c865a"
+        }
+      },
+      "revision_id": "b8d650bd-34b1-402c-a2ec-cc33b6d9dbe6",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 42,
+          "allColumnsRowsSha256": "d6ea72dacec6992f688b809018843baf63f6f1cd565b80bd3e50650d72379e9e"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "7439eafd40e28e0019ab08f970c6bdcefdcab1e82985ad978008490366d0c425"
+        },
+        "row_price": {
+          "rowCount": 3,
+          "allColumnsRowsSha256": "893379f09a3d04c23fda3550ba73e80efc48b20327c15d5174a7e05c95127f35"
+        }
+      },
+      "revision_id": "bfeb3ef9-474f-4eef-8e9d-1dfaff757897",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "78a5404d6f8eb497e74bd0e66443cf3854efd15fddf7be9a0844f0818cce00c4"
+        },
+        "resource": {
+          "rowCount": 4,
+          "allColumnsRowsSha256": "3148d7c32a68ed1f092302e81289efc35eb0c7621cc3b110d396239466e79041"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "7544299bed50bc0754ba8f091353da7020ebd7c0e87b5b9cde31309aa92274ac"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "1df2ecaff167171a1cc69cab7864cead08781e904cbd3378c2239c7f37709e7b"
+        }
+      },
+      "revision_id": "c7184e21-cd08-4ec0-bd78-4b1ece65b24f",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "165ea33b3ad2962a95979225c721e2da5648e77bcd3e3ac92a8c8da8e87816a6"
+        },
+        "resource": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "2f70af5c74373bea2508ec5c93685a49b6ac5f1559df0aa3e82773e8af9b4956"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "c8fbe7ea9d72aebaf939df84d7e33f13a5fa80bd5258a7cdcc635c15823495c3"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "fb0281aa062d88679801099f41ac5ca2631fc11e3db16069bf077b26112d27d6"
+        }
+      },
+      "revision_id": "c793c8e1-90aa-456d-9819-93e6ba9ae8d3",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "ecca964f326717774af1fb7a57c211b9ccb9bc12e94596a6a53a5119c705dedb"
+        },
+        "resource": {
+          "rowCount": 47,
+          "allColumnsRowsSha256": "923b87d499e830023472f4a54e47802f5d700d7739304947aff28b202a2f10e6"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "21d1a60cd05c691ffb3e50af387b8f4a3757aae8bac7fb81957ac15df4ecab7d"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "087466dcb9b3af3ef1fc324398175152965aee387593a6f7bdee89eb64c9bd52"
+        }
+      },
+      "revision_id": "c8e5226c-fc19-4fd0-89a5-5e8eb7897da2",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 15,
+          "allColumnsRowsSha256": "64a38a9d18fe761f06326ab03fc88aa0af811939e2a26725bc9bf745c2704385"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "ee91aa844898e3ac3274e67c8149be9fce720ccc4c9af7983ec4b090e047ff9e"
+        }
+      },
+      "revision_id": "ca1ade34-65a8-459a-9aa8-62f4750c4a98",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "b88fb785912855618fd3033860e67eaeb0b3a4e9a3bd0a12fb9875b62db21aca"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "62666ecbcb73f23567939af4ad4d1f60f28861220fdc94d84d9476c63bbe0718"
+        },
+        "row_price": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "fc960b0e8a566689ba6577a58ec2bc252e63c2ed6498d7a658bf6c0486f08c44"
+        }
+      },
+      "revision_id": "cc7af3ce-1603-4faa-8ccb-f0cc15545afa",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "09133f9a0aeb891ffd5bc33f36dbe2f3832a5486d3dd18adca415176fc4dc801"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "fe9f3f2dc7bfe5ccc5a3806f6c12c334ea2f8634d877264b1b3829bfc9db2268"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "9befaaef95fadaf19263bf1ae1eab34d65f1cbdc350c6d36f1bb3d6dc9df5ff1"
+        },
+        "row_price": {
+          "rowCount": 3,
+          "allColumnsRowsSha256": "a949fbdeb4711105864b074f91a91dd41288a1123d05b9272f7dc439809e5498"
+        }
+      },
+      "revision_id": "d2abafa2-e773-477b-844c-7ffa49ab79ec",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 4,
+          "allColumnsRowsSha256": "b7bdec49138e0bf1384f5909890a79fe0dba190d06e441d13c33ec8726159e66"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "7b37d6a074353516f1ae67ca5e152dfc3daf97f4ee94bc8e1d6dd58af7bc0bd0"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "127dd318ab4e709b413c90dcaae7b674ed0aabcb8b968d8247d25aa410417bbb"
+        }
+      },
+      "revision_id": "d2ad9298-1170-4e17-b2cd-868554a5d07c",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "116c68f708afa4d949aefe9f7cca591b376e8462fdf08341d8954c0e420d6319"
+        },
+        "resource": {
+          "rowCount": 19,
+          "allColumnsRowsSha256": "cd092e3fbe45c5503985291b13d67dd89f565564f0b97acb728ebb9e70ca2bbb"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "2be9c21ef882df7b007a99a0a0be0a5fc93e746c3afeaaa6eb2ee1299eaa59ce"
+        }
+      },
+      "revision_id": "d81937f0-29f1-451a-a493-986f5838a0e0",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "d74844026870ffe58463ca49b7d9f1e8e232d83e8e3d2b486a6a569392169c77"
+        },
+        "resource": {
+          "rowCount": 22,
+          "allColumnsRowsSha256": "4a46c370575870211c64c7c74f4468d224e634ddd64992b2d8f58dd4a141e9ea"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "637b0ba24e12acf608eb962d5016c2d9ef0eca74cc14a9e3c52674abf1d9cf4e"
+        },
+        "row_price": {
+          "rowCount": 6,
+          "allColumnsRowsSha256": "80266dbc24ea4abcd56e65e51a098f5961f9d451dff33bdd559de4c6e5ac5ac7"
+        }
+      },
+      "revision_id": "df64cd7a-15ec-437a-8217-797a075fa2bc",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "6efb6dbf1f779f15fc54d936194b9d511d9a35648d81aaab4c9b298b039ff53f"
+        },
+        "resource": {
+          "rowCount": 24,
+          "allColumnsRowsSha256": "ac90c5b0215264c312ba45b65056704af49b9366d365cc6193baf4a03f25c779"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "58fbf6e07efbbc60f0ebb2ed5ff75e33eb18ab601fc0b103290fb9e4e00e9859"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "5a7909fccf1e6c0ba9fc836622b05409f9a85ced6291a7f3ae2a15f90b759f5f"
+        }
+      },
+      "revision_id": "e4fb22db-98c1-4654-9390-e1242a6ecb4b",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "58cf918c66ac6abbfc4582d9b3760f153ca59ff279304dd2f0ebfb27731e9dbd"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "fa2c7269576255e091ba5a962df210716273f514101f58dcffaec6c00f9c386d"
+        },
+        "row_price": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "392e53875f5b403fa0dff4ffda51ebb1767be40ef2a461148bdf08afb51db344"
+        }
+      },
+      "revision_id": "e922db19-4afa-4af2-99e5-dd4cf813895f",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "b84cdf94d555f2171eb249d3b9fdc874b8f7a2aa046fd31286539b6a861667a6"
+        },
+        "resource": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d35d93f451cedac1cc4bb8b386099e28161de3cb967697d71f1333acbea756f1"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "92f1a6da82915cd69dfde0a2012095339834e4aad44af913e2c368aa248bfd83"
+        }
+      },
+      "revision_id": "eac9c2c9-6e21-41dd-813d-1cbc7a88118d",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "artifact": {
+          "rowCount": 2,
+          "allColumnsRowsSha256": "92b2c49b12ba90eba4c1d324ffa301172eee7419ae667b9183f4348b57db9722"
+        },
+        "resource": {
+          "rowCount": 20,
+          "allColumnsRowsSha256": "b707605f8ee4e91f524e6a07b0a2a82e2d5b099fc1d9ee87fd2d59590e08198c"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "d5fe2ca3fdcdebad68eff90067972511ccc5dc0875662e8f5e819bc062abb95f"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "2c4ac5848af7d8a56a123eaf6e76ddc5ea27ef82952fb1cb6d8874f739f97bd1"
+        }
+      },
+      "revision_id": "f2bc54de-390b-4569-bfa9-bf7450aef2be",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "ed52a13a61f317eb98aaf4feba6c706d083582c3cf91d8232b7e984ee8c0ca35"
+        }
+      },
+      "revision_id": "f72425cf-ae39-4109-af4f-252d015d1aea",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 25,
+          "allColumnsRowsSha256": "ff6061fbb6621c9afc08988dd5199fd750884782ff4a211f0ba582d830116623"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "55a26b909f48b03c48066d549a3e8269e2948d2220a0d176bd73864d0721fe4a"
+        },
+        "row_price": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "eb0552dcd0b2ceb5ffc17272ca23d41e0368def001dd2fcc3d483c719cd6a7b8"
+        }
+      },
+      "revision_id": "fb31867d-e385-4395-aa33-a8ae0ef35cc8",
+      "revision_count": 1
+    },
+    {
+      "sets": {
+        "resource": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "288bc3a2686f4ea21b53399a11ab46d4ec8e607371a7814dba24133003a44582"
+        },
+        "revision": {
+          "rowCount": 1,
+          "allColumnsRowsSha256": "e66d95a5d09b16199800a7766e3578e492536998344353f4460cea2ba904bda4"
+        },
+        "row_price": {
+          "rowCount": 59,
+          "allColumnsRowsSha256": "155b06d69321cae2a1df0e5bde35aa218cb9a1dc246b618185a958afbb20525c"
+        }
+      },
+      "revision_id": "fdc98936-4b65-4229-a1c4-fc361e69de84",
+      "revision_count": 1
+    }
+  ],
+  "all87FullColumnsSha256": "c6939c3aca85288b1d7aa7916d7904b3857ce2e4f99bf7bac54f478c51553009",
+  "pair": {
+    "definitionReleaseId": "563858d8-a6b3-5522-affd-956d00e94647",
+    "searchReleaseId": "bcdc1239-b9b0-5c8b-98e8-f40c478942fa"
+  },
+  "session": {
+    "db": "rik_r4_runtime_b5_v2",
+    "host": "127.0.0.1",
+    "port": 55432,
+    "read_only": "on",
+    "isolation": "repeatable read",
+    "snapshot": "538209:538209:"
+  },
+  "sqlPin": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/new-chat/work/floor-straightedge-saved-preimages-r16/protected-revision-full-row-digests.sql",
+    "sha256": "3093df5c8e218bc881eaa6f53d03bf0f5f3d01ec9328d6d729950c914abe909a",
+    "bytes": 2264
+  },
+  "old82ExactAgainst": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-independent-readback-r105/saved82-independent-after-r105.json",
+    "sha256": "c1eec6c8f80b64da4a72a0992658f854c45aafb4a70998ee79e6c7ed6f35d389",
+    "bytes": 59705
+  },
+  "newFiveExactAgainst": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-api-acceptance-b-r106/ordinary-api-result-r106.json",
+    "sha256": "3f01210d3054b1823198eb3073bb22066bc5bbd428fb1e4a2c101d3664fd0d8f",
+    "bytes": 1400222
+  },
+  "completedArtifactsAgainst": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-19/files-pasted-by-the-user-astra/work/screed-api-acceptance-b-r106/artifact-result-r106.json",
+    "sha256": "b6224653cc8ffd962cee695440913833b5c9cb56a59ce6a57c3085d6088f78aa",
+    "bytes": 11167
+  },
+  "knownSetOnlyNotGlobalDatabaseCount": true
+}

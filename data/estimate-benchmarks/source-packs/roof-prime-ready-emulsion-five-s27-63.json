@@ -1,0 +1,2497 @@
+{
+  "contract": "rik-expo-app.s27-63.roof-prime-ready-emulsion-five.v1",
+  "prefix": "roof:prime-ready-emulsion:krer12-016-02",
+  "normId": "12-01-016-02",
+  "sourceAdmissionArtifact": ".release-runtime/r568/s27-63/roof-prime-ready-emulsion-five/source-admission.json",
+  "sourceAdmissionSha256": "d415b2e3fa26d8e74c07f954893cc289264825c95a997826e70daefef3bbc7b0",
+  "designAdmissionArtifact": ".release-runtime/r568/s27-63/roof-prime-ready-emulsion-five/design-admission.json",
+  "designAdmissionSha256": "bb9180d7906f99ac726d1f1b2fda77ff3712836f25ec446a412a70e3c8058fb2",
+  "parentSnapshotSha256": "25321ee0b0b4c2a1557680daf9c6e1f8826780f470ae68826d295526af9220f6",
+  "sources": [
+    {
+      "id": "KRER12_2016_ROOF_PRIME_READY_BITUMEN_EMULSION",
+      "kind": "roof",
+      "quantityAdmitted": true,
+      "titleRu": "КРЕР, сборник 12 «Кровли», огрунтовка основания готовой битумной эмульсией",
+      "authority": "Госстрой Кыргызской Республики",
+      "printedEdition": "КРЕР12-2015; утверждён приказом от28.03.2016 №2-нпа",
+      "sha256": "114a0db0688f339f7064c616bf80785ab5245f4eaccbbe049e32c46c6942cfa8",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/no12krovli_compressed-2526908358eebcf23.66556657.pdf",
+      "localArtifact": ".release-runtime/r568/s27-35/g6-roof-source-audit/krer12.pdf",
+      "reviewedAt": "2026-10-11T23:36:09.3995196Z",
+      "locators": "КРЕР 12-01-016-02; PDF 27, только столбец 02; техническая часть PDF 4–6, §1.1,1.4,1.8,2.1–2.4"
+    },
+    {
+      "id": "krer_general_metal_roof_s2763",
+      "kind": "guidance",
+      "quantityAdmitted": false,
+      "titleRu": "КРЕР-2015, общие указания по применению",
+      "authority": "Госстрой Кыргызской Республики",
+      "printedEdition": "КРЕР-2015",
+      "sha256": "5f9f8fc4511678ad84ec3c78424d2064df672fa2a830efbcfff78a014e2493b9",
+      "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/stroitelnyeispecialnyestroitelnyeraboty-7866900598a0aab89.90712367.pdf",
+      "localArtifact": ".release-runtime/r568/s27-48/g7-next-source-extracts/KRER_GENERAL_APPLICATION_GUIDANCE.pdf",
+      "reviewedAt": "2026-10-11T21:25:14.667327+00:00",
+      "locators": "§1.3–1.4;1.7;2.8–2.10;3.5;4.1–4.2; приложение3, высокогорье"
+    }
+  ],
+  "groupTitleRu": "Огрунтовка основания кровли готовой битумной эмульсией",
+  "operationTitleRu": "Нанесение готовой битумной эмульсии на основание",
+  "completionCriterionRu": "Нанесена готовая эмульсия по выбранной норме. Состояние до огрунтовки, технологическая готовность к следующему слою, контроль и последующий ковёр проверяются отдельно.",
+  "scopeRu": "Огрунтовка бетонного или растворного основания кровли готовой битумной эмульсией под совместимый водоизоляционный ковёр, КРЕР 12-01-016-02. Устройство основания и законченного ковра не включено.",
+  "systemRu": "Готовая битумная эмульсия для гидроизоляционных работ по бетонному основанию или растворной/цементной стяжке под совместимый рулонный, мастичный или наплавляемый кровельный ковёр. Приготовление грунтовки, битум и керосин столбца 01 не добавляются. Дерево, произвольный современный праймер и покрытия Katepal, PVC или металл этой нормой сами не подтверждены.",
+  "conditionsRu": "Высота участка от земли не более 15 м. Нормативный расчёт КРЕР применим к этому проекту: новое строительство, нормальные условия при положительной температуре, высота местности ниже 1500 м, без иных осложнений и замены технологии. Наименование зоны и площадь сами готовность и совместимость не подтверждают. Проект подтверждает совместимость готовой эмульсии с данным основанием и последующим ковром, пригодность основания и необходимую отдельную огрунтовку. Та же огрунтовка ещё не оплачена внутри другой работы или договора. Состояние основания, влажность, высыхание и технологические требования изделия не выводятся из названия зоны.",
+  "measurementRu": "q — подтверждённая нормативная площадь кровли, относящаяся именно к этой огрунтовке. Измеритель таблицы — 100 м² кровли. Применимые правила КРЕР §2.1–2.4 учитываются в предоставленном проектном обмере: слуховые окна и дымовые трубы не вычитаются; их обделка не добавляется. При обмере скатов длина идёт от конька до крайней грани карниза: без настенных желобов добавляется 0,07 м; с карнизными свесами и настенными желобами уменьшается на 0,7 м. Проекции зенитных фонарей исключаются; внешние дополнительные элементы учитываются отдельно. Приложение не повторяет эти поправки для уже подтверждённой q. Площадь пола, рулона, прежний шаблон 100 м² и произвольное число слоёв эту площадь не заменяют.",
+  "systemParameterId": "roof_prime_system",
+  "conditionsParameterId": "roof_prime_conditions",
+  "areaParameterId": "roof_prime_area_scope",
+  "systemYesRu": "Готовая битумная эмульсия по бетонному или растворному основанию кровли",
+  "conditionsYesRu": "Основание и совместимый ковёр подтверждены; высота до 15 м; огрунтовка отдельно не оплачена",
+  "areaYesRu": "Нормативная площадь этой огрунтовки проверена",
+  "unknownChoiceRu": "Материал или основание ещё не проверены",
+  "legacyChoiceRu": "Прежний общий состав — количественные нормы требуют проверки",
+  "remainingScopeRu": [
+    "Очистка, исправление дефектов, просушка и устройство основания имеют свою применимость и расход; их выполнение этой нормой не доказано.",
+    "Кровельный ковёр, мастика, герметики, узлы, проходки и защитные слои не входят в одну огрунтовку.",
+    "Кисти, валики, прочий инструмент, защита, технологическая выдержка, проверка и завершение ещё требуют подтверждённого состава и ответственности.",
+    "Внешняя доставка, подъём, тара, пригодный склад, реальные упаковки и цены не выводятся из нормативного времени автомобиля."
+  ],
+  "rates": [
+    {
+      "role": "workers",
+      "resourceCode": "000-1003-2",
+      "titleRu": "Рабочие-строители среднего разряда 3,2",
+      "unitId": "man_hour",
+      "category": "labor",
+      "per100m2": "2.80",
+      "sourceRatePer100m2": "2.80",
+      "sourceUnit": "чел.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Один владелец труда огрунтовки готовой эмульсией. Две прежние строки того же грунтования повторно не оплачиваются. Приготовление по соседнему столбцу 01 не добавляется."
+      ]
+    },
+    {
+      "role": "flatbed_truck",
+      "resourceCode": "40-0001",
+      "titleRu": "Автомобили бортовые грузоподъемностью до 5 т",
+      "unitId": "machine_hour",
+      "category": "equipment",
+      "per100m2": "0.04",
+      "sourceRatePer100m2": "0.04",
+      "sourceUnit": "маш.-ч",
+      "exactUnitConversionFactor": "1",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "Нормативное время автомобиля — 0,04 маш.-ч на 100 м², без округления до смены. Цена должна покрывать полную эксплуатацию, в том числе водителя. Отдельные часы водителя источник не устанавливает."
+      ],
+      "machinePriceCoverageRequired": "FULL_OPERATED_MACHINE_HOUR"
+    },
+    {
+      "role": "ready_bitumen_emulsion",
+      "resourceCode": "01-0206-0021",
+      "titleRu": "Эмульсия битумная для гидроизоляционных работ",
+      "unitId": "kg",
+      "category": "material",
+      "per100m2": "45",
+      "sourceRatePer100m2": "0.045",
+      "sourceUnit": "т",
+      "exactUnitConversionFactor": "1000",
+      "costTreatment": "OWN_COST",
+      "detailsRu": [
+        "0,045 т на 100 м² точно переведены в 45 кг. Литры без плотности, тара без упаковочных данных и дополнительное разбавление не выводятся. Готовая эмульсия не заменяется битумом и керосином столбца 01."
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:waterproofing_interior_roof_prime_large_area",
+      "predecessorDefinitionId": "f282cd3e-a233-5fec-875f-cf7497160e22",
+      "predecessorVersion": 3,
+      "rowIdPrefix": "waterproofing_interior_roof_prime_large_area_",
+      "preservedOwners": [
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_01",
+          "resourceSpecId": "c3f51288-4990-ac04-fa2d-4830aa7a29f3",
+          "costOwnerId": "r555-price:fe3c1dabe2cc4863ec57a27b184e875280d55ea2",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_01"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_02",
+          "resourceSpecId": "5faa8baa-ea6e-b37c-c212-4686c25ff8df",
+          "costOwnerId": "r555-price:979d43ab1e1e6c71a241ffd344a295a2397b779f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_02"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_03",
+          "resourceSpecId": "fa81a3e2-51fa-9c8d-a98b-c96ea97593c0",
+          "costOwnerId": "r555-price:0853b3530d2d486e295cc92cfefc75063219afde",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_03"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_04",
+          "resourceSpecId": "8382b71d-d923-f3eb-5edc-a2e35dffa297",
+          "costOwnerId": "r555-price:88ec34954dd00349a50f75e5986809a5846118ed",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_04"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_05",
+          "resourceSpecId": "adc9e5de-3946-d719-61cc-27d4facabb7f",
+          "costOwnerId": "r555-price:954a3c11d428dcf684c2012475b3a5e46ab4e3e0",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_05"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_06",
+          "resourceSpecId": "e2c4ec5a-60c4-91d1-8bbd-9955135c49a9",
+          "costOwnerId": "r555-price:3245807f209f015b32a25896eee19653bf40005d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_06"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_37",
+          "resourceSpecId": "9dbcc6f2-c4d5-7c22-83b3-60c8ab146bff",
+          "costOwnerId": "r555-price:f575b101ef018d3da93151d48e212a996e4b24b1",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_37"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_38",
+          "resourceSpecId": "9409d89d-2bbf-943d-ca26-da6101fb0ac4",
+          "costOwnerId": "r555-price:5fcb7099b8be1daaf87e98f1af3ef2f37f8d3196",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_38"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_materials_39",
+          "resourceSpecId": "af4f423e-1f5b-bda1-08f7-7f9a741259a3",
+          "costOwnerId": "r555-price:e7693944e58b188fb7ca029db7c6114bb34d767e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_materials_39"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_components_07",
+          "resourceSpecId": "b3318e7c-38f3-e993-e084-92c195f1a2f8",
+          "costOwnerId": "r555-price:3fa9cbb8bffdc9782a36f834bd6ff59ed23a904c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_components_07"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_components_08",
+          "resourceSpecId": "b93877d3-5ce7-555d-f437-626f04022ab5",
+          "costOwnerId": "r555-price:21426a4fd7d30d606a2305f797e811024680cda7",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_components_08"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_components_09",
+          "resourceSpecId": "bb7d71f9-add3-70ef-6040-4cfe846c618f",
+          "costOwnerId": "r555-price:6ac72a5c97847019e82d0655edd6e57f4f1d79a7",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_components_09"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_components_10",
+          "resourceSpecId": "48f33576-9b4c-4f3e-67c7-acb0ecbbb13e",
+          "costOwnerId": "r555-price:bca2bbde0802b9fcd899d924a8621e20d9b39919",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_components_10"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_components_40",
+          "resourceSpecId": "a9572980-1908-1bd8-71e6-b6ffeb0efdab",
+          "costOwnerId": "r555-price:28c6808f28af84a21cb81cbbeaf3b817ea9a3fdd",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_components_40"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_components_41",
+          "resourceSpecId": "95f927e3-8a5e-cd7a-1981-dc5b038fb426",
+          "costOwnerId": "r555-price:043f5438c3595a410abaf414d44146c20ecb489a",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_components_41"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_components_42",
+          "resourceSpecId": "cb7ee893-edd0-1c76-04fc-f6cead4d0f02",
+          "costOwnerId": "r555-price:d9dfc232a6796034665cab941185e3584b4bb9c9",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_components_42"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_consumables_11",
+          "resourceSpecId": "2c34e399-da29-b5e8-f388-d6a5bb2b37ad",
+          "costOwnerId": "r555-price:38b18a8acc6dd0b156f51b1ccf2e98588ade430a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_consumables_11"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_consumables_12",
+          "resourceSpecId": "14989c89-4ed9-5a58-3044-70426e0b3c9f",
+          "costOwnerId": "r555-price:d72aabe28751312ebd512d3196f525cb45d2c744",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_consumables_12"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_consumables_13",
+          "resourceSpecId": "0f25d2d9-564c-d2a9-da11-98bf1b04f67b",
+          "costOwnerId": "r555-price:59576dab97497f58355b2cfa26127cac28009937",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_consumables_13"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_consumables_43",
+          "resourceSpecId": "0b697beb-50d3-4f7f-af95-593ffd452f0a",
+          "costOwnerId": "r555-price:53868c339e499ed68e48bfcd676e35ad3e9637fd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_consumables_43"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_consumables_44",
+          "resourceSpecId": "3318e896-a3c2-f6fa-236e-1e5f5c9004d4",
+          "costOwnerId": "r555-price:c686a87761024121b6d91fe05a529a3362a86a0d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_consumables_44"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_preparation_14",
+          "resourceSpecId": "d7879a28-370d-583e-84d9-b719bde128b8",
+          "costOwnerId": "r555-price:e04515dfb4d18cd541c1c0e076081fbbe0dbacc2",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_preparation_14"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_preparation_15",
+          "resourceSpecId": "763fe49f-0a05-c93c-2e40-e808e0c5d3c0",
+          "costOwnerId": "r555-price:988af77d6c55c88d9ad9c3e1f24f32fc0835e2b4",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_preparation_15"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_preparation_16",
+          "resourceSpecId": "741fb60e-db87-0247-a512-4b7f53c5eeb4",
+          "costOwnerId": "r555-price:e024bcf60b706c62bbf37194ba81e91b78b8c8ac",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_preparation_16"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_preparation_17",
+          "resourceSpecId": "4600ca92-1616-ab86-5c97-056306f25b55",
+          "costOwnerId": "r555-price:904e82b746b14240272a4605884b33659fac125f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_preparation_17"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_preparation_45",
+          "resourceSpecId": "d9117032-b2cf-8b18-f4b6-cb625f9b1c22",
+          "costOwnerId": "r555-price:37efe4dfde9851788c1909729e2f4103e99b272a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_preparation_45"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_preparation_46",
+          "resourceSpecId": "9a87c093-8302-5a89-d45c-23eb345c616a",
+          "costOwnerId": "r555-price:b67e8cbb936e5eaf304648172bf69afefe6e3db8",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_preparation_46"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_preparation_47",
+          "resourceSpecId": "dd33885b-cde9-9afb-15f8-a7c2c271a942",
+          "costOwnerId": "r555-price:7cfd590375a2f072837f7128b31ecc0530e23072",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_preparation_47"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_18",
+          "resourceSpecId": "210f5f7e-adc5-483e-f0da-99a876ccd4b9",
+          "costOwnerId": "r555-price:9c6bce2a797dc46600a1e4c0c5859415b0c1f075",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_18"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_19",
+          "resourceSpecId": "b3d1eb12-83fc-1ff4-7518-703947c706a3",
+          "costOwnerId": "r555-price:c78b809b46003493ab6b460e17a45214691afa94",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_19"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_20",
+          "resourceSpecId": "16cf5c4b-d187-c44f-961f-9bdbd3be3e5c",
+          "costOwnerId": "r555-price:afb67841f221357a4e54fa93d8b940ef121e778c",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_20"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_21",
+          "resourceSpecId": "965a807d-6395-5cec-5e2b-ba6e6ee360bf",
+          "costOwnerId": "r555-price:736e24555b7cbd226df2bff833abd430aa700acb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_21"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_22",
+          "resourceSpecId": "bc152cf9-56b3-a90a-8328-be75fdae774a",
+          "costOwnerId": "r555-price:fdb1416b76707936944e9c81dd5d4c622e1e4250",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_22"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_23",
+          "resourceSpecId": "2897b37f-7aa7-b359-9fb5-e6d6e52f86a2",
+          "costOwnerId": "r555-price:319f718d9db329adca765eab14bc57a5ca117c56",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_23"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_24",
+          "resourceSpecId": "641a2940-d84f-c866-1a57-e04e4da6f39e",
+          "costOwnerId": "r555-price:b4417818d3111d21184d42a8d1f3ce16e72fabed",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_24"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_48",
+          "resourceSpecId": "61aee069-3bbd-9094-e84f-208078ba45ae",
+          "costOwnerId": "r555-price:ad5af24572259fd246a462dce553cb98e8e05a7e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_48"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_49",
+          "resourceSpecId": "6c938220-8a1e-4981-e9d3-de4000f6c9d4",
+          "costOwnerId": "r555-price:f85c49ef03697c92c3428abbfd2ceb59add33b8d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_49"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_labor_50",
+          "resourceSpecId": "f60b4f2e-74c2-a980-22fd-eab1398b4bd6",
+          "costOwnerId": "r555-price:32b02fc48c15323b6cb0ee0f7cb630f5808e17dd",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_labor_50"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_equipment_25",
+          "resourceSpecId": "50e87939-3164-90fa-cb73-420fce9c2714",
+          "costOwnerId": "r555-price:dd6c5c41b85fa1c12882d65fe80b14337d698e43",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_equipment_25"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_equipment_26",
+          "resourceSpecId": "29b93a2a-93e6-aaff-36fe-1057ee2000b5",
+          "costOwnerId": "r555-price:fa5870c1d58d7426907b90db2d98788d4ba1b921",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_equipment_26"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_equipment_27",
+          "resourceSpecId": "ac743b33-aa26-102e-52e1-7d7cbaad18d6",
+          "costOwnerId": "r555-price:b8988c7039ef5c438c0c29202530c15e1d5e594c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_equipment_27"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_equipment_51",
+          "resourceSpecId": "16980128-233a-7e3c-9402-adec91b8bece",
+          "costOwnerId": "r555-price:5dfc816a22501e2d65374de9240634dc4bfe18cd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_equipment_51"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_equipment_52",
+          "resourceSpecId": "50daa063-bf61-550a-c276-24a3eaa2830c",
+          "costOwnerId": "r555-price:59a6f0fc61841bd7edfae10495b8dfb368bc096e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_equipment_52"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_logistics_28",
+          "resourceSpecId": "7f8404fb-6518-dd82-158d-c7857104c5b3",
+          "costOwnerId": "r555-price:3c0ae0684b3cfc885976916d29eb6df2e9a7e046",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_logistics_28"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_logistics_29",
+          "resourceSpecId": "56cb6a26-6310-d6f5-269f-46006f283570",
+          "costOwnerId": "r555-price:52505af1b02df0df5aae650fe70870bf639b8107",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_logistics_29"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_logistics_53",
+          "resourceSpecId": "5479ed3d-5237-f145-aaf9-9c88fe62ee81",
+          "costOwnerId": "r555-price:dcd5fae3fce982c25b5757ba35b26af86e9f5780",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_logistics_53"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_logistics_54",
+          "resourceSpecId": "13c2cb44-a280-4e8a-b9c7-70e02314c295",
+          "costOwnerId": "r555-price:cb4a7011d106ac672cec3682e8e166730d4ea7d1",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_logistics_54"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_waste_30",
+          "resourceSpecId": "4f5d5837-e4ff-7984-a394-40334222964d",
+          "costOwnerId": "r555-price:1febd51ec5359592f8895893518d1f193dc2409b",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_waste_30"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_waste_31",
+          "resourceSpecId": "2ae66833-6b32-cbcb-a780-ba9cb2ad7f75",
+          "costOwnerId": "r555-price:71d3237e9c3faf88c6d460c77ec1872424bb1882",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_waste_31"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_waste_55",
+          "resourceSpecId": "f032edff-ca33-634b-7922-5b26f07f8d62",
+          "costOwnerId": "r555-price:a877f7da3991d823c038dc2fb9ce93993a47722f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_waste_55"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_waste_56",
+          "resourceSpecId": "01dc65b6-a3a3-9d48-743f-b83bcc53fae3",
+          "costOwnerId": "r555-price:c30df4e8081336407242e6dfbdc05791e46490eb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_waste_56"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_quality_control_32",
+          "resourceSpecId": "f76b6ed2-428f-0d4c-ef06-a2a6e33134af",
+          "costOwnerId": "r555-price:c8a775541bca6796835b1809531aa55d641647e3",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_quality_control_32"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_quality_control_33",
+          "resourceSpecId": "99690be6-4574-9cb3-bdce-e4eb1050ce4f",
+          "costOwnerId": "r555-price:c757e791b42bf40729206600555932db31377d2a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_quality_control_33"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_quality_control_34",
+          "resourceSpecId": "87632d27-5225-3bc7-1617-8084d92757e9",
+          "costOwnerId": "r555-price:4ef8849ac653585be515b3a28dd075dcf8ad4e46",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_quality_control_34"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_quality_control_57",
+          "resourceSpecId": "8e5ae02a-79d6-b0f2-bd43-bfaa5921ca06",
+          "costOwnerId": "r555-price:49f41ff0a2d26c7305676b1e02e30d6d4b882565",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_quality_control_57"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_quality_control_58",
+          "resourceSpecId": "21ecec97-c05f-f367-394a-a97057752fa3",
+          "costOwnerId": "r555-price:c99f1e70f76b54bc977aa07697c92369614c9e4e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_quality_control_58"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_quality_control_59",
+          "resourceSpecId": "45ba266d-30b2-52b9-c85f-69c7b9dc02f4",
+          "costOwnerId": "r555-price:965d53c496d5f9d920419ac0308c7dacfdaf0dae",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_quality_control_59"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_overhead_35",
+          "resourceSpecId": "d6533edc-8e41-96f3-2346-543d6b7ae7d9",
+          "costOwnerId": "r555-price:435dda0895f8420c8610b7c02561503873643dcc",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_overhead_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_overhead_35"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_large_area_tax_36",
+          "resourceSpecId": "cf5c6bc9-01e7-a0dc-6d07-0d0056e5810b",
+          "costOwnerId": "r555-price:40676fa2370a459261ad2213717f45779abc0979",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_large_area_professional_expanded_v1_tax_quantity_formula_v1_waterproofing_interior_roof_prime_large_area_tax_36"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:waterproofing_interior_roof_prime_small_area",
+      "predecessorDefinitionId": "22d36cb7-bc49-56c5-8c81-e4a41ba1796d",
+      "predecessorVersion": 3,
+      "rowIdPrefix": "waterproofing_interior_roof_prime_small_area_",
+      "preservedOwners": [
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_01",
+          "resourceSpecId": "a6b79113-3365-6fa3-ea85-68f202aeacb1",
+          "costOwnerId": "r555-price:fe3c1dabe2cc4863ec57a27b184e875280d55ea2",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_01"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_02",
+          "resourceSpecId": "ee59ae26-1669-27e5-9068-c98d111c6f31",
+          "costOwnerId": "r555-price:979d43ab1e1e6c71a241ffd344a295a2397b779f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_02"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_03",
+          "resourceSpecId": "650f00c4-b706-fa41-e648-87db3a60d288",
+          "costOwnerId": "r555-price:0853b3530d2d486e295cc92cfefc75063219afde",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_03"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_04",
+          "resourceSpecId": "df56905f-1a54-ee2a-5898-fe79b7db2ad8",
+          "costOwnerId": "r555-price:88ec34954dd00349a50f75e5986809a5846118ed",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_04"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_05",
+          "resourceSpecId": "954094b8-b262-55a7-3781-892c3ec2c1ec",
+          "costOwnerId": "r555-price:954a3c11d428dcf684c2012475b3a5e46ab4e3e0",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_05"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_06",
+          "resourceSpecId": "6491d5a7-63fc-86c2-ca50-5152af6e3698",
+          "costOwnerId": "r555-price:3245807f209f015b32a25896eee19653bf40005d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_06"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_37",
+          "resourceSpecId": "fd1fca2d-ada2-801e-fa26-c4c0a629bc75",
+          "costOwnerId": "r555-price:f575b101ef018d3da93151d48e212a996e4b24b1",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_37"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_38",
+          "resourceSpecId": "55641faa-da3a-f3f4-1749-08c699b34b79",
+          "costOwnerId": "r555-price:5fcb7099b8be1daaf87e98f1af3ef2f37f8d3196",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_38"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_materials_39",
+          "resourceSpecId": "4b1ff0a4-3c6f-2743-43ab-2066ef22e3a3",
+          "costOwnerId": "r555-price:e7693944e58b188fb7ca029db7c6114bb34d767e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_materials_39"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_components_07",
+          "resourceSpecId": "4e705a21-4774-66b7-a5c2-3fc32a161c07",
+          "costOwnerId": "r555-price:3fa9cbb8bffdc9782a36f834bd6ff59ed23a904c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_components_07"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_components_08",
+          "resourceSpecId": "53668060-c9fd-6a74-f095-a12c5e4ac903",
+          "costOwnerId": "r555-price:21426a4fd7d30d606a2305f797e811024680cda7",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_components_08"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_components_09",
+          "resourceSpecId": "a4e3c67e-022a-c38d-5e00-cdf57d0a8411",
+          "costOwnerId": "r555-price:6ac72a5c97847019e82d0655edd6e57f4f1d79a7",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_components_09"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_components_10",
+          "resourceSpecId": "be75eac8-75ea-d0ca-d014-9f295e623276",
+          "costOwnerId": "r555-price:bca2bbde0802b9fcd899d924a8621e20d9b39919",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_components_10"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_components_40",
+          "resourceSpecId": "4505cf82-3645-bb2d-60db-4ed129272172",
+          "costOwnerId": "r555-price:28c6808f28af84a21cb81cbbeaf3b817ea9a3fdd",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_components_40"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_components_41",
+          "resourceSpecId": "e8372768-1731-21cb-7c1a-649ff19a27da",
+          "costOwnerId": "r555-price:043f5438c3595a410abaf414d44146c20ecb489a",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_components_41"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_components_42",
+          "resourceSpecId": "91a3bbbd-a6c8-d692-69cd-535750bf5ed7",
+          "costOwnerId": "r555-price:d9dfc232a6796034665cab941185e3584b4bb9c9",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_components_42"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_consumables_11",
+          "resourceSpecId": "09d53821-127b-04cc-c84c-996a0106d9ff",
+          "costOwnerId": "r555-price:38b18a8acc6dd0b156f51b1ccf2e98588ade430a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_consumables_11"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_consumables_12",
+          "resourceSpecId": "81b70a38-43fa-acae-faa2-402b772f17f8",
+          "costOwnerId": "r555-price:d72aabe28751312ebd512d3196f525cb45d2c744",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_consumables_12"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_consumables_13",
+          "resourceSpecId": "ecbd5974-355c-d009-e2d4-35f21e4256ed",
+          "costOwnerId": "r555-price:59576dab97497f58355b2cfa26127cac28009937",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_consumables_13"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_consumables_43",
+          "resourceSpecId": "99010a44-d721-3e0b-d399-ac162166e50f",
+          "costOwnerId": "r555-price:53868c339e499ed68e48bfcd676e35ad3e9637fd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_consumables_43"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_consumables_44",
+          "resourceSpecId": "966951ba-28e9-e2c0-e72d-b644142ff0a1",
+          "costOwnerId": "r555-price:c686a87761024121b6d91fe05a529a3362a86a0d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_consumables_44"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_preparation_14",
+          "resourceSpecId": "ae024849-4f8b-3620-4957-ffe2089297c4",
+          "costOwnerId": "r555-price:e04515dfb4d18cd541c1c0e076081fbbe0dbacc2",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_preparation_14"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_preparation_15",
+          "resourceSpecId": "4773ff8c-1fe6-4759-6066-4aa7b7d45aff",
+          "costOwnerId": "r555-price:988af77d6c55c88d9ad9c3e1f24f32fc0835e2b4",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_preparation_15"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_preparation_16",
+          "resourceSpecId": "aa283dc8-f582-6e70-74e0-8f51db5f16bb",
+          "costOwnerId": "r555-price:e024bcf60b706c62bbf37194ba81e91b78b8c8ac",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_preparation_16"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_preparation_17",
+          "resourceSpecId": "6e5d5107-6137-54fe-176d-c08ca1a77893",
+          "costOwnerId": "r555-price:904e82b746b14240272a4605884b33659fac125f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_preparation_17"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_preparation_45",
+          "resourceSpecId": "4c8b96e8-7b50-cef8-5add-2abf4e058570",
+          "costOwnerId": "r555-price:37efe4dfde9851788c1909729e2f4103e99b272a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_preparation_45"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_preparation_46",
+          "resourceSpecId": "a3fadb93-5c90-71e0-5ae8-d4de02e7805c",
+          "costOwnerId": "r555-price:b67e8cbb936e5eaf304648172bf69afefe6e3db8",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_preparation_46"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_preparation_47",
+          "resourceSpecId": "7d719d7a-2d4c-d017-4938-818811f31dc6",
+          "costOwnerId": "r555-price:7cfd590375a2f072837f7128b31ecc0530e23072",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_preparation_47"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_18",
+          "resourceSpecId": "68808c62-b574-566d-5d56-3d8ce291a686",
+          "costOwnerId": "r555-price:9c6bce2a797dc46600a1e4c0c5859415b0c1f075",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_18"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_19",
+          "resourceSpecId": "16825970-1389-aaa8-7121-f5d54dc9f6dd",
+          "costOwnerId": "r555-price:c78b809b46003493ab6b460e17a45214691afa94",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_19"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_20",
+          "resourceSpecId": "dde05187-7dce-7ca8-ee17-0ea795b3855f",
+          "costOwnerId": "r555-price:afb67841f221357a4e54fa93d8b940ef121e778c",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_20"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_21",
+          "resourceSpecId": "44c11dcb-b92c-21d3-e7b9-7d4cce7be72c",
+          "costOwnerId": "r555-price:736e24555b7cbd226df2bff833abd430aa700acb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_21"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_22",
+          "resourceSpecId": "cdee04a1-c97a-8be2-b680-cf35ee03f73f",
+          "costOwnerId": "r555-price:fdb1416b76707936944e9c81dd5d4c622e1e4250",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_22"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_23",
+          "resourceSpecId": "ce4837f8-9dec-5878-70d4-7c11326b5a30",
+          "costOwnerId": "r555-price:319f718d9db329adca765eab14bc57a5ca117c56",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_23"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_24",
+          "resourceSpecId": "80d0b7dd-2ee4-86a9-3f2c-d651ec4be0db",
+          "costOwnerId": "r555-price:b4417818d3111d21184d42a8d1f3ce16e72fabed",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_24"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_48",
+          "resourceSpecId": "9e38eb60-f41e-a681-6949-8333581d2f8f",
+          "costOwnerId": "r555-price:ad5af24572259fd246a462dce553cb98e8e05a7e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_48"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_49",
+          "resourceSpecId": "49c453cd-5e96-14ea-8fd9-98855a6ca6e5",
+          "costOwnerId": "r555-price:f85c49ef03697c92c3428abbfd2ceb59add33b8d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_49"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_labor_50",
+          "resourceSpecId": "cb846d05-2cd3-2fad-e951-995f79b2a35c",
+          "costOwnerId": "r555-price:32b02fc48c15323b6cb0ee0f7cb630f5808e17dd",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_labor_50"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_equipment_25",
+          "resourceSpecId": "10d3c906-06c9-cbc1-b22d-372af4b00d5e",
+          "costOwnerId": "r555-price:dd6c5c41b85fa1c12882d65fe80b14337d698e43",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_equipment_25"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_equipment_26",
+          "resourceSpecId": "6a63bc17-dd99-7004-16ed-732bb4e90178",
+          "costOwnerId": "r555-price:fa5870c1d58d7426907b90db2d98788d4ba1b921",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_equipment_26"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_equipment_27",
+          "resourceSpecId": "033f6b15-327b-a612-a6ba-49398ab5d1d3",
+          "costOwnerId": "r555-price:b8988c7039ef5c438c0c29202530c15e1d5e594c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_equipment_27"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_equipment_51",
+          "resourceSpecId": "1fe8a61a-8d8c-8107-560e-318e53b15a68",
+          "costOwnerId": "r555-price:5dfc816a22501e2d65374de9240634dc4bfe18cd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_equipment_51"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_equipment_52",
+          "resourceSpecId": "ed25bbad-583d-33fb-6c23-6dd15f68e6ad",
+          "costOwnerId": "r555-price:59a6f0fc61841bd7edfae10495b8dfb368bc096e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_equipment_52"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_logistics_28",
+          "resourceSpecId": "aa0dbb7f-11cd-61d8-b9c4-98559622cf86",
+          "costOwnerId": "r555-price:3c0ae0684b3cfc885976916d29eb6df2e9a7e046",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_logistics_28"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_logistics_29",
+          "resourceSpecId": "e0cf3782-4655-9c61-b3ed-9297cd325e58",
+          "costOwnerId": "r555-price:52505af1b02df0df5aae650fe70870bf639b8107",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_logistics_29"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_logistics_53",
+          "resourceSpecId": "cdb4dc19-acc0-be3c-b061-6a3ce1cf0a48",
+          "costOwnerId": "r555-price:dcd5fae3fce982c25b5757ba35b26af86e9f5780",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_logistics_53"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_logistics_54",
+          "resourceSpecId": "2e1959f8-2c3c-dbd4-ef8a-97e11d5c26c2",
+          "costOwnerId": "r555-price:cb4a7011d106ac672cec3682e8e166730d4ea7d1",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_logistics_54"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_waste_30",
+          "resourceSpecId": "9e7049da-15e6-5771-5664-176d6cce56a4",
+          "costOwnerId": "r555-price:1febd51ec5359592f8895893518d1f193dc2409b",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_waste_30"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_waste_31",
+          "resourceSpecId": "aa47be6e-3e33-0fdc-98e5-3b4f57e79cc4",
+          "costOwnerId": "r555-price:71d3237e9c3faf88c6d460c77ec1872424bb1882",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_waste_31"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_waste_55",
+          "resourceSpecId": "1b9329e5-0963-0d59-3c43-bce8573b2cfc",
+          "costOwnerId": "r555-price:a877f7da3991d823c038dc2fb9ce93993a47722f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_waste_55"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_waste_56",
+          "resourceSpecId": "d7721d9d-71a9-63d3-af53-099fdd77c79b",
+          "costOwnerId": "r555-price:c30df4e8081336407242e6dfbdc05791e46490eb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_waste_56"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_quality_control_32",
+          "resourceSpecId": "7a00566f-befc-700d-57fe-523ba377655e",
+          "costOwnerId": "r555-price:c8a775541bca6796835b1809531aa55d641647e3",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_quality_control_32"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_quality_control_33",
+          "resourceSpecId": "fa110e28-a9d4-cd72-12cc-03355befe067",
+          "costOwnerId": "r555-price:c757e791b42bf40729206600555932db31377d2a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_quality_control_33"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_quality_control_34",
+          "resourceSpecId": "1004f9dc-cfb7-de7a-9235-96534299548c",
+          "costOwnerId": "r555-price:4ef8849ac653585be515b3a28dd075dcf8ad4e46",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_quality_control_34"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_quality_control_57",
+          "resourceSpecId": "412e1ec8-9b81-09f4-1732-377305e345ff",
+          "costOwnerId": "r555-price:49f41ff0a2d26c7305676b1e02e30d6d4b882565",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_quality_control_57"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_quality_control_58",
+          "resourceSpecId": "64b51d1b-3c08-009c-179f-6d382c3f8b17",
+          "costOwnerId": "r555-price:c99f1e70f76b54bc977aa07697c92369614c9e4e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_quality_control_58"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_quality_control_59",
+          "resourceSpecId": "fdbcf9cb-7725-9b97-43db-2f97a3f10a41",
+          "costOwnerId": "r555-price:965d53c496d5f9d920419ac0308c7dacfdaf0dae",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_quality_control_59"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_overhead_35",
+          "resourceSpecId": "f95499eb-5230-a028-f4be-398f915c675e",
+          "costOwnerId": "r555-price:435dda0895f8420c8610b7c02561503873643dcc",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_overhead_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_overhead_35"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_small_area_tax_36",
+          "resourceSpecId": "d5db9d34-405b-aa3e-58c8-fff8f7c3eca8",
+          "costOwnerId": "r555-price:40676fa2370a459261ad2213717f45779abc0979",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_small_area_professional_expanded_v1_tax_quantity_formula_v1_waterproofing_interior_roof_prime_small_area_tax_36"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:waterproofing_interior_roof_prime_standard",
+      "predecessorDefinitionId": "95a1ca00-2b9f-5f58-aed7-c0c7f05dea10",
+      "predecessorVersion": 3,
+      "rowIdPrefix": "waterproofing_interior_roof_prime_standard_",
+      "preservedOwners": [
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_01",
+          "resourceSpecId": "d6a2fb7a-1e06-6feb-9bc6-d5b7924f7468",
+          "costOwnerId": "r555-price:fe3c1dabe2cc4863ec57a27b184e875280d55ea2",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_01"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_02",
+          "resourceSpecId": "75c37ace-e150-54bd-b845-c8d4356ebc1c",
+          "costOwnerId": "r555-price:979d43ab1e1e6c71a241ffd344a295a2397b779f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_02"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_03",
+          "resourceSpecId": "39b300b6-dd0f-79fe-42cf-d0e3101ed8b2",
+          "costOwnerId": "r555-price:0853b3530d2d486e295cc92cfefc75063219afde",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_03"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_04",
+          "resourceSpecId": "b20927ed-bc7b-ee7e-8812-7f70f73316c8",
+          "costOwnerId": "r555-price:88ec34954dd00349a50f75e5986809a5846118ed",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_04"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_05",
+          "resourceSpecId": "e127d190-db00-6a69-b0ea-416520b90590",
+          "costOwnerId": "r555-price:954a3c11d428dcf684c2012475b3a5e46ab4e3e0",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_05"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_06",
+          "resourceSpecId": "fbd10fbd-d1d3-35ca-2556-c574f0119c99",
+          "costOwnerId": "r555-price:3245807f209f015b32a25896eee19653bf40005d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_06"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_37",
+          "resourceSpecId": "68aa0735-7119-71ad-df8a-41c9bafefdfa",
+          "costOwnerId": "r555-price:f575b101ef018d3da93151d48e212a996e4b24b1",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_37"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_38",
+          "resourceSpecId": "afb1b482-3344-01a3-7208-207cac2b16d4",
+          "costOwnerId": "r555-price:5fcb7099b8be1daaf87e98f1af3ef2f37f8d3196",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_38"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_materials_39",
+          "resourceSpecId": "69901363-be1f-9149-390c-3cf4fc15b686",
+          "costOwnerId": "r555-price:e7693944e58b188fb7ca029db7c6114bb34d767e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_standard_materials_39"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_components_07",
+          "resourceSpecId": "2a9a79c1-48a2-8f9d-0220-ca086d109007",
+          "costOwnerId": "r555-price:3fa9cbb8bffdc9782a36f834bd6ff59ed23a904c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_standard_components_07"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_components_08",
+          "resourceSpecId": "ed7864c2-9714-1d34-dffd-728e220ccdd5",
+          "costOwnerId": "r555-price:21426a4fd7d30d606a2305f797e811024680cda7",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_standard_components_08"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_components_09",
+          "resourceSpecId": "0f4d431c-5059-d004-4474-02ad7847e276",
+          "costOwnerId": "r555-price:6ac72a5c97847019e82d0655edd6e57f4f1d79a7",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_standard_components_09"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_components_10",
+          "resourceSpecId": "0a93ad8e-8bff-eaaa-5aae-ad5a4401aeed",
+          "costOwnerId": "r555-price:bca2bbde0802b9fcd899d924a8621e20d9b39919",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_standard_components_10"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_components_40",
+          "resourceSpecId": "96ea6b80-a554-5679-9d56-4fbd96e434dc",
+          "costOwnerId": "r555-price:28c6808f28af84a21cb81cbbeaf3b817ea9a3fdd",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_standard_components_40"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_components_41",
+          "resourceSpecId": "d6602898-d412-ee16-705a-b2c758197227",
+          "costOwnerId": "r555-price:043f5438c3595a410abaf414d44146c20ecb489a",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_standard_components_41"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_components_42",
+          "resourceSpecId": "3b6f8626-c0f4-67f6-ebdf-434dac106b4a",
+          "costOwnerId": "r555-price:d9dfc232a6796034665cab941185e3584b4bb9c9",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_standard_components_42"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_consumables_11",
+          "resourceSpecId": "5bc0980a-d26f-597d-ea6b-4b8603cc49a5",
+          "costOwnerId": "r555-price:38b18a8acc6dd0b156f51b1ccf2e98588ade430a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_standard_consumables_11"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_consumables_12",
+          "resourceSpecId": "26bef7f6-1312-b29c-48b1-0fb430991391",
+          "costOwnerId": "r555-price:d72aabe28751312ebd512d3196f525cb45d2c744",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_standard_consumables_12"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_consumables_13",
+          "resourceSpecId": "550dd8de-d5ae-0610-6bde-5e906399e4f6",
+          "costOwnerId": "r555-price:59576dab97497f58355b2cfa26127cac28009937",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_standard_consumables_13"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_consumables_43",
+          "resourceSpecId": "b42147f4-f54e-1f7c-b872-b2f2a16d245d",
+          "costOwnerId": "r555-price:53868c339e499ed68e48bfcd676e35ad3e9637fd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_standard_consumables_43"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_consumables_44",
+          "resourceSpecId": "49d3abe0-1a81-6bdb-cf1e-6c5971cd7392",
+          "costOwnerId": "r555-price:c686a87761024121b6d91fe05a529a3362a86a0d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_standard_consumables_44"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_preparation_14",
+          "resourceSpecId": "fdefdbf3-7c75-82b4-2925-ee814da15cd6",
+          "costOwnerId": "r555-price:e04515dfb4d18cd541c1c0e076081fbbe0dbacc2",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_standard_preparation_14"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_preparation_15",
+          "resourceSpecId": "72ae56b9-93e0-8021-cf9b-edcef7778f46",
+          "costOwnerId": "r555-price:988af77d6c55c88d9ad9c3e1f24f32fc0835e2b4",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_standard_preparation_15"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_preparation_16",
+          "resourceSpecId": "c4bf60d2-d94c-8ea1-795c-1052429b353a",
+          "costOwnerId": "r555-price:e024bcf60b706c62bbf37194ba81e91b78b8c8ac",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_standard_preparation_16"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_preparation_17",
+          "resourceSpecId": "421b19e7-eaa7-8ce9-8ad9-ba56919651cb",
+          "costOwnerId": "r555-price:904e82b746b14240272a4605884b33659fac125f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_standard_preparation_17"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_preparation_45",
+          "resourceSpecId": "68c2a125-3672-92c1-b9dd-78144632b9cc",
+          "costOwnerId": "r555-price:37efe4dfde9851788c1909729e2f4103e99b272a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_standard_preparation_45"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_preparation_46",
+          "resourceSpecId": "a3660263-0d74-7b5c-976c-e28aff0cc5c8",
+          "costOwnerId": "r555-price:b67e8cbb936e5eaf304648172bf69afefe6e3db8",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_standard_preparation_46"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_preparation_47",
+          "resourceSpecId": "93155315-082e-51c6-f48f-8c5b68c1fdf1",
+          "costOwnerId": "r555-price:7cfd590375a2f072837f7128b31ecc0530e23072",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_standard_preparation_47"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_18",
+          "resourceSpecId": "c9e09b2e-10b7-c7ac-2c2c-b23dd872be78",
+          "costOwnerId": "r555-price:9c6bce2a797dc46600a1e4c0c5859415b0c1f075",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_18"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_19",
+          "resourceSpecId": "9d75e2f6-0d04-dcf7-899d-4c820f7665a7",
+          "costOwnerId": "r555-price:c78b809b46003493ab6b460e17a45214691afa94",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_19"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_20",
+          "resourceSpecId": "f4e4e9e9-a012-4b38-58e0-691e2f113287",
+          "costOwnerId": "r555-price:afb67841f221357a4e54fa93d8b940ef121e778c",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_20"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_21",
+          "resourceSpecId": "45cbe607-6e23-fc16-de28-ea907a9ef73e",
+          "costOwnerId": "r555-price:736e24555b7cbd226df2bff833abd430aa700acb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_21"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_22",
+          "resourceSpecId": "57612aad-b928-801e-ef83-9ada213f3536",
+          "costOwnerId": "r555-price:fdb1416b76707936944e9c81dd5d4c622e1e4250",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_22"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_23",
+          "resourceSpecId": "eac21615-0eac-e0db-8578-8d189844b251",
+          "costOwnerId": "r555-price:319f718d9db329adca765eab14bc57a5ca117c56",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_23"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_24",
+          "resourceSpecId": "52945680-4188-9cb3-a35e-9c075a7ee36d",
+          "costOwnerId": "r555-price:b4417818d3111d21184d42a8d1f3ce16e72fabed",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_24"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_48",
+          "resourceSpecId": "623c25e9-4d70-16be-9e20-5a201ab70091",
+          "costOwnerId": "r555-price:ad5af24572259fd246a462dce553cb98e8e05a7e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_48"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_49",
+          "resourceSpecId": "9fb1b570-c5c6-82df-13d0-ed2b00fd2199",
+          "costOwnerId": "r555-price:f85c49ef03697c92c3428abbfd2ceb59add33b8d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_49"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_labor_50",
+          "resourceSpecId": "d9e67fdc-9ec5-c6e1-33d1-05b688bcb762",
+          "costOwnerId": "r555-price:32b02fc48c15323b6cb0ee0f7cb630f5808e17dd",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_standard_labor_50"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_equipment_25",
+          "resourceSpecId": "d06568b0-1bf9-9c28-aa4f-6a873b56de07",
+          "costOwnerId": "r555-price:dd6c5c41b85fa1c12882d65fe80b14337d698e43",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_standard_equipment_25"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_equipment_26",
+          "resourceSpecId": "4acbc1cf-289a-3d59-1b4d-5565741fabfe",
+          "costOwnerId": "r555-price:fa5870c1d58d7426907b90db2d98788d4ba1b921",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_standard_equipment_26"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_equipment_27",
+          "resourceSpecId": "b4d4c6e1-982e-e586-79a4-ec60e92ba79c",
+          "costOwnerId": "r555-price:b8988c7039ef5c438c0c29202530c15e1d5e594c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_standard_equipment_27"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_equipment_51",
+          "resourceSpecId": "e3e0fe53-93b5-3d43-bf86-77b43a1d7170",
+          "costOwnerId": "r555-price:5dfc816a22501e2d65374de9240634dc4bfe18cd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_standard_equipment_51"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_equipment_52",
+          "resourceSpecId": "ddd0da0c-b3f3-33db-ba2e-4bccbd7d60d1",
+          "costOwnerId": "r555-price:59a6f0fc61841bd7edfae10495b8dfb368bc096e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_standard_equipment_52"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_logistics_28",
+          "resourceSpecId": "89d6bae5-df44-32b2-92f3-8fd9e7d87558",
+          "costOwnerId": "r555-price:3c0ae0684b3cfc885976916d29eb6df2e9a7e046",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_standard_logistics_28"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_logistics_29",
+          "resourceSpecId": "3cae47cb-8569-21d8-3351-4d9aa6874692",
+          "costOwnerId": "r555-price:52505af1b02df0df5aae650fe70870bf639b8107",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_standard_logistics_29"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_logistics_53",
+          "resourceSpecId": "43f1c577-03e0-f976-b19a-d08031c38f91",
+          "costOwnerId": "r555-price:dcd5fae3fce982c25b5757ba35b26af86e9f5780",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_standard_logistics_53"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_logistics_54",
+          "resourceSpecId": "f814f830-6774-f92c-bf7f-f44534f76f68",
+          "costOwnerId": "r555-price:cb4a7011d106ac672cec3682e8e166730d4ea7d1",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_standard_logistics_54"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_waste_30",
+          "resourceSpecId": "9b310a81-df5e-116c-0e9f-ba8b8707f476",
+          "costOwnerId": "r555-price:1febd51ec5359592f8895893518d1f193dc2409b",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_standard_waste_30"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_waste_31",
+          "resourceSpecId": "0a26f807-b95f-1ebe-ad46-0592f9b6bc1c",
+          "costOwnerId": "r555-price:71d3237e9c3faf88c6d460c77ec1872424bb1882",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_standard_waste_31"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_waste_55",
+          "resourceSpecId": "f9a7ed0d-a95f-b10c-db49-9fdcc1c22583",
+          "costOwnerId": "r555-price:a877f7da3991d823c038dc2fb9ce93993a47722f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_standard_waste_55"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_waste_56",
+          "resourceSpecId": "85bef6e7-3583-4ef5-41a0-701123c54781",
+          "costOwnerId": "r555-price:c30df4e8081336407242e6dfbdc05791e46490eb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_standard_waste_56"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_quality_control_32",
+          "resourceSpecId": "49c3dfdf-964c-0822-409d-746ef199133e",
+          "costOwnerId": "r555-price:c8a775541bca6796835b1809531aa55d641647e3",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_standard_quality_control_32"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_quality_control_33",
+          "resourceSpecId": "1e3e4646-8f45-1112-07fa-70d5bd0c7851",
+          "costOwnerId": "r555-price:c757e791b42bf40729206600555932db31377d2a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_standard_quality_control_33"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_quality_control_34",
+          "resourceSpecId": "e3cee4ff-9c58-97d9-8da6-4b7940f9ab03",
+          "costOwnerId": "r555-price:4ef8849ac653585be515b3a28dd075dcf8ad4e46",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_standard_quality_control_34"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_quality_control_57",
+          "resourceSpecId": "f5d66c0e-73c9-00a3-4bd0-c5f51f5bb94b",
+          "costOwnerId": "r555-price:49f41ff0a2d26c7305676b1e02e30d6d4b882565",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_standard_quality_control_57"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_quality_control_58",
+          "resourceSpecId": "a254f1f9-aae3-ea0f-c21a-bee5844cc387",
+          "costOwnerId": "r555-price:c99f1e70f76b54bc977aa07697c92369614c9e4e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_standard_quality_control_58"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_quality_control_59",
+          "resourceSpecId": "df449c7b-ea0c-14ae-168a-9a37c1863d26",
+          "costOwnerId": "r555-price:965d53c496d5f9d920419ac0308c7dacfdaf0dae",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_standard_quality_control_59"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_overhead_35",
+          "resourceSpecId": "24976afc-4d02-cacf-63f3-d59ef2acfe2e",
+          "costOwnerId": "r555-price:435dda0895f8420c8610b7c02561503873643dcc",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_overhead_quantity_formula_v1_waterproofing_interior_roof_prime_standard_overhead_35"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_standard_tax_36",
+          "resourceSpecId": "219e16d4-5122-259f-0d3e-210eeb85b1f8",
+          "costOwnerId": "r555-price:40676fa2370a459261ad2213717f45779abc0979",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_standard_professional_expanded_v1_tax_quantity_formula_v1_waterproofing_interior_roof_prime_standard_tax_36"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:waterproofing_interior_roof_prime_technical_room",
+      "predecessorDefinitionId": "fe2a61d5-4570-5ba8-b82d-46d3565f666b",
+      "predecessorVersion": 3,
+      "rowIdPrefix": "waterproofing_interior_roof_prime_technical_room_",
+      "preservedOwners": [
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_01",
+          "resourceSpecId": "1112a386-0cfc-860a-17ea-4911306b1a2f",
+          "costOwnerId": "r555-price:fe3c1dabe2cc4863ec57a27b184e875280d55ea2",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_01"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_02",
+          "resourceSpecId": "24da2890-4618-f574-e388-dccf1e6beee2",
+          "costOwnerId": "r555-price:979d43ab1e1e6c71a241ffd344a295a2397b779f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_02"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_03",
+          "resourceSpecId": "634fa0f3-1798-b6cf-d429-b22963cebec8",
+          "costOwnerId": "r555-price:0853b3530d2d486e295cc92cfefc75063219afde",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_03"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_04",
+          "resourceSpecId": "943ea43f-36d4-2f13-bbab-2c31b6f2301b",
+          "costOwnerId": "r555-price:88ec34954dd00349a50f75e5986809a5846118ed",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_04"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_05",
+          "resourceSpecId": "ffc6d8ff-8711-97c8-a486-45017464ab63",
+          "costOwnerId": "r555-price:954a3c11d428dcf684c2012475b3a5e46ab4e3e0",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_05"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_06",
+          "resourceSpecId": "a3ec498d-1af5-09a7-f9f6-b8ca61cc5adf",
+          "costOwnerId": "r555-price:3245807f209f015b32a25896eee19653bf40005d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_06"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_37",
+          "resourceSpecId": "4be38148-09d2-8dec-02a7-8c91ca975367",
+          "costOwnerId": "r555-price:f575b101ef018d3da93151d48e212a996e4b24b1",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_37"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_38",
+          "resourceSpecId": "cf882e4f-5008-0c9b-9c72-376fb10789de",
+          "costOwnerId": "r555-price:5fcb7099b8be1daaf87e98f1af3ef2f37f8d3196",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_38"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_materials_39",
+          "resourceSpecId": "20bdd688-aac3-5649-0372-6b16ea50c30e",
+          "costOwnerId": "r555-price:e7693944e58b188fb7ca029db7c6114bb34d767e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_materials_39"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_components_07",
+          "resourceSpecId": "6d500a33-077f-c5fa-8acc-9bd49b4a9f09",
+          "costOwnerId": "r555-price:3fa9cbb8bffdc9782a36f834bd6ff59ed23a904c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_components_07"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_components_08",
+          "resourceSpecId": "028e6ba4-986a-512f-ccd3-985761e3f51c",
+          "costOwnerId": "r555-price:21426a4fd7d30d606a2305f797e811024680cda7",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_components_08"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_components_09",
+          "resourceSpecId": "f2e39e45-7409-00e8-ac5c-373dba8caca2",
+          "costOwnerId": "r555-price:6ac72a5c97847019e82d0655edd6e57f4f1d79a7",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_components_09"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_components_10",
+          "resourceSpecId": "e0d60786-92a5-cf55-5e80-88334ff9b28a",
+          "costOwnerId": "r555-price:bca2bbde0802b9fcd899d924a8621e20d9b39919",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_components_10"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_components_40",
+          "resourceSpecId": "df049824-ee91-ba96-fe43-9dc66405f4d6",
+          "costOwnerId": "r555-price:28c6808f28af84a21cb81cbbeaf3b817ea9a3fdd",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_components_40"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_components_41",
+          "resourceSpecId": "76590213-c428-223d-1da3-1f8c03251ed7",
+          "costOwnerId": "r555-price:043f5438c3595a410abaf414d44146c20ecb489a",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_components_41"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_components_42",
+          "resourceSpecId": "2d1d7af7-95bb-6fd8-387a-df9742c6c15f",
+          "costOwnerId": "r555-price:d9dfc232a6796034665cab941185e3584b4bb9c9",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_components_42"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_consumables_11",
+          "resourceSpecId": "ac7a210d-5190-6128-7dd1-af53547fa611",
+          "costOwnerId": "r555-price:38b18a8acc6dd0b156f51b1ccf2e98588ade430a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_consumables_11"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_consumables_12",
+          "resourceSpecId": "81628b2d-44b3-56bc-d37d-b9baa86a5ff8",
+          "costOwnerId": "r555-price:d72aabe28751312ebd512d3196f525cb45d2c744",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_consumables_12"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_consumables_13",
+          "resourceSpecId": "d975a83d-d814-c937-8ea9-be34563a5451",
+          "costOwnerId": "r555-price:59576dab97497f58355b2cfa26127cac28009937",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_consumables_13"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_consumables_43",
+          "resourceSpecId": "cd1bb2c3-6c8b-49ce-1398-b2c28f52992e",
+          "costOwnerId": "r555-price:53868c339e499ed68e48bfcd676e35ad3e9637fd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_consumables_43"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_consumables_44",
+          "resourceSpecId": "0cfd1abb-e27d-6cb4-7bab-f902323d52b3",
+          "costOwnerId": "r555-price:c686a87761024121b6d91fe05a529a3362a86a0d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_consumables_44"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_preparation_14",
+          "resourceSpecId": "bb6ef8e7-2fbf-a73f-2843-47d740fe14f5",
+          "costOwnerId": "r555-price:e04515dfb4d18cd541c1c0e076081fbbe0dbacc2",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_preparation_14"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_preparation_15",
+          "resourceSpecId": "a3ac0018-0d6b-9c19-e3ff-c11fdabd8f88",
+          "costOwnerId": "r555-price:988af77d6c55c88d9ad9c3e1f24f32fc0835e2b4",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_preparation_15"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_preparation_16",
+          "resourceSpecId": "895d158b-1f0a-6b8a-26e6-07b41fae33d0",
+          "costOwnerId": "r555-price:e024bcf60b706c62bbf37194ba81e91b78b8c8ac",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_preparation_16"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_preparation_17",
+          "resourceSpecId": "b8a195c7-1727-de35-dd25-b3656f080299",
+          "costOwnerId": "r555-price:904e82b746b14240272a4605884b33659fac125f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_preparation_17"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_preparation_45",
+          "resourceSpecId": "6df95362-c0a1-24c2-bf2b-e173ed560d4f",
+          "costOwnerId": "r555-price:37efe4dfde9851788c1909729e2f4103e99b272a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_preparation_45"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_preparation_46",
+          "resourceSpecId": "009fe6e5-36e1-a890-4a68-313d6625d826",
+          "costOwnerId": "r555-price:b67e8cbb936e5eaf304648172bf69afefe6e3db8",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_preparation_46"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_preparation_47",
+          "resourceSpecId": "203a190d-6040-3e21-b627-cd25d8d74f3d",
+          "costOwnerId": "r555-price:7cfd590375a2f072837f7128b31ecc0530e23072",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_preparation_47"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_18",
+          "resourceSpecId": "83ec474d-30c7-393d-6128-ac48e7ca3504",
+          "costOwnerId": "r555-price:9c6bce2a797dc46600a1e4c0c5859415b0c1f075",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_18"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_19",
+          "resourceSpecId": "cefb91d2-b840-e60c-28e1-e28b9bc6e783",
+          "costOwnerId": "r555-price:c78b809b46003493ab6b460e17a45214691afa94",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_19"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_20",
+          "resourceSpecId": "f235bce5-f6de-02b0-4609-16f76d877790",
+          "costOwnerId": "r555-price:afb67841f221357a4e54fa93d8b940ef121e778c",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_20"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_21",
+          "resourceSpecId": "46e8f072-bc5e-ee00-ea8e-e32e95d29ced",
+          "costOwnerId": "r555-price:736e24555b7cbd226df2bff833abd430aa700acb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_21"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_22",
+          "resourceSpecId": "64e85c6c-e85e-9037-9851-9193484104a0",
+          "costOwnerId": "r555-price:fdb1416b76707936944e9c81dd5d4c622e1e4250",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_22"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_23",
+          "resourceSpecId": "acb6c457-afb6-8354-8574-7071f300c016",
+          "costOwnerId": "r555-price:319f718d9db329adca765eab14bc57a5ca117c56",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_23"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_24",
+          "resourceSpecId": "cd0d5d30-2e0f-8a83-0213-5cd38c894254",
+          "costOwnerId": "r555-price:b4417818d3111d21184d42a8d1f3ce16e72fabed",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_24"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_48",
+          "resourceSpecId": "afa419de-ce36-b252-d60a-a7b11e547734",
+          "costOwnerId": "r555-price:ad5af24572259fd246a462dce553cb98e8e05a7e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_48"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_49",
+          "resourceSpecId": "b99a3cc4-f969-1ce2-d470-536dc983ab78",
+          "costOwnerId": "r555-price:f85c49ef03697c92c3428abbfd2ceb59add33b8d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_49"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_labor_50",
+          "resourceSpecId": "aa5a6c58-872a-4b14-2ad5-91b71dfe084f",
+          "costOwnerId": "r555-price:32b02fc48c15323b6cb0ee0f7cb630f5808e17dd",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_labor_50"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_equipment_25",
+          "resourceSpecId": "8fac0383-e027-242a-23d4-d1142020239c",
+          "costOwnerId": "r555-price:dd6c5c41b85fa1c12882d65fe80b14337d698e43",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_equipment_25"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_equipment_26",
+          "resourceSpecId": "9989164f-fb3c-f100-e4a6-7e271e76c065",
+          "costOwnerId": "r555-price:fa5870c1d58d7426907b90db2d98788d4ba1b921",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_equipment_26"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_equipment_27",
+          "resourceSpecId": "e06777b8-723f-2324-43be-0f6829536607",
+          "costOwnerId": "r555-price:b8988c7039ef5c438c0c29202530c15e1d5e594c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_equipment_27"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_equipment_51",
+          "resourceSpecId": "51735da0-a68e-ac82-6c25-0e794c56f31e",
+          "costOwnerId": "r555-price:5dfc816a22501e2d65374de9240634dc4bfe18cd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_equipment_51"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_equipment_52",
+          "resourceSpecId": "e51a38d0-1933-1c91-15db-17b3b294bc14",
+          "costOwnerId": "r555-price:59a6f0fc61841bd7edfae10495b8dfb368bc096e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_equipment_52"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_logistics_28",
+          "resourceSpecId": "7a16b2a7-ffca-75bc-5869-0bd0bab72170",
+          "costOwnerId": "r555-price:3c0ae0684b3cfc885976916d29eb6df2e9a7e046",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_logistics_28"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_logistics_29",
+          "resourceSpecId": "d0d1f021-5c81-c652-651a-5a41a5a079ea",
+          "costOwnerId": "r555-price:52505af1b02df0df5aae650fe70870bf639b8107",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_logistics_29"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_logistics_53",
+          "resourceSpecId": "4e65e5ea-41cc-5ea3-b7d0-fb1744d46c33",
+          "costOwnerId": "r555-price:dcd5fae3fce982c25b5757ba35b26af86e9f5780",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_logistics_53"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_logistics_54",
+          "resourceSpecId": "05ac5ddb-0eb0-d683-fb58-fd3a41b1e1ba",
+          "costOwnerId": "r555-price:cb4a7011d106ac672cec3682e8e166730d4ea7d1",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_logistics_54"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_waste_30",
+          "resourceSpecId": "43b527b6-a13c-bd3e-811b-cd65056722dd",
+          "costOwnerId": "r555-price:1febd51ec5359592f8895893518d1f193dc2409b",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_waste_30"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_waste_31",
+          "resourceSpecId": "aa131df0-efb3-2489-f6c3-2737f401c5b7",
+          "costOwnerId": "r555-price:71d3237e9c3faf88c6d460c77ec1872424bb1882",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_waste_31"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_waste_55",
+          "resourceSpecId": "a722de05-c616-dd8d-f49f-eec7dbe05f93",
+          "costOwnerId": "r555-price:a877f7da3991d823c038dc2fb9ce93993a47722f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_waste_55"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_waste_56",
+          "resourceSpecId": "6b90626d-c6e8-8d67-3be8-a832709fc51f",
+          "costOwnerId": "r555-price:c30df4e8081336407242e6dfbdc05791e46490eb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_waste_56"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_quality_control_32",
+          "resourceSpecId": "da2f6416-45f3-02e7-6610-e39833b0b850",
+          "costOwnerId": "r555-price:c8a775541bca6796835b1809531aa55d641647e3",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_quality_control_32"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_quality_control_33",
+          "resourceSpecId": "23e672fa-c76d-750b-16bb-8572a9860b83",
+          "costOwnerId": "r555-price:c757e791b42bf40729206600555932db31377d2a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_quality_control_33"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_quality_control_34",
+          "resourceSpecId": "f028724b-ff9b-7dfc-da51-bb66e15a52fc",
+          "costOwnerId": "r555-price:4ef8849ac653585be515b3a28dd075dcf8ad4e46",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_quality_control_34"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_quality_control_57",
+          "resourceSpecId": "150097fd-e3e8-3bc5-9cfc-3c9e288e2909",
+          "costOwnerId": "r555-price:49f41ff0a2d26c7305676b1e02e30d6d4b882565",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_quality_control_57"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_quality_control_58",
+          "resourceSpecId": "2ae47e9b-a5aa-0e40-4b69-b92bf798f5ad",
+          "costOwnerId": "r555-price:c99f1e70f76b54bc977aa07697c92369614c9e4e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_quality_control_58"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_quality_control_59",
+          "resourceSpecId": "724e418a-4ef9-bac5-d3b3-9df746d3e25a",
+          "costOwnerId": "r555-price:965d53c496d5f9d920419ac0308c7dacfdaf0dae",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_quality_control_59"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_overhead_35",
+          "resourceSpecId": "bfe30eed-e287-ece8-5136-fd9dddb7a1b3",
+          "costOwnerId": "r555-price:435dda0895f8420c8610b7c02561503873643dcc",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_overhead_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_overhead_35"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_technical_room_tax_36",
+          "resourceSpecId": "736ddf2a-32dd-3fbe-f4cc-939d9c497737",
+          "costOwnerId": "r555-price:40676fa2370a459261ad2213717f45779abc0979",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_technical_room_professional_expanded_v1_tax_quantity_formula_v1_waterproofing_interior_roof_prime_technical_room_tax_36"
+        }
+      ]
+    },
+    {
+      "catalogId": "canonical-work:base:waterproofing_interior_roof_prime_wet_zone",
+      "predecessorDefinitionId": "05d069a5-653b-552e-99d0-c05d79cf302f",
+      "predecessorVersion": 3,
+      "rowIdPrefix": "waterproofing_interior_roof_prime_wet_zone_",
+      "preservedOwners": [
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_01",
+          "resourceSpecId": "b2453cfa-7315-0d79-318c-cad9b43b1d4f",
+          "costOwnerId": "r555-price:fe3c1dabe2cc4863ec57a27b184e875280d55ea2",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_01"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_02",
+          "resourceSpecId": "4bb7c959-7853-483b-22ee-67fb2fa57f50",
+          "costOwnerId": "r555-price:979d43ab1e1e6c71a241ffd344a295a2397b779f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_02"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_03",
+          "resourceSpecId": "95f8f84a-7235-0d1c-feff-a3d70b1b43f0",
+          "costOwnerId": "r555-price:0853b3530d2d486e295cc92cfefc75063219afde",
+          "unitId": "kg",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_03"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_04",
+          "resourceSpecId": "8d3dcd0d-a46c-4a55-6daf-7ddb39f73f6b",
+          "costOwnerId": "r555-price:88ec34954dd00349a50f75e5986809a5846118ed",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_04"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_05",
+          "resourceSpecId": "42470e74-0a0b-7529-3598-316fda4d4aa8",
+          "costOwnerId": "r555-price:954a3c11d428dcf684c2012475b3a5e46ab4e3e0",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_05"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_06",
+          "resourceSpecId": "3801111e-21ce-631d-247e-be1aa40f0b58",
+          "costOwnerId": "r555-price:3245807f209f015b32a25896eee19653bf40005d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_06"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_37",
+          "resourceSpecId": "68cf9b24-a477-ea08-5616-fac6931d8423",
+          "costOwnerId": "r555-price:f575b101ef018d3da93151d48e212a996e4b24b1",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_37"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_38",
+          "resourceSpecId": "56d9582c-6b19-1d4e-ab70-8cee7651deb1",
+          "costOwnerId": "r555-price:5fcb7099b8be1daaf87e98f1af3ef2f37f8d3196",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_38"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_materials_39",
+          "resourceSpecId": "2fe998cf-d0c3-041f-e1e4-5a1797cf29b7",
+          "costOwnerId": "r555-price:e7693944e58b188fb7ca029db7c6114bb34d767e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_materials_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_materials_39"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_components_07",
+          "resourceSpecId": "6e9af8ab-98ba-e385-a1c0-32b717baed09",
+          "costOwnerId": "r555-price:3fa9cbb8bffdc9782a36f834bd6ff59ed23a904c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_components_07"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_components_08",
+          "resourceSpecId": "947eee28-e075-9fd9-0c91-e1399794941b",
+          "costOwnerId": "r555-price:21426a4fd7d30d606a2305f797e811024680cda7",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_components_08"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_components_09",
+          "resourceSpecId": "007e7486-e6a7-3f8d-90f1-b2721e3df5d0",
+          "costOwnerId": "r555-price:6ac72a5c97847019e82d0655edd6e57f4f1d79a7",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_components_09"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_components_10",
+          "resourceSpecId": "d019ffa6-e8d8-4b9f-7a44-2e5362509eb8",
+          "costOwnerId": "r555-price:bca2bbde0802b9fcd899d924a8621e20d9b39919",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_components_10"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_components_40",
+          "resourceSpecId": "9ed9b5b8-51e5-ef7e-abb9-9e27db466f24",
+          "costOwnerId": "r555-price:28c6808f28af84a21cb81cbbeaf3b817ea9a3fdd",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_components_40"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_components_41",
+          "resourceSpecId": "94ceb8af-b6aa-8cef-9433-13c1d72466b5",
+          "costOwnerId": "r555-price:043f5438c3595a410abaf414d44146c20ecb489a",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_components_41"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_components_42",
+          "resourceSpecId": "34a76844-1e57-2a1c-04dd-ff2485e15aa8",
+          "costOwnerId": "r555-price:d9dfc232a6796034665cab941185e3584b4bb9c9",
+          "unitId": "linear_m",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_components_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_components_42"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_consumables_11",
+          "resourceSpecId": "9bc372ea-682f-d198-5a3f-e01f16ac924d",
+          "costOwnerId": "r555-price:38b18a8acc6dd0b156f51b1ccf2e98588ade430a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_consumables_11"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_consumables_12",
+          "resourceSpecId": "b772e826-5298-d9d1-dd67-7bbb4431fb06",
+          "costOwnerId": "r555-price:d72aabe28751312ebd512d3196f525cb45d2c744",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_consumables_12"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_consumables_13",
+          "resourceSpecId": "3e425ac1-2622-98c4-103a-b6e8907b8fc5",
+          "costOwnerId": "r555-price:59576dab97497f58355b2cfa26127cac28009937",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_consumables_13"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_consumables_43",
+          "resourceSpecId": "8cd7dde0-2a76-2449-64df-a78800b28aea",
+          "costOwnerId": "r555-price:53868c339e499ed68e48bfcd676e35ad3e9637fd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_consumables_43"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_consumables_44",
+          "resourceSpecId": "32344132-8fd4-0dfb-a3a1-b4af4196e23c",
+          "costOwnerId": "r555-price:c686a87761024121b6d91fe05a529a3362a86a0d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_consumables_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_consumables_44"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_preparation_14",
+          "resourceSpecId": "9e0d19b0-632d-b22a-6cd6-c8c6c4023bb3",
+          "costOwnerId": "r555-price:e04515dfb4d18cd541c1c0e076081fbbe0dbacc2",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_preparation_14"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_preparation_15",
+          "resourceSpecId": "1937aab9-e83d-60bd-a67a-71036506fa0b",
+          "costOwnerId": "r555-price:988af77d6c55c88d9ad9c3e1f24f32fc0835e2b4",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_preparation_15"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_preparation_16",
+          "resourceSpecId": "5e989f8b-e29e-83f4-3caf-49a5400f7acc",
+          "costOwnerId": "r555-price:e024bcf60b706c62bbf37194ba81e91b78b8c8ac",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_preparation_16"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_preparation_17",
+          "resourceSpecId": "a075a3ef-bfc9-a6cb-ce4e-e0490379fdb6",
+          "costOwnerId": "r555-price:904e82b746b14240272a4605884b33659fac125f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_preparation_17"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_preparation_45",
+          "resourceSpecId": "c6f0e49d-2c59-b05d-7a33-f5211f513bf1",
+          "costOwnerId": "r555-price:37efe4dfde9851788c1909729e2f4103e99b272a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_preparation_45"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_preparation_46",
+          "resourceSpecId": "53261abe-a415-7a86-aab3-a398582f6a63",
+          "costOwnerId": "r555-price:b67e8cbb936e5eaf304648172bf69afefe6e3db8",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_preparation_46"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_preparation_47",
+          "resourceSpecId": "05c5b2fd-45f4-784d-e747-b128b1a1c5b8",
+          "costOwnerId": "r555-price:7cfd590375a2f072837f7128b31ecc0530e23072",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_preparation_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_preparation_47"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_18",
+          "resourceSpecId": "d70a6425-ff57-facb-9887-496853c758eb",
+          "costOwnerId": "r555-price:9c6bce2a797dc46600a1e4c0c5859415b0c1f075",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_18"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_19",
+          "resourceSpecId": "c90ea279-bdb9-9eda-e6e3-08a85babfc32",
+          "costOwnerId": "r555-price:c78b809b46003493ab6b460e17a45214691afa94",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_19"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_20",
+          "resourceSpecId": "76c7c6a8-eec0-d16a-b3d4-0a9f745f3379",
+          "costOwnerId": "r555-price:afb67841f221357a4e54fa93d8b940ef121e778c",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_20"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_21",
+          "resourceSpecId": "71c165ef-8acc-1758-0ac0-5bcdc4869bcf",
+          "costOwnerId": "r555-price:736e24555b7cbd226df2bff833abd430aa700acb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_21"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_22",
+          "resourceSpecId": "c4ae8881-7825-d630-fdfa-507038ff81d6",
+          "costOwnerId": "r555-price:fdb1416b76707936944e9c81dd5d4c622e1e4250",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_22"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_23",
+          "resourceSpecId": "1b494dcc-3476-f041-7359-6baa5080bb92",
+          "costOwnerId": "r555-price:319f718d9db329adca765eab14bc57a5ca117c56",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_23"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_24",
+          "resourceSpecId": "7c6f22ef-9ae4-9b9a-2ded-5b02ce51cc58",
+          "costOwnerId": "r555-price:b4417818d3111d21184d42a8d1f3ce16e72fabed",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_24"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_48",
+          "resourceSpecId": "b61db83f-6e89-2081-4264-00dc1258dbd2",
+          "costOwnerId": "r555-price:ad5af24572259fd246a462dce553cb98e8e05a7e",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_48"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_49",
+          "resourceSpecId": "45cb618d-0a15-8149-f6b1-cdc230362ef0",
+          "costOwnerId": "r555-price:f85c49ef03697c92c3428abbfd2ceb59add33b8d",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_49"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_labor_50",
+          "resourceSpecId": "d39965bb-93fa-d16c-a71a-cbeee7ef3e55",
+          "costOwnerId": "r555-price:32b02fc48c15323b6cb0ee0f7cb630f5808e17dd",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_labor_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_labor_50"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_equipment_25",
+          "resourceSpecId": "3ad6806d-8649-39cb-a2d9-13ae38224539",
+          "costOwnerId": "r555-price:dd6c5c41b85fa1c12882d65fe80b14337d698e43",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_equipment_25"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_equipment_26",
+          "resourceSpecId": "f420ca9b-1de5-7504-4f80-4466454ae007",
+          "costOwnerId": "r555-price:fa5870c1d58d7426907b90db2d98788d4ba1b921",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_equipment_26"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_equipment_27",
+          "resourceSpecId": "05f9986e-6681-2aa9-926c-71d68ec844d3",
+          "costOwnerId": "r555-price:b8988c7039ef5c438c0c29202530c15e1d5e594c",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_equipment_27"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_equipment_51",
+          "resourceSpecId": "6077662c-16f5-2147-4566-93f05174bf46",
+          "costOwnerId": "r555-price:5dfc816a22501e2d65374de9240634dc4bfe18cd",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_equipment_51"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_equipment_52",
+          "resourceSpecId": "b2b3bf06-07af-7c0b-85b6-ed9ed748ad30",
+          "costOwnerId": "r555-price:59a6f0fc61841bd7edfae10495b8dfb368bc096e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_equipment_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_equipment_52"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_logistics_28",
+          "resourceSpecId": "1801786b-a6bb-a930-6cd5-f11aa687b281",
+          "costOwnerId": "r555-price:3c0ae0684b3cfc885976916d29eb6df2e9a7e046",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_logistics_28"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_logistics_29",
+          "resourceSpecId": "0a935978-71c7-322e-2251-ea3129739eba",
+          "costOwnerId": "r555-price:52505af1b02df0df5aae650fe70870bf639b8107",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_logistics_29"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_logistics_53",
+          "resourceSpecId": "d4a72bc9-e7b6-cd41-9b44-5a687da265a1",
+          "costOwnerId": "r555-price:dcd5fae3fce982c25b5757ba35b26af86e9f5780",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_logistics_53"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_logistics_54",
+          "resourceSpecId": "a9c52b05-4e50-d7a3-0ce7-afd169e62972",
+          "costOwnerId": "r555-price:cb4a7011d106ac672cec3682e8e166730d4ea7d1",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_logistics_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_logistics_54"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_waste_30",
+          "resourceSpecId": "c9be5d34-cf02-8ef2-c54f-ea15d62461a3",
+          "costOwnerId": "r555-price:1febd51ec5359592f8895893518d1f193dc2409b",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_waste_30"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_waste_31",
+          "resourceSpecId": "d028c844-c628-7128-bed8-c4dd9126e010",
+          "costOwnerId": "r555-price:71d3237e9c3faf88c6d460c77ec1872424bb1882",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_waste_31"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_waste_55",
+          "resourceSpecId": "19597b5b-67ad-8f75-6203-0c342b40d50a",
+          "costOwnerId": "r555-price:a877f7da3991d823c038dc2fb9ce93993a47722f",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_waste_55"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_waste_56",
+          "resourceSpecId": "555eea06-c576-ce90-3c0a-3bcf2b9243b0",
+          "costOwnerId": "r555-price:c30df4e8081336407242e6dfbdc05791e46490eb",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_waste_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_waste_56"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_quality_control_32",
+          "resourceSpecId": "68b37422-e4e8-cddc-5eeb-1417db4b9091",
+          "costOwnerId": "r555-price:c8a775541bca6796835b1809531aa55d641647e3",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_quality_control_32"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_quality_control_33",
+          "resourceSpecId": "08422cd3-1917-28eb-6d8e-0692af624e07",
+          "costOwnerId": "r555-price:c757e791b42bf40729206600555932db31377d2a",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_quality_control_33"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_quality_control_34",
+          "resourceSpecId": "a8f9d622-dbda-c71e-e0fa-75bd09841f2f",
+          "costOwnerId": "r555-price:4ef8849ac653585be515b3a28dd075dcf8ad4e46",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_quality_control_34"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_quality_control_57",
+          "resourceSpecId": "1cd5a593-d62f-403e-774d-b4c6c96606c3",
+          "costOwnerId": "r555-price:49f41ff0a2d26c7305676b1e02e30d6d4b882565",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_quality_control_57"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_quality_control_58",
+          "resourceSpecId": "be92d364-15bd-a2bd-8bb7-ef0fd9a0cc5d",
+          "costOwnerId": "r555-price:c99f1e70f76b54bc977aa07697c92369614c9e4e",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_quality_control_58"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_quality_control_59",
+          "resourceSpecId": "1ed0fe72-2b5c-8fa4-7ac9-c5890e4dc87e",
+          "costOwnerId": "r555-price:965d53c496d5f9d920419ac0308c7dacfdaf0dae",
+          "unitId": "m2",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_quality_control_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_quality_control_59"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_overhead_35",
+          "resourceSpecId": "f11c6a4c-b68f-f4ec-7e24-2b101d3a4c1f",
+          "costOwnerId": "r555-price:435dda0895f8420c8610b7c02561503873643dcc",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_overhead_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_overhead_35"
+        },
+        {
+          "rowId": "waterproofing_interior_roof_prime_wet_zone_tax_36",
+          "resourceSpecId": "ada6fe36-9846-e974-6db8-eccafdfb31c0",
+          "costOwnerId": "r555-price:40676fa2370a459261ad2213717f45779abc0979",
+          "unitId": "set",
+          "formulaId": "waterproofing_interior_roof_prime_wet_zone_professional_expanded_v1_tax_quantity_formula_v1_waterproofing_interior_roof_prime_wet_zone_tax_36"
+        }
+      ]
+    }
+  ],
+  "legacyDisposition": {
+    "materials_01": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Основной гидроизоляционный слой имеет старую привязку Ceresit CL 51 и q×1,3 kg. Это не готовая эмульсия; ковер остается отдельной проверяемой потребностью."
+    },
+    "materials_02": {
+      "disposition": "REPLACED_BY_EXACT_NORM",
+      "includedNormRoles": [
+        "emulsion"
+      ],
+      "reasonRu": "Обязанность обеспечить праймер в явно выбранной ветви покрывает готовая эмульсия 01-0206-0021. Старые m² праймера не превращаются в kg, прежняя цена/override не переносится; количество новой строки только q/100×45 kg."
+    },
+    "materials_03": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Мастика — отдельный материал кровельной системы, не эмульсия и не основание автоматически добавлять приготовление по 016-01."
+    },
+    "materials_04": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Лента примыкания относится к отдельным узлам; длина и совместимость не следуют из площади огрунтовки."
+    },
+    "materials_05": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Герметик и его старая единица m² не подтверждены таблицей огрунтовки; сохранить потребность без выдуманного расхода."
+    },
+    "materials_06": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Защитный слой кровли не устроен и не рассчитан нанесением эмульсии."
+    },
+    "materials_37": {
+      "disposition": "NORM_CONSUMPTION_FIXED_NO_EXTRA_FACTOR_REMAINDER_OPEN",
+      "includedNormRoles": [
+        "emulsion"
+      ],
+      "reasonRu": "Исходный расход эмульсии фиксирован 45 kg/100 м²; дополнительный запас к нему не выводится. Старый запас основного материала в m² относится к непроверенному проектному остатку, а не к автоматическому множителю эмульсии."
+    },
+    "materials_38": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Защитное покрытие зоны работ имеет самостоятельную применимость; отсутствие строки в таблице не означает наличие или достаточность защиты."
+    },
+    "materials_39": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Маркировочные материалы не нормированы этой колонкой; фактическая потребность остается открытой."
+    },
+    "components_07": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Прижимные планки кровельного ковра не заменяются жидкой эмульсией; узлы и количество проверяются отдельно."
+    },
+    "components_08": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Крепеж для иной части системы не вытекает из нормы грунтования; старое число комплектов не переносится."
+    },
+    "components_09": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Проходки требуют проекта и обмера; их длина и комплектность не определены q огрунтовки."
+    },
+    "components_10": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Угловые элементы — отдельные детали, не оплаченные и не закрытые таблицей 016-02."
+    },
+    "components_40": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Комплекты примыкания остаются проектной потребностью; праймер не обеспечивает весь узел."
+    },
+    "components_41": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Ремонтные вставки и доборы относятся к отдельной ремонтной/кровельной работе; расход не выводится."
+    },
+    "components_42": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Закладные элементы не нормированы выбранной операцией; нельзя превращать их погонные метры в расход эмульсии."
+    },
+    "consumables_11": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Кисти и валики могут требоваться для нанесения, но источник не задает комплекты. Не закрывать инструмент отсутствием табличной строки и не принимать ceil(q/80)."
+    },
+    "consumables_12": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Газ/топливо иной технологии не следует из готовой эмульсии; состав расходников и применимость остаются открытыми. Топливо, уже входящее в полный тариф автомобиля, повторно не оплачивается."
+    },
+    "consumables_13": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "СИЗ не становятся предоставленными из-за отсутствия отдельной нормы; прежняя единица m² не доказывает количество комплектов."
+    },
+    "consumables_43": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Расходники инструмента остаются проверяемой потребностью; таблица не обосновывает комплектность или цену."
+    },
+    "consumables_44": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Защита готовых поверхностей требует проекта работ; наличие и расход не доказаны нормой грунтования."
+    },
+    "preparation_14": {
+      "disposition": "READY_SUBSTRATE_PREREQUISITE_PROJECT_EXTRAS_OPEN",
+      "reasonRu": "Готовность основания требуется до огрунтовки; отдельная очистка и ее объем не объявляются выполненными. Обычные вспомогательные действия внутри труда нормы повторно не тарифицировать."
+    },
+    "preparation_15": {
+      "disposition": "READY_SUBSTRATE_PREREQUISITE_PROJECT_EXTRAS_OPEN",
+      "reasonRu": "Ремонт дефектов основания не входит в доказанный результат грунтовки; сохранить проверку необходимости и отдельного объема."
+    },
+    "preparation_16": {
+      "disposition": "READY_SUBSTRATE_PREREQUISITE_PROJECT_EXTRAS_OPEN",
+      "reasonRu": "Просушка основания до нанесения — отдельное условие/работа; источник не дает ее часов и не подтверждает фактическую влажность."
+    },
+    "preparation_17": {
+      "disposition": "REPLACED_BY_EXACT_NORM",
+      "includedNormRoles": [
+        "worker"
+      ],
+      "reasonRu": "Грунтование того же принятого участка — сама операция 016-02. Оно и labor_18 покрываются одним трудом 2,80 чел.-ч/100 м², не двумя платными строками. Старая цена за m² не переносится в чел.-ч."
+    },
+    "preparation_45": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Входной замер и фотофиксация не происходят от заполнения q; их потребность и выполнение отдельно проверяются."
+    },
+    "preparation_46": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "План производства работ и проектные условия не заменяются исходной таблицей расходов."
+    },
+    "preparation_47": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Временная рабочая зона не считается организованной или оплаченной выбранной нормой; отдельные требования остаются открытыми."
+    },
+    "labor_18": {
+      "disposition": "REPLACED_BY_EXACT_NORM",
+      "includedNormRoles": [
+        "worker"
+      ],
+      "reasonRu": "Нанесение праймера на тот же участок уже покрыто единственным новым worker; не складывать с preparation_17 и не переносить m²-цену в часовую ставку."
+    },
+    "labor_19": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Устройство основного гидроизоляционного слоя/ковра — другая операция. Эмульсия готовит основание, но не заменяет этот труд."
+    },
+    "labor_20": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Герметизация примыканий требует самостоятельного состава и обмера; 016-02 не завершает узлы."
+    },
+    "labor_21": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Обработка проходок остается отдельной работой без выведенного количества."
+    },
+    "labor_22": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Устройство защитного слоя не включается в оплаченное грунтование."
+    },
+    "labor_23": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Финишная обработка всей системы не доказана трудом нанесения эмульсии; остаток сохраняется."
+    },
+    "labor_24": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Отдельная уборка участка и ее объем остаются непроверенными; рутинные действия в составе уже оплаченной операции не добавлять повторно."
+    },
+    "labor_48": {
+      "disposition": "READY_SUBSTRATE_PREREQUISITE_PROJECT_EXTRAS_OPEN",
+      "reasonRu": "Приемка основания — реальная проверка готовности, а не автоматический результат выбора enum. Ее факт и отдельная потребность не закрываются расчетом."
+    },
+    "labor_49": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Высыхание нанесенной эмульсии, технологическая выдержка и контроль зависят от продукта и условий. 2,80 чел.-ч не являются временем сушки, а отсутствие строки не доказывает завершения."
+    },
+    "labor_50": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Финишная сдача требует фактического результата и проверок; вычисленные расходы не являются приемкой."
+    },
+    "equipment_25": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Горелка/фен относится к проверяемой иной технологии; не добавлять нагрев к готовой эмульсии и не объявлять инструмент обеспеченным."
+    },
+    "equipment_26": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Ручной каток ковра не имеет количества в 016-02; необходимость отдельной операции остается открытой."
+    },
+    "equipment_27": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Страховка и доступ не обеспечены самим ограничением высоты ≤15 м; условия и комплект проверяются отдельно."
+    },
+    "equipment_51": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Измерительный комплект не считается наличным из-за введенного q; количество и обеспечение не доказаны."
+    },
+    "equipment_52": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Малая механизация не идентифицирована исходной таблицей; нельзя объявить ее отсутствие/наличие или автоматически начислить комплект."
+    },
+    "logistics_28": {
+      "disposition": "NORM_BASE_OPERATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "lorry"
+      ],
+      "reasonRu": "Предусмотренная эксплуатация автомобиля 0,04 маш.-ч/100 м² уже оплачивается одним полным тарифом. Это не доказательство всех доставок, расстояний, минимального заказа или перевозки иных материалов; проектный остаток открыт."
+    },
+    "logistics_29": {
+      "disposition": "NORM_BASE_OPERATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "worker"
+      ],
+      "reasonRu": "Обычные вспомогательные действия самой принятой операции не оплачиваются второй раз. Отдельной нормы механизированного подъема в 016-02 нет: особый подъем, доступ и дополнительный объем не считаются закрытыми, крановые часы не выдумываются."
+    },
+    "logistics_53": {
+      "disposition": "NORM_BASE_OPERATION_PART_ONLY_PROJECT_EXTRAS_OPEN",
+      "includedNormRoles": [
+        "worker",
+        "lorry"
+      ],
+      "reasonRu": "Не дублировать оплаченную часть труда/автомобиля той же операции. Комплектация, дополнительная внутриплощадочная подача и иные материалы требуют отдельного определения; весь старый set не считается замененным."
+    },
+    "logistics_54": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Возврат тары, маршруты и упаковка не определены исходной массой эмульсии или машино-часами."
+    },
+    "waste_30": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Нахлест относится к отдельному рулонному слою. Старые 3% m² не прибавляются к kg эмульсии; потребность ковра остается отдельной."
+    },
+    "waste_31": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Обрезка касается иных листовых/рулонных материалов; ее 3% не переводятся в расход эмульсии и не считаются выполненными."
+    },
+    "waste_55": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Сортировка и упаковка отходов требуют фактического состава/объема; табличная норма не определяет старый процентный расход."
+    },
+    "waste_56": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Отдельная уборка рабочей зоны и ее старая материальная единица m² не подтверждены как физический расход. Сохранить потребность, не складывать с тем же уборочным трудом."
+    },
+    "quality_control_32": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Контроль нахлестов относится к иному слою, а не к готовой эмульсии; его необходимость не исчезает при сохранении общей кровельной задачи."
+    },
+    "quality_control_33": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Проверка герметичности всей системы не выполнена огрунтовкой и не имеет нормы в этой колонке."
+    },
+    "quality_control_34": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Фотофиксация скрытых работ — фактическое документирование, не результат расчета."
+    },
+    "quality_control_57": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Исполнительная документация проверяется отдельно и не считается готовой по исходным расходам."
+    },
+    "quality_control_58": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Комплектность доставленных материалов и принадлежность цены не доказаны расчетом 45 kg/100 м²."
+    },
+    "quality_control_59": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Итоговый чек-лист приемки не закрывается выбором системы, формулой или наличием цены."
+    },
+    "overhead_35": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Сметное сопровождение и проверка объема не определены КРЕР как отдельный количественный ресурс выбранной колонки; не добавлять универсальную единицу или процент."
+    },
+    "tax_36": {
+      "disposition": "PRESERVED_UNRESOLVED_PROJECT_REMAINDER",
+      "reasonRu": "Налоговое правило не определяется этой нормой материалов/труда/техники; не создавать фиктивную ставку или универсальную единицу."
+    }
+  },
+  "oracle": [
+    {
+      "measuredNormAreaM2": "37.5",
+      "quantities": {
+        "workers": "1.05",
+        "flatbed_truck": "0.015",
+        "ready_bitumen_emulsion": "16.875"
+      }
+    }
+  ],
+  "newPhysicalNormConsumers": 15,
+  "newWorkerConsumers": 5,
+  "newMachineConsumers": 5,
+  "newMaterialConsumers": 5,
+  "newOperatorInformationalConsumers": 0,
+  "newFullTechnicalTypes": 0,
+  "sourceRateTableArtifact": ".release-runtime/r568/s27-63/roof-prime-ready-emulsion-five/source-admission.json",
+  "sourceRateTableSha256": "d415b2e3fa26d8e74c07f954893cc289264825c95a997826e70daefef3bbc7b0",
+  "measurementTitleRu": "Нормативная площадь кровли для огрунтовки, м²",
+  "measurementGuideRu": "q — подтверждённая нормативная площадь кровли, относящаяся именно к этой огрунтовке. Измеритель таблицы — 100 м² кровли. Применимые правила КРЕР §2.1–2.4 учитываются в предоставленном проектном обмере: слуховые окна и дымовые трубы не вычитаются; их обделка не добавляется. При обмере скатов длина идёт от конька до крайней грани карниза: без настенных желобов добавляется 0,07 м; с карнизными свесами и настенными желобами уменьшается на 0,7 м. Проекции зенитных фонарей исключаются; внешние дополнительные элементы учитываются отдельно. Приложение не повторяет эти поправки для уже подтверждённой q. Площадь пола, рулона, прежний шаблон 100 м² и произвольное число слоёв эту площадь не заменяют.",
+  "systemChoiceTitleRu": "Чем грунтуют и по какому основанию",
+  "measurementChoiceTitleRu": "Как проверена площадь огрунтовки",
+  "operationProcessOrdinal": 10
+}

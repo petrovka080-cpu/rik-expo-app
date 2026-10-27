@@ -1,0 +1,65 @@
+{
+  "case_id": "supplemental-industrial-006-кабельная-эстакада-350-м",
+  "prompt": "кабельная эстакада 350 м",
+  "work_family_id": "pipe_rack",
+  "work_family_group": "INDUSTRIAL",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 350
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "foundation_concrete_m3",
+    "cable_trays_lm",
+    "painting_m2",
+    "steel_structure_t",
+    "crane_shifts"
+  ],
+  "reference_material_rows": [
+    "foundation_concrete_m3",
+    "cable_trays_lm"
+  ],
+  "reference_work_rows": [
+    "painting_m2"
+  ],
+  "reference_service_rows": [],
+  "reference_equipment_rows": [
+    "steel_structure_t",
+    "crane_shifts"
+  ],
+  "reference_procurement_subset": [
+    "foundation_concrete_m3",
+    "cable_trays_lm",
+    "steel_structure_t",
+    "crane_shifts"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_industrial_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/supplemental-industrial-006-кабельная-эстакада-350-м.json",
+  "critical": false,
+  "expected_row_codes": [
+    "foundation_concrete_m3",
+    "cable_trays_lm",
+    "painting_m2",
+    "steel_structure_t",
+    "crane_shifts"
+  ]
+}

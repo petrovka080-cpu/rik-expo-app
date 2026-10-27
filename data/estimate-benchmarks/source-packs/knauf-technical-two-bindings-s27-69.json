@@ -1,0 +1,895 @@
+{
+  "contract": "rik-expo-app.s27-69.knauf-plaster-technical-two-bindings.v1",
+  "reusedSubworkContract": "rik-expo-app.s27-63.knauf-interior-plaster-material-six.v1",
+  "formulaOwner": "knaufInteriorPlasterMaterialDefinitionS2763",
+  "formulaCopied": false,
+  "scopeRu": "Измеренная площадь плотного гладкого бетонного основания внутри сухого/нормального помещения. Ротбанд только вручную ровно10мм; для механизированного стандартного типа расчёт основной смеси15мм остаётся проектным. Пригодное грунтование не повторяется. Расход материалов приблизительный, не подтверждает готовность всех подработ.",
+  "sources": [
+    {
+      "id": "knauf_betogrund_052026_s2763",
+      "sha256": "4c15b575f388cd56916471fa51514f109ec564c0f85cc4878f1f19b9536dd3be",
+      "localArtifact": ".release-runtime/r568/s27-63/interior-plaster-materials/KNAUF-Betogrund-information-sheet-05-2026.pdf"
+    },
+    {
+      "id": "knauf_rotband_072025_s2763",
+      "sha256": "7d5f2b7883b765ba0e88b528f487472e1eb61fad2a5b602641fee6ad438a72b4",
+      "localArtifact": ".release-runtime/r568/s27-63/interior-plaster-materials/KNAUF-Rotband-information-sheet.pdf"
+    },
+    {
+      "id": "knauf_mp75_072025_compatibility_s2763",
+      "sha256": "b479530f4a35e3bd07d46cc248fb97c49069f09890e54a25ce44299c15700352",
+      "localArtifact": ".release-runtime/r568/s27-63/interior-plaster-materials/KNAUF-MP75-information-sheet.pdf"
+    }
+  ],
+  "parentSnapshotSha256": "b4a90336395cc481e9d0760dec52cc82c1af7d0d556f85c092fbc4308a11a10c",
+  "planningDefaults": {
+    "interior_plaster_material_system": "Ротбанд вручную, 10 мм по бетону",
+    "rotband_usable_stock_kg": "0",
+    "rotband_retained_reserve_kg": "0",
+    "rotband_bag_multiple": 1,
+    "betogrund_package_kg": "15",
+    "betogrund_usable_stock_kg": "0",
+    "betogrund_retained_reserve_kg": "0",
+    "betogrund_bucket_multiple": 1
+  },
+  "planningDefaultsReasonRu": "Начальный план не вычитает неуказанные остатки, не добавляет необязательный резерв и заказывает по одной заводской упаковке. Это редактируемые настройки плана, а не подтверждение наличия или отсутствия запасов на объекте. Выбран типовой Ротбанд10мм; другой материал или слой требуют подходящего варианта.",
+  "objectAbsenceAsserted": false,
+  "primerAreaTakenFromPlasterArea": false,
+  "newFullTechnicalTypes": 0,
+  "targets": [
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_wall_plaster_apply_technical_room",
+      "titleRu": "нанесение штукатурки стен в техническом помещении",
+      "predecessorDefinitionId": "4958c396-f76d-5f52-9230-82dda7171d27",
+      "predecessorVersion": 3,
+      "primerOnly": false,
+      "parentResourceCount": 59,
+      "primaryAreaParameterId": "q",
+      "legacyPrimerOwnerRowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_02",
+      "legacyPrimerLaborRowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_19",
+      "preservedOwners": [
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_01",
+          "costOwnerId": "r555-price:5c3cfb429d43b9a6b2cef3b1d55cd8b6f71d10a8",
+          "unitId": "kg",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_01",
+          "resourceSpecId": "794b8664-95b1-ba8c-824b-f4fee9ba121e"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_02",
+          "costOwnerId": "r555-price:a8336b0efe50292f08caef4d507826d43a1839f7",
+          "unitId": "l",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_02",
+          "resourceSpecId": "03bc0ad2-94b1-99fc-5b04-37508063f694"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_03",
+          "costOwnerId": "r555-price:dec6076de03d3e52a21f9553cf76922df8e047f6",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_03",
+          "resourceSpecId": "1723acd2-7903-f96b-be84-ac8598a01b08"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_04",
+          "costOwnerId": "r555-price:a92fb4f40720f8eea3cdfa426dfca3738ca24efc",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_04",
+          "resourceSpecId": "b9057015-2036-8adc-86e2-c2437f3394fd"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_05",
+          "costOwnerId": "r555-price:8d5eae8477c097a43159e8bf7f6c40305a5c2b2c",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_05",
+          "resourceSpecId": "c56a6703-9c45-c24b-f78b-f17f7598f3f8"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_06",
+          "costOwnerId": "r555-price:20d9f1f76b1bc990a30a6bbeb0d64b79350cbbfc",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_06",
+          "resourceSpecId": "d025b73a-a767-d111-20f0-608aced23064"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_37",
+          "costOwnerId": "r555-price:7f3f6993c58021e30b29bfc31335199c3a427849",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_37",
+          "resourceSpecId": "cc681e78-902d-ce6b-7b31-188f72ddc5e0"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_38",
+          "costOwnerId": "r555-price:5de086bcea6e474282b40ebc46ea6797e074d363",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_38",
+          "resourceSpecId": "4b9bde74-a976-48c8-4dcc-0a21777014a5"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_materials_39",
+          "costOwnerId": "r555-price:afab98a7657855315e83ee61c369170079f7285c",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_materials_39",
+          "resourceSpecId": "e58fec6e-89ac-a9dd-957d-3825f5a3603c"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_components_07",
+          "costOwnerId": "r555-price:ce76084c09c0a0a869549574a5b189c6aae72a14",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_components_07",
+          "resourceSpecId": "92b79989-50ef-3a6b-c691-056584fc6409"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_components_08",
+          "costOwnerId": "r555-price:7bf966772858804dd6e1f02e921b0adfe52429d7",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_components_08",
+          "resourceSpecId": "f77fd298-2558-468c-254a-fbd23311cd08"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_components_09",
+          "costOwnerId": "r555-price:e2a77462dd2d8043b3d7445a1d39e8a7cf3efedb",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_components_09",
+          "resourceSpecId": "cb5f1702-6262-2f91-8662-0341245de265"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_components_10",
+          "costOwnerId": "r555-price:8c87ba4be98b411a4af2e9a4c8398b736fab6385",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_components_10",
+          "resourceSpecId": "1f960e75-1842-d10d-f240-94bca1ce2264"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_components_40",
+          "costOwnerId": "r555-price:7b8be95cd7016bc724b7d326da9301c23de5a7b5",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_components_40",
+          "resourceSpecId": "cc0216bf-131e-ed55-566c-23cf259e974d"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_components_41",
+          "costOwnerId": "r555-price:0238d9967c484f16e3eb5116a440a3546affbfc7",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_components_41",
+          "resourceSpecId": "5055b674-3620-d273-a70d-03b47ffe492f"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_components_42",
+          "costOwnerId": "r555-price:2c3045443c9a069c26c3c6905f5a49a58271d0c1",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_components_42",
+          "resourceSpecId": "52691939-8847-4046-f823-8951d0668122"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_consumables_11",
+          "costOwnerId": "r555-price:57d2cab106fc6ee638790ebad4c9cde090b08aaf",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_consumables_11",
+          "resourceSpecId": "8d2f44cd-06a0-1da8-df67-4aef1f2310bb"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_consumables_12",
+          "costOwnerId": "r555-price:9f03c8a5a05ddd9997f1a42b12af5cf7125bc60b",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_consumables_12",
+          "resourceSpecId": "a5261443-b1a2-05d7-8d2e-50469e5d57d2"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_consumables_13",
+          "costOwnerId": "r555-price:d5d849d24b4c0508f6df5b859ed5f7c73448d10b",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_consumables_13",
+          "resourceSpecId": "915a0a16-21d1-d711-5bb5-c8b6a212b6c8"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_consumables_43",
+          "costOwnerId": "r555-price:f7cd1956aa58dce0e995a91f1599da6e4dc78bac",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_consumables_43",
+          "resourceSpecId": "98a2d0b4-f839-b62c-b33f-6650c0e92d9d"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_consumables_44",
+          "costOwnerId": "r555-price:46bd2c698ef62a0610d21f9f7083b339df47ad9b",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_consumables_44",
+          "resourceSpecId": "0165038f-d22f-5010-a37d-b5389678eae7"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_preparation_14",
+          "costOwnerId": "r555-price:6bd07291a84298f030b7cec8fb9e303221d5eae9",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_preparation_14",
+          "resourceSpecId": "3650a772-a095-c9a6-73fc-054195b855e5"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_preparation_15",
+          "costOwnerId": "r555-price:4de81c8116ca03d204ced11f60584c365bdd0470",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_preparation_15",
+          "resourceSpecId": "930982e4-88ee-240e-d585-1ea38f57d3f9"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_preparation_16",
+          "costOwnerId": "r555-price:3e8a320a339512c24d974bb01f9fb5e07b775a94",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_preparation_16",
+          "resourceSpecId": "88ee33da-7f05-cd3c-c5f2-4f9c87c06d74"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_preparation_17",
+          "costOwnerId": "r555-price:ef9813c6cf8b004f879d571ba442718571be758c",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_preparation_17",
+          "resourceSpecId": "4c3a6dad-8cfd-b6a2-ae57-0a7a1d100176"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_preparation_45",
+          "costOwnerId": "r555-price:b9d239db7cae7197a8977700ed0fbfcfd878f2d1",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_preparation_45",
+          "resourceSpecId": "c3420bc0-ca79-1ed4-3072-44e13fe52cdf"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_preparation_46",
+          "costOwnerId": "r555-price:54c779a4167e6d5999c5dca8d2cfaa2f3c9ebed7",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_preparation_46",
+          "resourceSpecId": "c76435dd-c3b1-7741-83cb-7889af99568c"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_preparation_47",
+          "costOwnerId": "r555-price:6e76b4fc3890396d3c29672ae5bf8fdbfb7a299f",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_preparation_47",
+          "resourceSpecId": "04814c23-af4f-fa51-5a91-9b5e5addcf2e"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_18",
+          "costOwnerId": "r555-price:4a6c86bfeb84ee29373ab7a0beb591ec809ab0a5",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_18",
+          "resourceSpecId": "7aa6ca1b-c13a-3783-f2d6-7bd42bab55af"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_19",
+          "costOwnerId": "r555-price:1205a97a6d77e16885e135cd7963db46a35208a0",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_19",
+          "resourceSpecId": "0837643a-0524-eea5-37db-e5675f4ebf6e"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_20",
+          "costOwnerId": "r555-price:fe6baf846ff0fd1f40425ae21592bc0e9f4402fb",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_20",
+          "resourceSpecId": "7865392d-dfa8-9fb9-b689-22d6294b5cb3"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_21",
+          "costOwnerId": "r555-price:cf79eac3357372c5a2d40d75d2f79583ab74c16b",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_21",
+          "resourceSpecId": "ae5b6fb8-cf72-2356-c52b-ebd62eabd2bf"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_22",
+          "costOwnerId": "r555-price:e4c206b9dc6476ce31eefd18348914db90aec90f",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_22",
+          "resourceSpecId": "f14c35e7-ed2a-3027-5af7-f185662aeeb6"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_23",
+          "costOwnerId": "r555-price:e54bce174a0d9e80e031cbe47cbcb9e02ffa8b07",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_23",
+          "resourceSpecId": "53963415-8461-5bae-a991-f70eb844ef03"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_24",
+          "costOwnerId": "r555-price:b896d869127d8facb3fbe1843b701618bb572d7a",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_24",
+          "resourceSpecId": "1ce6e729-c476-ed7a-e455-d4f8e9d9f5f8"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_48",
+          "costOwnerId": "r555-price:59882c9aa812bb80acdb9e1b65b49e421e3e4b63",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_48",
+          "resourceSpecId": "aaadee64-f21d-abe5-44d1-5146e62edaf9"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_49",
+          "costOwnerId": "r555-price:a4670f8cfd6702151d8b283db36090ec2b6a2d96",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_49",
+          "resourceSpecId": "21ceab95-d08f-91b0-4521-d105d01d9840"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_labor_50",
+          "costOwnerId": "r555-price:a1594cd26aecdd8220282f3b73d97b312700fdec",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_labor_50",
+          "resourceSpecId": "cf27e4ee-6b47-5106-bcf5-46a8ae0a1c3d"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_equipment_25",
+          "costOwnerId": "r555-price:5fe7b0baee56d8f3866dcf2e473d4abbf2eefd8d",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_equipment_25",
+          "resourceSpecId": "9643ffd2-d9e1-522b-5ce7-79ad4808fc86"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_equipment_26",
+          "costOwnerId": "r555-price:5bf7f3281dbbf11dd5d56b76714f060d71c531e0",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_equipment_26",
+          "resourceSpecId": "6d9a1db8-cae8-065f-32a1-02b9e6f3f9c2"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_equipment_27",
+          "costOwnerId": "r555-price:08c83d3ace76536430bcec29b28908e6b69a0f7c",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_equipment_27",
+          "resourceSpecId": "476afe5b-4923-e49d-664a-4201a3e57e75"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_equipment_51",
+          "costOwnerId": "r555-price:21f65f12e66d30d6ecd3867d981d0ef68bcabea8",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_equipment_51",
+          "resourceSpecId": "32051656-7494-91ca-7fdf-ba732ff43667"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_equipment_52",
+          "costOwnerId": "r555-price:ebddac32338e1af51c27d241db4e5e741713f932",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_equipment_52",
+          "resourceSpecId": "9c080406-483e-506c-91cc-1c1861bebb65"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_logistics_28",
+          "costOwnerId": "r555-price:aa65797077163fe2927701fd73db6baeffb74bd4",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_logistics_28",
+          "resourceSpecId": "9c6b08d2-d18d-924b-39db-0a3f45e49fd6"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_logistics_29",
+          "costOwnerId": "r555-price:61532f2a482442b6d341f157172aa0d6569ba188",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_logistics_29",
+          "resourceSpecId": "dd73becd-8d8f-5ffd-7bd9-29b1861b2244"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_logistics_53",
+          "costOwnerId": "r555-price:b1ce77c2ec3811d6bedfcc1be6d7d950c6ae5316",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_logistics_53",
+          "resourceSpecId": "04be83ca-079f-e8f7-d5de-7b6df4d5f4da"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_logistics_54",
+          "costOwnerId": "r555-price:9bd62fa01f6bd13d9afc51c27c308fb8597b02e6",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_logistics_54",
+          "resourceSpecId": "b32f19de-3c84-b10e-5619-35193dbcb225"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_waste_30",
+          "costOwnerId": "r555-price:a3fc6cde66d81ec5c92c0dba3656a3a8dfeef85a",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_waste_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_waste_30",
+          "resourceSpecId": "c417da6d-9f10-03b4-8c94-f0ecd984bfbc"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_waste_31",
+          "costOwnerId": "r555-price:a1013736f209358a1fe2f17bfaa78a270aae5c74",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_waste_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_waste_31",
+          "resourceSpecId": "d04b703f-ed30-d70f-24bb-6e203e3828f8"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_waste_55",
+          "costOwnerId": "r555-price:c4eba8bba0f4c6e6449ba0aa6c781142944b86af",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_waste_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_waste_55",
+          "resourceSpecId": "506bb076-5023-6e69-7c86-74a0d3fd144e"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_waste_56",
+          "costOwnerId": "r555-price:dde2163622121ed37f74549e88e98c0e28ed58f4",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_waste_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_waste_56",
+          "resourceSpecId": "f31d21bf-c847-f9cd-536a-37595226581b"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_32",
+          "costOwnerId": "r555-price:d77669d75fcfee169c2b984a0f9d560671bdeaf0",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_32",
+          "resourceSpecId": "3ab00953-6148-25ed-0622-1f0c48dba5f6"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_33",
+          "costOwnerId": "r555-price:0895fac675af23f6704b52c9d71a21f5d73dd953",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_33",
+          "resourceSpecId": "2725cd24-0bdc-8267-3d19-aa96f8195bad"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_34",
+          "costOwnerId": "r555-price:83ebd6ba5b8c0648ba0a318fb4889d64c4564f0a",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_34",
+          "resourceSpecId": "94770f5b-d0ee-d4b4-d6fc-f5667a6678bc"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_57",
+          "costOwnerId": "r555-price:7e153d286707a0217208925ecbf8d219485a2f63",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_57",
+          "resourceSpecId": "faa51815-c172-f738-8e3a-b0eb1d1c5b9c"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_58",
+          "costOwnerId": "r555-price:f9035dd8564ae406911d563f4f7f5f04ee9176d6",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_58",
+          "resourceSpecId": "63483ac1-a1c4-0b3e-2b12-6b63c36b1096"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_59",
+          "costOwnerId": "r555-price:5567933e28ec67bf0ee36ddd7eaacdefc2eb955e",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_quality_control_59",
+          "resourceSpecId": "8565b9fb-05fb-68bc-8cf6-1aa80ba4569e"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_overhead_35",
+          "costOwnerId": "r555-price:1ed78a0d3addceaae0065c9e7b591fedc429ccfe",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_overhead_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_overhead_35",
+          "resourceSpecId": "d9bc9ab8-264e-4bb4-fb23-d0525c631dd5"
+        },
+        {
+          "rowId": "plaster_paint_interior_wall_plaster_apply_technical_room_tax_36",
+          "costOwnerId": "r555-price:5c456cf7f95b7df2a3e7d0bbf19520c33182aa66",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_wall_plaster_apply_technical_room_professional_expanded_v1_tax_quantity_formula_v1_plaster_paint_interior_wall_plaster_apply_technical_room_tax_36",
+          "resourceSpecId": "9ba73e62-503e-e595-8eb2-904083399151"
+        }
+      ],
+      "parentSha256": "4d52a7b607fec8290ed948beb21817f963a9fec90c33d67525a5b3576dff1ff4"
+    },
+    {
+      "catalogId": "canonical-work:base:plaster_paint_interior_ceiling_plaster_apply_technical_room",
+      "titleRu": "нанесение штукатурки потолка в техническом помещении",
+      "predecessorDefinitionId": "20fccab6-f8fd-5d1a-84bc-6885356650cf",
+      "predecessorVersion": 3,
+      "primerOnly": false,
+      "parentResourceCount": 59,
+      "primaryAreaParameterId": "q",
+      "legacyPrimerOwnerRowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_02",
+      "legacyPrimerLaborRowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_19",
+      "preservedOwners": [
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_01",
+          "costOwnerId": "r555-price:a5ecd969e97d69d9fc04aa7ea0c0c617f9d556d5",
+          "unitId": "kg",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_01",
+          "resourceSpecId": "7ea31de9-2cac-6986-5880-98fe86733236"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_02",
+          "costOwnerId": "r555-price:888d245a25394a948db9f77967c84e31079655fa",
+          "unitId": "l",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_02",
+          "resourceSpecId": "d2055c6a-0162-0716-9816-a0b2b47bacfb"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_03",
+          "costOwnerId": "r555-price:caf423a1e6641353430a0dc4bfdb9e5328e5dde7",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_03",
+          "resourceSpecId": "fc464cbf-a69c-d6f5-ce1f-a8bf8ebf480c"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_04",
+          "costOwnerId": "r555-price:3e86cafc6e79c3f2b37af84b9620f86550d15ebc",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_04",
+          "resourceSpecId": "1a08ee2f-658a-8098-3ea3-561d841e15b3"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_05",
+          "costOwnerId": "r555-price:803775bf889251580e9fa699af23bca135bbd3b9",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_05",
+          "resourceSpecId": "66751c7b-4801-67e7-deb2-9d4c9e52a2cd"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_06",
+          "costOwnerId": "r555-price:61e69616bd26affc777e5ee340a3bcb5f820c824",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_06",
+          "resourceSpecId": "0c802c9b-76b8-063c-ea1d-f5f708a15445"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_37",
+          "costOwnerId": "r555-price:2557ad998ba4d6f71cb4153e986173be1db6b5f6",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_37",
+          "resourceSpecId": "00edc63c-8293-b488-5a37-1e8575a6ad7e"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_38",
+          "costOwnerId": "r555-price:cd34003a9b117cc14383ec8581b697e7562e24ea",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_38",
+          "resourceSpecId": "03e83c26-275f-d1b4-1700-b598ea0f65f9"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_39",
+          "costOwnerId": "r555-price:b4b94ba76709b87ea89e9983cc39915f94755292",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_materials_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_materials_39",
+          "resourceSpecId": "667cb444-c855-6727-2d01-aa633582f996"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_components_07",
+          "costOwnerId": "r555-price:ba2669109878fe986dbc06b76c884a3c515b3a72",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_components_07",
+          "resourceSpecId": "d50b4371-556d-7c15-f484-5de42dae9a95"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_components_08",
+          "costOwnerId": "r555-price:113b62792dda58d8cac051e4a11fee206df5651c",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_components_08",
+          "resourceSpecId": "6d84b674-d287-a097-9620-ec6b35904ad2"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_components_09",
+          "costOwnerId": "r555-price:f57477225f1f10088179bfb634b9e62ddffd95fb",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_components_09",
+          "resourceSpecId": "3731a1cd-b032-577a-70b6-e046db5e1b80"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_components_10",
+          "costOwnerId": "r555-price:a1c04cd6f4c97e16fb44054158397b4f6363b397",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_components_10",
+          "resourceSpecId": "b6dd25bf-4469-5941-d87c-c22ae69eb92d"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_components_40",
+          "costOwnerId": "r555-price:24a87a51465f4ccc94e8ee284c1469e8b2d10db6",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_components_40",
+          "resourceSpecId": "2f465d5d-6bc4-98af-9394-1b4f620e9383"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_components_41",
+          "costOwnerId": "r555-price:cdcc535dae4dfad88f1f4fe83e4dc669191b0780",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_components_41",
+          "resourceSpecId": "94219478-f128-3400-8b64-5c343b152f5f"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_components_42",
+          "costOwnerId": "r555-price:3c378aa01be536db38f5935694630322608dc492",
+          "unitId": "linear_m",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_components_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_components_42",
+          "resourceSpecId": "d24a67bc-7c3d-11c2-68b6-de421ead734b"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_11",
+          "costOwnerId": "r555-price:248bde8eb626f882e93c07bb864c064476896bb5",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_11",
+          "resourceSpecId": "8e263581-41cc-4bdb-9cf9-394fee9da971"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_12",
+          "costOwnerId": "r555-price:2eeb3c47c1379fc63846de0aa5a8b255fc847452",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_12",
+          "resourceSpecId": "edfbd7a6-6ea2-6967-6758-ef32cd47e653"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_13",
+          "costOwnerId": "r555-price:feaef225a3b0141caebba1b763c0a3d1c2a89a61",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_13",
+          "resourceSpecId": "33331791-1349-4470-53c3-324681d7cc64"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_43",
+          "costOwnerId": "r555-price:d55d6b13d8fa131b6c454998a6b90d67e56bc279",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_43",
+          "resourceSpecId": "2c79568a-6128-e0b2-21b2-22cd8117381f"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_44",
+          "costOwnerId": "r555-price:8ef10a2ec8d8a9469bdc856a532d7fb5c72aba7d",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_consumables_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_consumables_44",
+          "resourceSpecId": "74771afa-5440-e887-ed94-fe967e8ca68e"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_14",
+          "costOwnerId": "r555-price:a1668c1dc211a3d29ae5758a0c5341bda387b5dd",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_14",
+          "resourceSpecId": "69406e96-efbf-3f1f-c42e-99e97940b053"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_15",
+          "costOwnerId": "r555-price:b61cf35d8bbfa053f612169fc3b8e0d9afa043a2",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_15",
+          "resourceSpecId": "9cda2793-cfbd-328d-d210-07821846fc0b"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_16",
+          "costOwnerId": "r555-price:ab1d33b7b8056f27f8b73cd1e24b55f1402ee1dc",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_16",
+          "resourceSpecId": "2070f84f-ac75-fb6e-d90e-37baec8ebda2"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_17",
+          "costOwnerId": "r555-price:fda7bc3a3baa1f1188f52ef3198677f646005d24",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_17",
+          "resourceSpecId": "207d8660-94de-9ef9-60d8-5774696dbb7b"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_45",
+          "costOwnerId": "r555-price:8179d1706d8b946569bdd8fcbda4cd0e21777f7d",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_45",
+          "resourceSpecId": "92556c26-5fed-3797-2ffd-74a3d9070ab6"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_46",
+          "costOwnerId": "r555-price:f0feb07d6bc05fda6a13ce3147a59a343d1f4be5",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_46",
+          "resourceSpecId": "114fbf92-ff92-7f2c-3929-86cb01ebca37"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_47",
+          "costOwnerId": "r555-price:c7444dd22e41c07ef5d559da4aa1c92b9284ff5e",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_preparation_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_preparation_47",
+          "resourceSpecId": "82ff30a2-ba01-354f-a888-55a51f5cebaa"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_18",
+          "costOwnerId": "r555-price:b9fce99ed0a5d51f49cd5eff963b544bfb40c876",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_18",
+          "resourceSpecId": "8879f42c-231a-70a4-2768-c3b0fe3dc7df"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_19",
+          "costOwnerId": "r555-price:409111b6f49a5f9a7780afce9105c873727b883c",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_19",
+          "resourceSpecId": "343fbdb9-7829-8de2-ce88-50c2fd8b0b33"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_20",
+          "costOwnerId": "r555-price:d0a1a20edd66deebad33463d0e4c5dca9c729d2d",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_20",
+          "resourceSpecId": "1517d866-b5ad-59c6-a081-698e5bff2430"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_21",
+          "costOwnerId": "r555-price:b436b29f1fcdb6b96c30d52538e21be805d16209",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_21",
+          "resourceSpecId": "98211c13-174d-9a68-281e-8b9f17fad273"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_22",
+          "costOwnerId": "r555-price:b966ebf0dc5c2371b02aa2dd607e131f71a6654b",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_22",
+          "resourceSpecId": "b0567fd8-7a3b-e98a-e45f-b2d44d46aafa"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_23",
+          "costOwnerId": "r555-price:60c4ce12e089ba0a15c52544c7c5989d11c5337d",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_23",
+          "resourceSpecId": "bdf84d20-e953-0079-58ff-7e219394f53f"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_24",
+          "costOwnerId": "r555-price:4959c07e5af5990503b1684863b8bebaab02828a",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_24",
+          "resourceSpecId": "b17d2784-18bd-2a3e-2650-be55c12c03b4"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_48",
+          "costOwnerId": "r555-price:5540ea5e34b90d8e938ad673d0d0b82d1a6bf5a0",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_48",
+          "resourceSpecId": "680cd6c4-4e15-5474-43e3-aab4a65c8f25"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_49",
+          "costOwnerId": "r555-price:2999e4dafd8ff3457c972437416cadcef6285dee",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_49",
+          "resourceSpecId": "036b4152-010a-c39f-3477-50334872e7fa"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_50",
+          "costOwnerId": "r555-price:c1f66cb38c2f99b8b43e7e5bf6ab7045c1962816",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_labor_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_labor_50",
+          "resourceSpecId": "f7645900-c003-71f1-857f-69cb1bee7a84"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_25",
+          "costOwnerId": "r555-price:fb3b8c13b96eea6c773e84c45ac005a705027a33",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_25",
+          "resourceSpecId": "359915f1-6b65-2b33-738a-5b625c31bb22"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_26",
+          "costOwnerId": "r555-price:752d185f4acf461d179e44b5fcc2e06c241ac568",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_26",
+          "resourceSpecId": "80818b88-97e0-1c41-5608-98a1bb4a5e54"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_27",
+          "costOwnerId": "r555-price:d860eef08bb3f73681cebc47f5a8bd8aa41caa07",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_27",
+          "resourceSpecId": "b44d013f-d16c-98ba-9d8c-271097badf6f"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_51",
+          "costOwnerId": "r555-price:611a8abbb9c7e5add76a3bda3a28f8564436f530",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_51",
+          "resourceSpecId": "f45e9560-94d0-b356-e7ac-946e6a6891a8"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_52",
+          "costOwnerId": "r555-price:c71a75e5ff5b0c3f71864c99e5abcd9b78d8b3a7",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_equipment_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_equipment_52",
+          "resourceSpecId": "b54a2f1b-e86a-0d1c-f77a-4e53c7b2761b"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_logistics_28",
+          "costOwnerId": "r555-price:1d1da0cc8ef2fde62edb0579cccd43be15668a0a",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_logistics_28",
+          "resourceSpecId": "c1c68d08-a1f7-b0a0-d0f2-ff52cd681585"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_logistics_29",
+          "costOwnerId": "r555-price:433272813ae864b8c2d4586d588d4f3efa085755",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_logistics_29",
+          "resourceSpecId": "fc96954a-81e7-e4ee-c567-fc1c9d9d9646"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_logistics_53",
+          "costOwnerId": "r555-price:9084a38825f3a704d9c7b934694ff262a37b2661",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_logistics_53",
+          "resourceSpecId": "e4590d22-2d61-30eb-e34d-561be472b1a6"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_logistics_54",
+          "costOwnerId": "r555-price:094cecba479df6ad407a87fd09dc7fefcafcc2ef",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_logistics_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_logistics_54",
+          "resourceSpecId": "8e098e4f-44bd-8141-366a-1a25ac008769"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_waste_30",
+          "costOwnerId": "r555-price:b82cba39323631ba2353b1ab857973d3cf159516",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_waste_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_waste_30",
+          "resourceSpecId": "1899d58e-bcff-0add-da41-458acf4a1d89"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_waste_31",
+          "costOwnerId": "r555-price:f462f65415e7d1f67eb2b7a44259292f169539da",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_waste_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_waste_31",
+          "resourceSpecId": "2fae4875-1c59-8f63-cec8-62737de7d98e"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_waste_55",
+          "costOwnerId": "r555-price:0d1aff2ee882ea7b53c1488438e7efd3a7044195",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_waste_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_waste_55",
+          "resourceSpecId": "327880e4-28d7-d364-71cf-cf8713c52a73"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_waste_56",
+          "costOwnerId": "r555-price:c7d7222488768198e77cf38de3f9ca7c12a45c1e",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_waste_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_waste_56",
+          "resourceSpecId": "f2e363f9-706a-512d-578c-ee0a1e228c9a"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_32",
+          "costOwnerId": "r555-price:4a2218c51bfa5896d2913f750d3d0342cb6e32fd",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_32",
+          "resourceSpecId": "29dc1028-dffa-fce1-2df5-976da7afd561"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_33",
+          "costOwnerId": "r555-price:8f080ecb0b613f2115b9eed3f46e4473c963e56c",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_33",
+          "resourceSpecId": "911478b5-97e2-7798-363c-98c65db0b6e2"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_34",
+          "costOwnerId": "r555-price:75cde668584268eaf352dc82dbf9d8c4a5f5e71f",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_34",
+          "resourceSpecId": "56b7ce8a-2dbd-4e4d-1ea2-561f029473bb"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_57",
+          "costOwnerId": "r555-price:0dfb1939eff8295103a1ca2b2688bb5b7ba870c9",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_57",
+          "resourceSpecId": "9cde8a7a-8e13-7f88-dfa9-10b9ef820dd9"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_58",
+          "costOwnerId": "r555-price:cefce92c8a6c655c4679b2a75dfa38940f666bcc",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_58",
+          "resourceSpecId": "d9dea202-b82e-844e-614a-a16bf3f509cf"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_59",
+          "costOwnerId": "r555-price:e475ff237d629fa63e9c6324577e9bbe0bb58b3b",
+          "unitId": "m2",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_quality_control_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_quality_control_59",
+          "resourceSpecId": "7d0b8437-b252-d55d-7472-4af33ff0e44c"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_overhead_35",
+          "costOwnerId": "r555-price:7a60e0da93c22878df09607e60f0456624d13ae0",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_overhead_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_overhead_35",
+          "resourceSpecId": "05f0d860-3d73-062c-2679-8de580602d76"
+        },
+        {
+          "rowId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_tax_36",
+          "costOwnerId": "r555-price:fc6a7aa255e47e46fca6b705e4fa82400d11cc7f",
+          "unitId": "set",
+          "formulaId": "plaster_paint_interior_ceiling_plaster_apply_technical_room_professional_expanded_v1_tax_quantity_formula_v1_plaster_paint_interior_ceiling_plaster_apply_technical_room_tax_36",
+          "resourceSpecId": "e6a2efcf-dc6b-f1e7-91f4-676a8275ccbb"
+        }
+      ],
+      "parentSha256": "8c3efbbb863dfbc2e53276900210307ea11e4f2d4cefc01ebd94460ee31cd21a"
+    }
+  ]
+}

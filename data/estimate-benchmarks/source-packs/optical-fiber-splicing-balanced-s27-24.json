@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.optical-fiber-splicing-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:fiber_optic_connection",
+  "scope": "Atomic fusion splicing and attenuation measurement of confirmed SM G.652D fibers; cable-route construction, ODF supply, server cabinets and active telecom equipment are excluded.",
+  "officialGuidance": {
+    "title": "Указания по применению Кыргызских единичных расценок на монтаж оборудования (КРЕРм-2015)",
+    "authority": "Министерство строительства Кыргызской Республики",
+    "locator": "п. 2.9.2",
+    "rule": "Проектно-зависимые материальные ресурсы определяются по рабочим чертежам с учетом трудноустранимых потерь и отходов.",
+    "snapshotPath": ".release-runtime/r568/s27-23/q4-electrical-official-sources/KG_KRERM_2015_GUIDANCE.pdf",
+    "snapshotSha256": "a0c3a8684c66a3d7ce5b30b5340562972e11f6a0df92a2240770af46fdae2c54",
+    "officialUrl": "https://minstroy.gov.kg/ru/state_program/download-pdf/montazoborudovania-62169004e91aaf866.70682138.pdf"
+  },
+  "technologyDependency": {
+    "installedSleeves": "one protective sleeve for each confirmed fusion splice",
+    "attenuationRecords": "one individual measurement record for each confirmed splice"
+  },
+  "projectDocumentsRequired": [
+    "fiber splice schedule and cable passport",
+    "consumable and identification schedule",
+    "method statement and labor/equipment schedule",
+    "OTDR test program",
+    "logistics and waste plan"
+  ],
+  "sleeveProcurementBalance": {
+    "installed": "splice_count",
+    "expectedWaste": "sleeve_expected_waste_piece",
+    "retainedReserve": "sleeve_retained_spare_piece",
+    "totalNeed": "installed + expected waste + retained reserve",
+    "packages": "ceil(total need / supplier pack size)",
+    "order": "packages * supplier pack size",
+    "remainderAfterInstallationAndWaste": "order - installed - expected waste",
+    "surplusBeyondReserve": "remainder - retained reserve",
+    "visiblePreliminaryProfile": {
+      "sleeve_expected_waste_piece": 0,
+      "sleeve_retained_spare_piece": 0,
+      "sleeve_supplier_pack_size_piece": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "universal wipe, cleaner or marker rate",
+    "universal labor or equipment productivity",
+    "automatic pigtail or splice-tray quantity",
+    "fiber cable route included",
+    "ODF or server cabinet included",
+    "invented price"
+  ]
+}

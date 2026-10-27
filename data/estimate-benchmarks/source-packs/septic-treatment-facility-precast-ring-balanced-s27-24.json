@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.septic-treatment-facility-precast-ring-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:septic_treatment_facility",
+  "scope": "Construction of one explicitly selected three-chamber anaerobic-settling septic treatment facility STF-RC-3C-30M3-KS20 for 12 m3/day design flow and 30 m3 working volume, using 18 KS20.9 precast reinforced-concrete wall rings. Direct earthworks, foundations, precast components, joints, waterproofing, internal piping, baffles, ventilation, backfill, commissioning consumables, labor, mechanisms, QA and logistics are project-owned.",
+  "sourceAuthority": "Approved wastewater and structural designer, precast component supplier, waterproofing specification, testing laboratory and approving project engineer",
+  "ordinaryFixture": {
+    "facilityCount": 1,
+    "facilityDesignation": "STF-RC-3C-30M3-KS20",
+    "treatmentTechnology": "THREE_CHAMBER_ANAEROBIC_SETTLING",
+    "designFlowM3Day": 12,
+    "workingVolumeM3": 30,
+    "chamberCount": 3,
+    "installedRingPiece": 18,
+    "ringDesignation": "KS20.9"
+  },
+  "procurementBalance": {
+    "precastRings": {
+      "installedQuantity": "stf_ring_installed_piece",
+      "retainedSpareQuantity": "stf_ring_retained_spare_piece",
+      "supplierPackageQuantity": "stf_ring_supplier_package_quantity_piece"
+    },
+    "visiblePreliminaryProfile": {
+      "stf_ring_retained_spare_piece": 0,
+      "stf_ring_supplier_package_quantity_piece": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "complete municipal treatment plant, aeration tanks, sludge dewatering or external collection network",
+    "earthwork, concrete, component, labor, mechanism or logistics quantities derived from flow, volume or chamber count",
+    "automatic excavation shoring, groundwater dewatering or effluent dispersal field",
+    "universal retained spare or supplier-package quantity",
+    "invented price"
+  ]
+}

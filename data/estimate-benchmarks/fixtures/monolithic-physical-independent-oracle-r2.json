@@ -1,0 +1,218 @@
+{
+  "contract": "independent-authored-monolithic-physical-oracle/r2",
+  "status": "AUTHORED_UNRUN",
+  "expectedDerivedFromProductionCompiledRows": false,
+  "expectedOrigin": [
+    "KG06 pinned literal rates remain unchanged",
+    "Wacker primary exact non-GV technical row and integrated features",
+    "ELE explicit five1 quantities",
+    "Independent decimal arithmetic on synthetic documented supply facts"
+  ],
+  "notRealProjectDefault": true,
+  "deviceCases": [
+    {
+      "count": "1",
+      "expectedRows": {
+        "deep:device": [
+          "1",
+          "piece"
+        ],
+        "deep:converter": [
+          "1",
+          "piece"
+        ],
+        "deep:protection": [
+          "1",
+          "piece"
+        ],
+        "deep:head": [
+          "1",
+          "piece"
+        ],
+        "deep:hose": [
+          "1",
+          "piece"
+        ],
+        "deep:cable": [
+          "1",
+          "piece"
+        ]
+      },
+      "fixedCharacteristics": {
+        "hoseLength_m": "5",
+        "cableLength_m": "15"
+      },
+      "paid": false,
+      "order": false,
+      "sourceCode": "11-0180",
+      "ready": "COMPLETE_EXACT_DEVICE_PREPARATION"
+    },
+    {
+      "count": "3",
+      "expectedEachPieceQuantity": "3",
+      "notHours": true,
+      "notReserveCount": true
+    }
+  ],
+  "qaCases": [
+    {
+      "required": "2",
+      "stock": "1",
+      "reserve": "1",
+      "quantum": "1",
+      "expectedComponentsEach": "2",
+      "expectedOrder": "2",
+      "expectedRemaining": "1",
+      "expectedShortage": "0",
+      "expectedReserveDeficit": "0",
+      "ownerUnit": "piece",
+      "newPaidOwners": 1,
+      "componentPaidOwners": 0,
+      "ready": "COMPLETE_FIVE_PART_KIT_PREPARATION"
+    },
+    {
+      "required": "2",
+      "stock": "3",
+      "reserve": "1",
+      "expectedOrder": "0",
+      "expectedRemaining": "1",
+      "ready": true,
+      "zeroOrderNotFailure": true
+    }
+  ],
+  "bbsCases": [
+    {
+      "sourceProjectInstalledKg": "2000",
+      "sourceAggregateUnit": "t",
+      "sourceAggregateINFO": "2",
+      "cohorts": [
+        {
+          "grade": "TEST_ONLY_CLASS_A",
+          "diameterMm": "12",
+          "product": "TEST_ONLY_STRAIGHT_FINISHED_BAR",
+          "cutLengthM": "6",
+          "installedKg": "800",
+          "grossKg": "824",
+          "stockKg": "300",
+          "reserveKg": "26",
+          "quantumKg": "25",
+          "expectedOrderKg": "550",
+          "expectedRemainingKg": "26"
+        },
+        {
+          "grade": "TEST_ONLY_CLASS_A",
+          "diameterMm": "16",
+          "product": "TEST_ONLY_STRAIGHT_FINISHED_BAR",
+          "cutLengthM": "5",
+          "installedKg": "1200",
+          "grossKg": "1236",
+          "stockKg": "200",
+          "reserveKg": "14",
+          "quantumKg": "50",
+          "expectedOrderKg": "1050",
+          "expectedRemainingKg": "14"
+        }
+      ],
+      "expectedSumInstalledKg": "2000",
+      "expectedSumGrossKg": "2060",
+      "expectedSumOrderKg": "1600",
+      "expectedSourceMassDifferenceKg": "0",
+      "oldAggregatePaid": false,
+      "oldAggregateOrdered": false,
+      "newSupplyPaidOwners": 2,
+      "newSupplyOrderOwners": 2,
+      "newLaborOwners": 0,
+      "newMachineHours": 0,
+      "connectorsSpacersEmbedsClosed": false,
+      "ready": true
+    }
+  ],
+  "negativeCases": [
+    {
+      "case": "source11-0183surface selected with deepIRFU",
+      "expected": "FORMULA_OUTPUT_BOUNDS_FAILED",
+      "noDeepFallback": true
+    },
+    {
+      "case": "BBSactualDistinctSupplyPositions5",
+      "expected": "PARAMETER_RANGE_REJECT",
+      "neverTruncateOrMerge": true
+    },
+    {
+      "case": "cutlist_refmissing despitemass2000",
+      "expected": "PRELIMINARY_CONDITION_NEED",
+      "ready": false
+    },
+    {
+      "case": "BBSsum1999source2000",
+      "expected": "FORMULA_OUTPUT_BOUNDS_FAILED"
+    },
+    {
+      "case": "grossKglessThanInstalledKg",
+      "expected": "NUMERIC_RELATION_REJECT"
+    },
+    {
+      "case": "negativeStockOrReserve",
+      "expected": "PARAMETER_RANGE_REJECT"
+    },
+    {
+      "case": "quantum0",
+      "expected": "PARAMETER_RANGE_REJECT"
+    },
+    {
+      "case": "missingstockreservequantum",
+      "expected": "UNKNOWN_ORDER_WITH_KNOWN_INSTALLED_AND_GROSS_MASS",
+      "ready": false
+    },
+    {
+      "case": "IRFUvoltage219.999or240.001",
+      "expected": "PARAMETER_RANGE_REJECT"
+    },
+    {
+      "case": "IRFUfrequency49.999or60.001",
+      "expected": "PARAMETER_RANGE_REJECT"
+    },
+    {
+      "case": "count0or1.5",
+      "expected": "PARAMETER_RANGE_OR_INTEGER_REJECT"
+    },
+    {
+      "case": "preparedFingerprintWrong",
+      "expected": "MONOLITHIC_PHYSICAL_R2_APPROVED_PREPARED_MODEL_ANCHOR"
+    },
+    {
+      "case": "oldBoundprocurementFalseMutation",
+      "expected": "MONOLITHIC_PHYSICAL_R2_ORIGINAL_BOUND_PAYMENT_OR_SOURCE_DRIFT"
+    },
+    {
+      "case": "physicalscope0.0",
+      "expected": "NO_NEW_PHYSICAL_ROWS_OR_NEEDS_OR_ORDER",
+      "legacyZeroControlRetained": true
+    },
+    {
+      "case": "globallegacyorabsent",
+      "expected": "EXACT_CAPTURED_ROWS_NEEDS_MONEY_REPLAY",
+      "newQPriceCarry": false
+    }
+  ],
+  "safetyBoundaries": [
+    "IRFU Bodyguard does not waive KG temporary-network protection",
+    "Cement Pan is not a separately established level base plate",
+    "Set list does not establish test method/acceptance/frequency",
+    "BBSmass reconciliation does not prove list completeness by itself",
+    "No missing internal norm editable as0/1/77",
+    "All residual quantities unknown, never defaultzero"
+  ],
+  "bbsSmallCase": {
+    "sourceVolumeM3": "0.125",
+    "installedKg": "2.5",
+    "grossKg": "2.65",
+    "stockKg": "1.1",
+    "reserveKg": "0.45",
+    "quantumKg": "0.25",
+    "expectedOrderKg": "2",
+    "expectedRemainingKg": "0.45",
+    "sourceAggregateInfoT": "0.0025",
+    "normalization": "No m3-to-kg coefficient; all BBS masses direct syntheticproject facts"
+  }
+}

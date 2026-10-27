@@ -1,0 +1,236 @@
+{
+  "schema": "ai-estimate-role-based-uat-roles-v1",
+  "roles": [
+    {
+      "role_id": "ESTIMATOR",
+      "allowed_actions": [
+        "view_parser_result",
+        "view_missing_params",
+        "edit_assumptions",
+        "inspect_formulas",
+        "view_norm_sources",
+        "create_review_feedback"
+      ],
+      "blocked_actions": [
+        "approve_owner_signoff",
+        "edit_procurement_only_package",
+        "mark_ai_price_as_trusted"
+      ],
+      "required_views": [
+        "parser_result",
+        "missing_params",
+        "grouped_draft",
+        "details_drawer",
+        "formula_trace",
+        "norm_sources"
+      ],
+      "required_exports": [
+        "feedback_item"
+      ],
+      "acceptance_criteria": [
+        "parser_result_visible",
+        "missing_params_visible",
+        "assumptions_editable",
+        "formula_trace_visible",
+        "norm_sources_visible",
+        "feedback_can_be_created"
+      ],
+      "critical_failures": [
+        "parser_result_missing",
+        "grouped_draft_missing",
+        "formula_trace_missing",
+        "silent_quantity_correction"
+      ]
+    },
+    {
+      "role_id": "DIRECTOR",
+      "allowed_actions": [
+        "view_grouped_estimate",
+        "view_trust_level",
+        "view_commercial_level",
+        "view_price_completeness",
+        "open_pdf",
+        "view_assumptions_and_limitations"
+      ],
+      "blocked_actions": [
+        "override_missing_prices_as_total",
+        "approve_owner_signoff",
+        "edit_formula_without_review"
+      ],
+      "required_views": [
+        "grouped_estimate",
+        "trust_level",
+        "commercial_level",
+        "price_completeness",
+        "pdf",
+        "assumptions",
+        "limitations"
+      ],
+      "required_exports": [
+        "pdf_snapshot"
+      ],
+      "acceptance_criteria": [
+        "grouped_estimate_visible",
+        "trust_level_visible",
+        "commercial_level_visible",
+        "missing_price_state_visible",
+        "pdf_generated_from_snapshot"
+      ],
+      "critical_failures": [
+        "fake_final_total",
+        "trust_level_missing",
+        "pdf_missing",
+        "pdf_not_from_snapshot"
+      ]
+    },
+    {
+      "role_id": "PROCUREMENT_BUYER",
+      "allowed_actions": [
+        "view_procurement_package",
+        "export_procurement_package",
+        "view_material_equipment_service_quantities",
+        "create_procurement_feedback"
+      ],
+      "blocked_actions": [
+        "view_labor_rows_as_procurement",
+        "view_debug_rows_as_procurement",
+        "view_formulas_as_procurement_rows",
+        "mutate_snapshot"
+      ],
+      "required_views": [
+        "procurement_package",
+        "material_rows",
+        "equipment_rows",
+        "procurement_service_rows",
+        "snapshot_quantity_trace"
+      ],
+      "required_exports": [
+        "procurement_package"
+      ],
+      "acceptance_criteria": [
+        "procurement_package_created",
+        "no_labor_rows",
+        "no_debug_rows",
+        "no_formula_rows",
+        "quantities_match_snapshot"
+      ],
+      "critical_failures": [
+        "buyer_receives_work_rows",
+        "buyer_receives_helper_rows",
+        "buyer_quantity_mismatch",
+        "wrong_unit_in_procurement"
+      ]
+    },
+    {
+      "role_id": "FOREMAN",
+      "allowed_actions": [
+        "view_work_packages",
+        "view_scope",
+        "view_quantities",
+        "create_execution_feedback"
+      ],
+      "blocked_actions": [
+        "approve_pricebook",
+        "send_procurement_package",
+        "approve_owner_signoff"
+      ],
+      "required_views": [
+        "work_packages",
+        "scope",
+        "quantities",
+        "assumptions",
+        "missing_design_inputs"
+      ],
+      "required_exports": [
+        "work_package_summary"
+      ],
+      "acceptance_criteria": [
+        "work_packages_visible",
+        "quantities_visible",
+        "scope_visible",
+        "procurement_only_rows_not_mixed_into_work_scope"
+      ],
+      "critical_failures": [
+        "work_package_missing",
+        "quantity_missing",
+        "procurement_only_confusion"
+      ]
+    },
+    {
+      "role_id": "CLIENT_VIEWER",
+      "allowed_actions": [
+        "view_clean_summary",
+        "open_client_pdf",
+        "view_assumptions",
+        "view_price_state"
+      ],
+      "blocked_actions": [
+        "view_raw_json",
+        "view_raw_formulas_in_main_table",
+        "view_internal_template_ids",
+        "view_support_package"
+      ],
+      "required_views": [
+        "clean_summary",
+        "client_pdf",
+        "assumptions",
+        "price_state"
+      ],
+      "required_exports": [
+        "client_pdf"
+      ],
+      "acceptance_criteria": [
+        "clean_summary_visible",
+        "no_raw_formulas_in_main_table",
+        "no_raw_json",
+        "no_internal_template_ids"
+      ],
+      "critical_failures": [
+        "raw_json_visible",
+        "debug_formula_visible",
+        "internal_template_id_visible"
+      ]
+    },
+    {
+      "role_id": "SUPPORT_ADMIN",
+      "allowed_actions": [
+        "export_support_package",
+        "view_redacted_telemetry",
+        "view_failure_reason",
+        "link_feedback_to_revision"
+      ],
+      "blocked_actions": [
+        "export_secrets",
+        "export_private_phone",
+        "export_private_email",
+        "approve_owner_signoff"
+      ],
+      "required_views": [
+        "redacted_support_package",
+        "telemetry_summary",
+        "failure_reason",
+        "artifact_lineage"
+      ],
+      "required_exports": [
+        "redacted_support_package"
+      ],
+      "acceptance_criteria": [
+        "support_package_exportable",
+        "support_package_redacted",
+        "telemetry_redacted",
+        "failure_reason_visible"
+      ],
+      "critical_failures": [
+        "secret_leaked",
+        "private_phone_leaked",
+        "private_email_leaked",
+        "failure_reason_missing"
+      ]
+    }
+  ],
+  "acceptance": {
+    "uat_roles_created": true,
+    "every_role_has_acceptance_criteria": true,
+    "human_signoff_not_faked": true
+  }
+}

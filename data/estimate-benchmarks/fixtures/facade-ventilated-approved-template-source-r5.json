@@ -1,0 +1,90 @@
+{
+  "contract": "master-retained-approved-template-source-evidence/v1",
+  "capturedSourceDefinition": {
+    "id": "4f73581e-1519-560c-8ee7-5ab72771773c",
+    "release_id": "cf3f9443-a286-51f1-bddc-c1a490cd65c2",
+    "catalog_id": "canonical-work:expanded:ventilated_facade",
+    "definition_version": 1,
+    "passport": {
+      "titleRu": "Фасады, высотное остекление и доступ: монтаж вентилируемого фасада",
+      "category": "facade_glazing",
+      "contract": "rik-expo-app-r555.cumulative-successor.v1",
+      "familyId": "ventilated_facade",
+      "rowCount": 45,
+      "aliasesRu": [
+        "Фасады, высотное остекление и доступ: монтаж вентилируемого фасада"
+      ],
+      "riskPolicy": {
+        "dangerousWorkNotRefused": true,
+        "contractReadyWithoutReview": false,
+        "specialistReviewNoteRequired": false,
+        "drawingsRequiredForPreliminaryBoq": false,
+        "finalTotalAllowedWhenPricesMissing": false
+      },
+      "sourcePack": {
+        "normPackId": "ventilated_facade:expanded_complex_norm_pack_v1",
+        "normVersion": "2026.07.04",
+        "sourceTitles": [
+          "Инженерная справочная формула для блока \"Фасады, высотное остекление и доступ\""
+        ],
+        "sourceQuality": "engineering_reference_formula",
+        "sourceRegistryIds": [
+          "src_expanded_complex_facade_glazing_reference_formula_v1"
+        ]
+      },
+      "contentPack": {
+        "pdfPolicyId": "GROUPED_WITH_ASSUMPTIONS_TRACE_AND_SOURCES",
+        "calculatorId": "highRiseGlazingCalculator",
+        "unitPolicyId": "metric_units_required; conversions visible in calculation trace",
+        "laborRecipeId": "ventilated_facade:labor_recipe:4",
+        "pricePolicyId": "ventilated_facade:price_missing_policy_v1",
+        "serviceRecipeId": "ventilated_facade:service_recipe:4",
+        "materialRecipeId": "ventilated_facade:material_recipe:4",
+        "equipmentRecipeId": "ventilated_facade:equipment_recipe:3",
+        "buyerHandoffPolicyId": "MATERIAL_EQUIPMENT_DELIVERY_ONLY"
+      },
+      "templateKind": "expanded_complex_1610",
+      "estimateLevel": "PRELIMINARY_BOQ",
+      "outputMappings": {
+        "groupedUiSections": true,
+        "pdfRowsEqualSnapshotRows": true,
+        "buyerHandoffExcludesWorkRows": true,
+        "buyerHandoffProcurementSubset": true,
+        "missingPricesVisibleWithoutFakeTotal": true,
+        "pdfIncludesAssumptionsTraceAndSources": true
+      },
+      "workDescription": {
+        "titleRu": "Фасады, высотное остекление и доступ: монтаж вентилируемого фасада",
+        "workType": "facade",
+        "scopeSummary": "Фасады, высотное остекление и доступ: монтаж вентилируемого фасада; предварительная профессиональная смета; 45 строк"
+      }
+    },
+    "applicability": {
+      "excludedScopeRu": [
+        "Работы и ресурсы, отсутствующие в технологическом паспорте, не включены."
+      ],
+      "includedScopeRu": [
+        "Фасады, высотное остекление и доступ: монтаж вентилируемого фасада; предварительная профессиональная смета; 45 строк"
+      ],
+      "physicalResultRu": "Фасады, высотное остекление и доступ: монтаж вентилируемого фасада"
+    },
+    "definition_sha256": "8d70624cad669c4d470c750fc9d9b05da40b2d905729252e1c7e840f76e16faf",
+    "source_metadata": {
+      "groupId": "wg:expanded:ventilated_facade",
+      "contract": "rik-expo-app-r555.full-cumulative-successor-db.v1",
+      "priceGroup": "facade_glazing",
+      "sourceTree": "83db5f97ac7c2f1525272a91bad5faf71c8cd11771fa3931e30e24800c41db05",
+      "templateId": "ventilated_facade_preliminary_boq_expanded_complex_v1",
+      "epsilonRows": 0,
+      "genericRows": 0,
+      "masterSha256": "e74148e27e060bf0a36eb02ce7e4e93f4d09746975025113f19d7f5ee1950007",
+      "payloadContract": "rik-expo-app-r555.cumulative-successor.v1",
+      "sourceIdentityId": "expanded-template:ventilated_facade_preliminary_boq_expanded_complex_v1",
+      "publicEnglishWords": 0
+    },
+    "created_at": "2026-08-26T15:45:21.918901+00:00",
+    "content_status": "CANDIDATE_READY",
+    "content_gate_status": "GREEN"
+  },
+  "capturedSourceDefinitionSha256": "fa73c0ae18524566cf0b4fcd22e8d992f6e796c0989a95755ceaabe2ef00a3b9"
+}

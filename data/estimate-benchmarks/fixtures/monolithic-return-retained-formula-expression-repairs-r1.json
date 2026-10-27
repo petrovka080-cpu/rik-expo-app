@@ -1,0 +1,926 @@
+{
+  "contract": "monolithic-return-retained-formula-expression-repairs/r1",
+  "status": "LITERAL_SOURCE_PROPOSAL_ACTUAL_COMPILER_UNRUN",
+  "captureFile": {
+    "path": "C:/Users/User/Documents/Codex/2026-10-22/files-pasted-by-the-user-c-2/work/monolithic-return-current-parents-r1.json",
+    "sha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+    "releaseId": "d91453c6-20a0-5b18-9995-cb24731bd72d",
+    "searchReleaseId": "ab1eff60-cd53-5c8a-8374-2e83ab66b2f7"
+  },
+  "scope": "8 exact immutable parents; successor expression_source only. Not a new norm, math, unit, input, AST, history migration or FULL admission.",
+  "sourceOnlyAudit": {
+    "formulasRead": 1481,
+    "repairCount": 17,
+    "cardsWithRepairs": 1,
+    "cardsUnchanged": 7,
+    "held": [],
+    "productModuleImports": 0,
+    "actualCompilerExecuted": 0,
+    "testsExecuted": 0
+  },
+  "cards": [
+    {
+      "captureIndex": 0,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_form_standard",
+      "definitionId": "733e0d11-dbfd-5033-8366-f250e752168c",
+      "parentDefinitionReleaseId": "f54bbd24-0f66-556e-86f9-b2666568f1b3",
+      "definitionVersion": 16,
+      "definitionSha256": "9016d3b2a14baf73d2370acf2b2ec2d434e3f8033a6e78ad7c80896af483765a",
+      "baselineId": "7e283061-7093-51b9-8d54-66a4046b0685",
+      "baselineRowSha256": "fcfd0946e996231433584c3a881ff48a0da43e0d5ab4da7c10e5b90e1aee6e3e",
+      "capturedParentSha256": "8fd0506bde93b1ef541f3dd9f5a78c071686c746680f76e78b95fe9a0ee19a65",
+      "capturedDefinitionRowSha256": "08ab5526be4bab673d820081808536ba3a317e60e06fc9c264e1891b5b5323d9",
+      "capturedFormulaRecordsSha256": "d1494f459f5792623adff4fc2f546173f20ee8ff8f5fb1cba5ae654b68f41d20",
+      "shape": [
+        301,
+        122,
+        123
+      ],
+      "captureFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+      "status": "EXACT_SUCCESSOR_TEXT_REPAIRS",
+      "formulaExpressionRepairs": {
+        "concrete_order_quantity_v1": {
+          "capturedExpressionSource": "plan_dimension_concrete_volume_m3 * (1 + selected_contingency_percent / 100)",
+          "correctedExpressionSource": "slab_concrete_volume_m3 * (1 + placement_selected_contingency_percent / 100)"
+        },
+        "dokaflex_access_rental_v1": {
+          "capturedExpressionSource": "access_platform_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_access_platform_count * formwork_rental_duration_days"
+        },
+        "dokaflex_bracing_rental_v1": {
+          "capturedExpressionSource": "bracing_set_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_bracing_set_count * formwork_rental_duration_days"
+        },
+        "dokaflex_edge_protection_rental_v1": {
+          "capturedExpressionSource": "edge_protection_set_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_edge_protection_set_count * formwork_rental_duration_days"
+        },
+        "dokaflex_end_shutter_rental_v1": {
+          "capturedExpressionSource": "floor_end_shutter_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_floor_end_shutter_count * formwork_rental_duration_days"
+        },
+        "dokaflex_floor_prop_rental_v1": {
+          "capturedExpressionSource": "floor_prop_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_floor_prop_count * formwork_rental_duration_days"
+        },
+        "dokaflex_lowering_head_rental_v1": {
+          "capturedExpressionSource": "lowering_head_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_lowering_head_count * formwork_rental_duration_days"
+        },
+        "dokaflex_not_applicable_v1": {
+          "capturedExpressionSource": "project_stage_count * 0",
+          "correctedExpressionSource": "formwork_project_stage_count * 0"
+        },
+        "dokaflex_outbound_transport_v1": {
+          "capturedExpressionSource": "shipping_mass_t * outbound_distance_km",
+          "correctedExpressionSource": "formwork_shipping_mass_t * formwork_outbound_distance_km"
+        },
+        "dokaflex_primary_beam_rental_v1": {
+          "capturedExpressionSource": "primary_beam_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_primary_beam_count * formwork_rental_duration_days"
+        },
+        "dokaflex_reshoring_prop_rental_v1": {
+          "capturedExpressionSource": "reshoring_prop_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_reshoring_prop_count * formwork_rental_duration_days"
+        },
+        "dokaflex_return_transport_v1": {
+          "capturedExpressionSource": "shipping_mass_t * return_distance_km",
+          "correctedExpressionSource": "formwork_shipping_mass_t * formwork_return_distance_km"
+        },
+        "dokaflex_secondary_beam_rental_v1": {
+          "capturedExpressionSource": "secondary_beam_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_secondary_beam_count * formwork_rental_duration_days"
+        },
+        "dokaflex_sheet_rental_v1": {
+          "capturedExpressionSource": "formwork_sheet_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_formwork_sheet_count * formwork_rental_duration_days"
+        },
+        "dokaflex_stabilizer_rental_v1": {
+          "capturedExpressionSource": "secondary_beam_stabilizer_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_secondary_beam_stabilizer_count * formwork_rental_duration_days"
+        },
+        "dokaflex_supporting_head_rental_v1": {
+          "capturedExpressionSource": "supporting_head_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_supporting_head_count * formwork_rental_duration_days"
+        },
+        "dokaflex_tripod_rental_v1": {
+          "capturedExpressionSource": "removable_tripod_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_removable_tripod_count * formwork_rental_duration_days"
+        }
+      },
+      "repairWitnesses": [
+        {
+          "formulaId": "concrete_order_quantity_v1",
+          "capturedFormulaRowSha256": "f7732f43105132b75fdc0fe1c50a3fbe5ae182901db12a9a1f8f041a4ffe9589",
+          "capturedExpressionSource": "plan_dimension_concrete_volume_m3 * (1 + selected_contingency_percent / 100)",
+          "correctedExpressionSource": "slab_concrete_volume_m3 * (1 + placement_selected_contingency_percent / 100)",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "slab_concrete_volume_m3",
+              "kind": "parameter"
+            },
+            "right": {
+              "kind": "binary",
+              "left": {
+                "kind": "literal",
+                "value": "1"
+              },
+              "right": {
+                "kind": "binary",
+                "left": {
+                  "id": "placement_selected_contingency_percent",
+                  "kind": "parameter"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": "100"
+                },
+                "operator": "/"
+              },
+              "operator": "+"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "520480f4c7bd8d7800e52646540d9603309384fe9c1a8bb404c980ff56e1cff7",
+          "sourceOnlyRecomputedAstSha256": "520480f4c7bd8d7800e52646540d9603309384fe9c1a8bb404c980ff56e1cff7",
+          "outputUnitId": "m3",
+          "inputParameterIds": [
+            "slab_concrete_volume_m3",
+            "placement_selected_contingency_percent"
+          ],
+          "originalTextSyntaxAstSha256": "cb685b7fdaec9bc428ca3f301c7e87166704168a9f02cf6d062f0b5027efbbcb",
+          "originalTextInputParameterIds": [
+            "plan_dimension_concrete_volume_m3",
+            "selected_contingency_percent"
+          ],
+          "correctedTextSyntaxAstSha256": "520480f4c7bd8d7800e52646540d9603309384fe9c1a8bb404c980ff56e1cff7",
+          "correctedTextInputParameterIds": [
+            "placement_selected_contingency_percent",
+            "slab_concrete_volume_m3"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_access_rental_v1",
+          "capturedFormulaRowSha256": "949b4c3c5fb853fb1f270497293cc4cab2672877bf94ad30652116773be0c8d0",
+          "capturedExpressionSource": "access_platform_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_access_platform_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_access_platform_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "5e7a98cf6534994e53063247ca4fb850f5949b0e79d290f47378f14627741909",
+          "sourceOnlyRecomputedAstSha256": "5e7a98cf6534994e53063247ca4fb850f5949b0e79d290f47378f14627741909",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_access_platform_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "3a72f2d9bacb0ba486c9106d470838f497757b655a518876c217f565d087b585",
+          "originalTextInputParameterIds": [
+            "access_platform_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "5e7a98cf6534994e53063247ca4fb850f5949b0e79d290f47378f14627741909",
+          "correctedTextInputParameterIds": [
+            "formwork_access_platform_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_bracing_rental_v1",
+          "capturedFormulaRowSha256": "26684436df688f85110ed8e9ee12fc60bf3fa7e078493e99027bdc36e866c268",
+          "capturedExpressionSource": "bracing_set_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_bracing_set_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_bracing_set_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "f8e3c28d9809eade74d8205ba5e2c6449c7768ed4b141901a21f00f173a5dae5",
+          "sourceOnlyRecomputedAstSha256": "f8e3c28d9809eade74d8205ba5e2c6449c7768ed4b141901a21f00f173a5dae5",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_bracing_set_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "5b57a984fe713e9e94fcdaaafcadb8a5d6b33d34efbd3a979027746aa940702d",
+          "originalTextInputParameterIds": [
+            "bracing_set_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "f8e3c28d9809eade74d8205ba5e2c6449c7768ed4b141901a21f00f173a5dae5",
+          "correctedTextInputParameterIds": [
+            "formwork_bracing_set_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_edge_protection_rental_v1",
+          "capturedFormulaRowSha256": "005fff163a6c9025a9b613150afdd141c4dedca7f054139aabf691c3f11d5cf7",
+          "capturedExpressionSource": "edge_protection_set_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_edge_protection_set_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_edge_protection_set_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "515f51d4218ab062e9ef3ca7d0b560822b4eb277e0abdbd5baa16de9c651ad25",
+          "sourceOnlyRecomputedAstSha256": "515f51d4218ab062e9ef3ca7d0b560822b4eb277e0abdbd5baa16de9c651ad25",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_edge_protection_set_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "de3c0393061a2b8f254d42d7165e7dc52d88440036f88af593bbdede423c88b5",
+          "originalTextInputParameterIds": [
+            "edge_protection_set_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "515f51d4218ab062e9ef3ca7d0b560822b4eb277e0abdbd5baa16de9c651ad25",
+          "correctedTextInputParameterIds": [
+            "formwork_edge_protection_set_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_end_shutter_rental_v1",
+          "capturedFormulaRowSha256": "dd6038ef84645650146446b74db5beb39ea95c17ad326febf979a603dac77bcc",
+          "capturedExpressionSource": "floor_end_shutter_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_floor_end_shutter_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_floor_end_shutter_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "f438de3e330344e129cb004418e07b3903b1007cc49fddb3022eaf07a5d43209",
+          "sourceOnlyRecomputedAstSha256": "f438de3e330344e129cb004418e07b3903b1007cc49fddb3022eaf07a5d43209",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_floor_end_shutter_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "cdb2471c10ccfd8dbc0a86d5453c67b6b6c868e4d1eff4c298c04cbf00397ea3",
+          "originalTextInputParameterIds": [
+            "floor_end_shutter_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "f438de3e330344e129cb004418e07b3903b1007cc49fddb3022eaf07a5d43209",
+          "correctedTextInputParameterIds": [
+            "formwork_floor_end_shutter_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_floor_prop_rental_v1",
+          "capturedFormulaRowSha256": "42dcd342c4f550772db95e5e5168ff6eb3716f0bdafc4e580a4ef408439dcfcb",
+          "capturedExpressionSource": "floor_prop_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_floor_prop_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_floor_prop_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "a49fbd2aa695868ee9f5f7da5fdb1c7f122a7b58deef923d89c6b582a518f52e",
+          "sourceOnlyRecomputedAstSha256": "a49fbd2aa695868ee9f5f7da5fdb1c7f122a7b58deef923d89c6b582a518f52e",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_floor_prop_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "5887a2005c089852590f277d881e2cb729245c0ce2a366b5d987629e8f11a5ba",
+          "originalTextInputParameterIds": [
+            "floor_prop_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "a49fbd2aa695868ee9f5f7da5fdb1c7f122a7b58deef923d89c6b582a518f52e",
+          "correctedTextInputParameterIds": [
+            "formwork_floor_prop_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_lowering_head_rental_v1",
+          "capturedFormulaRowSha256": "95065ad9247d1b8697a60a2277d8dd289e60d326bad1a959d604239732cba0bd",
+          "capturedExpressionSource": "lowering_head_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_lowering_head_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_lowering_head_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "04fec67a27ea94d82edfcbe42c9b36856800eaf8814a3715c56e4c3023e23ef8",
+          "sourceOnlyRecomputedAstSha256": "04fec67a27ea94d82edfcbe42c9b36856800eaf8814a3715c56e4c3023e23ef8",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_lowering_head_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "692f7a068caf35c06fc2a4c3ca165b7fdea4e6d6e83f6eb7af7b731e8a0a6c31",
+          "originalTextInputParameterIds": [
+            "lowering_head_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "04fec67a27ea94d82edfcbe42c9b36856800eaf8814a3715c56e4c3023e23ef8",
+          "correctedTextInputParameterIds": [
+            "formwork_lowering_head_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_not_applicable_v1",
+          "capturedFormulaRowSha256": "db9c6fcd15794f1b24afa195ee1ed03434152052a6c1d111cd08a7e6f0b84688",
+          "capturedExpressionSource": "project_stage_count * 0",
+          "correctedExpressionSource": "formwork_project_stage_count * 0",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_project_stage_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "kind": "literal",
+              "value": "0"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "dbed8bcb1b745b6a83b90ffaba253010f5018fcf68d02c356a7d2faae0f07789",
+          "sourceOnlyRecomputedAstSha256": "dbed8bcb1b745b6a83b90ffaba253010f5018fcf68d02c356a7d2faae0f07789",
+          "outputUnitId": "item",
+          "inputParameterIds": [
+            "formwork_project_stage_count"
+          ],
+          "originalTextSyntaxAstSha256": "cde4aa550b0b5d72bf4fd26c74df3c7ec9e9b24b5e200ae5f019c430617fe9cd",
+          "originalTextInputParameterIds": [
+            "project_stage_count"
+          ],
+          "correctedTextSyntaxAstSha256": "dbed8bcb1b745b6a83b90ffaba253010f5018fcf68d02c356a7d2faae0f07789",
+          "correctedTextInputParameterIds": [
+            "formwork_project_stage_count"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_outbound_transport_v1",
+          "capturedFormulaRowSha256": "e330c0f10cfe802e5fe23b7dad04eb7364ebe2be3b7d3334624ceff0d42fb3f4",
+          "capturedExpressionSource": "shipping_mass_t * outbound_distance_km",
+          "correctedExpressionSource": "formwork_shipping_mass_t * formwork_outbound_distance_km",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_shipping_mass_t",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_outbound_distance_km",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "954acd50b2671f7cfca5042b0ae1c6ab31f3bd6482ad37f56012b16c6de6a052",
+          "sourceOnlyRecomputedAstSha256": "954acd50b2671f7cfca5042b0ae1c6ab31f3bd6482ad37f56012b16c6de6a052",
+          "outputUnitId": "t_km",
+          "inputParameterIds": [
+            "formwork_outbound_distance_km",
+            "formwork_shipping_mass_t"
+          ],
+          "originalTextSyntaxAstSha256": "eb7d24e2d2e978d3db03c53c451e334d4398285ce953771d17e99b5caa62bc6b",
+          "originalTextInputParameterIds": [
+            "outbound_distance_km",
+            "shipping_mass_t"
+          ],
+          "correctedTextSyntaxAstSha256": "954acd50b2671f7cfca5042b0ae1c6ab31f3bd6482ad37f56012b16c6de6a052",
+          "correctedTextInputParameterIds": [
+            "formwork_outbound_distance_km",
+            "formwork_shipping_mass_t"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_primary_beam_rental_v1",
+          "capturedFormulaRowSha256": "5fc2fe07e3c9136e19254665685a6dc091a9724934f9f4a649f4fa1814e25d8a",
+          "capturedExpressionSource": "primary_beam_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_primary_beam_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_primary_beam_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "f4c4a92dd81bca5d454bab8c820a0a72ef5f77b62825f094113207f01c8dfa9e",
+          "sourceOnlyRecomputedAstSha256": "f4c4a92dd81bca5d454bab8c820a0a72ef5f77b62825f094113207f01c8dfa9e",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_primary_beam_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "51acfa795f589726b283a4fbae6586fbb58962247b2c4bf0cfcc5f27c8afbe6e",
+          "originalTextInputParameterIds": [
+            "primary_beam_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "f4c4a92dd81bca5d454bab8c820a0a72ef5f77b62825f094113207f01c8dfa9e",
+          "correctedTextInputParameterIds": [
+            "formwork_primary_beam_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_reshoring_prop_rental_v1",
+          "capturedFormulaRowSha256": "fb011dd64a3b2829cc414bdcaaadb0e76ed6eb3e11d6219dbf7bb811f374b216",
+          "capturedExpressionSource": "reshoring_prop_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_reshoring_prop_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_reshoring_prop_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "475b7a4952a3274c4feb525a669c26ff2d8c3cc0e7fe08f96b09bbef539f3aba",
+          "sourceOnlyRecomputedAstSha256": "475b7a4952a3274c4feb525a669c26ff2d8c3cc0e7fe08f96b09bbef539f3aba",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_rental_duration_days",
+            "formwork_reshoring_prop_count"
+          ],
+          "originalTextSyntaxAstSha256": "3f52e254049b813746c242e1c751da3651d746a81877d766b16f3449933588ea",
+          "originalTextInputParameterIds": [
+            "rental_duration_days",
+            "reshoring_prop_count"
+          ],
+          "correctedTextSyntaxAstSha256": "475b7a4952a3274c4feb525a669c26ff2d8c3cc0e7fe08f96b09bbef539f3aba",
+          "correctedTextInputParameterIds": [
+            "formwork_rental_duration_days",
+            "formwork_reshoring_prop_count"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_return_transport_v1",
+          "capturedFormulaRowSha256": "293ee0c79534f3bf8dd17b86f715f39dc96676ee681792d1fe983a3567ab73f0",
+          "capturedExpressionSource": "shipping_mass_t * return_distance_km",
+          "correctedExpressionSource": "formwork_shipping_mass_t * formwork_return_distance_km",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_shipping_mass_t",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_return_distance_km",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "b33737b68087474fed89a22adcd92491bf3bd1dbfa743b8d7c2a51cbb65058ff",
+          "sourceOnlyRecomputedAstSha256": "b33737b68087474fed89a22adcd92491bf3bd1dbfa743b8d7c2a51cbb65058ff",
+          "outputUnitId": "t_km",
+          "inputParameterIds": [
+            "formwork_return_distance_km",
+            "formwork_shipping_mass_t"
+          ],
+          "originalTextSyntaxAstSha256": "d813d52cddffbe6afb7426be9b90e6a8a26885e29a2225230f680c53d0c351c4",
+          "originalTextInputParameterIds": [
+            "return_distance_km",
+            "shipping_mass_t"
+          ],
+          "correctedTextSyntaxAstSha256": "b33737b68087474fed89a22adcd92491bf3bd1dbfa743b8d7c2a51cbb65058ff",
+          "correctedTextInputParameterIds": [
+            "formwork_return_distance_km",
+            "formwork_shipping_mass_t"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_secondary_beam_rental_v1",
+          "capturedFormulaRowSha256": "465ddceef7121a17708e3fb225fa1856acf8294c1401c6ac985cbcf9bbb86eaa",
+          "capturedExpressionSource": "secondary_beam_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_secondary_beam_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_secondary_beam_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "b14a13bda0e5eaf47180f583c1d2d1d3bbdee3bff3558fbeb0a7125d8cf1b4a5",
+          "sourceOnlyRecomputedAstSha256": "b14a13bda0e5eaf47180f583c1d2d1d3bbdee3bff3558fbeb0a7125d8cf1b4a5",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_rental_duration_days",
+            "formwork_secondary_beam_count"
+          ],
+          "originalTextSyntaxAstSha256": "8a4c54ef528e5df0a223eeab41d129ff4897222a3c26b5c97571341105674f7f",
+          "originalTextInputParameterIds": [
+            "rental_duration_days",
+            "secondary_beam_count"
+          ],
+          "correctedTextSyntaxAstSha256": "b14a13bda0e5eaf47180f583c1d2d1d3bbdee3bff3558fbeb0a7125d8cf1b4a5",
+          "correctedTextInputParameterIds": [
+            "formwork_rental_duration_days",
+            "formwork_secondary_beam_count"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_sheet_rental_v1",
+          "capturedFormulaRowSha256": "e4937cdb91b81efc82dea55a1b401480bd40f40193fdea31de67f683867f7e00",
+          "capturedExpressionSource": "formwork_sheet_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_formwork_sheet_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_formwork_sheet_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "617e7b52ee6e03af91ac62bb3efa71af4b6bab4e9e030368308f2a868554eff8",
+          "sourceOnlyRecomputedAstSha256": "617e7b52ee6e03af91ac62bb3efa71af4b6bab4e9e030368308f2a868554eff8",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_formwork_sheet_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "85f83981f1e78fc57b16af28c230545ff41323ecdfa363c6ae9d2400c21dbdc5",
+          "originalTextInputParameterIds": [
+            "formwork_sheet_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "617e7b52ee6e03af91ac62bb3efa71af4b6bab4e9e030368308f2a868554eff8",
+          "correctedTextInputParameterIds": [
+            "formwork_formwork_sheet_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_stabilizer_rental_v1",
+          "capturedFormulaRowSha256": "6fb7a39026c1643b5a6ce4c8a7a53556a08034592c95abceb4e222362bf31e66",
+          "capturedExpressionSource": "secondary_beam_stabilizer_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_secondary_beam_stabilizer_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_secondary_beam_stabilizer_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "ec4a0d232d700f67b5cd6029545eb8120e3d0c6a2c9da3f85626801eb76a43bc",
+          "sourceOnlyRecomputedAstSha256": "ec4a0d232d700f67b5cd6029545eb8120e3d0c6a2c9da3f85626801eb76a43bc",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_rental_duration_days",
+            "formwork_secondary_beam_stabilizer_count"
+          ],
+          "originalTextSyntaxAstSha256": "f38b9a6226daa7b797d1d4efec365b6b21f5c40258b804bf8e81e601418f7511",
+          "originalTextInputParameterIds": [
+            "rental_duration_days",
+            "secondary_beam_stabilizer_count"
+          ],
+          "correctedTextSyntaxAstSha256": "ec4a0d232d700f67b5cd6029545eb8120e3d0c6a2c9da3f85626801eb76a43bc",
+          "correctedTextInputParameterIds": [
+            "formwork_rental_duration_days",
+            "formwork_secondary_beam_stabilizer_count"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_supporting_head_rental_v1",
+          "capturedFormulaRowSha256": "e38b93f373ec557e0c5c437873d0b71b4d3596f832b2eea648e64bbeaf5a2d08",
+          "capturedExpressionSource": "supporting_head_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_supporting_head_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_supporting_head_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "b1119176d27c2087a086400c910f25953effc5ac86dde886b8a99905a9e162f9",
+          "sourceOnlyRecomputedAstSha256": "b1119176d27c2087a086400c910f25953effc5ac86dde886b8a99905a9e162f9",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_rental_duration_days",
+            "formwork_supporting_head_count"
+          ],
+          "originalTextSyntaxAstSha256": "da9a537b7f5ab8a6276bf83c14b93bf8e9fdf95e2124b3e492cd74c7c9558f5f",
+          "originalTextInputParameterIds": [
+            "rental_duration_days",
+            "supporting_head_count"
+          ],
+          "correctedTextSyntaxAstSha256": "b1119176d27c2087a086400c910f25953effc5ac86dde886b8a99905a9e162f9",
+          "correctedTextInputParameterIds": [
+            "formwork_rental_duration_days",
+            "formwork_supporting_head_count"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        },
+        {
+          "formulaId": "dokaflex_tripod_rental_v1",
+          "capturedFormulaRowSha256": "104dbbafaee3e3eb9094dbd3893b27fc872758ed25533940f427b9d873ecc242",
+          "capturedExpressionSource": "removable_tripod_count * rental_duration_days",
+          "correctedExpressionSource": "formwork_removable_tripod_count * formwork_rental_duration_days",
+          "authoritativeCapturedAst": {
+            "kind": "binary",
+            "left": {
+              "id": "formwork_removable_tripod_count",
+              "kind": "parameter"
+            },
+            "right": {
+              "id": "formwork_rental_duration_days",
+              "kind": "parameter"
+            },
+            "operator": "*"
+          },
+          "authoritativeAstSha256": "41bd918f02f48c0b6c74d8af344e3070107c3c18c01c015265ead89d5a207d8b",
+          "sourceOnlyRecomputedAstSha256": "41bd918f02f48c0b6c74d8af344e3070107c3c18c01c015265ead89d5a207d8b",
+          "outputUnitId": "piece_day",
+          "inputParameterIds": [
+            "formwork_removable_tripod_count",
+            "formwork_rental_duration_days"
+          ],
+          "originalTextSyntaxAstSha256": "3a7839aa6615de9fd8b71af43f49afa9adc3713cb88673afb1e1740794f496d6",
+          "originalTextInputParameterIds": [
+            "removable_tripod_count",
+            "rental_duration_days"
+          ],
+          "correctedTextSyntaxAstSha256": "41bd918f02f48c0b6c74d8af344e3070107c3c18c01c015265ead89d5a207d8b",
+          "correctedTextInputParameterIds": [
+            "formwork_removable_tripod_count",
+            "formwork_rental_duration_days"
+          ],
+          "permittedChange": "expression_source only in successor; every other captured formula field immutable"
+        }
+      ],
+      "formulaCount": 122,
+      "sourceSyntaxMatchedUnchangedCount": 105,
+      "sourceSyntaxMatchedUnchangedFormulaIdsSha256": "6e67f525cea4fbec783aee0054cacd0c33f18d82395a60e46f34ad450f9ecd2f",
+      "integrationRule": "Apply exact map through existing retainParentBindings.formulaExpressionRepairs and same text-only changes in successor formula array. Never mutate capturedParent."
+    },
+    {
+      "captureIndex": 1,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_concrete_slab_pour_standard",
+      "definitionId": "74f7f66a-7c2f-5cf1-b97b-029da11f2e94",
+      "parentDefinitionReleaseId": "f008dc67-5310-5593-896c-efbfe0958bd6",
+      "definitionVersion": 14,
+      "definitionSha256": "f5d23852382429b0db41bd2bf85b69607c22fb54f4bcec88befcb7eb37093483",
+      "baselineId": "978988cd-5d0f-5b32-a93a-d2973a76ee96",
+      "baselineRowSha256": "5b5f72e56f347835144a530ef6abf2080794ccbe19fb762d4b94b4e77d3657e0",
+      "capturedParentSha256": "5e5f9c65a74ed8252a04d936963883931f4fdbe43f1841afaddea0a45765fb94",
+      "capturedDefinitionRowSha256": "f1c3a2220b7b041c38a7e6670d801c4fd63eca5c873d3bb17020afb0635af3ef",
+      "capturedFormulaRecordsSha256": "2bb64ffadd7a3ef5a574fde4380d2a6bd0f8bfd08773ba496995647cf33b62bb",
+      "shape": [
+        402,
+        204,
+        204
+      ],
+      "captureFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+      "status": "NO_REPAIR_REQUIRED",
+      "formulaExpressionRepairs": null,
+      "repairWitnesses": [],
+      "formulaCount": 204,
+      "sourceSyntaxMatchedUnchangedCount": 204,
+      "sourceSyntaxMatchedUnchangedFormulaIdsSha256": "7717a930e24c6d39b6afae22b6f8ea16f4dd233cb93920c5492ad42bc0a132b9",
+      "integrationRule": "Omit formulaExpressionRepairs entirely. Present null/empty is rejected by existing guard."
+    },
+    {
+      "captureIndex": 2,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_slab_foundation_pour_standard",
+      "definitionId": "e49082df-9ff0-54a1-8a89-c20064e22815",
+      "parentDefinitionReleaseId": "e3e131de-7d80-5f53-a14b-bde1d55a5c4c",
+      "definitionVersion": 12,
+      "definitionSha256": "0d25c180b85daffba85b4d5be37c399e969192bd90b9b2241caf577f16842127",
+      "baselineId": "950774f9-aebb-5e65-92d6-960000de7a89",
+      "baselineRowSha256": "4eba6a7273bb5486b335e4de44365e2206648866ecfea40dd87159f16e8f8cf3",
+      "capturedParentSha256": "e0cab2d86e187b97312c549e7b980c0a197c9db4ac66f3041c633ae3469bd36a",
+      "capturedDefinitionRowSha256": "a094358ba8656854e0c5e08268857a2a6a5c22c2debc5a4691941535db596a92",
+      "capturedFormulaRecordsSha256": "cc343cc88e36264a59505c490b9956c0480bb4b8e64b2d57ab2fa6acdde9b154",
+      "shape": [
+        427,
+        385,
+        370
+      ],
+      "captureFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+      "status": "NO_REPAIR_REQUIRED",
+      "formulaExpressionRepairs": null,
+      "repairWitnesses": [],
+      "formulaCount": 385,
+      "sourceSyntaxMatchedUnchangedCount": 385,
+      "sourceSyntaxMatchedUnchangedFormulaIdsSha256": "f68891e71c0c4adec0ca4c3259ae9f8cdbf60f7e3ff1748b3aaefdd5574fe042",
+      "integrationRule": "Omit formulaExpressionRepairs entirely. Present null/empty is rejected by existing guard."
+    },
+    {
+      "captureIndex": 3,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_stairs_concrete_pour_standard",
+      "definitionId": "67087a24-8029-58cc-84a2-be54326cecb8",
+      "parentDefinitionReleaseId": "be7b86f7-77b1-5883-96f4-24a700c6a89a",
+      "definitionVersion": 14,
+      "definitionSha256": "766a00f1b958fd4f789dd65f2828a3964ec8460ef79521a1c74b64db49ee3b0b",
+      "baselineId": "f395fece-c36d-5cf2-a014-d6028a5bc597",
+      "baselineRowSha256": "cebb0af6162c5b15e5c0bf26b908eabeeeebd168b38a3d78bb75cd7e054b7129",
+      "capturedParentSha256": "11eba7c225763f4240657f90313956627f18c65d3782677e942e6b4ed5be41aa",
+      "capturedDefinitionRowSha256": "97fb50d0e995d566a714e41af4f0a0e7c5d8277296a4f0673523f96c1a88d085",
+      "capturedFormulaRecordsSha256": "b791ef507b7d9587f3e52703a5b8c4e938da5ec107a2748ada58cbc5af62c2b8",
+      "shape": [
+        397,
+        187,
+        187
+      ],
+      "captureFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+      "status": "NO_REPAIR_REQUIRED",
+      "formulaExpressionRepairs": null,
+      "repairWitnesses": [],
+      "formulaCount": 187,
+      "sourceSyntaxMatchedUnchangedCount": 187,
+      "sourceSyntaxMatchedUnchangedFormulaIdsSha256": "c09b5f4ef2a457f5a5b94cc658f18f1f50a99946321fd20016ccbe41958e3d86",
+      "integrationRule": "Omit formulaExpressionRepairs entirely. Present null/empty is rejected by existing guard."
+    },
+    {
+      "captureIndex": 4,
+      "catalogId": "canonical-work:base:concrete_foundation_interior_strip_foundation_pour_standard",
+      "definitionId": "1c380012-6b8b-5de5-8e15-35e945dd1a3a",
+      "parentDefinitionReleaseId": "658381e0-8ba1-5cf0-b275-6e2050bf0eff",
+      "definitionVersion": 15,
+      "definitionSha256": "552a8173d2800b29d96d7bf94f0b8410b05ecd711ac585183e4f06d8001abe3a",
+      "baselineId": "50564651-12ae-556a-aaed-7830a01cc300",
+      "baselineRowSha256": "b76a410b07b1caf1a78f81a0466937dfb859113f56a92e103e63500625500d51",
+      "capturedParentSha256": "55a1bd03fa7be65a6f238659c88dcb3ee08f7d6db0b5524a1830c74eaf828076",
+      "capturedDefinitionRowSha256": "5b61a0b6da7e7ef46bb6b08a0b345d148e25346e05bc2ba02d110d7077ef4ad5",
+      "capturedFormulaRecordsSha256": "1408bc3c383a76830802ff336c3f13a353b0ae0a51b70421982ff9f93b54bcb8",
+      "shape": [
+        542,
+        260,
+        263
+      ],
+      "captureFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+      "status": "NO_REPAIR_REQUIRED",
+      "formulaExpressionRepairs": null,
+      "repairWitnesses": [],
+      "formulaCount": 260,
+      "sourceSyntaxMatchedUnchangedCount": 260,
+      "sourceSyntaxMatchedUnchangedFormulaIdsSha256": "84bd9b75e084ecdc5f167466dda52d41785e4d573e47d0efdc88887ca9127d8d",
+      "integrationRule": "Omit formulaExpressionRepairs entirely. Present null/empty is rejected by existing guard."
+    },
+    {
+      "captureIndex": 5,
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_beam_standard",
+      "definitionId": "d68949ea-1949-5e2f-a27c-1a24e69991ba",
+      "parentDefinitionReleaseId": "4434db31-d6c6-56f7-8084-0dc068019b1c",
+      "definitionVersion": 1,
+      "definitionSha256": "2b1cd728e5b8ea191fb544aca5db2f16d3960b368ad589510530920f1a74da13",
+      "baselineId": "6c42ded5-cfff-5038-8947-111f0655e8ab",
+      "baselineRowSha256": "3dee5a16a16fb0d81e5710eee0a7948a80a51f7a3485f1f2c8e53c7a4ecb8df0",
+      "capturedParentSha256": "d65d42cad810143effdfb44d9f1c72d52c3d84a5e19bd0c9bd219bd0930591c0",
+      "capturedDefinitionRowSha256": "99aeaca7c2356db52fef2446116a1b73a43f7ea7ea999bcb68cc19ad615fe288",
+      "capturedFormulaRecordsSha256": "e7a06bd538d7073b70981a103b1c64449dfcfcabcb2e52ead155230156f0cfa3",
+      "shape": [
+        110,
+        103,
+        103
+      ],
+      "captureFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+      "status": "NO_REPAIR_REQUIRED",
+      "formulaExpressionRepairs": null,
+      "repairWitnesses": [],
+      "formulaCount": 103,
+      "sourceSyntaxMatchedUnchangedCount": 103,
+      "sourceSyntaxMatchedUnchangedFormulaIdsSha256": "d86d3792b5e80c6130b2832480deba4e9e5ba9d17d416e20d66bed8c4d6d8bec",
+      "integrationRule": "Omit formulaExpressionRepairs entirely. Present null/empty is rejected by existing guard."
+    },
+    {
+      "captureIndex": 6,
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_column_standard",
+      "definitionId": "2edcb2a4-1323-573b-9e8b-47e036928b33",
+      "parentDefinitionReleaseId": "5d9a1c9d-1f43-50f3-8a02-52b047e96000",
+      "definitionVersion": 1,
+      "definitionSha256": "ec1deb0944368465d3bda9b706bf87824caeb6aba70a13011ba3397c4ba3297d",
+      "baselineId": "a56a6b5f-b764-5131-9c60-936f8bb3506e",
+      "baselineRowSha256": "66f4d5dd4c54873f4389b3e110fbc5aeca13526d3a205c03c1fe697a6638c9da",
+      "capturedParentSha256": "910d60aa83895a4d66a95c3ea08795efa08da6da47d5d3dcbf658bc42542fb64",
+      "capturedDefinitionRowSha256": "44fc2840618e1bb3372767457d836cdc707c1af0a1c6f5d161ec127e8adc422f",
+      "capturedFormulaRecordsSha256": "94fd5431b5e86f4b8556e64ed74a9eab9eb83984c53cdd69183cbb4fd8fcd79b",
+      "shape": [
+        107,
+        101,
+        101
+      ],
+      "captureFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+      "status": "NO_REPAIR_REQUIRED",
+      "formulaExpressionRepairs": null,
+      "repairWitnesses": [],
+      "formulaCount": 101,
+      "sourceSyntaxMatchedUnchangedCount": 101,
+      "sourceSyntaxMatchedUnchangedFormulaIdsSha256": "818f8a531144dd98a7e520172966ac6e8d72f71bcdbfe7d0ce50660b447b75f6",
+      "integrationRule": "Omit formulaExpressionRepairs entirely. Present null/empty is rejected by existing guard."
+    },
+    {
+      "captureIndex": 7,
+      "catalogId": "canonical-work:master:monolithic_reinforced_concrete_wall_standard",
+      "definitionId": "96a425a6-423e-5132-ae79-b3daca20f528",
+      "parentDefinitionReleaseId": "aeecf20c-4fd1-5311-9bdb-41ed7b644dfb",
+      "definitionVersion": 1,
+      "definitionSha256": "48895db2ac4702ee954ca2dbb74ad2ff2a878c1ddaad1f73212282f4922928c0",
+      "baselineId": "d75bc7ab-d430-5f12-97e0-c44e03202fed",
+      "baselineRowSha256": "fbf89f17059c1fb8a33a6a52398bb31f7fe5f9ca74434d9db1934810c5a88b8a",
+      "capturedParentSha256": "fc3626c06c953564cbdc8ee21f0959cab3828c7ade1f2b6f2196d2fe10af10b6",
+      "capturedDefinitionRowSha256": "c8dcf7814e1c3116bf791665eaa2c4dea439cb610997f25d3668cf65a55539e1",
+      "capturedFormulaRecordsSha256": "861e86f845e1aa5d353c966baa720fdd69d4cd7c99c1ce8db13ebc475c82fc8e",
+      "shape": [
+        115,
+        119,
+        119
+      ],
+      "captureFileSha256": "a9b8c587189c2b6147592dddcca2f84a1fc9743376abd5122bea0ec42f9f098d",
+      "status": "NO_REPAIR_REQUIRED",
+      "formulaExpressionRepairs": null,
+      "repairWitnesses": [],
+      "formulaCount": 119,
+      "sourceSyntaxMatchedUnchangedCount": 119,
+      "sourceSyntaxMatchedUnchangedFormulaIdsSha256": "ad45b52fede87365a9451f9b5e7a18cafa94473db6596ef684605024b9b308e9",
+      "integrationRule": "Omit formulaExpressionRepairs entirely. Present null/empty is rejected by existing guard."
+    }
+  ]
+}

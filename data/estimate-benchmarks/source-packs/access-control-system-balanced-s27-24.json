@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.access-control-system-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:access_control_system",
+  "scope": "Complete installation and commissioning of one explicitly scoped access-control system with 8 controlled doors, 2 selected four-door controllers ACS-CTRL-4D, 16 selected readers READER-MF, 8 selected electromagnetic locks MAGLOCK-300 and 8 selected exit buttons EXIT-NO. CCTV, fire-alarm equipment, general-purpose LAN and building-wide UPS are excluded.",
+  "sourceAuthority": "Approved security-systems design organization, access-control integrator, equipment manufacturer, commissioning authority and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved controlled-door schedule and access logic",
+    "approved controller, reader, lock, exit-device and door-contact schedule",
+    "approved local power-supply and standby-battery calculation",
+    "network, reader and lock cable schedule and containment routes",
+    "mounting boxes, terminations, labeling and fastening details",
+    "installation method with labor, lifting and test-equipment quantities",
+    "door-by-door functional, emergency release and fail-safe test program",
+    "controlled-door register and commissioning report schedule",
+    "conditional intercom and fire-release integration schedules",
+    "delivery and packaging-waste removal plan",
+    "controller supplier package size and approved retained spare quantity"
+  ],
+  "ordinaryFixture": {
+    "systemCount": 1,
+    "controlledDoorCount": 8,
+    "controllerCount": 2,
+    "controllerDesignation": "ACS-CTRL-4D",
+    "readerCount": 16,
+    "readerDesignation": "READER-MF",
+    "lockCount": 8,
+    "lockDesignation": "MAGLOCK-300",
+    "exitButtonCount": 8,
+    "exitButtonDesignation": "EXIT-NO"
+  },
+  "procurementBalance": {
+    "controller": {
+      "installedNetQuantity": "acs_controller_count",
+      "retainedSpare": "acs_controller_retained_spare_piece",
+      "packageSize": "acs_controller_supplier_pack_size_piece"
+    },
+    "rules": {
+      "totalNeed": "installed net quantity + retained spare",
+      "packageCount": "ceil(total need / supplier package size)",
+      "order": "package count * supplier package size",
+      "remainderAfterInstallation": "order - installed net quantity",
+      "surplusBeyondSpare": "remainder - retained spare"
+    },
+    "visiblePreliminaryProfile": {
+      "acs_controller_retained_spare_piece": 0,
+      "acs_controller_supplier_pack_size_piece": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "door, device or cable quantities derived from floor area alone",
+    "static 432-m route or generic electrical productivity",
+    "automatic access logic, lock mode, power, battery or integration selection",
+    "universal spare quantity or supplier package",
+    "CCTV, fire alarm, general LAN or building UPS included",
+    "invented price"
+  ]
+}

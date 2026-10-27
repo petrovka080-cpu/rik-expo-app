@@ -1,0 +1,792 @@
+{
+  "contract": "rik-expo-app.s26-3.independent-completeness-map.v1",
+  "sourceKind": "PROJECT_SYSTEM",
+  "generatedFromCurrentRows": false,
+  "operationResourceBindingRequired": true,
+  "evidenceSha256": "2b567f7ed6e08d1d37cdf478f09e16ab99d160c87a99b04b9a12f41a5de1e180",
+  "sourceAuthorityPromoted": false,
+  "projectAuthenticated": false,
+  "fullTechnicalAcceptance": false,
+  "entries": [
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:assembly:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:assembly:consumed",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close",
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:assembly:consumed",
+        "parentRowId": "electrical:socket-complete-two-gang-source-r1:assembly:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:assembly:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:assembly:order",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close",
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:assembly:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:assembly:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:assembly:remaining",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close",
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:assembly:remaining"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:assembly:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:assembly:free",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close",
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:assembly:free"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:assembly:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:assembly:shortage",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close",
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:assembly:shortage"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:assembly:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:assembly:reserve-deficit",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close",
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:assembly:reserve-deficit"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:screws:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:screws:consumed",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:screws:consumed",
+        "parentRowId": "electrical:socket-complete-two-gang-source-r1:screws:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:screws:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:screws:order",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:screws:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:screws:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:screws:remaining",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:screws:remaining"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:screws:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:screws:free",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:screws:free"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:screws:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:screws:shortage",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:screws:shortage"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:screws:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:screws:reserve-deficit",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:screws:reserve-deficit"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:anchors:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:anchors:consumed",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:anchors:consumed",
+        "parentRowId": "electrical:socket-complete-two-gang-source-r1:anchors:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:anchors:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:anchors:order",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:anchors:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:anchors:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:anchors:remaining",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:anchors:remaining"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:anchors:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:anchors:free",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:anchors:free"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:anchors:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:anchors:shortage",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:anchors:shortage"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:anchors:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:anchors:reserve-deficit",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:anchors:reserve-deficit"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:markers:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:markers:consumed",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:markers:consumed",
+        "parentRowId": "electrical:socket-complete-two-gang-source-r1:markers:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:markers:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:markers:order",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:markers:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:markers:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:markers:remaining",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:markers:remaining"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:markers:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:markers:free",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:markers:free"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:markers:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:markers:shortage",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:markers:shortage"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:markers:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:markers:reserve-deficit",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:markers:reserve-deficit"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:cleanup",
+      "expectedResourceId": "candidate:waste-bags:consumed",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:waste-bags:consumed",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:cleanup"
+      ],
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:waste-bags:consumed",
+        "parentRowId": "electrical:socket-complete-two-gang-source-r1:waste-bags:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:cleanup",
+      "expectedResourceId": "candidate:waste-bags:order",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:waste-bags:order",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:cleanup"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:waste-bags:order"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:cleanup",
+      "expectedResourceId": "candidate:waste-bags:remaining",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:waste-bags:remaining",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:cleanup"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:waste-bags:remaining"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:cleanup",
+      "expectedResourceId": "candidate:waste-bags:free",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:waste-bags:free",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:cleanup"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:waste-bags:free"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:cleanup",
+      "expectedResourceId": "candidate:waste-bags:shortage",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:waste-bags:shortage",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:cleanup"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:waste-bags:shortage"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:cleanup",
+      "expectedResourceId": "candidate:waste-bags:reserve-deficit",
+      "category": "material",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:waste-bags:reserve-deficit",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:cleanup"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:waste-bags:reserve-deficit"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:own:driver",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:own:driver",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:own:driver"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:own:stripper-cutter",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:own:stripper-cutter",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:own:stripper-cutter"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:own:voltage-indicator",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:own:voltage-indicator",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:own:voltage-indicator"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:own:proving-unit",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:own:proving-unit",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:own:proving-unit"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:qa-close",
+      "expectedResourceId": "candidate:own:installation-tester",
+      "category": "equipment",
+      "unitId": "pcs",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:own:installation-tester",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:own:installation-tester"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:own:ppe",
+      "category": "equipment",
+      "unitId": "set",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:own:ppe",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close",
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:own:ppe"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:connection",
+      "expectedResourceId": "candidate:own:isolation",
+      "category": "equipment",
+      "unitId": "set",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:own:isolation",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:own:isolation"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:housing-fix",
+      "expectedResourceId": "candidate:whole-labour",
+      "category": "construction_work",
+      "unitId": "man_hour",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:whole-labour",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:housing-fix",
+        "electrical:socket-complete-two-gang-source-r1:assembly-access-close",
+        "electrical:socket-complete-two-gang-source-r1:connection",
+        "electrical:socket-complete-two-gang-source-r1:qa-close",
+        "electrical:socket-complete-two-gang-source-r1:delivery",
+        "electrical:socket-complete-two-gang-source-r1:cleanup"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:whole-labour"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:qa-close",
+      "expectedResourceId": "candidate:qa-included",
+      "category": "service",
+      "unitId": "test",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:qa-included",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:qa-close"
+      ],
+      "resolution": {
+        "kind": "INCLUDED_COMPONENT_ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:qa-included",
+        "parentRowId": "electrical:socket-complete-two-gang-source-r1:whole-labour"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:delivery",
+      "expectedResourceId": "candidate:delivery",
+      "category": "service",
+      "unitId": "trip",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:delivery",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:delivery"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:delivery"
+      }
+    },
+    {
+      "operationId": "complete-two-gang:cleanup",
+      "expectedResourceId": "candidate:waste-removal",
+      "category": "service",
+      "unitId": "trip",
+      "sourceId": "F03973EN/00",
+      "sourceIdentifierKind": "HELD_MANUFACTURER_DOCUMENT_ID_NOT_REGISTRY_SOURCE_OR_NORM",
+      "condition": "EXACT_COMPLETE_TWO_GANG_OPT_IN_WITH_PROTECTED_APPLICATION_SOURCE_HOLD; actual compatible project scope required",
+      "quantityRule": "DECLARED_WHOLE_PRODUCT_AND_REAL_PROJECT_RESOURCE_TOTAL_NOT_AN_INSTALLATION_RATE",
+      "formulaId": "electrical:socket-complete-two-gang-source-r1:formula:waste-removal",
+      "requiredOperationIds": [
+        "electrical:socket-complete-two-gang-source-r1:cleanup"
+      ],
+      "resolution": {
+        "kind": "ROW",
+        "rowId": "electrical:socket-complete-two-gang-source-r1:waste-removal"
+      }
+    }
+  ]
+}

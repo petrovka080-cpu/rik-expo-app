@@ -1,0 +1,71 @@
+{
+  "schema": "ai-estimate-role-based-uat-permissions-v1",
+  "permissions": [
+    {
+      "role_id": "ESTIMATOR",
+      "can_view_parser_result": true,
+      "can_view_missing_params": true,
+      "can_edit_assumptions": true,
+      "can_inspect_formulas": true,
+      "can_view_norm_sources": true,
+      "can_create_feedback": true,
+      "can_view_procurement_work_rows": false,
+      "can_view_raw_debug": false,
+      "can_export_support_package": false
+    },
+    {
+      "role_id": "DIRECTOR",
+      "can_view_grouped_estimate": true,
+      "can_view_trust_level": true,
+      "can_view_commercial_level": true,
+      "can_view_price_completeness": true,
+      "can_open_pdf": true,
+      "can_view_raw_debug": false,
+      "can_override_missing_price_total": false,
+      "can_export_support_package": false
+    },
+    {
+      "role_id": "PROCUREMENT_BUYER",
+      "can_view_procurement_package": true,
+      "can_export_procurement_package": true,
+      "can_view_labor_rows_as_procurement": false,
+      "can_view_helper_rows_as_procurement": false,
+      "can_view_debug_rows_as_procurement": false,
+      "can_view_formulas_as_procurement_rows": false,
+      "can_mutate_snapshot": false
+    },
+    {
+      "role_id": "FOREMAN",
+      "can_view_work_packages": true,
+      "can_view_scope": true,
+      "can_view_quantities": true,
+      "can_view_procurement_only_package": false,
+      "can_approve_pricebook": false
+    },
+    {
+      "role_id": "CLIENT_VIEWER",
+      "can_view_clean_summary": true,
+      "can_open_client_pdf": true,
+      "can_view_raw_json": false,
+      "can_view_raw_formulas_in_main_table": false,
+      "can_view_internal_template_ids": false,
+      "can_export_support_package": false
+    },
+    {
+      "role_id": "SUPPORT_ADMIN",
+      "can_export_support_package": true,
+      "can_view_redacted_telemetry": true,
+      "can_view_failure_reason": true,
+      "can_export_secrets": false,
+      "can_export_private_phone": false,
+      "can_export_private_email": false,
+      "can_approve_owner_signoff": false
+    }
+  ],
+  "acceptance": {
+    "uat_permissions_created": true,
+    "procurement_role_cannot_see_work_rows_as_procurement": true,
+    "client_role_no_raw_debug": true,
+    "support_package_role_redacted": true
+  }
+}

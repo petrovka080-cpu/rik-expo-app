@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "rik-expo-app.s27-24.industrial-steel-pipe-butt-weld-balanced-source-pack.v1",
+  "catalogId": "canonical-work:expanded:pipeline_welding",
+  "scope": "Atomic fit-up, butt welding, joint-level NDT and recording of 16 explicitly identified steel process-pipe joints, outside diameter 219 mm, wall 8 mm, steel 09G2S, under an explicitly selected WPS. Full pipe length, fittings, supports and whole-pipeline pressure testing are excluded.",
+  "sourceAuthority": "Approved process-piping project organization, welding engineer, quality-control service and approving project engineer",
+  "projectDocumentsRequired": [
+    "approved isometrics and weld-joint schedule",
+    "approved WPS with exact identity and consumable designations",
+    "welding-wire and shielding-gas supplier pack sizes and approved retained reserves",
+    "resource schedule for degreaser and grinding discs",
+    "method statement with fitter-welder labor, welding source, clamp and grinder quantities",
+    "NDT program with inspector labor, instrument quantities and report schedule",
+    "weld log and traceability requirements",
+    "conditional root-purge, heat-treatment and coating-repair schedules",
+    "delivery and waste-removal plan"
+  ],
+  "ordinaryFixture": {
+    "jointCount": 16,
+    "outsideDiameterMm": 219,
+    "wallThicknessMm": 8,
+    "steelGrade": "09Г2С",
+    "weldingProcedureDesignation": "WPS-219-GMAW"
+  },
+  "procurementBalance": {
+    "weldingWire": {
+      "installedNetQuantity": "welding_wire_mass_kg",
+      "retainedReserve": "welding_wire_retained_reserve_kg",
+      "packageSize": "welding_wire_supplier_pack_size_kg"
+    },
+    "shieldingGas": {
+      "installedNetQuantity": "shielding_gas_volume_m3",
+      "retainedReserve": "shielding_gas_retained_reserve_m3",
+      "packageSize": "shielding_gas_supplier_pack_size_m3"
+    },
+    "rules": {
+      "totalNeed": "installed net quantity + retained reserve",
+      "packageCount": "ceil(total need / supplier pack size)",
+      "order": "package count * supplier pack size",
+      "remainderAfterUse": "order - installed net quantity",
+      "surplusBeyondReserve": "remainder - retained reserve"
+    },
+    "visiblePreliminaryProfile": {
+      "welding_wire_retained_reserve_kg": 0,
+      "welding_wire_supplier_pack_size_kg": 1,
+      "shielding_gas_retained_reserve_m3": 0,
+      "shielding_gas_supplier_pack_size_m3": 1
+    }
+  },
+  "acceptanceFixtureRole": "VALIDATION_FIXTURE_NOT_PROJECT_NORM",
+  "forbiddenClaims": [
+    "automatic WPS, welding process or NDT method selection",
+    "universal reserve or supplier package",
+    "universal consumable, labor, equipment, inspection or logistics productivity",
+    "full pipe length, fittings, supports or whole-pipeline pressure testing included",
+    "invented price"
+  ]
+}

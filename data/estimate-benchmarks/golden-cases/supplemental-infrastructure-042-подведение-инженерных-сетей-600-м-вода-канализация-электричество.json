@@ -1,0 +1,75 @@
+{
+  "case_id": "supplemental-infrastructure-042-подведение-инженерных-сетей-600-м-вода-канализация-электричество",
+  "prompt": "подведение инженерных сетей 600 м вода канализация электричество",
+  "work_family_id": "multi_utility_trench",
+  "work_family_group": "INFRASTRUCTURE",
+  "engine": "expanded_complex",
+  "estimate_level": "PRELIMINARY_BOQ",
+  "input_parameters": {
+    "length_m": 600,
+    "network_count": 3
+  },
+  "missing_design_inputs_expected": true,
+  "reference_boq_rows": [
+    "water_pipe_lm",
+    "sewer_pipe_lm",
+    "power_cable_lm",
+    "service_chambers_pcs",
+    "utility_trench_m3",
+    "excavator_shifts",
+    "testing_commissioning"
+  ],
+  "reference_material_rows": [
+    "water_pipe_lm",
+    "sewer_pipe_lm",
+    "power_cable_lm",
+    "service_chambers_pcs"
+  ],
+  "reference_work_rows": [
+    "utility_trench_m3"
+  ],
+  "reference_service_rows": [
+    "testing_commissioning"
+  ],
+  "reference_equipment_rows": [
+    "excavator_shifts"
+  ],
+  "reference_procurement_subset": [
+    "water_pipe_lm",
+    "sewer_pipe_lm",
+    "power_cable_lm",
+    "service_chambers_pcs",
+    "excavator_shifts",
+    "testing_commissioning"
+  ],
+  "reference_pdf_sections": [
+    "Cover",
+    "Estimate level and trust",
+    "Input parameters",
+    "Assumptions and missing design inputs",
+    "Grouped quantities",
+    "Norm/source appendix",
+    "Formula trace appendix",
+    "Procurement appendix"
+  ],
+  "pricebook_region": "KG",
+  "currency": "KGS",
+  "pricebook_version": null,
+  "tolerance_policy_id": "golden-benchmark-tolerance-v1",
+  "expert_reviewer": "estimate-golden-benchmark-review-board",
+  "review_status": "APPROVED_FOR_PRELIMINARY",
+  "source_refs": [
+    "src_expanded_complex_utility_connections_reference_formula_v1"
+  ],
+  "reference_boq_file": "reference-boq/supplemental-infrastructure-042-подведение-инженерных-сетей-600-м-вода-канализация-электричество.json",
+  "critical": false,
+  "expected_row_codes": [
+    "water_pipe_lm",
+    "sewer_pipe_lm",
+    "power_cable_lm",
+    "service_chambers_pcs",
+    "utility_trench_m3",
+    "excavator_shifts",
+    "testing_commissioning"
+  ]
+}
