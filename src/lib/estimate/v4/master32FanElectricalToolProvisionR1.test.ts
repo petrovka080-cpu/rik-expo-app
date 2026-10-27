@@ -1,3 +1,11 @@
+import {fanPreparedOpeningReferencePublicationRequestR614 as publicationRequestR614} from '../../../../scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1';
+import referenceMethodR610 from '../../../../data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json';
+import {fanPreparedOpeningReferenceAdmissionInputR610 as referenceInputR610} from './master32FanElectricalToolProvisionR1';
+import {resolvePrimaryMeasureSelectionV1 as referencePrimaryR610} from '../backendPlatform/canonicalPrimaryMeasureSelectionV1';
+import {auditCanonicalPublisherSuccessorOperationResourcesR1 as auditPublisher} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
+import {auditCanonicalEstimateOperationResourcesV1 as auditResources} from '../backendPlatform/canonicalEstimateOperationComposition';
+import {parseCanonicalPublicResourcePresentationV1 as parse} from '../backendPlatform/canonicalPublicResourcePresentationV1';
+import {estimateDeterministicHash} from '../estimateDeterministicHash';
 import {manufacturerDoorFanFactoryKitsPackR1 as factoryPack} from './manufacturerDoorFanFactoryKitsR1';
 import { appendMaster32FanElectricalToolProvisionR1 as append, master32FanElectricalParentR1 as parent,
   master32FanElectricalToolProvisionPackR1 as pack, assertMaster32FanElectricalToolProvisionR1 as validate,
@@ -217,4 +225,46 @@ it.each(pack.targets.map(t=>t.key))('preserves all arithmetic and need quantitie
   const run=(resources:typeof d.resources)=>compileCanonicalEstimateCore({operation:'recalculate',catalogId:pack.targets.find(t=>t.key===key)!.catalogId,compilerVersion:pack.contract,primaryMeasureParameterId:pack.factoryChoices.includes(String(parameters[pack.factorySelectorId]))?pack.factoryCountId:'q',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...resources],submittedParameters:parameters,confirmedParameters:{},rowOverrides:{},priceItems:[],currencyCode:'KGS',maximumResourceRows:resources.length,hashJson:v=>canonicalEstimateSha256HexText(canonicalEstimateStableJson(v))});
   expect(project(await run(d.resources))).toEqual(project(await run(pre)));
  }
+});
+it('builds the flat prepared-opening reference directly from exact sources with all real stages and explicit object choices',()=>{
+ const source=referenceMethodR610,input=referenceInputR610(source.catalogId),d=input.model,map=input.independentCompletenessMap;
+ expect(d.resources).toHaveLength(21);expect(map.entries).toHaveLength(21);expect(map.operationRoster).toHaveLength(7);
+ expect(d.parameters.some(p=>p.parameter_id==='q'||p.parameter_id===factoryPack.countParameterId)).toBe(false);
+ expect(d.resources.some(r=>r.row_id.startsWith('ventilation_interior_fan_install_standard_'))).toBe(false);
+ const isolate=map.operationRoster.find((o:any)=>o.operationId.endsWith(':isolate'))!,connect=map.operationRoster.find((o:any)=>o.operationId.endsWith(':connect'))!,functionCheck=map.operationRoster.find((o:any)=>o.operationId.endsWith(':function-check'))!;
+ expect(isolate.processOrdinal).toBeLessThan(connect.processOrdinal);expect(connect.processOrdinal).toBeLessThan(functionCheck.processOrdinal);
+ expect(map.operationRoster.every((o:any)=>!o.completionCriterionRu.includes('не подтверждают'))).toBe(true);
+ expect(map.operationRoster.some((o:any)=>/battery-renewal|tool-maintenance|periodic-testing/.test(o.operationId))).toBe(false);
+ expect(map.operationRequirements.every((o:any)=>Object.keys(o.requirements).length===10)).toBe(true);
+ expect(map.operationRequirements.flatMap((o:any)=>Object.values(o.requirements)).some((c:any)=>c.status!=='NOT_APPLICABLE'&&!(c.rowIds?.length))).toBe(false);
+ expect(auditPublisher({resourceDefinitions:d.resources,independentComposition:map}).definitionAdmissionAllowed).toBe(true);
+ expect(d.parameters.every(p=>p.default_value===null)).toBe(true);
+ expect(d.resources.every(r=>r.resource_graph.inputParameterIds?.includes(source.projectReferenceId))).toBe(true);
+ const request=publicationRequestR614();expect(request.status).toBe('STOP_SOURCE_HELD');expect(request.executableConfig).toBeNull();
+ expect(request.current).toBeNull();expect(request.capturedScopedNormativeRegistry).toBeNull();
+ expect(request.preparationFields.resourceDefinitions).toEqual(d.resources);
+ expect(request.partialQuantityClassification).toHaveLength(5);expect(request.partialQuantityClassification.every(r=>!r.deferredProjectQuantityBasisEligible)).toBe(true);
+ expect(request.omittedModes).toEqual(['catalogAppend','retainParentBindings','reuseExistingNormativeRegistry']);
+ expect(d.resources.every(r=>r.source_metadata?.automaticGenericPriceInheritanceAllowed===false)).toBe(true);
+ expect(()=>referenceInputR610('canonical-work:base:ventilation_interior_fan_install_wet_zone')).toThrow('EXACT_SOURCE_SCOPE');
+ const schema=d.parameters.map(p=>({parameterId:p.parameter_id,valueType:p.value_type,unitId:p.unit_id,visibilityRole:String(p.truth_metadata.visibility_role),constraints:p.constraints_json,
+  formulaConsumers:d.formulas.filter(f=>f.input_parameter_ids.includes(p.parameter_id)).map(f=>f.formula_id)}));
+ for(const old of ['q',factoryPack.countParameterId])expect(referencePrimaryR610({selectionMetadata:input.applicability.primaryMeasureSelectionV1,parameterSchema:schema,
+  submittedParameters:input.referenceDemoInput,parentPrimaryMeasure:{parameterId:old,unitId:'set'}})).toMatchObject({kind:'NEW_ROOT_REQUIRED',carryForward:{parameters:false,rowOverrides:false,prices:false}});
+});
+it('runs the same ordinary core for the explicit reference demo, preserving unknown amounts and one factory procurement owner',async()=>{
+ const source=referenceMethodR610,input=referenceInputR610(source.catalogId),d=input.model;
+ const compiled=await compileCanonicalEstimateCore({operation:'compile',compilerVersion:source.contract,catalogId:source.catalogId,primaryMeasureParameterId:source.primaryCountId,
+  parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],submittedParameters:input.referenceDemoInput,confirmedParameters:{},rowOverrides:{},priceItems:[],currencyCode:'KGS',maximumResourceRows:d.resources.length,hashJson:estimateDeterministicHash});
+ const profile=factoryPack.profiles.find(p=>p.key==='axial-100-plain')!;
+ expect(compiled.rows.find(r=>r.row_id===profile.ownerRowId)?.quantity).toBe('2');
+ expect(compiled.rows.filter(r=>r.included_in_procurement).map(r=>r.row_id)).toEqual([profile.ownerRowId]);
+ expect(compiled.preliminaryNeeds.map(r=>r.row_id).sort()).toEqual([...source.unknownQuantityRows].sort());
+ for(const need of compiled.preliminaryNeeds){expect(need.quantity).toBeNull();expect(need.unit_id).toBe('');}
+ for(const key of source.selectedToolKeys){const part=pack.parts.find(p=>p.key===key)!;expect(compiled.rows.find(r=>r.row_id===part.rowId)?.quantity).toBe(part.perFront);}
+ const unknown=new Set(compiled.preliminaryNeeds.map(r=>r.row_id));
+ const runtime=auditResources({requireIndependentComposition:true,independentComposition:input.independentCompletenessMap,
+  resources:d.resources.map(r=>{const presentation=parse(r.resource_graph.publicResourcePresentationV1)!;return{rowId:r.row_id,nameRu:presentation.nameRu,sourceNameRu:r.title_ru,resourceKind:presentation.resourceKind,
+   unitId:r.unit_id,operation:r.resource_graph.operationCompositionV1,publicNameVerified:true,quantityKnown:!unknown.has(r.row_id)};})});
+ expect(runtime.definitionAdmissionAllowed).toBe(true);expect(runtime.completeClaimAllowed).toBe(false);expect(runtime.pdfAllowed).toBe(false);expect(runtime.issues.filter(i=>i.code==='RESOURCE_UNIT_UNRESOLVED')).toHaveLength(5);
 });

@@ -92,7 +92,7 @@ export function canonicalEstimateSavedOperationAcceptanceV1(input: {
       titleRu: String(row.title_ru ?? ''), descriptor: graph.publicResourcePresentationV1,
       manualTitleOverride, graph, parameters, compactPreliminaryNeed: row.ownership_status === 'PRELIMINARY_NEED'});
     const legacyName = canonicalLegacyResourceNameV1(rowId, context, manualTitleOverride);
-    return [{rowId, sourceNameRu, nameRu: manualTitleOverride ? String(row.title_ru ?? '')
+    return [{rowId, unitId:typeof row.unit_id==='string'?row.unit_id:null, sourceNameRu, nameRu: manualTitleOverride ? String(row.title_ru ?? '')
         : legacyName ?? presentation?.nameRu ?? String(row.title_ru ?? ''),
       resourceKind: canonicalLegacyResourceKindV1(rowId, context) ?? presentation?.resourceKind
         ?? canonicalPublicResourcePresentationKindV1({titleRu:String(row.title_ru ?? ''),

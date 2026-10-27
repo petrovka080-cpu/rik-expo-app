@@ -82,5 +82,8 @@
   "AGENTS.md": null,
   "src/lib/estimate/v4/wallPaintConstructorS2735.ts": null,
   "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": null,
-  "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": null
+  "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": null,
+  "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": null,
+  "data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json": null,
+  "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": null
 }

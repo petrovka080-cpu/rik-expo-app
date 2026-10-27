@@ -148,6 +148,7 @@
     "data/estimate-benchmarks/source-packs/euroflex-recycling50-materials-s27-75.json": "bb333e13bf396699998c93e410ce25fff6086115d6a9d136ab1c1c08ac79b531",
     "data/estimate-benchmarks/source-packs/facade-ceresit-ct190-kz-material-subworks-r1.json": "9a3471c8cf2203aedb4c6acf9bfa74cc210a6c426df37715be3b8b6e75ec88f8",
     "data/estimate-benchmarks/source-packs/facade-flashings-with-downpipes-krer12-008-01-quantity-r1.json": "4c746387b60189b6973c7fcb501c2676a153a46ea5adead69f461cbd5181fa56",
+    "data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json": "e86d05411af9c15f5c3a5177e7212e09ff7e51c195bc7a2a9d64f2297af6f739",
     "data/estimate-benchmarks/source-packs/flat-metal-oil-two-coats-krer15-030-02-quantity-r1.json": "9cf784f9848df164187529d8aeee2442ccd736e91ea04ae0f729e488f7ee42f7",
     "data/estimate-benchmarks/source-packs/flat-roof-scope-s27-65.json": "6da79a052b0e9c7d84173062a885bb4b09af49897f9e9f376d4c3e267cbed651",
     "data/estimate-benchmarks/source-packs/floor-cement-screed20mm-krer11-011-01-r1.json": "99989ee2e6e3cf553b59b03a23c09d2eefa598672c51820f342bdd7ef17818e5",
@@ -285,7 +286,7 @@
     "data/estimate/professional-nomenclature/materials.json": "f6040620e1b67477d22712e8eb47e9d721ff933c7d431dcdd9ff1770ad49b9ff",
     "data/estimate/professional-nomenclature/services.json": "6ca56c72a5b479ab3c64d3c4415a0c3072d06c2a6090b80ca1bc5c6012ad5397",
     "data/estimate/professional-nomenclature/works.json": "ea3535f73092521c25d9fbd85ceb27c97d7ee5a2da7a89b885068620a1b850ed",
-    "docs/estimate-operation-resource-acceptance.md": "59dbba746ffd1a525dfaddd12bb4d48fd069a182767aa8bcd5df4a11a96b4a3c",
+    "docs/estimate-operation-resource-acceptance.md": "22e35f173b3ffa2c95fc8b06f28f242eaa683bca7df59615a9c5af971c9a5c51",
     "expo-env.d.ts": "6fc02634da46d3edc5a88eec9173ba6bf709726be3cba83c73ebd8e859d5c147",
     "jest.config.js": "e8ec12f711ce53a030fb7e9ac6b51ca3dccf32035357a77de39b7b0632720708",
     "jest.setup.js": "88956f4429b53e19936bb3c0704c524fd097e8a68b457691716c1cd5753ae1c1",
@@ -334,7 +335,7 @@
     "scripts/estimate/r4a13/canonicalDefinitionPublisherConditionalSourceScopeR1.test.ts": "1a35b95ea8c04c9879a91e763209b847ecb3f6787f5d0dec096979a66e3c89a8",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherParameterOrdinalsR1.test.ts": "80d99d70c1b35a864f138b6daf3348331b97ae0b15acdd0975825df9b29366fd",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": "d547140084bfcae2e33a48261a3d3b7dd0b6f105ec4357e3a7ff3344ed92c74e",
-    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "a7dd18e444ef7a0b0c2dbb7cd4d047c738a39c1d664c439517dbc1447e9dbba9",
+    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "89dd4f4c4be885f46f2151ac226e7e5a3da91d20667ef01670e61a8ebe4e5cb4",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherResourceOrderingR1.test.ts": "b3117f2ccb80b2a8007ba33f95b65bdd14064a59d8b4ac9a9520750093b0ea67",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": "22e0c945a463230bed73e7efed680cf7bbd1547b82348737c620e72756bc6691",
     "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845",
@@ -343,7 +344,7 @@
     "scripts/estimate/r4a13/floorConcreteUnderlayerColumn09AppendR1.test.ts": "5743738f5082244d862cb9cb7e9b89ec2e23ebc0bca8ce8f7c943b744edb4213",
     "scripts/estimate/r4a13/floorSandStraightedgeRetainedMasterR3.test.ts": "d9f06c8626032d2ab2356f8dac8e20009d7110c18840bb91d7318e35f2d03527",
     "scripts/estimate/r4a13/formworkRemainingFamilyApplicabilityCorrection.ts": "71b1c56673fdf4daa82fe756468b8fbe02145ddfe07905fd322ddce0656eb6b0",
-    "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": "4c0734caf4ae742e4c9a35d81ac45113f23589f25dd079c4f1bb4b99053d91de",
+    "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": "8b1724d62eba16d8df3c9140ecbf9664dc09dda4c5e81a8567b1f8cd2e86d506",
     "scripts/estimate/r4a13/masterActiveCatalogRetirementR575.test.ts": "8e9d66416130b3fa4d598f0abdfb9308192ee69c434cb1f3aa1da0118e0af03c",
     "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts": "936cdac80470ba4215586433315b41bd6546870e4c0b7d2b4b7c1e2d5b43dca0",
     "scripts/estimate/r4a13/masterExistingNormativeRegistryReuseR1.test.ts": "64169613230f776ec5f0c1b4902229226bc1de21d7d8e4d89268cbfa8ec05a67",
@@ -443,6 +444,7 @@
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.test.ts": "16199dd97dad1ae3b541eae2784351143527fde6d1676df03dbcffd22358bd5d",
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.ts": "2549780f9af5d0e6ece5e40683db6ef364f9d263492e2e58c58e59e140017d97",
     "scripts/estimate/r4a13/prepareManufacturerDoorFanFactoryKitsR1.ts": "cf6c305374da8d80c8234d1e28a549490f97a255000eb6e3cd0983930a087a30",
+    "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": "8fa2718a1041016342770f0952560a2f35d39164c6803cb0a71452349549706b",
     "scripts/estimate/r4a13/prepareMasterAsphaltCompactionProfileSuccessor.ts": "1813926b2ec6897a3af1b00740160d0ffa642f6ca76eb1f229f74586123005ed",
     "scripts/estimate/r4a13/prepareMasterAsphaltInstallKrer27Successor.ts": "369e2e86944b95be758f96b4dfe2168079665fb0771d68b0595d26587d24eea7",
     "scripts/estimate/r4a13/prepareMasterBridgeAsphaltCompleteSuccessor.ts": "c7c6b7f8a4040f94ef1aa4374387318d1be576f7882a57e9146ba7650a34de1f",
@@ -559,7 +561,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "30aca0f900750bac9e9d8e663d1b4761f8dff931f75ece3173d59ab6e4a90e1f",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "caeb8ad870505a3053724f605508be5a7a2644a3e5d67780976df64212efadd9",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "e39c32149e7ffbd80b2b763d434ebaa84caef89b3fc42dc6a23ab2ab2b9f95eb",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "86b63914c8e990ed96b9121e8d78eb364a016e95fd26598990ed3b1911ca473c",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1212,7 +1214,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "b00a772ac9b38b9ae47fc169252300c08382e9d3b7321f301afef6f29c0fdf96",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "255317cdf01b3b30cb33e5157c457b9ebbf7940ad844b755354511f60922bad6",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "4f3edff38b4f4a05035e9c10263dbabdcb821cae87be3ef4cb1d9d8312620e55",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -1234,7 +1236,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalRecalculation.ts": "b7cc752131d66fc0a5bec90ce53d2696719642eb9f99c5488c1579fc31145472",
     "src/lib/estimate/backendPlatform/canonicalEstimateOfflineCache.ts": "7793a6b9cec9c1ccc212a0ee5eb8647dd1a71b011f353c405d2e8750da3e960e",
     "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": "bdc95bcacab0ce59af5b1fd482bd54d30b980348391deb8a739417a6922593b7",
-    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "41dd9bfc0d8e56cc7cbe9e079357ff3cf7a5ecd8a004c11898185937882e7671",
+    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "66eefc0b45c3a77f1af319090eebf792dfd2f5d4235883d613fbde8c1354a919",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.test.ts": "4908d07962f9642d07fc617008bdc7863ddfdc69b0b89cc97d0e44e6a355dfee",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts": "cac2b06547720c704b21d15d87df00b1393966f5fd07c5a13884d7d10f045b81",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot.ts": "00951c3c11d9ab18190f2ad8f034dca95432bd93a8645154f6eb9e11ec98b185",
@@ -1250,7 +1252,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "a0a61d3e702b8a57c5a98f77d1306170dfcf34700a34ab506c9a7b7d8c6622d1",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "0306868be8cc0ef91cdc3b0ea1c287017652390078741cc0616d69bbe9d0b8a8",
+    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "1559569db12222e8c9a889308c3354b0220b4b7178073ffd2e544d656ddb54fc",
     "src/lib/estimate/backendPlatform/canonicalEstimateSearchInput.ts": "8db129b35d8f80b05a79376336fdfa4222a9dcb7c51288f1eae3d24403d62139",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
     "src/lib/estimate/backendPlatform/canonicalExactConditionalSuccessorMigrationV1.ts": "914d3aaf669a97e2f11231c887272a0e4c49206c22782d732ff840c55731d47e",
@@ -1816,8 +1818,8 @@
     "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts": "73244519d0d16e7931c351d34a021431238c5e3eb363042279118af6714f9af8",
     "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.ts": "40fc21e9cab745ac25e7e4192ebe48039876070e79c879267ac2ac4cab691838",
     "src/lib/estimate/v4/masonryBrickWallBiaTn10R1.ts": "1223578c1bfe569bcbc18183f2a81cf204a6359ef26605bd45c0c52b682be8d3",
-    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": "4b2336d84c64c0902822e52b01e3d6129aa18aadfc8da16ab667c2476111b14e",
-    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": "482dd9934d36481310e0dc8a129951a8fb2907bc4984dd47670b758553f068e2",
+    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": "0f875022cb944ba5d4652fcbdfff69f06f5d03e39b759d321737115faf0792f0",
+    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": "9f6cf7c9e9262f43da259e8e5cbb48997b2099c81ec0f9af20fa67b50d7ebfb5",
     "src/lib/estimate/v4/mineralCeilingThirdPuttyCoatS2754.ts": "150d9985d86076af8540cd29003ed8ab493d2a50c7431b170a0f1e13cb60f0ed",
     "src/lib/estimate/v4/mineralCeilingThirdPuttySupplierGatesS2754.ts": "feea1d25660d74d2d9ad8d718010639ed353e8128e73f2b156857abea9b20986",
     "src/lib/estimate/v4/monolithicStairDokaKrer06Column11101R1.ts": "4a3f0b4920fbb42e0a300dc16051bb6ccd4b164236446ee23fd9a486b1746ff3",
@@ -2399,7 +2401,7 @@
     "tests/estimateNorms/temporaryTrussNodeStrengtheningDevicesKrer46R1.contract.test.ts": "29526da51dfee3861e319dd08d5c050de466a6755b0f4d4ec313516857cb8a43",
     "tests/estimateNorms/temporaryUpperBeamChordStrengtheningDevicesKrer46R1.contract.test.ts": "55b297096439835ffa64954922f0eb8af18d0136dbe4ce960d1c0123701a0a68",
     "tests/estimateNorms/temporaryVerticalProtectiveBarrierBoardFrameKrer46R1.contract.test.ts": "cc5d45d3af2c98a187e62dbb2aa70554b5f31fbe4825e4fc280233e895832bc7",
-    "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": "ae64cee09864fc6d7a131600de012b9aa30c1202983fc07afb5e15a97e0742eb",
+    "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": "72ea41f63fbf5996c3958627ed2aa93f190a6602ee437a0cff699f7e793a9ec8",
     "tests/estimateNorms/woodCeilingFireproofCoatingKrer26R1.contract.test.ts": "a8f9e28a391190aca9a59d98a6e0ad7c76ba149fadc7405cea9c8ee35180050a",
     "tests/estimateNorms/woodFireproofingLayerStrengtheningVariantsR1.contract.test.ts": "1113af0f6871d64c1a401307da5e8073affbee273a11fe522cb651bc34f402f5",
     "tests/estimateNorms/woodFireproofingLocalRepairVariantsR1.contract.test.ts": "589e7f07c1a2eecb49bf9256cedc3c3db371c94eef9e2caf6b989aaac34502d5",
@@ -3611,7 +3613,7 @@
     "node_modules/zustand/vanilla.d.ts": "4d7d964609a07368d076ce943b07106c5ebee8138c307d3273ba1cf3a0c3c751"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "e39c32149e7ffbd80b2b763d434ebaa84caef89b3fc42dc6a23ab2ab2b9f95eb",
+  "originalSeedManifestSha256": "86b63914c8e990ed96b9121e8d78eb364a016e95fd26598990ed3b1911ca473c",
   "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -3625,35 +3627,47 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2445,
+    "sourceFiles": 2447,
     "dependencyFiles": 1160,
-    "sourceBytes": 133051983
+    "sourceBytes": 133162916
   },
   "candidateSourceComposition": {
-    "contract": "source-authored-complete-reference-method-existing-ordinary-compiler/r613",
+    "contract": "mandatory-unit-acceptance-existing-fan-reference-ordinary-core/r617",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
-      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": {
-        "sha256": "d5f25622e12c23bd10408c1b7ef22ffffdd5e2f3b1bbfabd8a18edf077b6d9c0"
+      "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": {
+        "sha256": "66eefc0b45c3a77f1af319090eebf792dfd2f5d4235883d613fbde8c1354a919"
       },
-      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": {
-        "sha256": "74daf96e9fceda55ec5ecf2161a1b323c01ec725f5d621103866c755a7faff30"
+      "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": {
+        "sha256": "1559569db12222e8c9a889308c3354b0220b4b7178073ffd2e544d656ddb54fc"
       },
-      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": {
-        "sha256": "b00a772ac9b38b9ae47fc169252300c08382e9d3b7321f301afef6f29c0fdf96"
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": {
+        "sha256": "89dd4f4c4be885f46f2151ac226e7e5a3da91d20667ef01670e61a8ebe4e5cb4"
       },
-      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": {
-        "sha256": "4f3edff38b4f4a05035e9c10263dbabdcb821cae87be3ef4cb1d9d8312620e55"
-      },
-      "src/lib/estimate/v4/wallPaintConstructorS2735.ts": {
-        "sha256": "2b9d38d00d39ec53b4758d377f37825caab1a02359b0e1a6e620d1c51a182c9e"
-      },
-      "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": {
-        "sha256": "3c54b07a2f8f9565d210ec571611f219264e7594837d9efa7146e1ceca5dd92c"
+      "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": {
+        "sha256": "8b1724d62eba16d8df3c9140ecbf9664dc09dda4c5e81a8567b1f8cd2e86d506"
       },
       "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": {
-        "sha256": "ae64cee09864fc6d7a131600de012b9aa30c1202983fc07afb5e15a97e0742eb"
+        "sha256": "72ea41f63fbf5996c3958627ed2aa93f190a6602ee437a0cff699f7e793a9ec8"
+      },
+      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": {
+        "sha256": "255317cdf01b3b30cb33e5157c457b9ebbf7940ad844b755354511f60922bad6"
+      },
+      "docs/estimate-operation-resource-acceptance.md": {
+        "sha256": "22e35f173b3ffa2c95fc8b06f28f242eaa683bca7df59615a9c5af971c9a5c51"
+      },
+      "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": {
+        "sha256": "9f6cf7c9e9262f43da259e8e5cbb48997b2099c81ec0f9af20fa67b50d7ebfb5"
+      },
+      "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": {
+        "sha256": "0f875022cb944ba5d4652fcbdfff69f06f5d03e39b759d321737115faf0792f0"
+      },
+      "data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json": {
+        "sha256": "e86d05411af9c15f5c3a5177e7212e09ff7e51c195bc7a2a9d64f2297af6f739"
+      },
+      "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": {
+        "sha256": "8fa2718a1041016342770f0952560a2f35d39164c6803cb0a71452349549706b"
       }
     }
   },

@@ -46,6 +46,12 @@ it('requires independently declared operation/resource/name/kind evidence at bot
  expect(partialAdmission.status).toBe('COMPOSITION_UNVERIFIED');
  // Visible source-reviewed but unresolved composition can be authored, never issued as a PDF.
  expect(partialAdmission.pdfAllowed).toBe(false);
+ expect(partialAdmission.issues).toContainEqual({code:'RESOURCE_UNIT_UNRESOLVED',rowId:'TEST_ONLY:labour'});
+ // Known numbers cannot conceal an unresolved measure; admission still preserves the partial row.
+ const measureOnlyMap={...map,operationRequirements:[{...map.operationRequirements[0],requirements:{...reviewedClasses,LABOR:{status:'REQUIRED',rowIds:['TEST_ONLY:labour']}}}]};
+ const measureOnly=audit({resourceDefinitions:resources,independentComposition:measureOnlyMap});
+ expect(measureOnly).toMatchObject({pdfAllowed:false,definitionAdmissionAllowed:true,completeClaimAllowed:false});
+ expect(measureOnly.issues).toEqual([{code:'RESOURCE_UNIT_UNRESOLVED',rowId:'TEST_ONLY:labour'}]);
  const noReview={...map,operationRequirements:undefined};expect(()=>admit({resourceDefinitions:resources,independentComposition:noReview})).toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');
  const incompleteClasses={...reviewedClasses,PPE:undefined};
  expect(()=>admit({resourceDefinitions:resources,independentComposition:{...map,operationRequirements:[{operationId:operation.operationId,sourceId:'TEST_ONLY_SOURCE',requirements:incompleteClasses}]}})).toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');
@@ -81,7 +87,7 @@ it('requires independently declared operation/resource/name/kind evidence at bot
   operationId:secondary.operationId,requiredOperationIds:[operation.operationId]}:entry)};
  expect(()=>admit({resourceDefinitions:resources,independentComposition:missingPrimary})).toThrow('INDEPENDENT_RESOURCE_PRIMARY_USE_MISSING');
  // Manual naming is permitted, while independent membership and kind stay mandatory.
- const manualRows=resources.map((row,index)=>({rowId:row.row_id,sourceNameRu:row.title_ru,
+ const manualRows=resources.map((row,index)=>({rowId:row.row_id,unitId:row.unit_id,sourceNameRu:row.title_ru,
   nameRu:index===0?'Моё название зажима':row.title_ru,resourceKind:row.resource_graph.publicResourcePresentationV1.resourceKind,
   operation,manualTitleOverride:true,publicNameVerified:false}));
  const manualAccepted=auditCommon({resources:manualRows,independentComposition:map,requireIndependentComposition:true});

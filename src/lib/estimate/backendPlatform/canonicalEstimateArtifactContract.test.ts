@@ -457,7 +457,7 @@ it('cold-reads the exact server passport snapshot, rejects drift and never upgra
   expect(checksum).not.toBe(createHash('sha256').update(canonicalEstimateStableJson({rows:['fixed']}),'utf8').digest('hex'));
   const saved={...revision,release_id:'pinned-release',definition_version_id:'pinned-definition',
     amendment_contract:{parameterSources:{operationCompositionEvidenceV1:evidence}}};
-  const resources=specification.map(([kind,name])=>({row_id:'test-'+kind,title_ru:name,quantity:'1',
+  const resources=specification.map(([kind,name])=>({row_id:'test-'+kind,title_ru:name,quantity:'1',unit_id:kind==='LABOR'?'man_hour':kind==='TRANSPORT'?'trip':'piece',
     calculation_trace:{resourceGraph:{operationCompositionV1:op,publicResourcePresentationV1:{
       contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:name,nameRu:name,
       brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:kind}}}}));
@@ -471,6 +471,13 @@ it('cold-reads the exact server passport snapshot, rejects drift and never upgra
   const quantityOnly=canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources:unknown});
   expect(quantityOnly).toMatchObject({status:'COMPOSITION_UNVERIFIED',pdfAllowed:true,completeClaimAllowed:false});
   expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(quantityOnly)).not.toThrow();
+  for(const unit_id of ['', '   ', null]){
+    const unknownUnit=resources.map((row,index)=>index?row:{...row,unit_id});
+    const held=canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources:unknownUnit});
+    expect(held).toMatchObject({status:'COMPOSITION_UNVERIFIED',pdfAllowed:false,completeClaimAllowed:false});
+    expect(held.issues).toContainEqual({code:'RESOURCE_UNIT_UNRESOLVED',rowId:'test-MATERIAL'});
+    expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(held)).toThrow(expect.objectContaining({code:'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED',httpStatus:409}));
+  }
   const legacy={...saved,amendment_contract:{}};
   expect(canonicalEstimateSavedOperationAcceptanceV1({revision:legacy,resources}).status).toBe('COMPOSITION_UNVERIFIED');
   expect(canonicalEstimateSavedOperationAcceptanceV1({revision:legacy,resources,savedIndependentComposition:map}).pdfAllowed).toBe(false);

@@ -99,7 +99,7 @@ export function auditCanonicalPublisherSuccessorOperationResourcesR1(input:Reado
    const titleRu=String(row.title_ru??'');
    const presentation=canonicalPublicResourceDisplayPresentationV1({rowId:String(row.row_id??''),titleRu,graph,
     descriptor:graph.publicResourcePresentationV1});
-   return[{rowId:String(row.row_id??''),nameRu:presentation?.nameRu??titleRu,sourceNameRu:titleRu,
+   return[{rowId:String(row.row_id??''),unitId:typeof row.unit_id==='string'?row.unit_id:null,nameRu:presentation?.nameRu??titleRu,sourceNameRu:titleRu,
     resourceKind:presentation?.resourceKind??null,operation:graph.operationCompositionV1,
     publicNameVerified:presentation!=null}];
   })});

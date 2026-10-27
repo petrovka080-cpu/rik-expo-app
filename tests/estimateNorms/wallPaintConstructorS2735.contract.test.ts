@@ -148,7 +148,7 @@ import {buildWallPaintReferenceProjectSystemS2735,CT54_REFERENCE_INDEPENDENT_COM
 import {auditCanonicalEstimateOperationResourcesV1} from '../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 describe('explicit CT54 PROJECT_SYSTEM reference composition, not full norms',()=>{
   const input=()=>({requireIndependentComposition:true,independentComposition:CT54_REFERENCE_INDEPENDENT_COMPOSITION_S2735,
-    resources:buildWallPaintReferenceProjectSystemS2735().resources.map(row=>({rowId:row.row_id,
+    resources:buildWallPaintReferenceProjectSystemS2735().resources.map(row=>({rowId:row.row_id,unitId:row.unit_id,
       nameRu:String((row.resource_graph.publicResourcePresentationV1 as {nameRu:string}).nameRu),
       resourceKind:String((row.resource_graph.publicResourcePresentationV1 as {resourceKind:string}).resourceKind),
       operation:row.resource_graph.operationCompositionV1,publicNameVerified:true,quantityKnown:false}))});

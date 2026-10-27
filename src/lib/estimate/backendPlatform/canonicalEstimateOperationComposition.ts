@@ -370,7 +370,7 @@ export type CanonicalEstimateOperationResourceAcceptanceV1 = Readonly<{
 }>;
 
 export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
-  resources: readonly Readonly<{rowId:string;nameRu:string;sourceNameRu?:string;resourceKind?:string|null;
+  resources: readonly Readonly<{rowId:string;nameRu:string;unitId:string|null;sourceNameRu?:string;resourceKind?:string|null;
     operation?:unknown;publicNameVerified?:boolean;manualTitleOverride?:boolean;quantityKnown?:boolean}>[];
   independentComposition?:unknown;
   requireIndependentComposition?:boolean;
@@ -395,6 +395,9 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
   for(const row of input.resources){
     if(!text(row.rowId)||rows.has(row.rowId)){errors.push({code:'RESOURCE_ID_MISSING_OR_DUPLICATED',rowId:row.rowId});continue;}
     rows.set(row.rowId,row);
+    // A number without its declared measure cannot be issued as an estimate.
+    // Keep the visible partial row; never guess a unit from its title/category.
+    if(!text(row.unitId))unverified.push({code:'RESOURCE_UNIT_UNRESOLVED',rowId:row.rowId});
     if(!text(row.nameRu)||row.nameRu.length>180||(!row.manualTitleOverride&&/сверх доказанной поставки|по фактическому основанию|инструмент квалифицированного/iu.test(row.nameRu)))
       errors.push({code:'PUBLIC_RESOURCE_NAME_INVALID',rowId:row.rowId});
     if(!row.manualTitleOverride&&row.publicNameVerified!==true)unverified.push({code:'PUBLIC_RESOURCE_NAME_UNVERIFIED',rowId:row.rowId});
@@ -507,7 +510,7 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
   const quantityUnknown=input.resources.some(row=>row.quantityKnown===false);
   if(quantityUnknown)unverified.push({code:'RESOURCE_QUANTITY_UNRESOLVED'});
   const status=errors.length?'STRUCTURE_INVALID':unverified.length?'COMPOSITION_UNVERIFIED':'ACCEPTED';
-  const unresolvedOnly=(issue:Issue)=>issue.code==='RESOURCE_QUANTITY_UNRESOLVED'
+  const unresolvedOnly=(issue:Issue)=>issue.code==='RESOURCE_QUANTITY_UNRESOLVED'||issue.code==='RESOURCE_UNIT_UNRESOLVED'
     ||issue.code.startsWith('OPERATION_RESOURCE_CLASS_UNRESOLVED_');
   return{contractVersion:'canonical-operation-resource-acceptance/v1',status,issues:[...errors,...unverified],
     // A partial definition may remain visible for authoring, but issuing a PDF

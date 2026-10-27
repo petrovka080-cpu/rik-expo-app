@@ -1,3 +1,4 @@
+import referenceMethodArtifact from '../../../../data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json';
 import {manufacturerDoorFanFactoryDefinitionR1,manufacturerDoorFanFactoryKitsPackR1} from './manufacturerDoorFanFactoryKitsR1';
 import artifact from '../../../../data/estimate-benchmarks/source-packs/master32-fan-electrical-tool-provision-r1.json';
 import captured from '../../../../data/estimate-benchmarks/fixtures/master32-fan-electrical-current-parents-r1.json';
@@ -250,4 +251,108 @@ export function master32FanElectricalCompletenessR1(key: string): Json {
     conditionalCompleteProvision: { coverageCondition: master32FanElectricalCoverageR1(), resolvedNeedRowIds: [pack.closedOldNeedRowId],
       selectedScopeUnresolvedNeedRowIds: [...pack.oldNeedRowIds.filter(id => id !== pack.closedOldNeedRowId), ...pack.additionalNeeds.map(n => n.rowId)],
       actualElectricalTestsOrSafeIsolationProved: false, completeInstallation: false } };
+}
+
+/** New source-owned whole replacement input, not a retained-parent projection.
+ * No current/captured resource is filtered, copied or rebound by this builder.
+ * The reference object conditions are explicit DEMO/PPR conditions, not facts
+ * about an existing saved estimate. The ordinary compiler remains authoritative.
+ */
+export const fanPreparedOpeningReferenceArtifactSha256R610='e86d05411af9c15f5c3a5177e7212e09ff7e51c195bc7a2a9d64f2297af6f739';
+export function fanPreparedOpeningReferenceDefinitionR610(catalogId:string):AutomaticOwnerDefinition{
+ const reference=referenceMethodArtifact as unknown as Json;
+ if(catalogId!==reference.catalogId||reference.sourceKind!=='PROJECT_SYSTEM'||reference.generatedFromCurrentRows!==false)
+  throw Error('FAN_REFERENCE_R610_EXACT_SOURCE_SCOPE_REQUIRED');
+ const profile=manufacturerDoorFanFactoryKitsPackR1.profiles.find(p=>p.key===reference.manufacturerProfileKey);
+ if(!profile||profile.family!=='hvac'||profile.key!=='axial-100-plain'
+  ||reference.manufacturerManualSha256!==manufacturerDoorFanFactoryKitsPackR1.sources.find(s=>s.key==='fan-manual')?.sha256
+  ||JSON.stringify(reference.selectedToolKeys)!==JSON.stringify(['driver-ph1','driver-slot15','voltage-indicator','indicator-prods','indicator-lead','prod-shrouds','prover','prover-cells','prover-hanger','instrument-case','clean-cloth']))
+  throw Error('FAN_REFERENCE_R610_EXACT_PRIMARY_AND_TOOL_SOURCE_REQUIRED');
+ const sourceRows=reference.rows as Json[],operations=reference.operationRoster as Json[];
+ for(const row of sourceRows){
+  const lineage=row.sourceLineage;
+  if(lineage.kind==='FIXED24_INITIAL_TOOL_PART'){
+   const part=pack.parts.find(p=>p.key===lineage.sourceKey);
+   if(!part||part.rowId!==row.rowId||part.unitId!==row.unitId||part.perFront!==lineage.perFront
+    ||row.expression!==reference.frontCountId+'*'+part.perFront||part.titleRu!==row.sourceTitleRu||part.category!==row.category||RESOURCE_KINDS[part.key]!==row.resourceKind)
+    throw Error('FAN_REFERENCE_R610_TOOL_PHYSICAL_LINEAGE_REQUIRED');
+  }else if(lineage.kind==='FACTORY_OWNER'){
+   if(profile.ownerRowId!==row.rowId||profile.ownerTitleRu!==row.sourceTitleRu||profile.ownerUnitId!==row.unitId||row.expression!==reference.primaryCountId)
+    throw Error('FAN_REFERENCE_R610_FACTORY_OWNER_LINEAGE_REQUIRED');
+  }else if(lineage.kind==='FACTORY_COMPONENT'){
+   const component=profile.bom.find(b=>b.rowId===row.rowId);
+   if(!component||component.titleRu!==row.sourceTitleRu||component.unitId!==row.unitId
+    ||component.countPerFactoryUnit!==lineage.countPerFactoryUnit||row.expression!==reference.primaryCountId+'*'+component.countPerFactoryUnit
+    ||row.costOwnerRowId!==profile.ownerRowId||row.procurement!==false)
+    throw Error('FAN_REFERENCE_R610_INCLUDED_FACTORY_LINEAGE_REQUIRED');
+  }else if(lineage.kind!=='PROJECT_SYSTEM_REFERENCE_NEED'||!row.quantityUnknown||row.costTreatment==='INCLUDED_IN_RESOURCE_ROWS')
+    throw Error('FAN_REFERENCE_R610_REAL_PROJECT_NEED_REQUIRED');
+ }
+ const selection={kind:'equals' as const,parameterId:reference.selectorId,value:reference.selectorValue};
+ const scope={kind:'and' as const,operands:[selection,...reference.scopeChoices.map((c:Json)=>({kind:'equals',parameterId:c.parameterId,value:c.value}))]};
+ const ordinary:AutomaticParameterSpec[]=[
+  {id:reference.selectorId,title:'Выбранный способ монтажа вентилятора',kind:'ordinary',valueType:'enum',unitId:null,values:[reference.selectorValue]},
+  {id:reference.primaryCountId,title:'Фактическое число выбранных вентиляторов',kind:'ordinary',valueType:'integer',unitId:'set',min:1,max:1000000},
+ ];
+ const conditional:AutomaticParameterSpec[]=[
+  {id:reference.frontCountId,title:'Фактическое число пригодных выделенных инструментальных постов',kind:'conditional',valueType:'integer',unitId:'piece',min:1,max:1000000,requiredWhen:selection},
+  {id:reference.projectReferenceId,title:'Документ условий монтажа и фактической применимости',kind:'conditional',valueType:'text',unitId:null,requiredWhen:selection},
+  ...reference.scopeChoices.map((c:Json)=>({id:c.parameterId,title:c.titleRu,kind:'conditional' as const,valueType:'enum' as const,unitId:null,values:[c.value],requiredWhen:selection})),
+  ...sourceRows.filter(r=>r.quantityUnknown).map((r:Json)=>({id:r.quantityParameterId,title:r.publicNameRu,kind:'internal' as const,valueType:'decimal' as const,unitId:null})),
+ ];
+ const specs:AutomaticRowSpec[]=sourceRows.map(r=>({rowId:r.rowId,formulaId:r.formulaId,title:r.sourceTitleRu,section:'Монтаж вентилятора в готовом проёме',
+  category:r.category,unitId:r.unitId,expression:r.expression,costTreatment:r.costTreatment,procurement:r.procurement,inclusion:scope}));
+ const built=buildAutomaticConstructionOwnerR1({contract:reference.contract,semanticOwner:catalogId,sourceId:reference.sourceId,normId:'PROJECT_REFERENCE_METHOD_NO_NEW_INSTALLATION_NORM',
+  sourceMetadata:{source_title:'Проектный способ монтажа вентилятора в готовом проёме',source_document_version:reference.contract,
+   definition_hash:fanPreparedOpeningReferenceArtifactSha256R610,artifact_sha256:fanPreparedOpeningReferenceArtifactSha256R610,exact_locator:'Source-owned PROJECT_SYSTEM scope/rows/operationRequirements; DEMO, not authenticated site facts.'},
+  applicabilityRu:reference.sourceScope.join(' '),ordinary,profile:[],conditional,rows:specs,deferMissingProjectFactsToRows:true,
+  excludedUnownedAssumptions:reference.remainingActualAdmissionNeeds});
+ const parameters=built.parameters.map(p=>{
+  const row=sourceRows.find(r=>r.quantityParameterId===p.parameter_id);
+  const {guide:_unearned,...truth}=p.truth_metadata;
+  return{...p,default_value:null,truth_metadata:row?{...unresolvedApplicationNormTruthR1(truth,
+   'Фактический объём, единица ведомости и норма для этого ресурса не заданы проектным способом; UNKNOWN не подменяется нулём или единицей.'),guide:{guide_kind:'PROJECT_DEFINED',source_role:'UNRESOLVED_APPLICATION_NORM',guide_short_ru:'Количество и единица остаются неизвестными до предметного обоснования.',source_document:reference.sourceId,source_locator:'Source-owned row quantityUnknown; no installation norm'}}:
+   {...truth,value_source_role:'PROJECT_SPECIFIC_INPUT',visibility_role:'USER_INPUT',source_confirmation_required:false,
+    provenance:{consumer_input_role_v1:'OBJECT_FACT'},guide:{guide_kind:'PROJECT_DEFINED',source_role:'PROJECT_SYSTEM_REFERENCE_REQUIRES_ACTUAL_SCOPE',
+     guide_short_ru:'Условия способа монтажа и документы объекта требуют отдельного подтверждения.',source_document:reference.sourceId,source_locator:'Source scope and explicit project choices'}}};
+ });
+ const resources=built.resources.map(r=>{
+  const declaration=sourceRows.find(d=>d.rowId===r.row_id)!;
+  const uses=declaration.operationKeys.map((key:string)=>operations.find(o=>o.operationId.endsWith(':'+key)));
+  if(uses.length===0||uses.some((o:Json|undefined)=>!o))throw Error('FAN_REFERENCE_R610_EXACT_OPERATION_MEMBERSHIP_REQUIRED');
+  return rehash({...r,cost_owner_id:declaration.costOwnerRowId,resource_graph:{...r.resource_graph,
+   inputParameterIds:[...new Set([...(r.resource_graph.inputParameterIds??[]),reference.projectReferenceId])],
+   operationCompositionV1:{...uses[0],additionalOperations:uses.slice(1)},
+   ...(declaration.costTreatment==='INCLUDED_IN_RESOURCE_ROWS'?{parentCostOwnerId:declaration.costOwnerRowId,includedInResourceOwnerRowId:declaration.costOwnerRowId}:{}),
+   publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:declaration.publicNameRu,sourceTitleRu:r.title_ru,
+    resourceKind:declaration.resourceKind,brandAndModelRu:null,specificationRu:null,detailsRu:declaration.quantityUnknown?['Количество и единица ведомости не определены; ресурс остаётся видимым.']:[]}},
+   source_metadata:{...r.source_metadata,normativeTrace:[],sourceRole:'PROJECT_SYSTEM_REFERENCE_METHOD_NOT_OBJECT_AUTHENTICATED',
+    sourceLineage:declaration.sourceLineage,sourceMethodArtifactSha256:fanPreparedOpeningReferenceArtifactSha256R610,
+    actualExecutionProved:false,actualProjectAuthenticated:false,publicationAllowed:false,automaticGenericPriceInheritanceAllowed:false,
+    quantityNormAuthored:false,referenceWholeSourceReplacement:true}});
+ });
+ return{...built,parameters,resources,runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:[reference.selectorId,reference.primaryCountId]};
+}
+export function fanPreparedOpeningReferenceAdmissionInputR610(catalogId:string){
+ const reference=referenceMethodArtifact as unknown as Json,model=fanPreparedOpeningReferenceDefinitionR610(catalogId);
+ const entries=reference.rows.map((r:Json)=>({expectedResourceId:reference.sourceId+':'+r.rowId,sourceId:reference.sourceId,
+  condition:'EXPLICIT_REFERENCE_METHOD_AND_ALL_OBJECT_SCOPE_CHOICES_REQUIRED_NOT_AUTHENTICATED_BY_DEMO',
+  operationId:reference.operationRoster.find((o:Json)=>o.operationId.endsWith(':'+r.operationKeys[0])).operationId,
+  requiredOperationIds:r.operationKeys.map((key:string)=>reference.operationRoster.find((o:Json)=>o.operationId.endsWith(':'+key)).operationId),
+  publicNameRu:r.publicNameRu,resourceKind:r.resourceKind,category:r.category,unitId:r.unitId,formulaId:r.formulaId,
+  ...(r.quantityUnknown?{quantityUnitUnconfirmed:true}:{}),resolution:r.costTreatment==='INCLUDED_IN_RESOURCE_ROWS'
+   ?{kind:'INCLUDED_COMPONENT_ROW',rowId:r.rowId,parentRowId:r.costOwnerRowId}:{kind:'ROW',rowId:r.rowId}}));
+ return{status:'SOURCE_HELD_REFERENCE_INPUT_NOT_PUBLISHED',model,
+  independentCompletenessMap:{contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PROJECT_SYSTEM',generatedFromCurrentRows:false,
+   evidenceSha256:fanPreparedOpeningReferenceArtifactSha256R610,operationResourceBindingRequired:true,operationRoster:reference.operationRoster,
+   operationRequirements:reference.operationRequirements,entries},
+  applicability:{primaryMeasureParameterId:reference.primaryCountId,primaryMeasureSelectionV1:{contract:'canonical-primary-measure-selection/v1',
+   selectorParameterId:reference.selectorId,selections:[{selectorValue:reference.selectorValue,primaryMeasureParameterId:reference.primaryCountId,unitId:'set'}]},
+   newRootOnly:true,automaticMigrationAllowed:false,actualProjectAuthenticated:false},
+  passport:{quantityScope:'PARTIAL',unresolvedApplicableResourceRowIds:reference.unknownQuantityRows,fullTechnicalAcceptance:false},
+  referenceDemoInput:{...reference.referenceDemoInput},
+  sourcePaths:['data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json',
+   'data/estimate-benchmarks/source-packs/manufacturer-door-fan-factory-kits-r1.json','data/estimate-benchmarks/source-packs/master32-fan-electrical-tool-provision-r1.json',
+   'src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts'],
+  currentCapture:null,newSourceRegistryReceipt:null,actualAdmissionReceipt:null};
 }
