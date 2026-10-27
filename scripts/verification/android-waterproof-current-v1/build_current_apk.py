@@ -79,7 +79,19 @@ def main():
  from restore_exact_git_blobs import restore_exact_git_blobs
  manifest=s['sourceManifest'];manifest_restore=restore_exact_git_blobs(root,a.source_commit,{manifest['path']:manifest['sha256']})
  assert read(inside(root,manifest['path']))['sourcePins']==s['sourcePins'],'RESTORED_MANIFEST_PIN_SET_DIFFERS'
- source_restore=restore_exact_git_blobs(root,a.source_commit,s['sourcePins'])
+ # The whole product has more files than one raw-restore batch admits.
+ # Reuse the existing helper serially; its6000pins/512MiB total/64MiB blob,
+ #128MiB owned memory and60s bounds remain unchanged for every invocation.
+ batches=[];group={};group_bytes=0;covered=[]
+ for rel,digest in sorted(s['sourcePins'].items()):
+  item=inside(root,rel);item_bytes=item.stat().st_size if item.is_file()else 0
+  if group and(len(group)>=1000 or group_bytes+item_bytes>128*MIB):
+   batches.append(restore_exact_git_blobs(root,a.source_commit,group));covered.extend(group);group={};group_bytes=0
+  group[rel]=digest;group_bytes+=item_bytes
+ if group:batches.append(restore_exact_git_blobs(root,a.source_commit,group));covered.extend(group)
+ assert covered==sorted(s['sourcePins']),'SERIAL_RAW_RESTORE_COVERAGE_MISMATCH'
+ assert all(sha(inside(root,rel))==digest for rel,digest in s['sourcePins'].items()),'SERIAL_RAW_RESTORE_FINAL_SOURCE_DRIFT'
+ source_restore=dict(status='PASS_SERIAL_EXISTING_BOUNDED_RAW_RESTORE_UNION',checkedPins=len(covered),batches=batches,allOriginalPerBatchLimitsUnchanged=True,noGitMetadataMutation=True)
  write(out/'source-raw-restoration.json',dict(manifest=manifest_restore,source=source_restore))
  identity_literals=validate_contract(s,root,a.source_commit)
  assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()==a.source_commit
@@ -130,7 +142,7 @@ def main():
  npm_cli=pathlib.Path(node).parent/'node_modules/npm/bin/npm-cli.js';assert npm_cli.is_file()
  run('npm-ci',[node,npm_cli,'ci'],1536,900)
  # Existing fingerprint implementation must reproduce the captured canonical tuple.
- text=run('source-identity',[node,'--import','tsx','scripts/dev/printLocalDeveloperBuildIdentity.ts'],256)
+ text=run('source-identity',[node,'--max-old-space-size=64','--max-semi-space-size=4','--import','tsx','scripts/dev/printLocalDeveloperBuildIdentity.ts'],256)
  assert json.loads(text)==s['sourceIdentity'],'APK_SNAPSHOT_PRODUCT_IDENTITY_DIFFERS_FROM_FRESH_RUNTIME'
  dirs=[root/'android/app/build/generated/assets/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/res/createBundleWaterProofJsAndAssets',root/'android/app/build/generated/assets/createWaterProofUpdatesResources']
  assert all(not p.exists()for p in dirs),'FRESH_GENERATED_DIRECTORIES_REQUIRED'
