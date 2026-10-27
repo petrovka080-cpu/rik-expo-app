@@ -1333,6 +1333,9 @@ export async function compileCanonicalEstimateCore(
         }),
       ])];
       if (supplyBlocks.length && missingParameterIds.length === 0) needState = "SUPPLY_CONFIRMATION_REQUIRED";
+      // Required application facts remain open when their quantity is also unknown.
+      // Reuse the persisted condition classification; numeric-only needs keep their state.
+      if (unresolvedConditionParameterIds.length > 0) needState = "CONDITION_REQUIRED";
       if (effectiveOutput) unresolvedEffectiveOutputs.set(effectiveOutput.parameterId, missingParameterIds);
       // Required physical facts remain selected even when their payment is covered.
       const selected = includedInEstimate || commercialOwner != null;
