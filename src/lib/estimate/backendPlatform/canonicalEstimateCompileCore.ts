@@ -1317,6 +1317,18 @@ export async function compileCanonicalEstimateCore(
         needState = 'CONDITION_REQUIRED';
         missingParameterIds = scopeRequirementDecision.missingObjectFactParameterIds;
       }
+      // Quantity and applicability can be unresolved together. Persist the
+      // condition evidence while this compiler still owns the pinned parameter
+      // definitions; a saved PDF must never consult today's catalogue for it.
+      const unresolvedConditionParameterIds = [...new Set([
+        ...missingNumericRelationParameterIds,
+        ...missingCommercialScopeParameterIds,
+        ...(scopeRequirementDecision?.missingObjectFactParameterIds ?? []),
+        ...missingParameterIds.filter(id => {
+          const definition = parameterDefinitionsById.get(id);
+          return definition != null && !["decimal", "integer", "number"].includes(definition.value_type);
+        }),
+      ])];
       if (supplyBlocks.length && missingParameterIds.length === 0) needState = "SUPPLY_CONFIRMATION_REQUIRED";
       if (effectiveOutput) unresolvedEffectiveOutputs.set(effectiveOutput.parameterId, missingParameterIds);
       // Required physical facts remain selected even when their payment is covered.
@@ -1379,6 +1391,7 @@ export async function compileCanonicalEstimateCore(
           ...(override?.titleRu == null ? {} : { manualTitleOverride: true }),
           needState,
           missingParameterIds,
+          ...(unresolvedConditionParameterIds.length ? { unresolvedConditionParameterIds } : {}),
           ...(inclusionDecision == null ? {} : { inclusionDecision }),
           ...(formulaOutputBoundsTrace == null ? {} : { formulaOutputBounds: formulaOutputBoundsTrace }),
           ...(provenance == null ? {} : { manualAmendment: provenance }),

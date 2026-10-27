@@ -374,6 +374,8 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
     operation?:unknown;publicNameVerified?:boolean;manualTitleOverride?:boolean;quantityKnown?:boolean}>[];
   independentComposition?:unknown;
   requireIndependentComposition?:boolean;
+  /** Compiler-owned saved blockers, including nonphysical object-scope rows. */
+  unresolvedConditionRowIds?:readonly string[];
 }>): CanonicalEstimateOperationResourceAcceptanceV1 {
   type Issue = {code:string;rowId?:string;operationId?:string};
   const errors:Issue[]=[],unverified:Issue[]=[];
@@ -507,6 +509,8 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
     for(const [operationId,op]of expectedOps)if(op.processRole!=='REFERENCE_ONLY'&&op.processRole!=='COST_SUMMARY'&&!reviewed.has(operationId))
       unverified.push({code:'OPERATION_RESOURCE_REQUIREMENTS_UNVERIFIED',operationId});
   }
+  for(const rowId of new Set(input.unresolvedConditionRowIds ?? []))
+    unverified.push({code:'RESOURCE_CONDITION_UNRESOLVED',rowId});
   const quantityUnknown=input.resources.some(row=>row.quantityKnown===false);
   if(quantityUnknown)unverified.push({code:'RESOURCE_QUANTITY_UNRESOLVED'});
   const status=errors.length?'STRUCTURE_INVALID':unverified.length?'COMPOSITION_UNVERIFIED':'ACCEPTED';

@@ -86,6 +86,25 @@ it('CT54 ordinary artifact gate distinguishes a missing waste-receiver condition
   expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(held)).toThrow(expect.objectContaining({
     code:'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED',httpStatus:409}));
   expect(JSON.stringify(pending)).toBe(pendingBefore);
+
+  // No known numeric quantity must not hide a simultaneously missing fact.
+  const withoutArea={...parameters};delete withoutArea.area_m2;
+  const numericOnly=await compile(withoutArea),numericBefore=JSON.stringify(numericOnly);
+  expect(numericOnly.compiled.preliminaryNeeds).toHaveLength(31);
+  expect(numericOnly.compiled.preliminaryNeeds.every(row=>row.quantity===null)).toBe(true);
+  const numericGate=canonicalEstimateSavedOperationAcceptanceV1({revision:numericOnly.saved,resources:numericOnly.resources});
+  expect(numericGate).toMatchObject({pdfAllowed:true,completeClaimAllowed:false});
+  expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(numericGate)).not.toThrow();
+  expect(JSON.stringify(numericOnly)).toBe(numericBefore);
+  const withoutFact={...withoutArea};delete withoutFact.ct54_reference_waste_receiver;
+  const mixed=await compile(withoutFact),mixedBefore=JSON.stringify(mixed);
+  expect(mixed.compiled.preliminaryNeeds.every(row=>row.need_state==='QUANTITY_REQUIRED')).toBe(true);
+  expect(mixed.compiled.preliminaryNeeds.every(row=>row.quantity===null)).toBe(true);
+  const mixedGate=canonicalEstimateSavedOperationAcceptanceV1({revision:mixed.saved,resources:mixed.resources});
+  expect(mixedGate.pdfAllowed).toBe(false);
+  expect(mixedGate.issues).toContainEqual({code:'RESOURCE_CONDITION_UNRESOLVED',rowId:'reference:wall-paint:ct54:ct54'});
+  expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(mixedGate)).toThrow(expect.objectContaining({httpStatus:409}));
+  expect(JSON.stringify(mixed)).toBe(mixedBefore);
 });
 
 it("serializes one purchased resource and its related operations as valid immutable JSON", () => {
@@ -454,7 +473,8 @@ test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
     const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
     expect(result.issues).toContainEqual({code:'RESOURCE_OPERATION_MISSING',rowId:need.row_id});
     expect(result.issues).toContainEqual({code:'RESOURCE_QUANTITY_UNRESOLVED'});
-    expect(result.issues.some(issue=>issue.rowId==='explicit-counter'||issue.rowId==='scope')).toBe(false);
+    expect(result.issues.some(issue=>issue.rowId==='explicit-counter')).toBe(false);
+    expect(result.issues.filter(issue=>issue.rowId==='scope')).toEqual([{code:'RESOURCE_CONDITION_UNRESOLVED',rowId:'scope'}]);
     expect(result.pdfAllowed).toBe(false);expect(JSON.stringify(resources)).toBe(before);
   });
 

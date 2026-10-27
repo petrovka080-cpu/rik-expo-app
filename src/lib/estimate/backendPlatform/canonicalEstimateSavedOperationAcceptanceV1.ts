@@ -76,7 +76,17 @@ export function canonicalEstimateSavedOperationAcceptanceV1(input: {
   const context = {revisionId: String(input.revision.id ?? ''), releaseId: String(input.revision.release_id ?? ''),
     checksumSha256: String(input.revision.checksum_sha256 ?? ''), savedResources: originals};
   const display = resolveCanonicalLegacyOperationDisplayV1(originals, context);
-  const acceptance = auditCanonicalEstimateOperationResourcesV1({resources: input.resources.flatMap((row, index) => {
+  // Read immutable compiler evidence before omitting documentary scope
+  // rows from the physical composition. A numeric gap is not an object fact.
+  const unresolvedConditionRowIds = input.resources.filter(row => {
+    const trace = record(row.calculation_trace), graph = record(trace.resourceGraph);
+    const scope = canonicalScopeRequirementDecisionV1(graph.scopeRequirementDecisionV1);
+    return row.need_state === 'CONDITION_REQUIRED' || trace.needState === 'CONDITION_REQUIRED'
+      || (Array.isArray(trace.unresolvedConditionParameterIds) && trace.unresolvedConditionParameterIds.length > 0)
+      || (scope != null && scope.rowId === row.row_id && scope.status === 'OBJECT_FACT_REQUIRED');
+  }).map(row => String(row.row_id ?? ''));
+  const acceptance = auditCanonicalEstimateOperationResourcesV1({unresolvedConditionRowIds,
+    resources: input.resources.flatMap((row, index) => {
     // The complete immutable input above remains the legacy guard authority.
     // Only authenticated scope decisions and the same public-row classifier as
     // PDF identify nonphysical checks/counters. Never filter by financial flags.
@@ -112,7 +122,10 @@ export function canonicalEstimateSavedOperationAcceptanceV1(input: {
 export function assertCanonicalEstimateSavedArtifactStructureV1(acceptance: CanonicalEstimateOperationResourceAcceptanceV1): void {
   if (!acceptance.pdfAllowed) {
     const unverified = acceptance.status === 'COMPOSITION_UNVERIFIED';
-    throw Object.assign(new Error(unverified
+    const conditionRequired = acceptance.issues.some(issue => issue.code === 'RESOURCE_CONDITION_UNRESOLVED');
+    throw Object.assign(new Error(conditionRequired
+      ? 'Не подтверждены обязательные условия выполнения работы. PDF пока недоступен.'
+      : unverified
       ? 'Состав подработ не проверен. PDF пока недоступен.'
       : 'В составе подработ обнаружены ошибки. PDF пока недоступен.'), {
       code: unverified ? 'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED' : 'ARTIFACT_OPERATION_RESOURCE_STRUCTURE_INVALID',

@@ -1215,7 +1215,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "d794e116094e65be158d3191bace66f7a9d137e8cfe1496697d0de6a3dd3f89c",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "602e011a89807cec30402f1f47d20ebdb162f6e9a6ffbecb9f5b1142c95c042f",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "947232dae57f3d8d8978394e64663583c588ff3aa43b8ccd82daa4f3d3d3f44b",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -1223,7 +1223,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection.ts": "5889ba9e5c3a53c2f0609bb1c116c52b95018a50292a37dc61f954dd22b56b23",
     "src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity.ts": "0a3de9780795f25367ca73596b3933e60f7c75cf261b764d9ea4ac82089f2d36",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts": "e5f3a5427ddfbe9c68ec38b2adc3f622f528c601a498ec8f0f6aa9829bf9dcb7",
-    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "9d036ab3d3959e298ed5ac3b13d16f3940db5a98e592046bc4fde3cefd79bb77",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "13d53fea5697402fd7bad93b7633fb56652a268782b5068079e9cca044000495",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts": "40486f1c7f0e4f58e98efcba5960d71ca6b32f38c24752966a43a128b5bb30e5",
     "src/lib/estimate/backendPlatform/canonicalEstimateConditionProfilesV1.ts": "ae0057c9b01aede2046211ef59a1ed29be0487e9845292a0ba6374395da3db43",
     "src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts": "e8b0b7462638944ca7d314227845e8f313ca8e932fc115b6e94a3058f130796f",
@@ -1237,7 +1237,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalRecalculation.ts": "b7cc752131d66fc0a5bec90ce53d2696719642eb9f99c5488c1579fc31145472",
     "src/lib/estimate/backendPlatform/canonicalEstimateOfflineCache.ts": "7793a6b9cec9c1ccc212a0ee5eb8647dd1a71b011f353c405d2e8750da3e960e",
     "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": "bdc95bcacab0ce59af5b1fd482bd54d30b980348391deb8a739417a6922593b7",
-    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "66eefc0b45c3a77f1af319090eebf792dfd2f5d4235883d613fbde8c1354a919",
+    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "436933e87c6d9c4e10893ca673ed9bcdb96d71e9a6f16e277d117249703d3876",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.test.ts": "4908d07962f9642d07fc617008bdc7863ddfdc69b0b89cc97d0e44e6a355dfee",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts": "cac2b06547720c704b21d15d87df00b1393966f5fd07c5a13884d7d10f045b81",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot.ts": "00951c3c11d9ab18190f2ad8f034dca95432bd93a8645154f6eb9e11ec98b185",
@@ -1253,7 +1253,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "a0a61d3e702b8a57c5a98f77d1306170dfcf34700a34ab506c9a7b7d8c6622d1",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "1559569db12222e8c9a889308c3354b0220b4b7178073ffd2e544d656ddb54fc",
+    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "fd96029227f6aa2ceb3b2ae36a19d212f94156cf9387d8fe5a3adf91a94a980e",
     "src/lib/estimate/backendPlatform/canonicalEstimateSearchInput.ts": "8db129b35d8f80b05a79376336fdfa4222a9dcb7c51288f1eae3d24403d62139",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
     "src/lib/estimate/backendPlatform/canonicalExactConditionalSuccessorMigrationV1.ts": "914d3aaf669a97e2f11231c887272a0e4c49206c22782d732ff840c55731d47e",
@@ -3631,14 +3631,14 @@
   "stats": {
     "sourceFiles": 2449,
     "dependencyFiles": 1160,
-    "sourceBytes": 133237490
+    "sourceBytes": 133241280
   },
   "candidateSourceComposition": {
-    "contract": "saved-condition-negative-contract/r632",
+    "contract": "common-saved-object-condition-admission/r633",
     "sourceOnly": true,
-    "expectedApplicationRegression": "missing waste receiver must block artifact",
-    "productFixIncluded": false,
-    "actualApplicationAcceptance": false
+    "actualApplicationAcceptance": false,
+    "redRun": 40482026935,
+    "coverage": "Known quantity and all-null mixed missing conditions refuse; valid unknown quantities and empty prices remain preliminary"
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
