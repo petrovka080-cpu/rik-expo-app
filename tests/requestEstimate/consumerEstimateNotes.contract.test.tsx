@@ -79,6 +79,38 @@ describe("notes preserve the authoritative estimate", () => {
     }
   });
 
+  it("saves and cold reopens a note on a canonical history draft containing a legacy unbound item", () => {
+    const original = fixture();
+    saveConsumerRepairBundle({ ...original, items: [...original.items, { ...original.items[0], id: "legacy-note-item",
+      titleRu: "Пользовательское примечание", itemType: "work", quantity: 1, unitPrice: null, totalPrice: null,
+      sourceParameters: {} }] });
+    simulateConsumerRepairRequestStoreReloadForTests();
+    const cold = getConsumerRepairBundle(original.draft.id), beforeItems = JSON.stringify(cold.items);
+    const saved = saveConsumerRepairEstimateNote(noteInput(cold, "ДЕМО: заметка после открытия истории"));
+    expect(JSON.stringify(saved.items)).toBe(beforeItems);
+    expect(saved.estimateDraftRevisionState).toEqual(cold.estimateDraftRevisionState);
+    expect(saved.estimateComments).toHaveLength(1);
+    expect(saved.estimateComments![0].revisionId).toBe(revisionId);
+    simulateConsumerRepairRequestStoreReloadForTests();
+    const reopened = getConsumerRepairBundle(original.draft.id);
+    expect(reopened.estimateComments).toEqual(saved.estimateComments);
+    const deleted = saveConsumerRepairEstimateNote({ ...noteInput(reopened, ""), deleteCommentId: reopened.estimateComments![0].id });
+    expect(deleted.estimateComments![0].deleted).toBe(true);
+    expect(JSON.stringify(deleted.items)).toBe(beforeItems);
+  });
+
+  it("still rejects mixed canonical revisions and half-bound items when saving metadata", () => {
+    for (const sourceParameters of [{ canonicalBackendRevisionId: "foreign", canonicalBackendReleaseId: releaseId },
+      { canonicalBackendRevisionId: revisionId }]) {
+      const original = fixture();
+      const mixed = saveConsumerRepairBundle({ ...original, items: [...original.items,
+        { ...original.items[0], id: "conflicting-bound-item", sourceParameters }] });
+      const before = JSON.stringify(getConsumerRepairBundle(mixed.draft.id));
+      expect(() => saveConsumerRepairEstimateNote(noteInput(mixed))).toThrow();
+      expect(JSON.stringify(getConsumerRepairBundle(mixed.draft.id))).toBe(before);
+    }
+  });
+
   it("requires text in the real note editor, saves once during an in-flight commit and exposes note deletion", async () => {
     let bundle = fixture();
     let release!: (value: boolean) => void;

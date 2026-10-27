@@ -10,7 +10,7 @@ on:
         required: true
         default: all
         type: choice
-        options: [all, developer-runtime, types-only]
+        options: [all, developer-runtime, types-only, notes-cold-runtime]
 permissions:
   contents: read
 concurrency:
@@ -19,7 +19,7 @@ concurrency:
 jobs:
   full-affected-types:
     if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'GOX developer runtime only:') }}
-    name: ${{ inputs.validation_scope == 'types-only' && 'Current full types only' || inputs.validation_scope == 'developer-runtime' && 'Current types and developer runtime only' || 'Full current types and affected tests' }}
+    name: ${{ inputs.validation_scope == 'types-only' && 'Current full types only' || inputs.validation_scope == 'notes-cold-runtime' && 'Current types, note UI and developer runtime' || inputs.validation_scope == 'developer-runtime' && 'Current types and developer runtime only' || 'Full current types and affected tests' }}
     runs-on: windows-2022
     timeout-minutes: 25
     env:
@@ -40,7 +40,7 @@ jobs:
         run: python scripts/verification/gox-current-types-v1/bootstrap_source.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT"
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.19.6
+          node-version: 24.19.0
           cache: npm
       - run: npm ci
       - run: python -m pip install psutil==7.1.0
@@ -51,7 +51,7 @@ jobs:
           GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
         run: python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$env:GOX_TYPES_OUTPUT_ROOT"
       - name: Exact affected Jest - admission
-        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' }}
+        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' && inputs.validation_scope != 'notes-cold-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -61,7 +61,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch admission
       - name: Exact affected Jest - contracts
-        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' }}
+        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' && inputs.validation_scope != 'notes-cold-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -71,7 +71,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch contracts
       - name: Exact affected Jest - owners
-        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' }}
+        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' && inputs.validation_scope != 'notes-cold-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -81,7 +81,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch owners
       - name: Exact affected Jest - ui-render
-        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' }}
+        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' && inputs.validation_scope != 'notes-cold-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
@@ -111,7 +111,7 @@ jobs:
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-contract
       - name: Exact affected Jest - ui-procurement
-        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' }}
+        if: ${{ inputs.validation_scope != 'developer-runtime' && inputs.validation_scope != 'types-only' && inputs.validation_scope != 'notes-cold-runtime' }}
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}

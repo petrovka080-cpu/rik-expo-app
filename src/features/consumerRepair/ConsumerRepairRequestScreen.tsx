@@ -3503,8 +3503,11 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       || (consumerRepairCanonicalBackendBinding(current)?.revisionId ?? null) !== input.revisionId) {
       throw new Error("Заметка не сохранена: выбрана другая версия сметы.");
     }
-    const bundle = saveConsumerRepairEstimateNote({ requestDraftId: input.draftId, ownerUserId: this.props.consumerUserId,
+    const metadata = saveConsumerRepairEstimateNote({ requestDraftId: input.draftId, ownerUserId: this.props.consumerUserId,
       revisionId: input.revisionId, text: input.text, deleteCommentId: input.deleteCommentId });
+    // Durable storage may compact the backend payload. A metadata-only edit
+    // retains the already-read resources and naming/classification evidence.
+    const bundle = { ...current, draft: metadata.draft, estimateComments: metadata.estimateComments, events: metadata.events };
     this.updateCurrentBundle(bundle, "Сохраняем заметки к смете…");
     await awaitConsumerRepairBundleDurableCommit({ requestDraftId: input.draftId,
       expectedStatus: bundle.draft.status, expectedRevisionId: bundle.estimateDraftRevisionState?.currentRevisionId ?? null });

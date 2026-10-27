@@ -1090,9 +1090,17 @@ export function saveConsumerRepairEstimateNote(input: {
   deleteCommentId?: string;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
-  const binding = canonicalBackendBindingForItems(bundle.items);
+  // Metadata can coexist with an unbound legacy/manual item. Keep the strict
+  // all-items binding for calculation mutations; for notes every item that
+  // claims canonical ownership must still provide the same complete pair.
+  const canonicalItems = bundle.items.filter(item => Boolean(
+    String(item.sourceParameters?.canonicalBackendRevisionId ?? "").trim()
+    || String(item.sourceParameters?.canonicalBackendReleaseId ?? "").trim(),
+  ));
+  const binding = canonicalBackendBindingForItems(canonicalItems);
   const revisionId = binding?.revisionId ?? bundle.durableHistorySummary?.sourceRevisionId ?? null;
-  if (bundle.draft.consumerUserId !== input.ownerUserId || revisionId !== input.revisionId) {
+  if ((canonicalItems.length > 0 && !binding)
+    || bundle.draft.consumerUserId !== input.ownerUserId || revisionId !== input.revisionId) {
     throw new Error("Заметка не сохранена: выбрана другая смета или её версия.");
   }
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "add_item" });
