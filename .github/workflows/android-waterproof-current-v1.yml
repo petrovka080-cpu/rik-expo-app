@@ -35,10 +35,16 @@ jobs:
       EXPO_NO_DOTENV: '1'
       SENTRY_DISABLE_AUTO_UPLOAD: 'true'
     steps:
+      - name: Preserve exact source bytes before checkout
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
         with:
           path: ci
           persist-credentials: false
+          filter: blob:none
+          sparse-checkout: |
+            .github/workflows
+            scripts/verification/android-waterproof-current-v1
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
