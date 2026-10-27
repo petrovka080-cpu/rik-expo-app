@@ -199,7 +199,26 @@ describe('exact saved revision legacy display adapter', () => {
     const display = resolveCanonicalLegacyOperationDisplayV1(resources, context);
     expect(display).not.toBe(resources);
     expect(display).toHaveLength(resources.length);
-    expect(display.filter((row, index) => row.operation !== resources[index]!.operation)).toHaveLength(12);
+    const changedIdRows = ['site-fixings','electrical-cable','isolator','drill','drill-bit','marking-pencil','screwdriver','electrical-tools','access','ppe']
+      .map(key => 'factory-fan:onsite:' + key);
+    const authorizedRows = [...changedIdRows, 'factory-fan:onsite:installation-labour'];
+    expect([...binding.replacementRowIds].sort()).toEqual([...authorizedRows].sort());
+    expect(display.filter((row, index) => row.operation.operationId !== resources[index]!.operation.operationId)
+      .map(row => row.rowId).sort()).toEqual([...changedIdRows].sort());
+    for (const [index, row] of display.entries()) {
+      const original = resources[index]!;
+      if (authorizedRows.includes(row.rowId)) {
+        expect(row.operation).toEqual(binding.target);
+      } else if (original.operation.operationId.endsWith(':operation:factory-supply')) {
+        expect(row.operation).toEqual({...original.operation, operationTitleRu:'Комплектация вентилятора'});
+        expect([row.operation.operationId,row.operation.processOrdinal,row.operation.completionCriterionRu,row.operation.additionalOperations])
+          .toEqual([original.operation.operationId,original.operation.processOrdinal,original.operation.completionCriterionRu,original.operation.additionalOperations]);
+      } else if (row.rowId === 'factory-fan:onsite:duct-interface') {
+        expect(row.operation).toEqual({...original.operation, operationTitleRu:'Присоединение вентилятора к воздуховоду'});
+      } else {
+        expect(row.operation).toBe(original.operation);
+      }
+    }
     for (const [index, row] of display.entries()) {
       expect({...row, operation: resources[index]!.operation}).toEqual(resources[index]);
       expect(row.quantity).toBeNull(); expect(row.unitPrice).toBeNull(); expect(row.amount).toBeNull();

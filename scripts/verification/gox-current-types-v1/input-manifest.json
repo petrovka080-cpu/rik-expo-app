@@ -1224,7 +1224,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalIngress.ts": "2db29fb7d5d8c27f706d1c8123341357a8c9f1bd3e88d71974ee264a87a6f0c7",
     "src/lib/estimate/backendPlatform/canonicalEstimateHistoricalRecalculation.ts": "b7cc752131d66fc0a5bec90ce53d2696719642eb9f99c5488c1579fc31145472",
     "src/lib/estimate/backendPlatform/canonicalEstimateOfflineCache.ts": "7793a6b9cec9c1ccc212a0ee5eb8647dd1a71b011f353c405d2e8750da3e960e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": "7acd17c0206c575ab19c829497f8a6c69ee93611d57269e18d6394b6eca0f52f",
+    "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": "bdc95bcacab0ce59af5b1fd482bd54d30b980348391deb8a739417a6922593b7",
     "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": "0580a7c0c73d26b9b8e6dcc0f7759eb7d5df8ae534f586bf2ba600a774428b1e",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.test.ts": "4908d07962f9642d07fc617008bdc7863ddfdc69b0b89cc97d0e44e6a355dfee",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts": "cac2b06547720c704b21d15d87df00b1393966f5fd07c5a13884d7d10f045b81",
@@ -3615,7 +3615,7 @@
     "sourceBytes": 132654891
   },
   "candidateSourceComposition": {
-    "contract": "common-public-names-and-visible-cold-row-membership/r589",
+    "contract": "plain-names-operation-link-and-caption-independent-contract/r591",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
@@ -3644,7 +3644,7 @@
         "sha256": "c95b29c53391a48a51fc273379086739175cccb1b24b7248ad9c6023ab4afcf7"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.test.ts": {
-        "sha256": "7acd17c0206c575ab19c829497f8a6c69ee93611d57269e18d6394b6eca0f52f"
+        "sha256": "bdc95bcacab0ce59af5b1fd482bd54d30b980348391deb8a739417a6922593b7"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition.ts": {
         "sha256": "0580a7c0c73d26b9b8e6dcc0f7759eb7d5df8ae534f586bf2ba600a774428b1e"
