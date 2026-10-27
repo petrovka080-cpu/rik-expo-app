@@ -59,15 +59,42 @@ jobs:
           $taskStageOutput = Join-Path $env:GOX_TYPES_OUTPUT_ROOT 'jest-owners'
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
           python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch owners
-      - name: Exact affected Jest - ui
+      - name: Exact affected Jest - ui-render
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}
           GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
         run: |
-          $taskStageOutput = Join-Path $env:GOX_TYPES_OUTPUT_ROOT 'jest-ui'
+          $taskStageOutput = Join-Path $env:GOX_TYPES_OUTPUT_ROOT 'jest-ui-render'
           New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
-          python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui
+          python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-render
+      - name: Exact affected Jest - ui-cold
+        shell: pwsh
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
+        run: |
+          $taskStageOutput = Join-Path $env:GOX_TYPES_OUTPUT_ROOT 'jest-ui-cold'
+          New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
+          python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-cold
+      - name: Exact affected Jest - ui-contract
+        shell: pwsh
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
+        run: |
+          $taskStageOutput = Join-Path $env:GOX_TYPES_OUTPUT_ROOT 'jest-ui-contract'
+          New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
+          python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-contract
+      - name: Exact affected Jest - ui-procurement
+        shell: pwsh
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          GOX_TYPES_OUTPUT_ROOT: ${{ runner.temp }}/gox-types-${{ github.run_id }}
+        run: |
+          $taskStageOutput = Join-Path $env:GOX_TYPES_OUTPUT_ROOT 'jest-ui-procurement'
+          New-Item -ItemType Directory -Path $taskStageOutput -ErrorAction Stop | Out-Null
+          python scripts/verification/gox-current-types-v1/guard.py --root "$env:GITHUB_WORKSPACE" --commit "$env:SOURCE_COMMIT" --output "$taskStageOutput" --stage jest --batch ui-procurement
       - uses: actions/upload-artifact@v4
         if: always()
         with:

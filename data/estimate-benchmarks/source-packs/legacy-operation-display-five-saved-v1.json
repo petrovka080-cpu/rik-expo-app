@@ -299,7 +299,12 @@
         "factory-fan:onsite:cleanup-waste": "SERVICE"
       },
       "operationTitlesByRowId": {
-        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-125-plain:owner": "Комплектация вентилятора",
+        "factory-fan:axial-125-plain:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-125-plain:seal": "Комплектация вентилятора",
+        "factory-fan:axial-125-plain:manual": "Комплектация вентилятора",
+        "factory-fan:axial-125-plain:box": "Комплектация вентилятора"
       },
       "resourceNamesByRowId": {
         "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
@@ -315,7 +320,12 @@
         "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
         "factory-fan:onsite:access": "Оборудование для безопасного доступа",
         "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
-        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-125-plain:owner": "Вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, без таймера",
+        "factory-fan:axial-125-plain:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-125-plain:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-125-plain:manual": "Инструкция по установке",
+        "factory-fan:axial-125-plain:box": "Упаковочная коробка"
       }
     },
     {
@@ -636,7 +646,13 @@
         "factory-fan:axial-100-timer:setting-screwdriver": "TOOL"
       },
       "operationTitlesByRowId": {
-        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-100-timer:owner": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:seal": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:manual": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:box": "Комплектация вентилятора",
+        "factory-fan:axial-100-timer:setting-screwdriver": "Комплектация вентилятора"
       },
       "resourceNamesByRowId": {
         "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
@@ -652,7 +668,13 @@
         "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
         "factory-fan:onsite:access": "Оборудование для безопасного доступа",
         "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
-        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-100-timer:owner": "Вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, с таймером",
+        "factory-fan:axial-100-timer:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-100-timer:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-100-timer:manual": "Инструкция по установке",
+        "factory-fan:axial-100-timer:box": "Упаковочная коробка",
+        "factory-fan:axial-100-timer:setting-screwdriver": "Отвёртка для настройки таймера"
       }
     },
     {
@@ -952,7 +974,12 @@
         "factory-fan:onsite:cleanup-waste": "SERVICE"
       },
       "operationTitlesByRowId": {
-        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-100-plain:owner": "Комплектация вентилятора",
+        "factory-fan:axial-100-plain:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-100-plain:seal": "Комплектация вентилятора",
+        "factory-fan:axial-100-plain:manual": "Комплектация вентилятора",
+        "factory-fan:axial-100-plain:box": "Комплектация вентилятора"
       },
       "resourceNamesByRowId": {
         "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
@@ -968,7 +995,12 @@
         "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
         "factory-fan:onsite:access": "Оборудование для безопасного доступа",
         "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
-        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-100-plain:owner": "Вытяжной вентилятор Ø100 мм, 220–240 В, 50 Гц, без таймера",
+        "factory-fan:axial-100-plain:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-100-plain:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-100-plain:manual": "Инструкция по установке",
+        "factory-fan:axial-100-plain:box": "Упаковочная коробка"
       }
     },
     {
@@ -1289,7 +1321,13 @@
         "factory-fan:axial-125-timer:setting-screwdriver": "TOOL"
       },
       "operationTitlesByRowId": {
-        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-125-timer:owner": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:seal": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:manual": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:box": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:setting-screwdriver": "Комплектация вентилятора"
       },
       "resourceNamesByRowId": {
         "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
@@ -1305,7 +1343,13 @@
         "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
         "factory-fan:onsite:access": "Оборудование для безопасного доступа",
         "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
-        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-125-timer:owner": "Вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, с таймером",
+        "factory-fan:axial-125-timer:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-125-timer:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-125-timer:manual": "Инструкция по установке",
+        "factory-fan:axial-125-timer:box": "Упаковочная коробка",
+        "factory-fan:axial-125-timer:setting-screwdriver": "Отвёртка для настройки таймера"
       }
     },
     {
@@ -1626,7 +1670,13 @@
         "factory-fan:axial-125-timer:setting-screwdriver": "TOOL"
       },
       "operationTitlesByRowId": {
-        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду"
+        "factory-fan:onsite:duct-interface": "Присоединение вентилятора к воздуховоду",
+        "factory-fan:axial-125-timer:owner": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:fixings": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:seal": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:manual": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:box": "Комплектация вентилятора",
+        "factory-fan:axial-125-timer:setting-screwdriver": "Комплектация вентилятора"
       },
       "resourceNamesByRowId": {
         "factory-fan:onsite:site-fixings": "Дополнительный крепёж вентилятора",
@@ -1642,7 +1692,13 @@
         "factory-fan:onsite:duct-interface": "Воздуховод и соединительные детали",
         "factory-fan:onsite:access": "Оборудование для безопасного доступа",
         "factory-fan:onsite:delivery-handling": "Доставка, разгрузка и подача вентилятора",
-        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа"
+        "factory-fan:onsite:cleanup-waste": "Сбор и вывоз упаковки и отходов монтажа",
+        "factory-fan:axial-125-timer:owner": "Вытяжной вентилятор Ø125 мм, 220–240 В, 50 Гц, с таймером",
+        "factory-fan:axial-125-timer:fixings": "Шурупы и дюбели",
+        "factory-fan:axial-125-timer:seal": "Уплотнительная прокладка",
+        "factory-fan:axial-125-timer:manual": "Инструкция по установке",
+        "factory-fan:axial-125-timer:box": "Упаковочная коробка",
+        "factory-fan:axial-125-timer:setting-screwdriver": "Отвёртка для настройки таймера"
       }
     }
   ]

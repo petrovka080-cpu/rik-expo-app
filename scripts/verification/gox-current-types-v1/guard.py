@@ -27,7 +27,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', required=True); parser.add_argument('--commit', required=True)
     parser.add_argument('--output', required=True); parser.add_argument('--stage', choices=['types', 'jest'], default='types')
-    parser.add_argument('--batch', choices=['contracts', 'owners', 'ui'])
+    parser.add_argument('--batch', choices=['contracts', 'owners', 'ui-render', 'ui-cold', 'ui-contract', 'ui-procurement'])
     args = parser.parse_args()
     root = Path(args.root).resolve(); out = Path(args.output).resolve()
     assert os.environ.get('GITHUB_ACTIONS') == 'true' and os.name == 'nt', 'WINDOWS_CI_ONLY'

@@ -1393,11 +1393,15 @@ export function buildRequestEstimateViewModel(
   );
   const hasSmartEstimateV2 = viewBundle.items.some((item) => item.sourceParameters?.smartEstimateProjectionV2 != null);
   const smartStageIds = [...new Set(viewBundle.items.map(itemSection).filter((id) => id.startsWith("professional_")))];
-  const sectionIds: RequestEstimateSectionViewModel["id"][] = hasSmartEstimateV2
+  const preferredSectionIds: RequestEstimateSectionViewModel["id"][] = hasSmartEstimateV2
     ? smartStageIds
     : hasCapitalRenovationCalculator
     ? CAPITAL_RENOVATION_SECTION_IDS
     : ["materials", "labor", "equipment", "logistics", "other"];
+  // Canonical operations need no smart-stage marker. Keep preferred ordering,
+  // then materialize every actual section, including unassigned UNKNOWN rows
+  // beside professional stages. Admission still uses the complete saved bundle.
+  const sectionIds = [...new Set([...preferredSectionIds, ...viewBundle.items.map(itemSection)])];
   const hiddenResourceAlternatives=consumerRepairHiddenResourceAlternativeIds(viewBundle.items);
   const publicCompositionItems=viewBundle.items.filter(item=>!hiddenResourceAlternatives.has(item.id));
   const baseSections: RequestEstimateSectionViewModel[] = measure("PUBLIC_ROW_SECTIONS", () => sectionIds

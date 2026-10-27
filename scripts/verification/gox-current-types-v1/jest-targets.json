@@ -12,10 +12,17 @@
       "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts",
       "src/lib/estimate/v4/ct126PreparedWallBranchesR2.test.ts"
     ],
-    "ui": [
-      "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx",
-      "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
+    "ui-render": [
+      "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx"
+    ],
+    "ui-cold": [
+      "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts"
+    ],
+    "ui-contract": [
       "tests/requestEstimate/requestEstimateViewModel.contract.test.ts"
+    ],
+    "ui-procurement": [
+      "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx"
     ]
   }
 }

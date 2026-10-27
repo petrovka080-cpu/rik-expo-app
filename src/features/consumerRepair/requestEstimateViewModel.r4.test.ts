@@ -429,3 +429,26 @@ describe('retained SCS and ACS cold projection resource kind and operation bound
     }
   });
 });
+
+// Canonical operation metadata and smart-stage projection are independent.
+// Both ordering paths must retain the declared row and its unassigned neighbour.
+it.each([false,true])('retains declared and unassigned UNKNOWN rows after cold read with smart marker=%s', smart => {
+  const stage={...canonicalItem('retained:declared','Кабель для подключения','7'.repeat(64),0),
+    itemType:'material' as const,category:'material',quantity:null,unit:'m',unitPrice:null,totalPrice:null};
+  stage.sourceParameters={...stage.sourceParameters,...(smart?{smartEstimateProjectionV2:{}}:{}),
+    canonicalOperationComposition:{contractVersion:'canonical-operation-resource/v1',groupId:'retained-work',groupTitleRu:'Монтаж',
+      operationId:'route',operationTitleRu:'Прокладка кабеля',completionCriterionRu:'Кабель проложен'}};
+  const general={...canonicalItem('retained:unassigned','Крепёж для кабеля','8'.repeat(64),1),
+    itemType:'material' as const,category:'material',quantity:null,unit:'piece',unitPrice:null,totalPrice:null};
+  const stored=serverBoundBundle([stage,general]),saved=JSON.stringify(stored);
+  const cold=JSON.parse(saved) as ConsumerRepairDraftBundle;
+  const vm=buildRequestEstimateViewModel(cold)!;
+  const rows=vm.sections.flatMap(section=>section.items);
+  expect(rows.map(row=>row.id).sort()).toEqual([stage.id,general.id].sort());
+  expect(new Set(rows.map(row=>row.id)).size).toBe(2);
+  for(const row of rows)expect(row).toMatchObject({quantity:null,unitPrice:null,totalPrice:null});
+  expect(vm.sections.find(section=>section.items.some(row=>row.id===stage.id))?.operation?.operationId).toBe('route');
+  expect(vm.sections.find(section=>section.items.some(row=>row.id===general.id))?.operation??null).toBeNull();
+  expect(vm.workProcessGroups?.flatMap(group=>group.operations).map(operation=>operation.operationId)).toEqual(['route']);
+  expect(JSON.stringify(stored)).toBe(saved);expect(JSON.stringify(cold)).toBe(saved);
+});

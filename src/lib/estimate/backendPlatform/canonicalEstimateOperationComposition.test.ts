@@ -316,3 +316,27 @@ it.each(legacyDisplayBindings.entries)('projects exact source-authored names wit
     .toBe('Присоединение вентилятора к воздуховоду');
   expect(JSON.stringify({resources, context})).toBe(stored);
 });
+it.each(legacyDisplayBindings.entries)('R589 names the exact saved fan and every supplied BOM component without rewriting ownership for $revisionId',binding=>{
+ const resources=binding.expectedResources.map(row=>({...JSON.parse(JSON.stringify(row)),titleRu:'Сохранённое исходное имя',quantity:null,unitPrice:null,costOwnerId:row.rowId,procurementEligible:false}));
+ const context={revisionId:binding.revisionId,releaseId:binding.releaseId,checksumSha256:binding.checksumSha256,savedResources:resources};
+ const stored=JSON.stringify({resources,context});
+ const known=resources.filter(row=>row.operation.operationId.endsWith(':operation:factory-supply'));
+ expect(known.length).toBeGreaterThanOrEqual(5);expect(known.length).toBeLessThanOrEqual(6);
+ const names:Record<string,string>={fixings:'Шурупы и дюбели',seal:'Уплотнительная прокладка',manual:'Инструкция по установке',box:'Упаковочная коробка','setting-screwdriver':'Отвёртка для настройки таймера'};
+ for(const row of known){
+  const role=row.rowId.split(':').at(-1)!;
+  const expected=role==='owner'?'Вытяжной вентилятор Ø'+(row.rowId.includes(':axial-100-')?'100':'125')+' мм, 220–240 В, 50 Гц, '+(row.rowId.includes('-timer:')?'с таймером':'без таймера'):names[role];
+  expect(expected).toBeDefined();expect(canonicalLegacyResourceNameV1(row.rowId,context)).toBe(expected);
+  expect(canonicalLegacyResourceNameV1(row.rowId,context,true)).toBeNull();
+  expect(canonicalLegacyResourceNameV1(row.rowId,{...context,checksumSha256:'foreign'})).toBeNull();
+ }
+ const display=resolveCanonicalLegacyOperationDisplayV1(resources,context);
+ for(const row of known){const shown=display.find(x=>x.rowId===row.rowId)!;
+  expect(shown.operation).toEqual({...row.operation,operationTitleRu:'Комплектация вентилятора'});
+  expect([shown.rowId,shown.quantity,shown.unitPrice,shown.costOwnerId,shown.procurementEligible]).toEqual([row.rowId,row.quantity,row.unitPrice,row.costOwnerId,row.procurementEligible]);
+ }
+ const foreign=resources.map(row=>row===known[0]?{...row,operation:{...row.operation,operationId:'foreign-supply'}}:row);
+ expect(canonicalLegacyResourceNameV1(known[0]!.rowId,{...context,savedResources:foreign})).toBeNull();
+ expect(canonicalLegacyResourceNameV1(known[0]!.rowId,{...context,savedResources:resources.slice(1)})).toBeNull();
+ expect(JSON.stringify({resources,context})).toBe(stored);
+});
