@@ -1,0 +1,21 @@
+{
+  "contract": "gox-existing-precomputed-reuse/r1",
+  "sourceRunId": 40556026061,
+  "sourceWorkflowCommit": "996baa231296ebd7596e5cf05f5ed5a78083f316",
+  "sourceSnapshotCommit": "9b39b1938c6bac938a46054b38db59579e504965",
+  "artifactId": 12759390260,
+  "artifactName": "current-waterproof-apk-40556026061",
+  "artifactArchiveSha256": "35ba6c077c77f8a53d611ddbbc1e41a960fa926fdabc91333724a7ed4bd88f09",
+  "evidenceSha256": "3e4caef99d58a5b75b4b2189a64fd1a83b47fdc6549c09828504fe3c38e91e5b",
+  "precomputedSha256": "e90a30e09c1ac74704b2d6b1980cf1a5e17f91266ac59d32940f187eee44abeb",
+  "transportSha256": "416bf491090fa7512d9a166fa7f179d53996033156bc2f21fc68f305c425e44c",
+  "receiptSha256": {
+    "source-identity": "444a6fd3a96e9d24328ca75eb96d15f30f9ed033750264dab267ce61e9714db7",
+    "metro-export": "e8e42626cc4bcea98d531525fd621d87c6e6d12ba310b1fd9c857c0ad55c2fdd",
+    "canonical-client-transport": "d600d68a6c3f346cfa10a88d89f951fcf8bc4c973f46ff54b7ce638433d7da43",
+    "hermes": "eb74fd5fb560e99d87db451c118d43f659d958e310eef8fee711a1790af73e71",
+    "expo-updates": "7c86d974948d275631339fcd0a6c3c65cfed3a40d58cf1c595eb00b6ae248f47"
+  },
+  "expectedFiles": 55,
+  "expectedBytes": 47496428
+}
