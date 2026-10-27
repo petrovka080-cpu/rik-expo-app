@@ -81,3 +81,27 @@ describe('raw TEXT normative scope, lossless old rows and bounded atomic read',(
  test.each([{isolation:'read committed'},{readOnly:'off'}])('capture refuses an ungoverned transaction %p',async options=>{const s=setup(),m=mock(s.before,options);delete s.input.config.capturedScopedNormativeRegistry;await expect(readCapture(m.client,s.input)).rejects.toThrow('CAPTURE_REQUIRES_CALLER_REPEATABLE_READ_READ_ONLY');expect(m.calls).toHaveLength(1);});
  test('capture never replaces an existing declaration silently',async()=>{const s=setup(),m=mock(s.before);await expect(readCapture(m.client,s.input)).rejects.toThrow('CAPTURE_MUST_NOT_REPLACE_DECLARATION');expect(m.calls).toHaveLength(0);});
 });
+
+
+describe('ordinary whole PROJECT_SYSTEM typed quantity route uses the same raw registry owner',()=>{
+ function ordinary(){const s=setup();delete s.input.config.catalogAppend;
+  s.source.metadata={testOnly:true,sourceKind:'PROJECT_SYSTEM'} as typeof s.source.metadata;
+  s.registered.sourceRows.find(row=>row.id===s.source.id)!.raw=JSON.stringify({...s.source,created_at:'2026-10-19T00:00:00.654321Z'});
+  s.input.config.binding={ordinaryCompositeSourceV1:{contract:'master-ordinary-composite-source/v1',
+   capturedSourcePreimage:{sourceKey:s.source.source_key,expected:null}}};return s;}
+ test('accepts strict absent ordinary source and still validates registered managed rows plus unchanged old raw scope',()=>{
+  const s=ordinary(),r=opt(s.input)!;expect(()=>check(r,s.before)).not.toThrow();expect(()=>check(r,s.registered,'REGISTERED')).not.toThrow();
+  s.registered.sourceRows[0]!.raw=s.registered.sourceRows[0]!.raw.replace('9007199254740992','9007199254740993');
+  expect(()=>check(r,s.registered,'REGISTERED')).toThrow('REGISTERED_OLD_FULL_RAW_SCOPE_CHANGED');
+ });
+ test('rejects mixing ordinary and append/retain, undefined mode, wrong source kind and forged absence',()=>{
+  const missing=ordinary();delete missing.input.config.capturedScopedNormativeRegistry;
+  expect(()=>opt(missing.input)).toThrow('ORDINARY_SOURCE_CAPTURE_REQUIRED');
+  const s=ordinary();s.input.config.catalogAppend={capturedSourcePreimage:{sourceKey:s.source.source_key,expected:null}};
+  expect(()=>opt(s.input)).toThrow('ONE_SUPPORTED_ABSENCE_ROUTE_REQUIRED');delete s.input.config.catalogAppend;
+  s.input.config.binding.ordinaryCompositeSourceV1=undefined;expect(()=>opt(s.input)).toThrow('ORDINARY_TYPED_COMPOSITE_DECLARATION');
+  const kind=ordinary();kind.source.metadata={testOnly:true};expect(()=>opt(kind.input)).toThrow('ORDINARY_TYPED_COMPOSITE_DECLARATION');
+  const absent=ordinary();absent.input.config.binding.ordinaryCompositeSourceV1.capturedSourcePreimage.expected={};
+  expect(()=>opt(absent.input)).toThrow('EXPLICIT_STRICT_ABSENCE_REQUIRED');
+ });
+});

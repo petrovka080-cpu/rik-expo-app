@@ -956,7 +956,7 @@
       "publicNameRu": "Готовый питающий кабель вентилятора",
       "resourceKind": "MATERIAL",
       "category": "material",
-      "unitId": "",
+      "unitId": "m",
       "expression": "fan_reference_r610_unknown_electrical_cable",
       "operationKeys": [
         "isolate",
@@ -969,10 +969,21 @@
       "sourceLineage": {
         "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
         "sourceId": "project_system_fan_prepared_opening_reference_r610",
-        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, all actual quantities/units unknown."
+        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, actual quantities unknown; measurement units separately defined by this project method."
       },
       "quantityParameterId": "fan_reference_r610_unknown_electrical_cable",
-      "quantityUnknown": true
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "m",
+        "ruleRu": "Длина готового питающего кабеля, фактически используемого выбранной ветвью, измеряется вдоль его оси в метрах. Это не длина закупки, запас или новая прокладка.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
     },
     {
       "rowId": "factory-fan:onsite:isolator",
@@ -981,7 +992,7 @@
       "publicNameRu": "Аппарат отключения питания вентилятора",
       "resourceKind": "EQUIPMENT",
       "category": "equipment",
-      "unitId": "",
+      "unitId": "pcs",
       "expression": "fan_reference_r610_unknown_isolator",
       "operationKeys": [
         "isolate",
@@ -994,10 +1005,21 @@
       "sourceLineage": {
         "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
         "sourceId": "project_system_fan_prepared_opening_reference_r610",
-        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, all actual quantities/units unknown."
+        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, actual quantities unknown; measurement units separately defined by this project method."
       },
       "quantityParameterId": "fan_reference_r610_unknown_isolator",
-      "quantityUnknown": true
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "pcs",
+        "ruleRu": "Число физических готовых аппаратов полного отключения, участвующих в выбранной схеме питания. Число полюсов не превращается в число аппаратов.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
     },
     {
       "rowId": "factory-fan:onsite:installation-labour",
@@ -1006,7 +1028,7 @@
       "publicNameRu": "Работа монтажника и электрика",
       "resourceKind": "LABOR",
       "category": "work",
-      "unitId": "",
+      "unitId": "man_hour",
       "expression": "fan_reference_r610_unknown_installation_labour",
       "operationKeys": [
         "delivery",
@@ -1023,10 +1045,21 @@
       "sourceLineage": {
         "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
         "sourceId": "project_system_fan_prepared_opening_reference_r610",
-        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, all actual quantities/units unknown."
+        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, actual quantities unknown; measurement units separately defined by this project method."
       },
       "quantityParameterId": "fan_reference_r610_unknown_installation_labour",
-      "quantityUnknown": true
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "man_hour",
+        "ruleRu": "Сумма фактических человеко-часов исполнителей семи операций выбранной ветви; один и тот же интервал одного исполнителя учитывается один раз. Нормативная трудоёмкость и длительность не назначены.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
     },
     {
       "rowId": "factory-fan:onsite:ppe",
@@ -1035,7 +1068,7 @@
       "publicNameRu": "Защитные перчатки",
       "resourceKind": "PPE",
       "category": "equipment",
-      "unitId": "",
+      "unitId": "pair",
       "expression": "fan_reference_r610_unknown_ppe",
       "operationKeys": [
         "delivery",
@@ -1051,10 +1084,21 @@
       "sourceLineage": {
         "kind": "PROJECT_SYSTEM_REFERENCE_NEED",
         "sourceId": "project_system_fan_prepared_opening_reference_r610",
-        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, all actual quantities/units unknown."
+        "meaning": "Existing prepared cable/switch and own usable PPE are not new purchases; one whole labour owner, actual quantities unknown; measurement units separately defined by this project method."
       },
       "quantityParameterId": "fan_reference_r610_unknown_ppe",
-      "quantityUnknown": true
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "pair",
+        "ruleRu": "Число физических пар защитных перчаток выбранного механического назначения: одна левая и одна правая перчатка образуют одну пару. Это не расход пар на вентилятор и не заявление диэлектрической защиты.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
     },
     {
       "rowId": "factory-fan:onsite:reference-isolation-lock",
@@ -1063,7 +1107,7 @@
       "publicNameRu": "Замок блокировки питания",
       "resourceKind": "ACCESSORY",
       "category": "equipment",
-      "unitId": "",
+      "unitId": "pcs",
       "expression": "fan_reference_r610_unknown_isolation_lock",
       "operationKeys": [
         "isolate",
@@ -1080,7 +1124,18 @@
         "meaning": "Own project method requires actual compatible individual lock on ready isolator; no manufacturer kit supply, new purchase or normative count is claimed."
       },
       "quantityParameterId": "fan_reference_r610_unknown_isolation_lock",
-      "quantityUnknown": true
+      "quantityUnknown": true,
+      "measurementBasis": {
+        "kind": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+        "sourceId": "project_system_fan_prepared_opening_reference_r610",
+        "methodVersion": "fan-prepared-opening-measurement-basis/r618-r1",
+        "unitId": "pcs",
+        "ruleRu": "Число отдельных совместимых замков предотвращения повторного включения. Ключи и полюса аппарата не считаются дополнительными замками.",
+        "quantityKnown": false,
+        "consumptionNormClaimed": false,
+        "procurementQuantityClaimed": false,
+        "legacyMigrationAllowed": false
+      }
     }
   ],
   "unknownQuantityRows": [
@@ -1105,6 +1160,16 @@
     "ROOT actual source registry admission and selected current tuple",
     "Authentic object/PPR readiness, actual tool/terminal/fixing/PPE compatibility and accepted applicable checks programme",
     "Manufacturer-compatible manual handling applicability; not a universal exemption from PDF10 suitable machinery",
-    "Unknown labour and existing-material/PPE quantities/units remain visible; no price or norm claimed."
-  ]
+    "Unknown labour and existing-material/PPE quantities remain visible in author-defined measurement units; no price or norm claimed."
+  ],
+  "measurementMethod": {
+    "contract": "fan-prepared-opening-measurement-basis/r618-r1",
+    "authority": "AUTHOR_SELECTED_MEASUREMENT_BASIS",
+    "sourceKind": "PROJECT_SYSTEM",
+    "appliesOnlyTo": "This independent new-root reference method, not legacy rows or saved estimates",
+    "allFiveQuantityParametersRemainUnknown": true,
+    "newConsumptionNorms": 0,
+    "priceAndProcurementChanged": false,
+    "unitAuthorityPrerequisite": "Shared professional unit authority must support pair as a pair; never map pair to set or pcs."
+  }
 }

@@ -28,7 +28,7 @@ export type MasterCapturedScopedNormativeRegistryR1=MasterScopedNormativeRegistr
 export type MasterScopedNormativeRegistryInputR1=Readonly<{
  config:Readonly<{stopCode:string;normId:string;capturedScopedNormativeRegistry?:MasterCapturedScopedNormativeRegistryR1;
   catalogAppend?:Readonly<{capturedSourcePreimage?:unknown}>;
-  binding?:Readonly<{reuseExistingNormativeRegistry?:unknown;retainParentBindings?:Readonly<{capturedSourcePreimage?:unknown}>}>}>;
+  binding?:Readonly<{reuseExistingNormativeRegistry?:unknown;retainParentBindings?:Readonly<{capturedSourcePreimage?:unknown}>;ordinaryCompositeSourceV1?:unknown}>}>;
  newSource:Json;newLocators:readonly Json[];
 }>;
 export type MasterResolvedScopedNormativeRegistryR1=Readonly<{
@@ -96,13 +96,23 @@ function closure(i:MasterScopedNormativeRegistryInputR1,s:MasterScopedNormativeR
 }
 /** Omission is the only no-query legacy path. Present undefined/null is STOP. */
 export function resolveMasterScopedNormativeRegistryOptInR1(i:MasterScopedNormativeRegistryInputR1):MasterResolvedScopedNormativeRegistryR1|null{
- if(!Object.hasOwn(i.config,'capturedScopedNormativeRegistry'))return null;
+ if(!Object.hasOwn(i.config,'capturedScopedNormativeRegistry')){
+  requireThat(!Object.hasOwn(i.config.binding??{},'ordinaryCompositeSourceV1'),i,'ORDINARY_SOURCE_CAPTURE_REQUIRED');
+  return null;
+ }
  const v=i.config.capturedScopedNormativeRegistry;
  requireThat(object(v)&&keys(v,['contract','projection','scope','sourceRows','locatorRows','captureSha256'])
   &&v.contract===CONTRACT&&v.projection===PROJECTION,i,'OPT_IN_RAW_PROJECTION_OBJECT');
  requireThat(!Object.hasOwn(i.config.binding??{},'reuseExistingNormativeRegistry'),i,'REUSE_CONFLICT');
- requireThat((i.config.catalogAppend!=null)!==(i.config.binding?.retainParentBindings!=null),i,'ONE_SUPPORTED_ABSENCE_ROUTE_REQUIRED');
- const absent=i.config.catalogAppend?.capturedSourcePreimage??i.config.binding?.retainParentBindings?.capturedSourcePreimage;
+ const ordinary=i.config.binding?.ordinaryCompositeSourceV1;
+ const ordinaryOpted=Object.hasOwn(i.config.binding??{},'ordinaryCompositeSourceV1');
+ if(ordinaryOpted)requireThat(object(ordinary)&&keys(ordinary,['contract','capturedSourcePreimage'])
+  &&ordinary.contract==='master-ordinary-composite-source/v1'&&i.newSource.metadata?.sourceKind==='PROJECT_SYSTEM'
+  &&i.newLocators.length===1,i,'ORDINARY_TYPED_COMPOSITE_DECLARATION');
+ requireThat([i.config.catalogAppend!=null,i.config.binding?.retainParentBindings!=null,ordinaryOpted].filter(Boolean).length===1,
+  i,'ONE_SUPPORTED_ABSENCE_ROUTE_REQUIRED');
+ const absent=i.config.catalogAppend?.capturedSourcePreimage??i.config.binding?.retainParentBindings?.capturedSourcePreimage
+  ??(object(ordinary)?ordinary.capturedSourcePreimage:undefined);
  requireThat(object(absent)&&keys(absent,['sourceKey','expected'])&&absent.sourceKey===i.newSource.source_key&&absent.expected===null,i,'EXPLICIT_STRICT_ABSENCE_REQUIRED');
  requireThat(object(i.newSource)&&keys(i.newSource,SOURCE_KEYS)&&UUID.test(i.newSource.id)&&HASH.test(i.newSource.artifact_sha256)
   &&typeof i.newSource.source_key==='string'&&i.newSource.source_key.length>0

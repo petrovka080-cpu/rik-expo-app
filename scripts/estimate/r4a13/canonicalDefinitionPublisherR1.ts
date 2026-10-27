@@ -1,3 +1,4 @@
+import {resolveMasterScopedNormativeRegistryOptInR1,readMasterScopedNormativeRegistryPreconditionsR1,type MasterResolvedScopedNormativeRegistryR1} from './masterScopedNormativeRegistryPreimageR1';
 import {auditCanonicalEstimateOperationResourcesV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import {canonicalScopeRequirementDecisionV1} from '../../../src/lib/estimate/backendPlatform/canonicalScopeRequirementV1';
 import {canonicalPublicResourceDisplayPresentationV1,canonicalPublicSavedResourceRowKindV1} from '../../../src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
@@ -645,11 +646,41 @@ export async function canonicalPublisherRequiredBindingSourceKeysR1(
   return sources.filter(key=>!historicalOnly.includes(key));
 }
 
+export type CanonicalOrdinaryCompositeTypedQuantityInputR1=Readonly<{
+ kind:'ORDINARY_COMPOSITE_TYPED_QUANTITY';catalogId:string;bindingRowIds:readonly string[];
+ scopedRegistry:MasterResolvedScopedNormativeRegistryR1;
+}>;
+export type CanonicalTypedQuantityInputR1=MasterRetainedBindingGuardInputR1|CanonicalOrdinaryCompositeTypedQuantityInputR1;
+function ordinaryTypedQuantityInput(input:CanonicalTypedQuantityInputR1):input is CanonicalOrdinaryCompositeTypedQuantityInputR1{
+ return 'kind' in input&&input.kind==='ORDINARY_COMPOSITE_TYPED_QUANTITY';
+}
+function typedQuantityCatalog(input:CanonicalTypedQuantityInputR1):string{
+ return ordinaryTypedQuantityInput(input)?input.catalogId:input.config.catalogId;
+}
+function assertOrdinaryTypedQuantityPlan(input:CanonicalOrdinaryCompositeTypedQuantityInputR1,plan:CanonicalDefinitionPublishPlan):MasterResolvedScopedNormativeRegistryR1{
+ const declared=input.scopedRegistry;
+ const scope=resolveMasterScopedNormativeRegistryOptInR1(declared.input);
+ invariant(scope!=null&&scope.expectedSourceJson===declared.expectedSourceJson&&scope.expectedLocatorsJson===declared.expectedLocatorsJson
+  &&JSON.stringify(stable(scope.declaration))===JSON.stringify(stable(declared.declaration)),
+  'TYPED_QUANTITY_ORDINARY_SCOPED_DECLARATION_DRIFT');
+ const config=scope.input.config,binding=config.binding;
+ invariant(config.catalogAppend==null&&binding?.retainParentBindings==null&&binding?.reuseExistingNormativeRegistry==null
+  &&binding?.ordinaryCompositeSourceV1!=null&&scope.input.newSource.metadata?.sourceKind==='PROJECT_SYSTEM'
+  &&scope.input.newLocators.length===1,'TYPED_QUANTITY_ORDINARY_COMPOSITE_SCOPE');
+ const ids=input.bindingRowIds;
+ invariant(Array.isArray(ids)&&ids.length===plan.resources.length&&new Set(ids).size===ids.length
+  &&plan.resources.every(row=>ids.includes(row.row_id)),'TYPED_QUANTITY_ORDINARY_EXACT_RESOURCE_BINDINGS');
+ const basis=plan.passport.decision.partialQuantityBasis;
+ invariant(basis?.kind==='DEFERRED_PROJECT_QUANTITIES','TYPED_QUANTITY_ORDINARY_DEFERRED_ONLY');
+ assertMasterTypedPartialQuantityRegistryR1(basis,{newSources:[scope.input.newSource],newLocators:scope.input.newLocators});
+ return scope;
+}
+
 export async function preflightCanonicalDefinitionPublishPlans(
   client: Client,
   plans: readonly CanonicalDefinitionPublishPlan[],
   retainedLegacyInputs: readonly MasterRetainedBindingGuardInputR1[] = [],
-  typedQuantityInputs: readonly MasterRetainedBindingGuardInputR1[] = [],
+  typedQuantityInputs: readonly CanonicalTypedQuantityInputR1[] = [],
 ) {
   invariant(plans.length > 0, "STOP_CANONICAL_PUBLISHER_EMPTY_PLAN");
   invariant(Array.isArray(retainedLegacyInputs)
@@ -657,8 +688,8 @@ export async function preflightCanonicalDefinitionPublishPlans(
     &&retainedLegacyInputs.every(input=>plans.some(plan=>plan.definition.catalog_id===input.config.catalogId)),
     "STOP_CANONICAL_PUBLISHER_LEGACY_ASSUMPTION_SCOPE");
   invariant(Array.isArray(typedQuantityInputs)
-    &&new Set(typedQuantityInputs.map(input=>input.config.catalogId)).size===typedQuantityInputs.length
-    &&typedQuantityInputs.every(input=>plans.some(plan=>plan.definition.catalog_id===input.config.catalogId
+    &&new Set(typedQuantityInputs.map(typedQuantityCatalog)).size===typedQuantityInputs.length
+    &&typedQuantityInputs.every(input=>plans.some(plan=>plan.definition.catalog_id===typedQuantityCatalog(input)
       &&hasMasterTypedPartialQuantityBasisR1(plan.passport))),"STOP_CANONICAL_PUBLISHER_TYPED_QUANTITY_SCOPE");
   // Collect all independent pure quantity errors before the first schema query.
   const quantityErrors=plans.flatMap(plan=>hasMasterTypedPartialQuantityBasisR1(plan.passport)
@@ -667,9 +698,13 @@ export async function preflightCanonicalDefinitionPublishPlans(
   // They must be collected before any schema or registered-source read.
   const typedPlans=plans.filter(plan=>hasMasterTypedPartialQuantityBasisR1(plan.passport));
   for(const plan of typedPlans){
-    const input=typedQuantityInputs.find(input=>input.config.catalogId===plan.definition.catalog_id);
-    if(!input?.config.binding.reuseExistingNormativeRegistry)
-      quantityErrors.push(`${plan.definition.catalog_id}:TYPED_QUANTITY_REGISTERED_SOURCE_REQUIRED`);
+    const input=typedQuantityInputs.find(input=>typedQuantityCatalog(input)===plan.definition.catalog_id);
+    if(input&&ordinaryTypedQuantityInput(input)){
+      try{assertOrdinaryTypedQuantityPlan(input,plan);}catch(error){quantityErrors.push(`${plan.definition.catalog_id}:${String((error as Error).message)}`);}
+    }else{
+      const registered=input&&!ordinaryTypedQuantityInput(input)?input.config.binding.reuseExistingNormativeRegistry:undefined;
+      if(!registered)quantityErrors.push(`${plan.definition.catalog_id}:TYPED_QUANTITY_REGISTERED_SOURCE_REQUIRED`);
+    }
   }
   invariant(quantityErrors.length===0,`STOP_CANONICAL_PUBLISHER_TYPED_QUANTITY:${quantityErrors.join(',')}`);
   for (const plan of plans) automaticPriceInheritanceExcludedResourceIds(plan);
@@ -677,11 +712,18 @@ export async function preflightCanonicalDefinitionPublishPlans(
   for(const plan of plans)assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
     resourceDefinitions:plan.resources,independentComposition:plan.passport?.decision?.independentCompletenessMap,definitionPassport:plan.definition.passport});
   for(const plan of typedPlans){
-    const input=typedQuantityInputs.find(input=>input.config.catalogId===plan.definition.catalog_id)!;
+    const input=typedQuantityInputs.find(input=>typedQuantityCatalog(input)===plan.definition.catalog_id)!;
     try{
       // Same complete registered source/locator preimage guard, without DML.
-      const registered=await readMasterRetainedBindingPreconditionsR1(client,input,"REGISTERED");
-      assertMasterTypedPartialQuantityRegistryR1(plan.passport.decision.partialQuantityBasis,registered);
+      if(ordinaryTypedQuantityInput(input)){
+        // Authoritative raw PG managed-text comparison must succeed BEFORE a
+        // planned object can witness the registered basis; hashes alone grant nothing.
+        const scope=assertOrdinaryTypedQuantityPlan(input,plan);
+        await readMasterScopedNormativeRegistryPreconditionsR1(client,scope,'REGISTERED');
+      }else{
+        const registered=await readMasterRetainedBindingPreconditionsR1(client,input,"REGISTERED");
+        assertMasterTypedPartialQuantityRegistryR1(plan.passport.decision.partialQuantityBasis,registered);
+      }
     }catch(error){quantityErrors.push(`${plan.definition.catalog_id}:${String((error as Error).message)}`);}
   }
   invariant(quantityErrors.length===0,`STOP_CANONICAL_PUBLISHER_TYPED_QUANTITY:${quantityErrors.join(',')}`);

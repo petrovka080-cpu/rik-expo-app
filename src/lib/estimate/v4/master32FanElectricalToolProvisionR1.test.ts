@@ -239,15 +239,15 @@ it('builds the flat prepared-opening reference directly from exact sources with 
  expect(map.operationRequirements.flatMap((o:any)=>Object.values(o.requirements)).some((c:any)=>c.status!=='NOT_APPLICABLE'&&!(c.rowIds?.length))).toBe(false);
  expect(auditPublisher({resourceDefinitions:d.resources,independentComposition:map}).definitionAdmissionAllowed).toBe(true);
  expect(d.parameters.every(p=>p.default_value===null)).toBe(true);
- expect(d.resources.every(r=>r.resource_graph.inputParameterIds?.includes(source.projectReferenceId))).toBe(true);
+ expect(d.resources.every(r=>Array.isArray(r.resource_graph.inputParameterIds)&&r.resource_graph.inputParameterIds.includes(source.projectReferenceId))).toBe(true);
  const request=publicationRequestR614();expect(request.status).toBe('STOP_SOURCE_HELD');expect(request.executableConfig).toBeNull();
  expect(request.current).toBeNull();expect(request.capturedScopedNormativeRegistry).toBeNull();
  expect(request.preparationFields.resourceDefinitions).toEqual(d.resources);
- expect(request.partialQuantityClassification).toHaveLength(5);expect(request.partialQuantityClassification.every(r=>!r.deferredProjectQuantityBasisEligible)).toBe(true);
+ expect(request.partialQuantityClassification).toHaveLength(5);expect(request.partialQuantityClassification.every(r=>!r.deferredProjectQuantityBasisEligible&&r.measurementUnitKnown)).toBe(true);
  expect(request.omittedModes).toEqual(['catalogAppend','retainParentBindings','reuseExistingNormativeRegistry']);
  expect(d.resources.every(r=>r.source_metadata?.automaticGenericPriceInheritanceAllowed===false)).toBe(true);
  expect(()=>referenceInputR610('canonical-work:base:ventilation_interior_fan_install_wet_zone')).toThrow('EXACT_SOURCE_SCOPE');
- const schema=d.parameters.map(p=>({parameterId:p.parameter_id,valueType:p.value_type,unitId:p.unit_id,visibilityRole:String(p.truth_metadata.visibility_role),constraints:p.constraints_json,
+ const schema=d.parameters.map(p=>({parameterId:p.parameter_id,valueType:p.value_type,unitId:p.unit_id,visibilityRole:String(p.truth_metadata.visibility_role),constraints:p.constraints_json??{},
   formulaConsumers:d.formulas.filter(f=>f.input_parameter_ids.includes(p.parameter_id)).map(f=>f.formula_id)}));
  for(const old of ['q',factoryPack.countParameterId])expect(referencePrimaryR610({selectionMetadata:input.applicability.primaryMeasureSelectionV1,parameterSchema:schema,
   submittedParameters:input.referenceDemoInput,parentPrimaryMeasure:{parameterId:old,unitId:'set'}})).toMatchObject({kind:'NEW_ROOT_REQUIRED',carryForward:{parameters:false,rowOverrides:false,prices:false}});
@@ -260,11 +260,11 @@ it('runs the same ordinary core for the explicit reference demo, preserving unkn
  expect(compiled.rows.find(r=>r.row_id===profile.ownerRowId)?.quantity).toBe('2');
  expect(compiled.rows.filter(r=>r.included_in_procurement).map(r=>r.row_id)).toEqual([profile.ownerRowId]);
  expect(compiled.preliminaryNeeds.map(r=>r.row_id).sort()).toEqual([...source.unknownQuantityRows].sort());
- for(const need of compiled.preliminaryNeeds){expect(need.quantity).toBeNull();expect(need.unit_id).toBe('');}
+ for(const need of compiled.preliminaryNeeds){expect(need.quantity).toBeNull();expect(need.unit_id).toBe(source.rows.find(row=>row.rowId===need.row_id)!.unitId);}
  for(const key of source.selectedToolKeys){const part=pack.parts.find(p=>p.key===key)!;expect(compiled.rows.find(r=>r.row_id===part.rowId)?.quantity).toBe(part.perFront);}
  const unknown=new Set(compiled.preliminaryNeeds.map(r=>r.row_id));
  const runtime=auditResources({requireIndependentComposition:true,independentComposition:input.independentCompletenessMap,
   resources:d.resources.map(r=>{const presentation=parse(r.resource_graph.publicResourcePresentationV1)!;return{rowId:r.row_id,nameRu:presentation.nameRu,sourceNameRu:r.title_ru,resourceKind:presentation.resourceKind,
    unitId:r.unit_id,operation:r.resource_graph.operationCompositionV1,publicNameVerified:true,quantityKnown:!unknown.has(r.row_id)};})});
- expect(runtime.definitionAdmissionAllowed).toBe(true);expect(runtime.completeClaimAllowed).toBe(false);expect(runtime.pdfAllowed).toBe(false);expect(runtime.issues.filter(i=>i.code==='RESOURCE_UNIT_UNRESOLVED')).toHaveLength(5);
+ expect(runtime.definitionAdmissionAllowed).toBe(true);expect(runtime.completeClaimAllowed).toBe(false);expect(runtime.pdfAllowed).toBe(true);expect(runtime.issues.filter(i=>i.code==='RESOURCE_UNIT_UNRESOLVED')).toHaveLength(0);
 });

@@ -5,6 +5,8 @@ export type ProfessionalUnitDimension =
   | "area"
   | "volume"
   | "count"
+  | "paired_count"
+  | "energy"
   | "headcount"
   | "package"
   | "mass"
@@ -61,6 +63,8 @@ const DEFINITIONS = [
   unit({ code: "m3", aliases: ["cubic_m", "cbm", "m³", "м3", "м³"], dimension: "volume", canonicalSiUnit: "m3", conversionFactorToSi: 1, precision: 3, discrete: false, displayRu: "м³", displayNameRu: "кубический метр", displayEn: "m³", unitSystems: METRIC_MIXED, boqCanonical: true }),
   unit({ code: "cu_ft", aliases: ["ft3", "ft³", "cubic_foot", "cubic_feet"], dimension: "volume", canonicalSiUnit: "m3", conversionFactorToSi: 0.0283168466, precision: 3, discrete: false, displayRu: "куб. фут", displayNameRu: "кубический фут", displayEn: "cu ft", unitSystems: IMPERIAL_MIXED, boqCanonical: false }),
   unit({ code: "pcs", aliases: ["pc", "piece", "pieces", "шт", "шт."], dimension: "count", canonicalSiUnit: "pcs", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "шт.", displayNameRu: "штука", displayEn: "pcs", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
+  // A pair is its own authored counting basis; never infer pieces or sets from it.
+  unit({ code: "pair", aliases: ["pairs", "пара", "пары", "пар"], dimension: "paired_count", canonicalSiUnit: "pair", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "пара", displayNameRu: "пара", displayEn: "pair", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "person", aliases: ["people", "чел", "чел.", "человек"], dimension: "headcount", canonicalSiUnit: "person", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "чел.", displayNameRu: "человек", displayEn: "person", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "circuit", aliases: ["circuits", "контур", "контуры"], dimension: "count", canonicalSiUnit: "pcs", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "контур", displayNameRu: "контур", displayEn: "circuit", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "zone", aliases: ["zones", "зона", "зоны"], dimension: "count", canonicalSiUnit: "pcs", conversionFactorToSi: 1, precision: 0, discrete: true, displayRu: "зона", displayNameRu: "зона", displayEn: "zone", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
@@ -92,6 +96,7 @@ const DEFINITIONS = [
   unit({ code: "m2_formwork", aliases: [], dimension: "area", canonicalSiUnit: "m2", conversionFactorToSi: 1, precision: 3, discrete: false, displayRu: "м² опалубки", displayNameRu: "квадратный метр опалубки", displayEn: "m² formwork", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "m3_concrete", aliases: [], dimension: "volume", canonicalSiUnit: "m3", conversionFactorToSi: 1, precision: 3, discrete: false, displayRu: "м³ бетона", displayNameRu: "кубический метр бетона", displayEn: "m³ concrete", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "kg_rebar", aliases: [], dimension: "mass", canonicalSiUnit: "kg", conversionFactorToSi: 1, precision: 3, discrete: false, displayRu: "кг арматуры", displayNameRu: "килограмм арматуры", displayEn: "kg rebar", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
+  unit({ code: "kwh", aliases: ["kWh", "кВт·ч", "кВтч", "kW·h", "kilowatt_hour"], dimension: "energy", canonicalSiUnit: "J", conversionFactorToSi: 3_600_000, precision: 2, discrete: false, displayRu: "кВт·ч", displayNameRu: "киловатт-час", displayEn: "kWh", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "W", aliases: ["w", "вт"], dimension: "power", canonicalSiUnit: "W", conversionFactorToSi: 1, precision: 0, discrete: false, displayRu: "Вт", displayNameRu: "ватт", displayEn: "W", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "kW", aliases: ["kw", "квт"], dimension: "power", canonicalSiUnit: "W", conversionFactorToSi: 1000, precision: 2, discrete: false, displayRu: "кВт", displayNameRu: "киловатт", displayEn: "kW", unitSystems: ALL_SYSTEMS, boqCanonical: true }),
   unit({ code: "MW", aliases: ["mw", "мвт"], dimension: "power", canonicalSiUnit: "W", conversionFactorToSi: 1_000_000, precision: 3, discrete: false, displayRu: "МВт", displayNameRu: "мегаватт", displayEn: "MW", unitSystems: ALL_SYSTEMS, boqCanonical: true }),

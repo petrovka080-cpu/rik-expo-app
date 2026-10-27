@@ -133,6 +133,10 @@ export type MasterSingleDefinitionSuccessorConfig = Readonly<{
   applicability: Json;
   binding: Readonly<{
     rowId: string;
+    /** Ordinary whole PROJECT_SYSTEM, strict fresh absence and registered reread;
+     * never an alias for retained bindings or a missing application norm. */
+    ordinaryCompositeSourceV1?:Readonly<{contract:'master-ordinary-composite-source/v1';
+      capturedSourcePreimage:Readonly<{sourceKey:string;expected:null}>}>;
     /** Exact CT126 prepared-profile proof in the existing retained successor slot. */
     ct126PreparedWallMigrationR2?: true;
     /** Opt in to multiple resources backed by one composite source locator. */
@@ -1527,7 +1531,9 @@ export function buildMasterScopeReadiness(unresolvedRows: readonly string[] | un
 /** The same pure validator runs here and on the final publisher plan. */
 export function validateMasterTypedPartialQuantityPreparationR1(config: Pick<MasterSingleDefinitionSuccessorConfig,
   'binding'|'parameterDefinitions'|'formulaDefinitions'|'resourceDefinitions'|'acceptanceInput'
-  |'runtimeProfileInput'|'runtimeProfileClassification'|'runtimeProfileSourceIds'> & Readonly<{
+  |'runtimeProfileInput'|'runtimeProfileClassification'|'runtimeProfileSourceIds'> & Partial<Pick<MasterSingleDefinitionSuccessorConfig,
+    'contract'|'stopCode'|'catalogId'|'parentReleaseId'|'sourceId'|'normId'|'sourceMetadata'|'locator'|'catalogAppend'
+    |'projectSourcePackagePath'|'capturedScopedNormativeRegistry'>> & Readonly<{
     passport:Pick<MasterSingleDefinitionSuccessorConfig['passport'],'partialQuantityBasis'|'unresolvedApplicableResourceRowIds'>;
   }>): string[] {
   if(!Object.hasOwn(config.passport,'partialQuantityBasis'))return [];
@@ -1535,12 +1541,29 @@ export function validateMasterTypedPartialQuantityPreparationR1(config: Pick<Mas
   const mixed=config.passport.unresolvedApplicableResourceRowIds==null?[]:['MASTER_TYPED_QUANTITY_CANNOT_MASK_MISSING_APPLICATION_NORMS'];
   const retained=config.binding.retainParentBindings,values={...config.acceptanceInput,...config.runtimeProfileInput};
   const registry=config.binding.reuseExistingNormativeRegistry;
-  if(!retained||!registry)mixed.push('TYPED_QUANTITY_REGISTERED_RETAINED_SOURCE_REQUIRED');
-  else try{assertMasterTypedPartialQuantityRegistryR1(basis,{newSources:[registry.source],newLocators:registry.locators});}
-  catch(error){mixed.push(String((error as Error).message));}
+  if(retained&&registry){
+    if(Object.hasOwn(config.binding,'ordinaryCompositeSourceV1'))mixed.push('TYPED_QUANTITY_ORDINARY_RETAINED_CONFLICT');
+    try{assertMasterTypedPartialQuantityRegistryR1(basis,{newSources:[registry.source],newLocators:registry.locators});}
+    catch(error){mixed.push(String((error as Error).message));}
+  }else if(!retained&&!registry&&Object.hasOwn(config.binding,'ordinaryCompositeSourceV1')){
+    try{
+      invariant(basis.kind==='DEFERRED_PROJECT_QUANTITIES'&&config.catalogAppend==null&&config.projectSourcePackagePath==null
+        &&config.sourceMetadata?.source_kind==='PROJECT_SYSTEM','TYPED_QUANTITY_ORDINARY_DEFERRED_SCOPE');
+      invariant([config.contract,config.stopCode,config.catalogId,config.parentReleaseId,config.sourceId,config.normId].every(value=>
+        typeof value==='string'&&value.length>0)&&config.locator!=null,
+        'TYPED_QUANTITY_ORDINARY_MANAGED_CONFIG');
+      const candidate=assembleMasterSingleDefinitionManagedRegistryCandidateR1(config as MasterSingleDefinitionSuccessorConfig,
+        {projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate;
+      const scoped=resolveMasterScopedNormativeRegistryOptInR1(candidate);
+      invariant(scoped!=null,'TYPED_QUANTITY_ORDINARY_FRESH_SCOPED_PREIMAGE_REQUIRED');
+      const ids=resolveMasterSingleDefinitionBindingRowIds(config,config.resourceDefinitions,[basis.source.locatorId]);
+      invariant(ids.length===config.resourceDefinitions.length,'TYPED_QUANTITY_ORDINARY_EXACT_RESOURCE_BINDINGS');
+      assertMasterTypedPartialQuantityRegistryR1(basis,{newSources:[candidate.newSource],newLocators:candidate.newLocators});
+    }catch(error){mixed.push(String((error as Error).message));}
+  }else mixed.push('TYPED_QUANTITY_REGISTERED_RETAINED_SOURCE_REQUIRED');
   const sourceIds=Object.fromEntries(config.parameterDefinitions.map(p=>[p.parameter_id,
     retained?.newParameterSources[p.parameter_id]?.sourceIds??retained?.capturedParent.baseline.normative_source_ids?.[p.parameter_id]
-      ??config.runtimeProfileSourceIds?.[p.parameter_id]??[]]));
+      ??config.runtimeProfileSourceIds?.[p.parameter_id]??(config.binding.ordinaryCompositeSourceV1!=null&&config.sourceId?[config.sourceId]:[])]));
   return [...mixed,...validateMasterTypedPartialQuantityBasisR1({parameters:config.parameterDefinitions,formulas:config.formulaDefinitions,resources:config.resourceDefinitions,
     baseline:{input_values:values,input_classification:Object.fromEntries(config.parameterDefinitions.map(p=>[p.parameter_id,
       config.runtimeProfileClassification?.[p.parameter_id]??'VALIDATION_FIXTURE'])),normative_source_ids:sourceIds},
@@ -1916,7 +1939,8 @@ export async function runMasterSingleDefinitionSuccessorR1(
         parameter.parameter_id,
         Object.keys(runtimeProfileInput).length === 0
           ? [config.sourceId]
-          : runtimeProfileSourceIds[parameter.parameter_id] ?? [],
+          : runtimeProfileSourceIds[parameter.parameter_id]
+            ?? (config.binding.ordinaryCompositeSourceV1 != null ? [config.sourceId] : []),
       ])),
       guide_provenance_ru: Object.fromEntries(parameterRows.map((parameter) => [
         parameter.parameter_id,
@@ -2177,6 +2201,10 @@ export async function runMasterSingleDefinitionSuccessorR1(
           stop(config, "APPEND_POINTER_CHANGED_BEFORE_WRITE"));
         }
         if(scopedRegistryInput!=null&&scopedRegistryPreflight!=null){
+          // Ordinary whole replacement has no retained/append branch to acquire these locks.
+          if(config.binding.ordinaryCompositeSourceV1!=null){
+            await client.query("lock table public.estimate_normative_source, public.estimate_normative_locator in share row exclusive mode");
+          }
           const lockedScope=await readMasterScopedNormativeRegistryPreconditionsR1(client,scopedRegistryInput,"LOCKED_BEFORE");
           assertMasterScopedNormativeRegistryUnchangedR1(scopedRegistryInput,scopedRegistryPreflight,lockedScope);
         }
@@ -2263,7 +2291,11 @@ export async function runMasterSingleDefinitionSuccessorR1(
         const publisherPreflight = await preflightCanonicalDefinitionPublishPlans(client, [plan],
           retentionInput != null && (retentionInput.config.binding.retainParentBindings?.legacyTemplateAssumptionSources
             || retentionInput.config.binding.retainParentBindings?.legacyCapturedFixtureSources)
-            ? [retentionInput] : [], hasMasterTypedPartialQuantityBasisR1(plan.passport)&&retentionInput!=null?[retentionInput]:[]);
+            ? [retentionInput] : [], hasMasterTypedPartialQuantityBasisR1(plan.passport)
+              ?retentionInput!=null?[retentionInput]:scopedRegistryInput!=null&&config.binding.ordinaryCompositeSourceV1!=null
+                ?[{kind:'ORDINARY_COMPOSITE_TYPED_QUANTITY',catalogId:config.catalogId,
+                  bindingRowIds:[config.binding.rowId,...(config.binding.additionalRowIds??[])],scopedRegistry:scopedRegistryInput}]:[]
+              :[]);
         await client.query(`insert into public.estimate_definition_release(
             id,release_key,schema_version,status,source_commit,source_tree,source_manifest_sha256,
             definition_count,resource_row_count,metadata,parent_release_id,source_package_sha256,

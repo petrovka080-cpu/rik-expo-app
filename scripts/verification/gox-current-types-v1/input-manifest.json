@@ -148,7 +148,7 @@
     "data/estimate-benchmarks/source-packs/euroflex-recycling50-materials-s27-75.json": "bb333e13bf396699998c93e410ce25fff6086115d6a9d136ab1c1c08ac79b531",
     "data/estimate-benchmarks/source-packs/facade-ceresit-ct190-kz-material-subworks-r1.json": "9a3471c8cf2203aedb4c6acf9bfa74cc210a6c426df37715be3b8b6e75ec88f8",
     "data/estimate-benchmarks/source-packs/facade-flashings-with-downpipes-krer12-008-01-quantity-r1.json": "4c746387b60189b6973c7fcb501c2676a153a46ea5adead69f461cbd5181fa56",
-    "data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json": "e86d05411af9c15f5c3a5177e7212e09ff7e51c195bc7a2a9d64f2297af6f739",
+    "data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json": "79a157a5cc9886fe179413f2840b97689de5ec4912c877ec8d5c9a493c817acd",
     "data/estimate-benchmarks/source-packs/flat-metal-oil-two-coats-krer15-030-02-quantity-r1.json": "9cf784f9848df164187529d8aeee2442ccd736e91ea04ae0f729e488f7ee42f7",
     "data/estimate-benchmarks/source-packs/flat-roof-scope-s27-65.json": "6da79a052b0e9c7d84173062a885bb4b09af49897f9e9f376d4c3e267cbed651",
     "data/estimate-benchmarks/source-packs/floor-cement-screed20mm-krer11-011-01-r1.json": "99989ee2e6e3cf553b59b03a23c09d2eefa598672c51820f342bdd7ef17818e5",
@@ -335,7 +335,7 @@
     "scripts/estimate/r4a13/canonicalDefinitionPublisherConditionalSourceScopeR1.test.ts": "1a35b95ea8c04c9879a91e763209b847ecb3f6787f5d0dec096979a66e3c89a8",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherParameterOrdinalsR1.test.ts": "80d99d70c1b35a864f138b6daf3348331b97ae0b15acdd0975825df9b29366fd",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": "d547140084bfcae2e33a48261a3d3b7dd0b6f105ec4357e3a7ff3344ed92c74e",
-    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "89dd4f4c4be885f46f2151ac226e7e5a3da91d20667ef01670e61a8ebe4e5cb4",
+    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "420d4a40ac236dd836bd752bcdc5e416a4512216519e99dabfaa7e2f902905e4",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherResourceOrderingR1.test.ts": "b3117f2ccb80b2a8007ba33f95b65bdd14064a59d8b4ac9a9520750093b0ea67",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": "22e0c945a463230bed73e7efed680cf7bbd1547b82348737c620e72756bc6691",
     "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845",
@@ -359,8 +359,8 @@
     "scripts/estimate/r4a13/masterReviewedNormPackRegistryReuseR1.test.ts": "deedfbddedc0bf73ed1cba14730fc6fc83690a090b44deed937eb9083079d14e",
     "scripts/estimate/r4a13/masterReviewedNormPackRegistryReuseR1.ts": "634ed19917767433c4f7cbc2f8d9eeddc6b10f883391e67be23e4949670b3576",
     "scripts/estimate/r4a13/masterRuntimeAdmissionMetadataR1.test.ts": "44fb0a1f84dcb802d719f591ea611fc2866d0697f1bfb06c6347c5f8ad793175",
-    "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.test.ts": "ec227642566c5abee266c39c5cd5d82ce08b6b715499f6aedf9aab553c0a4036",
-    "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts": "a30129a398c3502df422e7492a143abe9e126668cca816c3822a8df31b363679",
+    "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.test.ts": "b474f8a12c05b5be97c4ccdc3406b5c5b7d47cbfdb28466bcb7938a3b7930365",
+    "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts": "3fb8efab3994f8353ccfba30bca0a0606f54c3569e32c1df9c89efce4f4c7d44",
     "scripts/estimate/r4a13/masterSingleDefinitionAppendGuardsR1.ts": "9d9d7600e89c5b6bfbd278b7f02cee36f40ca12487c6e6d0ca33d132d32f5f4a",
     "scripts/estimate/r4a13/masterSingleDefinitionAppendParentBridgeR1.test.ts": "86ebe3871f289d672c07376a7297bb97df2b1993b2d0b36a2f3b945394a36ea7",
     "scripts/estimate/r4a13/masterSingleDefinitionAppendParentBridgeR1.ts": "3711b2c38354165e866214bf0059f6e39e871302cb073d0e5e8406450ba005a9",
@@ -370,7 +370,7 @@
     "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.test.ts": "5d58415a4ed0341b5bbec3b5ac7f3241c8f5d79d219aa9be8dd31ff51271a864",
     "scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts": "bdec313b9b0efbe03f414a5fad94352fb96d0d4d075d1ee5627521ccc6cfcdfe",
     "scripts/estimate/r4a13/masterSingleDefinitionRetainedFormulaExpressionRepairsR1.test.ts": "aaec4b6cf742790aa3152d552d5e7794a0f4638ba5af8e9520e7f6eeeb525603",
-    "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": "fe8f963ff2b7869949b5593c44517590c836ee32b35a3cf26f9a21e19026ee16",
+    "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": "c5aed9f0a32a29b7632a928f12e064f37d915095bb7e22aa302133bc72192006",
     "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.ts": "8cf5fe6385481c3c9db87e5026f211ded1acd6daa6db30d2418406ed49ba0847",
     "scripts/estimate/r4a13/monolithicRepeatedRetainedContinuationR1.ts": "b4da165a3fcba3d3e227db7191296bb0b5fd48b8290728d79ac83a9c188eb2db",
     "scripts/estimate/r4a13/preflightS2758FusionBench.ts": "e763137583b69984955faa81488c327e9d26881eed5c38362fcd72c05fe63dbd",
@@ -410,6 +410,7 @@
     "scripts/estimate/r4a13/prepareCeramicFloorCementMortarKrer11Column03AppendR1.test.ts": "d9451e92d17a1c61c1fdf36049ae629c10810be7c00bb2dda3b3e47dab32b4b5",
     "scripts/estimate/r4a13/prepareCeramicFloorCementMortarKrer11Column03AppendR1.ts": "0ef4ffe2ca60b063bf60f96fba3d411ea5a446b0a31b77982ed7d9711d32697f",
     "scripts/estimate/r4a13/prepareCt126PreparedWallBranchesR2.ts": "48801fb31039e8bcd2d7eacec8cc8865fc20005ede277f945160e5f50a0b02e3",
+    "scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts": "aca89b0dd59d217af83e168b78495c6af42f4f14120901b7297f619b395c5727",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.test.ts": "c2ba5f9367795a3889a2ea61e8b910a7420005ffd4440aafb9002f498acf66a2",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.ts": "f2966bee892f08237f0bd50c054845ee6ea7a6c59032f03f909d536c4bd5fff9",
     "scripts/estimate/r4a13/prepareElecor60x40SingleRouteMaterialsR1.ts": "93fb236d6c999d86a2d4f8a209177265613b1860d39ad5554efbbc8ecc367ab7",
@@ -444,14 +445,14 @@
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.test.ts": "16199dd97dad1ae3b541eae2784351143527fde6d1676df03dbcffd22358bd5d",
     "scripts/estimate/r4a13/prepareManualTrench05701AdmittedMasterAppendR1.ts": "2549780f9af5d0e6ece5e40683db6ef364f9d263492e2e58c58e59e140017d97",
     "scripts/estimate/r4a13/prepareManufacturerDoorFanFactoryKitsR1.ts": "cf6c305374da8d80c8234d1e28a549490f97a255000eb6e3cd0983930a087a30",
-    "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": "8fa2718a1041016342770f0952560a2f35d39164c6803cb0a71452349549706b",
+    "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": "24e6da7d230a7747a7937ae02adb8d6f128cf17dc6a52ea1de073516e5eb240c",
     "scripts/estimate/r4a13/prepareMasterAsphaltCompactionProfileSuccessor.ts": "1813926b2ec6897a3af1b00740160d0ffa642f6ca76eb1f229f74586123005ed",
     "scripts/estimate/r4a13/prepareMasterAsphaltInstallKrer27Successor.ts": "369e2e86944b95be758f96b4dfe2168079665fb0771d68b0595d26587d24eea7",
     "scripts/estimate/r4a13/prepareMasterBridgeAsphaltCompleteSuccessor.ts": "c7c6b7f8a4040f94ef1aa4374387318d1be576f7882a57e9146ba7650a34de1f",
     "scripts/estimate/r4a13/prepareMasterDrywallCeilingPreparationProfileSuccessor.ts": "7f3d7f8c4bd5b057366ac75d1c931887a41c143d1c490855a4e31d56144317bf",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionOperationCoverageR3.test.ts": "297dcdd05a34205b6947bd070c6db8cea1cc47b17a24722a5455f13626843c5c",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.test.ts": "c94c830ddebcd6caeaf27c7831551b0cb06e18f42ba060f745067aaaf0bda096",
-    "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "03068fafdbd0817c1a6db54c8726c89e610691ec88350774df7cf206a9c642a9",
+    "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "55d059a0c7e9cf9b033b55d1d89b7efe5ee2079b0a51d1e0c222dfb9e4454551",
     "scripts/estimate/r4a13/prepareMasterStripFoundationConcretePlacementProfileSuccessor.ts": "685967f84fb291424437ef9c2ac41c69a3bf65dd8c3e60b92989df4fb125a403",
     "scripts/estimate/r4a13/prepareMasterSurfaceDrainageChannelSuccessor.ts": "912433eb6b61bb988d49abd7d24777ce7de95f4ed4bb7dcf1b2f6bcca6c601ff",
     "scripts/estimate/r4a13/preparePavingCut70AdmittedMasterAppendR2.ts": "214c15286e7ad28d1d094adf145bad923b6ae748ee2daba5254de90ffde17dbd",
@@ -560,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "30aca0f900750bac9e9d8e663d1b4761f8dff931f75ece3173d59ab6e4a90e1f",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "caeb8ad870505a3053724f605508be5a7a2644a3e5d67780976df64212efadd9",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "86b63914c8e990ed96b9121e8d78eb364a016e95fd26598990ed3b1911ca473c",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "d828577e08197edff91aca5cfe4e7e697170fabe9f778a31f004d1c38923d016",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "455ae114220747ec394a5c6f9cd49b828ae1eb4b808358d285b3cb769a4bd9d4",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1214,8 +1215,8 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "255317cdf01b3b30cb33e5157c457b9ebbf7940ad844b755354511f60922bad6",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "4f3edff38b4f4a05035e9c10263dbabdcb821cae87be3ef4cb1d9d8312620e55",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "6140ac5e5a23068f3354887c1339604ddee02fc93c0262527a0436a0ce1af223",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "947232dae57f3d8d8978394e64663583c588ff3aa43b8ccd82daa4f3d3d3f44b",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.ts": "5c59629f9c6c307b1432bae451cdad3a87468e5ce3de82bad5e71c71170a2a0c",
@@ -1290,8 +1291,8 @@
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.test.ts": "68a81598f210d4e4566e7ff931bcc9328233619d30ca026a9257b9e413544d76",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
     "src/lib/estimate/backendPlatform/canonicalProcurementOperationAllocation.test.ts": "69e677cfdf6fc0106c97436e8433450604cb1e8537847e1e3fe1615ffd878730",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "74daf96e9fceda55ec5ecf2161a1b323c01ec725f5d621103866c755a7faff30",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "d5f25622e12c23bd10408c1b7ef22ffffdd5e2f3b1bbfabd8a18edf077b6d9c0",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "a4d005e02f60ee52cf303a7a795d3c49dc541b3a079a666515077ef7c4c5cf8b",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "7f1b1538e955f6cb03e7cc7e7303af7295c151af1fff54a1a498670d54b3bc9b",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.test.ts": "3aa6ed34ddd2b0e7bd35aa67674e5cfed153f1e0802c169a43b180fc1f1a2f3b",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts": "cf73e5767efe06a52a5b54ebbb83124d939fd24237cdf8d811c15ac707cc9931",
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts": "d083dab58274d98404d95407cd25bedb688d140b843ed5397ac45dbb315dc6c1",
@@ -1467,7 +1468,7 @@
     "src/lib/estimate/professionalNormSourceStaticAdmission.ts": "06ddc84d7c4127c80dd56c55964ee8d1be8c18224b8b980632906a839306122f",
     "src/lib/estimate/professionalPricebookContract.ts": "f838bcff5bcafcf3eb56b8bc393a39bc4207343675fa333461264cfc15592d24",
     "src/lib/estimate/professionalPricebookRegistry.ts": "9fd6d3fbf6154e8c62f27e1bd37ef86e5c7e7897c8743a563c98831179d7dda7",
-    "src/lib/estimate/professionalUnitRegistry.ts": "40165b4f74a4249078d43c52db4933c03472078cca8857ab91a3777c76f85d9f",
+    "src/lib/estimate/professionalUnitRegistry.ts": "c3d64a737cfcfb6111b6a376d9c8093f4cb91aef78b7a52bc06c6f0a70c0da55",
     "src/lib/estimate/professionalWorkPassportRegistry.ts": "0c0ad535f52380ba91366cfda4599801ae769cd9f3ce0ea488835aa7c89439d1",
     "src/lib/estimate/publicBoqNaming.ts": "e4be4c2383cb1b364bbfe82ab1e6e172851ee86f1e50456481cceab24d98f860",
     "src/lib/estimate/publicRussianLexiconR555.ts": "01c31721329cf3c7e5e41878f1e6a9119e447c8f47261d8dd4a439fa946a3d32",
@@ -1818,8 +1819,8 @@
     "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts": "73244519d0d16e7931c351d34a021431238c5e3eb363042279118af6714f9af8",
     "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.ts": "40fc21e9cab745ac25e7e4192ebe48039876070e79c879267ac2ac4cab691838",
     "src/lib/estimate/v4/masonryBrickWallBiaTn10R1.ts": "1223578c1bfe569bcbc18183f2a81cf204a6359ef26605bd45c0c52b682be8d3",
-    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": "0f875022cb944ba5d4652fcbdfff69f06f5d03e39b759d321737115faf0792f0",
-    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": "9f6cf7c9e9262f43da259e8e5cbb48997b2099c81ec0f9af20fa67b50d7ebfb5",
+    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": "9536eddfc6b1395833da28399d6797afc1d05d7994844307c9a8ea7800958bfa",
+    "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": "0a4e8774525c845c845061cd15ebfa316c12f8421e8783f8d92bf85422cdd73f",
     "src/lib/estimate/v4/mineralCeilingThirdPuttyCoatS2754.ts": "150d9985d86076af8540cd29003ed8ab493d2a50c7431b170a0f1e13cb60f0ed",
     "src/lib/estimate/v4/mineralCeilingThirdPuttySupplierGatesS2754.ts": "feea1d25660d74d2d9ad8d718010639ed353e8128e73f2b156857abea9b20986",
     "src/lib/estimate/v4/monolithicStairDokaKrer06Column11101R1.ts": "4a3f0b4920fbb42e0a300dc16051bb6ccd4b164236446ee23fd9a486b1746ff3",
@@ -2290,6 +2291,7 @@
     "tests/entry/rootLayoutOfficeWarmup.contract.test.ts": "977f90c6700f5d897f1e8e790b49c81e7d2adaec49f6b68a8541d1593f6ea12c",
     "tests/estimateBackend/r4A10AsphaltSurfaceDrainage.contract.test.ts": "507f150a6dbf157c238475c821afeacdf964e79956bdb7a24e800888c7ee5fd0",
     "tests/estimateBackend/r6HistoricalAreaPublisherRetired.contract.test.ts": "cd6f0794fc4974dc4d1eade5bcdf58ce29fe00857487ad6ad45e3b8862f16ec7",
+    "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts": "cbe93ad9fdbed9f59048068ed7ee54ce85934d67017ed34dba93571e1a41f7d6",
     "tests/estimateDomainFactory/electricalComplete.contract.test.ts": "484acf4da848fa7b0a496e2ef42b45f55418e5cd40c02d88c7628fb5758f0d71",
     "tests/estimateDomainFactory/heatingVentilationComplete.contract.test.ts": "d16cb69a952b45d8f11b5bfe756d10d324ce7554779f744e9b935c015631d0b6",
     "tests/estimateDomainFactory/interiorFinishesComplete.contract.test.ts": "8fdd40d61e9799f03e2f0be45da6914c70aab4ecc7bf547e97f922c5e5bdc586",
@@ -3613,7 +3615,7 @@
     "node_modules/zustand/vanilla.d.ts": "4d7d964609a07368d076ce943b07106c5ebee8138c307d3273ba1cf3a0c3c751"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "86b63914c8e990ed96b9121e8d78eb364a016e95fd26598990ed3b1911ca473c",
+  "originalSeedManifestSha256": "455ae114220747ec394a5c6f9cd49b828ae1eb4b808358d285b3cb769a4bd9d4",
   "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -3627,12 +3629,12 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2447,
+    "sourceFiles": 2449,
     "dependencyFiles": 1160,
-    "sourceBytes": 133162916
+    "sourceBytes": 133227737
   },
   "candidateSourceComposition": {
-    "contract": "mandatory-unit-acceptance-existing-fan-reference-ordinary-core/r617",
+    "contract": "existing-owner-composite-source-references-and-unit-rule/r621",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
@@ -3643,7 +3645,7 @@
         "sha256": "1559569db12222e8c9a889308c3354b0220b4b7178073ffd2e544d656ddb54fc"
       },
       "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": {
-        "sha256": "89dd4f4c4be885f46f2151ac226e7e5a3da91d20667ef01670e61a8ebe4e5cb4"
+        "sha256": "420d4a40ac236dd836bd752bcdc5e416a4512216519e99dabfaa7e2f902905e4"
       },
       "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": {
         "sha256": "8b1724d62eba16d8df3c9140ecbf9664dc09dda4c5e81a8567b1f8cd2e86d506"
@@ -3652,22 +3654,52 @@
         "sha256": "72ea41f63fbf5996c3958627ed2aa93f190a6602ee437a0cff699f7e793a9ec8"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": {
-        "sha256": "255317cdf01b3b30cb33e5157c457b9ebbf7940ad844b755354511f60922bad6"
+        "sha256": "6140ac5e5a23068f3354887c1339604ddee02fc93c0262527a0436a0ce1af223"
       },
       "docs/estimate-operation-resource-acceptance.md": {
         "sha256": "22e35f173b3ffa2c95fc8b06f28f242eaa683bca7df59615a9c5af971c9a5c51"
       },
       "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": {
-        "sha256": "9f6cf7c9e9262f43da259e8e5cbb48997b2099c81ec0f9af20fa67b50d7ebfb5"
+        "sha256": "0a4e8774525c845c845061cd15ebfa316c12f8421e8783f8d92bf85422cdd73f"
       },
       "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": {
-        "sha256": "0f875022cb944ba5d4652fcbdfff69f06f5d03e39b759d321737115faf0792f0"
+        "sha256": "9536eddfc6b1395833da28399d6797afc1d05d7994844307c9a8ea7800958bfa"
       },
       "data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json": {
-        "sha256": "e86d05411af9c15f5c3a5177e7212e09ff7e51c195bc7a2a9d64f2297af6f739"
+        "sha256": "79a157a5cc9886fe179413f2840b97689de5ec4912c877ec8d5c9a493c817acd"
       },
       "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": {
-        "sha256": "8fa2718a1041016342770f0952560a2f35d39164c6803cb0a71452349549706b"
+        "sha256": "24e6da7d230a7747a7937ae02adb8d6f128cf17dc6a52ea1de073516e5eb240c"
+      },
+      "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": {
+        "sha256": "55d059a0c7e9cf9b033b55d1d89b7efe5ee2079b0a51d1e0c222dfb9e4454551"
+      },
+      "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts": {
+        "sha256": "3fb8efab3994f8353ccfba30bca0a0606f54c3569e32c1df9c89efce4f4c7d44"
+      },
+      "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": {
+        "sha256": "c5aed9f0a32a29b7632a928f12e064f37d915095bb7e22aa302133bc72192006"
+      },
+      "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.test.ts": {
+        "sha256": "b474f8a12c05b5be97c4ccdc3406b5c5b7d47cbfdb28466bcb7938a3b7930365"
+      },
+      "scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts": {
+        "sha256": "aca89b0dd59d217af83e168b78495c6af42f4f14120901b7297f619b395c5727"
+      },
+      "src/lib/estimate/professionalUnitRegistry.ts": {
+        "sha256": "c3d64a737cfcfb6111b6a376d9c8093f4cb91aef78b7a52bc06c6f0a70c0da55"
+      },
+      "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts": {
+        "sha256": "cbe93ad9fdbed9f59048068ed7ee54ce85934d67017ed34dba93571e1a41f7d6"
+      },
+      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": {
+        "sha256": "7f1b1538e955f6cb03e7cc7e7303af7295c151af1fff54a1a498670d54b3bc9b"
+      },
+      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": {
+        "sha256": "a4d005e02f60ee52cf303a7a795d3c49dc541b3a079a666515077ef7c4c5cf8b"
+      },
+      "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": {
+        "sha256": "947232dae57f3d8d8978394e64663583c588ff3aa43b8ccd82daa4f3d3d3f44b"
       }
     }
   },

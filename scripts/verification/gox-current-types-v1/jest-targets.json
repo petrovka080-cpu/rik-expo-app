@@ -7,7 +7,10 @@
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts",
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts",
       "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.test.ts",
-      "src/features/consumerRepair/consumerCanonicalArtifactHydration.test.ts"
+      "src/features/consumerRepair/consumerCanonicalArtifactHydration.test.ts",
+      "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts",
+      "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.test.ts",
+      "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts"
     ],
     "owners": [
       "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts",

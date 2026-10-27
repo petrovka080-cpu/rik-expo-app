@@ -85,5 +85,11 @@
   "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts": null,
   "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.ts": null,
   "data/estimate-benchmarks/source-packs/fan-prepared-opening-reference-method-r610-r1.json": null,
-  "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": null
+  "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": null,
+  "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts": null,
+  "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": null,
+  "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.test.ts": null,
+  "scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts": null,
+  "src/lib/estimate/professionalUnitRegistry.ts": null,
+  "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts": null
 }

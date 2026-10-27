@@ -258,7 +258,7 @@ export function master32FanElectricalCompletenessR1(key: string): Json {
  * The reference object conditions are explicit DEMO/PPR conditions, not facts
  * about an existing saved estimate. The ordinary compiler remains authoritative.
  */
-export const fanPreparedOpeningReferenceArtifactSha256R610='e86d05411af9c15f5c3a5177e7212e09ff7e51c195bc7a2a9d64f2297af6f739';
+export const fanPreparedOpeningReferenceArtifactSha256R610='79a157a5cc9886fe179413f2840b97689de5ec4912c877ec8d5c9a493c817acd';
 export function fanPreparedOpeningReferenceDefinitionR610(catalogId:string):AutomaticOwnerDefinition{
  const reference=referenceMethodArtifact as unknown as Json;
  if(catalogId!==reference.catalogId||reference.sourceKind!=='PROJECT_SYSTEM'||reference.generatedFromCurrentRows!==false)
@@ -298,7 +298,7 @@ export function fanPreparedOpeningReferenceDefinitionR610(catalogId:string):Auto
   {id:reference.frontCountId,title:'Фактическое число пригодных выделенных инструментальных постов',kind:'conditional',valueType:'integer',unitId:'piece',min:1,max:1000000,requiredWhen:selection},
   {id:reference.projectReferenceId,title:'Документ условий монтажа и фактической применимости',kind:'conditional',valueType:'text',unitId:null,requiredWhen:selection},
   ...reference.scopeChoices.map((c:Json)=>({id:c.parameterId,title:c.titleRu,kind:'conditional' as const,valueType:'enum' as const,unitId:null,values:[c.value],requiredWhen:selection})),
-  ...sourceRows.filter(r=>r.quantityUnknown).map((r:Json)=>({id:r.quantityParameterId,title:r.publicNameRu,kind:'internal' as const,valueType:'decimal' as const,unitId:null})),
+  ...sourceRows.filter(r=>r.quantityUnknown).map((r:Json)=>({id:r.quantityParameterId,title:r.publicNameRu,kind:'internal' as const,valueType:(['pcs','pair'].includes(r.unitId)?'integer':'decimal') as 'integer'|'decimal',unitId:r.unitId})),
  ];
  const specs:AutomaticRowSpec[]=sourceRows.map(r=>({rowId:r.rowId,formulaId:r.formulaId,title:r.sourceTitleRu,section:'Монтаж вентилятора в готовом проёме',
   category:r.category,unitId:r.unitId,expression:r.expression,costTreatment:r.costTreatment,procurement:r.procurement,inclusion:scope}));
@@ -307,13 +307,16 @@ export function fanPreparedOpeningReferenceDefinitionR610(catalogId:string):Auto
    definition_hash:fanPreparedOpeningReferenceArtifactSha256R610,artifact_sha256:fanPreparedOpeningReferenceArtifactSha256R610,exact_locator:'Source-owned PROJECT_SYSTEM scope/rows/operationRequirements; DEMO, not authenticated site facts.'},
   applicabilityRu:reference.sourceScope.join(' '),ordinary,profile:[],conditional,rows:specs,deferMissingProjectFactsToRows:true,
   excludedUnownedAssumptions:reference.remainingActualAdmissionNeeds});
+ const sourceGuideEvidence={guide_version:reference.contract,source_snapshot_hash:fanPreparedOpeningReferenceArtifactSha256R610,
+  applicability:reference.sourceScope.join(' '),verified_at:'2026-10-27T08:14:34Z',guide_validation_policy:'MANDATORY_BLOCK',
+  evidence_review_scope:'SOURCE_GUIDE_ONLY_NOT_OBJECT_AUTHENTICATION_OR_EXECUTION'};
  const parameters=built.parameters.map(p=>{
   const row=sourceRows.find(r=>r.quantityParameterId===p.parameter_id);
   const {guide:_unearned,...truth}=p.truth_metadata;
   return{...p,default_value:null,truth_metadata:row?{...unresolvedApplicationNormTruthR1(truth,
-   'Фактический объём, единица ведомости и норма для этого ресурса не заданы проектным способом; UNKNOWN не подменяется нулём или единицей.'),guide:{guide_kind:'PROJECT_DEFINED',source_role:'UNRESOLVED_APPLICATION_NORM',guide_short_ru:'Количество и единица остаются неизвестными до предметного обоснования.',source_document:reference.sourceId,source_locator:'Source-owned row quantityUnknown; no installation norm'}}:
+   'Фактическое количество и норма для ресурса не заданы; единица определена отдельной авторской методикой учёта. UNKNOWN не подменяется нулём или единицей.'),guide:{...sourceGuideEvidence,guide_kind:'PROJECT_DEFINED',source_role:'UNRESOLVED_APPLICATION_NORM',guide_short_ru:'Количество остаётся неизвестным; единица задана авторской методикой учёта.',source_document:reference.sourceId,source_locator:'AUTHOR_SELECTED_MEASUREMENT_BASIS; source-owned quantityUnknown; no installation norm'}}:
    {...truth,value_source_role:'PROJECT_SPECIFIC_INPUT',visibility_role:'USER_INPUT',source_confirmation_required:false,
-    provenance:{consumer_input_role_v1:'OBJECT_FACT'},guide:{guide_kind:'PROJECT_DEFINED',source_role:'PROJECT_SYSTEM_REFERENCE_REQUIRES_ACTUAL_SCOPE',
+    provenance:{consumer_input_role_v1:'OBJECT_FACT'},guide:{...sourceGuideEvidence,guide_kind:'PROJECT_DEFINED',source_role:'PROJECT_SYSTEM_REFERENCE_REQUIRES_ACTUAL_SCOPE',
      guide_short_ru:'Условия способа монтажа и документы объекта требуют отдельного подтверждения.',source_document:reference.sourceId,source_locator:'Source scope and explicit project choices'}}};
  });
  const resources=built.resources.map(r=>{
@@ -321,13 +324,13 @@ export function fanPreparedOpeningReferenceDefinitionR610(catalogId:string):Auto
   const uses=declaration.operationKeys.map((key:string)=>operations.find(o=>o.operationId.endsWith(':'+key)));
   if(uses.length===0||uses.some((o:Json|undefined)=>!o))throw Error('FAN_REFERENCE_R610_EXACT_OPERATION_MEMBERSHIP_REQUIRED');
   return rehash({...r,cost_owner_id:declaration.costOwnerRowId,resource_graph:{...r.resource_graph,
-   inputParameterIds:[...new Set([...(r.resource_graph.inputParameterIds??[]),reference.projectReferenceId])],
+   inputParameterIds:[...new Set([...(Array.isArray(r.resource_graph.inputParameterIds)?r.resource_graph.inputParameterIds.filter((id:unknown):id is string=>typeof id==='string'):[]),reference.projectReferenceId])],
    operationCompositionV1:{...uses[0],additionalOperations:uses.slice(1)},
    ...(declaration.costTreatment==='INCLUDED_IN_RESOURCE_ROWS'?{parentCostOwnerId:declaration.costOwnerRowId,includedInResourceOwnerRowId:declaration.costOwnerRowId}:{}),
    publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:declaration.publicNameRu,sourceTitleRu:r.title_ru,
-    resourceKind:declaration.resourceKind,brandAndModelRu:null,specificationRu:null,detailsRu:declaration.quantityUnknown?['Количество и единица ведомости не определены; ресурс остаётся видимым.']:[]}},
+    resourceKind:declaration.resourceKind,brandAndModelRu:null,specificationRu:null,detailsRu:declaration.quantityUnknown?['Количество не определено; авторская единица учёта не является нормой расхода.']:[]}},
    source_metadata:{...r.source_metadata,normativeTrace:[],sourceRole:'PROJECT_SYSTEM_REFERENCE_METHOD_NOT_OBJECT_AUTHENTICATED',
-    sourceLineage:declaration.sourceLineage,sourceMethodArtifactSha256:fanPreparedOpeningReferenceArtifactSha256R610,
+    sourceLineage:declaration.sourceLineage,...(declaration.measurementBasis?{measurementBasis:declaration.measurementBasis}:{}),sourceMethodArtifactSha256:fanPreparedOpeningReferenceArtifactSha256R610,
     actualExecutionProved:false,actualProjectAuthenticated:false,publicationAllowed:false,automaticGenericPriceInheritanceAllowed:false,
     quantityNormAuthored:false,referenceWholeSourceReplacement:true}});
  });
@@ -340,7 +343,7 @@ export function fanPreparedOpeningReferenceAdmissionInputR610(catalogId:string){
   operationId:reference.operationRoster.find((o:Json)=>o.operationId.endsWith(':'+r.operationKeys[0])).operationId,
   requiredOperationIds:r.operationKeys.map((key:string)=>reference.operationRoster.find((o:Json)=>o.operationId.endsWith(':'+key)).operationId),
   publicNameRu:r.publicNameRu,resourceKind:r.resourceKind,category:r.category,unitId:r.unitId,formulaId:r.formulaId,
-  ...(r.quantityUnknown?{quantityUnitUnconfirmed:true}:{}),resolution:r.costTreatment==='INCLUDED_IN_RESOURCE_ROWS'
+  ...(r.quantityUnknown?{quantityUnknown:true,measurementBasis:r.measurementBasis}:{}),resolution:r.costTreatment==='INCLUDED_IN_RESOURCE_ROWS'
    ?{kind:'INCLUDED_COMPONENT_ROW',rowId:r.rowId,parentRowId:r.costOwnerRowId}:{kind:'ROW',rowId:r.rowId}}));
  return{status:'SOURCE_HELD_REFERENCE_INPUT_NOT_PUBLISHED',model,
   independentCompletenessMap:{contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PROJECT_SYSTEM',generatedFromCurrentRows:false,

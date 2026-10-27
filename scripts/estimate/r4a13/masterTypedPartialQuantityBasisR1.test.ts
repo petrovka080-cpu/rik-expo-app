@@ -192,3 +192,44 @@ test('preserves old missing-application-norm and FULL quantity semantics indepen
   passport:{decision:{...buildMasterScopeReadiness(undefined,model.resources),engineeringAcceptance:false},capability_matrix:buildMasterCapabilityMatrix(undefined,model.resources)}};
  expect(canonicalPublisherQuantityScopeIsConsistent(complete)).toBe(true);
 });
+
+
+import {prepareCt54ReferencePublicationR613} from './prepareCt54ReferencePublicationR613';
+import {assembleMasterSingleDefinitionManagedRegistryCandidateR1} from './prepareMasterSingleDefinitionSuccessorR1';
+import {makeMasterScopedNormativeRegistryCaptureR1} from './masterScopedNormativeRegistryPreimageR1';
+function ordinaryCt54TypedView(){
+ const config=prepareCt54ReferencePublicationR613({parentReleaseId:'TEST_ONLY_CURRENT_RELEASE',parentSearchReleaseId:'TEST_ONLY_SEARCH_RELEASE',
+  currentReleasePath:'TEST_ONLY_REFERENCE_POINTER_COPY',selectedCurrentReleasePath:'TEST_ONLY_SELECTED_POINTER',referencePointerMode:'PREPARED_NOT_ACTIVE_COPY',outputRoot:'TEST_ONLY',expectedBranch:'TEST_ONLY',masterPath:'TEST_ONLY',masterSha256:'a'.repeat(64),
+  currentDefinitionVersionId:'TEST_ONLY_DEFINITION',currentDefinitionSha256:'b'.repeat(64),approvedTemplateBaselineId:'TEST_ONLY_BASELINE',
+  capturedParentPath:'TEST_ONLY_CAPTURE',capturedParentByteSha256:'c'.repeat(64),expectedParentShape:[19,91,91],
+  verifyTargetPrecondition:async()=>{throw Error('TEST_ONLY_DO_NOT_WRITE');},verifyCore:async()=>({status:'TEST_ONLY_NOT_RUN'})});
+ const candidate=assembleMasterSingleDefinitionManagedRegistryCandidateR1(config,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate;
+ const scope={artifactSha256:String(candidate.newSource.artifact_sha256),normId:config.normId,sourceKey:config.sourceId,
+  generatedSourceId:candidate.newSource.id,generatedLocatorIds:candidate.newLocators.map(l=>l.id),generatedLocatorKeys:candidate.newLocators.map(l=>l.locator_key)};
+ return {...config,capturedScopedNormativeRegistry:makeMasterScopedNormativeRegistryCaptureR1(scope,{sourceRows:[],locatorRows:[]})};
+}
+test('ordinary whole reference admits exact deferred project facts without fake retain and rejects missing raw evidence or missing-norm substitution',()=>{
+ const v=ordinaryCt54TypedView();expect(validateMasterTypedPartialQuantityPreparationR1(v)).toEqual([]);
+ expect(Object.keys(v.runtimeProfileSourceIds??{}).every(id=>Object.hasOwn(v.runtimeProfileInput??{},id))).toBe(true);
+ expect(Object.keys(v.runtimeProfileSourceIds??{})).toEqual(['ct54_reference_method']);
+ expect(v.sourcePaths).toContain('scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts');
+ for(const p of v.parameterDefinitions){
+  const guide=p.truth_metadata.guide as Json;
+  expect(guide.verified_at).toBe('2026-10-27T08:19:33Z');
+  expect(guide.source_snapshot_hash).toBe('31f6a6651795aa722d845c3bff84255a8a34ce3170edf30356cd30c45eaa8640');
+  expect(guide.guide_version).toBe('ct54-manual-reference-project-system/s2735-r608-v1');
+  expect(guide.applicability).toContain('не подтверждение условий объекта');
+ }
+ expect(v.parameterDefinitions.filter(p=>p.truth_metadata.provenance?.consumer_input_role_v1==='OBJECT_FACT')).toHaveLength(7);
+
+ expect(v.binding.retainParentBindings).toBeUndefined();expect(v.binding.reuseExistingNormativeRegistry).toBeUndefined();
+ expect(v.passport.partialQuantityBasis?.kind).toBe('DEFERRED_PROJECT_QUANTITIES');
+ const ids=(v.passport.partialQuantityBasis as Extract<MasterTypedPartialQuantityBasisR1,{kind:'DEFERRED_PROJECT_QUANTITIES'}>).parameters.map(p=>p.parameterId);
+ expect(ids).toHaveLength(30);expect(ids.every(id=>!Object.hasOwn(v.acceptanceInput,id))).toBe(true);
+ const missing={...v};delete (missing as Json).capturedScopedNormativeRegistry;
+ expect(validateMasterTypedPartialQuantityPreparationR1(missing).join(',')).toContain('ORDINARY_SOURCE_CAPTURE_REQUIRED');
+ const forged=clone(v);(forged.passport.partialQuantityBasis as Json).source.artifactSha256='f'.repeat(64);
+ expect(validateMasterTypedPartialQuantityPreparationR1(forged).join(',')).toContain('REGISTERED_SOURCE_LOCATOR_ARTIFACT');
+ const norm=clone(v);norm.parameterDefinitions[0]!.truth_metadata.value_source_role='UNRESOLVED_APPLICATION_NORM';
+ expect(validateMasterTypedPartialQuantityPreparationR1(norm).join(',')).toContain('APPLICATION_NORM_CONFLICT');
+});
