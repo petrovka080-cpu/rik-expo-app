@@ -149,16 +149,14 @@ def main():
  for d in dirs:d.mkdir(parents=True)
  bundle=dirs[0]/'index.android.bundle';entry=root/'index.js'
  run('metro-export',[node,'--max-old-space-size=1024','--max-semi-space-size=8',root/'node_modules/expo/node_modules/@expo/cli/build/bin/cli','export:embed','--platform','android','--dev','false','--minify','false','--max-workers','1','--reset-cache','--entry-file',entry,'--bundle-output',bundle,'--assets-dest',dirs[1]],2048,900)
- found=set();carry=b'';client_binding=None
+ found=set();carry=b''
  with bundle.open('rb')as stream:
   while chunk:=stream.read(MIB):
    block=carry+chunk
    found.update(k for k,v in identity_literals.items()if str(v).encode()in block)
-   index=block.find(b'function resolveFunctionUrl() {')
-   if index>=0 and len(block)-index>=1200:client_binding=block[index:index+1200]
    carry=block[-4096:]
  assert found==set(identity_literals),'MISSING_EMBEDDED_RUNTIME_IDENTITY'
- assert client_binding and b'var configured = String("http://10.0.2.2:8765").trim();'in client_binding,'ACTUAL_CANONICAL_CLIENT_TRANSPORT_BINDING_MISMATCH'
+ run('canonical-client-transport',[node,'--max-old-space-size=64','--max-semi-space-size=4',HERE/'verify_canonical_client_transport.cjs','--root',root,'--bundle',bundle,'--expected-url','http://10.0.2.2:8765','--report',out/'canonical-client-transport.json'],256)
  phase_inputs=dict(sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],capabilityId=s['capabilityId'],definitionReleaseId=s['pair']['definitionReleaseId'],searchReleaseId=s['pair']['searchReleaseId'])
  js=dict(status='PASS_OFFICIAL_EMBEDDED_JS_EXPORT_ONLY',inputs=phase_inputs,artifact=dict(files=inventory(root,dirs[:2]),bundleSha256=sha(bundle)))
  source_js_bytes=bundle.stat().st_size;source_js_sha=sha(bundle)

@@ -1,5 +1,5 @@
 name: Current canonical WaterProof APK V1
-run-name: WaterProof bounded identity APK ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
+run-name: WaterProof verified transport APK ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
 on:
   push:
     branches: ['codex/gox-types-operations-resources-r580']
