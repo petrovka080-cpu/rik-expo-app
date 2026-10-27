@@ -18,6 +18,9 @@ import {
   selectCanonicalArtifactRows,
 } from "./canonicalEstimateArtifactContract";
 import { canonicalEstimateStableJson } from "./canonicalEstimateDeterminism";
+import ct54Reference from '../../../../data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json';
+import {ct54ReferencePublicationModelR613} from '../../../../scripts/estimate/r4a13/prepareCt54ReferencePublicationR613';
+import {compileCanonicalEstimateCore} from './canonicalEstimateCompileCore';
 
 const revision = {
   id: "revision-1",
@@ -34,6 +37,56 @@ const rows = [
   { row_id: "labor", ordinal: 1, section: "labor", category: "labor", title_ru: "Работа", unit_id: "m2", quantity: "10", unit_price: null, amount: null, currency_code: "KGS", procurement_eligible: false, included_in_estimate: true, included_in_procurement: false, ownership_status: "OWNED", row_sha256: "d".repeat(64) },
   { row_id: "legacy", ordinal: 2, section: "legacy", category: "legacy", title_ru: "Legacy", unit_id: "item", quantity: "999", unit_price: null, amount: null, currency_code: "KGS", procurement_eligible: true, included_in_estimate: false, included_in_procurement: false, ownership_status: "MIGRATED_UNOWNED_EXCLUDED_FROM_TOTAL", row_sha256: "e".repeat(64) },
 ];
+
+it('CT54 ordinary artifact gate distinguishes a missing waste-receiver condition from thirty unknown numeric quantities',async()=>{
+  // Contract fixture only: use the actual ordinary model/compiler/commit adapter.
+  // The fixture passport is not a DB readback, publication or saved-project claim.
+  const model=ct54ReferencePublicationModelR613(),method='ct54_reference_method';
+  const hashJson=(value:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(value),'utf8').digest('hex');
+  const parameters:Record<string,unknown>={area_m2:20,...ct54Reference.conditions};
+  delete parameters[method];
+  const compile=async(submittedParameters:Record<string,unknown>)=>{
+    const compiled=await compileCanonicalEstimateCore({operation:'compile',compilerVersion:ct54Reference.contract,
+      catalogId:'canonical-work:base:plaster_paint_interior_paint_wall_paint_standard',primaryMeasureParameterId:'area_m2',
+      parameterDefinitions:[...model.parameters],formulaDefinitions:[...model.formulas],resourceDefinitions:[...model.resources],
+      submittedParameters,confirmedParameters:{[method]:ct54Reference.conditions.ct54_reference_method},
+      currencyCode:'KGS',priceItems:[],maximumResourceRows:model.resources.length,hashJson});
+    const evidence=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'ct54-contract-release',
+      definitionVersionId:'ct54-contract-definition',passport:{definition_version_id:'ct54-contract-definition',
+        payload_sha256:'c'.repeat(64),decision:{independentCompletenessMap:ct54Reference.independentComposition}}})!;
+    const checksum=hashJson({...compiled.revisionProjection,operationCompositionEvidenceV1:evidence});
+    const commit=buildCanonicalRevisionCommitPayload({rowCount:compiled.rows.length,currencyCode:'KGS',totals:compiled.totals,
+      checksumSha256:checksum,compilerVersion:ct54Reference.contract,parameters:compiled.parameters,
+      approvedTemplateBaselineId:null,baselineAssumptions:{[method]:ct54Reference.conditions.ct54_reference_method},
+      effectiveUserParameters:submittedParameters,parentRevisionId:null,identityContract:{},
+      preliminaryNeeds:compiled.preliminaryNeeds,operationCompositionEvidenceV1:evidence});
+    const saved={...revision,release_id:'ct54-contract-release',definition_version_id:'ct54-contract-definition',
+      catalog_id:'canonical-work:base:plaster_paint_interior_paint_wall_paint_standard',row_count:compiled.rows.length,
+      input_parameters:compiled.parameters,checksum_sha256:checksum,amendment_contract:{parameterSources:commit.parameterSources}};
+    const resources=[...compiled.rows,...canonicalArtifactPreliminaryNeeds(saved)];
+    return {compiled,saved,resources};
+  };
+  const ready=await compile(parameters),readyBefore=JSON.stringify(ready);
+  expect(ready.compiled.rows).toHaveLength(1);expect(ready.compiled.preliminaryNeeds).toHaveLength(30);
+  const quantityOnly=canonicalEstimateSavedOperationAcceptanceV1({revision:ready.saved,resources:ready.resources});
+  expect(quantityOnly).toMatchObject({pdfAllowed:true,completeClaimAllowed:false});
+  expect(quantityOnly.issues).toEqual([{code:'RESOURCE_QUANTITY_UNRESOLVED'}]);
+  expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(quantityOnly)).not.toThrow();
+  expect(JSON.stringify(ready)).toBe(readyBefore);
+
+  const missing={...parameters};delete missing.ct54_reference_waste_receiver;
+  const pending=await compile(missing),pendingBefore=JSON.stringify(pending);
+  expect(pending.compiled.rows).toHaveLength(0);expect(pending.compiled.preliminaryNeeds).toHaveLength(31);
+  expect(pending.compiled.preliminaryNeeds.every(row=>row.missing_parameter_ids.includes('ct54_reference_waste_receiver'))).toBe(true);
+  expect(pending.compiled.preliminaryNeeds.find(row=>row.row_id==='reference:wall-paint:ct54:ct54'))
+    .toMatchObject({need_state:'CONDITION_REQUIRED',quantity:'6'});
+  // This exact owner guards enqueue, cache/read, worker and the PDF projection.
+  const held=canonicalEstimateSavedOperationAcceptanceV1({revision:pending.saved,resources:pending.resources});
+  expect(held.pdfAllowed).toBe(false);expect(held.completeClaimAllowed).toBe(false);
+  expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(held)).toThrow(expect.objectContaining({
+    code:'ARTIFACT_OPERATION_COMPOSITION_UNVERIFIED',httpStatus:409}));
+  expect(JSON.stringify(pending)).toBe(pendingBefore);
+});
 
 it("serializes one purchased resource and its related operations as valid immutable JSON", () => {
   const material = { ...rows[0], row_id: "membrane-rolls", unit_id: "roll", quantity: "30", calculation_trace: {

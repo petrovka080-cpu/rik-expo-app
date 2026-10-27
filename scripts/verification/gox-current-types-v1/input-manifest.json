@@ -1215,7 +1215,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "6140ac5e5a23068f3354887c1339604ddee02fc93c0262527a0436a0ce1af223",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "d794e116094e65be158d3191bace66f7a9d137e8cfe1496697d0de6a3dd3f89c",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "947232dae57f3d8d8978394e64663583c588ff3aa43b8ccd82daa4f3d3d3f44b",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -3631,29 +3631,14 @@
   "stats": {
     "sourceFiles": 2449,
     "dependencyFiles": 1160,
-    "sourceBytes": 133232766
+    "sourceBytes": 133237490
   },
   "candidateSourceComposition": {
-    "contract": "source-authored-formula-reference-and-existing-Master-guard/r629",
+    "contract": "saved-condition-negative-contract/r632",
     "sourceOnly": true,
-    "actualApplicationAcceptance": false,
-    "selectedOverlays": {
-      "data/estimate-benchmarks/source-packs/ct54-manual-reference-project-system-r608.json": {
-        "sha256": "05698bb74b7c16e4ecfe55db323aeecb9ff8b9a69bdd3e0927afaf024db22ede"
-      },
-      "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts": {
-        "sha256": "c3fb9e15a7eb9ae2a7f3dcbd2a653aa2734dbfa1c88b5a10a4da68f4c6208d43"
-      },
-      "scripts/estimate/r4a13/prepareMaster32FanElectricalToolProvisionR1.ts": {
-        "sha256": "2abe3a0509b5752f4a471a51eb939d3a685cda721b8ebc88c021baa2f3360663"
-      },
-      "src/lib/estimate/v4/master32FanElectricalToolProvisionR1.test.ts": {
-        "sha256": "1f35d3ccd71cf357bea60777320c6faba05ed6d02719aa7229794392d98d5c0b"
-      },
-      "docs/estimate-operation-resource-acceptance.md": {
-        "sha256": "f39ac19fdb9997f790856f64b46c1315eac1efd064c5c17aa2f44c742d4c7c77"
-      }
-    }
+    "expectedApplicationRegression": "missing waste receiver must block artifact",
+    "productFixIncluded": false,
+    "actualApplicationAcceptance": false
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
