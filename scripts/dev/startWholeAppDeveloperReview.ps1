@@ -503,8 +503,22 @@ if ($LASTEXITCODE -ne 0 -or -not $BackendManagerRaw) {
   Fail-Review "CANONICAL_ESTIMATE_BACKEND_RED" "проверьте local estimate capability и backend 8765"
 }
 $BackendManager = $BackendManagerRaw | ConvertFrom-Json
-function Assert-WholeAppBackendRuntimeIdentity([object]$BackendManager) {
-$RuntimeIdentity = Invoke-RestMethod -Uri "http://127.0.0.1:8765/runtime-identity" -TimeoutSec 15
+function Assert-WholeAppBackendRuntimeIdentity([object]$BackendManager, [switch]$WaitForStartup) {
+$StartupWait = [Diagnostics.Stopwatch]::StartNew()
+$RuntimeIdentity = $null
+do {
+  try {
+    $RuntimeIdentity = Invoke-RestMethod -Uri "http://127.0.0.1:8765/runtime-identity" -TimeoutSec 1
+    if ($null -eq $RuntimeIdentity) { throw "CANONICAL_ESTIMATE_RUNTIME_IDENTITY_EMPTY" }
+  }
+  catch {
+    if (-not $WaitForStartup -or $StartupWait.ElapsedMilliseconds -ge 25000 `
+      -or $null -eq (Get-Process -Id ([int]$BackendManager.backend_pid) -ErrorAction SilentlyContinue)) {
+      throw
+    }
+    Start-Sleep -Milliseconds 200
+  }
+} while ($null -eq $RuntimeIdentity)
 $RuntimeIdentityRoot = [System.IO.Path]::GetFullPath([string]$RuntimeIdentity.workingDirectory)
 $RuntimeFrontend = $RuntimeIdentity.frontendBuildIdentity
 $RuntimeIdentityOk = $RuntimeIdentity.schemaVersion -eq "rik-expo-app.local-runtime-identity.v1" `
@@ -513,6 +527,10 @@ $RuntimeIdentityOk = $RuntimeIdentity.schemaVersion -eq "rik-expo-app.local-runt
   -and [string]$RuntimeIdentity.sourceHead -eq $BuildCommit `
   -and [string]$RuntimeIdentity.sourceTree -eq [string]$Identity.sourceTreeHash `
   -and [string]$RuntimeIdentity.specSha256 -eq [string]$BackendManager.master_sha256 `
+  -and [int]$RuntimeIdentity.processId -eq [int]$BackendManager.backend_pid `
+  -and [string]$RuntimeIdentity.runtimeSourceSha256 -eq [string]$BackendManager.backend_runtime_source_sha256 `
+  -and [string]$RuntimeIdentity.authProviderUrlSha256 -eq [string]$BackendManager.auth_provider_url_sha256 `
+  -and [string]$RuntimeIdentity.authPublicKeySha256 -eq [string]$BackendManager.auth_public_key_sha256 `
   -and [string]$RuntimeIdentity.definitionReleaseId -eq [string]$BackendManager.definition_release_id `
   -and [string]$RuntimeIdentity.searchReleaseId -eq [string]$BackendManager.search_release_id `
   -and [string]$RuntimeFrontend.sourceTreeHash -eq [string]$Identity.sourceTreeHash `
@@ -524,6 +542,7 @@ $RuntimeIdentityOk = $RuntimeIdentity.schemaVersion -eq "rik-expo-app.local-runt
 if (-not $RuntimeIdentityOk) {
   Fail-Review "CANONICAL_ESTIMATE_RUNTIME_IDENTITY_RED" "перезапустите единый backend 8765 из $Root с release из канонического manifest"
 }
+$BackendManager.runtime_identity_verified = $true
 }
 if ($DeferBackendForColdBundle) {
   if ($BackendManager.status -ne 'R568_BACKEND_INPUTS_PREPARED_PROCESS_NOT_STARTED' `
@@ -810,7 +829,7 @@ else {
 
 if ($DeferBackendForColdBundle) {
   $PreparedBackendManager = $BackendManager
-  $BackendManagerRaw = & $Node --import tsx (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") 2>$null
+  $BackendManagerRaw = & $Node --import tsx (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") --return-after-start 2>$null
   if ($LASTEXITCODE -ne 0 -or -not $BackendManagerRaw) {
     Fail-Review "CANONICAL_ESTIMATE_BACKEND_AFTER_BUNDLE_RED" "проверьте единый backend после последовательной сборки"
   }
@@ -821,7 +840,7 @@ if ($DeferBackendForColdBundle) {
     -or $BackendManager.master_sha256 -ne $PreparedBackendManager.master_sha256) {
     Fail-Review "CANONICAL_ESTIMATE_PREPARED_TUPLE_DRIFT" "сборка и backend должны использовать один и тот же допуск, MASTER и release"
   }
-  Assert-WholeAppBackendRuntimeIdentity -BackendManager $BackendManager
+  Assert-WholeAppBackendRuntimeIdentity -BackendManager $BackendManager -WaitForStartup
   Record-ReviewStage "backend_started_after_cold_bundles"
 }
 

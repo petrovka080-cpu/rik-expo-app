@@ -9,6 +9,53 @@ import ts from "typescript";
 const source = (relative: string) => readFileSync(resolve(relative), "utf8");
 
 describe("whole-app developer review runtime", () => {
+  it("releases the startup manager without claiming READY and preserves full verification for synchronous starts and reused backends", async () => {
+    const ast = ts.createSourceFile("manager.ts", source("scripts/dev/ensureLocalDeveloperCanonicalBackend.ts"), ts.ScriptTarget.Latest, true);
+    const declaration = ast.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "verifyBackendRuntimeStart");
+    if (!declaration) throw new Error("ACTUAL_START_HANDOFF_FUNCTION_REQUIRED");
+    const code = ts.transpileModule(declaration.getText(ast), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+    const waitForPort = jest.fn(async () => true);
+    const runtimeIdentity = jest.fn(async () => ({ processId: 123 }));
+    const runtimeIdentityMatches = jest.fn(() => true);
+    const invariant = (condition: unknown, message: string) => { if (!condition) throw new Error(message); };
+    const verify = runInNewContext(code + ";verifyBackendRuntimeStart", { waitForPort, runtimeIdentity, runtimeIdentityMatches, invariant });
+    expect(await verify({}, 123, true, true)).toBe(false);
+    expect(waitForPort).not.toHaveBeenCalled();
+    expect(runtimeIdentity).not.toHaveBeenCalled();
+    expect(await verify({}, 123, true, false)).toBe(true);
+    expect(waitForPort).toHaveBeenCalledWith(true, 25000);
+    waitForPort.mockClear();
+    expect(await verify({}, 123, false, true)).toBe(true);
+    expect(waitForPort).not.toHaveBeenCalled();
+    runtimeIdentityMatches.mockReturnValueOnce(false);
+    await expect(verify({}, 123, false, true)).rejects.toThrow("R568_RUNTIME_IDENTITY_TUPLE_RED");
+    await expect(verify({}, 456, false, true)).rejects.toThrow("R568_RUNTIME_IDENTITY_PID_RED");
+    waitForPort.mockResolvedValueOnce(false);
+    await expect(verify({}, 123, true, false)).rejects.toThrow("R568_BACKEND_START_TIMEOUT_PID_123");
+  });
+  it("the actual launcher refuses wrong source, release, runtime bytes, provider and process before upgrading pending identity", () => {
+    const launcher = resolve("scripts/dev/startWholeAppDeveloperReview.ps1").replaceAll("'", "''");
+    const command = [
+      "$ErrorActionPreference='Stop';Set-StrictMode -Version Latest;$tokens=$null;$parseErrors=$null",
+      "$ast=[System.Management.Automation.Language.Parser]::ParseFile('" + launcher + "',[ref]$tokens,[ref]$parseErrors);if($parseErrors.Count){throw 'LAUNCHER_PARSE_FAILED'}",
+      "$function=@($ast.FindAll({param($node)$node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Assert-WholeAppBackendRuntimeIdentity'},$true));if($function.Count -ne 1){throw 'ACTUAL_IDENTITY_BARRIER_REQUIRED'};. ([ScriptBlock]::Create($function[0].Extent.Text))",
+      "$Root=(Get-Location).Path;$BuildCommit='commit';$Identity=[pscustomobject]@{sourceTreeHash='source';productSourceHash='product';jsBundleFingerprint='bundle'}",
+      "$good=[pscustomobject]@{schemaVersion='rik-expo-app.local-runtime-identity.v1';runtimeRole='FULL_CANONICAL_ESTIMATE_BACKEND';processId=123;workingDirectory=$Root;sourceHead='commit';sourceTree='source';specSha256='master';runtimeSourceSha256='runtime';definitionReleaseId='release';searchReleaseId='search';authProviderUrlSha256='provider';authPublicKeySha256='public';frontendBuildIdentity=[pscustomobject]@{sourceTreeHash='source';productSourceHash='product';jsBundleFingerprint='bundle';buildCommit='commit'};containsCredentials=$false;containsTenantIdentity=$false}",
+      "$backend=[pscustomobject]@{master_sha256='master';backend_pid=123;backend_runtime_source_sha256='runtime';auth_provider_url_sha256='provider';auth_public_key_sha256='public';definition_release_id='release';search_release_id='search';runtime_identity_verified=$false}",
+      "$script:response=$good;$script:requests=0;$script:transient=$true",
+      "function Invoke-RestMethod {param($Uri,$TimeoutSec)$script:requests++;if($script:transient){$script:transient=$false;throw 'NOT_LISTENING_YET'};$script:response}",
+      "function Get-Process {param($Id,$ErrorAction)[pscustomobject]@{Id=$Id}};function Start-Sleep {param($Milliseconds)};function Fail-Review {param($Code,$Recovery)throw $Code}",
+      "Assert-WholeAppBackendRuntimeIdentity -BackendManager $backend -WaitForStartup;$positive=$backend.runtime_identity_verified -and $script:requests -eq 2",
+      "$results=@(foreach($field in @('sourceTree','definitionReleaseId','runtimeSourceSha256','authProviderUrlSha256','authPublicKeySha256','processId')){$script:response=$good|ConvertTo-Json -Depth 4|ConvertFrom-Json;if($field -eq 'processId'){$script:response.$field=456}else{$script:response.$field='wrong'};$backend.runtime_identity_verified=$false;$refused=$false;try{Assert-WholeAppBackendRuntimeIdentity -BackendManager $backend -WaitForStartup}catch{$refused=$_.Exception.Message -eq 'CANONICAL_ESTIMATE_RUNTIME_IDENTITY_RED'};[pscustomobject]@{field=$field;refused=$refused;stillPending=-not $backend.runtime_identity_verified}})",
+      "[pscustomobject]@{positive=$positive;negativeCases=$results}|ConvertTo-Json -Depth 4 -Compress",
+    ].join("\n");
+    const result = spawnSync("powershell", ["-NoProfile", "-NonInteractive", "-Command", command], { cwd: resolve("."), windowsHide: true, encoding: "utf8" });
+    expect({ status: result.status, stderr: result.stderr }).toEqual({ status: 0, stderr: "" });
+    const outcome = JSON.parse(result.stdout);
+    expect(outcome.positive).toBe(true);
+    expect(outcome.negativeCases).toHaveLength(6);
+    expect(outcome.negativeCases.every((entry: { refused: boolean; stillPending: boolean }) => entry.refused && entry.stillPending)).toBe(true);
+  });
   it("streams the exact existing closure hash across imports, cycles, UTF-8 and multiple read blocks", () => {
     const ast = ts.createSourceFile("manager.ts", source("scripts/dev/ensureLocalDeveloperCanonicalBackend.ts"), ts.ScriptTarget.Latest, true);
     const declarations = ast.statements.filter(statement => ts.isFunctionDeclaration(statement)
@@ -118,6 +165,12 @@ describe("whole-app developer review runtime", () => {
     const launcher = source("scripts/dev/startWholeAppDeveloperReview.ps1");
     expect(launcher.match(/& \$Node --import tsx/gu)).toHaveLength(3);
     expect(launcher).not.toContain("$TsxCli");
+    const handoffGuard = spawnSync(process.execPath, ["--import", "tsx", "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts", "--return-after-start"], {
+      cwd: resolve("."), windowsHide: true, encoding: "utf8", env: { ...process.env, LOCAL_DEVELOPER_BACKEND_AUTH_PROFILE: "local_provider" },
+    });
+    expect(handoffGuard.status).not.toBe(0);
+    expect(handoffGuard.stderr).toContain("R568_MANAGER_START_HANDOFF_MODE_CONFLICT");
+    expect(handoffGuard.stdout).toBe("");
   });
   it("direct TypeScript loader returns the existing real build identity", () => {
     const result = spawnSync(process.execPath, ["--import", "tsx", "scripts/dev/printLocalDeveloperBuildIdentity.ts"], {

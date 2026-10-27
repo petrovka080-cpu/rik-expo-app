@@ -55,7 +55,10 @@ const EVIDENCE_ROOT = resolve(
 const OUTPUT = resolve(EVIDENCE_ROOT, "backend.json");
 const PREFLIGHT_ONLY = process.argv.includes("--preflight");
 const PREPARE_ONLY = process.argv.includes("--prepare-only");
+const RETURN_AFTER_START = process.argv.includes("--return-after-start");
 invariant(!(PREFLIGHT_ONLY && PREPARE_ONLY), "R568_MANAGER_MODE_CONFLICT");
+invariant(!RETURN_AFTER_START || (!PREFLIGHT_ONLY && !PREPARE_ONLY && WHOLE_APP_AUTH_PROFILE),
+  "R568_MANAGER_START_HANDOFF_MODE_CONFLICT");
 
 function invariant(value: unknown, code: string): asserts value {
   if (!value) throw new Error(code);
@@ -143,7 +146,7 @@ async function portOwner(): Promise<{ pid: number; name: string; commandLine: st
   return raw && raw !== "null" ? JSON.parse(raw) : null;
 }
 
-function isOwnedBackend(owner: ReturnType<typeof portOwner>): boolean {
+function isOwnedBackend(owner: Awaited<ReturnType<typeof portOwner>>): boolean {
   if (!owner || owner.name.toLocaleLowerCase() !== "node.exe") return false;
   const command = owner.commandLine.replace(/\\/gu, "/").toLocaleLowerCase();
   return command.includes("servecanonicalestimatelocalr1.ts");
@@ -211,6 +214,22 @@ async function runtimeIdentity(): Promise<Json | null> {
   }).catch(() => null);
   if (!response?.ok) return null;
   return response.json().catch(() => null) as Promise<Json | null>;
+}
+
+async function verifyBackendRuntimeStart(
+  desired: Json, backendPid: number, newlyStarted: boolean, returnAfterStart: boolean,
+): Promise<boolean> {
+  // The whole-app launcher already owns the final exact-identity barrier.
+  // Release this short-lived manager before the backend loads its graph; a
+  // process having been spawned is explicitly not a verified running backend.
+  if (newlyStarted && returnAfterStart) return false;
+  if (newlyStarted) {
+    invariant(await waitForPort(true, 25_000), `R568_BACKEND_START_TIMEOUT_PID_${backendPid}`);
+  }
+  const identity = await runtimeIdentity();
+  invariant(runtimeIdentityMatches(identity, desired), "R568_RUNTIME_IDENTITY_TUPLE_RED");
+  invariant(identity?.processId === backendPid, "R568_RUNTIME_IDENTITY_PID_RED");
+  return true;
 }
 
 function runtimeIdentityMatches(identity: Json | null, desired: Json): boolean {
@@ -513,11 +532,11 @@ async function main(): Promise<void> {
       invariant(await waitForPort(false, 15_000), `R568_BACKEND_STOP_TIMEOUT_PID_${ownerBefore.pid}`);
     }
     backendPid = startBackend({ authPublicKey, authProviderUrl, desired, capability: capability! });
-    invariant(await waitForPort(true, 25_000), `R568_BACKEND_START_TIMEOUT_PID_${backendPid}`);
     backendAction = "RESTARTED";
   }
-  const identity = await runtimeIdentity();
-  invariant(runtimeIdentityMatches(identity, desired), "R568_RUNTIME_IDENTITY_TUPLE_RED");
+  const runtimeIdentityVerified = await verifyBackendRuntimeStart(
+    desired, backendPid, backendAction === "RESTARTED", RETURN_AFTER_START,
+  );
   const manifest = WHOLE_APP_AUTH_PROFILE ? null : await authenticatedManifest(credentials);
   if (!WHOLE_APP_AUTH_PROFILE) {
     invariant(manifestMatches(manifest, desired), "R568_RUNTIME_MANIFEST_TUPLE_RED");
@@ -537,12 +556,14 @@ async function main(): Promise<void> {
     schema_version: "rik-expo-app.r568.local-developer-canonical-backend.v1",
     generated_utc: new Date().toISOString(),
     master_sha256: MASTER_SHA256,
-    status: WHOLE_APP_AUTH_PROFILE
-      ? "READY_R568_WHOLE_APP_BACKEND_AWAITING_AUTHENTICATED_REQUEST"
-      : "GREEN_R568_LOCAL_DEVELOPER_CANONICAL_BACKEND_EXACT",
+    status: !runtimeIdentityVerified
+      ? "R568_WHOLE_APP_BACKEND_STARTED_RUNTIME_IDENTITY_PENDING"
+      : WHOLE_APP_AUTH_PROFILE
+        ? "READY_R568_WHOLE_APP_BACKEND_AWAITING_AUTHENTICATED_REQUEST"
+        : "GREEN_R568_LOCAL_DEVELOPER_CANONICAL_BACKEND_EXACT",
     auth_profile: BACKEND_AUTH_PROFILE,
     authenticated_runtime_manifest_verified: !WHOLE_APP_AUTH_PROFILE,
-    runtime_identity_verified: true,
+    runtime_identity_verified: runtimeIdentityVerified,
     backend_action: backendAction,
     capability_action: capabilityAction,
     backend_pid: backendPid,
@@ -588,6 +609,9 @@ async function main(): Promise<void> {
     auth_profile: BACKEND_AUTH_PROFILE,
     authenticated_runtime_manifest_verified: receipt.authenticated_runtime_manifest_verified,
     runtime_identity_verified: receipt.runtime_identity_verified,
+    backend_runtime_source_sha256: desired.backendRuntimeSourceSha256,
+    auth_provider_url_sha256: desired.authProviderUrlSha256,
+    auth_public_key_sha256: desired.authPublicKeySha256,
     evidence_root: EVIDENCE_ROOT,
     request_audit_path: resolve(
       EVIDENCE_ROOT,

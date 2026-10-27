@@ -292,7 +292,7 @@
     "jest.setup.js": "88956f4429b53e19936bb3c0704c524fd097e8a68b457691716c1cd5753ae1c1",
     "package-lock.json": "ee6621c44b5b63a18b8f7c7e164d39608621d55990f4fac817c00a1e5203c1fe",
     "package.json": "c23e73dec82fe210a856fb9f0340848afcab68a5a5dc55a144ba028d466eef96",
-    "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts": "de6175bbbd67d022bf2e18be72cea4d7e26bafaf06cb9278b11f2cb00cadf33d",
+    "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts": "332493e07916adfad805cf9396743f622d91f28cc42dc48f19058bef290d43ec",
     "scripts/dev/runFormworkFramiXlifePileCapDistinctProjectDifferentialWebAcceptance.ts": "612481635ec44d67e5104630ef0b8b8df961502a6579a58e8c35a5ac86e0446e",
     "scripts/dev/runFormworkFramiXlifePileCapDistinctProjectFamilyBackendAcceptance.ts": "efa31fc5cec085e497fb01e09361080cad2b6357e2de8629356f51c0da69362f",
     "scripts/dev/runS2716RoadsBackendAcceptance.ts": "663aaa5aea0a00398a2ad572972054dab9753a83470868dcb3c5c93197950c88",
@@ -2453,12 +2453,12 @@
     "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": "b85b7496155f070c836fa08ecc8d25142d41d6ffb56572e8c428774999cc2f88",
     "app.json": "ef89bea7e24439ffadddda58cbe91552509420b4326bf2bbd2ace7d6bbca6d4e",
     "metro.config.js": "96719ad2eacd8a8ed5357c13ee057595992ad8e3cd8dbd22372b114137d0d360",
-    "scripts/dev/startWholeAppDeveloperReview.ps1": "5fc81f8008eb239774a4ae65e67f6356cc43feac1f3b4c2f00ab67d83a385a88",
+    "scripts/dev/startWholeAppDeveloperReview.ps1": "fd6a2a318f23889f9ffb86c006eb132ce610cfd8d7da431e7e7538110eac6c99",
     "scripts/dev/metroGeneratedRuntimeExclusion.test.js": "c8a736b039156353ed598b0927124b37516c0d18f05d8ff700aa1a7a92a82b47",
     "scripts/dev/wholeAppDevelopmentAsyncRoutes.test.js": "7136f402d6e3c84fa90b3f6f9d734b07b14b1f8c8152788300fd7b9c9f4ddb2c",
     "scripts/dev/warmWholeAppDeveloperRuntime.cjs": "dba64055b8dbb34144f713eac6bef69fb21b0fd242982b6e3bfe7eae1b234017",
     "scripts/dev/warmWholeAppDeveloperRuntime.test.ts": "8d0f7f6173deb52b201d0b4d6aad472eb1310d6880b5adde7d64163b257f06ec",
-    "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "3b42594edb1e279c975cc57c59b8cf67fb8ca4c4236ff405700dcf9e4eadbef4",
+    "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "5093a32a13cbeca7b9a717ff2745fdb5a0aa5b32a3a1a95217d81b60e793c544",
     "scripts/dev/wholeAppEmbeddedBuildTarget.test.js": "d06db891ac5b9e8d525042416d8ddb1a48535805ae9bbf2cd4c6c880b0efe307",
     "src/features/consumerRepair/ConsumerRepairEstimateNotes.tsx": "4740e1e39093c4297dacc97ee56468a3d01535d0e67c860601663d081094989a",
     "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx": "2f0f3cd679b46535c9f1a110374d15419bdd0ab715e28a379f9e7c68e4ac32e8",
@@ -3645,20 +3645,21 @@
   "stats": {
     "sourceFiles": 2463,
     "dependencyFiles": 1160,
-    "sourceBytes": 133366380
+    "sourceBytes": 133374767
   },
   "candidateSourceComposition": {
-    "contract": "exact-existing-runtime-loader-input-completion/r702",
+    "contract": "existing-startup-manager-handoff/r709",
     "referenceCommonCommit": "20e3f94234317f64afd5eb1ef7da536d8bb614d2",
     "referenceCommonRun": 40513302536,
     "referenceCommonTestsPassed": 609,
     "commonSourcePinsUnchanged": true,
-    "previousRuntimeCommit": "2438db93f9039d686de171851c51ef9a6dee7a6b",
-    "previousRuntimeRun": 40517394862,
-    "previousRuntimeTestsPassed": 36,
-    "previousRuntimeTestsFailed": 1,
-    "failure": "Exact direct-loader entrypoint itself absent from prior source snapshot; now include its original canonical bytes and already-pinned fingerprint dependency",
-    "actualApplicationAcceptance": false
+    "previousRuntimeCommit": "21a0d5a6fc9c2432a639aa812c184f399698d263",
+    "previousRuntimeRun": 40518829476,
+    "previousRuntimeTestsPassed": 37,
+    "runtimeOnly": true,
+    "localAffectedTestsPassed": 16,
+    "actualApplicationAcceptance": false,
+    "reason": "Manager releases its graph before backend startup; sole launcher retains exact final PID/source/runtime/provider/release readiness barrier. Limits unchanged."
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
