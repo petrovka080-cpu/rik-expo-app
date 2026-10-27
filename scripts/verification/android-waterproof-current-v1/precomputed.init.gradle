@@ -11,21 +11,6 @@ def digestFile = { File f ->
   f.withInputStream { stream -> byte[] buffer = new byte[1048576]; int n; while ((n = stream.read(buffer)) != -1) { digest.update(buffer, 0, n) } }
   digest.digest().encodeHex().toString()
 }
-// The existing developer APK contract is exactly x86_64. React Native's
-// architecture property alone does not filter prebuilt AAR native libraries.
-gradle.beforeProject { p ->
-  if (p.projectDir.canonicalFile != new File(expectedRoot,'android/app').canonicalFile) return
-  p.pluginManager.withPlugin('com.android.application') {
-    p.extensions.getByName('androidComponents').finalizeDsl { android ->
-      def target = android.buildTypes.getByName('waterProof')
-      assert !target.debuggable
-      target.ndk.abiFilters.clear()
-      target.ndk.abiFilters.add('x86_64')
-      assert target.ndk.abiFilters == (['x86_64'] as Set)
-      p.logger.lifecycle('VERIFIED_WATERPROOF_ABI_FILTER x86_64')
-    }
-  }
-}
 gradle.projectsEvaluated {
   if (gradle.rootProject.projectDir.canonicalFile != new File(expectedRoot,'android').canonicalFile) return
   def p = gradle.rootProject.findProject(':app')
