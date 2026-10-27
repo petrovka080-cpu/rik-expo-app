@@ -1,3 +1,4 @@
+import {canonicalOperationCompositionEvidenceFromPassportV1,canonicalSavedOperationCompositionEvidenceV1,type CanonicalOperationCompositionEvidenceV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
 import {assertCanonicalProfessionalArtifactCurrentPresentationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
 import {canonicalEstimateSavedOperationAcceptanceV1, assertCanonicalEstimateSavedArtifactStructureV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
 import type {CanonicalEstimateOperationResourceAcceptanceV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
@@ -3032,8 +3033,30 @@ async function compileClaimedJob(
       createHash("sha256").update(value, "utf8").digest("hex"),
   });
   const selectedMaterialDeliveryV1=selectedDelivery?finalizeCanonicalSelectedDeliveryReceiptR1(selectedDelivery.admission,rows):undefined;
+  // Read only the exact resolved immutable definition's persisted passport.
+  // This transaction already owns the compilation; no active/current lookup.
+  const compositionPassports = (await client.query(
+    'select definition_version_id,catalog_id,decision,payload_sha256 from public.estimate_content_passport_r3 where definition_version_id=$1',
+    [definition.id],
+  )).rows;
+  if (compositionPassports.length > 1 || (compositionPassports[0]
+      && compositionPassports[0].catalog_id !== job.catalog_id))
+    throw new Error('OPERATION_COMPOSITION_PASSPORT_BINDING_INVALID');
+  const parentComposition = parentRevision
+    && parentRevision.release_id === job.target_release_id
+    && parentRevision.definition_version_id === definition.id
+    ? canonicalSavedOperationCompositionEvidenceV1(parentRevision) : undefined;
+  if (parentComposition?.issue) throw new Error(parentComposition.issue);
+  const inheritedCompositionEvidence = parentComposition?.independentComposition !== undefined
+    ? (parentRevision!.amendment_contract as JsonRecord).parameterSources as JsonRecord : undefined;
+  const operationCompositionEvidenceV1 = inheritedCompositionEvidence
+    ? inheritedCompositionEvidence.operationCompositionEvidenceV1 as CanonicalOperationCompositionEvidenceV1
+    : compositionPassports[0]
+    ? canonicalOperationCompositionEvidenceFromPassportV1({releaseId:String(job.target_release_id),
+      definitionVersionId:String(definition.id),passport:compositionPassports[0]}) : undefined;
   const revisionProjection = {
     ...compiled.revisionProjection,
+    ...(operationCompositionEvidenceV1 ? {operationCompositionEvidenceV1} : {}),
     ...(selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1}:{}),
     identity: identityContract,
     ...(roofPreparationMigrationV1?{roofPreparationMigrationV1}:{}),
@@ -3046,6 +3069,7 @@ async function compileClaimedJob(
     ...(roofPrimerPrerequisiteV1?{roofPrimerPrerequisiteV1}:{}),
   };
   const commitPayload = buildCanonicalRevisionCommitPayload({
+    operationCompositionEvidenceV1,
     ...(selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1}:{}),
     rowCount: rows.length,
     currencyCode,

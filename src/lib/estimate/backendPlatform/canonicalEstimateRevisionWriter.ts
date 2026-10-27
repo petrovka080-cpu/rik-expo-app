@@ -200,6 +200,7 @@ export function assertCanonicalRevisionHasContent(input: {
 }
 
 export function buildCanonicalRevisionCommitPayload(input: {
+  operationCompositionEvidenceV1?: import("./canonicalEstimateSavedOperationAcceptanceV1").CanonicalOperationCompositionEvidenceV1;
   selectedMaterialDeliveryV1?: Record<string, unknown>;
   rowCount: number;
   currencyCode: string;
@@ -238,6 +239,7 @@ export function buildCanonicalRevisionCommitPayload(input: {
     migrationSource: null,
     resolvedParameters: input.parameters,
     parameterSources: {
+      ...(input.operationCompositionEvidenceV1 ? {operationCompositionEvidenceV1:input.operationCompositionEvidenceV1} : {}),
       ...(input.selectedMaterialDeliveryV1?{selectedMaterialDeliveryV1:input.selectedMaterialDeliveryV1}:{}),
       approvedTemplateBaselineId: input.approvedTemplateBaselineId,
       baselineAssumptions: input.baselineAssumptions,

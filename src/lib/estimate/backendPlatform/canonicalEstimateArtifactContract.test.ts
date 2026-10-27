@@ -1,3 +1,6 @@
+import {createHash} from 'node:crypto';
+import {buildCanonicalRevisionCommitPayload} from './canonicalEstimateRevisionWriter';
+import {canonicalOperationCompositionEvidenceFromPassportV1,canonicalSavedOperationCompositionEvidenceV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 import {assertCanonicalProfessionalArtifactCurrentPresentationV1} from './canonicalEstimateArtifactContract';
 import unresolvedCeiling from '../../../../data/estimate-benchmarks/fixtures/master24-ceiling-unresolved-included-pdf-r1.json';
 import {canonicalPublicSavedResourceRowKindV1} from './canonicalPublicResourcePresentationV1';
@@ -418,4 +421,78 @@ it('separates archived metadata identity from current PDF issuance and preserves
     expect(()=>assertCanonicalProfessionalArtifactCurrentPresentationV1({metadata,revision:saved,rendererVersion:renderer}))
       .toThrow(expect.objectContaining({code:'ARTIFACT_PRESENTATION_REFRESH_REQUIRED'}));
   expect(JSON.stringify({saved,current,archived})).toBe(before);
+});
+
+it('cold-reads the exact server passport snapshot, rejects drift and never upgrades an old revision from caller evidence',()=>{
+  // Synthetic complete single-operation contract, not an actual project readback.
+  const op={contractVersion:'canonical-operation-resource/v1',groupId:'test-group',groupTitleRu:'Работа',
+    operationId:'test-install',operationTitleRu:'Выполнить монтаж',completionCriterionRu:'Монтаж закончен',
+    processOrdinal:1,processRole:'PROCESS'};
+  const specification=[['MATERIAL','Материал'],['CONSUMABLE','Расходный материал'],['TOOL','Инструмент'],
+    ['ACCESSORY','Оснастка'],['EQUIPMENT','Оборудование'],['MECHANISM','Механизм'],['LABOR','Труд монтажника'],
+    ['SERVICE','Услуга'],['TRANSPORT','Доставка'],['PPE','Средства защиты']] as const;
+  const map={contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PROJECT_SYSTEM',
+    generatedFromCurrentRows:false,evidenceSha256:'e'.repeat(64),operationRoster:[op],
+    entries:specification.map(([kind,name])=>({operationId:'test-install',expectedResourceId:'test-'+kind,
+      condition:'Синтетический полный комплект',sourceId:'test-source',requiredOperationIds:['test-install'],
+      publicNameRu:name,resourceKind:kind,resolution:{kind:'ROW',rowId:'test-'+kind}})),
+    operationRequirements:[{operationId:'test-install',sourceId:'test-source',
+      requirements:Object.fromEntries(specification.map(([kind])=>[kind,{status:'REQUIRED',rowIds:['test-'+kind]}]))}]};
+  const passport={definition_version_id:'pinned-definition',payload_sha256:'c'.repeat(64),
+    decision:{independentCompletenessMap:map}};
+  const evidence=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'pinned-release',
+    definitionVersionId:'pinned-definition',passport})!;
+  expect(evidence.mapSha256).toBe(createHash('sha256').update(canonicalEstimateStableJson(map),'utf8').digest('hex'));
+  const projection={rows:['fixed'],operationCompositionEvidenceV1:evidence};
+  const checksum=createHash('sha256').update(canonicalEstimateStableJson(projection),'utf8').digest('hex');
+  const commit=buildCanonicalRevisionCommitPayload({rowCount:10,currencyCode:'KGS',totals:{},
+    checksumSha256:checksum,compilerVersion:'synthetic',parameters:{},approvedTemplateBaselineId:null,
+    baselineAssumptions:{},effectiveUserParameters:{},parentRevisionId:null,identityContract:{},
+    operationCompositionEvidenceV1:evidence});
+  expect(commit.parameterSources).toMatchObject({operationCompositionEvidenceV1:evidence});
+  expect(commit.checksumSha256).toBe(checksum);
+  expect(checksum).not.toBe(createHash('sha256').update(canonicalEstimateStableJson({rows:['fixed']}),'utf8').digest('hex'));
+  const saved={...revision,release_id:'pinned-release',definition_version_id:'pinned-definition',
+    amendment_contract:{parameterSources:{operationCompositionEvidenceV1:evidence}}};
+  const resources=specification.map(([kind,name])=>({row_id:'test-'+kind,title_ru:name,quantity:'1',
+    calculation_trace:{resourceGraph:{operationCompositionV1:op,publicResourcePresentationV1:{
+      contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:name,nameRu:name,
+      brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:kind}}}}));
+  const cold=JSON.parse(JSON.stringify(saved));const before=JSON.stringify({saved,resources,passport});
+  const result=canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources});
+  expect(result.status).toBe('ACCEPTED');expect(result.completeClaimAllowed).toBe(true);
+  expect(canonicalSavedOperationCompositionEvidenceV1(cold).independentComposition).toEqual(map);
+  const manual=resources.map(row=>({...row,title_ru:'Моё название',calculation_trace:{...row.calculation_trace,manualTitleOverride:true}}));
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources:manual}).status).toBe('ACCEPTED');
+  const unknown=resources.map((row,index)=>index?row:{...row,quantity:null});
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources:unknown})).toMatchObject({status:'COMPOSITION_UNVERIFIED',pdfAllowed:true,completeClaimAllowed:false});
+  const legacy={...saved,amendment_contract:{}};
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:legacy,resources}).status).toBe('COMPOSITION_UNVERIFIED');
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:legacy,resources,savedIndependentComposition:map}).pdfAllowed).toBe(false);
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources,savedIndependentComposition:map}).status).toBe('ACCEPTED');
+  for(const bad of [null,{...evidence,mapSha256:'0'.repeat(64)},
+    {...evidence,releaseId:'other'},{...evidence,definitionVersionId:'other'},
+    {...evidence,sourcePassportPayloadSha256:'missing'},
+    {...evidence,independentComposition:{...map,operationRoster:[]}}]){
+    const changed={...saved,amendment_contract:{parameterSources:{operationCompositionEvidenceV1:bad}}};
+    expect(()=>canonicalEstimateSavedOperationAcceptanceV1({revision:changed,resources})).not.toThrow();
+    expect(canonicalEstimateSavedOperationAcceptanceV1({revision:changed,resources})).toMatchObject({status:'STRUCTURE_INVALID',pdfAllowed:false});
+  }
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources,
+    savedIndependentComposition:{...map,entries:[]}}).pdfAllowed).toBe(false);
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:cold,resources:resources.slice(1)}).pdfAllowed).toBe(false);
+  const expandedMap={...map,entries:[...map.entries,{...map.entries[0],expectedResourceId:'not-output-derived',
+    resolution:{kind:'ROW',rowId:'required-but-absent'}}]};
+  const expandedEvidence=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'pinned-release',
+    definitionVersionId:'pinned-definition',passport:{...passport,decision:{independentCompletenessMap:expandedMap}}})!;
+  const expandedSaved={...saved,amendment_contract:{parameterSources:{operationCompositionEvidenceV1:expandedEvidence}}};
+  expect(canonicalSavedOperationCompositionEvidenceV1(expandedSaved).independentComposition).toEqual(expandedMap);
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:expandedSaved,resources}).issues)
+    .toContainEqual({code:'REQUIRED_RESOURCE_MISSING',rowId:'required-but-absent'});
+  const malformedEvidence=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'pinned-release',
+    definitionVersionId:'pinned-definition',passport:{...passport,decision:{independentCompletenessMap:{...map,operationRoster:[]}}}})!;
+  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:{...saved,amendment_contract:{parameterSources:{
+    operationCompositionEvidenceV1:malformedEvidence}}},resources}).pdfAllowed).toBe(false);
+  expect(()=>canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'pinned-release',definitionVersionId:'other',passport})).toThrow();
+  expect(JSON.stringify({saved,resources,passport})).toBe(before);
 });

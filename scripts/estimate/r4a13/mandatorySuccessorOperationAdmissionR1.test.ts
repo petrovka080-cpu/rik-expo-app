@@ -4,7 +4,9 @@ import {auditCanonicalPublisherSuccessorOperationResourcesR1 as audit,assertCano
  preflightCanonicalDefinitionPublishPlans as preflight,publishCanonicalDefinitionDraft as publish,
  canonicalPublisherQuantityScopeIsConsistent as quantityScope,type CanonicalDefinitionPublishPlan} from './canonicalDefinitionPublisherR1';
 import {validateIndependentCompletenessMapReferences as references} from './prepareMasterSingleDefinitionSuccessorR1';
-import {estimateDeterministicHash as hash} from '../../../src/lib/estimate/estimateDeterministicHash';
+import {canonicalEstimateSha256HexText} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSha256';
+import {canonicalEstimateStableJson} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism';
+const hash=(value:unknown)=>canonicalEstimateSha256HexText(canonicalEstimateStableJson(value));
 
 it('requires independently declared operation/resource/name/kind evidence at both new write entries while retaining an honest UNKNOWN template',async()=>{
  // Independently authored TEST_ONLY source fixture, not a source/quantity receipt.
@@ -127,6 +129,26 @@ it('requires independently declared operation/resource/name/kind evidence at bot
  const missingPlan={definition:{catalog_id:'canonical-work:TEST_ONLY:element'},resources,passport:{decision:{}}} as unknown as CanonicalDefinitionPublishPlan;
  await expect(preflight(client,[missingPlan])).rejects.toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');
  await expect(publish(client,missingPlan)).rejects.toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');
+ const noPassportPlan={...missingPlan,passport:undefined} as unknown as CanonicalDefinitionPublishPlan;
+ await expect(preflight(client,[noPassportPlan])).rejects.toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');
+ await expect(publish(client,noPassportPlan)).rejects.toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');
+ // B is the actual validated content map. Raw A is optional, never silently
+ // copied from B, and every explicit top-level/nested A must stable-equal B.
+ const rawB=Object.fromEntries(Object.entries(map).reverse());
+ expect(admit({resourceDefinitions:resources,independentComposition:map,definitionPassport:{}}).definitionAdmissionAllowed).toBe(true);
+ expect(admit({resourceDefinitions:resources,independentComposition:map,definitionPassport:{independentCompletenessMap:rawB,
+  decision:{independentCompletenessMap:map}}}).definitionAdmissionAllowed).toBe(true);
+ const rawA={...map,evidenceSha256:'c'.repeat(64)},mapsBefore=JSON.stringify({rawA,rawB,map});
+ for(const definitionPassport of [{independentCompletenessMap:rawA},{decision:{independentCompletenessMap:rawA}},
+  {independentCompletenessMap:rawB,decision:{independentCompletenessMap:rawA}}]){
+  const conflictingPlan={...missingPlan,definition:{...missingPlan.definition,passport:definitionPassport},
+   passport:{decision:{independentCompletenessMap:map}}} as unknown as CanonicalDefinitionPublishPlan;
+  const originalPlan=JSON.stringify(conflictingPlan);
+  await expect(preflight(client,[conflictingPlan])).rejects.toThrow('STOP_CANONICAL_PUBLISHER_RAW_DEFINITION_COMPOSITION_MISMATCH');
+  await expect(publish(client,conflictingPlan)).rejects.toThrow('STOP_CANONICAL_PUBLISHER_RAW_DEFINITION_COMPOSITION_MISMATCH');
+  expect(JSON.stringify(conflictingPlan)).toBe(originalPlan);
+ }
+ expect(JSON.stringify({rawA,rawB,map})).toBe(mapsBefore);expect(query).not.toHaveBeenCalled();
  const capturedLegacyMap={...map,operationRoster:undefined},capturedBytes=JSON.stringify(capturedLegacyMap);
  const metadataOnlyNewPlan={...missingPlan,passport:{decision:{quantityScope:'PARTIAL',independentCompletenessMap:capturedLegacyMap}}} as unknown as CanonicalDefinitionPublishPlan;
  await expect(preflight(client,[metadataOnlyNewPlan])).rejects.toThrow('STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES');

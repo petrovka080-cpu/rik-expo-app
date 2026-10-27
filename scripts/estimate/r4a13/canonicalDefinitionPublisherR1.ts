@@ -104,10 +104,19 @@ export function auditCanonicalPublisherSuccessorOperationResourcesR1(input:Reado
     publicNameVerified:presentation!=null}];
   })});
 }
-export function assertCanonicalPublisherSuccessorOperationResourcesR1(input:Parameters<typeof auditCanonicalPublisherSuccessorOperationResourcesR1>[0]&{catalogId?:string}){
+export function assertCanonicalPublisherSuccessorOperationResourcesR1(input:Parameters<typeof auditCanonicalPublisherSuccessorOperationResourcesR1>[0]&{catalogId?:string;definitionPassport?:unknown}){
  const result=auditCanonicalPublisherSuccessorOperationResourcesR1(input);
  invariant(result.definitionAdmissionAllowed,
   'STOP_CANONICAL_PUBLISHER_NEW_SUCCESSOR_OPERATION_RESOURCES:'+String(input.catalogId??'')+':'+result.status+':'+result.issues.map(issue=>[issue.code,issue.rowId,issue.operationId].filter(Boolean).join(':')).join(','));
+ // The content passport is the validated/persisted admission authority. A raw
+ // definition may omit the map; explicit competing declarations must agree.
+ const raw=isObject(input.definitionPassport)?input.definitionPassport:null;
+ const nested=raw&&isObject(raw.decision)?raw.decision:null;
+ for(const [scope,container]of [['passport',raw],['passport.decision',nested]] as const){
+  if(container&&Object.hasOwn(container,'independentCompletenessMap'))
+   invariant(JSON.stringify(stable(container.independentCompletenessMap))===JSON.stringify(stable(input.independentComposition)),
+    'STOP_CANONICAL_PUBLISHER_RAW_DEFINITION_COMPOSITION_MISMATCH:'+scope);
+ }
  return result;
 }
 
@@ -643,10 +652,6 @@ export async function preflightCanonicalDefinitionPublishPlans(
   typedQuantityInputs: readonly MasterRetainedBindingGuardInputR1[] = [],
 ) {
   invariant(plans.length > 0, "STOP_CANONICAL_PUBLISHER_EMPTY_PLAN");
-  // Mandatory for all new plans, including callers that bypass the Master adapter.
-  // Pure source-composition check precedes the first schema/registry query.
-  for(const plan of plans)assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
-    resourceDefinitions:plan.resources,independentComposition:plan.passport.decision?.independentCompletenessMap});
   invariant(Array.isArray(retainedLegacyInputs)
     &&new Set(retainedLegacyInputs.map(input=>input.config.catalogId)).size===retainedLegacyInputs.length
     &&retainedLegacyInputs.every(input=>plans.some(plan=>plan.definition.catalog_id===input.config.catalogId)),
@@ -658,19 +663,28 @@ export async function preflightCanonicalDefinitionPublishPlans(
   // Collect all independent pure quantity errors before the first schema query.
   const quantityErrors=plans.flatMap(plan=>hasMasterTypedPartialQuantityBasisR1(plan.passport)
     ?validateMasterTypedPartialQuantityBasisR1(plan).map(error=>`${plan.definition.catalog_id}:${error}`):[]);
-  for(const plan of plans.filter(plan=>hasMasterTypedPartialQuantityBasisR1(plan.passport))){
+  // Pure quantity and source-scope errors keep their established priority.
+  // They must be collected before any schema or registered-source read.
+  const typedPlans=plans.filter(plan=>hasMasterTypedPartialQuantityBasisR1(plan.passport));
+  for(const plan of typedPlans){
     const input=typedQuantityInputs.find(input=>input.config.catalogId===plan.definition.catalog_id);
-    if(!input?.config.binding.reuseExistingNormativeRegistry){
-      quantityErrors.push(`${plan.definition.catalog_id}:TYPED_QUANTITY_REGISTERED_SOURCE_REQUIRED`);continue;
-    }
+    if(!input?.config.binding.reuseExistingNormativeRegistry)
+      quantityErrors.push(`${plan.definition.catalog_id}:TYPED_QUANTITY_REGISTERED_SOURCE_REQUIRED`);
+  }
+  invariant(quantityErrors.length===0,`STOP_CANONICAL_PUBLISHER_TYPED_QUANTITY:${quantityErrors.join(',')}`);
+  for (const plan of plans) automaticPriceInheritanceExcludedResourceIds(plan);
+  // Admission follows existing pure guards, and still precedes all DB reads.
+  for(const plan of plans)assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
+    resourceDefinitions:plan.resources,independentComposition:plan.passport?.decision?.independentCompletenessMap,definitionPassport:plan.definition.passport});
+  for(const plan of typedPlans){
+    const input=typedQuantityInputs.find(input=>input.config.catalogId===plan.definition.catalog_id)!;
     try{
-      // Reuse the complete existing source/locator preimage guard, without DML.
+      // Same complete registered source/locator preimage guard, without DML.
       const registered=await readMasterRetainedBindingPreconditionsR1(client,input,"REGISTERED");
       assertMasterTypedPartialQuantityRegistryR1(plan.passport.decision.partialQuantityBasis,registered);
     }catch(error){quantityErrors.push(`${plan.definition.catalog_id}:${String((error as Error).message)}`);}
   }
   invariant(quantityErrors.length===0,`STOP_CANONICAL_PUBLISHER_TYPED_QUANTITY:${quantityErrors.join(',')}`);
-  for (const plan of plans) automaticPriceInheritanceExcludedResourceIds(plan);
   const schema = await preflightCanonicalDefinitionPublisherSchema(client);
   const auditedPlans: CanonicalPublisherJson[] = [];
   for (const plan of plans) {
@@ -920,11 +934,12 @@ export async function publishCanonicalDefinitionDraft(
   client: Client,
   plan: CanonicalDefinitionPublishPlan,
 ) {
-  // The write boundary repeats admission even if a caller skipped preflight.
-  assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
-    resourceDefinitions:plan.resources,independentComposition:plan.passport.decision?.independentCompletenessMap});
+  // Preserve retired-catalog and pure price-policy error priority for old callers.
   assertCanonicalNewWorkCatalogIdV1(plan.definition.catalog_id);
   const excludedPriceInheritanceResourceIds = automaticPriceInheritanceExcludedResourceIds(plan);
+  // Every admissible write repeats composition admission before the first INSERT.
+  assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
+    resourceDefinitions:plan.resources,independentComposition:plan.passport?.decision?.independentCompletenessMap,definitionPassport:plan.definition.passport});
   await client.query(`insert into public.estimate_definition_version(
       id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,
       source_metadata,content_status,content_gate_status)

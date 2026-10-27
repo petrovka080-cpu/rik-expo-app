@@ -316,7 +316,7 @@
     "scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryReadSetR1.ts": "520d80b9c68bfa42894bcddce6be5c4d3ac1f506486d55ad851d909b46fe71a5",
     "scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryServerR1.ts": "3622f74a8c3a67db56d5da91287de9ad95d63b69cf7a6a1ba05ddc533f8f68b2",
     "scripts/estimate/backendMigration/roofRetainedHistoryContextR1.ts": "aa338df982d127439f35ab6d4e120ae49ca4e534ac75dcf15c9010b444e711ee",
-    "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": "31009f9959a0cee507ada358cc749a2e5cb773100e31acf7ff8911f45fa5b25b",
+    "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": "299311ad1072e046fad83c5b2a836a934efa712f94f6f3b6e34ecdc8f4c2dfca",
     "scripts/estimate/batch001008R3/batch001DrywallGoldFixtureR3.ts": "a72df97a02221e699380c6b15ca17f1d62b2dc58eb25460ef1e956e2b57952e6",
     "scripts/estimate/buildAsphaltRelatedR8Inventory.ts": "c384816684ae0b6f3e68f47ffd385923a38c0a4558401630b046fe66719de270",
     "scripts/estimate/buildControlledPilotHealthDashboard.ts": "11eb9952703e60b0794ea3f2052022f9624f6ab8c4fd770539aec47c6e4d43b2",
@@ -332,8 +332,8 @@
     "scripts/estimate/r4a13/brickPartitionSelectedMaterialDeliveryR1.ts": "e4f3a7dac02dbc97df04da214b13e3e6d24554c5ac349a1ce4a7b328bc9d513a",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherConditionalSourceScopeR1.test.ts": "1a35b95ea8c04c9879a91e763209b847ecb3f6787f5d0dec096979a66e3c89a8",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherParameterOrdinalsR1.test.ts": "80d99d70c1b35a864f138b6daf3348331b97ae0b15acdd0975825df9b29366fd",
-    "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": "dc49ae5ac122a4464d3402593524e0a3999898ed09b7d6cd38dc23877cb816dc",
-    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "4746cfe34700eb13732ee844c16cefb7316dac8510b76381795413836cefcb13",
+    "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": "d547140084bfcae2e33a48261a3d3b7dd0b6f105ec4357e3a7ff3344ed92c74e",
+    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "a7dd18e444ef7a0b0c2dbb7cd4d047c738a39c1d664c439517dbc1447e9dbba9",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherResourceOrderingR1.test.ts": "b3117f2ccb80b2a8007ba33f95b65bdd14064a59d8b4ac9a9520750093b0ea67",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": "22e0c945a463230bed73e7efed680cf7bbd1547b82348737c620e72756bc6691",
     "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845",
@@ -342,7 +342,7 @@
     "scripts/estimate/r4a13/floorConcreteUnderlayerColumn09AppendR1.test.ts": "5743738f5082244d862cb9cb7e9b89ec2e23ebc0bca8ce8f7c943b744edb4213",
     "scripts/estimate/r4a13/floorSandStraightedgeRetainedMasterR3.test.ts": "d9f06c8626032d2ab2356f8dac8e20009d7110c18840bb91d7318e35f2d03527",
     "scripts/estimate/r4a13/formworkRemainingFamilyApplicabilityCorrection.ts": "71b1c56673fdf4daa82fe756468b8fbe02145ddfe07905fd322ddce0656eb6b0",
-    "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": "8c512a2425ef5d026c74e7ffcebc2853f5c11b1936420d4a5739905b8b4c3c3c",
+    "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": "de7d7a4f4eb24e1421a3c023ccc41eaae54e4ad233185b05b4b1c735d24eb587",
     "scripts/estimate/r4a13/masterActiveCatalogRetirementR575.test.ts": "8e9d66416130b3fa4d598f0abdfb9308192ee69c434cb1f3aa1da0118e0af03c",
     "scripts/estimate/r4a13/masterExactVentilatedApprovedSparseBaselineR62.ts": "936cdac80470ba4215586433315b41bd6546870e4c0b7d2b4b7c1e2d5b43dca0",
     "scripts/estimate/r4a13/masterExistingNormativeRegistryReuseR1.test.ts": "64169613230f776ec5f0c1b4902229226bc1de21d7d8e4d89268cbfa8ec05a67",
@@ -1211,7 +1211,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "1ea1b4cc132950ba8cef0d82d42958530055a6e1faef7a757ecec129beac3d1a",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "d20212f8e71e855c987bea452fc8bc54465350d5dab7acc639fa6451a1926045",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "1ce43aa667c904fa8dd46123ffd7de84697447497f9ff64125abdfe31cd6d559",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -1245,11 +1245,11 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateProfileInputResolverS2723.test.ts": "613c5afd0572211e0ca96041b5d5605efabd379c9b77a4fdb9c6e804d35053f7",
     "src/lib/estimate/backendPlatform/canonicalEstimateProfileInputResolverS2723.ts": "99998cf807fdc06b66195e07bcc3eec037389fb7ec6c4bf251bef0ab1ca494dc",
     "src/lib/estimate/backendPlatform/canonicalEstimateResourceInclusionV1.ts": "0d283e95193dd57406a1c53d63c0b852f3d918db686e9671f97ee0d638ced6a2",
-    "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.test.ts": "62dfb6a1b909d77ea3fa4a0a7eea950a52ff4032fa40748363c2a095c0d7e98d",
+    "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.test.ts": "7a62502caa5b5888d17bcb0be78d306935b49825e19bb27cac718841e9ae4fcf",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "a0a61d3e702b8a57c5a98f77d1306170dfcf34700a34ab506c9a7b7d8c6622d1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "42cc437ba33fdc64dbeac73b45db987ad6bc63f6e86101ca7d34f8f314252b14",
+    "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "6dd1f13ba43771059720a7f92f3dca9f0257f6829dbded5d12770510834d2dd6",
+    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "4a7842d0b776ede16a3157af6a39e8a61cbf534aef96de9b05b4a97dec2a76f9",
     "src/lib/estimate/backendPlatform/canonicalEstimateSearchInput.ts": "8db129b35d8f80b05a79376336fdfa4222a9dcb7c51288f1eae3d24403d62139",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
     "src/lib/estimate/backendPlatform/canonicalExactConditionalSuccessorMigrationV1.ts": "914d3aaf669a97e2f11231c887272a0e4c49206c22782d732ff840c55731d47e",
@@ -3625,10 +3625,10 @@
   "stats": {
     "sourceFiles": 2443,
     "dependencyFiles": 1160,
-    "sourceBytes": 132920335
+    "sourceBytes": 132943332
   },
   "candidateSourceComposition": {
-    "contract": "mandatory-operation-resource-acceptance-and-current-issued-bytes/r602",
+    "contract": "mandatory-operation-resource-acceptance-saved-evidence/r604",
     "sourceOnly": true,
     "actualApplicationAcceptance": false,
     "selectedOverlays": {
@@ -3636,7 +3636,7 @@
         "sha256": "ea62066892e3160c8ae44fe85e936be5b18a1087a18e1408a047ca08f9ed8de8"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": {
-        "sha256": "6dd1f13ba43771059720a7f92f3dca9f0257f6829dbded5d12770510834d2dd6"
+        "sha256": "4a7842d0b776ede16a3157af6a39e8a61cbf534aef96de9b05b4a97dec2a76f9"
       },
       "src/lib/estimate/backendPlatform/contracts.ts": {
         "sha256": "f80447ecee674f2dc3bcc24ed63f0465a0d972512aa6bdd8502227784bb62456"
@@ -3645,13 +3645,13 @@
         "sha256": "a0a61d3e702b8a57c5a98f77d1306170dfcf34700a34ab506c9a7b7d8c6622d1"
       },
       "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": {
-        "sha256": "31009f9959a0cee507ada358cc749a2e5cb773100e31acf7ff8911f45fa5b25b"
+        "sha256": "299311ad1072e046fad83c5b2a836a934efa712f94f6f3b6e34ecdc8f4c2dfca"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": {
-        "sha256": "1ea1b4cc132950ba8cef0d82d42958530055a6e1faef7a757ecec129beac3d1a"
+        "sha256": "d20212f8e71e855c987bea452fc8bc54465350d5dab7acc639fa6451a1926045"
       },
       "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.test.ts": {
-        "sha256": "62dfb6a1b909d77ea3fa4a0a7eea950a52ff4032fa40748363c2a095c0d7e98d"
+        "sha256": "7a62502caa5b5888d17bcb0be78d306935b49825e19bb27cac718841e9ae4fcf"
       },
       "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": {
         "sha256": "3890d420cf40fc52527848ee8cb75a98a1f6d79debbb2c44c641f462fe0744cd"
@@ -3660,10 +3660,10 @@
         "sha256": "c8d91de0e247117496d15aed9c8b7df9da176ecb9d1dee2915bf59ed4d30611e"
       },
       "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": {
-        "sha256": "4746cfe34700eb13732ee844c16cefb7316dac8510b76381795413836cefcb13"
+        "sha256": "a7dd18e444ef7a0b0c2dbb7cd4d047c738a39c1d664c439517dbc1447e9dbba9"
       },
       "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts": {
-        "sha256": "8c512a2425ef5d026c74e7ffcebc2853f5c11b1936420d4a5739905b8b4c3c3c"
+        "sha256": "de7d7a4f4eb24e1421a3c023ccc41eaae54e4ad233185b05b4b1c735d24eb587"
       },
       "scripts/estimate/r4a13/prepareBatch001MeasuredAreaCumulativeSuccessor.ts": {
         "sha256": "bbbc5017575aae71107ab50165563388f7502ec77312beb0fb6ef2d0e784be95"
@@ -3715,6 +3715,12 @@
       },
       "AGENTS.md": {
         "sha256": "66eb1253ef479a135ceb44d7e6d7bd71676e9bbef999ac0cccbb67008c935040"
+      },
+      "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": {
+        "sha256": "d547140084bfcae2e33a48261a3d3b7dd0b6f105ec4357e3a7ff3344ed92c74e"
+      },
+      "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": {
+        "sha256": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e"
       }
     }
   },

@@ -1,6 +1,9 @@
+import {canonicalEstimateSha256HexText as sha256} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSha256';
+import {canonicalEstimateStableJson as stable} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism';
 import type { Client } from 'pg';
 import {
   canonicalPublisherPriceBindingIsCompatible,
+  auditCanonicalPublisherSuccessorOperationResourcesR1,
   createCanonicalDefinitionClonePlan,
   preflightCanonicalDefinitionPublishPlans,
   publishCanonicalDefinitionDraft,
@@ -45,13 +48,53 @@ const LEGACY_ROUTE_SQL = `insert into public.estimate_resource_price_route_bindi
     on conflict(resource_spec_id,route_id) do nothing
     returning resource_spec_id`;
 
+/** Explicit TEST_ONLY supply/BOM declaration independent of emitted plan rows.
+ * This synthetic three-material package tests price SQL only. It supplies no
+ * production source, labour/consumption norm, safety result or project receipt. */
+function testOnlyPriceSourceComposition() {
+  const operation = {contractVersion:'canonical-operation-resource/v1' as const,
+    groupId:'TEST_ONLY:price-package',groupTitleRu:'Контрольный комплект материалов',
+    operationId:'TEST_ONLY:price-package:supply',operationTitleRu:'Комплектация контрольных материалов',processOrdinal:0,
+    completionCriterionRu:'Точный синтетический состав объявлен; реальная поставка, монтаж и цена этим тестом не подтверждаются.'};
+  const declared = [
+    {rowId:'test:row:0',nameRu:'Одинаковое синтетическое название'},
+    {rowId:'test:row:1',nameRu:'Одинаковое синтетическое название'},
+    {rowId:'test:row:2',nameRu:'Одинаковое синтетическое название'},
+  ] as const;
+  const excludedClasses = {
+    CONSUMABLE:'TEST_ONLY: исчерпывающий состав этой поставки содержит только три материала; расходные составы не входят в объявленный комплект.',
+    TOOL:'TEST_ONLY: в исчерпывающем составе поставки нет инструмента; объектный монтаж не является этой операцией.',
+    ACCESSORY:'TEST_ONLY: оснастка не входит в точный комплект поставки; монтажные приспособления не заявлены.',
+    EQUIPMENT:'TEST_ONLY: оборудование не входит в точный комплект поставки; оснащение места работ вне этого source scope.',
+    MECHANISM:'TEST_ONLY: механизмы не являются компонентами поставки; погрузка и установка не объявлены этой операцией.',
+    LABOR:'TEST_ONLY: это состав готовой поставки, а не отдельная операция изготовления или монтажа с оплатой труда.',
+    SERVICE:'TEST_ONLY: отдельная услуга не входит в исчерпывающую ведомость этой поставки.',
+    TRANSPORT:'TEST_ONLY: доставка не входит в объявленный состав поставки и не считается выполненной.',
+    PPE:'TEST_ONLY: СИЗ не входят в точный комплект поставки; требования выполнения объектных работ вне этого теста.',
+  };
+  const requirements = {MATERIAL:{status:'REQUIRED',rowIds:declared.map(row=>row.rowId)},
+    ...Object.fromEntries(Object.entries(excludedClasses).map(([kind,reasonRu])=>[kind,{status:'NOT_APPLICABLE',reasonRu}]))};
+  const source = {contract:'TEST_ONLY_PRICE_INHERITANCE_SOURCE/v1',operation,declared,requirements};
+  return {operation,map:{contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PROJECT_SYSTEM',
+    generatedFromCurrentRows:false,evidenceSha256:sha256(stable(source)),operationResourceBindingRequired:true,
+    operationRoster:[operation],operationRequirements:[{operationId:operation.operationId,sourceId:'TEST_ONLY_PRICE_SOURCE',requirements}],
+    entries:declared.map((resource,index)=>({expectedResourceId:'TEST_ONLY:material:'+index,operationId:operation.operationId,
+      requiredOperationIds:[operation.operationId],publicNameRu:resource.nameRu,resourceKind:'MATERIAL',category:'material',unitId:'m',
+      sourceId:'TEST_ONLY_PRICE_SOURCE',condition:'EXACT_THREE_MATERIAL_TEST_ONLY_SUPPLY_NOT_PRODUCTION_OR_INSTALLATION',
+      formulaId:'test:quantity',resolution:{kind:'ROW',rowId:resource.rowId}}))}};
+}
+
 function makePlan(metadata: readonly CanonicalPublisherJson[] = [{}, {}, {}],
   parameterDefinitions?: CanonicalPublisherJson[]) {
+  const composition = testOnlyPriceSourceComposition();
   const resources = metadata.map((source_metadata, ordinal) => ({
     row_id: `test:row:${ordinal}`, ordinal, section: 'test', category: 'material',
     title_ru: 'Одинаковое синтетическое название', row_type: 'material', unit_id: 'm',
     formula_id: 'test:quantity', inclusion_ast: { kind: 'literal', value: true },
-    resource_graph: { costTreatment: 'OWN_COST' }, cost_owner_id: `test:owner:${ordinal}`,
+    resource_graph: { costTreatment: 'OWN_COST',operationCompositionV1:composition.operation,
+      publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',
+        sourceTitleRu:'Одинаковое синтетическое название',nameRu:'Одинаковое синтетическое название',resourceKind:'MATERIAL',
+        brandAndModelRu:null,specificationRu:null,detailsRu:[]} }, cost_owner_id: `test:owner:${ordinal}`,
     procurement_eligible: true, source_metadata,
   }));
   const parameters = parameterDefinitions ?? [{ parameter_id: 'quantity', ordinal: 0, value_type: 'decimal',
@@ -85,7 +128,7 @@ function makePlan(metadata: readonly CanonicalPublisherJson[] = [{}, {}, {}],
     passport: { physicalResultRu: 'Синтетическая проверка издателя', excludedScopeRu: [],
       decision: { contract: CONTENT_CONTRACT, status: 'GREEN', allowed: true, quantityScope: 'FULL',
         priceState: 'PARTIAL_NEEDS_PRICE', activationAllowed: false, productionEligible: false,
-        waveContract: CONTRACT }, payloadSha256: '6'.repeat(64), sourceHead: '7'.repeat(40), sourceTree: '8'.repeat(40) },
+        waveContract: CONTRACT,independentCompletenessMap:composition.map }, payloadSha256: '6'.repeat(64), sourceHead: '7'.repeat(40), sourceTree: '8'.repeat(40) },
     bindingApplicability: binding => binding.applicability,
     expectedNormativeBindingCount: 0,
   });
@@ -148,6 +191,7 @@ describe('real canonical publisher target-only automatic price inheritance opt-o
   test('absent flag preserves the complete historical SQL, two parameters and plan bytes', async () => {
     const plan = makePlan();
     const original = structuredClone(plan);
+    expect(auditCanonicalPublisherSuccessorOperationResourcesR1({resourceDefinitions:plan.resources,independentComposition:plan.passport.decision.independentCompletenessMap}).definitionAdmissionAllowed).toBe(true);
     const recorder = recordingClient(plan);
     const result = await publishCanonicalDefinitionDraft(recorder.client, plan);
     expect(routeCall(recorder.calls)).toEqual({ sql: LEGACY_ROUTE_SQL, values: [SOURCE_DEFINITION_ID, DEFINITION_ID] });
@@ -180,6 +224,15 @@ describe('real canonical publisher target-only automatic price inheritance opt-o
     await expect(preflightCanonicalDefinitionPublishPlans(recorder.client, [plan])).rejects.toThrow(exact);
     await expect(publishCanonicalDefinitionDraft(recorder.client, plan)).rejects.toThrow(exact);
     expect(() => priceCompatible(plan.resources[0]!)).toThrow(exact);
+    expect(recorder.query).not.toHaveBeenCalled();
+  });
+
+  test('pure price policy retains priority when independent composition is also missing',async()=>{
+    const plan=makePlan([{[FLAG]:'false'},{},{}]);
+    delete plan.passport.decision.independentCompletenessMap;
+    const recorder=recordingClient(plan),exact=/^STOP_CANONICAL_PUBLISHER_PRICE_INHERITANCE_POLICY_TYPE$/u;
+    await expect(preflightCanonicalDefinitionPublishPlans(recorder.client,[plan])).rejects.toThrow(exact);
+    await expect(publishCanonicalDefinitionDraft(recorder.client,plan)).rejects.toThrow(exact);
     expect(recorder.query).not.toHaveBeenCalled();
   });
 

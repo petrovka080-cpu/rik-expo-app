@@ -1,3 +1,4 @@
+import {canonicalSavedOperationCompositionEvidenceV1,canonicalOperationCompositionEvidenceFromPassportV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 import {
   CanonicalEstimateRevisionReadContractError,
   canonicalEstimateRevisionDetailFromStorage,
@@ -154,4 +155,18 @@ it('exposes optional composition diagnostics without rejecting or rewriting a sa
   expect(canonicalEstimateRevisionDetailFromStorage(row,{operationResourceAcceptanceV1:acceptance}).operationResourceAcceptanceV1).toEqual(acceptance);
   expect(canonicalEstimateRevisionDetailFromStorage(row)).not.toHaveProperty('operationResourceAcceptanceV1');
   expect(JSON.stringify(row)).toBe(before);
+});
+
+it('retains the pinned evidence through saved JSON and detail mapping without a current-source read',()=>{
+  const row=revisionStorage({definition_version_id:'pinned-definition'});
+  const snapshot=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:String(row.release_id),
+    definitionVersionId:String(row.definition_version_id),passport:{definition_version_id:row.definition_version_id,
+      payload_sha256:'b'.repeat(64),decision:{independentCompletenessMap:{contract:'synthetic-roundtrip',entries:['fixed']}}}})!;
+  const saved={...row,amendment_contract:{parameterSources:{operationCompositionEvidenceV1:snapshot}}};
+  const cold=JSON.parse(JSON.stringify(saved));const before=JSON.stringify(cold);
+  expect(canonicalSavedOperationCompositionEvidenceV1(cold).independentComposition).toEqual(snapshot.independentComposition);
+  expect(canonicalEstimateRevisionDetailFromStorage(cold).checksumSha256).toBe(row.checksum_sha256);
+  expect(canonicalSavedOperationCompositionEvidenceV1({...cold,definition_version_id:'other'}).issue).toBeDefined();
+  expect(canonicalSavedOperationCompositionEvidenceV1({...cold,release_id:'other'}).issue).toBeDefined();
+  expect(JSON.stringify(cold)).toBe(before);
 });
