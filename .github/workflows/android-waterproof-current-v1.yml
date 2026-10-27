@@ -1,5 +1,5 @@
 name: Current canonical WaterProof APK V1
-run-name: WaterProof verified transport APK ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
+run-name: WaterProof bounded Gradle producer APK ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
 on:
   push:
     branches: ['codex/gox-types-operations-resources-r580']
@@ -52,7 +52,7 @@ jobs:
         env:
           SOURCE_COMMIT: ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
           BUILD_SPEC_PATH: ${{ inputs.build_spec_path || 'scripts/verification/android-waterproof-current-v1/inputs/current-build-r750.json' }}
-          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 || '52743c00e121e31267d5099049ce6670068a6c0e44db70b7da320a0ecd7b9f8f' }}
+          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 || '834d8cd3a671783634d0b13dc84449e963be8272f13767afe9e502f911b410f6' }}
         run: |
           if ($env:SOURCE_COMMIT -notmatch '^[a-f0-9]{40}$') { throw 'Exact commit required' }
           if ($env:BUILD_SPEC_SHA -notmatch '^[a-f0-9]{64}$') { throw 'Exact build contract hash required' }
@@ -88,7 +88,7 @@ jobs:
         env:
           SOURCE_COMMIT: ${{ inputs.source_commit || '9b39b1938c6bac938a46054b38db59579e504965' }}
           BUILD_SPEC_PATH: ${{ inputs.build_spec_path || 'scripts/verification/android-waterproof-current-v1/inputs/current-build-r750.json' }}
-          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 || '52743c00e121e31267d5099049ce6670068a6c0e44db70b7da320a0ecd7b9f8f' }}
+          BUILD_SPEC_SHA: ${{ inputs.build_spec_sha256 || '834d8cd3a671783634d0b13dc84449e963be8272f13767afe9e502f911b410f6' }}
         run: |
           $driver = Join-Path $env:GITHUB_WORKSPACE 'ci/scripts/verification/android-waterproof-current-v1/build_current_apk.py'
           $spec = Join-Path (Join-Path $env:GITHUB_WORKSPACE 'ci') $env:BUILD_SPEC_PATH

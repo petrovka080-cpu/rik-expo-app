@@ -71,6 +71,30 @@ def validate_contract(s,root,snapshot):
  return expected
 def inventory(root,dirs):
  return sorted([dict(path=p.relative_to(root).as_posix(),bytes=p.stat().st_size,sha256=sha(p))for d in dirs for p in d.rglob('*')if p.is_file()],key=lambda x:x['path'])
+def drain_owned_phase_job(job,child,owned,psutil,timeout=10):
+ # Job termination is asynchronous on Windows. Observe the same Job and PID
+ # creation times until its descendants really disappear; never kill by name.
+ error=None;remaining=[];started=time.monotonic()
+ try:
+  job.terminate()
+  if child:child.wait(timeout=timeout)
+  deadline=time.monotonic()+timeout
+  while True:
+   members=job.pids()
+   for pid in members:
+    try:owned[pid]=psutil.Process(pid).create_time()
+    except psutil.NoSuchProcess:pass
+   remaining=[]
+   for pid,ctime in owned.items():
+    try:
+     if psutil.Process(pid).create_time()==ctime:remaining.append(pid)
+    except psutil.NoSuchProcess:pass
+   remaining=sorted(set(remaining+members))
+   if not remaining or time.monotonic()>=deadline:break
+   time.sleep(.05)
+ except BaseException as e:error=repr(e)
+ finally:job.close()
+ return dict(remainingOwnedProcesses=remaining,closureError=error,closureElapsedSeconds=time.monotonic()-started)
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--root',required=True);ap.add_argument('--spec',required=True);ap.add_argument('--spec-sha256',required=True);ap.add_argument('--source-commit',required=True);ap.add_argument('--output',required=True);ap.add_argument('--contract-only',action='store_true');a=ap.parse_args()
  root=pathlib.Path(a.root).resolve();out=pathlib.Path(a.output).resolve();assert not out.exists();out.mkdir(parents=True)
@@ -128,15 +152,9 @@ def main():
     assert code==0,'PHASE_EXIT_'+label+':'+str(code)
   except BaseException as e:error=repr(e);raise
   finally:
-   job.terminate()
-   if child:child.wait(timeout=10)
-   job.close();remaining=[]
-   for pid,ctime in owned.items():
-    try:
-     if psutil.Process(pid).create_time()==ctime:remaining.append(pid)
-    except psutil.NoSuchProcess:pass
-   receipt=dict(phase=label,exitCode=code,error=error,elapsedSeconds=time.monotonic()-started,peakCombinedRssBytes=peak,peakCombinedPrivateBytes=private,admission=admission,endMemory=memory(),remainingOwnedProcesses=remaining,foreignProcessesTerminated=False)
-   write(out/(label+'.receipt.json'),receipt);receipts.append(receipt);assert not remaining
+   closure=drain_owned_phase_job(job,child,owned,psutil)
+   receipt=dict(phase=label,exitCode=code,error=error,elapsedSeconds=time.monotonic()-started,peakCombinedRssBytes=peak,peakCombinedPrivateBytes=private,admission=admission,endMemory=memory(),**closure,foreignProcessesTerminated=False)
+   write(out/(label+'.receipt.json'),receipt);receipts.append(receipt);assert not closure['remainingOwnedProcesses'] and closure['closureError']is None,'OWNED_PHASE_CLOSURE_'+label
   assert check_source(),'SOURCE_DRIFT_AFTER_'+label
   return(out/(label+'.stdout.log')).read_text(encoding='utf8',errors='replace')
  npm_cli=pathlib.Path(node).parent/'node_modules/npm/bin/npm-cli.js';assert npm_cli.is_file()
@@ -171,9 +189,21 @@ def main():
  updates=dict(status='PASS_OFFICIAL_EXPO_UPDATES_RESOURCES_ONLY',inputs=phase_inputs,artifact=dict(files=inventory(root,dirs[2:]),fingerprint=(dirs[2]/'fingerprint').read_text().strip()))
  assert read(dirs[2]/'app.manifest')['assets']and re.fullmatch('[a-f0-9]{40}|[a-f0-9]{64}',updates['artifact']['fingerprint'])
  precomputed=dict(status='PASS_CURRENT_SOURCE_PRECOMPUTED_PHASE_UNION',sourceHead=s['canonicalSourceHead'],sourceTree=s['sourceIdentity']['sourceTreeHash'],jsBundleFingerprint=s['sourceIdentity']['jsBundleFingerprint'],files=inventory(root,dirs));write(out/'precomputed.json',precomputed)
+ # Preserve the already built HBC/assets and exact source-bound receipts
+ # before packaging. Raw JS stays private; no credential/session is included.
+ assert sum(f['bytes']for f in precomputed['files'])<=128*MIB,'PRECOMPUTED_PRESERVATION_SIZE_CAP'
+ for f in precomputed['files']:
+  source=inside(root,f['path']);target=inside(out/'precomputed-files',f['path']);target.parent.mkdir(parents=True,exist_ok=True)
+  shutil.copyfile(source,target);assert target.stat().st_size==f['bytes']and sha(target)==f['sha256']
+ write(out/'precomputed-phase-evidence.json',dict(sourceIdentity=s['sourceIdentity'],phaseInputs=phase_inputs,js=js,hermes=hermes,updates=updates,precomputed=precomputed,publicEnvironmentSha256=hashlib.sha256(json.dumps(s['publicEnvironment'],sort_keys=True,separators=(',',':')).encode()).hexdigest(),rawJsNotUploaded=True))
  init=(HERE/'precomputed.init.gradle').read_text(encoding='utf8').replace('@ROOT_JSON@',json.dumps(str(root))).replace('@RECEIPT_JSON@',json.dumps(str(out/'precomputed.json')))
  (out/'precomputed.init.gradle').write_text(init,encoding='utf8')
- glog=run('gradle',[java,'-Xmx64m','-Xms64m','-Dorg.gradle.appname=gradlew','-classpath',root/'android/gradle/wrapper/gradle-wrapper.jar','org.gradle.wrapper.GradleWrapperMain',':app:assembleWaterProof','-p','android','--no-daemon','--max-workers=1','--stacktrace','-Dorg.gradle.workers.max=1','-Dorg.gradle.daemon=false','-Dorg.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC','-Pkotlin.compiler.execution.strategy=in-process','-PreactNativeArchitectures=x86_64','-Pandroid.enablePngCrunchInReleaseBuilds=false','--init-script',out/'precomputed.init.gradle'],3072,1500)
+ # Bound the existing Gradle DAG by real producer boundaries. Each keeps
+ # the original3GiB/1500s/one-worker policy; later invocations reuse Gradle's
+ # own exact-input incremental outputs in this same private CI workspace.
+ glog=''
+ for phase,target in [('gradle-compile-java',':app:compileWaterProofJavaWithJavac'),('gradle-merge-dex',':app:mergeExtDexWaterProof'),('gradle',':app:assembleWaterProof')]:
+  glog+=run(phase,[java,'-Xmx64m','-Xms64m','-Dorg.gradle.appname=gradlew','-classpath',root/'android/gradle/wrapper/gradle-wrapper.jar','org.gradle.wrapper.GradleWrapperMain',target,'-p','android','--no-daemon','--max-workers=1','--stacktrace','-Dorg.gradle.workers.max=1','-Dorg.gradle.daemon=false','-Dorg.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC','-Pkotlin.compiler.execution.strategy=in-process','-PreactNativeArchitectures=x86_64','-Pandroid.enablePngCrunchInReleaseBuilds=false','--init-script',out/'precomputed.init.gradle'],3072,1500)
  for task in ['createBundleWaterProofJsAndAssets','createWaterProofUpdatesResources']:assert 'VERIFIED_PRECOMPUTED_PHASE :app:'+task+' files='in glog
  assert inventory(root,dirs)==precomputed['files']
  apk=root/'android/app/build/outputs/apk/waterProof/app-waterProof.apk';assert apk.is_file()
