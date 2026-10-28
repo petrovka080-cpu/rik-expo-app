@@ -85,7 +85,7 @@ export function prepareLinoleumCurrentProjectQuantityR2(ctx:LinoleumCurrentProje
   binding:{rowId:newRows[0]!.row_id,additionalRowIds:newRows.slice(1).map(r=>r.row_id),applicability:{projectSystem:quantity.contract,countsAreActualProjectRecordsNotNorms:true},
    applicabilityByRowId:Object.fromEntries(newRows.map(r=>[r.row_id,{sourceRole:'PROJECT_RECORD_QUANTITY_NOT_MANUFACTURER_NORM',permanentNotApplicable:r.row_id===original.namespace+'perimeter-seal',fullTechnicalAcceptance:false}])),
    retainParentBindings:{capturedParent:ctx.actualParent,capturedParentSha256:ctx.actualParentCaptureSha256,
-    newParameterSources:Object.fromEntries(newParameters.map(p=>[p.parameter_id,{kind:'KNOWN' as const,sourceIds:[quantity.sourceId]}])),
+    newParameterSources:Object.fromEntries(newParameters.map(p=>[p.parameter_id,{kind:String(p.truth_metadata.value_source_role).includes('DERIVED')?'DERIVED' as const:'KNOWN' as const,sourceIds:[quantity.sourceId]}])),
     legacyTemplateAssumptionSources:{contract:'master-retained-legacy-template-assumptions/r1',templateId:'flooring_interior_linoleum_lay_standard_professional_expanded_v1',
      parameterSources:{q:['r555-source:flooring_interior_linoleum_lay_standard_professional_expanded_v1']}},
     capturedSourcePreimage:{sourceKey:quantity.sourceId,expected:null}}},

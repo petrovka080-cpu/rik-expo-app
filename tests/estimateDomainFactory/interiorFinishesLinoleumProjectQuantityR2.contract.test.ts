@@ -5,7 +5,7 @@ import {buildLinoleumCurrentProjectQuantityR2 as model,compileLinoleumCurrentPro
  buildLinoleumCurrentWholeR1 as legacyModel} from '../../src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding';
 import {prepareLinoleumCurrentProjectQuantityR2 as recipe,observedLinoleumParentR1115R2 as observed,
  type LinoleumCurrentProjectQuantityContextR2} from '../../scripts/estimate/r4a13/prepareLinoleumCurrentProjectQuantityR2';
-import {masterRetainedParentCaptureSha256R1 as captureHash} from '../../scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1';
+import {masterRetainedParentCaptureSha256R1 as captureHash,assembleMasterExplicitParameterSourcesR1} from '../../scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1';
 import {validateMasterTypedPartialQuantityPreparationR1 as preparation,buildMasterCapabilityMatrix,buildMasterScopeReadiness,
  validateIndependentCompletenessMapReferences} from '../../scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1';
 import {validateMasterTypedPartialQuantityBasisR1 as basisErrors,masterTypedPartialQuantityDependentRowsR1 as dependencies}
@@ -178,6 +178,16 @@ describe('Linoleum R2 actual project quantities and pure retained ordinary recip
   }
   const b=c.passport.partialQuantityBasis;if(!b||b.kind!=='DEFERRED_PROJECT_QUANTITIES')throw Error('TEST_R2_PROJECT_BASIS');
   for(const p of b.parameters)expect(Object.hasOwn(c.acceptanceInput,p.parameterId)).toBe(false);
+  const retained=c.binding.retainParentBindings!;
+  const currentOnly=c.parameterDefinitions.filter(p=>!retained.capturedParent.parameters.some(old=>old.parameter_id===p.parameter_id));
+  const expectedDerived=[oldPack.selector.parameterId,oldPack.seamParameterId,oldPack.edgeParameterId,'effective_resource_quantity_linoleum_current_whole_r1_adhesive_order'];
+  expect(new Set(Object.entries(retained.newParameterSources).filter(([,spec])=>spec.kind==='DERIVED').map(([id])=>id))).toEqual(new Set(expectedDerived));
+  expect(Object.values(retained.newParameterSources).filter(spec=>spec.kind==='KNOWN')).toHaveLength(86);
+  expect(assembleMasterExplicitParameterSourcesR1({errorPrefix:'TEST_LINOLEUM_EXISTING_RETAINED_',parameters:currentOnly,
+   newParameterSources:retained.newParameterSources,sourceClosure:[pack.sourceId],oldResourceRowIds:retained.capturedParent.resources.map(r=>r.row_id),
+   next:{parameters:c.parameterDefinitions,formulas:c.formulaDefinitions,resources:c.resourceDefinitions}}))
+   .toEqual(Object.fromEntries(currentOnly.map(p=>[p.parameter_id,[pack.sourceId]])));
+
  });
  it('constructs a helper derived exact typed project witness without masking a missing application norm',()=>{
   const c=recipe(context()),b=c.passport.partialQuantityBasis;if(!b||b.kind!=='DEFERRED_PROJECT_QUANTITIES')throw Error('TEST_R2_PROJECT_BASIS');expect(b.parameters).toHaveLength(70);

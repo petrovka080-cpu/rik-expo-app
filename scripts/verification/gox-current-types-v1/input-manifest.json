@@ -2608,8 +2608,8 @@
     "data/estimate-benchmarks/source-artifacts/linoleum-r2-euroclean888-current-linked-tds.pdf": "a8d55ad04bbe85e83f441f2d7c340207865b26a7a0e3566953f7c3e05567de6a",
     "data/estimate-benchmarks/source-packs/linoleum-current-project-quantity-cycle-r2.json": "d50f5780578f582a0a43b1137ce0b2c94d7b65d7c4fca7cfc25b03b41512e38b",
     "data/estimate-benchmarks/source-packs/linoleum-project-quantity-records-r2.txt": "18919be50a9bb58b84f3e2e4bd214efb68001d7bfb438f3b9bd4e73071fb5fed",
-    "scripts/estimate/r4a13/prepareLinoleumCurrentProjectQuantityR2.ts": "fa9e5f5a67963b2e78207d0618dd41969d2890dae2961e3c99e39ac1a5809259",
-    "tests/estimateDomainFactory/interiorFinishesLinoleumProjectQuantityR2.contract.test.ts": "b6cc6347f046f2a4403efe793b11c029ac29a02f1403c8c64dc0ad2b41dc0061",
+    "scripts/estimate/r4a13/prepareLinoleumCurrentProjectQuantityR2.ts": "48f8d73cccbde93f1aa0357472582cd428049e04a883b9c830247cc9d4af6d64",
+    "tests/estimateDomainFactory/interiorFinishesLinoleumProjectQuantityR2.contract.test.ts": "87331a6733fa2e7dd165ee6ffd3cafabec0cba82684cd149c6ba96aa63645322",
     "scripts/estimate/r4a13/masterRetainedManagedTypedQuantityR1.test.ts": "35e3dfcd59f72a888cda704ce337fc03035520ae345ec60048df607afed4064f"
   },
   "dependencyPins": {
@@ -3793,15 +3793,10 @@
     "dependencyFiles": 1160
   },
   "candidateSourceComposition": {
-    "baseTypedActualCI": 40643379989,
-    "baseTypedCommit": "0c3e9cfa01710fb3a3cc767eb7f5869211603bee",
-    "delta": "whole linoleum R2 effective8 plus existing general retained-managed typed guard/test",
-    "actualSourceResults": [
-      "C:/Users/User/Documents/Codex/2026-10-27/files-pasted-by-the-user-c-2/work/n24/ROOT_ACTUAL27_RESULT.json",
-      "C:/Users/User/Documents/Codex/2026-10-27/files-pasted-by-the-user-c-2/work/n26/ROOT_ACTUAL_THREE_RESULT.json",
-      "C:/Users/User/Documents/Codex/2026-10-27/files-pasted-by-the-user-c-2/work/n25/ROOT_ACTUAL13_RESULT.json"
-    ],
-    "noDecorPrimerOtherFamilyIntake": true
+    "baseActualTypesCI": 40649095495,
+    "baseTypedCommit": "51921c6612fef5a93c367322e20e5629ca1cb274",
+    "delta": "family-only4derivedparameterprovenance kinds and1existingrecipe case invoking actualexplicit-source assembler; common and other26familycases unchanged",
+    "noNewQuantityOrObjectFacts": true
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
