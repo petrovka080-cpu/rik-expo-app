@@ -2547,7 +2547,7 @@
     "data/estimate-benchmarks/source-packs/vvgng-ls-power-cable-balanced-s27-23.json": "65d8971b0e108f0db523534ddefb5361727924039c87816df30796a5f31c21cc",
     "data/estimate-benchmarks/source-packs/vvgng-ls-power-cable-whole-current-r919-r1.json": "5e4e33dd2b460ec66c7ac974f1717dd6cf8e07f53b71cfa6cffd69bcc2621a0a",
     "scripts/estimate/r4a13/prepareS2723VvgngLsPowerCableBalancedSuccessor.ts": "e3784782b859e792c97b9be4e1628ff3a60fc3089aed93d0a9cfcab5f8032bcb",
-    "tests/estimateNorms/vvgngLsPowerCableR1.contract.test.ts": "8f0ebc758bf72bee11613054825d6c508b013d693479f573829d70cf0858361e",
+    "tests/estimateNorms/vvgngLsPowerCableR1.contract.test.ts": "9c2585bfe68e93fd6b396772d271af045e993ad13c46531c46c4fcf7b4054043",
     "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-5x6-066-official.html": "e5ce9b4b451fa54693160403fc8380117f25051ffa8cb7db519c2e274c4d8cbb",
     "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-5x6-1-official.html": "181e4dd67b8c8750ed8a3c7a9f5e8a094c9a94f9d2a31219be50d023771bb442",
     "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-family-official.html": "8492d79e52183f8d7574435399b90583da412092605808712a792b40a1f7a1b4",
@@ -3741,7 +3741,7 @@
     "findings": [],
     "patternScanFromPredecessorSourcePlan": "81f630f069c9e53edb8a6faea5d370a0f1ad019dab5b333752352983ecd0fb18",
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 161158212
+    "sourceBytes": 161159890
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
@@ -3749,7 +3749,7 @@
   "stats": {
     "sourceFiles": 2567,
     "dependencyFiles": 1160,
-    "sourceBytes": 161158212
+    "sourceBytes": 161159890
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -4552,6 +4552,21 @@
       "currentAndroidCiHeadFixedAt": "aad5733163935c22962e3b857a6bceb58f06bde9",
       "formalPublicationAndSavedUiAccepted": false,
       "allPriorNeedsRetained": true
+    },
+    "addressedVvgTestTypesR1001": {
+      "parent": "d9f5f28cdd6b2b83ea84385cc147b99a41174b2a",
+      "priorActualRun": 40612861274,
+      "actualPriorDiagnostics": 5,
+      "changedTestOnly": "tests/estimateNorms/vvgngLsPowerCableR1.contract.test.ts",
+      "beforeSha256": "8f0ebc758bf72bee11613054825d6c508b013d693479f573829d70cf0858361e",
+      "afterSha256": "9c2585bfe68e93fd6b396772d271af045e993ad13c46531c46c4fcf7b4054043",
+      "addressedRuntimeCases": 2,
+      "unchangedNewSourceCasesReused": 46,
+      "explicitRootsAndImportClosureUnchanged": true,
+      "noCommonSchemaOrGuardChange": true,
+      "sourceOnly": true,
+      "newProductCandidate": false,
+      "canonicalProductUnchanged": true
     }
   },
   "existingCiTypesStageBudget": {

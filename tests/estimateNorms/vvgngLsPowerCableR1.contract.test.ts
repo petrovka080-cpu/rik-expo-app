@@ -47,6 +47,23 @@ const OPTIONAL_PRODUCT_DESIGNATIONS = [
   "lug_designation", "firestop_designation", "test_designation",
 ] as const;
 
+function vvgContractIsRecordR993(value:unknown):value is Record<string,unknown>{
+ return value!==null&&typeof value==='object'&&!Array.isArray(value);
+}
+function vvgContractRecordR989(value:unknown,label:string):Record<string,unknown>{
+ if(!vvgContractIsRecordR993(value))throw Error('VVG_CONTRACT_RECORD_REQUIRED:'+label);
+ return value;
+}
+function vvgContractTextR989(value:unknown,label:string):string{
+ if(typeof value!=='string'||!value.trim())throw Error('VVG_CONTRACT_TEXT_REQUIRED:'+label);
+ return value;
+}
+function vvgCanonicalSectionInputR989(row:{row_id:string;title_ru?:unknown;calculation_trace?:unknown}):{rowId:string;titleRu:string;operation:unknown}{
+ const trace=vvgContractRecordR989(row.calculation_trace,row.row_id+':calculation_trace');
+ const graph=vvgContractRecordR989(trace.resourceGraph,row.row_id+':resourceGraph');
+ return{rowId:row.row_id,titleRu:vvgContractTextR989(row.title_ru,row.row_id+':title_ru'),operation:graph.operationCompositionV1};
+}
+
 describe("MASTER VVGng-LS power-cable owner", () => {
   test("uses net route geometry without importing historical rates", () => {
     expect(VVGNG_LS_POWER_CABLE_CATALOG_ID)
@@ -175,14 +192,27 @@ describe("MASTER VVGng-LS power-cable owner", () => {
 
   test('binds the original paid cable and labour directly to real consuming operations without another cable order',async()=>{
     const out=await compileVvgngLsPowerCableR1({...VVGNG_LS_POWER_CABLE_ACCEPTANCE_INPUT});
-    for(const r of out.rows){expect(r.row_sha256).toMatch(/^[0-9a-f]{64}$/u);expect(r.calculation_trace.formulaAstSha256).toMatch(/^[0-9a-f]{64}$/u);}
-    for(const r of out.preliminaryNeeds)expect(r.need_sha256).toMatch(/^[0-9a-f]{64}$/u);
+    for(const r of out.rows){
+      const {row_sha256:actualRowHash,...rowBody}=r;
+      expect(actualRowHash).toBe(estimateDeterministicHash(rowBody));
+      const trace=vvgContractRecordR989(r.calculation_trace,r.row_id+':calculation_trace');
+      const actualFormulaId=vvgContractTextR989(trace.formulaId,r.row_id+':formulaId');
+      const actualDefinition=VVGNG_LS_POWER_CABLE_FORMULAS.find(f=>f.formula_id===actualFormulaId);
+      expect(actualDefinition).toBeDefined();if(!actualDefinition)throw Error('VVG_ACTUAL_FORMULA_DEFINITION_REQUIRED:'+actualFormulaId);
+      const actualResource=VVGNG_LS_POWER_CABLE_RESOURCES.find(resource=>resource.row_id===r.row_id);
+      expect(actualResource).toBeDefined();if(!actualResource)throw Error('VVG_ACTUAL_RESOURCE_DEFINITION_REQUIRED:'+r.row_id);
+      expect(actualFormulaId).toBe(actualResource.formula_id);
+      expect(vvgContractTextR989(trace.formulaAstSha256,r.row_id+':formulaAstSha256')).toBe(actualDefinition.ast_sha256);
+    }
+    for(const r of out.preliminaryNeeds){
+      const {need_sha256:actualNeedHash,...needBody}=r;
+      expect(actualNeedHash).toBe(estimateDeterministicHash(needBody));
+    }
     const definition=VVGNG_LS_POWER_CABLE_RESOURCES.find(r=>r.row_id===source.existingCableOrderOwnerRowId)!;
     expect(definition.ordinal).toBe(1);expect(definition.cost_owner_id).toBe(definition.row_id);expect(definition.procurement_eligible).toBe(true);
     const uses=refs(definition.resource_graph.operationCompositionV1);
     expect(uses).toHaveLength(10);expect(new Set(uses.map(o=>o.groupId))).toEqual(new Set([source.groupId]));
-    const shown=sections([...out.rows,...out.preliminaryNeeds].map(r=>({rowId:r.row_id,titleRu:r.title_ru,
-      operation:(r.calculation_trace.resourceGraph as Record<string,unknown>).operationCompositionV1})));
+    const shown=sections([...out.rows,...out.preliminaryNeeds].map(vvgCanonicalSectionInputR989));
     expect(shown.flatMap(s=>s.resourceIds).filter(id=>id===definition.row_id)).toHaveLength(1);
     for(const role of ['readback','unwind','lay','fix','mark','terminate','firestop','qa','delivery']){
       const stage=shown.find(s=>s.operation?.operationId===source.groupId+':'+role)!;expect(stage).toBeDefined();
@@ -200,8 +230,7 @@ describe("MASTER VVGng-LS power-cable owner", () => {
     delete input.clamp_designation;delete input.clamp_quantity_piece;
     const out=await compileVvgngLsPowerCableR1(input);
     expect([...out.rows,...out.preliminaryNeeds].some(r=>r.row_id==='rc09:halogen_free_cable_clamp')).toBe(false);
-    const shown=sections([...out.rows,...out.preliminaryNeeds].map(r=>({rowId:r.row_id,titleRu:r.title_ru,
-      operation:(r.calculation_trace.resourceGraph as Record<string,unknown>).operationCompositionV1})));
+    const shown=sections([...out.rows,...out.preliminaryNeeds].map(vvgCanonicalSectionInputR989));
     expect(shown.some(s=>s.operation?.operationId===source.groupId+':fix')).toBe(false);
     expect(out.rows.find(r=>r.row_id===source.existingCableOrderOwnerRowId)?.quantity).toBe('150');
     await expect(compileVvgngLsPowerCableR1({...input,clamp_quantity_piece:300})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED'});
