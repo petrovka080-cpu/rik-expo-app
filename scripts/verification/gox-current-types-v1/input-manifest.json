@@ -352,7 +352,7 @@
     "scripts/estimate/r4a13/masterOperationCompositionOnlyR1.ts": "a66f347c87596bd5e2ff78cead1cddaa69a10de0cb04abe830685cdc718c05b2",
     "scripts/estimate/r4a13/masterRetainedCapturedFixtureProvenanceR1.test.ts": "4358a21acd7bdc1f6a6374045004af50b79b08546e136fa2bf2e1fc2c4d2ac8c",
     "scripts/estimate/r4a13/masterRetainedCapturedSourcePreimageR1.test.ts": "7bb2d07ba13bd65b4807d8b4b0eb76c141d84cfc25856c303f1217b451d7e28f",
-    "scripts/estimate/r4a13/masterRetainedForwardLineageR1.ts": "fb672dfc5c41e8644aa9334a0de170ff192366b851cbba55e2662383023098cd",
+    "scripts/estimate/r4a13/masterRetainedForwardLineageR1.ts": "2a09afabe26f214bbd52c598a137d7e50d0a4638ac00d924e3fe1babb80ac6f4",
     "scripts/estimate/r4a13/masterRetainedLegacyTemplateAssumptionsR1.test.ts": "4f68ad420eb4de7824286b90af6be29cbbd0469a28ea3b2aaacd8acd6748f5f7",
     "scripts/estimate/r4a13/masterRetainedSuccessorProvenanceContinuationR1.test.ts": "2c6f7436d3255b4f1084deeff8d5e3f49cc37e7d2f083f1282f17ca2f11ad905",
     "scripts/estimate/r4a13/masterRetiredAreaCatalogR1.test.ts": "f4808d4dfc177af5781ad93cc60d57759052b8a50af156f748534342b5b38faa",
@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "455f3ec15e97901656e45824bdce5777d901031df9ca37f2010472650319fa5a",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "2d16da4640e62eba0221d38c5eb980bd59a46082b91c888de9e26e7c89fba95f",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "16bf29b87fb680305c8303c2dcbf0c79916297c9720f11dfa5fd029b4a1d262c",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2568,7 +2568,13 @@
     "scripts/estimate/r4a13/prepareCm11Ce40KzSelectableFloorR2.ts": "edb9139a02671ffea5add48d6783f58540af9ffad71c5dc2b07d181d17a2f47e",
     "src/lib/estimate/v4/cm11Ce40KzSelectableFloorR2.test.ts": "fd65f8cdf9643157870294fcf04ef94c4731eee7fe8f8f3ac7a20da817c56080",
     "src/lib/estimate/v4/cm11Ce40KzWholeFloorGroupR1.ts": "e394f499b3e983487b78a47cc0ebcbe8537008d229306c8602535ae68e2af2ed",
-    "data/estimate-benchmarks/source-packs/acs-whole-passage-kit-measurements-r6.txt": "e1ff70175ace4a314a1aadec335bc655c08eb52723bed47716b8f02af8b3fffd"
+    "data/estimate-benchmarks/source-packs/acs-whole-passage-kit-measurements-r6.txt": "e1ff70175ace4a314a1aadec335bc655c08eb52723bed47716b8f02af8b3fffd",
+    "data/estimate-benchmarks/fixtures/ct126-current-high_load-retained-forward-lineage-r1.json": "4794e81ff05d7320c2adf3e365debd81a24be294e192164f43aa2e6f15b65795",
+    "data/estimate-benchmarks/fixtures/ct126-current-repair-retained-forward-lineage-r1.json": "615c6922bcbbe9e19c44abf8423215bf9d7b793e3544d54452eb8cff9c0be3f7",
+    "data/estimate-benchmarks/fixtures/ct126-current-standard-retained-forward-lineage-r1.json": "784834596a479d15cc3345831492996a952e3e8077e40e18be52dbcf683c4b29",
+    "data/estimate-benchmarks/fixtures/ct126-current-technical_room-retained-forward-lineage-r1.json": "3e2fd950ca45eb86b6b4532eb7a72f1969f08b450a6d4d8e0267812ec42c0067",
+    "data/estimate-benchmarks/fixtures/ct126-current-four-registered-full-captures-r1.json": "51d58977e545856d9823035d915555c294a76d6a536996869f10b511873632e4",
+    "scripts/estimate/r4a13/masterRetainedForwardLineageR1.test.ts": "003189046650805e3a2bcf1356aa2effd9d317037cc8e5ba73d02ec16ce556fc"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3733,7 +3739,7 @@
     "node_modules/zustand/vanilla.d.ts": "4d7d964609a07368d076ce943b07106c5ebee8138c307d3273ba1cf3a0c3c751"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "2d16da4640e62eba0221d38c5eb980bd59a46082b91c888de9e26e7c89fba95f",
+  "originalSeedManifestSha256": "16bf29b87fb680305c8303c2dcbf0c79916297c9720f11dfa5fd029b4a1d262c",
   "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -3741,15 +3747,15 @@
     "findings": [],
     "patternScanFromPredecessorSourcePlan": "81f630f069c9e53edb8a6faea5d370a0f1ad019dab5b333752352983ecd0fb18",
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 161159890
+    "sourceBytes": 171288403
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2567,
+    "sourceFiles": 2573,
     "dependencyFiles": 1160,
-    "sourceBytes": 161159890
+    "sourceBytes": 171288403
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -4567,6 +4573,23 @@
       "sourceOnly": true,
       "newProductCandidate": false,
       "canonicalProductUnchanged": true
+    },
+    "ct126ExactRegisteredCurrentForwardR1017": {
+      "parent": "826e83fe77a65d826a30eaa83831ec05d5128c9a",
+      "actualPriorFullTypesRun": 40615415368,
+      "priorDiagnostics": 0,
+      "changedRootSourceFiles": 7,
+      "explicitSeedKeysBefore": 130,
+      "explicitSeedKeysAfter": 132,
+      "newMeaningfulSourceCasesPassed": 14,
+      "addressedChangedHeaderCasesPassed": 5,
+      "actualCurrentCommonNormalAndExistingLockedPassed": 4,
+      "dmlStatements": 0,
+      "historicalTimeRepresentationOnly": true,
+      "oldSingularCaptureHashesAndMetadataPreserved": true,
+      "canonicalProductUnchanged": true,
+      "sourceOnly": true,
+      "newProductCandidate": false
     }
   },
   "existingCiTypesStageBudget": {
