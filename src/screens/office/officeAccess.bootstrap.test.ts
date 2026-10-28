@@ -1,6 +1,8 @@
-import { createOfficeCompany } from "./officeAccess.services";
+import { createOfficeCompany, loadOfficeAccessScreenData } from "./officeAccess.services";
 import { createOfficeCompanyAtomically } from "./officeAccess.transport";
-import { loadCurrentAuthUser } from "../profile/profile.services";
+import { loadCurrentAuthUser, loadProfileScreenData } from "../profile/profile.services";
+import { loadDeveloperOverrideContext } from "../../lib/developerOverride";
+import { normalizePage } from "../../lib/api/_core";
 import { supabase } from "../../lib/supabaseClient";
 import type { UserProfile } from "../profile/profile.types";
 import type { CreateCompanyDraft } from "./officeAccess.types";
@@ -66,4 +68,52 @@ test.each([null, {}, [], "", "not-a-company-id"])("unconfirmed response %p does 
   rpc.mockResolvedValue({ data, error: null });
   await expect(createOfficeCompany({ profile, profileEmail: null, draft })).rejects.toThrow("подтвердить создание");
   expect(supabase.from).not.toHaveBeenCalled();
+});
+
+const setupAccessRead = (ownerId: string, membershipRole: string | null) => {
+  jest.mocked(normalizePage).mockReturnValue({ from: 0, to: 29 } as ReturnType<typeof normalizePage>);
+  jest.mocked(loadDeveloperOverrideContext).mockResolvedValue({
+    actorUserId: null, actorRole: null, entitlement: null, authorizationSource: "none",
+    isEnabled: false, isActive: false, allowedRoles: [], activeEffectiveRole: null,
+    canAccessAllOfficeRoutes: false, canImpersonateForMutations: false, expiresAt: null, reason: null,
+  });
+  jest.mocked(loadProfileScreenData).mockResolvedValue({
+    profile, profileRole: "guest", profileEmail: "test@example.invalid", profileAvatarUrl: null,
+    company: { id: companyId, owner_user_id: ownerId },
+    accessSourceSnapshot: {
+      userId, authRole: null, resolvedRole: "guest", usageMarket: true, usageBuild: true,
+      ownedCompanyId: null, listingsCount: 0,
+      companyMemberships: membershipRole ? [{ companyId, role: membershipRole }] : [],
+    },
+  } as Awaited<ReturnType<typeof loadProfileScreenData>>);
+  jest.mocked(supabase.from).mockImplementation(() => {
+    const query: Record<string, (...args: unknown[]) => unknown> = {
+      select: () => query, eq: () => query, order: () => query,
+      range: async () => ({ data: [], count: 0, error: null }),
+    };
+    return query as never;
+  });
+};
+
+test("a server-backed company owner is displayed as director", async () => {
+  setupAccessRead(userId, null);
+  const data = await loadOfficeAccessScreenData();
+  expect(data.companyAccessRole).toBe("director");
+  expect(data.accessSourceSnapshot.ownedCompanyId).toBe(companyId);
+  expect(rpc).not.toHaveBeenCalled();
+});
+
+test("a warehouse member retains their membership role without becoming an owner", async () => {
+  setupAccessRead("other-owner", "warehouse");
+  const data = await loadOfficeAccessScreenData();
+  expect(data.companyAccessRole).toBe("warehouse");
+  expect(data.accessSourceSnapshot.ownedCompanyId).toBeNull();
+  expect(rpc).not.toHaveBeenCalled();
+});
+
+test("a company row alone grants neither director nor company ownership", async () => {
+  setupAccessRead("other-owner", null);
+  const data = await loadOfficeAccessScreenData();
+  expect(data.companyAccessRole).toBeNull();
+  expect(data.accessSourceSnapshot.ownedCompanyId).toBeNull();
 });

@@ -2194,7 +2194,7 @@
     "src/screens/office/office.reentry.ts": "46a1b570495634db5957f9fd2e17889ab875b396aeb981a2beb889670f158451",
     "src/screens/office/office.route.ts": "3faebf1ecdcad342e1eb0c798e0e12960a1dbc4b91224a15dae7587b3bb978a0",
     "src/screens/office/officeAccess.model.ts": "18d3163b4107f5de950b5e5cf7871cb219c06028ad3c0b91a551aec69d74e00c",
-    "src/screens/office/officeAccess.services.ts": "859f4012060e745816b292128cb5f575eee0d552a3bb6ef64b9fda9f09e36244",
+    "src/screens/office/officeAccess.services.ts": "6e27adff8a0579ab60cc9b9cee9757b110a39015b99831aab459a8be0173be24",
     "src/screens/office/officeAccess.transport.ts": "5866d6f78a1a5541d96c6493008e0565d57523f9423052efcc6904897dcc53f2",
     "src/screens/office/officeAccess.types.ts": "48158cd77ab815a7a80cba3c210b34fcf4647b117b989b77e4c50f257f07e8e6",
     "src/screens/office/officeHub.cards.tsx": "727c456925e0b41778f146fc8dff1a008549e6d8a9ed58ba35f35b67d9aff455",
@@ -2620,7 +2620,7 @@
     "tests/api/chatHistoryAndRetry.test.ts": "6aebbb4083c7e116781a1ca67daafa4e8656427a4200cc5839ef0443c554c878",
     "tests/scale/bffPostgresTls.test.ts": "e9cb23ffbb7a7b818b7755899e0ee4e8fce49b4fef6b4c6017950b68950d3753",
     "scripts/server/stagingBffCatalogRequestMutationPorts.ts": "65345e191d8700095a094dd3d574d0b9b86b61e079663575252e6433954a0738",
-    "src/screens/office/officeAccess.bootstrap.test.ts": "690d647dbf0c48d714872dd278f4e8a1a2c3ee771b2bde1ff5c7c71ffa6aa9df",
+    "src/screens/office/officeAccess.bootstrap.test.ts": "15dae4121b7b4f51d81f4860de737b0536ec6caf37fa43a8af3af2e386153824",
     "src/screens/office/officeAccess.services.contract.test.ts": "30751e241b0392b20d021c4040ee1d620b1e2d736e7672cd413489227f64e0d2",
     "tests/scale/bffStagingRequestAuth.test.ts": "0133360653384c1852a246a2687e7e2fc9d975fe66c64e30391fb56b2ad24f23",
     "tests/scale/bffStagingHttpServer.test.ts": "55b8f608e4fac68599d38ba0dbefa5df05d0538bb3d54b76a1a960b14fe768c7",
@@ -4298,6 +4298,22 @@
       "guardsRelaxed": false,
       "firstCiBootstrapFailureRun": 40768933047,
       "noTypecheckResultInFirstRun": true
+    },
+    "officeOwnerRoleDisplayR1152": {
+      "parent": "8714ae29a0785b9358cfb9f4f321128f124df782",
+      "actualCiTypeDiagnostic": {
+        "run": 40769941352,
+        "code": 2304,
+        "file": "src/screens/office/officeAccess.services.ts",
+        "line": 237,
+        "name": "OFFICE_BOOTSTRAP_ROLE"
+      },
+      "sourceFix": "Restore existing shared director-role constant import only for server-backed owner; do not infer ownedCompanyId from membership.",
+      "affectedUnitCasesPass": 20,
+      "typeDependencyFiles": 697,
+      "typeDiagnostics": 0,
+      "databaseRoleAssignmentsChanged": false,
+      "actualUiAccepted": false
     }
   },
   "existingCiTypesStageBudget": {

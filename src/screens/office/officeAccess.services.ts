@@ -13,6 +13,7 @@ import {
   normalizeOfficeMembersPageParams,
 } from "./officeAccess.types";
 import { createOfficeCompanyAtomically } from "./officeAccess.transport";
+import { OFFICE_BOOTSTRAP_ROLE } from "./officeAccess.model";
 import type {
   CreateCompanyDraft,
   CreateInviteDraft,
@@ -252,7 +253,8 @@ export async function loadOfficeAccessScreenData(): Promise<OfficeAccessScreenDa
           ...baseProfile.accessSourceSnapshot,
           developerOverride,
           ownedCompanyId:
-            baseProfile.accessSourceSnapshot.ownedCompanyId ?? company.id,
+            baseProfile.accessSourceSnapshot.ownedCompanyId ??
+            (company.owner_user_id === authUser.id ? company.id : null),
         }
       : {
           ...baseProfile.accessSourceSnapshot,
