@@ -241,21 +241,29 @@ describe("whole-app developer review runtime", () => {
     expect(result.stderr).toContain("R568_MANAGER_MODE_CONFLICT");
     expect(result.stdout).toBe("");
     const launcher = source("scripts/dev/startWholeAppDeveloperReview.ps1");
-    expect(launcher.match(/& \$Node --import tsx/gu)).toHaveLength(1);
-    expect(launcher.match(/& \$Node --experimental-strip-types/gu)).toHaveLength(2);
+    const managerCalls = launcher.split(/\r?\n/u).filter(line =>
+      line.includes('$BackendManagerRaw = & $Node') && line.includes('ensureLocalDeveloperCanonicalBackend.ts'));
+    expect(managerCalls).toHaveLength(2);
+    const managerLoaders = managerCalls.map(line => {
+      const loader = line.match(/& \$Node (.+?) \(Join-Path/u)?.[1];
+      expect(loader).toBeDefined();
+      return loader!.trim().split(/\s+/u);
+    });
+    expect(managerLoaders).toEqual([["--import", "tsx"], ["--import", "tsx"]]);
+    expect(launcher).not.toContain("--experimental-strip-types");
     expect(launcher).not.toContain("$TsxCli");
-    const handoffGuard = spawnSync(process.execPath, ["--import", "tsx", "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts", "--return-after-start"], {
+    const handoffGuard = spawnSync(process.execPath, [...managerLoaders[1]!, "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts", "--return-after-start"], {
       cwd: resolve("."), windowsHide: true, encoding: "utf8", env: { ...process.env, LOCAL_DEVELOPER_BACKEND_AUTH_PROFILE: "local_provider" },
     });
     expect(handoffGuard.status).not.toBe(0);
     expect(handoffGuard.stderr).toContain("R568_MANAGER_START_HANDOFF_MODE_CONFLICT");
     expect(handoffGuard.stdout).toBe("");
-    const nativeGuard = spawnSync(process.execPath, ["--experimental-strip-types", "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts", "--prepare-only", "--preflight"], {
+    const managerGuard = spawnSync(process.execPath, [...managerLoaders[0]!, "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts", "--prepare-only", "--preflight"], {
       cwd: resolve("."), windowsHide: true, encoding: "utf8",
     });
-    expect(nativeGuard.status).not.toBe(0);
-    expect(nativeGuard.stderr).toContain("R568_MANAGER_MODE_CONFLICT");
-    expect(nativeGuard.stdout).toBe("");
+    expect(managerGuard.status).not.toBe(0);
+    expect(managerGuard.stderr).toContain("R568_MANAGER_MODE_CONFLICT");
+    expect(managerGuard.stdout).toBe("");
   });
   it("direct TypeScript loader returns the existing real build identity", () => {
     const result = spawnSync(process.execPath, ["--import", "tsx", "scripts/dev/printLocalDeveloperBuildIdentity.ts"], {

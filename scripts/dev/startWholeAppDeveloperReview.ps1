@@ -498,7 +498,7 @@ $env:LOCAL_DEVELOPER_JS_BUNDLE_FINGERPRINT = [string]$Identity.jsBundleFingerpri
 $DeferBackendForColdBundle = -not $PreflightOnly -and -not $PrepareBuildOnly `
   -and (-not $ReuseTransformCache -or $WarmupTarget -eq 'Web') `
   -and @(Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue).Count -eq 0
-$BackendManagerRaw = & $Node --experimental-strip-types (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") $(if ($PreflightOnly) { "--preflight" } elseif ($DeferBackendForColdBundle) { "--prepare-only" }) 2>$null
+$BackendManagerRaw = & $Node --import tsx (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") $(if ($PreflightOnly) { "--preflight" } elseif ($DeferBackendForColdBundle) { "--prepare-only" }) 2>$null
 if ($LASTEXITCODE -ne 0 -or -not $BackendManagerRaw) {
   Fail-Review "CANONICAL_ESTIMATE_BACKEND_RED" "проверьте local estimate capability и backend 8765"
 }
@@ -829,7 +829,7 @@ else {
 
 if ($DeferBackendForColdBundle) {
   $PreparedBackendManager = $BackendManager
-  $BackendManagerRaw = & $Node --experimental-strip-types (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") --return-after-start 2>$null
+  $BackendManagerRaw = & $Node --import tsx (Join-Path $Root "scripts\dev\ensureLocalDeveloperCanonicalBackend.ts") --return-after-start 2>$null
   if ($LASTEXITCODE -ne 0 -or -not $BackendManagerRaw) {
     Fail-Review "CANONICAL_ESTIMATE_BACKEND_AFTER_BUNDLE_RED" "проверьте единый backend после последовательной сборки"
   }
