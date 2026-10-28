@@ -352,7 +352,7 @@
     "scripts/estimate/r4a13/masterOperationCompositionOnlyR1.ts": "a66f347c87596bd5e2ff78cead1cddaa69a10de0cb04abe830685cdc718c05b2",
     "scripts/estimate/r4a13/masterRetainedCapturedFixtureProvenanceR1.test.ts": "4358a21acd7bdc1f6a6374045004af50b79b08546e136fa2bf2e1fc2c4d2ac8c",
     "scripts/estimate/r4a13/masterRetainedCapturedSourcePreimageR1.test.ts": "7bb2d07ba13bd65b4807d8b4b0eb76c141d84cfc25856c303f1217b451d7e28f",
-    "scripts/estimate/r4a13/masterRetainedForwardLineageR1.ts": "2a09afabe26f214bbd52c598a137d7e50d0a4638ac00d924e3fe1babb80ac6f4",
+    "scripts/estimate/r4a13/masterRetainedForwardLineageR1.ts": "fb672dfc5c41e8644aa9334a0de170ff192366b851cbba55e2662383023098cd",
     "scripts/estimate/r4a13/masterRetainedLegacyTemplateAssumptionsR1.test.ts": "4f68ad420eb4de7824286b90af6be29cbbd0469a28ea3b2aaacd8acd6748f5f7",
     "scripts/estimate/r4a13/masterRetainedSuccessorProvenanceContinuationR1.test.ts": "2c6f7436d3255b4f1084deeff8d5e3f49cc37e7d2f083f1282f17ca2f11ad905",
     "scripts/estimate/r4a13/masterRetiredAreaCatalogR1.test.ts": "f4808d4dfc177af5781ad93cc60d57759052b8a50af156f748534342b5b38faa",
@@ -410,7 +410,7 @@
     "scripts/estimate/r4a13/prepareCeramicFloorCementMortarKrer11Column03AppendR1.test.ts": "d9451e92d17a1c61c1fdf36049ae629c10810be7c00bb2dda3b3e47dab32b4b5",
     "scripts/estimate/r4a13/prepareCeramicFloorCementMortarKrer11Column03AppendR1.ts": "0ef4ffe2ca60b063bf60f96fba3d411ea5a446b0a31b77982ed7d9711d32697f",
     "scripts/estimate/r4a13/prepareCt126PreparedWallBranchesR2.ts": "48801fb31039e8bcd2d7eacec8cc8865fc20005ede277f945160e5f50a0b02e3",
-    "scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts": "b427b182454ce73abc75f5fc2c59829f329a31c94e233722fa0f682dbe61383a",
+    "scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts": "aca89b0dd59d217af83e168b78495c6af42f4f14120901b7297f619b395c5727",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.test.ts": "c2ba5f9367795a3889a2ea61e8b910a7420005ffd4440aafb9002f498acf66a2",
     "scripts/estimate/r4a13/prepareCurbBaseCuringAntisolMasterRetainedR2.ts": "f2966bee892f08237f0bd50c054845ee6ea7a6c59032f03f909d536c4bd5fff9",
     "scripts/estimate/r4a13/prepareElecor60x40SingleRouteMaterialsR1.ts": "93fb236d6c999d86a2d4f8a209177265613b1860d39ad5554efbbc8ecc367ab7",
@@ -425,7 +425,7 @@
     "scripts/estimate/r4a13/prepareFireproofZoneInjectionRepairVariantSuccessor.ts": "71de5196cc4a6049343d4f2022e1deb0c74dc49d646a8182e88f7321bb31e4e5",
     "scripts/estimate/r4a13/prepareFlatMetalOil03002CreateAppendR1.test.ts": "807246a59f6289dfe7f79210bac71674bcf497973462cc00ff6cd63926a1e463",
     "scripts/estimate/r4a13/prepareFlatMetalOil03002CreateAppendR1.ts": "2c34bb081603ef2a859ce79714a59482ba143b63e9702971fa676e79e706e9a0",
-    "scripts/estimate/r4a13/prepareFloorCementScreed20mmColumn01AppendR1.ts": "6181f61e9733a500a15ca43eaec8d49eb19e3598ebe8a45d3314680365017a09",
+    "scripts/estimate/r4a13/prepareFloorCementScreed20mmColumn01AppendR1.ts": "86fd534653202b25bc003c9a9d007537a3f7dea53db9e0e6903149d1c23239cd",
     "scripts/estimate/r4a13/prepareFloorConcreteUnderlayerColumn09AppendR1.ts": "7c923bd10f52c9fdd845280979fa5dca12364fcb501b7699ff005cf6749f1aec",
     "scripts/estimate/r4a13/prepareFloorSandStraightedgeRetainedMasterR3.ts": "5203a1d85f9413863de82afb39b469887abb9c49cb72782e06be4592f97a6e1d",
     "scripts/estimate/r4a13/prepareFloorSandThicknessControlMasterRetainedR1.test.ts": "1e10cbdc8ff199ff1fad12c1f5dc204337afad58c36fdb5c13647d3546654972",
@@ -558,11 +558,11 @@
     "scripts/typecheck/runTypecheckShards.test.mjs": "3f5ed8afd93e3733f5dd8f9fcd43fc61d10a2e654f46a951c8b84a1d14eb9391",
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job.py": "9b7f796d63045d06a72991a319bfc6e251fc4212ef0e10611b76060aea969242",
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
-    "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5aa2509512738a0a8039c17bf9e8d03c522a455c04c51fff970fc275f042dbf5",
+    "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "455f3ec15e97901656e45824bdce5777d901031df9ca37f2010472650319fa5a",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "7e876af4e02226c8410b42524445fdc02d598e3dcec708b15032b4b2742d35d1",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "455ae114220747ec394a5c6f9cd49b828ae1eb4b808358d285b3cb769a4bd9d4",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -617,8 +617,8 @@
     "src/features/consumerRepair/consumerCanonicalBaselineCompile.ts": "8fdbbfd841f801b050cc683fdd9715fc2ddfe80fbff94df7e019b8e900cd73a7",
     "src/features/consumerRepair/consumerCanonicalConditionalPrimaryMeasure.test.ts": "262c8f4ebd708105c64ec59947994cf13adb5be5060cef0d5053e85a61c591b4",
     "src/features/consumerRepair/consumerCanonicalDerivedPrimaryMeasureS2775.test.ts": "ba6257ddcfdba712f2b40f7396fe420477f710dd77a693a99f9e29cf583c4eed",
-    "src/features/consumerRepair/consumerCanonicalParameterEditor.ownership.test.ts": "8476eaddf977d6c5fd059e554d897f454ab8dd7ee5aaa045a74056be6dbbf2c6",
-    "src/features/consumerRepair/consumerCanonicalParameterEditor.ts": "23b36aabc9facc9e9595eff719a1b241be63734b67431e95560917b5a426a3b3",
+    "src/features/consumerRepair/consumerCanonicalParameterEditor.ownership.test.ts": "2442b020929aae1b1bdddf54cd6413673dd3e06a63c16d197db202273e24cf43",
+    "src/features/consumerRepair/consumerCanonicalParameterEditor.ts": "6bcada6e0727729ff8dd351a741dc86d516a3e87ce3a1efc2277bd0920748da5",
     "src/features/consumerRepair/consumerCanonicalPreviewQuantityCounts.ts": "6f4d603dee0cef67e54f78c9b47554a5e52ec02701306a0e76d9605ecddb6c9b",
     "src/features/consumerRepair/consumerCanonicalReleaseMigration.ts": "4e9bfca4e295a21d257a32aa9e2a60e88e29eb3c37101ce5c038b75ea2db14fe",
     "src/features/consumerRepair/consumerCanonicalScopeWorkflow.ts": "f1fa4bcfabd5afd08f0eebf96fc0a06d9380711b580a57bd852967b93ec557a8",
@@ -1215,7 +1215,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "30942431a6ed8524195b03b7e4c3c4bbb5fd2ec26993f97aaa2c28048433ac00",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "76d345c6cdf0ecbbf335aa51dce6a6b546bd904e2951a53a70ca5b167f0e5f7e",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "60da3042d4b2f442d59fb975b768b0b099477764ee259c28f9cdebf24c7d6131",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -1223,7 +1223,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateClientForemanProjection.ts": "5889ba9e5c3a53c2f0609bb1c116c52b95018a50292a37dc61f954dd22b56b23",
     "src/lib/estimate/backendPlatform/canonicalEstimateCommandIdentity.ts": "0a3de9780795f25367ca73596b3933e60f7c75cf261b764d9ea4ac82089f2d36",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.test.ts": "e5f3a5427ddfbe9c68ec38b2adc3f622f528c601a498ec8f0f6aa9829bf9dcb7",
-    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "f2e20e41af7d12181c39d333a4ea9067cfaf2a37c6d2e31edbef02d98c25ccf6",
+    "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts": "13d53fea5697402fd7bad93b7633fb56652a268782b5068079e9cca044000495",
     "src/lib/estimate/backendPlatform/canonicalEstimateCompositionSelectionV1.ts": "40486f1c7f0e4f58e98efcba5960d71ca6b32f38c24752966a43a128b5bb30e5",
     "src/lib/estimate/backendPlatform/canonicalEstimateConditionProfilesV1.ts": "ae0057c9b01aede2046211ef59a1ed29be0487e9845292a0ba6374395da3db43",
     "src/lib/estimate/backendPlatform/canonicalEstimateDefinitionRegistry.ts": "e8b0b7462638944ca7d314227845e8f313ca8e932fc115b6e94a3058f130796f",
@@ -1253,7 +1253,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "a0a61d3e702b8a57c5a98f77d1306170dfcf34700a34ab506c9a7b7d8c6622d1",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "50095660dc8943927e24ffbf7f7124f39239beafff9a84df5f959e2140d56b14",
+    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "fd96029227f6aa2ceb3b2ae36a19d212f94156cf9387d8fe5a3adf91a94a980e",
     "src/lib/estimate/backendPlatform/canonicalEstimateSearchInput.ts": "8db129b35d8f80b05a79376336fdfa4222a9dcb7c51288f1eae3d24403d62139",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
     "src/lib/estimate/backendPlatform/canonicalExactConditionalSuccessorMigrationV1.ts": "914d3aaf669a97e2f11231c887272a0e4c49206c22782d732ff840c55731d47e",
@@ -1299,8 +1299,8 @@
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts": "59dbd892ef60bd7495b85b2508db64e5cc07a2b380f2cc7894d969e6a5c3dc9c",
     "src/lib/estimate/backendPlatform/canonicalPublicResourceAlternativesV1.ts": "ed5da8cbe6d58095be01861a4f9dd027ef7e3fb9790109d0ced15cd4b5e9026c",
     "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": "79147fe6ae1075f1949cb422464bf391f2d4216ae2b5721e64debe795586078e",
-    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts": "1dff6f3a90ff748e4d879ebfac011774b2c6a2ec8b8052ddb8752613a216cde8",
-    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": "ea6a143fba3d21890631061559935070be883e33f7aa21316c8ba1f51267bd67",
+    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts": "45c1b61d50e8f02b2290d9db9c8ebb7abd2652bade5bdfe88afa3e3104359bea",
+    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": "57e0be99ace2b1625dc95418519fa4d76841a307212b3e1fb8e4dec9fd5e3010",
     "src/lib/estimate/backendPlatform/canonicalPublicSelectedSpecificationV1.ts": "a4003d21680e0ea82d7bfac1a3a60ed0748f4a5e1a2dde47263524a3b072a30b",
     "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts": "1a563f44d0987d3cbd30efea1659d2a9ba066b1fdea77780f76163e53dedbcfa",
     "src/lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1.ts": "c8abe10b60679371d137c5a790592474f3bf317ae75d390be26f7c3ef32f4448",
@@ -1359,9 +1359,9 @@
     "src/lib/estimate/buildProfessionalBoqDraft.ts": "325e512618dc38998d788fbc7f0bb01d068eaa3f3242d1bf4ac682def118ad45",
     "src/lib/estimate/buildProfessionalWorkPassport.ts": "b4f56e34fafd97739a5ccc0d7b574b8c2e344f66a2a32973e46264b89fa35d54",
     "src/lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance.ts": "946fa05dda4329cc2b183d6bf59aa2270ce91d3c213d2f3215782480ebd197ce",
-    "src/lib/estimate/canonicalParameters/canonicalParameterCore.ts": "ef2d4b4a60bd07c6dace22395208249cc10f7c5703de5d8a72b8c55178d527af",
+    "src/lib/estimate/canonicalParameters/canonicalParameterCore.ts": "f11dd3acdb094cea0c85a3fc8fe7a963c61dc5e425622e8fc9058cb9e3e1bd4c",
     "src/lib/estimate/canonicalParameters/canonicalParameterSchemaRegistry.ts": "bd65d2edac3be509feadd35b5ccc8fbacf13918c19ff6d6648bb640e81286581",
-    "src/lib/estimate/canonicalParameters/canonicalParameterSessionConditionValuesV1.ts": "cb1751170aa9574493f518827758744a3f00c7c854526fded35b47c29dbb1701",
+    "src/lib/estimate/canonicalParameters/canonicalParameterSessionConditionValuesV1.ts": "9c9ecae0ce3fbb3aff0814cc223ffea38b57f8283778d0957f3837ee04ab0cc4",
     "src/lib/estimate/canonicalParameters/index.ts": "cbdf7fa5cb49bfbeb84d00aaa05bae9fe832c7742373f6bb03af220f0a1a30f5",
     "src/lib/estimate/canonicalParameters/projectEstimateDraftRevisionToCanonicalSession.ts": "baec54b1f2f814692adfa9ad2ce0de658ffbe4ce4e289bfd96692f30e028d831",
     "src/lib/estimate/canonicalParameters/registeredCanonicalParameterSchemas.ts": "0d061b35dba2d16b6b071a21e0e6524ff95214b5dd459f49a7b538d9d4b87247",
@@ -1486,7 +1486,7 @@
     "src/lib/estimate/semantic/classifyAiEstimateWork.ts": "e4ce7cfeaf450ea94deccb2da7195f0a225d67e87776331316acdad5c7baa49c",
     "src/lib/estimate/semanticBoqGate.ts": "c16902e59c17cf3c1df11041a7464d4746e8c50dafbb4a5ac90421d2de2a25c5",
     "src/lib/estimate/v4/addressableSmokeDetectorClassifiedVariantsR1.ts": "22970a44d109dc25ffca8d3a08bce165fee1b47e17b4715af3f956fbb9cd663f",
-    "src/lib/estimate/v4/addressableSmokeDetectorR1.ts": "ac888d1b9268eb7a0ef59107a22978b6a30baacef56aba365bc20c348f084e5c",
+    "src/lib/estimate/v4/addressableSmokeDetectorR1.ts": "9535497016eb92c505f1bfd1ddcc7fbffaca51d2fcf3305f56e798367625f739",
     "src/lib/estimate/v4/aggressiveEnvironmentBrickFloorOnBituminousMasticOrAcidResistantMortarDemolitionKrer46R1.ts": "8e4de9ae0cca9dc67413801798ccf6e7abed9f5781f2c094341cccb1b90adf70",
     "src/lib/estimate/v4/aggressiveEnvironmentCementOrConcreteFloor25mmDemolitionKrer46R1.ts": "587f1d5f09995f1659d583e1e805e72411f9281824d156b7ab7f856a85b06d7d",
     "src/lib/estimate/v4/aggressiveEnvironmentCementOrConcreteFloorThicknessAdjustmentKrer46R2.ts": "22362e7189c29833a8df52c2b29aaabe628c0699f7bc1b3026a251ef2a7fa653",
@@ -1673,7 +1673,7 @@
     "src/lib/estimate/v4/domains/electricalComplete/maximumResourceScopeV2.ts": "d579e0c0e7d8785cce7f5735521a288e0876f9fc11bec8794d351cc20852a749",
     "src/lib/estimate/v4/domains/electricalComplete/maximumScopeAuditV2.ts": "90d53ef8c3b6ffa301684210d21607ec68ac70a1b73c64c87bfb60cf90e3a87e",
     "src/lib/estimate/v4/domains/electricalComplete/parameterProfileV2.ts": "f43eacf3077a70731c3159ca28350f67695e5d7a0ff7bcd4840da4fbc30c50d4",
-    "src/lib/estimate/v4/domains/electricalComplete/productionBinding.ts": "302e86e919fbdd4b665d310bb5601747ae085117f8ef6150c0aa263d5843e082",
+    "src/lib/estimate/v4/domains/electricalComplete/productionBinding.ts": "b7753fe8acc472dcebb1b29bcd2cc68fffee69426e88e628ada90cb1de48e900",
     "src/lib/estimate/v4/domains/electricalComplete/r2FinalGateAudit.ts": "747451637fa2eae0ffe411cd9b9564918b457cf37b53a0bb925d60bee39b5bbb",
     "src/lib/estimate/v4/domains/electricalComplete/resourceScope.ts": "8796be0fdef95be7f4934f68d34e191198231ec9d202590e0fb4438fe188e0db",
     "src/lib/estimate/v4/domains/heatingVentilationComplete/canonicalParameterSchemas.ts": "5dabb0e0af286a4d932a99ab46634022c679c443f3a0495a08ad5fedbcc3caa1",
@@ -1806,7 +1806,7 @@
     "src/lib/estimate/v4/interiorWallFinishingGroupR502.test.ts": "18835e6551d477a37d5a6081094d3edc0d51098fec55b4d52601ef032a8aba1f",
     "src/lib/estimate/v4/interiorWallFinishingGroupR502.ts": "1aa5ba1f1f44e16201a8f30145db7e3cd5d32cf14de78dd3400db823a75dfc4c",
     "src/lib/estimate/v4/jointReinforcementR1.ts": "027cb1706469c89475f96c543fd514187436110445894b41d75863091ade2b62",
-    "src/lib/estimate/v4/ledLuminaireInstallationR1.ts": "86b6dfa02e183981148dc5a54910bb7fdc2ae2158c2690725dac0de7197584a5",
+    "src/lib/estimate/v4/ledLuminaireInstallationR1.ts": "8d35282e45dc3c2873428bb7ff2dda932df565a51da87f65619bc7cc73864351",
     "src/lib/estimate/v4/legrandP31BlindEpJointFastenersR1.test.ts": "b5f861cefa5ab6df59a40d7dc87bbf236962670195d3ed992e5f509be3790c7c",
     "src/lib/estimate/v4/legrandP31BlindEpJointFastenersR1.ts": "71c5bf20d1ad5a7079ea384f62742c1306dc2152ae19db973cff0ac0b7d8a159",
     "src/lib/estimate/v4/levelingOperationCompletionS2733.ts": "3b35b3130be74c6d3ee2011127a05ca4b7fbb94339c02e02216b36d2143e9646",
@@ -1831,7 +1831,7 @@
     "src/lib/estimate/v4/multiDomainReferencePassportsV4.ts": "0e4dbd02a6bd4034122272befd672a7028d6eb4398afaefd12624d0dbd85ef3d",
     "src/lib/estimate/v4/multiDomainReferenceProductionBindingV4.ts": "78a15dc6a1851d33cf655013df7841d30cab16c846ed3d566a0e16252a2f8311",
     "src/lib/estimate/v4/multiDomainReferenceTypesV4.ts": "8ac1d2591b435dd786666be397b28a410cf73560410a8e87ed14fdf2a2bd6595",
-    "src/lib/estimate/v4/opticalFiberSplicingR1.ts": "64069c4bc8cafa6673c87f5e76483c05cd0627210a0fe5b8f5c9290bbae0aa0f",
+    "src/lib/estimate/v4/opticalFiberSplicingR1.ts": "ead3e4a6f098f7707d1e9b05f51a5a05c5181fae0e821bbdcaf0ef3adab6cebd",
     "src/lib/estimate/v4/optionalAutomaticOwnerCompositionR1.ts": "02422786fbc67034956a3153348d4594c85693365a23d80b54b80791670aaabb",
     "src/lib/estimate/v4/p31Ep341213PhysicalReferenceR1.test.ts": "6f18a5819358e542dfe5ed598d4105178dd386dbd13c9c025b502f0bb0a37323",
     "src/lib/estimate/v4/p31Ep341213PhysicalReferenceR1.ts": "967212188a7e474be52eae2ae6683a544d2c227555a9372cd652c30ee565e2b3",
@@ -1908,7 +1908,7 @@
     "src/lib/estimate/v4/simpleCementLimeStoneWall01601QuantityR1.test.ts": "733ab66deb054dda55ffe831148479fb933aa8670416391f997ffc8c1529fd44",
     "src/lib/estimate/v4/simpleCementLimeStoneWall01601QuantityR1.ts": "5a50f3431bcd3dadd7dd8a85ba940474f501085227c325b24903b9ceb72783a1",
     "src/lib/estimate/v4/singlePipeTrenchConstructorS2735.ts": "7da8dcdd1369931f6af7a505de1b9be21e2f7be502c23294df5d4c58797fef4e",
-    "src/lib/estimate/v4/skirtingConstructorS2735.ts": "c99e6245a711931d63bd1be92a72964cd20886f1b256ee8e1b11c9e85205c919",
+    "src/lib/estimate/v4/skirtingConstructorS2735.ts": "fa1410cb06c01a74f720871dd605a50a5009bfdf1b4baaea5616377737b50c60",
     "src/lib/estimate/v4/slabFoundationConcretePlacementR1.ts": "6df43d0d44de4967e44db3ba081944a06c5839a9b4a35cddeca9d52f4f9cd544",
     "src/lib/estimate/v4/slabFoundationLocalRepairS2716.ts": "d0793178c8083db9cfa9859c45d592861eb0df710c33715c23752f70d36cb29e",
     "src/lib/estimate/v4/slabFoundationReinforcementR1.ts": "b1f351260bea64b1638b9033343a38cfde329348e498444e16062600ba8a9457",
@@ -1943,14 +1943,14 @@
     "src/lib/estimate/v4/temporaryTrussNodeStrengtheningDevicesKrer46R1.ts": "ff139780e577e1d0132e3bcb15aae81846ac30188438e1c31c0ab721e520b829",
     "src/lib/estimate/v4/temporaryUpperBeamChordStrengtheningDevicesKrer46R1.ts": "b617da6fce1cd753506d0a23802e44fc10d358292e37e230141b968578b061b5",
     "src/lib/estimate/v4/temporaryVerticalProtectiveBarrierBoardFrameKrer46R1.ts": "650a13f18831625ca6c48fae052308e893f71a283c73b40976422ce44d58b1a7",
-    "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts": "06ebce299842f747f0c042414d59b4f8765cd9d9ca8c36f4b0e8728cdf310078",
-    "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.ts": "2058c381854bb280ae4789a7be10bcca39ad879f5e2c0ae6f5d365c23ef1abc1",
+    "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts": "b83c3f67deb0253f52732ea91cbdadf2a18973e9a3df7b7c9bfe454ffb6c14f7",
+    "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.ts": "fb824d78cba8b816ede866203c0ef898e7db77685395d28aa7ace394c1e05ddb",
     "src/lib/estimate/v4/validateProfessionalEstimateV4.ts": "16706551d1db837090c0bd8acf197f32fa94d5a9c67af846e5b150d512ce93cd",
     "src/lib/estimate/v4/ventPitotPortCapsProjectPReferenceR1.test.ts": "2e5d58134bb596898ca06ffdd2af47fd360807f6f4b62d5166f1e8967f0a9ff9",
     "src/lib/estimate/v4/ventPitotPortCapsProjectPReferenceR1.ts": "fa2b4a1b2acd595d66e3e25de1bba183999ec64d53052690860a1f3bf0a757a3",
     "src/lib/estimate/v4/vibrationOperationCompletionS2733.ts": "6122469fc21e1cd4fb2a409500461bb4f0dcfb42647687dffb07f228035a7aa5",
-    "src/lib/estimate/v4/vvgngLsPowerCableR1.ts": "40e26d5538f7eb42fc1291780a97bccd967b3ea979de70f03b0823e72249a56b",
-    "src/lib/estimate/v4/wallPaintConstructorS2735.ts": "80c73e21fe18fa3775bd0bf4dc739faaf95eec83463dcccb3ce0aad35ae3682e",
+    "src/lib/estimate/v4/vvgngLsPowerCableR1.ts": "93f38232d47f0aebc6076211d7cbd28330ad2536d7a74b1c30515b3672084313",
+    "src/lib/estimate/v4/wallPaintConstructorS2735.ts": "2b9d38d00d39ec53b4758d377f37825caab1a02359b0e1a6e620d1c51a182c9e",
     "src/lib/estimate/v4/woodCeilingFireproofCoatingKrer26R1.ts": "85ac311c6a688a054f0edf7ccca79d4be6b2d94dca812b0fa35476dc582064f2",
     "src/lib/estimate/v4/woodFireproofingLayerStrengtheningVariantsR1.ts": "e60a9925b1f8c2463ad2d53746626d2057df4abee17a8365c36bf91a7e263c71",
     "src/lib/estimate/v4/woodFireproofingLocalRepairVariantsR1.ts": "b568769e049499de0c336057bf0514af289a653caf2f510761ba24e280acde7a",
@@ -2292,7 +2292,7 @@
     "tests/estimateBackend/r4A10AsphaltSurfaceDrainage.contract.test.ts": "507f150a6dbf157c238475c821afeacdf964e79956bdb7a24e800888c7ee5fd0",
     "tests/estimateBackend/r6HistoricalAreaPublisherRetired.contract.test.ts": "cd6f0794fc4974dc4d1eade5bcdf58ce29fe00857487ad6ad45e3b8862f16ec7",
     "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts": "cbe93ad9fdbed9f59048068ed7ee54ce85934d67017ed34dba93571e1a41f7d6",
-    "tests/estimateDomainFactory/electricalComplete.contract.test.ts": "914a22d135c6d1a0caaf5179924ba495043d302b13e6f1c3a79f6c8bd4356a78",
+    "tests/estimateDomainFactory/electricalComplete.contract.test.ts": "484acf4da848fa7b0a496e2ef42b45f55418e5cd40c02d88c7628fb5758f0d71",
     "tests/estimateDomainFactory/heatingVentilationComplete.contract.test.ts": "d16cb69a952b45d8f11b5bfe756d10d324ce7554779f744e9b935c015631d0b6",
     "tests/estimateDomainFactory/interiorFinishesComplete.contract.test.ts": "8fdd40d61e9799f03e2f0be45da6914c70aab4ecc7bf547e97f922c5e5bdc586",
     "tests/estimateInfrastructure/consumerRepairDurableSaveFallback.contract.test.ts": "239fd273bea6478213e427ec68b4d01adc49af0025b23398b5604acf36caf526",
@@ -2465,116 +2465,7 @@
     "scripts/release/computeReleaseFingerprints.ts": "4ac1915c343f0d6b9efe96ddabd0ee097506c96d78415927891e251952c72b7c",
     "android/app/src/main/res/xml/network_security_config.xml": "c18af8f6bc8bce27c4bd5b904697ae834f7977e70d2937e6f26a6c559331209a",
     "scripts/dev/printLocalDeveloperBuildIdentity.ts": "42942a12cc952bc4506b217b4d6e327bc85129cb85136b114577873d72bf6f38",
-    "scripts/dev/waitForBackendStartupManagerExit.mjs": "9d898517bbe5214eef20a306cc17101c08e013d17a4d57de49cb5b8ae85b6ef3",
-    "src/features/consumerRepair/consumerCanonicalParameterEditor.finiteMembershipR53.test.ts": "ce2a3613e262009f80f317c07d4446b47e7654d0a2cdcdf19d69a4a8fc69ecc7",
-    "data/estimate-benchmarks/source-packs/led-luminaire-installation-balanced-s27-23.json": "750ca31bb5ea7effb8e45772982a9043dbf6d9cbf508dcc556c79bc0ea230f63",
-    "tests/estimateNorms/ledLuminaireInstallationR1.contract.test.ts": "5f05f8b677295f832f84209f0311e5872c2d0dbdbd620c39d34fe3842dc6ba7b",
-    "scripts/estimate/r4a13/prepareMasterLedLuminaireInstallationSuccessor.ts": "94f2dfce5b6bfc7bcbd2760e8c8480e93a7eaa8744556dbdff38a431478eb6e8",
-    "data/estimate-benchmarks/source-packs/optical-fiber-whole-splice-method-r1.json": "035ca8778f692b30272718709f47c2f575b693fb303c3d656a8003f78aae9d10",
-    "tests/estimateNorms/opticalFiberSplicingR1.contract.test.ts": "119cd2c8dd4604e1053ac1703306b8a072ff2e25d41c827ac6174698e9c2a4aa",
-    "scripts/estimate/r4a13/prepareMasterOpticalFiberSplicingSuccessor.ts": "836935607c14749ac7abdcc4ef86684fd0b4e4ef23196e7e7deef64b0d931e61",
-    "data/estimate-benchmarks/source-packs/OPTICAL_WHOLE_QUANTITY_METHOD_R2.txt": "60a864d8381b86dd60effff82234a4715de2b2c69a4b85223486a9e4eb93c18d",
-    "data/estimate-benchmarks/source-packs/cement-screed20mm-current-physical-cycle-r1.json": "5cd96daf8796e32c91b310a4970611b3ff740b3cf5d93b2491d53bf1b2501a42",
-    "data/estimate-benchmarks/source-packs/outdoor-distribution-board-current-r846-r1.json": "7dfe41128581f61352118a6042c5b935654d191838e3d081f385c5545a2d892a",
-    "data/estimate-benchmarks/source-packs/electrical-testing-commissioning-current-r858-r1.json": "02390a8169e56c110c8fc1a062bd9496693cfcb098e5bc31a3a0ee2d5c351a5d",
-    "data/estimate-benchmarks/source-packs/electrical-retained-unbound-quantity-source-r871-r1.json": "9d58c526d3dd07cffb02520a3dc2a72454ce95f0d25484e88ddf89f1324a72f5",
-    "data/estimate-benchmarks/source-packs/grounding-system-current-r867-r1.json": "02a0ce6aee534038f65b45a1a7d2fc34308ff7f52383b60d2abece247f41bd4d",
-    "data/estimate-benchmarks/source-packs/access-control-single-door-method-r1.json": "d6ba3278d486b01edd0638d86ac172b82dd6c55a1a3e249a51f84ae96c9b4aac",
-    "src/lib/estimate/v4/accessControlSystemR1.ts": "f51f5026f7954bd781d6927e386d42c1d00b1f911a4b8d8b63b1d30b861cbdce",
-    "scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts": "7d1776ee224ac94b8f2302cabefe3b76e515e414e5b2fc81bbeb3f1c224a4b39",
-    "tests/estimateNorms/accessControlSystemR1.contract.test.ts": "61ebab3f0382d7b198db59fa3e6aff3db43194223edbc299e26666e7979d69ee",
-    "data/estimate-benchmarks/source-packs/acs-whole-passage-measured-balance-r5.txt": "6ae58c91ec2ce428ddc65877ac777ee1621d0e41e931a071bec10a772ad25d7f",
-    "data/estimate-benchmarks/source-packs/addressable-smoke-detector-balanced-s27-24.json": "2a2de9e22d44a196e8fb4982b608a7974e8ce142310a7c4162a745a8677cc6ab",
-    "tests/estimateNorms/addressableSmokeDetectorR1.contract.test.ts": "8477ae894c0a4502bab611618596be3e50fbdb4a8fe09bf2a7d819fbc5a156a9",
-    "scripts/estimate/r4a13/prepareS2724AddressableSmokeDetectorBalancedSuccessor.ts": "0ea7a426b1095db8cf5e514846107b86b8b1ec1c101035a424b5ded91a76064c",
-    "data/estimate-benchmarks/source-packs/ADDRESSABLE_SMOKE_WHOLE_DEVICE_METHOD_R1.txt": "bcc1725ff1527bd4a6c33e8434d2601d3ff6235b116688da944b7592f81c4bfb",
-    "data/estimate-benchmarks/source-packs/ready-pvc-skirting-current-physical-cycle-r1.json": "7025a0044f75c064ba40210900b513a84e6ae9c15ae156cb1c7036b97a6da8d6",
-    "src/lib/estimate/v4/skirtingConstructorS2735.test.ts": "c15b97246efcd598836a209d2e7293d085c465dff52808a4bf353d9261d79e61",
-    "scripts/estimate/r4a13/prepareS2735SkirtingBatchSuccessor.ts": "c4ccb78c51540ae106c97f2545742c536c4447e12bcf21ba1b5ec07b84a9e0c6",
-    "scripts/estimate/r4a13/prepareCeramicFloorM150WholeProvisionR5.ts": "0e62c8c2ab3464cc37fb7b8a0776532be587898ca41f35f4907004f810d4c27d",
-    "src/lib/estimate/v4/ceramicFloorM150HandDryingProvisionR5.test.ts": "10e1fc5604a28cbfbb4533a4d9558b48316ffec8076dfd762ebd38b145ce05bc",
-    "src/lib/estimate/v4/ceramicFloorM150HandDryingProvisionR5.ts": "da0f41f79adcc8f6a870c08ce20a6a9857741292020428fbeaf063814b97cd6b",
-    "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-resource-group-r2.json": "576d9d7ab5bcd1faaf8f8b14f0aaf4d3c1c01f6191054e65dc6f6fb8419d8a2b",
-    "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-whole-provision-r3.json": "ab7a7865e9aec2f60a9b993d0709ea5616aa4077c3d4b80bea94112c46adc755",
-    "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-whole-provision-r4.json": "e2e44080008d6c26d6b659e0675704a03363a68d629b9db6fdcb066c7e5c01dd",
-    "data/estimate-benchmarks/source-packs/ceramic-floor-m150-exact-format-branches-r1.json": "a56a2e126aea94917a0600f7b9d1e66aefbb136af1a1fe01cadf59c4d54c3352",
-    "data/estimate-benchmarks/source-packs/ceramic-floor-m150-hand-drying-provision-r5.json": "869b033370fe142f6d023d3af1906758f96ce65a01010e02b2c231c59d294021",
-    "data/estimate-benchmarks/source-packs/marly-skin-normal-provision-r1.json": "192e6a7e38072e3c7dc8c42069c1367a31db6838070adf7683b9608ced7d85bd",
-    "data/estimate-benchmarks/source-packs/normal-hand-preparation-drying-r1.json": "576eff8fa64e48e3d8ce4b8643e5f85960b2b5f724d10c9bb3def9a664cc2de8",
-    "data/estimate-benchmarks/source-packs/normal-hand-preparation-provision-r1.json": "7bffddfd20c455dfb22759781150114605514ed94b6b256301e89dc610f101fc",
-    "scripts/estimate/r4a13/ceramicM150TargetPreconditionR2.ts": "5a296ef4a53bc6ba9b40239b2974eca93422bde25baf5ec3d976efeec830c187",
-    "scripts/estimate/r4a13/prepareCeramicFloorM150ResourceGroupSuccessorR2.test.ts": "af09ef6b9951fcc9f0f00ad80ff31e5b0bff3918e33b09a96c06d68141bd4866",
-    "scripts/estimate/r4a13/prepareCeramicFloorM150ResourceGroupSuccessorR2.ts": "f6872f17267ef2407b705b0ccbef37de9697b8903d857a7a438e131d2be5cf7f",
-    "scripts/estimate/r4a13/prepareCeramicFloorM150WholeProvisionR4.ts": "068d7012fe9f8af76fbda65a6ae80ee689a05061f7cd9241d1cb94cab60632bf",
-    "src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.test.ts": "f28660bf8727c386c13d74c1a3fe960c8ee2f981b48912cf590bc4d5e520b5ae",
-    "src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.ts": "c44cf81554ada489036784e34bcbfa48b8941d6d323b4d9fff9887f60edb31c5",
-    "src/lib/estimate/v4/ceramicFloorCementMortarWholeProvisionR3.ts": "48403f21e2778b7567142718111d31405aa3ae530fd21fee017f562d3f228e2b",
-    "src/lib/estimate/v4/ceramicFloorCementMortarWholeProvisionR4.test.ts": "3ff3156ea2a611cfced6dc8b68071cbd443d0880a64b6ce9336722478b4103e4",
-    "src/lib/estimate/v4/ceramicFloorCementMortarWholeProvisionR4.ts": "0d0cd923a3598ac5aea481faa8736056b1e4b55e784de50ff3f1e6a36845c88b",
-    "src/lib/estimate/v4/ceramicFloorM150ExactFormatBranchesR1.test.ts": "801775b4886c6fedfc3d6be825388fddf9d3424f9eadee39e41e87fa54938c92",
-    "src/lib/estimate/v4/ceramicFloorM150ExactFormatBranchesR1.ts": "566be19ba108e2354539525d5c216e396ef57d8e82ab948dee2eebeac40f6126",
-    "src/lib/estimate/v4/ceramicFloorM150ExactFormatBranchesR2.ts": "f9c8aed7348ed18b53934151d80fe36d5dee067091cf56e7b612cf68eef75783",
-    "src/lib/estimate/v4/ceramicFloorM150SelectableFormatR1.ts": "d3433b696dc11934d3139ba8b6efcb776b1fa5755c8083eebd7fb734081d2e69",
-    "src/lib/estimate/v4/marlySkinNormalProvisionProfileR1.ts": "90f77dd7adea29ec8476b2593938efe25d3af8fe367fce522d7b56c0cfe38f6e",
-    "src/lib/estimate/v4/normalHandPreparationDryingProfileR1.ts": "065c5a01943eccdc25c20f173ec90c1b47c4b8d9ec0db3d9a2113a2a356d71c3",
-    "src/lib/estimate/v4/normalHandPreparationProvisionProfileR1.ts": "fea406191512493cffd643127b8b17202ef4abcca1632892b0f106c2be206138",
-    "src/features/consumerRepair/consumerSourceProfileParameterCardsR52.test.ts": "0a0ebfbb12bfed5c6dbbad5b1f4b45bb63ffa442718659a7403cd82329de912f",
-    "data/estimate-benchmarks/fixtures/saved-source-profile-parameter-cards-r52.json": "60c4f029f26a3a9eea57f792b95c5acfa137d77005db1a8855149fea27c4634c",
-    "data/estimate-benchmarks/source-packs/skirting-constructor-s27-35.json": "22b58d95118d4237fa4848eadd5a551caedc6b745e8535bef511f5fb5fab7440",
-    "data/estimate-benchmarks/source-packs/drywall-c11-layered-geometry-r1.json": "8a86474300d290cf9aa8cd2f27827be9799f86a0a523474aca54d1b749c98590",
-    "data/estimate-benchmarks/fixtures/drywall-c11-layered-geometry-r1-small-normal-boundary.json": "eda7e5543c4dbb2fc893731b8db2d4f479c72de917f9f946571366cd434772c4",
-    "scripts/estimate/r4a13/master29FloorDrywallSubjectVerificationR1.ts": "35f755255cfbfc4655dee1e21f3b60705b4c32cbb29c12cd7034869c4f2797e6",
-    "data/estimate-benchmarks/fixtures/ct54-quantity-key-observation-r934.json": "8d3c3c7a8f65734c8173890f2d993193ae26822c7849839130a515d68f2e3c27",
-    "data/estimate-benchmarks/fixtures/ct54-user-reference-parent-r930.json": "e4f8534c4ba883d8d0e4414e0fe6a3bd389a29a6997d675825af303bd9db634c",
-    "data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.json": "4f27d54fe3ac4bbaf38b0f8b6f00f5c309b2f95ea7968b33f88e73c6585af35f",
-    "data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.source.txt": "28f4de8430bf0fd36e75201ebcf95c013d5e52ef2aaa43312ed61c4dce34352f",
-    "data/estimate-benchmarks/fixtures/c11-current-parent-r919.json": "dc738c221588b30e6fc4a0dca9a1f05ec2363ac7f15699395bad8d0e1923c194",
-    "data/estimate-benchmarks/source-packs/c11-current-physical-continuation-r1.json": "c212d6470223e18e811a8786101c3f19c129fb051cc39cbd06e73e3dbfc24dc6",
-    "scripts/estimate/r4a13/prepareDrywallC11LayeredGeometryR1.ts": "8fdfa947a7cf2f9293a80e45108cac984c5c080e42a0fb04464c506a79f88803",
-    "src/lib/estimate/v4/drywallC11LayeredGeometryR1.test.ts": "e168c0e7612a73a21b245411d0448e8ca4a693f5bb9fa3db60750a4ff79e012f",
-    "src/lib/estimate/v4/drywallC11LayeredGeometryR1.ts": "38df47e5942e1b09e0c9e79a371172dd9ea79251c9d8fdd286374be398599666",
-    "src/lib/estimate/v4/cctvSystemR1.ts": "5ee440a7da98281fa861bcafbd464eb4270e499bf93ff452f25b40649305c6a9",
-    "tests/estimateNorms/cctvSystemR1.contract.test.ts": "931066b7d05b80c9ac9b4cb5fd68b1c294aa7af87dd7a7de425ae153d5f52938",
-    "scripts/estimate/r4a13/prepareS2724CctvSystemBalancedSuccessor.ts": "e50d785546cf5bb9857fbdfb0f1a2fd298f3a8939a6f583a40a1c31cdbfe4b90",
-    "data/estimate-benchmarks/source-packs/cctv-whole-g5-protect-method-r1.json": "52ea5d4133910d559edba0c3d7455fb92dfd6e2bf920dec2d1777d53d5a573d2",
-    "data/estimate-benchmarks/source-packs/CCTV_WHOLE_MEASURED_METHOD_R5.txt": "b9e00513390c88e6975b08094d60b9abb50fe95827883dbdf1848511cb25c45f",
-    "data/estimate-benchmarks/fixtures/c11-legacy-partition-parent-r948.json": "168516829e9fb0c0a65d4b9a94f4f6165db427b6010bcd69180770713e6e3882",
-    "src/lib/estimate/v4/cm11SmallCeramicS2754.ts": "c977317949e3e1bbf0f71b053acc2807b4edf25aa9e6a1b400df56b6743beb01",
-    "data/estimate-benchmarks/source-packs/cm11-small-ceramic-s27-54.json": "a0be16d625a6f6e23db2223c9507a5920098db142b0909c6dd39ba237773b31a",
-    "data/estimate-benchmarks/source-packs/cm11-ce40-whole-floor-source-blocker-r1.json": "16935fefc7f0ee2a85e4108a1457540b15bf34add46ac23deb6681ea0903e41e",
-    "data/estimate-benchmarks/fixtures/cm11-kz-selectable-legacy59-r2.json": "6f8f6429d097f164d62b70b30e84bdd048bb40930780839f5449c8cad4a0c6dd",
-    ".release-runtime/r568/master29-floor-drywall/floor-parent.json": "4e88ee1764a9b129e133b02cecf16ded7c7290bb31d6c5dc3a069628521c8263",
-    "data/estimate-benchmarks/source-packs/vvgng-ls-power-cable-balanced-s27-23.json": "65d8971b0e108f0db523534ddefb5361727924039c87816df30796a5f31c21cc",
-    "data/estimate-benchmarks/source-packs/vvgng-ls-power-cable-whole-current-r919-r1.json": "5e4e33dd2b460ec66c7ac974f1717dd6cf8e07f53b71cfa6cffd69bcc2621a0a",
-    "scripts/estimate/r4a13/prepareS2723VvgngLsPowerCableBalancedSuccessor.ts": "e3784782b859e792c97b9be4e1628ff3a60fc3089aed93d0a9cfcab5f8032bcb",
-    "tests/estimateNorms/vvgngLsPowerCableR1.contract.test.ts": "9c2585bfe68e93fd6b396772d271af045e993ad13c46531c46c4fcf7b4054043",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-5x6-066-official.html": "e5ce9b4b451fa54693160403fc8380117f25051ffa8cb7db519c2e274c4d8cbb",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-5x6-1-official.html": "181e4dd67b8c8750ed8a3c7a9f5e8a094c9a94f9d2a31219be50d023771bb442",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-family-official.html": "8492d79e52183f8d7574435399b90583da412092605808712a792b40a1f7a1b4",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-manual-official.pdf": "7b68a009f01b0ee385913fe1efc65b8ae125c51f6f4d976ddf1d807df0bf8ba0",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/fluke-166x-users-r3-2024.pdf": "0b1d1a64e4f00e53e7ee4c3d02c4e7dfca53dd57f5a7af4426a296725f455a27",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/KNIPEX-1262180-exact-2025.pdf": "449f7b7bfeccb83fe50b3a9ba5a57093217ba0c65771579fbb74f22de34184fa",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/KNIPEX-1620165SB-current.pdf": "1ff743c60ec97ca69b00fc1d93888b2a59c1fca19d74276a142ca9714d125b42",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/KNIPEX-9516200-current.pdf": "afd5271ed641d396d27bacb26c8018372cfbb542551026dde485a4be8c43784c",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/KNIPEX-9517500-current.pdf": "1cffcd6af83453b003c0eca58fcc5edec34758462a986378179de4518459827e",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/manPDS.pdf": "17a8e645e9067b9590e426b6692d68026c09990b63ab10b0ce15a13c07b61c20",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/pds-srd-datasheet-c15.pdf": "8b70a5a7e2f2f314eda1a989a07926a171378810e5aedc2a0540644ae9fd74f9",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/primary-web-facts-authored-not-original.json": "43bc97ea1d7d3c2b6dbd2ffe79001021f75e60dd17abbe80f2366256fb534a25",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/VI-15000-instructions-VerF1.0.pdf": "0b7781d2313142b10f0de0eb6929881899b91aadeb7ff302890d4b5f93a887c6",
-    "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/vipd150-srd-datasheet.pdf": "60b9b93f3637f13fb21696f57848dbe94f7c846aae62da8708fbca04c63eea9a",
-    "data/estimate-benchmarks/fixtures/cm11-ct17-ce40-current-parent-r951.json": "70093a1a64f3d5235d3b955b3431f7f4122813b29bb01dcd993da94fc00a2ee1",
-    "data/estimate-benchmarks/fixtures/cm11-current-r3-new-source-observation-r968.json": "1c64d687f8b9500ba8c8d228c13a8be164068ddbefe6b8aca921273b70690ecd",
-    "data/estimate-benchmarks/source-packs/cm11-ct17-ce40-current-consumer-cycle-r3.json": "3dee7a2ee7cb647926f40d61afd775d2f06f1ea91dcd50ef8e9d9e5ea430b3b6",
-    "scripts/estimate/r4a13/prepareCm11Ce40KzSelectableFloorR2.ts": "edb9139a02671ffea5add48d6783f58540af9ffad71c5dc2b07d181d17a2f47e",
-    "src/lib/estimate/v4/cm11Ce40KzSelectableFloorR2.test.ts": "fd65f8cdf9643157870294fcf04ef94c4731eee7fe8f8f3ac7a20da817c56080",
-    "src/lib/estimate/v4/cm11Ce40KzWholeFloorGroupR1.ts": "e394f499b3e983487b78a47cc0ebcbe8537008d229306c8602535ae68e2af2ed",
-    "data/estimate-benchmarks/source-packs/acs-whole-passage-kit-measurements-r6.txt": "e1ff70175ace4a314a1aadec335bc655c08eb52723bed47716b8f02af8b3fffd",
-    "data/estimate-benchmarks/fixtures/ct126-current-high_load-retained-forward-lineage-r1.json": "4794e81ff05d7320c2adf3e365debd81a24be294e192164f43aa2e6f15b65795",
-    "data/estimate-benchmarks/fixtures/ct126-current-repair-retained-forward-lineage-r1.json": "615c6922bcbbe9e19c44abf8423215bf9d7b793e3544d54452eb8cff9c0be3f7",
-    "data/estimate-benchmarks/fixtures/ct126-current-standard-retained-forward-lineage-r1.json": "784834596a479d15cc3345831492996a952e3e8077e40e18be52dbcf683c4b29",
-    "data/estimate-benchmarks/fixtures/ct126-current-technical_room-retained-forward-lineage-r1.json": "3e2fd950ca45eb86b6b4532eb7a72f1969f08b450a6d4d8e0267812ec42c0067",
-    "data/estimate-benchmarks/fixtures/ct126-current-four-registered-full-captures-r1.json": "51d58977e545856d9823035d915555c294a76d6a536996869f10b511873632e4",
-    "scripts/estimate/r4a13/masterRetainedForwardLineageR1.test.ts": "003189046650805e3a2bcf1356aa2effd9d317037cc8e5ba73d02ec16ce556fc"
+    "scripts/dev/waitForBackendStartupManagerExit.mjs": "9d898517bbe5214eef20a306cc17101c08e013d17a4d57de49cb5b8ae85b6ef3"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3739,7 +3630,7 @@
     "node_modules/zustand/vanilla.d.ts": "4d7d964609a07368d076ce943b07106c5ebee8138c307d3273ba1cf3a0c3c751"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "7e876af4e02226c8410b42524445fdc02d598e3dcec708b15032b4b2742d35d1",
+  "originalSeedManifestSha256": "455ae114220747ec394a5c6f9cd49b828ae1eb4b808358d285b3cb769a4bd9d4",
   "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -3747,862 +3638,34 @@
     "findings": [],
     "patternScanFromPredecessorSourcePlan": "81f630f069c9e53edb8a6faea5d370a0f1ad019dab5b333752352983ecd0fb18",
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 171291749
+    "sourceBytes": 132654891
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2573,
+    "sourceFiles": 2464,
     "dependencyFiles": 1160,
-    "sourceBytes": 171291749
+    "sourceBytes": 133395237
   },
   "candidateSourceComposition": {
-    "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
-    "parent": "d7734edeeee8a689fee9422efaaa9dde925a9e07",
-    "newProductCandidate": false,
-    "productCanonicalChanged": false,
-    "families": [
-      "common saved readback visibility",
-      "whole surface LED",
-      "whole optical fiber",
-      "whole cement screed"
+    "contract": "latest-note-metadata-cold-binding-and-native-manager/r738",
+    "parent": "53783e96574e888f8782d6fd565fd8a08198c243",
+    "referenceCommonCommit": "20e3f94234317f64afd5eb1ef7da536d8bb614d2",
+    "referenceCommonRun": 40513302536,
+    "referenceCommonTestsPassed": 609,
+    "referenceRuntimeCommit": "53783e96574e888f8782d6fd565fd8a08198c243",
+    "referenceRuntimeRun": 40527216466,
+    "referenceRuntimeTestsPassed": 42,
+    "currentAffectedBatches": [
+      "ui-cold",
+      "ui-contract",
+      "developer-runtime"
     ],
-    "changedLogicalPaths": [
-      "data/estimate-benchmarks/source-packs/OPTICAL_WHOLE_QUANTITY_METHOD_R2.txt",
-      "data/estimate-benchmarks/source-packs/cement-screed20mm-current-physical-cycle-r1.json",
-      "data/estimate-benchmarks/source-packs/led-luminaire-installation-balanced-s27-23.json",
-      "data/estimate-benchmarks/source-packs/optical-fiber-whole-splice-method-r1.json",
-      "scripts/estimate/r4a13/prepareFloorCementScreed20mmColumn01AppendR1.ts",
-      "scripts/estimate/r4a13/prepareMasterLedLuminaireInstallationSuccessor.ts",
-      "scripts/estimate/r4a13/prepareMasterOpticalFiberSplicingSuccessor.ts",
-      "src/features/consumerRepair/consumerCanonicalParameterEditor.finiteMembershipR53.test.ts",
-      "src/features/consumerRepair/consumerCanonicalParameterEditor.ts",
-      "src/lib/estimate/canonicalParameters/canonicalParameterCore.ts",
-      "src/lib/estimate/canonicalParameters/canonicalParameterSessionConditionValuesV1.ts",
-      "src/lib/estimate/v4/ledLuminaireInstallationR1.ts",
-      "src/lib/estimate/v4/opticalFiberSplicingR1.ts",
-      "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts",
-      "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.ts",
-      "tests/estimateNorms/ledLuminaireInstallationR1.contract.test.ts",
-      "tests/estimateNorms/opticalFiberSplicingR1.contract.test.ts"
-    ],
-    "newDependencies": [],
-    "validationScope": "types-only",
-    "unchangedJestBatchesNotRerun": true,
-    "localActualProofs": {
-      "commonNew": 8,
-      "commonRegression": 35,
-      "LED": 13,
-      "optical": 12,
-      "screed": 17
-    },
-    "actualDbPublicationOrNativeAcceptance": false,
-    "ciPreparationForward": {
-      "contract": "same-exact-Git-restorer-bounded-pack-cache/r869",
-      "failedPriorRun": 40576133701,
-      "failure": "GIT_PREFLIGHT_RESOURCE_STOP before typeworker started",
-      "newSourceCaseChanges": false,
-      "oneBatchAtomicRestoreAndAllSHA512128MiB60sGuardsUnchanged": true,
-      "localFullPinProbe": {
-        "status": "PASS_EXISTING_SINGLE_BATCH_ALL_RAW_PIN_BYTES_UNCHANGED_LIMITS",
-        "checkedPins": 2474,
-        "rawBytes": 136331506,
-        "batchProcesses": 1,
-        "peakCombinedRssBytes": 77381632,
-        "elapsedSeconds": 1.2809999999590218,
-        "noOwnedProcessStillRunning": true,
-        "sourceReplacement": false,
-        "canonicalWrites": 0,
-        "ciPassClaim": false
-      }
-    },
-    "addressedSourceForwardR875": {
-      "parent": "2fd3e04c0a125f98b1eed5d2fcf9664e73c16f57",
-      "priorRun": 40576819539,
-      "priorActualDiagnostics": 25,
-      "changes": [
-        {
-          "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
-          "beforeSha256": "13d53fea5697402fd7bad93b7633fb56652a268782b5068079e9cca044000495",
-          "afterSha256": "5136220626daed28b16f6d03188d73e6337b24d400ff6ecb1fb04991fab8dfd7"
-        },
-        {
-          "path": "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts",
-          "beforeSha256": "fd96029227f6aa2ceb3b2ae36a19d212f94156cf9387d8fe5a3adf91a94a980e",
-          "afterSha256": "50095660dc8943927e24ffbf7f7124f39239beafff9a84df5f959e2140d56b14"
-        },
-        {
-          "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts",
-          "beforeSha256": "76d345c6cdf0ecbbf335aa51dce6a6b546bd904e2951a53a70ca5b167f0e5f7e",
-          "afterSha256": "873d3f568af85010f81322ea53470ba32010818dd1f5f02ac5c4a2cdc43c4182"
-        },
-        {
-          "path": "src/lib/estimate/v4/threeSubworkPhysicalResourceCompletionR3.test.ts",
-          "beforeSha256": "12d96f9a6fc8ed71165203c65210838d24808fd4bdaa4e4fbf4f89369222d660",
-          "afterSha256": "06ebce299842f747f0c042414d59b4f8765cd9d9ca8c36f4b0e8728cdf310078"
-        },
-        {
-          "path": "src/lib/estimate/v4/opticalFiberSplicingR1.ts",
-          "beforeSha256": "26fba4d79b585db6c9adf9a59233fa038e2285d72ee8096209235c9c48626397",
-          "afterSha256": "64069c4bc8cafa6673c87f5e76483c05cd0627210a0fe5b8f5c9290bbae0aa0f"
-        },
-        {
-          "path": "tests/estimateNorms/opticalFiberSplicingR1.contract.test.ts",
-          "beforeSha256": "2fc5e054810b6bba1ff9f3de5f14127b6593b7d58b91bff295f1bdd7629b354f",
-          "afterSha256": "119cd2c8dd4604e1053ac1703306b8a072ff2e25d41c827ac6174698e9c2a4aa"
-        }
-      ],
-      "scopeThreeCasesPassed": true,
-      "newCommonSourceFiles": 2,
-      "noAnyOrTsIgnoreAdded": true,
-      "actualDbOrNativeAcceptance": false
-    },
-    "wholeSourceForwardR910": {
-      "parent": "8572f4072988043ee52d154c1551ad4ee2cd02c6",
-      "changes": [
-        {
-          "path": "src/lib/estimate/v4/domains/electricalComplete/productionBinding.ts",
-          "beforeCiSha256": "b7753fe8acc472dcebb1b29bcd2cc68fffee69426e88e628ada90cb1de48e900",
-          "afterSha256": "302e86e919fbdd4b665d310bb5601747ae085117f8ef6150c0aa263d5843e082",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": "b7753fe8acc472dcebb1b29bcd2cc68fffee69426e88e628ada90cb1de48e900"
-        },
-        {
-          "path": "tests/estimateDomainFactory/electricalComplete.contract.test.ts",
-          "beforeCiSha256": "484acf4da848fa7b0a496e2ef42b45f55418e5cd40c02d88c7628fb5758f0d71",
-          "afterSha256": "914a22d135c6d1a0caaf5179924ba495043d302b13e6f1c3a79f6c8bd4356a78",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": "484acf4da848fa7b0a496e2ef42b45f55418e5cd40c02d88c7628fb5758f0d71"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/outdoor-distribution-board-current-r846-r1.json",
-          "beforeCiSha256": null,
-          "afterSha256": "7dfe41128581f61352118a6042c5b935654d191838e3d081f385c5545a2d892a",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/electrical-testing-commissioning-current-r858-r1.json",
-          "beforeCiSha256": null,
-          "afterSha256": "02390a8169e56c110c8fc1a062bd9496693cfcb098e5bc31a3a0ee2d5c351a5d",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/electrical-retained-unbound-quantity-source-r871-r1.json",
-          "beforeCiSha256": null,
-          "afterSha256": "9d58c526d3dd07cffb02520a3dc2a72454ce95f0d25484e88ddf89f1324a72f5",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/grounding-system-current-r867-r1.json",
-          "beforeCiSha256": null,
-          "afterSha256": "02a0ce6aee534038f65b45a1a7d2fc34308ff7f52383b60d2abece247f41bd4d",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/access-control-single-door-method-r1.json",
-          "beforeCiSha256": null,
-          "afterSha256": "f885c16b6fa6d6db29a935dba99b94f4790765e4d6f105893fb8a8e5a8708194",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "src/lib/estimate/v4/accessControlSystemR1.ts",
-          "beforeCiSha256": null,
-          "afterSha256": "f34c63d42399685518326647abd5715ff5aade631ce32142f1f9e854e717569b",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": "a5adcf7a08e9fa7da16d15def87e474681906f3859d910b23d1b630c9625cdb5"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts",
-          "beforeCiSha256": null,
-          "afterSha256": "1134c105afa363a28343e01fdffe95559b032aa51e1ee60b0e609251a58be361",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": "8feb886040d4fcdd6c451ea45a2c54e8c6bee4acd75670da35c7b461a0304a2c"
-        },
-        {
-          "path": "tests/estimateNorms/accessControlSystemR1.contract.test.ts",
-          "beforeCiSha256": null,
-          "afterSha256": "f8d963231ed772d90d92277a9eb02f8ef6f0f6d9930f3257e6601851e8510d6a",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": "e66ac33605f897067059b0556364eff435885e6262019b6ef1435bbf5c92c7c7"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/acs-whole-passage-measured-balance-r5.txt",
-          "beforeCiSha256": null,
-          "afterSha256": "6ae58c91ec2ce428ddc65877ac777ee1621d0e41e931a071bec10a772ad25d7f",
-          "sourceGatePlan": "e909",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/addressable-smoke-detector-balanced-s27-24.json",
-          "beforeCiSha256": null,
-          "afterSha256": "2a2de9e22d44a196e8fb4982b608a7974e8ce142310a7c4162a745a8677cc6ab",
-          "sourceGatePlan": "l888",
-          "canonicalBeforeSha256": "b5566ba12a77235be0798663503c80231818941518e73f7bbc06de2aa8994ab2"
-        },
-        {
-          "path": "src/lib/estimate/v4/addressableSmokeDetectorR1.ts",
-          "beforeCiSha256": "9535497016eb92c505f1bfd1ddcc7fbffaca51d2fcf3305f56e798367625f739",
-          "afterSha256": "9745c36278c497a54696ffe36080b6072e629a2ce3f73f9fbc21a9adbd20d0a0",
-          "sourceGatePlan": "l888",
-          "canonicalBeforeSha256": "9535497016eb92c505f1bfd1ddcc7fbffaca51d2fcf3305f56e798367625f739"
-        },
-        {
-          "path": "tests/estimateNorms/addressableSmokeDetectorR1.contract.test.ts",
-          "beforeCiSha256": null,
-          "afterSha256": "4c6a35831f8324ed874355dbc74722e04d104e7f994dbbff83129ffa80f2bf5e",
-          "sourceGatePlan": "l888",
-          "canonicalBeforeSha256": "e047d03f6a1a324af3e8832731ee4ff6fbbc27845d85bad56bbefd01a985e317"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareS2724AddressableSmokeDetectorBalancedSuccessor.ts",
-          "beforeCiSha256": null,
-          "afterSha256": "0ea7a426b1095db8cf5e514846107b86b8b1ec1c101035a424b5ded91a76064c",
-          "sourceGatePlan": "l888",
-          "canonicalBeforeSha256": "50df7206bc8721df9839315c2496b5137c4d7c8204c7e6e0a08515bb459da175"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/ADDRESSABLE_SMOKE_WHOLE_DEVICE_METHOD_R1.txt",
-          "beforeCiSha256": null,
-          "afterSha256": "bcc1725ff1527bd4a6c33e8434d2601d3ff6235b116688da944b7592f81c4bfb",
-          "sourceGatePlan": "l888",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/ready-pvc-skirting-current-physical-cycle-r1.json",
-          "beforeCiSha256": null,
-          "afterSha256": "7025a0044f75c064ba40210900b513a84e6ae9c15ae156cb1c7036b97a6da8d6",
-          "sourceGatePlan": "r903",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "src/lib/estimate/v4/skirtingConstructorS2735.ts",
-          "beforeCiSha256": "fa1410cb06c01a74f720871dd605a50a5009bfdf1b4baaea5616377737b50c60",
-          "afterSha256": "c99e6245a711931d63bd1be92a72964cd20886f1b256ee8e1b11c9e85205c919",
-          "sourceGatePlan": "r903",
-          "canonicalBeforeSha256": "fa1410cb06c01a74f720871dd605a50a5009bfdf1b4baaea5616377737b50c60"
-        },
-        {
-          "path": "src/lib/estimate/v4/skirtingConstructorS2735.test.ts",
-          "beforeCiSha256": null,
-          "afterSha256": "c15b97246efcd598836a209d2e7293d085c465dff52808a4bf353d9261d79e61",
-          "sourceGatePlan": "r903",
-          "canonicalBeforeSha256": null
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareS2735SkirtingBatchSuccessor.ts",
-          "beforeCiSha256": null,
-          "afterSha256": "612ba510f4d0baf7cc4a5a950fd9afee47edf8cdbd949662bff37dbeee2641ff",
-          "sourceGatePlan": "r903",
-          "canonicalBeforeSha256": "a2da166d77073c3367403cf8af8f1ee034bb0f4d6fc8dccab65cc82da8119bdb"
-        },
-        {
-          "path": "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts",
-          "beforeCiSha256": "5136220626daed28b16f6d03188d73e6337b24d400ff6ecb1fb04991fab8dfd7",
-          "afterSha256": "f2e20e41af7d12181c39d333a4ea9067cfaf2a37c6d2e31edbef02d98c25ccf6",
-          "sourceGatePlan": "r903",
-          "canonicalBeforeSha256": "5136220626daed28b16f6d03188d73e6337b24d400ff6ecb1fb04991fab8dfd7"
-        }
-      ],
-      "families": [
-        "existing ODB",
-        "existing electrical QA",
-        "whole grounding",
-        "whole addressable detector",
-        "whole ACS passage",
-        "whole ready PVC skirting"
-      ],
-      "commonDelta": "Existing common required condition priority COW R901, five addressed source controls PASS; not yet canonical",
-      "seedAppend": {
-        "beforeSha256": "a8ce28bd5e6915ca6ccd59f6fd77efc50b7ac3c775cbe02dd61b948c7932f25e",
-        "afterSha256": "0fffdc2edb9ec28afdccb76f56687d18aee64de86df79e0564e6970b3b6708e9",
-        "oldKeysPreserved": 105,
-        "appended": [
-          "src/lib/estimate/v4/skirtingConstructorS2735.test.ts"
-        ]
-      },
-      "validationScope": "types-only",
-      "unchangedJestBatchesNotRerun": true,
-      "sourceAdmission": false,
-      "actualFamilyDbSavePdfAccepted": false,
-      "newProductCandidate": false
-    },
-    "explicitTypeEntrypointsForwardR911": {
-      "parent": "858d5a8f8610040c146f5a2ec659a37e4b03702d",
-      "reason": "Review before dispatch found authored producer/test paths imported indirectly or not explicit. Append every authored TS root and unchanged canonical source-only import closure; no CI run was used as proof.",
-      "explicitTsRootsAdded": [
-        "src/lib/estimate/v4/domains/electricalComplete/productionBinding.ts",
-        "tests/estimateDomainFactory/electricalComplete.contract.test.ts",
-        "src/lib/estimate/v4/accessControlSystemR1.ts",
-        "scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts",
-        "tests/estimateNorms/accessControlSystemR1.contract.test.ts",
-        "src/lib/estimate/v4/addressableSmokeDetectorR1.ts",
-        "tests/estimateNorms/addressableSmokeDetectorR1.contract.test.ts",
-        "scripts/estimate/r4a13/prepareS2724AddressableSmokeDetectorBalancedSuccessor.ts",
-        "src/lib/estimate/v4/skirtingConstructorS2735.ts",
-        "scripts/estimate/r4a13/prepareS2735SkirtingBatchSuccessor.ts",
-        "src/lib/estimate/backendPlatform/canonicalEstimateCompileCore.ts"
-      ],
-      "oldSeedKeysPreserved": 106,
-      "unmodifiedCanonicalClosureAdded": [
-        "scripts/estimate/r4a13/prepareCeramicFloorM150WholeProvisionR5.ts",
-        "src/lib/estimate/v4/ceramicFloorM150HandDryingProvisionR5.test.ts",
-        "src/lib/estimate/v4/ceramicFloorM150HandDryingProvisionR5.ts",
-        "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-resource-group-r2.json",
-        "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-whole-provision-r3.json",
-        "data/estimate-benchmarks/source-packs/ceramic-floor-cement-mortar-whole-provision-r4.json",
-        "data/estimate-benchmarks/source-packs/ceramic-floor-m150-exact-format-branches-r1.json",
-        "data/estimate-benchmarks/source-packs/ceramic-floor-m150-hand-drying-provision-r5.json",
-        "data/estimate-benchmarks/source-packs/marly-skin-normal-provision-r1.json",
-        "data/estimate-benchmarks/source-packs/normal-hand-preparation-drying-r1.json",
-        "data/estimate-benchmarks/source-packs/normal-hand-preparation-provision-r1.json",
-        "scripts/estimate/r4a13/ceramicM150TargetPreconditionR2.ts",
-        "scripts/estimate/r4a13/prepareCeramicFloorM150ResourceGroupSuccessorR2.test.ts",
-        "scripts/estimate/r4a13/prepareCeramicFloorM150ResourceGroupSuccessorR2.ts",
-        "scripts/estimate/r4a13/prepareCeramicFloorM150WholeProvisionR4.ts",
-        "src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.test.ts",
-        "src/lib/estimate/v4/ceramicFloorCementMortarResourceGroupR2.ts",
-        "src/lib/estimate/v4/ceramicFloorCementMortarWholeProvisionR3.ts",
-        "src/lib/estimate/v4/ceramicFloorCementMortarWholeProvisionR4.test.ts",
-        "src/lib/estimate/v4/ceramicFloorCementMortarWholeProvisionR4.ts",
-        "src/lib/estimate/v4/ceramicFloorM150ExactFormatBranchesR1.test.ts",
-        "src/lib/estimate/v4/ceramicFloorM150ExactFormatBranchesR1.ts",
-        "src/lib/estimate/v4/ceramicFloorM150ExactFormatBranchesR2.ts",
-        "src/lib/estimate/v4/ceramicFloorM150SelectableFormatR1.ts",
-        "src/lib/estimate/v4/marlySkinNormalProvisionProfileR1.ts",
-        "src/lib/estimate/v4/normalHandPreparationDryingProfileR1.ts",
-        "src/lib/estimate/v4/normalHandPreparationProvisionProfileR1.ts",
-        "src/features/consumerRepair/consumerSourceProfileParameterCardsR52.test.ts",
-        "data/estimate-benchmarks/fixtures/saved-source-profile-parameter-cards-r52.json",
-        "data/estimate-benchmarks/source-packs/skirting-constructor-s27-35.json"
-      ],
-      "runtimeDocumentsExcluded": true,
-      "productSourceChanged": false,
-      "validationScope": "types-only"
-    },
-    "addressedWholeFamilyTypesR927": {
-      "parent": "18c12bd3e7d407ba5c13b19ef1edaf6492a1640a",
-      "exactWholeFamilyTreeBase": "b110ddba0b48a7a8642ee9b3b026356216d4e275",
-      "changes": [
-        {
-          "path": "src/lib/estimate/v4/accessControlSystemR1.ts",
-          "beforeSha256": "f34c63d42399685518326647abd5715ff5aade631ce32142f1f9e854e717569b",
-          "afterSha256": "0879b3fc7babb17065cc2f607f064974c9e24b20ae3e2b9c13cedc98052696da"
-        },
-        {
-          "path": "tests/estimateNorms/accessControlSystemR1.contract.test.ts",
-          "beforeSha256": "f8d963231ed772d90d92277a9eb02f8ef6f0f6d9930f3257e6601851e8510d6a",
-          "afterSha256": "64406886378cd76ee0169552da4a11dd7d77ca6baaeef36f3ba575b34284a1bc"
-        },
-        {
-          "path": "src/lib/estimate/v4/addressableSmokeDetectorR1.ts",
-          "beforeSha256": "9745c36278c497a54696ffe36080b6072e629a2ce3f73f9fbc21a9adbd20d0a0",
-          "afterSha256": "ac888d1b9268eb7a0ef59107a22978b6a30baacef56aba365bc20c348f084e5c"
-        },
-        {
-          "path": "tests/estimateNorms/addressableSmokeDetectorR1.contract.test.ts",
-          "beforeSha256": "4c6a35831f8324ed874355dbc74722e04d104e7f994dbbff83129ffa80f2bf5e",
-          "afterSha256": "8477ae894c0a4502bab611618596be3e50fbdb4a8fe09bf2a7d819fbc5a156a9"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareS2735SkirtingBatchSuccessor.ts",
-          "beforeSha256": "612ba510f4d0baf7cc4a5a950fd9afee47edf8cdbd949662bff37dbeee2641ff",
-          "afterSha256": "c4ccb78c51540ae106c97f2545742c536c4447e12bcf21ba1b5ec07b84a9e0c6"
-        }
-      ],
-      "actualAddressedNewAcsCases": 3,
-      "actualChangedPlinthProducerCase": 1,
-      "priorFullTypeDiagnostics": 19,
-      "allOriginalExplicitTypeRootsRetained": true,
-      "typeSeedsTopLevelKeys": 117,
-      "sourceOnly": true,
-      "actualFamilyDbSavePdfAccepted": false,
-      "newProductCandidate": false,
-      "canonicalProductUnchanged": true
-    },
-    "singleNestedRecordTypeForwardR931": {
-      "parent": "adbb61e4a09de2b9dfdbb5732333d00fc4a829d2",
-      "path": "tests/estimateNorms/accessControlSystemR1.contract.test.ts",
-      "beforeSha256": "64406886378cd76ee0169552da4a11dd7d77ca6baaeef36f3ba575b34284a1bc",
-      "afterSha256": "0a870131c4250971c8311c9e4208ed33c591a450ac21ee4f15dd2952ff3e7ba2",
-      "actualDiagnostic": "TS2571line402char10",
-      "oneExpressionOnly": true,
-      "priorRuntimePassesNotRerun": true,
-      "sourceOnly": true
-    },
-    "ct54C11CctvWholeForwardR948": {
-      "parent": "b0f3d5c642cec3247ee6b74f9e76c3fb801ee318",
-      "acceptedTypeTreeBase": "25886eb0859515a1434e7d93388674b303e91e55",
-      "changes": [
-        {
-          "path": "scripts/estimate/r4a13/prepareCt54ReferencePublicationR613.ts",
-          "beforeTypeTreeSha256": "aca89b0dd59d217af83e168b78495c6af42f4f14120901b7297f619b395c5727",
-          "afterSha256": "b427b182454ce73abc75f5fc2c59829f329a31c94e233722fa0f682dbe61383a"
-        },
-        {
-          "path": "src/lib/estimate/v4/wallPaintConstructorS2735.ts",
-          "beforeTypeTreeSha256": "2b9d38d00d39ec53b4758d377f37825caab1a02359b0e1a6e620d1c51a182c9e",
-          "afterSha256": "80c73e21fe18fa3775bd0bf4dc739faaf95eec83463dcccb3ce0aad35ae3682e"
-        },
-        {
-          "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts",
-          "beforeTypeTreeSha256": "873d3f568af85010f81322ea53470ba32010818dd1f5f02ac5c4a2cdc43c4182",
-          "afterSha256": "14e6eccb600f8c8942111f27224927cabfb3d90186f7dce917d44dcc2c8e4c39"
-        },
-        {
-          "path": "src/features/consumerRepair/consumerCanonicalParameterEditor.ownership.test.ts",
-          "beforeTypeTreeSha256": "2442b020929aae1b1bdddf54cd6413673dd3e06a63c16d197db202273e24cf43",
-          "afterSha256": "8476eaddf977d6c5fd059e554d897f454ab8dd7ee5aaa045a74056be6dbbf2c6"
-        },
-        {
-          "path": "data/estimate-benchmarks/fixtures/ct54-quantity-key-observation-r934.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "8d3c3c7a8f65734c8173890f2d993193ae26822c7849839130a515d68f2e3c27"
-        },
-        {
-          "path": "data/estimate-benchmarks/fixtures/ct54-user-reference-parent-r930.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "e4f8534c4ba883d8d0e4414e0fe6a3bd389a29a6997d675825af303bd9db634c"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "4f27d54fe3ac4bbaf38b0f8b6f00f5c309b2f95ea7968b33f88e73c6585af35f"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/ct54-actual-project-quantity-plan-r1.source.txt",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "28f4de8430bf0fd36e75201ebcf95c013d5e52ef2aaa43312ed61c4dce34352f"
-        },
-        {
-          "path": "data/estimate-benchmarks/fixtures/c11-current-parent-r919.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "dc738c221588b30e6fc4a0dca9a1f05ec2363ac7f15699395bad8d0e1923c194"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/c11-current-physical-continuation-r1.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "c212d6470223e18e811a8786101c3f19c129fb051cc39cbd06e73e3dbfc24dc6"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareDrywallC11LayeredGeometryR1.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "8fdfa947a7cf2f9293a80e45108cac984c5c080e42a0fb04464c506a79f88803"
-        },
-        {
-          "path": "src/lib/estimate/v4/drywallC11LayeredGeometryR1.test.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "da5121a5285a09d5f7c4d10792d5c8c96d7b9bc4c243f67b4990bcc0137c1419"
-        },
-        {
-          "path": "src/lib/estimate/v4/drywallC11LayeredGeometryR1.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "38df47e5942e1b09e0c9e79a371172dd9ea79251c9d8fdd286374be398599666"
-        },
-        {
-          "path": "src/lib/estimate/v4/cctvSystemR1.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "bbd335713a85ab429ae9e3e6636d591e1f3576c8b1a7ce56671241549bc53eaf"
-        },
-        {
-          "path": "tests/estimateNorms/cctvSystemR1.contract.test.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "931066b7d05b80c9ac9b4cb5fd68b1c294aa7af87dd7a7de425ae153d5f52938"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareS2724CctvSystemBalancedSuccessor.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "73dc1282afce3a06e07bdc9ee118e08a24b5fc8e6327fffeddef8eb924289ac3"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/cctv-whole-g5-protect-method-r1.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "52ea5d4133910d559edba0c3d7455fb92dfd6e2bf920dec2d1777d53d5a573d2"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/CCTV_WHOLE_MEASURED_METHOD_R5.txt",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "b9e00513390c88e6975b08094d60b9abb50fe95827883dbdf1848511cb25c45f"
-        }
-      ],
-      "explicitTsRootsAdded": [
-        "src/features/consumerRepair/consumerCanonicalParameterEditor.ownership.test.ts",
-        "scripts/estimate/r4a13/prepareDrywallC11LayeredGeometryR1.ts",
-        "src/lib/estimate/v4/drywallC11LayeredGeometryR1.test.ts",
-        "src/lib/estimate/v4/drywallC11LayeredGeometryR1.ts",
-        "src/lib/estimate/v4/cctvSystemR1.ts",
-        "tests/estimateNorms/cctvSystemR1.contract.test.ts",
-        "scripts/estimate/r4a13/prepareS2724CctvSystemBalancedSuccessor.ts"
-      ],
-      "allOldSeedsPreserved": 117,
-      "unchangedCanonicalImportClosureAdded": [
-        "data/estimate-benchmarks/fixtures/drywall-c11-layered-geometry-r1-small-normal-boundary.json",
-        "data/estimate-benchmarks/source-packs/drywall-c11-layered-geometry-r1.json",
-        "scripts/estimate/r4a13/master29FloorDrywallSubjectVerificationR1.ts"
-      ],
-      "actualAddressedSourceLineage": [
-        {
-          "stage": "f945/02-whole-cases",
-          "passed": 10,
-          "failed": 2,
-          "originalFailuresPreserved": true
-        },
-        {
-          "stage": "f947/02-addressed",
-          "passed": 2,
-          "failed": 0,
-          "originalFailuresPreserved": true
-        },
-        {
-          "stage": "f941/02-whole-cases",
-          "passed": 31,
-          "failed": 3,
-          "originalFailuresPreserved": true
-        },
-        {
-          "stage": "f946/02-addressed",
-          "passed": 5,
-          "failed": 0,
-          "originalFailuresPreserved": true
-        },
-        {
-          "stage": "l939/02-whole-cases",
-          "passed": 6,
-          "failed": 6,
-          "originalFailuresPreserved": true
-        },
-        {
-          "stage": "l942/02-addressed",
-          "passed": 6,
-          "failed": 0,
-          "originalFailuresPreserved": true
-        }
-      ],
-      "distinctWholeSourceCases": {
-        "CT54": 12,
-        "C11": 34,
-        "CCTV": 12
-      },
-      "sourceOnly": true,
-      "newProductCandidate": false,
-      "formalPublicationAndSavedUiAccepted": false,
-      "allPriorNeedsRetained": true
-    },
-    "addressedFourteenTypesR954": {
-      "parent": "67f687c4f5b82b9363a60aedcb3a8d90296681a9",
-      "exactFiveFiles": [
-        {
-          "path": "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts",
-          "beforeSha256": "14e6eccb600f8c8942111f27224927cabfb3d90186f7dce917d44dcc2c8e4c39",
-          "afterSha256": "30942431a6ed8524195b03b7e4c3c4bbb5fd2ec26993f97aaa2c28048433ac00"
-        },
-        {
-          "path": "src/lib/estimate/v4/drywallC11LayeredGeometryR1.test.ts",
-          "beforeSha256": "da5121a5285a09d5f7c4d10792d5c8c96d7b9bc4c243f67b4990bcc0137c1419",
-          "afterSha256": "e168c0e7612a73a21b245411d0448e8ca4a693f5bb9fa3db60750a4ff79e012f"
-        },
-        {
-          "path": "data/estimate-benchmarks/fixtures/c11-legacy-partition-parent-r948.json",
-          "beforeSha256": null,
-          "afterSha256": "168516829e9fb0c0a65d4b9a94f4f6165db427b6010bcd69180770713e6e3882"
-        },
-        {
-          "path": "src/lib/estimate/v4/cctvSystemR1.ts",
-          "beforeSha256": "bbd335713a85ab429ae9e3e6636d591e1f3576c8b1a7ce56671241549bc53eaf",
-          "afterSha256": "5ee440a7da98281fa861bcafbd464eb4270e499bf93ff452f25b40649305c6a9"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareS2724CctvSystemBalancedSuccessor.ts",
-          "beforeSha256": "73dc1282afce3a06e07bdc9ee118e08a24b5fc8e6327fffeddef8eb924289ac3",
-          "afterSha256": "e50d785546cf5bb9857fbdfb0f1a2fd298f3a8939a6f583a40a1c31cdbfe4b90"
-        }
-      ],
-      "actualPriorDiagnostics": 14,
-      "runtimeAddressedCctvCases": 2,
-      "runtimeAddressedFinishingCases": 7,
-      "sourceOnly": true,
-      "newProductCandidate": false,
-      "allUnchangedOldPassesReused": true,
-      "allExplicitRootsRetained": true,
-      "noCommonSchemaOrGuardChange": true,
-      "canonicalProductUnchanged": true
-    },
-    "vvgCm11AcsWholeSourceR989": {
-      "parent": "aad5733163935c22962e3b857a6bceb58f06bde9",
-      "acceptedPriorFullTypes": "734caf3688d6c30d4f3d9be622ce679e1b544a9a",
-      "changes": [
-        {
-          "path": "src/lib/estimate/v4/vvgngLsPowerCableR1.ts",
-          "beforeTypeTreeSha256": "93f38232d47f0aebc6076211d7cbd28330ad2536d7a74b1c30515b3672084313",
-          "afterSha256": "40e26d5538f7eb42fc1291780a97bccd967b3ea979de70f03b0823e72249a56b"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/vvgng-ls-power-cable-balanced-s27-23.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "65d8971b0e108f0db523534ddefb5361727924039c87816df30796a5f31c21cc"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/vvgng-ls-power-cable-whole-current-r919-r1.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "5e4e33dd2b460ec66c7ac974f1717dd6cf8e07f53b71cfa6cffd69bcc2621a0a"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareS2723VvgngLsPowerCableBalancedSuccessor.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "e3784782b859e792c97b9be4e1628ff3a60fc3089aed93d0a9cfcab5f8032bcb"
-        },
-        {
-          "path": "tests/estimateNorms/vvgngLsPowerCableR1.contract.test.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "8f0ebc758bf72bee11613054825d6c508b013d693479f573829d70cf0858361e"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-5x6-066-official.html",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "e5ce9b4b451fa54693160403fc8380117f25051ffa8cb7db519c2e274c4d8cbb"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-5x6-1-official.html",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "181e4dd67b8c8750ed8a3c7a9f5e8a094c9a94f9d2a31219be50d023771bb442"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-family-official.html",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "8492d79e52183f8d7574435399b90583da412092605808712a792b40a1f7a1b4"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/Concord-VVGngALS-manual-official.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "7b68a009f01b0ee385913fe1efc65b8ae125c51f6f4d976ddf1d807df0bf8ba0"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/fluke-166x-users-r3-2024.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "0b1d1a64e4f00e53e7ee4c3d02c4e7dfca53dd57f5a7af4426a296725f455a27"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/KNIPEX-1262180-exact-2025.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "449f7b7bfeccb83fe50b3a9ba5a57093217ba0c65771579fbb74f22de34184fa"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/KNIPEX-1620165SB-current.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "1ff743c60ec97ca69b00fc1d93888b2a59c1fca19d74276a142ca9714d125b42"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/KNIPEX-9516200-current.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "afd5271ed641d396d27bacb26c8018372cfbb542551026dde485a4be8c43784c"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/KNIPEX-9517500-current.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "1cffcd6af83453b003c0eca58fcc5edec34758462a986378179de4518459827e"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/manPDS.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "17a8e645e9067b9590e426b6692d68026c09990b63ab10b0ce15a13c07b61c20"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/pds-srd-datasheet-c15.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "8b70a5a7e2f2f314eda1a989a07926a171378810e5aedc2a0540644ae9fd74f9"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/primary-web-facts-authored-not-original.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "43bc97ea1d7d3c2b6dbd2ffe79001021f75e60dd17abbe80f2366256fb534a25"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/VI-15000-instructions-VerF1.0.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "0b7781d2313142b10f0de0eb6929881899b91aadeb7ff302890d4b5f93a887c6"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-artifacts/vvgng-whole-r919-r1/vipd150-srd-datasheet.pdf",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "60b9b93f3637f13fb21696f57848dbe94f7c846aae62da8708fbca04c63eea9a"
-        },
-        {
-          "path": "data/estimate-benchmarks/fixtures/cm11-ct17-ce40-current-parent-r951.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "70093a1a64f3d5235d3b955b3431f7f4122813b29bb01dcd993da94fc00a2ee1"
-        },
-        {
-          "path": "data/estimate-benchmarks/fixtures/cm11-current-r3-new-source-observation-r968.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "1c64d687f8b9500ba8c8d228c13a8be164068ddbefe6b8aca921273b70690ecd"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/cm11-ct17-ce40-current-consumer-cycle-r3.json",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "3dee7a2ee7cb647926f40d61afd775d2f06f1ea91dcd50ef8e9d9e5ea430b3b6"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareCm11Ce40KzSelectableFloorR2.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "edb9139a02671ffea5add48d6783f58540af9ffad71c5dc2b07d181d17a2f47e"
-        },
-        {
-          "path": "src/lib/estimate/v4/cm11Ce40KzSelectableFloorR2.test.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "fd65f8cdf9643157870294fcf04ef94c4731eee7fe8f8f3ac7a20da817c56080"
-        },
-        {
-          "path": "src/lib/estimate/v4/cm11Ce40KzWholeFloorGroupR1.ts",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "e394f499b3e983487b78a47cc0ebcbe8537008d229306c8602535ae68e2af2ed"
-        },
-        {
-          "path": "src/lib/estimate/v4/accessControlSystemR1.ts",
-          "beforeTypeTreeSha256": "0879b3fc7babb17065cc2f607f064974c9e24b20ae3e2b9c13cedc98052696da",
-          "afterSha256": "f51f5026f7954bd781d6927e386d42c1d00b1f911a4b8d8b63b1d30b861cbdce"
-        },
-        {
-          "path": "scripts/estimate/r4a13/prepareS2724AccessControlSystemBalancedSuccessor.ts",
-          "beforeTypeTreeSha256": "1134c105afa363a28343e01fdffe95559b032aa51e1ee60b0e609251a58be361",
-          "afterSha256": "7d1776ee224ac94b8f2302cabefe3b76e515e414e5b2fc81bbeb3f1c224a4b39"
-        },
-        {
-          "path": "tests/estimateNorms/accessControlSystemR1.contract.test.ts",
-          "beforeTypeTreeSha256": "0a870131c4250971c8311c9e4208ed33c591a450ac21ee4f15dd2952ff3e7ba2",
-          "afterSha256": "61ebab3f0382d7b198db59fa3e6aff3db43194223edbc299e26666e7979d69ee"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/access-control-single-door-method-r1.json",
-          "beforeTypeTreeSha256": "f885c16b6fa6d6db29a935dba99b94f4790765e4d6f105893fb8a8e5a8708194",
-          "afterSha256": "d6ba3278d486b01edd0638d86ac172b82dd6c55a1a3e249a51f84ae96c9b4aac"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/acs-whole-passage-kit-measurements-r6.txt",
-          "beforeTypeTreeSha256": null,
-          "afterSha256": "e1ff70175ace4a314a1aadec335bc655c08eb52723bed47716b8f02af8b3fffd"
-        },
-        {
-          "path": "data/estimate-benchmarks/source-packs/acs-whole-passage-measured-balance-r5.txt",
-          "beforeTypeTreeSha256": "6ae58c91ec2ce428ddc65877ac777ee1621d0e41e931a071bec10a772ad25d7f",
-          "afterSha256": "6ae58c91ec2ce428ddc65877ac777ee1621d0e41e931a071bec10a772ad25d7f"
-        }
-      ],
-      "explicitTsRootsAdded": [
-        "src/lib/estimate/v4/vvgngLsPowerCableR1.ts",
-        "scripts/estimate/r4a13/prepareS2723VvgngLsPowerCableBalancedSuccessor.ts",
-        "tests/estimateNorms/vvgngLsPowerCableR1.contract.test.ts",
-        "scripts/estimate/r4a13/prepareCm11Ce40KzSelectableFloorR2.ts",
-        "src/lib/estimate/v4/cm11Ce40KzSelectableFloorR2.test.ts",
-        "src/lib/estimate/v4/cm11Ce40KzWholeFloorGroupR1.ts"
-      ],
-      "allOldSeedsPreserved": 124,
-      "unchangedImportClosureAdded": [
-        ".release-runtime/r568/master29-floor-drywall/floor-parent.json",
-        "data/estimate-benchmarks/fixtures/cm11-kz-selectable-legacy59-r2.json",
-        "data/estimate-benchmarks/source-packs/cm11-ce40-whole-floor-source-blocker-r1.json",
-        "data/estimate-benchmarks/source-packs/cm11-small-ceramic-s27-54.json",
-        "src/lib/estimate/v4/cm11SmallCeramicS2754.ts"
-      ],
-      "oldLegacyParentJson": "Byte-exact existing definition/baseline read fixture only; no after-source compiler overlay or saved user history.",
-      "actualAddressedSourceLineage": [
-        {
-          "stage": "e979/02-addressed",
-          "passed": 13,
-          "failed": 1,
-          "oldFailuresRetained": true
-        },
-        {
-          "stage": "e980/02-addressed",
-          "passed": 1,
-          "failed": 0,
-          "oldFailuresRetained": true
-        },
-        {
-          "stage": "f981/02-whole-cases",
-          "passed": 22,
-          "failed": 2,
-          "oldFailuresRetained": true
-        },
-        {
-          "stage": "f984/02-addressed",
-          "passed": 1,
-          "failed": 1,
-          "oldFailuresRetained": true
-        },
-        {
-          "stage": "f987/02-addressed",
-          "passed": 1,
-          "failed": 0,
-          "oldFailuresRetained": true
-        },
-        {
-          "stage": "l983/02-whole-cases",
-          "passed": 8,
-          "failed": 0,
-          "oldFailuresRetained": true
-        }
-      ],
-      "distinctWholeSourceCases": {
-        "VVG": 14,
-        "CM11": 24,
-        "ACS": 8
-      },
-      "sourceOnly": true,
-      "newProductCandidate": false,
-      "canonicalProductUnchanged": true,
-      "currentAndroidCiHeadFixedAt": "aad5733163935c22962e3b857a6bceb58f06bde9",
-      "formalPublicationAndSavedUiAccepted": false,
-      "allPriorNeedsRetained": true
-    },
-    "addressedVvgTestTypesR1001": {
-      "parent": "d9f5f28cdd6b2b83ea84385cc147b99a41174b2a",
-      "priorActualRun": 40612861274,
-      "actualPriorDiagnostics": 5,
-      "changedTestOnly": "tests/estimateNorms/vvgngLsPowerCableR1.contract.test.ts",
-      "beforeSha256": "8f0ebc758bf72bee11613054825d6c508b013d693479f573829d70cf0858361e",
-      "afterSha256": "9c2585bfe68e93fd6b396772d271af045e993ad13c46531c46c4fcf7b4054043",
-      "addressedRuntimeCases": 2,
-      "unchangedNewSourceCasesReused": 46,
-      "explicitRootsAndImportClosureUnchanged": true,
-      "noCommonSchemaOrGuardChange": true,
-      "sourceOnly": true,
-      "newProductCandidate": false,
-      "canonicalProductUnchanged": true
-    },
-    "ct126ExactRegisteredCurrentForwardR1017": {
-      "parent": "826e83fe77a65d826a30eaa83831ec05d5128c9a",
-      "actualPriorFullTypesRun": 40615415368,
-      "priorDiagnostics": 0,
-      "changedRootSourceFiles": 7,
-      "explicitSeedKeysBefore": 130,
-      "explicitSeedKeysAfter": 132,
-      "newMeaningfulSourceCasesPassed": 14,
-      "addressedChangedHeaderCasesPassed": 5,
-      "actualCurrentCommonNormalAndExistingLockedPassed": 4,
-      "dmlStatements": 0,
-      "historicalTimeRepresentationOnly": true,
-      "oldSingularCaptureHashesAndMetadataPreserved": true,
-      "canonicalProductUnchanged": true,
-      "sourceOnly": true,
-      "newProductCandidate": false
-    },
-    "commonIncludedConstructionWorkLabourR1050": {
-      "parent": "57514cf70521a9067d948a094ac57d981e2052fa",
-      "changedSourceFiles": 2,
-      "addressedNewCasesPassed": 4,
-      "oldCasesExcluded": 10,
-      "actualPriorFullTypesRun": 40619014218,
-      "actualACSExistingMasterStructureRefusal": true,
-      "remaining68EmptyClassesStillBlocked": true,
-      "quantityUnitOwnerSourceUnchanged": true,
-      "sourceOnly": true,
-      "newProductCandidate": false
-    }
+    "unchangedOtherFiveCommonBatchesNotRerun": true,
+    "ciNodeVersion": "24.19.0",
+    "nodeChangeReason": "Exact installed and real whole-app verified native TypeScript manager runtime; Node20 cannot execute native strip-types guard",
+    "actualApplicationAcceptance": false
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
