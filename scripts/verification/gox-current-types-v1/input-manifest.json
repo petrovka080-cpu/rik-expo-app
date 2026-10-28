@@ -2600,7 +2600,7 @@
     "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts": "f156c9cc98d74bcd156a66b01033ff580c25b496b0c4312f6a999b5a81964cd7",
     "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "0215177921859913f63f5eb58d81c68bd04fe72a05c30d6fd8152f8784bfb8c5",
     "scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts": "425beda8c54d45b18053d60a9e80a9106fe7f55bac0d0c9a12f65afea991a0b9",
-    "tests/estimateNorms/intercomExistingDomainWholeR1.contract.test.ts": "c185195740effce3761931edfaec36e34aa0b503f70e2b93f92d0cab2fd9d2d9",
+    "tests/estimateNorms/intercomExistingDomainWholeR1.contract.test.ts": "67df311f4bf416542c16c117365d4b2450db8fc1faf1c2893f96af09ad077d13",
     "data/estimate-benchmarks/source-packs/intercom-existing-domain-whole-r1.json": "378292026553696c770f3b70c8dde1191cc63e4cff353c04495aab769f44f885",
     "data/estimate-benchmarks/source-packs/INTERCOM_EXISTING_DOMAIN_WHOLE_R1.txt": "ea0fce3be20161fd12deab3eb5e1f364e62b0be194618d4506568b493c0833df"
   },
@@ -4723,6 +4723,23 @@
       "sourceOnly": true,
       "newProductCandidate": false,
       "ordinaryPublication": false
+    },
+    "intercomTestStringTypeR1109": {
+      "parent": "1f970588a9480682616c1ef0aa7eca6f895eda02",
+      "priorActualRun": 40642188098,
+      "priorDiagnostics": [
+        {
+          "code": 2322,
+          "category": "Error",
+          "file": "D:/a/rik-expo-app/rik-expo-app/tests/estimateNorms/intercomExistingDomainWholeR1.contract.test.ts",
+          "line": 86,
+          "character": 272,
+          "message": "Type 'unknown' is not assignable to type 'string'."
+        }
+      ],
+      "change": "Exacttestonlyconststringnarrowingbeforecallback, oneaffectedcasePASS11reused",
+      "sourceOnly": true,
+      "newProductCandidate": false
     }
   },
   "existingCiTypesStageBudget": {
