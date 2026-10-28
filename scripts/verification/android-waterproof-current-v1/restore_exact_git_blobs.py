@@ -36,11 +36,16 @@ def batch(root,commit,paths,temporary):
  job=OwnedLauncherJob();child=None;start=time.monotonic();peak=0
  try:
   with request.open('rb')as stdin,output.open('wb')as stdout,error.open('wb')as stderr:
-   child=subprocess.Popen(['git','-C',str(root),'cat-file','--batch'],stdin=stdin,stdout=stdout,stderr=stderr,creationflags=subprocess.CREATE_NO_WINDOW|0x00000004)
+   # Keep pack mappings and decoded-delta caches within the existing aggregate
+   # 128 MiB process cap. Blob bytes and every admission/closure check are unchanged.
+   child=subprocess.Popen(['git','-c','core.packedGitWindowSize=8m','-c','core.packedGitLimit=32m',
+    '-c','core.deltaBaseCacheLimit=8m','-c','pack.threads=1','-C',str(root),'cat-file','--batch'],
+    stdin=stdin,stdout=stdout,stderr=stderr,creationflags=subprocess.CREATE_NO_WINDOW|0x00000004)
    job.assign_and_resume_suspended(child)
    while True:
     peak=max(peak,rss(os.getpid())+sum(rss(p)for p in job.pids()));free,commit_free=available()
-    assert peak<=128*MIB and free>=1280*MIB and commit_free>=512*MIB,'GIT_PREFLIGHT_RESOURCE_STOP'
+    assert peak<=128*MIB and free>=1280*MIB and commit_free>=512*MIB,(
+     'GIT_PREFLIGHT_RESOURCE_STOP',{'peakCombinedRssBytes':peak,'physicalFreeBytes':free,'commitFreeBytes':commit_free})
     assert output.stat().st_size<=512*MIB and time.monotonic()-start<60,'GIT_PREFLIGHT_SIZE_OR_TIME_STOP'
     code=child.poll()
     if code is not None:break

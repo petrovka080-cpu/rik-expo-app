@@ -558,7 +558,7 @@
     "scripts/typecheck/runTypecheckShards.test.mjs": "3f5ed8afd93e3733f5dd8f9fcd43fc61d10a2e654f46a951c8b84a1d14eb9391",
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job.py": "9b7f796d63045d06a72991a319bfc6e251fc4212ef0e10611b76060aea969242",
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
-    "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "557d9eb7f5a10546036599364c336faff093866dfb59b8dbbc07914739cbf8c3",
+    "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "455f3ec15e97901656e45824bdce5777d901031df9ca37f2010472650319fa5a",
@@ -4287,7 +4287,18 @@
     "localCurrentCoreOomPreserved": true,
     "standardResolverInventoryIsNotTypecheckPass": true,
     "resourcePolicyChanged": false,
-    "runtimeOrPublicationAccepted": false
+    "runtimeOrPublicationAccepted": false,
+    "boundedGitBootstrapR1152": {
+      "parent": "0c86f06abba5fea55dbecc71ad3a227aae01cc67",
+      "sourceSha256": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
+      "unitCasesPass": 4,
+      "actualTextBlobsVerified": 2633,
+      "actualBatchPeakRss": 87298048,
+      "aggregateRssLimitMiB": 128,
+      "guardsRelaxed": false,
+      "firstCiBootstrapFailureRun": 40768933047,
+      "noTypecheckResultInFirstRun": true
+    }
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",
