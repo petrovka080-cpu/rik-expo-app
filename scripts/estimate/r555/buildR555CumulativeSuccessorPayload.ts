@@ -573,60 +573,7 @@ async function main(): Promise<void> {
   if (summary.status.startsWith("RED")) process.exitCode = 1;
 }
 
-if (require.main === module) {
 void main().catch((error: unknown) => {
   process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
   process.exitCode = 1;
 });
-
-}
-
-
-import type{MasterSingleDefinitionSuccessorConfig}from'../r4a13/prepareMasterSingleDefinitionSuccessorR1';
-import{assembleMasterSingleDefinitionManagedRegistryCandidateR1}from'../r4a13/prepareMasterSingleDefinitionSuccessorR1';
-import{resolveMasterScopedNormativeRegistryOptInR1}from'../r4a13/masterScopedNormativeRegistryPreimageR1';
-import{INTERCOM_EXISTING_DOMAIN_WHOLE_SOURCE_R1,intercomExistingDomainWholeDefinitionR1}from'../../../src/lib/estimate/buildProfessionalWorkPassport';
-import{compileCanonicalEstimateCore as intercomCoreR1}from'../../../src/lib/estimate/backendPlatform/canonicalEstimateCompileCore';
-import{estimateDeterministicHash as intercomHashR1}from'../../../src/lib/estimate/estimateDeterministicHash';
-export type ExistingIntercomWholeContextR1=Readonly<{sourceRoot:string;expectedBranch:string;masterPath:string;masterSha256:string;parentReleaseId:string;parentSearchReleaseId:string;currentReleasePath:string;selectedCurrentReleasePath:string;outputRoot:string;capturedParentPath:string;capturedParentByteSha256:string;referencePointerMode:'PREPARED_NOT_ACTIVE_COPY';verifyTargetPrecondition:NonNullable<MasterSingleDefinitionSuccessorConfig['verifyTargetPrecondition']>;capturedScopedNormativeRegistry?:MasterSingleDefinitionSuccessorConfig['capturedScopedNormativeRegistry']}>;
-function intercomRequireR1(ok:unknown,code:string):asserts ok{if(!ok)throw Error('STOP_INTERCOM_WHOLE_R1_'+code);}
-function intercomProducerRecordR1(v:unknown):Record<string,unknown>{if(v===null||typeof v!=='object'||Array.isArray(v))throw Error('INTERCOM_R1_RECORD_REQUIRED');return Object.fromEntries(Object.entries(v));}
-export function intercomWholeSourceFixtureR1():Record<string,unknown>{
- const q=INTERCOM_EXISTING_DOMAIN_WHOLE_SOURCE_R1,r:Record<string,unknown>={q:2,intercom_actual_installed_complete_systems_r1:2,intercom_actual_received_complete_kits_r1:3,intercom_actual_bus_B_m_r1:40,intercom_actual_bus_C_m_r1:60,intercom_actual_relay_D_m_r1:10,intercom_actual_qa_events_r1:12};
- for(const f of q.actualRecords)r[f.id]='TEST_ONLY reviewed source-contract record '+f.id+'; not real object/approval';
- for(const g of q.geometryFacts)r[g.id]=g.id.includes('_A_')?50:g.id.includes('_B_')?20:g.id.includes('_C_')?30:5;
- for(const x of q.resources)if(x.quantityUnknown&&typeof x.quantityParameterId==='string')r[x.quantityParameterId]=x.unitId==='man_hour'?'0.1':1;
- r[q.scopeDecisionId]=q.supportedDecision;return r;
-}
-export function compileExistingIntercomWholeR1(input:Record<string,unknown>=intercomWholeSourceFixtureR1(),rowOverrides:Parameters<typeof intercomCoreR1>[0]['rowOverrides']={}){
- const q=INTERCOM_EXISTING_DOMAIN_WHOLE_SOURCE_R1,m=intercomExistingDomainWholeDefinitionR1(q.profileId);
- return intercomCoreR1({operation:Object.keys(rowOverrides??{}).length?'recalculate':'compile',compilerVersion:q.contract,catalogId:q.catalogId,primaryMeasureParameterId:q.primaryMeasureParameterId,parameterDefinitions:[...m.parameters],formulaDefinitions:[...m.formulas],resourceDefinitions:[...m.resources],submittedParameters:Object.fromEntries(m.ordinaryParameterIds.filter(id=>input[id]!==undefined).map(id=>[id,input[id]])),confirmedParameters:input,rowOverrides,priceItems:[],currencyCode:'KGS',maximumResourceRows:q.maximumResourceRows,hashJson:intercomHashR1});
-}
-/** Pure config appended to the established catalogue producer. Existing Master
- * owns source registry capture, both authority phases, publication and audit. */
-export function prepareExistingIntercomWholeConfigR1(ctx:ExistingIntercomWholeContextR1):MasterSingleDefinitionSuccessorConfig{
- const q=INTERCOM_EXISTING_DOMAIN_WHOLE_SOURCE_R1;
- intercomRequireR1(ctx.referencePointerMode==='PREPARED_NOT_ACTIVE_COPY'&&resolve(ctx.currentReleasePath).toLowerCase()!==resolve(ctx.selectedCurrentReleasePath).toLowerCase(),'PREPARED_POINTER_MUST_DIFFER');
- intercomRequireR1(ctx.capturedParentByteSha256===q.freshParent.proof.sha256&&sha256(readFileSync(ctx.capturedParentPath))===q.freshParent.proof.sha256,'EXACT_R1074_PARENT_REQUIRED');
- const p=intercomProducerRecordR1(JSON.parse(readFileSync(ctx.capturedParentPath,'utf8')));intercomRequireR1(p.transactionRolledBack===true&&p.connectionClosed===true&&p.referenceReleaseId===ctx.parentReleaseId,'ACTUAL_REFERENCE_READONLY_RECEIPT');
- intercomRequireR1(Array.isArray(p.results),'RESULTS');const t=p.results.map(intercomProducerRecordR1).find(r=>intercomProducerRecordR1(r.target).catalogId===q.catalogId);intercomRequireR1(t,'TARGET');
- for(const side of['current','reference']){const observed=intercomProducerRecordR1(t[side]),body=intercomProducerRecordR1(t[side+'Body']);intercomRequireR1(intercomHashR1(observed.header)===intercomHashR1(q.freshParent.actualHeader)&&(['parameters','formulas','resources']as const).every(k=>intercomHashR1(body[k])===intercomHashR1(q.freshParent.nativeParentModel[k])),'EXACT_CURRENT_REFERENCE_BODY');}
- intercomRequireR1(typeof ctx.verifyTargetPrecondition==='function','NORMAL_LOCKED_AUTHORITY_GUARD_REQUIRED');
- intercomRequireR1(ctx.capturedScopedNormativeRegistry!==undefined,'FORMAL_SCOPED_CAPTURE_REQUIRED_EMPTY_LOOKUP_NOT_CANDIDATE_ABSENCE');
- const verifyBytes=()=>{intercomRequireR1(sha256(readFileSync(resolve(ctx.sourceRoot,q.projectMethod.logicalPath)))===q.projectMethod.sha256,'METHOD_BYTES');for(const s of q.primarySources)intercomRequireR1(sha256(readFileSync(s.path))===s.sha256,'OEM_BYTES:'+s.path);};verifyBytes();
- const m=intercomExistingDomainWholeDefinitionR1(q.profileId),fixture=intercomWholeSourceFixtureR1();
- const config:MasterSingleDefinitionSuccessorConfig={contract:q.contract,stopCode:'INTERCOM_WHOLE_R1',applicationName:'existing-intercom-domain-whole-source',expectedBranch:ctx.expectedBranch,masterPath:ctx.masterPath,masterSha256:ctx.masterSha256,parentReleaseId:ctx.parentReleaseId,parentSearchReleaseId:ctx.parentSearchReleaseId,currentReleasePath:ctx.currentReleasePath,outputRoot:ctx.outputRoot,catalogId:q.catalogId,sourceId:q.candidateSourceId,normId:'PROJECT_SYSTEM:EXACT_2WIRE_INTERCOM_WHOLE_METHOD_R1',
-  capturedScopedNormativeRegistry:ctx.capturedScopedNormativeRegistry,
-  sourceMetadata:{source_title:q.titleRu,source_authority:'PROJECT_SYSTEM exact OEM method plus separately mandatory project/legacy63/owner records; no payment norm or object safety design',source_kind:'PROJECT_SYSTEM',artifact_sha256:q.projectMethod.sha256,official_url:null,exact_locator:q.locatorKey,use_restriction:'Only exact source method; legacy63 classes/quantity/normative/price/source holds remain; no whole-building acceptance.'},
-  sourcePaths:['src/lib/estimate/buildProfessionalWorkPassport.ts','scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts','tests/estimateNorms/intercomExistingDomainWholeR1.contract.test.ts','data/estimate-benchmarks/source-packs/intercom-existing-domain-whole-r1.json',q.projectMethod.logicalPath],
-  parameterDefinitions:m.parameters,formulaDefinitions:m.formulas,resourceDefinitions:m.resources,shortInput:fixture,acceptanceInput:fixture,runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},expectedParentShape:[1,63,63],benchmarkOrdinal:0,validationScenario:'EXISTING_INTERCOM_WHOLE_SOURCE_NOT_OBJECT_OR_PRICE_APPROVAL',
-  verifyTargetPrecondition:async(client,phase)=>{verifyBytes();await ctx.verifyTargetPrecondition(client,phase);},verifyCore:async()=>{const r=await compileExistingIntercomWholeR1(fixture);intercomRequireR1(r.rows.length+r.preliminaryNeeds.length<=q.maximumResourceRows,'BOUNDED_CORE');return{status:'TEST_ONLY_SOURCE_NOT_NATIVE_OR_WHOLE_BUILDING',physicalClosures:0,sourceAdmission:false,FULL:false};},
-  passport:{canonicalRuName:'Монтаж домофонной системы',workKey:'electrical_interior_intercom_install_standard',physicalResultRu:'Совместимая домофонная линия смонтирована и предъявлена к полной принятой программе; фактическое выполнение/результаты и объектные условия не следуют из расчёта.',includedScopeRu:q.operationRoster.map(o=>o.operationTitleRu),excludedScopeRu:['IP/PoE/cloud/второй абонент и произвольные системы не подставляются.','Shared ACS lock/power/escape, upstream electrical feed/UPS и общие FAS/CAT6 владельцы не оплачиваются второй раз.'],independentCompletenessMap:q.independentComposition,unresolvedApplicableResourceRowIds:q.resourceDeclarations.filter(r=>r.rowKind==='RESOURCE').map(r=>r.rowId)},
-  applicability:{primaryMeasureParameterId:q.primaryMeasureParameterId,primaryMeasureUnitId:'pcs',legacyPrimaryMeasureHistoryOnly:'q',automaticPrimaryMeasureMigrationAllowed:false,internalProfileId:q.profileId,actualParent:q.freshParent.actualHeader,sourceAdmission:false,activationAllowed:false,productionEligible:false,automaticMigrationAllowed:false,fullTechnicalAcceptance:false},
-  binding:{rowId:m.resources[0]!.row_id,additionalRowIds:m.resources.slice(1).map(r=>r.row_id),ordinaryCompositeSourceV1:{contract:'master-ordinary-composite-source/v1',capturedSourcePreimage:{sourceKey:q.candidateSourceId,expected:null}},applicability:{internalProfileId:q.profileId,sourceAdmission:false},applicabilityByRowId:Object.fromEntries(q.resourceDeclarations.map(r=>[r.rowId,{formulaId:r.formulaId,operationIds:r.operationIds,legacySourceResolutionRequired:true}]))},
-  locator:{key:q.locatorKey,payload:{contract:q.contract,sourceOrigin:{source_document_version:q.contract,definition_hash:q.projectMethod.sha256},actualParent:q.freshParent.actualHeader,independentCompletenessMap:q.independentComposition,sourceOwnedResourceDeclarations:q.resourceDeclarations,primaryPins:q.primarySources,sourceAdmission:false}},
-  search:{primaryUom:'pcs',canonicalNameRu:'Монтаж домофонной системы',aliases:['монтаж домофона','монтаж видеодомофона'],shortScopeRu:'Полный совместимый цикл линии домофона: монтаж, питание, соединения, конфигурация, вызов/аудио/видео и проверка принятого дверного интерфейса.',keyDistinguishingParameters:['q','intercom_actual_installed_complete_systems_r1'],clarificationFields:q.scopeFactIds,includedBoundaries:q.operationRoster.map(o=>o.operationTitleRu),excludedBoundaries:['Неподтверждённая архитектура/дверной режим/источники/legacy63 не допускаются по одному названию.'],extraSearchTermsRu:'видеодомофон вызывная панель внутренний блок двухпроводная линия реле настройка проверка',sourceProvenance:{sourceId:q.candidateSourceId,artifactSha256:q.projectMethod.sha256,sourceAdmission:false}},
-  forbiddenAdjacentMatchers:[/\b(?:nurse|CAT6A|PoE|CCTV)\b|полная\s+пожарная\s+сертификация/iu],owner:'EXISTING_INTERCOM_WHOLE_SOURCE_R1',receiptFileStem:'EXISTING_INTERCOM_WHOLE_R1'};
- const managed=assembleMasterSingleDefinitionManagedRegistryCandidateR1(config,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate;
- intercomRequireR1(resolveMasterScopedNormativeRegistryOptInR1(managed)!==null,'EXISTING_MASTER_FORMAL_REGISTRY_PREDICATE');return config;
-}

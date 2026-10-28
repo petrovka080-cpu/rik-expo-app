@@ -1,7 +1,3 @@
-import {buildSkirtingCurrentPhysicalCycleR1,skirtingCurrentPhysicalCompletenessR1,skirtingCurrentPhysicalPackR1} from '../../../src/lib/estimate/v4/skirtingConstructorS2735';
-import type {AutomaticOwnerDefinition} from '../../../src/lib/estimate/v4/automaticConstructionOwnerR1';
-import {readMasterSuccessorTargetPreimageR1,validateIndependentCompletenessMapReferences,assembleMasterSingleDefinitionManagedRegistryCandidateR1} from './prepareMasterSingleDefinitionSuccessorR1';
-import {resolveMasterScopedNormativeRegistryOptInR1,type MasterCapturedScopedNormativeRegistryR1} from './masterScopedNormativeRegistryPreimageR1';
 import {buildCanonicalRevisionCommitPayload} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter';
 import {canonicalEstimateRevisionDetailFromStorage,canonicalEstimateRevisionRowFromStorage} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper';
 import {projectCanonicalEstimatePreliminaryNeedTransport} from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport';
@@ -11,7 +7,7 @@ import {canonicalEstimateStableJson} from '../../../src/lib/estimate/backendPlat
 import {masterOperationValueSha256R1,assertMasterOperationCompositionDeclarationR1,assertMasterOperationCompositionComputationR1} from './masterOperationCompositionOnlyR1';
 import {masterRetainedParentCaptureSha256R1} from './masterSingleDefinitionRetainParentBindingsR1';
 import type {CanonicalPublisherJson as Json} from './canonicalDefinitionPublisherR1';
-import type {MasterRetainedParentCaptureR1,MasterRetainParentBindingsR1} from './masterSingleDefinitionRetainParentBindingsR1';
+import type {MasterRetainedParentCaptureR1} from './masterSingleDefinitionRetainParentBindingsR1';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {strict as assert} from 'node:assert';
@@ -492,112 +488,6 @@ export function skirtingCurrentRetainedMetadataConfigR411(record:Json,parent:{re
     currentKnownRows:after.rows.length,currentNeeds:after.preliminaryNeeds.length,currentProcurementRows:after.rows.filter(row=>row.included_in_procurement).length,
     sourceQuantityNormsChanged:false,actualObjectFactsAccepted:false,actualBaselineDurable,controlEvidence,wholeDeliveryAcceptance:false,FULL:false};
   }};
-}
-
-export type SkirtingCurrentPhysicalPinR1=Readonly<{path:string;sha256:string}>;
-export type SkirtingCurrentPhysicalContextR1=Readonly<{releaseId:string;searchReleaseId:string;outputRoot:string;
- actualBodyProof:SkirtingCurrentPhysicalPinR1;targetPreimage:SkirtingCurrentPhysicalPinR1;master:SkirtingCurrentPhysicalPinR1;
- currentRelease:SkirtingCurrentPhysicalPinR1;physicalSourcePack:SkirtingCurrentPhysicalPinR1;formalScopedCapture?:SkirtingCurrentPhysicalPinR1}>;
-/** Full-source opt-in in the existing producer; R411 metadata-only enrolment is
- * not reused to admit a changed model. No writer, DB or runner is created. */
-export function prepareSkirtingCurrentPhysicalCycleDraftR1(c:SkirtingCurrentPhysicalContextR1):MasterSingleDefinitionSuccessorConfig{
- const p=skirtingCurrentPhysicalPackR1,moduleRoot=resolve(__dirname,'../../..'),
-  digest=(bytes:string|Buffer)=>createHash('sha256').update(bytes).digest('hex'),
-  read=(pin:SkirtingCurrentPhysicalPinR1)=>{assert.match(pin.sha256,/^[a-f0-9]{64}$/u);const bytes=readFileSync(pin.path);
-   assert.equal(digest(bytes),pin.sha256,'SKIRTING_CURRENT_PIN_CHANGED:'+pin.path);return bytes;},
-  json=(pin:SkirtingCurrentPhysicalPinR1)=>JSON.parse(read(pin).toString('utf8').replace(/^\uFEFF/u,''))as Json;
- for(const pin of[c.actualBodyProof,c.targetPreimage,c.master,c.currentRelease,c.physicalSourcePack,...(c.formalScopedCapture?[c.formalScopedCapture]:[])])read(pin);
- assert.equal(c.master.sha256,'92c04a456ecd85afcc699e7da5e6cf97114db1a74019fd203f1816c2b81ca08f','SKIRTING_MASTER224_REQUIRED');
- assert.equal(c.actualBodyProof.sha256,p.actualCurrent.proofSha256,'SKIRTING_CURRENT_R858_REQUIRED');
- assert.equal(resolve(c.physicalSourcePack.path),resolve(moduleRoot,'data/estimate-benchmarks/source-packs/ready-pvc-skirting-current-physical-cycle-r1.json'),'SKIRTING_PIN_MUST_BE_IMPORTED_JSON');
- assert.deepEqual(json(c.physicalSourcePack),p,'SKIRTING_CURRENT_IMPORTED_SOURCE_IDENTITY');
- const proof=json(c.actualBodyProof),pointer=json(c.currentRelease),target=json(c.targetPreimage),
-  observed=proof.results.find((x:Json)=>x.target?.catalogId===p.catalogId&&x.target?.sourceId===p.contract);
- assert.equal(proof.transactionRolledBack,true);assert.equal(proof.connectionClosed,true);assert(observed?.current,'SKIRTING_CURRENT_REQUESTED_SOURCE_TARGET');
- assert.equal(c.releaseId,proof.selectedReleaseId,'SKIRTING_SELECTED_R858_PARENT');assert.equal(pointer.definitionReleaseId,c.releaseId);assert.equal(pointer.searchReleaseId,c.searchReleaseId);
- assert.deepEqual(target,observed.current,'SKIRTING_REQUESTED_TARGET_BODY');assert.deepEqual(target.header,p.actualCurrent.header,'SKIRTING_ACTUAL_HEADER');assert.equal(target.sets.newSource.rowCount,0);
- for(const source of p.sources)assert.equal(digest(readFileSync(source.path)),source.sha256,'SKIRTING_PRIMARY_SOURCE_CHANGED:'+source.id);
- const raw=observed.currentBody;
- assert(raw&&[raw.definition,raw.baseline,raw.sources,raw.locators,raw.bindings,raw.parameters,raw.formulas,raw.resources].every(Array.isArray),'SKIRTING_FULL_CURRENT_CAPTURE_REQUIRED');
- assert.equal(raw.definition.length,1);assert.equal(raw.baseline.length,1);
- const omit=(row:Json,keys:readonly string[])=>Object.fromEntries(Object.entries(row).filter(([key])=>!keys.includes(key))),
-  normalized={parameters:raw.parameters.map((q:Json)=>omit(q,['definition_version_id','approved_template_baseline_id'])).sort((a:Json,b:Json)=>a.ordinal-b.ordinal),
-   formulas:raw.formulas.map((f:Json)=>omit(f,['definition_version_id'])).sort((a:Json,b:Json)=>a.formula_id<b.formula_id?-1:a.formula_id>b.formula_id?1:0),
-   resources:raw.resources.map((r:Json)=>omit(r,['definition_version_id','created_at'])).sort((a:Json,b:Json)=>a.ordinal-b.ordinal)};
- assert.deepEqual(normalized,p.actualCurrent.retainedBody,'SKIRTING_ACTUAL_RAW_NORMALIZED_BODY_MISMATCH');
- const capture:MasterRetainedParentCaptureR1={definition:raw.definition[0],baseline:raw.baseline[0],parameters:raw.parameters,formulas:raw.formulas,
-  resources:raw.resources,bindings:raw.bindings,normativeSources:raw.sources,normativeLocators:raw.locators},captureSha=masterRetainedParentCaptureSha256R1(capture),
-  snapshot=JSON.parse(JSON.stringify(p.actualCurrent.retainedBody)),base:AutomaticOwnerDefinition={...snapshot,
-   runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['length_m']},model=buildSkirtingCurrentPhysicalCycleR1(base,'ACTUAL_CUT_PLAN_R1'),
-  // The owner validates the normalized exact body. The retained representative
-  // additionally needs exact DB ownership columns on unchanged historical rows.
-  d:AutomaticOwnerDefinition={...model,parameters:model.parameters.map(q=>({...capture.parameters.find(old=>old.parameter_id===q.parameter_id),...q})),
-   formulas:model.formulas.map(formula=>{
-    const retained=capture.formulas.find(old=>old.formula_id===formula.formula_id);if(!retained)return formula;
-    // The typed model contains the exact normalized persisted contract. Restore
-    // only its checked immutable FK; no raw Json union or formula cast escapes.
-    assert.deepEqual(omit(retained,['definition_version_id']),formula,'SKIRTING_RETAINED_FORMULA_FULL_CONTRACT_REQUIRED');
-    const definitionId=retained.definition_version_id;
-    if(typeof definitionId!=='string'||definitionId!==capture.definition.id)throw Error('SKIRTING_RETAINED_FORMULA_DEFINITION_ID_REQUIRED');
-    return{...formula,definition_version_id:definitionId};
-   }),
-   resources:model.resources.map(r=>({...capture.resources.find(old=>old.row_id===r.row_id),...r}))},
-  map=skirtingCurrentPhysicalCompletenessR1(),held=new Set(d.parameters.filter(q=>q.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM').map(q=>q.parameter_id)),
-  open=d.resources.filter(row=>d.formulas.find(formula=>formula.formula_id===row.formula_id)!.input_parameter_ids.some(id=>held.has(id))).map(row=>row.row_id),
-  oldIds=new Set(capture.parameters.map(q=>q.parameter_id)),
-  newParameterSources:MasterRetainParentBindingsR1['newParameterSources']=Object.fromEntries(d.parameters.filter(q=>!oldIds.has(q.parameter_id)).map(q=>[q.parameter_id,
-   q.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM'?{kind:'UNRESOLVED' as const,sourceIds:[]}:{kind:'KNOWN' as const,sourceIds:[p.contract]}])),
-  retained:MasterRetainParentBindingsR1={capturedParent:capture,capturedParentSha256:captureSha,newParameterSources,
-   capturedSourcePreimage:{sourceKey:p.contract,expected:null}},
-  bound=[p.prefix+':whole-required-scope'],input={length_m:'30'},
-  {retainedBody:_body,...compactCurrent}=p.actualCurrent,compactPack={...p,actualCurrent:compactCurrent},
-  formal=c.formalScopedCapture?json(c.formalScopedCapture)as MasterCapturedScopedNormativeRegistryR1:undefined;
- assert.equal(open.length,23,'SKIRTING_DECLARED_PHYSICAL_SOURCE_HOLDS');
- return{contract:p.contract,stopCode:'SKIRTING_CURRENT_WHOLE_PHYSICAL_R1',applicationName:'ready-pvc-skirting-current-whole',expectedBranch:'codex/r4-a5-clean-08b18902',
-  masterPath:c.master.path,masterSha256:c.master.sha256,parentReleaseId:c.releaseId,parentSearchReleaseId:c.searchReleaseId,currentReleasePath:c.currentRelease.path,
-  outputRoot:c.outputRoot,catalogId:p.catalogId,sourceId:p.contract,normId:'PROJECT_SYSTEM:READY_PVC_SKIRTING_CURRENT_WHOLE_PHYSICAL_R1',
-  sourcePaths:[c.physicalSourcePack.path,...['scripts/estimate/r4a13/prepareS2735SkirtingBatchSuccessor.ts','src/lib/estimate/v4/skirtingConstructorS2735.ts',
-   'src/lib/estimate/v4/skirtingConstructorS2735.test.ts','data/estimate-benchmarks/source-packs/skirting-constructor-s27-35.json',
-   'scripts/estimate/r4a13/masterSingleDefinitionRetainParentBindingsR1.ts','scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.ts'].map(path=>resolve(moduleRoot,path)),
-   ...p.sources.map(source=>source.path),c.actualBodyProof.path,c.targetPreimage.path,c.master.path,c.currentRelease.path,...(c.formalScopedCapture?[c.formalScopedCapture.path]:[])],
-  sourceMetadata:{source_title:'Готовый плинтус из ПВХ: полный применимый цикл по самостоятельной длине',source_authority:'Документы производителей, принятые карты раскроя и проектное обеспечение',
-   source_kind:'PROJECT_SYSTEM',artifact_sha256:c.physicalSourcePack.sha256,official_url:null,exact_locator:'R858 current137/37/37; PMO516V1 p1; Forbo232 TDS/SDS pinned; accepted-cut-plan delta',
-   use_restriction:'SOURCE_ONLY BLOCKED_PARTIAL:23source quantities and16protectedconditions require evidence. ExactselectedPVCglueprofile only, no03904/wood/fastener transfer.'},
-  ...(formal?{capturedScopedNormativeRegistry:formal}:{}),parameterDefinitions:d.parameters,formulaDefinitions:d.formulas,resourceDefinitions:d.resources,
-  shortInput:input,acceptanceInput:input,runtimeProfileInput:{},runtimeProfileClassification:{},runtimeProfileSourceIds:{},expectedParentShape:[137,37,37],benchmarkOrdinal:0,
-  validationScenario:'ACTUAL_R858_READY_PVC_SKIRTING_WHOLE_CURRENT_WITH_UNKNOWN_SOURCE_QUANTITIES_AND_APPROVED_CUTPLAN',
-  passport:{canonicalRuName:'Монтаж готового плинтуса по отдельной длине',workKey:'flooring_interior_baseboard_install_standard',
-   physicalResultRu:'Установленная и принятая совместимая линия плинтуса; неизвестные нормы и факты не объявлены обеспеченными.',includedScopeRu:p.operations.map(o=>o.nameRu),
-   excludedScopeRu:['Площадь покрытия вместо измеренной длины','Керамический03904, деревянный и механический монтаж по этой норме','Автоматическая совместимость и объектное подтверждение'],
-   independentCompletenessMap:map,unresolvedApplicableResourceRowIds:open},
-  applicability:{actualParentProof:c.actualBodyProof,actualHeader:p.actualCurrent.header,newObjectClosures:0,protectedConditions:16,sourceHeldFunctions:23,
-   baselineAssumptionCount:78,baselineValidationFixtureCount:59,baselineNotRuntime:true,fullTechnicalAcceptance:false,consumptionNotOrder:true},
-  binding:{rowId:bound[0]!,retainParentBindings:retained,
-   applicability:{contract:p.contract,actualParentSha256:p.actualCurrent.header.definition_sha256,sourceOnly:true,
-    quantityMeaning:'WHOLE_PHYSICAL_PROCESS_CHECK_NOT_NEW_ADHESIVE_OR_LABOUR_NORM',oldAdhesiveBindingRetained:true,
-    newSourceDoesNotOwnHistoricalQuantities:true,protectedObjectReadbacksRequired:true,fullTechnicalAcceptance:false}},
-  locator:{key:'ready-pvc-skirting-current-whole-physical-r1',payload:{sourcePack:compactPack,actualBodyProof:c.actualBodyProof,independentCompletenessMap:map,fullTechnicalAcceptance:false}},
-  search:{primaryUom:'m',canonicalNameRu:'Монтаж готового плинтуса по отдельной длине',aliases:['Клеевой монтаж готового плинтуса из ПВХ'],
-   shortScopeRu:'Готовый плинтус из ПВХ по совместимому клеевому способу, с отдельным обмером и картой раскроя.',
-   keyDistinguishingParameters:['length_m','skirting_product_code','adhesive_product'],clarificationFields:['length_m','skirting_cycle_cutplan_total_required_m'],
-   includedBoundaries:p.operations.map(o=>o.nameRu),excludedBoundaries:['Пол, подложка, керамический и деревянный способы'],extraSearchTermsRu:'плинтус готовый ПВХ приклеивание раскрой углы стыки очистка',
-   sourceProvenance:{actualParentProof:c.actualBodyProof,sourcePack:c.physicalSourcePack,fullTechnicalAcceptance:false}},
-  forbiddenAdjacentMatchers:[/materials_0[1-6]|professional_.*_set|floor_covering|underlay|ceramic-skirting|krer11-039-04/iu],owner:'ROOT_SINGLE_WRITER',receiptFileStem:'ready_pvc_skirting_current_whole_r1',
-  verifyTargetPrecondition:async(client,phase)=>assert.deepEqual(await readMasterSuccessorTargetPreimageR1(client,{releaseId:c.releaseId,catalogId:p.catalogId,sourceId:p.contract,lock:phase==='LOCKED_BEFORE'}),target,'SKIRTING_ACTUAL_TARGET_DRIFT'),
-  verifyCore:async()=>{assert(c.formalScopedCapture,'STOP_SKIRTING_CURRENT_WHOLE_PHYSICAL_R1_SCOPED_REGISTRY_ORDINARY_SOURCE_CAPTURE_REQUIRED');
-   assert.deepEqual(validateIndependentCompletenessMapReferences({completenessMap:map,formulaDefinitions:d.formulas,resourceDefinitions:d.resources}),[]);
-   return{status:'SOURCE_ONLY_STRUCTURAL_MAP_NOT_CORE_RUNTIME_ACCEPTANCE',shape:[d.parameters.length,d.formulas.length,d.resources.length],sourceHolds:open.length,
-    actualClosures:0,fullTechnicalAcceptance:false,rootFiniteCoreCasesRequired:true};}};
-}
-
-/** Actual ordinary intake refuses an absent formal scoped capture. The draft
- * above is inspectable authoring data; its verifyCore also refuses this absence. */
-export function prepareSkirtingCurrentPhysicalCycleConfigR1(c:SkirtingCurrentPhysicalContextR1):MasterSingleDefinitionSuccessorConfig{
- const config=prepareSkirtingCurrentPhysicalCycleDraftR1(c);
- assert(c.formalScopedCapture,'STOP_SKIRTING_CURRENT_WHOLE_PHYSICAL_R1_SCOPED_REGISTRY_ORDINARY_SOURCE_CAPTURE_REQUIRED');
- const candidate=assembleMasterSingleDefinitionManagedRegistryCandidateR1(config,{projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate;
- assert(resolveMasterScopedNormativeRegistryOptInR1(candidate),'SKIRTING_CURRENT_FORMAL_RETAINED_CAPTURE_REQUIRED');
- return config;
 }
 
 if(process.argv[1]?.replaceAll('\\','/').endsWith('/prepareS2735SkirtingBatchSuccessor.ts'))

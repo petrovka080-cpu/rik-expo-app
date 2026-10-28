@@ -1,0 +1,167 @@
+import {
+  buildAssistantStoreReadQueryPlans,
+  createAssistantStoreReadBffReadonlyDbPort,
+} from "../../scripts/server/stagingBffAssistantStoreReadPort";
+
+const sqlText = (plans: ReturnType<typeof buildAssistantStoreReadQueryPlans>): string =>
+  plans.map((plan) => plan.sql).join("\n");
+
+describe("assistant/store BFF readonly DB port", () => {
+  it("bounds latest chat history and binds a precise older cursor as parameters", () => {
+    const [page] = buildAssistantStoreReadQueryPlans({
+      operation: "chat.listing.messages.list", args: {
+        listingId: "bbbbbbbb-0000-4000-8000-000000000001", pageSize: 1000,
+        before: { createdAt: "2026-10-29T05:30:00.123456+05:30", id: "aaaaaaaa-0000-4000-8000-000000000001" },
+      },
+    });
+    expect(page.values).toEqual(["bbbbbbbb-0000-4000-8000-000000000001", 100, "2026-10-29T00:00:00.123456Z", "aaaaaaaa-0000-4000-8000-000000000001"]);
+    expect(page.sql).toContain("(m.created_at, m.id) < ($3::timestamptz, $4::uuid)");
+    expect(page.sql).toContain("m.supplier_id = $1::uuid");
+    expect(page.sql).toContain("SS.US");
+    expect(page.sql).not.toContain("123456");
+  });
+  it("rejects a malformed chat cursor even when the DB planner is called directly", () => {
+    expect(() => buildAssistantStoreReadQueryPlans({ operation: "chat.listing.messages.list", args: {
+      listingId: "listing", before: { createdAt: "now();delete", id: "bad" },
+    } })).toThrow("CHAT_CURSOR_INVALID");
+  });
+  it("builds bounded deterministic assistant listing plans", () => {
+    const plans = buildAssistantStoreReadQueryPlans({
+      operation: "assistant.market.active_listings",
+      args: { pageSize: 250 },
+    });
+
+    expect(plans).toHaveLength(1);
+    expect(plans[0]).toEqual(
+      expect.objectContaining({
+        operation: "assistant.market.active_listings",
+        values: [100],
+        maxRows: 100,
+        readOnly: true,
+      }),
+    );
+    expect(plans[0].sql).toContain("where status = 'active'");
+    expect(plans[0].sql).toContain("order by created_at desc, id desc");
+    expect(plans[0].sql).toContain("limit $1");
+  });
+
+  it("builds single-scope assistant actor context without expanding client fanout", () => {
+    const plans = buildAssistantStoreReadQueryPlans({
+      operation: "assistant.actor.context",
+      args: { userId: "user-redacted" },
+    });
+
+    expect(plans).toHaveLength(1);
+    expect(plans[0]).toEqual(
+      expect.objectContaining({
+        operation: "assistant.actor.context",
+        values: ["user-redacted"],
+        maxRows: 1,
+        readOnly: true,
+      }),
+    );
+    expect(plans[0].sql).toContain("from public.user_profiles");
+    expect(plans[0].sql).toContain("from public.company_members");
+    expect(plans[0].sql).toContain("from public.companies");
+    expect(plans[0].sql).toContain("from public.market_listings");
+  });
+
+  it("builds bounded deterministic store list plans", () => {
+    const requestItems = buildAssistantStoreReadQueryPlans({
+      operation: "store.request_items.list",
+      args: { requestId: "request-redacted", status: "draft" },
+    });
+    const inbox = buildAssistantStoreReadQueryPlans({
+      operation: "store.director_inbox.list",
+      args: {},
+    });
+    const approved = buildAssistantStoreReadQueryPlans({
+      operation: "store.approved_request_items.list",
+      args: { requestId: "request-redacted" },
+    });
+
+    expect(requestItems[0]).toEqual(
+      expect.objectContaining({
+        values: ["request-redacted", "draft", 5001],
+        maxRows: 5000,
+        readOnly: true,
+      }),
+    );
+    expect(requestItems[0].sql).toContain("from public.request_items");
+    expect(requestItems[0].sql).toContain("order by created_at asc, id asc");
+    expect(inbox[0].sql).toContain("from public.request_items_pending_view");
+    expect(inbox[0].sql).toContain("order by created_at desc, request_item_id asc");
+    expect(inbox[0].values).toEqual([5001]);
+    expect(approved[0].sql).toContain("from public.v_request_items_display");
+    expect(approved[0].sql).toContain("order by id asc");
+    expect(approved[0].values).toEqual(["request-redacted", 5001]);
+  });
+
+  it("builds bounded low-risk profile, chat, supplier showcase, and capability plans", () => {
+    const profile = buildAssistantStoreReadQueryPlans({
+      operation: "profile.current.full_name",
+      args: { userId: "user-redacted" },
+    });
+    const chatActor = buildAssistantStoreReadQueryPlans({
+      operation: "chat.actor.context",
+      args: { userId: "user-redacted" },
+    });
+    const chatMessages = buildAssistantStoreReadQueryPlans({
+      operation: "chat.listing.messages.list",
+      args: { listingId: "listing-redacted", pageSize: 250 },
+    });
+    const supplierCompany = buildAssistantStoreReadQueryPlans({
+      operation: "supplier_showcase.company_by_id",
+      args: { companyId: "company-redacted" },
+    });
+    const supplierUserListings = buildAssistantStoreReadQueryPlans({
+      operation: "supplier_showcase.listings_by_user_id",
+      args: { userId: "user-redacted", includeInactive: false, pageSize: 500 },
+    });
+    const submittedAt = buildAssistantStoreReadQueryPlans({
+      operation: "request.submitted_at.capability",
+      args: {},
+    });
+
+    expect(profile[0].sql).toContain("from public.user_profiles");
+    expect(profile[0].values).toEqual(["user-redacted"]);
+    expect(chatActor[0].sql).toContain("from public.market_listings");
+    expect(chatMessages[0]).toEqual(
+      expect.objectContaining({
+        values: ["listing-redacted", 100],
+        maxRows: 100,
+        readOnly: true,
+      }),
+    );
+    expect(chatMessages[0].sql).toContain("from public.chat_messages");
+    expect(chatMessages[0].sql).toContain("order by m.created_at desc, m.id desc");
+    expect(supplierCompany[0].sql).toContain("from public.companies");
+    expect(supplierUserListings[0]).toEqual(
+      expect.objectContaining({
+        values: ["user-redacted", false, 100],
+        maxRows: 100,
+        readOnly: true,
+      }),
+    );
+    expect(supplierUserListings[0].sql).toContain("where user_id::text = $1");
+    expect(supplierUserListings[0].sql).toContain("order by created_at desc, id desc");
+    expect(submittedAt[0].sql).toContain("submitted_at");
+    expect(submittedAt[0].maxRows).toBe(1);
+  });
+
+  it("keeps generated plans SELECT-only and does not create a port without readonly DB env", () => {
+    const plans = [
+      ...buildAssistantStoreReadQueryPlans({ operation: "assistant.actor.context", args: { userId: "u" } }),
+      ...buildAssistantStoreReadQueryPlans({ operation: "chat.listing.messages.list", args: { listingId: "l" } }),
+      ...buildAssistantStoreReadQueryPlans({ operation: "assistant.market.companies_by_ids", args: { ids: ["c"] } }),
+      ...buildAssistantStoreReadQueryPlans({
+        operation: "assistant.market.profiles_by_user_ids",
+        args: { ids: ["u"] },
+      }),
+      ...buildAssistantStoreReadQueryPlans({ operation: "store.director_inbox.list", args: {} }),
+    ];
+
+    expect(sqlText(plans)).not.toMatch(/\b(insert|update|delete|truncate|alter|drop|create|grant|revoke|call|copy|merge)\b/i);
+    expect(createAssistantStoreReadBffReadonlyDbPort({})).toBeUndefined();
+  });
+});

@@ -1,4 +1,11 @@
+import "react-native-get-random-values";
 import { subscribeChannel } from "./realtime/realtime.client";
+import {
+  ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS,
+  isChatMessageId,
+  normalizeChatMessageTimestamp,
+  type ChatMessageCursor,
+} from "./assistant_store_read.bff.contract";
 import {
   loadChatActorContextRows,
   loadChatProfileRowsByUserIds,
@@ -8,6 +15,18 @@ import { getCurrentChatAuthUser } from "./chat.auth.transport";
 import { supabase } from "./supabaseClient";
 
 export type ChatMessageType = "text" | "photo" | "voice" | "file" | "system";
+export const CHAT_MESSAGE_PAGE_SIZE = ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS.maxRows;
+export type { ChatMessageCursor };
+
+export function createChatSendIntentId(): string {
+  const cryptoLike = (globalThis as { crypto?: { getRandomValues?: (array: Uint8Array) => Uint8Array } }).crypto;
+  if (typeof cryptoLike?.getRandomValues !== "function") throw new Error("Не удалось подготовить отправку сообщения.");
+  const bytes = cryptoLike.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
 
 export type ChatMessage = {
   id: string;
@@ -68,7 +87,7 @@ const toChatMessage = (value: unknown): ChatMessage | null => {
 
   const id = toTrimmedText(record.id);
   const userId = toTrimmedText(record.user_id);
-  const createdAt = toTrimmedText(record.created_at);
+  const createdAt = normalizeChatMessageTimestamp(record.created_at);
   const messageType = toTrimmedText(record.message_type) as ChatMessageType | null;
   if (!id || !userId || !createdAt || !messageType) return null;
 
@@ -140,9 +159,10 @@ async function loadCurrentChatActor(): Promise<ChatActor> {
 
 export async function fetchListingChatMessages(
   listingId: string,
-  limit = 120,
+  limit = CHAT_MESSAGE_PAGE_SIZE,
+  before?: ChatMessageCursor | null,
 ): Promise<ChatMessage[]> {
-  const { data, error } = await loadListingChatMessageRows<unknown>(listingId, limit);
+  const { data, error } = await loadListingChatMessageRows<unknown>(listingId, limit, before);
 
   if (error) throw toChatError(error, "Failed to load chat messages.");
 
@@ -160,7 +180,7 @@ export async function fetchListingChatMessages(
     }
   }
 
-  return rows.map((row) => ({
+  return rows.sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id)).map((row) => ({
     ...row,
     user: {
       name: userMap.get(row.user_id) || "User",
@@ -171,12 +191,18 @@ export async function fetchListingChatMessages(
 export async function sendListingChatMessage(
   listingId: string,
   content: string,
+  intentId = createChatSendIntentId(),
 ): Promise<ChatMessage> {
+  if (!isChatMessageId(intentId)) {
+    throw new Error("Invalid chat send identifier");
+  }
+  intentId = intentId.toLowerCase();
   const actor = await loadCurrentChatActor();
 
   const { data, error } = await supabase
     .from("chat_messages" as never)
-    .insert({
+    .upsert({
+      id: intentId,
       company_id: actor.companyId,
       object_id: null,
       supplier_id: listingId,
@@ -184,14 +210,26 @@ export async function sendListingChatMessage(
       message_type: "text",
       content: content.trim(),
       mentions: [],
-    } as never)
+    } as never, { onConflict: "id", ignoreDuplicates: true })
     .select(CHAT_MESSAGE_SELECT)
-    .single();
+    .maybeSingle();
 
-  if (error) throw toChatError(error, "Failed to send message.");
+  // A commit can succeed while its response is lost. The existing primary key
+  // is the send intent; retries cannot insert a second message with that key.
+  let confirmed = data;
+  if (!confirmed) {
+    const readback = await supabase.from("chat_messages" as never)
+      .select(CHAT_MESSAGE_SELECT).eq("id", intentId)
+      .eq("user_id", actor.userId).eq("supplier_id", listingId).maybeSingle();
+    confirmed = readback.data;
+    if (!confirmed && (error || readback.error)) {
+      throw toChatError(error || readback.error, "Failed to confirm sent message.");
+    }
+  }
 
-  const message = toChatMessage(data);
-  if (!message) {
+  const message = toChatMessage(confirmed);
+  if (!message || message.id !== intentId || message.user_id !== actor.userId
+      || message.supplier_id !== listingId || message.content !== content.trim()) {
     throw new Error("Failed to normalize sent message.");
   }
 
@@ -243,7 +281,7 @@ export async function deleteListingChatMessage(messageId: string): Promise<void>
 
 export function subscribeToListingChatMessages(
   listingId: string,
-  onChange: () => void,
+  onChange: (change: ListingChatChange) => void,
 ): () => void {
   return subscribeChannel({
     name: buildListingChatChannelName(listingId),
@@ -260,6 +298,16 @@ export function subscribeToListingChatMessages(
         owner: "table:chat_messages",
       },
     ],
-    onEvent: () => onChange(),
+    onEvent: ({ payload }) => onChange({
+      eventType: payload.eventType,
+      message: toChatMessage(payload.new),
+      id: toTrimmedText(asRecord(payload.new)?.id ?? asRecord(payload.old)?.id),
+    }),
   });
 }
+
+export type ListingChatChange = {
+  eventType: "INSERT" | "UPDATE" | "DELETE";
+  message: ChatMessage | null;
+  id: string | null;
+};

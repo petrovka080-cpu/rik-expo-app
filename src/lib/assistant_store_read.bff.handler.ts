@@ -3,6 +3,7 @@ import type { BffResponseEnvelope } from "../shared/scale/bffContracts";
 import {
   ASSISTANT_STORE_READ_BFF_CONTRACT,
   ASSISTANT_STORE_READ_BFF_OPERATION_CONTRACTS,
+  normalizeChatMessageCursor,
   type AssistantStoreReadBffOperation,
   type AssistantStoreReadBffReadResultDto,
   type AssistantStoreReadBffRequestDto,
@@ -54,7 +55,8 @@ export const isAssistantStoreReadBffRequestDto = (
     case "supplier_showcase.company_by_owner_user_id":
       return isRecord(args) && typeof args.userId === "string";
     case "chat.listing.messages.list":
-      return isRecord(args) && typeof args.listingId === "string" && isOptionalPageSize(args.pageSize);
+      return isRecord(args) && typeof args.listingId === "string" && isOptionalPageSize(args.pageSize)
+        && (args.before == null || normalizeChatMessageCursor(args.before) !== null);
     case "supplier_showcase.company_by_id":
       return isRecord(args) && typeof args.companyId === "string";
     case "supplier_showcase.listings_by_user_id":

@@ -1,9 +1,6 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  LED_SURFACE_WHOLE_SOURCE_R1, LED_SURFACE_WHOLE_SOURCE_SHA_R1, LED_SURFACE_FACTORY_DEMO_R1,
-  ledSurfaceWholeDefinitionR1, ledSurfaceWholeCompletenessR1, ledSurfaceFactoryComponentRowIdsR1,
   LED_LUMINAIRE_INSTALLATION_ACCEPTANCE_INPUT,
   LED_LUMINAIRE_INSTALLATION_CATALOG_ID,
   LED_LUMINAIRE_INSTALLATION_FORMULAS,
@@ -18,11 +15,9 @@ import {
   LED_LUMINAIRE_INSTALLATION_SOURCE_METADATA,
   compileLedLuminaireInstallationR1,
 } from "../../../src/lib/estimate/v4/ledLuminaireInstallationR1";
-import { runMasterSingleDefinitionSuccessorR1, readMasterSuccessorTargetPreimageR1, validateIndependentCompletenessMapReferences, type MasterSingleDefinitionSuccessorConfig } from "./prepareMasterSingleDefinitionSuccessorR1";
+import { runMasterSingleDefinitionSuccessorR1 } from "./prepareMasterSingleDefinitionSuccessorR1";
 
 type Json = Record<string, any>;
-import type {AutomaticOwnerDefinition} from "../../../src/lib/estimate/v4/automaticConstructionOwnerR1";
-import {canonicalEstimateStableJson} from "../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism";
 
 function quantity(
   result: Awaited<ReturnType<typeof compileLedLuminaireInstallationR1>>,
@@ -31,41 +26,102 @@ function quantity(
   return result.rows.find((row) => row.row_id === rowId)?.quantity ?? null;
 }
 
-export async function verifyLedSurfaceWholeCoreR1():Promise<Json>{
- const d=ledSurfaceWholeDefinitionR1(),map=ledSurfaceWholeCompletenessR1();
- const check=(ok:unknown,code:string)=>{if(!ok)throw Error('STOP_LED_SURFACE_WHOLE_SOURCE:'+code);};
- check([d.parameters.length,d.formulas.length,d.resources.length].join(':')==='35:29:29','SHAPE');
- check(validateIndependentCompletenessMapReferences({completenessMap:map,formulaDefinitions:d.formulas,resourceDefinitions:d.resources,requireOperationBindings:true}).length===0,'INDEPENDENT_REFERENCES');
- const short=await compileLedLuminaireInstallationR1({...LED_LUMINAIRE_INSTALLATION_SHORT_INPUT});
- for(const id of ledSurfaceFactoryComponentRowIdsR1)check(short.preliminaryNeeds.some(n=>n.row_id===id),'UNCONFIRMED_FACTORY_SOURCE:'+id);
- const demo=await compileLedLuminaireInstallationR1({...LED_LUMINAIRE_INSTALLATION_SHORT_INPUT,...LED_SURFACE_FACTORY_DEMO_R1,luminaire_count:3});
- for(const c of LED_SURFACE_WHOLE_SOURCE_R1.factoryComponents)check(quantity(demo,LED_SURFACE_WHOLE_SOURCE_R1.prefix+':'+c.key)===String(c.countPerLuminaire*3),'FACTORY_CONSUMPTION:'+c.key);
- check(!demo.rows.some(r=>r.row_id==='rc09:luminaire_mounting_anchor_set'),'NO_DUPLICATE_FACTORY_ANCHORS');
- check(demo.preliminaryNeeds.length>0,'DEMO_IS_NOT_COMPLETE_PROJECT');
- return {status:'SOURCE_CASES_ONLY_NOT_RUNTIME_PUBLISHER_OR_FULL',shape:[35,29,29],operations:14,independentUnresolvedClassDeclarations:140,
-  sourceSha256:LED_SURFACE_WHOLE_SOURCE_SHA_R1,actualObjectFactsAuthenticated:false,fullTechnicalAcceptance:false,acceptedCompleteTypes:0};
+async function verifyCore(): Promise<Json> {
+  const short = await compileLedLuminaireInstallationR1({
+    ...LED_LUMINAIRE_INSTALLATION_SHORT_INPUT,
+  });
+  const complete = await compileLedLuminaireInstallationR1({
+    ...LED_LUMINAIRE_INSTALLATION_ACCEPTANCE_INPUT,
+  });
+  const balanced = await compileLedLuminaireInstallationR1({
+    ...LED_LUMINAIRE_INSTALLATION_ACCEPTANCE_INPUT,
+    luminaire_retained_spare_piece: 3,
+    luminaire_supplier_pack_size_piece: 8,
+  });
+  const conditional = await compileLedLuminaireInstallationR1({
+    ...LED_LUMINAIRE_INSTALLATION_ACCEPTANCE_INPUT,
+    separate_driver_mode: "REQUIRED",
+    separate_driver_designation: "Драйвер по ведомости светильников",
+    separate_driver_quantity_piece: 30,
+    ceiling_adapter_mode: "REQUIRED",
+    ceiling_adapter_designation: "Адаптер усиления по узлу потолка",
+    ceiling_adapter_quantity_set: 30,
+  });
+  const needs = new Set(short.preliminaryNeeds.map((need) => need.row_id));
+  if (!(short.rows.length === 8
+    && quantity(short, "rc09:led_luminaire_install") === "30"
+    && quantity(short, "rc09:led_luminaire_36w_ip40") === "30"
+    && quantity(short, "led:balance:installed-net") === "30"
+    && quantity(short, "led:balance:retained-spare") === "0"
+    && quantity(short, "led:balance:package-count") === "30"
+    && short.preliminaryNeeds.length === 15)) {
+    throw new Error("STOP_MASTER_LED_LUMINAIRE_INSTALLATION_SHORT_COMPOSITION");
+  }
+  for (const rowId of [
+    "rc09:luminaire_mounting_anchor_set", "rc09:luminaire_terminal_connector",
+    "rc09:luminaire_connection_wire_3x1_5", "rc09:luminaire_pe_lug",
+    "rc09:luminaire_work_platform", "rc09:luminaire_pe_continuity_test",
+    "led:labor:installation", "led:labor:testing",
+    "led:equipment:drilling-tool", "led:equipment:installation-tool",
+    "led:equipment:tester", "led:logistics:delivery", "led:logistics:waste-removal",
+    "rc09:separate_led_driver", "rc09:suspended_ceiling_reinforcement_adapter",
+  ]) if (!needs.has(rowId)) throw new Error(`STOP_MASTER_LED_LUMINAIRE_NEED:${rowId}`);
+  if (!(complete.preliminaryNeeds.length === 0 && complete.rows.length === 21
+    && quantity(complete, "rc09:luminaire_connection_wire_3x1_5") === "18"
+    && quantity(complete, "rc09:luminaire_work_platform") === "0.6"
+    && quantity(complete, "led:labor:installation") === "18"
+    && quantity(complete, "led:equipment:tester") === "3"
+    && quantity(complete, "led:logistics:delivery") === "1")) {
+    throw new Error("STOP_MASTER_LED_LUMINAIRE_INSTALLATION_COMPLETE_FIXTURE");
+  }
+  if (!(quantity(balanced, "led:balance:installed-net") === "30"
+    && quantity(balanced, "led:balance:retained-spare") === "3"
+    && quantity(balanced, "led:balance:total-need") === "33"
+    && quantity(balanced, "led:balance:package-count") === "5"
+    && quantity(balanced, "rc09:led_luminaire_36w_ip40") === "40"
+    && quantity(balanced, "led:balance:remainder") === "10"
+    && quantity(balanced, "led:balance:surplus-beyond-reserve") === "7")) {
+    throw new Error("STOP_MASTER_LED_LUMINAIRE_INSTALLATION_PROCUREMENT_BALANCE");
+  }
+  if (!(conditional.preliminaryNeeds.length === 0 && conditional.rows.length === 23)) {
+    throw new Error("STOP_MASTER_LED_LUMINAIRE_INSTALLATION_CONDITIONAL_FIXTURE");
+  }
+  const serialized = JSON.stringify({ short, complete, balanced, conditional });
+  if (/(lighting.cable.line|light.switch|distribution.board)/iu.test(serialized)) {
+    throw new Error("STOP_MASTER_LED_LUMINAIRE_INSTALLATION_ADJACENT_SCOPE");
+  }
+  return { status: "GREEN_S27_23_LED_LUMINAIRE_INSTALLATION_BALANCED_CORE",
+    short: { rowCount: short.rows.length, preliminaryNeedCount: short.preliminaryNeeds.length,
+      knownLuminaireCount: LED_LUMINAIRE_INSTALLATION_SHORT_INPUT.luminaire_count,
+      visibleRowIds: short.rows.map((row) => row.row_id),
+      preliminaryNeedRowIds: short.preliminaryNeeds.map((need) => need.row_id) },
+    complete: { rowCount: complete.rows.length, preliminaryNeedCount: 0 },
+    balanced: {
+      installedPiece: quantity(balanced, "led:balance:installed-net"),
+      retainedSparePiece: quantity(balanced, "led:balance:retained-spare"),
+      totalNeedPiece: quantity(balanced, "led:balance:total-need"),
+      packageCount: quantity(balanced, "led:balance:package-count"),
+      orderedPiece: quantity(balanced, "rc09:led_luminaire_36w_ip40"),
+      remainderPiece: quantity(balanced, "led:balance:remainder"),
+      surplusBeyondReservePiece: quantity(balanced, "led:balance:surplus-beyond-reserve"),
+    },
+    conditional: { rowCount: conditional.rows.length, preliminaryNeedCount: 0 },
+    serializedSha256: createHash("sha256").update(serialized).digest("hex") };
 }
-/** Existing ordinary writer config. ROOT supplies the exact whole current body
- * and bounded preimage from its existing reader; no source arrays masquerade as
- * a fresh target, and no registry/source admission is fabricated here. */
-export function ledSurfaceInstallationConfigR1(parent:{releaseId:string;searchReleaseId:string;
- currentBody:Pick<AutomaticOwnerDefinition,'parameters'|'formulas'|'resources'>;expectedPreimage:{header:Json;sets:Json}}):MasterSingleDefinitionSuccessorConfig{
- const d=ledSurfaceWholeDefinitionR1(parent.currentBody),expected=parent.expectedPreimage,source=LED_SURFACE_WHOLE_SOURCE_R1;
- if(expected.header.definition_version_id!==source.currentParent.definitionVersionId
-  ||expected.header.definition_sha256!==source.currentParent.definitionSha256||Object.keys(expected.sets).length!==10)
-  throw Error('LED_SURFACE_ACTUAL_R830_PREIMAGE_REQUIRED');
- return {
 
+void runMasterSingleDefinitionSuccessorR1({
   contract: "rik-expo-app.s27-23.led-luminaire-installation-balanced-successor.v1",
   stopCode: "S27_23_LED_LUMINAIRE_INSTALLATION_BALANCED",
   applicationName: "s27-23-led-luminaire-installation-balanced-successor",
   expectedBranch: "codex/r4-a5-clean-08b18902",
   masterPath: resolve(process.env.R4A13_MASTER_PATH
-    ?? "C:/Users/User/Downloads/GOX_BUILD_MASTER_TZ_2_24_2026-10-27.txt"),
+    ?? "C:/Users/User/Downloads/MASTER_TZ_R4_A13_6_R9_ONE_CORE_COMPLETE_ESTIMATES_FULL_ACCEPTANCE_RU (64).md"),
   masterSha256: process.env.R4A13_MASTER_SHA256
-    ?? "92c04a456ecd85afcc699e7da5e6cf97114db1a74019fd203f1816c2b81ca08f",
-  parentReleaseId: parent.releaseId,
-  parentSearchReleaseId: parent.searchReleaseId,
+    ?? "5cbccf3054fe0aa893eb402ac1d5532cec2c2cafe418fd62e833c0769373cc49",
+  parentReleaseId: process.env.R4A13_PARENT_DEFINITION_RELEASE_ID
+    ?? "2dd8c955-95d3-5736-aa50-093bad9e4f9b",
+  parentSearchReleaseId: process.env.R4A13_PARENT_SEARCH_RELEASE_ID
+    ?? "32bf116e-d349-502c-a74d-fa764b93b50d",
   currentReleasePath: resolve("data/estimate-benchmarks/r568-local-developer-canonical-release.json"),
   outputRoot: resolve(process.env.R4A13_OUTPUT_ROOT
     ?? ".release-runtime/r568/s27-23/led-luminaire-installation-balanced-successor"),
@@ -84,29 +140,22 @@ export function ledSurfaceInstallationConfigR1(parent:{releaseId:string;searchRe
   sourceId: LED_LUMINAIRE_INSTALLATION_SOURCE_ID,
   normId: LED_LUMINAIRE_INSTALLATION_NORM_ID,
   sourceMetadata: LED_LUMINAIRE_INSTALLATION_SOURCE_METADATA,
-  parameterDefinitions: d.parameters,
-  formulaDefinitions: d.formulas,
-  resourceDefinitions: d.resources,
+  parameterDefinitions: LED_LUMINAIRE_INSTALLATION_PARAMETERS,
+  formulaDefinitions: LED_LUMINAIRE_INSTALLATION_FORMULAS,
+  resourceDefinitions: LED_LUMINAIRE_INSTALLATION_RESOURCES,
   shortInput: LED_LUMINAIRE_INSTALLATION_SHORT_INPUT,
   acceptanceInput: LED_LUMINAIRE_INSTALLATION_ACCEPTANCE_INPUT,
   runtimeProfileInput: LED_LUMINAIRE_INSTALLATION_RUNTIME_INPUT,
   runtimeProfileClassification: LED_LUMINAIRE_INSTALLATION_RUNTIME_CLASSIFICATION,
   runtimeProfileSourceIds: LED_LUMINAIRE_INSTALLATION_RUNTIME_SOURCE_IDS,
-  verifyCore:verifyLedSurfaceWholeCoreR1,
-  verifyTargetPrecondition:async(client,phase)=>{
-   const current=await readMasterSuccessorTargetPreimageR1(client,{releaseId:parent.releaseId,catalogId:LED_LUMINAIRE_INSTALLATION_CATALOG_ID,
-    sourceId:LED_LUMINAIRE_INSTALLATION_SOURCE_ID,lock:phase==='LOCKED_BEFORE'});
-   if(canonicalEstimateStableJson({header:current.header,sets:current.sets})!==canonicalEstimateStableJson(expected))
-    throw Error('LED_SURFACE_ACTUAL_PARENT_DRIFT:'+phase);
-  },
-  expectedParentShape: [31, 23, 23],
+  verifyCore,
+  expectedParentShape: [22, 10, 10],
   benchmarkOrdinal: 23,
   validationScenario: "MASTER_BENCHMARK_23_LED_LUMINAIRE_INSTALLATION",
   passport: {
     canonicalRuName: "Монтаж накладного светодиодного светильника 36 Вт IP40",
     workKey: "electrical_interior_lighting_install_standard",
-    physicalResultRu: "Цикл монтажа точных накладных36ВтIP40 представлен по операциям. Фактические основание, соединения, снабжение, испытания и результаты должны быть подтверждены отдельно; готовность объекта не заявлена.",
-    independentCompletenessMap:ledSurfaceWholeCompletenessR1(),
+    physicalResultRu: "Накладные LED-светильники 36 Вт IP40 закреплены на подтверждённом основании, подключены, PE-соединение и включение проверены",
     includedScopeRu: ["монтаж известного количества точных светильников",
       "видимый баланс установленных светильников, резерва, упаковки, заказа и остатка",
       "крепёж только по основанию и узлу монтажа",
@@ -117,8 +166,7 @@ export function ledSurfaceInstallationConfigR1(parent:{releaseId:string;searchRe
     excludedScopeRu: ["кабельная линия освещения", "выключатели", "распределительный щит",
       "автоматические поштучные и погонные нормы", "неподтверждённые цены"],
   },
-  applicability: { country: "KG", sourceOnlyUnrun:true,fullTechnicalAcceptance:false,acceptedCompleteTypes:0,
-    actualProjectAuthenticated:false,manufacturerBOMNotInstallationNorm:true,wholeCycleSourceSha256:LED_SURFACE_WHOLE_SOURCE_SHA_R1, operationClass: "INSTALL_LED_LUMINAIRE",
+  applicability: { country: "KG", operationClass: "INSTALL_LED_LUMINAIRE",
     materialSystem: "SURFACE_LED_36W_IP40", primaryMeasureParameterId: "luminaire_count",
     geometryParameters: ["luminaire_count"],
     knownScopeParameters: ["rated_power", "ingress_protection", "mounting_type"],
@@ -144,9 +192,6 @@ export function ledSurfaceInstallationConfigR1(parent:{releaseId:string;searchRe
     knownScopeInputs: ["rated_power", "ingress_protection", "mounting_type"],
     officialGuidanceArtifactSha256: LED_LUMINAIRE_INSTALLATION_SOURCE_METADATA.artifact_sha256,
     visiblePreliminaryBalanceInputs: Object.keys(LED_LUMINAIRE_INSTALLATION_RUNTIME_INPUT),
-    wholeCycleSourceSha256:LED_SURFACE_WHOLE_SOURCE_SHA_R1,
-    factoryRevisionFacts:[source.factoryProfileId,source.factoryDocumentId,source.factoryFitId,source.additionalMountingId],
-    manufacturerFactorySourceEvidence:source.sources,returnWhen:source.returnWhen,
     directProjectInputs: ["anchor_set_designation", "anchor_set_quantity_set",
       "terminal_connector_designation", "terminal_connector_quantity_piece",
       "connection_wire_designation", "connection_wire_length_m", "pe_lug_designation",
@@ -162,10 +207,10 @@ export function ledSurfaceInstallationConfigR1(parent:{releaseId:string;searchRe
     canonicalNameRu: "Монтаж накладного светодиодного светильника 36 Вт IP40",
     aliases: ["монтаж LED светильника 36 Вт IP40", "установка накладного светильника",
       "подключение светодиодного светильника", "surface LED luminaire installation"],
-    shortScopeRu: "Монтаж накладных LED-светильников36ВтIP40 по фактической ведомости. Штатный комплект точной ревизии показан отдельно; основание, соединения, инструмент, труд, логистика и контроль требуют применимых источников и фактов.",
+    shortScopeRu: "Монтаж 30 накладных LED-светильников 36 Вт IP40 с видимым балансом изделий; проектные комплектующие, труд, оборудование, логистика и испытания остаются точечными уточнениями до получения ППР и ведомостей.",
     keyDistinguishingParameters: ["luminaire_count", "rated_power", "ingress_protection",
       "mounting_type"],
-    clarificationFields: [source.factoryProfileId,source.factoryDocumentId,source.factoryFitId,source.additionalMountingId,"luminaire_retained_spare_piece",
+    clarificationFields: ["luminaire_retained_spare_piece",
       "luminaire_supplier_pack_size_piece", "anchor_set_designation", "anchor_set_quantity_set",
       "terminal_connector_designation", "terminal_connector_quantity_piece",
       "connection_wire_designation", "connection_wire_length_m", "pe_lug_quantity_piece",
@@ -190,21 +235,7 @@ export function ledSurfaceInstallationConfigR1(parent:{releaseId:string;searchRe
     /light.switch|выключател/iu, /distribution.board|распределительн.*щит/iu],
   owner: "S27_23_LED_LUMINAIRE_INSTALLATION_BALANCED_SUCCESSOR",
   receiptFileStem: "S27_23_LED_LUMINAIRE_INSTALLATION_BALANCED",
- };}
-if(process.argv[1]?.replaceAll('\\','/').endsWith('/prepareMasterLedLuminaireInstallationSuccessor.ts')){
- // Same existing ordinary entrypoint; a reviewed R830 body is mandatory. ROOT
- // owns execution, fresh common source capture and all publication decisions.
- const path=process.env.R4A13_LED_TARGET_PARENT_PROOF_PATH;
- if(!path)throw Error('LED_SURFACE_EXISTING_READER_PROOF_PATH_REQUIRED');
- const bytes=readFileSync(resolve(path));
- if(createHash('sha256').update(bytes).digest('hex')!==LED_SURFACE_WHOLE_SOURCE_R1.currentParent.proofSha256)
-  throw Error('LED_SURFACE_EXISTING_READER_PROOF_SHA_REQUIRED');
- const proof=JSON.parse(bytes.toString('utf8')),target=proof.results.find((r:Json)=>r.target.catalogId===LED_LUMINAIRE_INSTALLATION_CATALOG_ID);
- if(!target?.currentBody)throw Error('LED_SURFACE_WHOLE_CURRENT_BODY_REQUIRED');
- const current=JSON.parse(readFileSync(resolve('data/estimate-benchmarks/r568-local-developer-canonical-release.json'),'utf8'));
- void runMasterSingleDefinitionSuccessorR1(ledSurfaceInstallationConfigR1({releaseId:current.definitionReleaseId,searchReleaseId:current.searchReleaseId,
-  currentBody:target.currentBody,expectedPreimage:{header:target.current.header,sets:target.current.sets}})).catch((error:unknown)=>{
-   process.stderr.write(`${error instanceof Error?error.stack??error.message:String(error)}\n`);process.exitCode=1;
-  });
-}
-
+}).catch((error: unknown) => {
+  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+  process.exitCode = 1;
+});

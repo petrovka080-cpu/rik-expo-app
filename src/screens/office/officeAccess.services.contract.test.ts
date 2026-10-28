@@ -14,17 +14,16 @@ describe("officeAccess.services source contract", () => {
     const source = fs.readFileSync(servicePath, "utf8");
     const transport = fs.readFileSync(transportPath, "utf8");
 
-    expect(source).toContain('role: OFFICE_BOOTSTRAP_ROLE');
     expect(source).toContain('status: "pending"');
     expect(source).toContain('.from("companies")');
     expect(source).toContain('.from("company_members")');
     expect(source).toContain('.from("company_invites")');
-    expect(source).toContain("insertOfficeCompanyMember({");
-    expect(source).toContain("insertOfficeCompanyProfile(");
+    expect(source).not.toContain("insertOfficeCompanyMember(");
+    expect(source).not.toContain("insertOfficeCompanyProfile(");
     expect(source).not.toContain('supabase.from("company_members").insert');
     expect(source).not.toContain('supabase.from("company_profiles").insert');
-    expect(transport).toContain('supabase.from("company_members").insert(payload)');
-    expect(transport).toContain('supabase.from("company_profiles").insert(payload)');
+    expect(transport).not.toContain('.from("company_members")');
+    expect(transport).not.toContain('.from("company_profiles")');
     expect(source).toContain('{ count: "exact" }');
     expect(source).toContain(".range(");
     expect(source).not.toContain('role: "buyer"');
