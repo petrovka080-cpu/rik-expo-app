@@ -865,3 +865,65 @@ export function getProfessionalWorkPassportBuildCacheStats(): {
     productionExpanded: getProductionExpandedEstimate10000CacheStats(),
   };
 }
+
+
+import intercomWholeSourceR1 from'../../../data/estimate-benchmarks/source-packs/intercom-existing-domain-whole-r1.json';
+import{buildAutomaticConstructionOwnerR1,unresolvedApplicationNormTruthR1,type AutomaticOwnerDefinition,type AutomaticParameterSpec,type AutomaticInclusionCondition}from'./v4/automaticConstructionOwnerR1';
+import{compileFormulaGraph as intercomFormulaR1}from'./backendPlatform/formulaGraph';
+import{estimateDeterministicHash as intercomHashR1}from'./estimateDeterministicHash';
+export const INTERCOM_EXISTING_DOMAIN_WHOLE_SOURCE_R1=intercomWholeSourceR1;
+function intercomRecordR1(v:unknown):Record<string,unknown>{if(v===null||typeof v!=='object'||Array.isArray(v))throw Error('INTERCOM_R1_RECORD_REQUIRED');return Object.fromEntries(Object.entries(v));}
+/** Source model of the already registered intercom work, compiled only by the
+ * common Core. No new public catalog, calculator, implicit system or publisher. */
+export function intercomExistingDomainWholeDefinitionR1(profileId:string):AutomaticOwnerDefinition{
+ const q=INTERCOM_EXISTING_DOMAIN_WHOLE_SOURCE_R1,n=q.freshParent.nativeParentModel;
+ if(profileId!==q.profileId||n.parameters.length!==1||n.formulas.length!==63||n.resources.length!==63)throw Error('INTERCOM_R1_EXACT_ESTABLISHED_PROFILE_PARENT_REQUIRED');
+ const active:AutomaticInclusionCondition={kind:'greater_than',parameterId:'intercom_actual_installed_complete_systems_r1',value:0};
+ const spec=(p:{id:string;titleRu:string;unitId:string;minimum:number;valueType:string;maximum?:number}):AutomaticParameterSpec=>{
+  if(p.valueType!=='decimal'&&p.valueType!=='integer')throw Error('INTERCOM_R1_NUMERIC_SPEC');return{id:p.id,title:p.titleRu,unitId:p.unitId,valueType:p.valueType,kind:'ordinary',min:p.minimum,...(p.maximum===undefined?{}:{max:p.maximum})};
+ };
+ const physical=[...q.resources,...q.notes],facts=new Set(q.scopeFactIds);
+ const parameters:AutomaticParameterSpec[]=[{id:'q',title:'Фактический объём существующей работы',unitId:'point',valueType:'decimal',kind:'ordinary',min:0},...q.ordinaryInputs.map(spec),
+  ...q.resources.filter(r=>r.quantityUnknown).map(r=>{if(typeof r.quantityParameterId!=='string')throw Error('INTERCOM_R1_MEASURED_QUANTITY_ID');return{id:r.quantityParameterId,title:r.publicNameRu,unitId:r.unitId,valueType:['m','m2','man_hour'].includes(r.unitId)?'decimal' as const:'integer' as const,kind:'ordinary' as const,min:0};}),
+  ...q.legacyQuantityForwards.map(r=>({id:r.quantityParameterId,title:'Неизвестное основание исходной строки: '+r.originalResource.title_ru,unitId:r.unitId,valueType:'decimal' as const,kind:'ordinary' as const,min:0}))];
+ const model=buildAutomaticConstructionOwnerR1({contract:q.contract,semanticOwner:q.catalogId,sourceId:q.candidateSourceId,normId:'PROJECT_SYSTEM:EXACT_2WIRE_INTERCOM_WHOLE_METHOD_R1',
+  sourceMetadata:{source_title:q.titleRu,source_document_version:q.contract,definition_hash:q.projectMethod.sha256,artifact_sha256:q.projectMethod.sha256,exact_locator:q.locatorKey},
+  applicabilityRu:'Только доказанная независимая односемейная двухпроводная схема, настенный монтаж, точный кабель и реле к принятому shared door owner. Не автоматически IP/PoE/cloud/второйабонент/аварийныйрежим.',
+  ordinary:parameters,profile:[],conditional:[...q.actualRecords.map(p=>({id:p.id,title:p.titleRu,unitId:null,valueType:'text' as const,kind:'conditional' as const,resourceBranchConsumers:[q.scopeRowId]})),
+   ...q.geometryFacts.map(p=>({...spec(p),kind:'conditional' as const,resourceBranchConsumers:[q.scopeRowId]})),{id:q.scopeDecisionId,title:'Допуск точного полного метода домофонии',unitId:null,valueType:'enum',kind:'conditional',values:q.scopeDecisions,resourceBranchConsumers:[q.scopeRowId]}],
+  deferMissingProjectFactsToRows:true,
+  rows:physical.map(r=>({rowId:r.rowId,title:r.publicNameRu,section:r.rowKind==='RESOURCE'?'Состав совместимой домофонной системы':'Отдельные условия и баланс',category:r.category,unitId:r.unitId,formulaId:r.formulaId,expression:r.expression,
+   procurement:r.procurementEligible,...(r.rowId===q.effectiveCompleteKitQuantityOwner.rowId?{effectiveQuantityOutput:{parameterId:q.effectiveCompleteKitQuantityOwner.parameterId,unitId:'pcs'},purchaseBalance:{unitId:'pcs',consumedExpression:'intercom_actual_installed_complete_systems_r1',stockExpression:'0',reserveExpression:'0',orderQuantumExpression:'1'}}:{}),costTreatment:r.costTreatment==='OWN_COST'?'OWN_COST' as const:r.costTreatment==='INFORMATIONAL_SCOPE'?'INFORMATIONAL_SCOPE' as const:'INCLUDED_IN_RESOURCE_ROWS' as const,
+   ...(r.costTreatment==='INCLUDED_IN_RESOURCE_ROWS'?{purchaseBalanceOwnerRowId:r.costOwnerRowId}:{}),inclusion:active})),
+  excludedUnownedAssumptions:['No q100 baseline as actual object','No q*1.1/minimum1/3percent template rate as norm','No kit1/defaultpart/freefactorycoverage','No aggregate200m cap for many valid circuits','No nursecall049272 or copperCAT6A norm','No roomUPS/ACS/FAS/escape system duplication','No relayload/door/mains safety fromknownquantity/price','No softwarelicence/cloudapp for physicallyconfigurednonconnectedmethod','No onepicture/call/subscriber as wholebuilding acceptance','No paidlabour fromOEM1min restartwait','No liquidcleaner/aerosol ondevices','No genericNA or hidden63legacyrows']});
+ const legacyByParam=new Map(q.legacyQuantityForwards.map(x=>[x.quantityParameterId,x]));
+ const nextParams:AutomaticOwnerDefinition['parameters']=model.parameters.map(p=>{
+  if(p.parameter_id==='q')return{...n.parameters[0]!,default_value:null,truth_metadata:{...p.truth_metadata,provenance:{retainedActualNativeParameterDefinitionR1:n.parameters[0],historicalBaseline100NotActualObject:true},hidden_default_forbidden:true,runtime_profile_value:false}};
+  const old=legacyByParam.get(p.parameter_id);
+  if(old)return{...p,truth_metadata:unresolvedApplicationNormTruthR1({...p.truth_metadata,source_confirmation_required:true,runtime_profile_value:false,
+   provenance:{retainedActualFormulaR1:old.originalFormula,retainedActualResourceR1:old.originalResource},guide:{...intercomRecordR1(p.truth_metadata.guide),guide_validation_policy:'DEFER_MISSING_PROJECT_VALUE_ROW_LOCALLY_REJECT_INVALID_SUPPLIED_VALUE'}},old.returnWhen)};
+  if(!facts.has(p.parameter_id))return p;
+  return{...p,required:false,default_value:null,constraints_json:{...p.constraints_json,requiredWhen:active},truth_metadata:{...p.truth_metadata,value_source_role:'PROJECT_SPECIFIC_INPUT',visibility_role:'INTERNAL_ONLY',source_confirmation_required:true,runtime_profile_value:false,hidden_default_forbidden:true,provenance:{consumer_input_role_v1:'OBJECT_FACT',input_channel_v1:'SERVER_REVIEWED_PROJECT_RECORDS'},...(p.parameter_id===q.scopeDecisionId?{unknown_enum_values:['UNKNOWN']}:{})}};
+ });
+ const nativeFormulaForwards=q.legacyQuantityForwards.map(x=>{const c=intercomFormulaR1(x.quantityParameterId);return{...x.originalFormula,expression_source:x.quantityParameterId,ast:c.ast,input_parameter_ids:c.inputParameterIds,ast_sha256:intercomHashR1(c.ast)};});
+ const formulas=[...nativeFormulaForwards,...model.formulas];
+ const declarations=new Map(q.resourceDeclarations.map(x=>[x.rowId,x]));const roster=new Map(q.operationRoster.map(o=>[o.operationId,o]));
+ const allRows=[...n.resources,...model.resources],legacyIds=new Set(n.resources.map(r=>r.row_id));
+ const resources=allRows.map((r,i)=>{
+  const d=declarations.get(r.row_id);if(!d||d.unitId!==r.unit_id||d.formulaId!==r.formula_id)throw Error('INTERCOM_R1_ROW_BINDING:'+r.row_id);
+  const refs=d.operationIds.map(id=>{const op=roster.get(id);if(!op)throw Error('INTERCOM_R1_OPERATION_REQUIRED:'+id);return op;});
+  const legacy=legacyIds.has(r.row_id),g:Record<string,unknown>={...r.resource_graph,retainedActualNativeGraphR1:legacy?r.resource_graph:undefined,
+   operationCompositionV1:{...refs[0]!,...(refs.length>1?{additionalOperations:refs.slice(1)}:{})},
+   publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:r.title_ru,nameRu:d.publicNameRu,brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:d.resourceKind,...(d.rowKind!=='RESOURCE'?{rowKind:d.rowKind}:{})},
+   sourceWholeIntercomR1:{contract:q.contract,parent:q.freshParent.actualHeader,projectMethodSha256:q.projectMethod.sha256,legacySourceHeld:legacy,sourceAuthority:false,actualObjectAccepted:false,factorySupplyGuardPassed:false,priceCoverageAccepted:false,wholeBuildingAcceptance:false}};
+  if(!legacy){g.formulaOutputBoundsV1={schemaVersion:'canonical_formula_output_bounds_v1',unitId:r.unit_id,minimum:0,reasonRu:r.row_id.endsWith(':unused-complete-kits')?'Установка не превышает учтённую полную поставку той же партии, без процентов и заказа по округлению.':'Фактическое количество, без подмены источника/схемы/цены.'};
+   const x=q.resources.find(x=>x.rowId===r.row_id);if((x&&!x.quantityUnknown||r.row_id.endsWith(':unused-complete-kits'))&&!r.row_id.endsWith(':complete-video-kit'))g.derivedQuantityEditPolicyV1={contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',unitId:r.unit_id,parameterIds:intercomFormulaR1(d.expression).inputParameterIds,reasonRu:'Общая фабрика считает по принятым фактическим inputs; изменение количества не подтверждает метод или цену.'};}
+  if(r.row_id===q.scopeRowId){const exact={kind:'and',operands:[active,{kind:'greater_than',parameterId:'q',value:0},{kind:'equals',parameterId:q.scopeDecisionId,value:q.supportedDecision}]};const originalRowIds=n.resources.map(x=>x.row_id);
+   g.inputParameterIds=[...q.scopeFactIds];g.scopeRequirementV1={contractVersion:'canonical-scope-requirement/v1',kind:'OBJECT_SCOPE',objectFactMode:'PROJECT_APPLICABILITY_ONLY',groupId:'intercom:whole:r1',groupTitleRu:q.titleRu,titleRu:'Условия полного совместимого домофонного метода',reasonRu:'Обязательны действительная архитектура/кабельная схема/питание/дверной интерфейс/режимы/полная программа/единые владельцы и разрешение legacy63; известное число/цена их не заменяют.',exactScopeWhen:exact,objectFactParameterId:q.scopeDecisionId,unknownObjectValues:['UNKNOWN'],requiredFactParameterIds:q.scopeFactIds,coveringRowIds:[],originalRowIds,
+    projectOperationContextsV1:[{when:active,resourceRowIds:originalRowIds,applicabilityWhen:exact,requiredFactParameterIds:q.scopeFactIds,unknownFactValues:{[q.scopeDecisionId]:['UNKNOWN']}},{when:active,resourceRowIds:q.resources.map(x=>x.rowId),applicabilityWhen:exact,requiredFactParameterIds:q.scopeFactIds,unknownFactValues:{[q.scopeDecisionId]:['UNKNOWN']}}],sourceEvidence:[{sha256:q.projectMethod.sha256,locator:q.locatorKey+'; exact programme/record/source/price owner not admitted'}]};}
+  const{row_sha256:_old,...body}=r,next={...body,...(!legacy?{ordinal:i}:{}),resource_graph:g,source_metadata:legacy?{...r.source_metadata,runtimeExpressionSource:d.expression,calculationTraceTemplate:'Explicit source-held application norm: '+d.expression+'; original raw metadata/formula retained in sourceOwnedQuantityAuthorityForwardR1.originalNativeResource; no runtime constant or actual quantity accepted.',sourceOwnedQuantityAuthorityForwardR1:{originalNativeResource:r,originalFormula:q.legacyQuantityForwards.find(x=>x.rowId===r.row_id)?.originalFormula,activeQuantityAuthority:'UNRESOLVED_APPLICATION_NORM_NOT_OLD_GENERIC_COEFFICIENT'}}:r.source_metadata};
+  return{...next,row_sha256:intercomHashR1(next)};
+ });
+ if(resources.length!==q.maximumResourceRows||new Set(resources.map(r=>r.row_id)).size!==resources.length||new Set(nextParams.map(p=>p.parameter_id)).size!==nextParams.length||new Set(formulas.map(f=>f.formula_id)).size!==formulas.length)throw Error('INTERCOM_R1_DUPLICATE_IDENTITY');
+ return{parameters:nextParams,formulas,resources,runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['q',...q.ordinaryInputs.map(p=>p.id),...q.resources.filter(r=>r.quantityUnknown).map(r=>{if(typeof r.quantityParameterId!=='string')throw Error('INTERCOM_R1_QTY_INPUT');return r.quantityParameterId;})]};
+}

@@ -137,5 +137,8 @@
   "tests/estimateDomainFactory/interiorFinishesLinoleumCurrent.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesLinoleumCurrent.contract.test.ts",
   "src/lib/estimate/v4/domains/interiorFinishesWave1/productionBinding.ts": "src/lib/estimate/v4/domains/interiorFinishesWave1/productionBinding.ts",
   "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts",
-  "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts"
+  "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts",
+  "src/lib/estimate/buildProfessionalWorkPassport.ts": "src/lib/estimate/buildProfessionalWorkPassport.ts",
+  "scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts": "scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts",
+  "tests/estimateNorms/intercomExistingDomainWholeR1.contract.test.ts": "tests/estimateNorms/intercomExistingDomainWholeR1.contract.test.ts"
 }

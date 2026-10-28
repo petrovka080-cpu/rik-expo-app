@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "455f3ec15e97901656e45824bdce5777d901031df9ca37f2010472650319fa5a",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "a2be82b3c753b41bf91d8f2b0a9b1de8e12bee101483f4437f2ddab1f430f134",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "1002f12b436a9c1f92ec4c7a26de9d7dc8fa9c9297ac8b2ceed87c27c34ec743",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1357,7 +1357,7 @@
     "src/lib/estimate/buildEstimateFromInlineWorkPrompt.ts": "b8b0e9ba6da6902cda3b1307b109ac148b4fcc345f5d00f1307504233957e331",
     "src/lib/estimate/buildNormativeParameterCompletenessModel.ts": "fe4125ab115f4da226933256f67c33127b85a065bf52a4d998b009510dfc73a9",
     "src/lib/estimate/buildProfessionalBoqDraft.ts": "325e512618dc38998d788fbc7f0bb01d068eaa3f3242d1bf4ac682def118ad45",
-    "src/lib/estimate/buildProfessionalWorkPassport.ts": "b4f56e34fafd97739a5ccc0d7b574b8c2e344f66a2a32973e46264b89fa35d54",
+    "src/lib/estimate/buildProfessionalWorkPassport.ts": "b459bf691c7e5d01711654d87aee6ba838169b5b177a42ab25a8c8919051277e",
     "src/lib/estimate/canonicalParameters/canonicalParameterCalculationRelevance.ts": "946fa05dda4329cc2b183d6bf59aa2270ce91d3c213d2f3215782480ebd197ce",
     "src/lib/estimate/canonicalParameters/canonicalParameterCore.ts": "ef2d4b4a60bd07c6dace22395208249cc10f7c5703de5d8a72b8c55178d527af",
     "src/lib/estimate/canonicalParameters/canonicalParameterSchemaRegistry.ts": "bd65d2edac3be509feadd35b5ccc8fbacf13918c19ff6d6648bb640e81286581",
@@ -2598,7 +2598,11 @@
     "data/estimate-benchmarks/source-packs/glass-fleece-current-oem-physical-cycle-r1.json": "d86af311db9214a36146b23ef1c9f91dcec90105bb7ac7266eada456d0737e0d",
     "data/estimate-benchmarks/source-packs/glass-fleece-whole-quantity-basis-r1.txt": "48d999bff83391715f56dc77d4c1d53ac783ae09bccb750bac94bbaeb977d9be",
     "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts": "f156c9cc98d74bcd156a66b01033ff580c25b496b0c4312f6a999b5a81964cd7",
-    "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "0215177921859913f63f5eb58d81c68bd04fe72a05c30d6fd8152f8784bfb8c5"
+    "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "0215177921859913f63f5eb58d81c68bd04fe72a05c30d6fd8152f8784bfb8c5",
+    "scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts": "425beda8c54d45b18053d60a9e80a9106fe7f55bac0d0c9a12f65afea991a0b9",
+    "tests/estimateNorms/intercomExistingDomainWholeR1.contract.test.ts": "c185195740effce3761931edfaec36e34aa0b503f70e2b93f92d0cab2fd9d2d9",
+    "data/estimate-benchmarks/source-packs/intercom-existing-domain-whole-r1.json": "378292026553696c770f3b70c8dde1191cc63e4cff353c04495aab769f44f885",
+    "data/estimate-benchmarks/source-packs/INTERCOM_EXISTING_DOMAIN_WHOLE_R1.txt": "ea0fce3be20161fd12deab3eb5e1f364e62b0be194618d4506568b493c0833df"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3763,7 +3767,7 @@
     "node_modules/zustand/vanilla.d.ts": "4d7d964609a07368d076ce943b07106c5ebee8138c307d3273ba1cf3a0c3c751"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "a2be82b3c753b41bf91d8f2b0a9b1de8e12bee101483f4437f2ddab1f430f134",
+  "originalSeedManifestSha256": "1002f12b436a9c1f92ec4c7a26de9d7dc8fa9c9297ac8b2ceed87c27c34ec743",
   "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -3771,15 +3775,15 @@
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
     "sourceBytes": 176502689,
-    "newInputs": "Exactexistingcatalogparentfixture,11publicprimaryartifacts,sourcepack/methodTXT,existingWave1producerandbyteexactsplit2tests. Noauth/history/runtimecapture."
+    "newInputs": "Exact5R6intercomsourcefiles; no auth/history/runtime capture. Existingcoherenttypedheldcompanions retained; no unrelated canonical restore."
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2597,
+    "sourceFiles": 2601,
     "dependencyFiles": 1160,
-    "sourceBytes": 176502689
+    "sourceBytes": 178077366
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -4697,6 +4701,28 @@
       "sourceOnly": true,
       "newProductCandidate": false,
       "commonProductionChanged": false
+    },
+    "intercomWholeR1102": {
+      "parent": "955485734f1485f8e9a9e50ea950e1a0b3c6711e",
+      "actualPriorFullTypesRun": 40640779089,
+      "changedSource": [
+        "src/lib/estimate/buildProfessionalWorkPassport.ts",
+        "scripts/estimate/r555/buildR555CumulativeSuccessorPayload.ts",
+        "tests/estimateNorms/intercomExistingDomainWholeR1.contract.test.ts",
+        "data/estimate-benchmarks/source-packs/intercom-existing-domain-whole-r1.json",
+        "data/estimate-benchmarks/source-packs/INTERCOM_EXISTING_DOMAIN_WHOLE_R1.txt"
+      ],
+      "distinctSourceCasesCovered": 12,
+      "old139SeedsPreserved": true,
+      "seedKeys": 142,
+      "unchanged814LiteralClosurePreservedExceptExact5After": true,
+      "oldWave1GlassSupersetRetained": true,
+      "native63OriginalActive62": true,
+      "needs119": true,
+      "physicalClosures": 0,
+      "sourceOnly": true,
+      "newProductCandidate": false,
+      "ordinaryPublication": false
     }
   },
   "existingCiTypesStageBudget": {
