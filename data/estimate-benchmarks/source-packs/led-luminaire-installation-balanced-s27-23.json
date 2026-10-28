@@ -41,5 +41,1331 @@
     "light switches included",
     "distribution board included",
     "invented price"
-  ]
+  ],
+  "wholeCycle": {
+    "contract": "surface-led36-ip40-existing-whole/r1",
+    "prefix": "led:surface36:whole:r1",
+    "currentParent": {
+      "proofSha256": "0d8165fc3517acd4ea727b7c7a793c869aca41b6fbef7dbe64d81b388bc4caf4",
+      "definitionVersionId": "ffe05202-b951-552d-b499-e4a520910ed9",
+      "definitionSha256": "6df474ae33cb50ad3c3e637565f15f4c70b38f692aa7b2f4543b5a482def6f23",
+      "shape": [
+        31,
+        23,
+        23
+      ]
+    },
+    "scopeRu": "Только существующий монтаж накладных36ВтIP40. Точный источник WLF03 относится к сборке36Вт4000К1200x75x25 классаI с несменяемым выводомZ и конкретным штатным комплектом. Это вариант комплектации существующей технологии, не новая карточка и не фактический выбор изделия объекта.",
+    "factoryProfileId": "surface_led36_factory_profile",
+    "factoryProfileValue": "Линейное изделие 36 Вт 4000 К IP40 класса I 1200×75×25 с выводом Z и штатным комплектом ревизии источника",
+    "factoryDocumentId": "surface_led36_factory_document",
+    "factoryFitId": "surface_led36_factory_mounting_fit",
+    "factoryFitValue": "Приняты точная ревизия изделия и комплект; основание, среда, питание, PE, контактный узел и доступ совместимы по документам",
+    "additionalMountingId": "surface_led36_additional_mounting_scope",
+    "noAdditionalMountingValue": "Только подтверждённый штатный комплект; дополнительное крепление не требуется",
+    "additionalMountingValue": "Отдельное дополнительное крепление подтверждено узлом и не дублирует штатные детали",
+    "primaryCountId": "luminaire_count",
+    "paidFactoryOwnerRowId": "rc09:led_luminaire_36w_ip40",
+    "privateProductEvidence": {
+      "sku": "WLFS36W03",
+      "catalogueEan": "4260529294588",
+      "currentWebEan": "4262356470050",
+      "eanRevisionEquivalenceProved": false,
+      "requiredDimensionsMm": "1200x75x25",
+      "powerW": 36,
+      "ip": "IP40",
+      "protectionClass": "I",
+      "factoryDriverIncluded": true,
+      "externalCableIncluded": false,
+      "externalSupplyCableCores": 3,
+      "externalSupplyCableCrossSectionMm2": {
+        "min": "0.5",
+        "max": "1.5"
+      },
+      "fixedLeadReplaceable": false,
+      "suspensionIncluded": false
+    },
+    "sources": [
+      {
+        "id": "wlf03-passport",
+        "url": "https://www.wolta.ru/upload/products/f64a2074-9978-11e8-80cf-ac1f6b462347/docs/%D0%9F%D0%90%D0%A1%D0%9F%D0%9E%D0%A0%D0%A2.pdf",
+        "file": "WOLTA_WLF03_passport.pdf",
+        "sha256": "da725fcbbc72468a473855484bc102b5bee4d88f3ff7d2cdd1334fe7ded88d84",
+        "locatorRu": "PDF1 RU: конкретные4 модели,36Вт/IP40/I/1200x75x25, комплект, L/N/PE и монтаж; PDF2: поверхность, уход, тара/утилизация/транспорт."
+      },
+      {
+        "id": "wlf03-presentation",
+        "url": "https://www.wolta.ru/upload/products/f64a2074-9978-11e8-80cf-ac1f6b462347/docs/%D0%9F%D0%A0%D0%95%D0%97%D0%95%D0%9D%D0%A2%D0%90%D0%A6%D0%98%D0%AF.pdf",
+        "file": "WOLTA_WLF03_presentation.pdf",
+        "sha256": "394217477cdfdf46e42fedd440abc56e491e4a4ded34af14503165a0db686a41",
+        "locatorRu": "PDF1–2: exact36Вт/3600лм/1200x75x25, накладной монтаж; подвес отдельно."
+      },
+      {
+        "id": "wlf03-manufacturer-catalog",
+        "url": "https://www.elcn.ru/upload/iblock/a98/bzmn4oo7x1gtkxuir67u3ljq2fdgjcxw/WOLTA.-Svetodiodnoe-osveshchenie.pdf",
+        "file": "WOLTA_manufacturer_catalog_mirrored.pdf",
+        "sha256": "ee5f0cb6b4765d166068169459b3f8ae67c280542c0ca0f59572f67285ac3405",
+        "locatorRu": "PDF39 / печатные74–75: документ авторства изготовителя размещён дистрибьютором; exact36Вт/3600лм/1200x75x25/EAN4260529294588; изображённый комплект x2: скоба+винт+дюбель. Не каталог старого1190x60x22 изделия."
+      }
+    ],
+    "operations": [
+      {
+        "key": "accept-scope",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:accept-scope",
+        "operationTitleRu": "Проверить ведомость, условия помещения и основание",
+        "completionCriterionRu": "Приняты точное изделие, поверхность, питание, защита, доступ и границы работ.",
+        "processOrdinal": 10,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "isolate",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:isolate",
+        "operationTitleRu": "Отключить питание и проверить отсутствие напряжения",
+        "completionCriterionRu": "Рабочее место отключено и отсутствие напряжения проверено пригодным комплектом.",
+        "processOrdinal": 20,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "delivery",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:delivery",
+        "operationTitleRu": "Доставить и подать комплект к монтажному месту",
+        "completionCriterionRu": "Поставка и подача приняты по фактическому грузу, пути и отдельному владельцу.",
+        "processOrdinal": 30,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "receive",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:receive",
+        "operationTitleRu": "Проверить целостность и комплектность светильника",
+        "completionCriterionRu": "Изделие и его полный комплект соответствуют принятой ревизии паспорта и ведомости.",
+        "processOrdinal": 40,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "access",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:access",
+        "operationTitleRu": "Подготовить безопасный доступ",
+        "completionCriterionRu": "Средство доступа и условия работы приняты по высоте и ППР.",
+        "processOrdinal": 50,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "layout",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:layout",
+        "operationTitleRu": "Разметить места крепления",
+        "completionCriterionRu": "Разметка соответствует принятому основанию и точному монтажному комплекту.",
+        "processOrdinal": 60,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "mount",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:mount",
+        "operationTitleRu": "Закрепить монтажный комплект и светильник",
+        "completionCriterionRu": "Светильник надёжно закреплён по совместимому узлу без неподтверждённого крепежа.",
+        "processOrdinal": 70,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "prepare-leads",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:prepare-leads",
+        "operationTitleRu": "Подготовить питающий кабель и концы жил",
+        "completionCriterionRu": "Подготовлены совместимые жилы по принятому контактному узлу; длина и зачистка не угаданы.",
+        "processOrdinal": 80,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "connect",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:connect",
+        "operationTitleRu": "Соединить L, N и защитный PE",
+        "completionCriterionRu": "L, N, PE подключены раздельно и защищены по принятой схеме, оболочке и разгрузке натяжения.",
+        "processOrdinal": 90,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "inspect-pe",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:inspect-pe",
+        "operationTitleRu": "Проверить монтаж и защитное соединение",
+        "completionCriterionRu": "Визуальная и предусмотренная программой инструментальная проверка выполнены; результаты фактические.",
+        "processOrdinal": 100,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "functional",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:functional",
+        "operationTitleRu": "Восстановить питание и проверить работу",
+        "completionCriterionRu": "После допуска и проверок светильник включён и проверен по программе.",
+        "processOrdinal": 110,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "record",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:record",
+        "operationTitleRu": "Оформить результаты и передать работу",
+        "completionCriterionRu": "Фактические результаты и исполнительные документы приняты без подмены TEST данными.",
+        "processOrdinal": 120,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "cleanup",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:cleanup",
+        "operationTitleRu": "Очистить монтажное место и собрать отходы",
+        "completionCriterionRu": "Отдельно согласованы поверхность, средства очистки, упаковка и классификация отходов.",
+        "processOrdinal": 130,
+        "processRole": "PROCESS"
+      },
+      {
+        "key": "waste",
+        "groupId": "led:surface36:whole:r1",
+        "groupTitleRu": "Монтаж накладного светодиодного светильника 36 Вт IP40",
+        "operationId": "led:surface36:whole:r1:waste",
+        "operationTitleRu": "Передать упаковку и отходы по назначению",
+        "completionCriterionRu": "Путь, количество, упаковка и подтверждения передачи установлены по реальному составу.",
+        "processOrdinal": 140,
+        "processRole": "PROCESS"
+      }
+    ],
+    "resourceUses": {
+      "rc09:led_luminaire_36w_ip40": [
+        "delivery",
+        "receive"
+      ],
+      "rc09:luminaire_mounting_anchor_set": [
+        "layout",
+        "mount"
+      ],
+      "rc09:luminaire_terminal_connector": [
+        "prepare-leads",
+        "connect"
+      ],
+      "rc09:luminaire_connection_wire_3x1_5": [
+        "prepare-leads",
+        "connect"
+      ],
+      "rc09:luminaire_pe_lug": [
+        "prepare-leads",
+        "connect"
+      ],
+      "rc09:luminaire_work_platform": [
+        "access",
+        "layout",
+        "mount",
+        "prepare-leads",
+        "connect",
+        "inspect-pe",
+        "functional"
+      ],
+      "led:labor:installation": [
+        "layout",
+        "mount",
+        "prepare-leads",
+        "connect"
+      ],
+      "led:labor:testing": [
+        "inspect-pe",
+        "functional"
+      ],
+      "led:equipment:drilling-tool": [
+        "layout",
+        "mount"
+      ],
+      "led:equipment:installation-tool": [
+        "prepare-leads",
+        "mount",
+        "connect"
+      ],
+      "led:equipment:tester": [
+        "inspect-pe"
+      ],
+      "led:logistics:delivery": [
+        "delivery"
+      ],
+      "led:logistics:waste-removal": [
+        "cleanup",
+        "waste"
+      ],
+      "rc09:separate_led_driver": [
+        "receive",
+        "mount",
+        "connect"
+      ],
+      "rc09:suspended_ceiling_reinforcement_adapter": [
+        "layout",
+        "mount"
+      ]
+    },
+    "resourceKinds": {
+      "rc09:luminaire_work_platform": "MECHANISM",
+      "led:labor:installation": "LABOR",
+      "led:labor:testing": "LABOR",
+      "led:equipment:drilling-tool": "TOOL",
+      "led:equipment:installation-tool": "TOOL",
+      "led:equipment:tester": "EQUIPMENT",
+      "led:logistics:delivery": "TRANSPORT",
+      "led:logistics:waste-removal": "SERVICE"
+    },
+    "factoryComponents": [
+      {
+        "key": "factory-assembled-luminaire",
+        "titleRu": "Смонтированный линейный светильник 36 Вт IP40 класса I",
+        "countPerLuminaire": 1,
+        "unitId": "pcs",
+        "uses": [
+          "receive",
+          "mount",
+          "connect",
+          "functional"
+        ],
+        "basis": "Паспорт WLF03 PDF1: светильник в сборе; расход=N, не заказ/резерв."
+      },
+      {
+        "key": "factory-driver",
+        "titleRu": "Драйвер в составе светильника",
+        "countPerLuminaire": 1,
+        "unitId": "pcs",
+        "uses": [
+          "receive",
+          "connect",
+          "functional"
+        ],
+        "basis": "Паспорт PDF1 прямо включает драйвер в собранное изделие. Не отдельный монтируемый или покупаемый драйвер."
+      },
+      {
+        "key": "factory-mounting-clip",
+        "titleRu": "Металлическая скоба штатного накладного крепления",
+        "countPerLuminaire": 2,
+        "unitId": "pcs",
+        "uses": [
+          "receive",
+          "mount"
+        ],
+        "basis": "Авторский каталог изготовителя PDF39, печатная75: комплект накладного монтажа x2; exact36W/1200x75x25 revision."
+      },
+      {
+        "key": "factory-mounting-screw",
+        "titleRu": "Винт штатного монтажного комплекта",
+        "countPerLuminaire": 2,
+        "unitId": "pcs",
+        "uses": [
+          "receive",
+          "mount"
+        ],
+        "basis": "Та же изображённая группа x2 содержит винт. Диаметр/длина не определены изображением; пригодность к основанию обязательна."
+      },
+      {
+        "key": "factory-mounting-plug",
+        "titleRu": "Дюбель штатного монтажного комплекта",
+        "countPerLuminaire": 2,
+        "unitId": "pcs",
+        "uses": [
+          "receive",
+          "mount"
+        ],
+        "basis": "Та же изображённая группа x2 содержит дюбель. Материал/размер и допустимость основания не выводятся из картинки."
+      },
+      {
+        "key": "factory-fixed-lead",
+        "titleRu": "Несменяемый присоединительный вывод светильника L, N, PE",
+        "countPerLuminaire": 1,
+        "unitId": "pcs",
+        "uses": [
+          "receive",
+          "prepare-leads",
+          "connect"
+        ],
+        "basis": "Паспорт PDF1 и каталог PDF39: присоединение типаZ; выведенный провод изделия не заменяет питающий кабель или его длину."
+      }
+    ],
+    "factBoundary": {
+      "sourceFactsNotObjectFacts": true,
+      "factoryCountNotLaborOrToolNorm": true,
+      "kitCompatibilityWithActualBaseNotProved": true,
+      "newEanEquivalenceNotAssumed": true,
+      "manufacturerDoesNotSpecifyFastenerSizesHere": true,
+      "noAutomaticThreeConnectorsOrRingLug": true,
+      "noClipCountAsSupportLoadProof": true,
+      "noPriceOrStockDefaultFromFactoryCount": true,
+      "additionalMountingNeedsDistinctDocumentedScope": true
+    },
+    "independentClassRequirements": [
+      {
+        "operationId": "led:surface36:whole:r1:accept-scope",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:isolate",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:delivery",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:receive",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:access",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:layout",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:mount",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:prepare-leads",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:connect",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:inspect-pe",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:functional",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:record",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:cleanup",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      },
+      {
+        "operationId": "led:surface36:whole:r1:waste",
+        "classes": [
+          {
+            "kind": "MATERIAL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "CONSUMABLE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TOOL",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "ACCESSORY",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "EQUIPMENT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "MECHANISM",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "LABOR",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "SERVICE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "TRANSPORT",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          },
+          {
+            "kind": "PPE",
+            "status": "UNRESOLVED",
+            "reasonRu": "Не установлен применимый полный физический состав этого класса и его фактическое/нормативное количество. Общая категория, fixture или цена не подтверждают комплект.",
+            "rowIds": []
+          }
+        ]
+      }
+    ],
+    "returnWhen": [
+      {
+        "id": "LED36-EXACT-PACKAGE-REVISION",
+        "owner": "Поставщик/проектировщик",
+        "missing": "Фактическая маркировка/ревизия и комплект объекта; новый EAN не сопоставлен старому каталожному исполнению.",
+        "returnWhen": "Документ поставки и маркировка подтверждают exact36Вт/1200x75x25/ClassI/Z и штатные2 скобы/2 винта/2 дюбеля; либо возвращается новый точный паспорт/BOM."
+      },
+      {
+        "id": "LED36-BASE-FASTENING",
+        "owner": "Проектировщик/подрядчик",
+        "missing": "Основание, крепёжный узел, фактическая высота и физические размеры/тип штатных винтов/дюбелей.",
+        "returnWhen": "Принятый узел/ППР подтверждает допустимость штатного полного крепления; иначе требуется отдельный совместимый комплект по источнику."
+      },
+      {
+        "id": "LED36-CONTACT-CABLE",
+        "owner": "Электротехнический проектировщик/монтажник",
+        "missing": "Фактический питающий кабель/длина, жилы выводов изделия, соединители, зачистка/разгрузка/оболочка, PEконтакт и нужность кольцевого наконечника.",
+        "returnWhen": "Один утверждённый полный контактный узел с паспортами обоих изделий и фактической ведомостью соединений; старый IEK/WAGO узел не переносится автоматически."
+      },
+      {
+        "id": "LED36-COMPLETE-PROVISION",
+        "owner": "Подрядчик/сметчик",
+        "missing": "Конкретные монтажный/измерительный инструменты, оснастка, СИЗ, доступ, труд и границы цены общих владельцев.",
+        "returnWhen": "Целые совместимые комплекты и применимая норма/принятая организация обеспечивают каждую операцию без второго заказа/платежа."
+      },
+      {
+        "id": "LED36-QA-HANDOVER",
+        "owner": "Проектировщик/электролаборатория",
+        "missing": "Фактическая программа, состав измерений/единица, пригодные приборы/принадлежности и документы результатов.",
+        "returnWhen": "Точная программа и результаты этой установки; включение светильника не заменяет проверку PE/цепи и наоборот."
+      },
+      {
+        "id": "LED36-LOGISTICS-CLEANUP",
+        "owner": "Подрядчик/логист/сметчик",
+        "missing": "Принятые груз/маршрут/подача, физическая уборка после монтажа, упаковка/отходы и покрытие цены.",
+        "returnWhen": "Фактический план с целыми ресурсными комплектами/единицами/количествами и одним владельцем; уход из паспорта не считается автоматически монтажным трудом."
+      }
+    ],
+    "runtime": "UNRUN",
+    "sourceOnly": true,
+    "publicationAllowed": false,
+    "physicalNeedsClosed": 0,
+    "newReady": false
+  }
 }

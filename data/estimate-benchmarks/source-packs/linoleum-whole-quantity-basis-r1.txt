@@ -1,0 +1,122 @@
+LINOLEUM CURRENT WHOLE QUANTITY BASIS R1 — SOURCE ONLY / UNRUN
+Existing catalog: canonical-work:base:flooring_interior_linoleum_lay_standard.
+This is an authored dimensional/measurement record. It grants no KG normative adoption,
+new public card, actual project fact, price, publication or complete physical acceptance.
+
+1. METHOD AND ORIGINAL STATE
+Actual R1065 native1/59/59 and R1072 proposed-key absence are independent observations.
+The59 original IDs, formula AST/units/input IDs, physical owners and source metadata are
+retained in their legacy selector branch. Original q100 remains an historical visible
+baseline assumption. It is not a measurement of a new job or authority for OEM quantities.
+The exact new branch is ordinary jute-backed natural sheet2.5mm with the611 EN V17/B1
+method, prepared absorbent unheated floor. PVC, Decibel/Ohmex, Click/modular, stairs,
+coving, unapproved repair/levelling, other adhesives/regions are outside this branch.
+
+2. PRIMARY DOCUMENTS
+Forbo Sheet: filename January2023, content header032021; standard jute and611/B1,
+68kg floor roller, edge pressing, individual sheets, scribed net-fit joints, optional
+specified hot weld. Page7: suitable groove,5mm nozzle, trial weld; no general PVC rod.
+Forbo611 linked EN TDS BG132567 Version17/2023-08-30:280–385g/m²,11kg bucket,
+ready dispersion stirred before use, clean tools with water; no mortar mixing-water norm.
+The old230–290/260–300g/m² versions are not interchangeable input norms here.
+Floorcare09.2022 requires no wet initial cleaning within3days. This controls the proposed
+manual initial-clean stage; the older installation48h statement does not shorten it.
+The exact cleaning-product dilution, actual surface condition and accepted work timing
+remain required. No factory finish stripping, polish, strong solvent or acid added by default.
+Linked611 SDS11.3/20.02.2025 is trade-named611EurostarLino: supplier identity must match.
+Its glove advice requires actual glove-maker resistance/breakthrough data; no automatic
+nitrile type, respirator count or wear rate. Chemical and knife-cut protection are distinct.
+
+3. CUT PLAN AND SUPPLY
+Every purchased cut has an accepted roll/SKU/batch/usable-width/bin assignment. An area
+sum alone does not prove that cuts fit a roll or that short offcuts are usable.
+For a single accepted actual width W and accepted issued total length L:
+ issued gross area = W*L [m²]; consumed allocation = W*L - accepted reusable return [m²].
+ consumed allocation - net laid area >=0. Negative balances are errors, never max(0).
+Purchased m² = accepted supplier cut-length sum * that same actual width. The accepted
+piecewise purchase schedule has already considered compatible stock and usable offcuts:
+stock is not subtracted again. No universal5/10percent waste or area-based roll rounding.
+Different widths/batches/length constraints require a new accepted takeoff, not this scalar
+summary. Actual delivered material and actual order acceptance are separate from both.
+
+4. ADHESIVE TRIAL AND QUANTITY
+For a valid trial contained within the final bonded floor:
+ rate = (trial bucket start kg - trial bucket end kg - separately measured discard kg)
+        / actual trial bonded m².
+Trial area>0; net laid area - trial area >=0; rate must lie within0.280..0.385kg/m² for
+this exact TDS. Unknown inputs stay unknown. A measured zero discard must be explicit;
+it is never a default. No midpoint or maximum rate silently selected. An external trial
+requires its own nonduplicated material balance and is outside this narrow implementation.
+Consumed adhesive = actual net laid m² * accepted rate [kg].
+Planned homogeneous supply = ceil(max(0,consumption+reserve-usable stock)/(11*M))*(11*M)
+where M is actual positive integer supplier bucket multiple. Unknown stock/reserve/M
+remain unknown: consumption can be known while planned supply is not. The rounded
+plan is informational in this forward; it does not assert delivery, order or paid owner.
+
+5. MEASURED SHARED FLOWS
+Cleaning water = dedicated final litre reading - initial litre reading, >=0.
+The same water has one physical ID at actual adhesive/laying/seam/junction/clean consumers.
+A building-wide meter may not be attributed wholly to this job. Filling a vessel repeatedly
+is not a vessel count. Water in ready adhesive is not additional mixing water.
+Inbound transport = actual consolidated cargo gross kg /1000 * accepted route km [t·km].
+It is not automatically both inbound and outbound. Waste transfer kg is a different service.
+Segregated net waste kg = actual gross kg - matching tare kg, >=0. Linoleum trim, used blades,
+adhesive/wash residues and packaging have real separate containers/receiver by applicability.
+No waste density, bag capacity, trips or receivers can be derived from floor area alone.
+Identical protection-cut area = actual accepted count*length*width. Count and dimensions
+come from the protection plan; no universal room multiplier or protective product chosen.
+Actual labour = accepted nonoverlapping person-minutes/60 [man_hour]. This is a factual
+record with trace, not a productivity norm, installation method approval or duplicate crew
+payment. CT54/CT29/CT126 labour rates and curing clock time are not labour input quantities.
+
+6. WELDING KIT AND SEAM
+K is actual provided ORIGINAL complete Leister161.334230V kit inventory, not default1,
+workstation count, number of seams or area-derived need. The OEM lists the heat gun,
+100.303 tube,105.433 speed nozzle,142.717 SPARE heater and116.586 case. Each singular
+member is K provided pieces, not K newly bought pieces. It is not a complete welding post:
+groover/trimmer/guide/brush/rest/power/cable/PPE/roller are not invented as kit members.
+Official web primary details were read; raw PDF download returned429. The artifact byte
+pin and exact delivered-kit compatibility remain SOURCE_HELD; this forward grants no kit
+admission or cost inclusion. A spare heater is not a second operating heater or energy rate.
+Specified cable length = accepted welded-seam length + measured trial allowance + accepted
+join/end allowance. Each zero must be explicit. No universal cable-loss percentage.
+NET_FIT has no welding-tool quantity requirement, but requires actual permission from the
+usage/specification. HOT_WELD requires its own actual approved method, compatible rod,
+trial/setup, electrical safety and the applicable drying interval. User method text is not proof.
+The seam roller remains mandatory for the scribed joint (UKguidep5). ROLLER/HAMMER
+are alternatives only at otherwise inaccessible edges. A selected HAMMER does not remove
+the seam roller. The same provided seam roller is reused at edges when ROLLER is selected;
+conditional consumer references carry no second payment or order. Perimeter sealant
+exists only under a confirmed specified node; confirmed none differs from missing evidence.
+
+7. TRUTH AND OPEN NEEDS
+26 independent numeric inputs are proposed;13 physical rule expressions are authored.
+This is not a claim that26 UI questions disappeared, nor26 actual project closures.
+45 physical quantities remain application/source/provision held.16 protected declarations
+remain distinct from numeric UNKNOWN and price. A protected readback can establish the
+validity of a method without inventing an unentered meter reading, inventory count or hour.
+All new rows are INFORMATIONAL_SCOPE and not actual procurement/payment. Shared IDs
+are displayed at all real consumers; supplied-kit member links are inventory links, not a
+claim that a price paid under another row is known. Commercial allocation needs its own
+actual contract/order basis. Manual numbers and prices do not remove source/condition holds.
+
+8. ORDINARY INTAKE
+Use existing MasterSingleDefinitionSuccessor and existing source-aware retained guard.
+The native q approval has matching tree/baseline/old source-definition and exact q-consumer
+arrays; existing legacyTemplateAssumptionSources can retain its r555-source provenance.
+No product guard defect is asserted. ROOT must create the normal formal retained capture
+using the existing reader/helper, preserve all0native registry tuples, declare only NEW
+rows under the proposed PROJECT_SYSTEM source, retain old59 historical status, assemble
+exact typed partial witnesses and execute normal/locked common preflight under its lease.
+R1065/R1072 observations are not that capture. The historical migration main is not a new
+family entrypoint and must not be invoked. No new publisher, SQL reader or engine is added.
+
+RETURN CONDITIONS
+- ROOT actual finite25cases/types/materialized context and formal source-aware capture.
+- Accepted exact product/base/climate/layout/bond/seam/safety/receiver/curing/cleaning facts.
+- Exact per-roll cut/stock/usable-return and supplier takeoff, with one-use trace.
+- Provided compatible inventory and actual labour/rental/transport/cleaning documents.
+- Exact tool-kit raw source byte pin and delivered SKU; full post attachments separately.
+- Compatible neutral cleaner dose and chemical/cut-risk PPE manufacturer evidence.
+Source-only completion retains every previous finishing family's needs and returnWhen.
+0 object closures; no READY, seal, publication, native/save/PDF acceptance or FULL claimed.

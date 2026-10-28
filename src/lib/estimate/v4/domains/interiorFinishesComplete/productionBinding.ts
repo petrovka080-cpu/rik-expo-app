@@ -567,3 +567,133 @@ export function isInteriorFinishesProductionDraftV1(draft: ConsumerRepairAiDraft
     item.sourceParameters?.professionalDomainFactoryV1 === true &&
     item.sourceParameters?.domainId === INTERIOR_FINISHES_COMPLETE_DOMAIN_ID));
 }
+
+
+// Exact current linoleum continuation. No registered default or saved revision
+// is changed by importing these explicit source-only functions.
+import linoleumParentR1065 from '../../../../../../data/estimate-benchmarks/fixtures/linoleum-current-parent-r1065.json';
+import linoleumPackR1 from '../../../../../../data/estimate-benchmarks/source-packs/linoleum-current-oem-physical-cycle-r1.json';
+import {buildAutomaticConstructionOwnerR1 as buildLinoleumAutomaticR1,
+ compileAutomaticConstructionOwnerR1 as compileLinoleumAutomaticR1,
+ unresolvedApplicationNormTruthR1 as linoleumUnresolvedR1,
+ type AutomaticOwnerDefinition as LinoleumDefinitionR1,
+ type AutomaticParameterSpec as LinoleumParameterR1,
+ type AutomaticRowSpec as LinoleumRowR1,
+ type AutomaticInclusionCondition as LinoleumConditionR1} from '../../automaticConstructionOwnerR1';
+import {canonicalEstimateStableJson as linoleumStableR1} from '../../../backendPlatform/canonicalEstimateDeterminism';
+import {canonicalEstimateSha256HexText as linoleumShaTextR1} from '../../../backendPlatform/canonicalEstimateSha256';
+import {compileFormulaGraph as linoleumFormulaR1, type FormulaAst as LinoleumAstR1} from '../../../backendPlatform/formulaGraph';
+import {estimateDeterministicHash as linoleumRowHashR1} from '../../../estimateDeterministicHash';
+import {effectivePurchaseBalanceExpressionsR1 as linoleumBalanceR1} from '../../effectivePurchaseBalanceR1';
+
+type LinoleumRecordR1=Record<string,unknown>;
+const lr1=(value:unknown):LinoleumRecordR1=>{if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('LINOLEUM_R1_RECORD_REQUIRED');return value;};
+const lt1=(value:unknown):string=>{if(typeof value!=='string')throw Error('LINOLEUM_R1_TEXT_REQUIRED');return value;};
+const la1=(value:unknown):unknown[]=>{if(!Array.isArray(value))throw Error('LINOLEUM_R1_ARRAY_REQUIRED');return value;};
+const lb1=(value:unknown):boolean=>{if(typeof value!=='boolean')throw Error('LINOLEUM_R1_BOOLEAN_REQUIRED');return value;};
+const li1=(value:unknown):number=>{if(typeof value!=='number'||!Number.isSafeInteger(value)||value<0)throw Error('LINOLEUM_R1_ORDINAL_REQUIRED');return value;};
+function linoleumAstR1(value:unknown):LinoleumAstR1{
+ const x=lr1(value);
+ if(x.kind==='literal')return{...x,kind:'literal',value:lt1(x.value)};
+ if(x.kind==='parameter')return{...x,kind:'parameter',id:lt1(x.id)};
+ if(x.kind==='unary'&&(x.operator==='+'||x.operator==='-'))return{...x,kind:'unary',operator:x.operator,operand:linoleumAstR1(x.operand)};
+ if(x.kind==='binary'&&(x.operator==='+'||x.operator==='-'||x.operator==='*'||x.operator==='/'))return{...x,kind:'binary',operator:x.operator,left:linoleumAstR1(x.left),right:linoleumAstR1(x.right)};
+ if(x.kind==='conditional')return{...x,kind:'conditional',condition:linoleumAstR1(x.condition),whenTrue:linoleumAstR1(x.whenTrue),whenFalse:linoleumAstR1(x.whenFalse)};
+ if(x.kind==='call'&&(x.function==='ceil'||x.function==='floor'||x.function==='max'||x.function==='min'||x.function==='pow'||x.function==='round_to'||x.function==='sqrt'||x.function==='unit_convert'))return{...x,kind:'call',function:x.function,arguments:la1(x.arguments).map(linoleumAstR1)};
+ throw Error('LINOLEUM_R1_AST_REQUIRED');
+}
+export const linoleumCurrentWholePackR1=linoleumPackR1;
+/** All ten actual sets, full header, raw provenance and arithmetic are guarded
+ * before mapping. No reconstruction from the manifest or generic59 fixture. */
+export function linoleumActualCurrentR1(actual:unknown=linoleumParentR1065):LinoleumDefinitionR1{
+ const snapshot=lr1(actual),body=lr1(snapshot.body),header=lr1(snapshot.header);
+ if(linoleumStableR1(header)!==linoleumStableR1(linoleumPackR1.parent.header)
+  ||linoleumShaTextR1(linoleumStableR1(body))!==linoleumPackR1.parent.bodySha256)throw Error('LINOLEUM_R1_ACTUAL_R1065_BODY_REQUIRED');
+ const definition=lr1(la1(body.definition)[0]);
+ if(definition.catalog_id!==linoleumPackR1.catalogId||definition.id!==header.definition_version_id
+  ||definition.definition_sha256!==header.definition_sha256||definition.definition_version!==3)throw Error('LINOLEUM_R1_ACTUAL_HEADER_REQUIRED');
+ const parameters:LinoleumDefinitionR1['parameters'][number][]=la1(body.parameters).map(raw=>{const p=lr1(raw);return{...p,
+  parameter_id:lt1(p.parameter_id),ordinal:li1(p.ordinal),value_type:lt1(p.value_type),unit_id:p.unit_id===null?null:lt1(p.unit_id),title_ru:lt1(p.title_ru),
+  required:lb1(p.required),default_value:p.default_value,constraints_json:p.constraints_json===null?null:lr1(p.constraints_json),truth_metadata:lr1(p.truth_metadata)};});
+ const formulas:LinoleumDefinitionR1['formulas'][number][]=la1(body.formulas).map(raw=>{const f=lr1(raw),expression=lt1(f.expression_source),compiled=linoleumFormulaR1(expression),ast=linoleumAstR1(f.ast),inputs=la1(f.input_parameter_ids).map(lt1);
+  if(linoleumStableR1(compiled.ast)!==linoleumStableR1(ast)||linoleumStableR1(compiled.inputParameterIds)!==linoleumStableR1(inputs))throw Error('LINOLEUM_R1_RETAINED_FORMULA_PARITY');
+  return{...f,formula_id:lt1(f.formula_id),output_unit_id:lt1(f.output_unit_id),expression_source:expression,ast,input_parameter_ids:inputs,ast_sha256:lt1(f.ast_sha256)};});
+ const resources:LinoleumDefinitionR1['resources'][number][]=la1(body.resources).map(raw=>{const r=lr1(raw);return{...r,id:lt1(r.id),row_id:lt1(r.row_id),ordinal:li1(r.ordinal),section:lt1(r.section),category:lt1(r.category),title_ru:lt1(r.title_ru),unit_id:lt1(r.unit_id),formula_id:lt1(r.formula_id),inclusion_ast:lr1(r.inclusion_ast),resource_graph:lr1(r.resource_graph),procurement_eligible:lb1(r.procurement_eligible),cost_owner_id:r.cost_owner_id===null?null:lt1(r.cost_owner_id),source_metadata:r.source_metadata===null?null:lr1(r.source_metadata),row_sha256:lt1(r.row_sha256)};});
+ if(parameters.length!==1||formulas.length!==59||resources.length!==59||la1(body.bindings).length!==0||la1(body.locators).length!==0||la1(body.sources).length!==0)throw Error('LINOLEUM_R1_CURRENT_SHAPE_REQUIRED');
+ return{parameters,formulas,resources,runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['q']};
+}
+const lp1=linoleumPackR1,ln1=lp1.namespace,lid1=(key:string)=>ln1+key,
+ leq1=(id:string,value:string):LinoleumConditionR1=>({kind:'equals',parameterId:id,value}),
+ lexact1=leq1(lp1.selector.parameterId,lp1.selector.exactValue);
+const linoleumFactIdsR1=(keys:readonly string[])=>keys.map(key=>{const f=lp1.protectedFacts.find(f=>f.key===key);if(!f)throw Error('LINOLEUM_R1_FACT:'+key);return f.id;});
+function linoleumOperationsR1(keys:readonly string[]){
+ const refs=keys.map(key=>{const o=lp1.operations.find(o=>o.key===key);if(!o)throw Error('LINOLEUM_R1_OPERATION:'+key);return{operationId:lid1('operation:'+key),operationTitleRu:o.titleRu,processOrdinal:lp1.operations.indexOf(o)*10,processRole:'PROCESS' as const,completionCriterionRu:'Реальное обеспечение и результат подработы проверены в точной применимой технологии; открытые количества не скрываются.'};});
+ return{contractVersion:'canonical-operation-resource/v1',groupId:ln1,groupTitleRu:lp1.titleRu,...refs[0]!,additionalOperations:refs.slice(1)};
+}
+function linoleumPublicKindR1(key:string){
+ if(['chemical-glove','chemical-goggle','cut-protection','knee-protection','work-footwear'].includes(key))return 'PPE';
+ if(key==='labour')return 'LABOR';if(key==='vehicle')return 'TRANSPORT';
+ if(['moisture-test','quality-service','handover-doc','waste-haul'].includes(key))return 'SERVICE';
+ if(['covering','adhesive','clean-water','weld-cable','perimeter-seal','neutral-cleaner'].includes(key))return 'MATERIAL';
+ if(['wipe','straight-blade','hooked-blade','vacuum-filter','vacuum-bag','mop-pad','waste-sack','wet-waste-vessel','sharps-vessel','protection-cover'].includes(key))return 'CONSUMABLE';
+ return ['vacuum','handling-trolley','upright-storage','inspection-light','power-provision'].includes(key)?'EQUIPMENT':'TOOL';
+}
+function linoleumRehashR1(row:LinoleumDefinitionR1['resources'][number]):LinoleumDefinitionR1['resources'][number]{const{row_sha256:_old,...content}=row;return{...content,row_sha256:linoleumRowHashR1(content)};}
+/** Same existing catalog and compiler. Legacy59 remains a distinct executable
+ * branch; none of its area coefficients, owners or provenance gain OEM status. */
+export function buildLinoleumCurrentWholeR1(actual:unknown=linoleumParentR1065):LinoleumDefinitionR1{
+ const old=linoleumActualCurrentR1(actual),evidence=lp1.primaryPins[0]!,held=new Map(lp1.resources.filter(r=>r.heldQuantity).map(r=>[r.expression,r.quantityBasis])),
+  selectors:LinoleumParameterR1[]=[{id:lp1.selector.parameterId,title:'Способ укладки существующей карточки',valueType:'enum',unitId:null,kind:'ordinary',values:[lp1.selector.legacyValue,lp1.selector.exactValue]},
+   {id:lp1.seamParameterId,title:'Тип стыка по принятой спецификации',valueType:'enum',unitId:null,kind:'ordinary',values:lp1.seamValues},
+   {id:lp1.edgeParameterId,title:'Способ прижатия недоступных катку примыканий',valueType:'enum',unitId:null,kind:'ordinary',values:lp1.edgeValues}],
+  ordinary:LinoleumParameterR1[]=[...selectors,...lp1.numericDrivers.map(d=>({id:d.id,title:d.titleRu,valueType:d.integer?'integer' as const:'decimal' as const,unitId:d.unitId,kind:'ordinary' as const,min:d.minimum}))],
+  conditional:LinoleumParameterR1[]=[...lp1.protectedFacts.map(f=>({id:f.id,title:f.titleRu,valueType:'enum' as const,unitId:null,kind:'conditional' as const,values:f.values,
+    // Real application facts use the existing Core consumer requirement.
+    // Optional numerical measurements remain separate row quantity needs.
+    requiredWhen:f.key==='weld_method'?{kind:'and' as const,operands:[lexact1,leq1(lp1.seamParameterId,'HOT_WELD')]}
+     :f.key==='netfit_permission'?{kind:'and' as const,operands:[lexact1,leq1(lp1.seamParameterId,'NET_FIT')]}:lexact1})),
+   ...[...held].map(([id,title])=>({id,title,valueType:'decimal' as const,unitId:lp1.resources.find(r=>r.expression===id)!.unitId,kind:'internal' as const,min:0}))];
+ const rows:LinoleumRowR1[]=lp1.resources.map(r=>{
+  let inclusion:LinoleumConditionR1=lexact1;
+  if(r.appliesWhen?.includes('HOT_WELD'))inclusion={kind:'and',operands:[lexact1,leq1(lp1.seamParameterId,'HOT_WELD')]};
+  if(r.functionKey==='perimeter-seal')inclusion={kind:'and',operands:[lexact1,leq1(lp1.parameterPrefix+'perimeter_scope','SEAL_REQUIRED')]};
+  if(r.functionKey==='rubbing-hammer')inclusion={kind:'and',operands:[lexact1,leq1(lp1.edgeParameterId,'HAMMER')]};
+  // No sealant is implied by area or by a general wish for welded seams.
+  // Its exact applicable junction remains an explicit held physical need.
+  return{rowId:r.rowId,formulaId:r.formulaId,section:r.primaryOperation,category:r.functionKey==='labour'?'labor':r.functionKey==='vehicle'?'transport':r.unitId==='pcs'&&['moisture-test','quality-service','handover-doc'].includes(r.functionKey)?'service':['covering','adhesive','clean-water','wipe','protection-cover','weld-cable','perimeter-seal','neutral-cleaner','waste-sack','wet-waste-vessel','sharps-vessel','straight-blade','hooked-blade','vacuum-bag'].includes(r.functionKey)?'material':'equipment',title:r.nameRu,unitId:r.unitId,expression:r.expression,procurement:false,costTreatment:'INFORMATIONAL_SCOPE',inclusion,
+   inputParameterIds:[...linoleumFactIdsR1(r.factKeys),lp1.seamParameterId,lp1.edgeParameterId],
+   ...(['clean-water','waste-haul','covering'].includes(r.functionKey)?{formulaOutputBounds:{schemaVersion:'canonical_formula_output_bounds_v1' as const,unitId:r.unitId,minimum:0,reasonRu:'Сырой измерительный баланс не заменяется max(0) и не скрывает отрицательный результат.'}}:{})};
+ });
+ const rate=lp1.quantityRules.acceptedRate,consumed=lp1.resources.find(r=>r.functionKey==='adhesive')!.expression,balance=linoleumBalanceR1({ownerRowId:lid1('adhesive-order'),orderUnitId:'kg',consumed,stock:lp1.parameterPrefix+'adhesive_stock_kg',reserve:lp1.parameterPrefix+'adhesive_reserve_kg',quantum:'11*'+lp1.parameterPrefix+'adhesive_supplier_bucket_multiple'});
+ rows.push({rowId:lid1('adhesive-rate-check'),formulaId:lid1('formula:adhesive-rate-check'),section:'adhesive',category:'service',title:'Контроль удельного расхода принятой пробы',unitId:'kg_per_m2',expression:rate,procurement:false,costTreatment:'INFORMATIONAL_SCOPE',inclusion:lexact1,inputParameterIds:linoleumFactIdsR1(['product','bond']),formulaOutputBounds:{schemaVersion:'canonical_formula_output_bounds_v1',unitId:'kg_per_m2',minimum:0.280,maximum:0.385,reasonRu:'Взята только точная EN611V17 область280–385г/м²; среднее или расход другой версии не подставляется.'}},
+  {rowId:lid1('covering-balance-check'),formulaId:lid1('formula:covering-balance-check'),section:'layout',category:'service',title:'Баланс выданного покрытия, укладки и пригодного возврата',unitId:'m2',expression:lp1.resources.find(r=>r.functionKey==='covering')!.expression+'-'+lp1.parameterPrefix+'net_area_m2',procurement:false,costTreatment:'INFORMATIONAL_SCOPE',inclusion:lexact1,inputParameterIds:linoleumFactIdsR1(['layout','dedicated_records']),formulaOutputBounds:{schemaVersion:'canonical_formula_output_bounds_v1',unitId:'m2',minimum:0,reasonRu:'Выданная площадь должна покрывать укладку и пригодный возврат; неизвестные потери не подменяются процентом.'}},
+  {rowId:lid1('trial-area-check'),formulaId:lid1('formula:trial-area-check'),section:'adhesive',category:'service',title:'Принятая проба внутри окончательной площади',unitId:'m2',expression:lp1.parameterPrefix+'net_area_m2-'+lp1.parameterPrefix+'trial_bonded_area_m2',procurement:false,costTreatment:'INFORMATIONAL_SCOPE',inclusion:lexact1,inputParameterIds:linoleumFactIdsR1(['bond']),formulaOutputBounds:{schemaVersion:'canonical_formula_output_bounds_v1',unitId:'m2',minimum:0,reasonRu:'Проба в этом узком методе входит в укладку; внешняя проба не удваивается и требует собственного подтверждённого баланса.'}},
+  {rowId:lid1('covering-order'),formulaId:lid1('formula:covering-order'),section:'incoming',category:'material',title:'Покрытие по принятой ведомости покупных отрезов',unitId:'m2',expression:lp1.quantityRules.coveringOrder,procurement:false,costTreatment:'INFORMATIONAL_SCOPE',inclusion:lexact1,inputParameterIds:linoleumFactIdsR1(['product','layout','dedicated_records'])},
+  {rowId:lid1('adhesive-order'),formulaId:lid1('formula:adhesive-order'),section:'incoming',category:'material',title:'Клей по подтверждённому балансу поставки',unitId:'kg',expression:`ceil(max(0,(${consumed})+${lp1.parameterPrefix}adhesive_reserve_kg-${lp1.parameterPrefix}adhesive_stock_kg)/(11*${lp1.parameterPrefix}adhesive_supplier_bucket_multiple))*(11*${lp1.parameterPrefix}adhesive_supplier_bucket_multiple)`,procurement:false,costTreatment:'INFORMATIONAL_SCOPE',inclusion:lexact1,inputParameterIds:linoleumFactIdsR1(['product','bond','dedicated_records']),...balance.owner},
+  {rowId:lid1('edge-roller-scope'),formulaId:lid1('formula:edge-roller-scope'),section:'junctions',category:'service',title:'Прижатие примыканий ручным роликом',unitId:'m2',expression:lp1.parameterPrefix+'net_area_m2',procurement:false,costTreatment:'INFORMATIONAL_SCOPE',inclusion:{kind:'and',operands:[lexact1,leq1(lp1.edgeParameterId,'ROLLER')]},inputParameterIds:linoleumFactIdsR1(['equipment'])},
+  {rowId:lid1('netfit-scope'),formulaId:lid1('formula:netfit-scope'),section:'net-seam',category:'service',title:'Допуск стыка без сварки по назначению',unitId:'m2',expression:lp1.parameterPrefix+'net_area_m2',procurement:false,costTreatment:'INFORMATIONAL_SCOPE',inclusion:{kind:'and',operands:[lexact1,leq1(lp1.seamParameterId,'NET_FIT')]},inputParameterIds:linoleumFactIdsR1(['netfit_permission'])});
+ const added=buildLinoleumAutomaticR1({contract:lp1.contract,semanticOwner:ln1,sourceId:lp1.sourceId,normId:'LINOLEUM_EXACT_OEM_METHOD_MEASUREMENTS_NOT_LABOUR_NORM',sourceMetadata:{source_title:lp1.titleRu,source_document_version:lp1.contract,definition_hash:evidence.sha256,artifact_sha256:evidence.sha256,exact_locator:'Source pack resources/operations/quantityRules; exact UKSheet032021 and611ENBG132567V17; original59 not OEM norms'},applicabilityRu:lp1.scopeRu,ordinary,profile:[],conditional,rows,deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:lp1.sourceHolds});
+ const factIds=new Set(lp1.protectedFacts.map(f=>f.id)),numericIds=new Set(lp1.numericDrivers.map(d=>d.id)),selectorIds=new Set(selectors.map(s=>s.id));
+ const parameters=[...old.parameters,...added.parameters.map((p,index)=>{
+  let truth=p.truth_metadata;
+  if(factIds.has(p.parameter_id))truth={...truth,visibility_role:'INTERNAL_ONLY',value_source_role:'PROJECT_DOCUMENTATION',source_confirmation_required:true,provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL',source_readback_only_v1:true,consumer_question_allowed:false}};
+  else if(held.has(p.parameter_id))truth=linoleumUnresolvedR1(truth,held.get(p.parameter_id)!);
+  else if(numericIds.has(p.parameter_id)||selectorIds.has(p.parameter_id))truth={...truth,visibility_role:'USER_INPUT',value_source_role:'PROJECT_SPECIFIC_INPUT',source_confirmation_required:false,visible_when:p.parameter_id===lp1.selector.parameterId?{kind:'literal',value:true}:lexact1,provenance:{consumer_input_role_v1:'OBJECT_FACT'},guide:{...lr1(truth.guide),source_role:'USER_MEASURED',guide_kind:'MEASUREMENT_RULE',source_document:lp1.quantityEvidence.path,source_locator:'Sections3-7: exact dimensions and one-use measured flow; no defaults',source_snapshot_hash:lp1.quantityEvidence.sha256}};
+  return{...p,ordinal:old.parameters.length+index,required:false,default_value:null,truth_metadata:truth};
+ })];
+ const legacy=leq1(lp1.selector.parameterId,lp1.selector.legacyValue),resources=[...old.resources.map(r=>linoleumRehashR1({...r,inclusion_ast:{kind:'and',operands:[legacy,r.inclusion_ast]}})),...added.resources.map((r,index)=>{
+  const item=lp1.resources.find(item=>item.rowId===r.row_id),ops=item?.operations??((r.row_id.includes('rate')||r.row_id.includes('trial-area'))?['adhesive']:r.row_id.includes('netfit')?['net-seam']:r.row_id.includes('edge-roller')?['junctions']:r.row_id.includes('covering-balance')?['layout']:['incoming']),facts=item?linoleumFactIdsR1(item.factKeys):(Array.isArray(r.resource_graph.inputParameterIds)?r.resource_graph.inputParameterIds.filter((value):value is string=>typeof value==='string'&&factIds.has(value)):[]);
+  return linoleumRehashR1({...r,ordinal:old.resources.length+index,resource_graph:{...r.resource_graph,operationCompositionV1:item?.functionKey==='hand-roller'?{...linoleumOperationsR1(ops),additionalOperations:linoleumOperationsR1(ops).additionalOperations.map(op=>({...op,whenResourcePresent:[lid1('edge-roller-scope')]}))}:linoleumOperationsR1(ops),requiredFactConditionIds:facts,scopeContextParameterIds:[lp1.parameterPrefix+'net_area_m2'],publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',nameRu:r.title_ru,sourceTitleRu:r.title_ru,brandAndModelRu:null,specificationRu:null,detailsRu:[],...(item?{resourceKind:linoleumPublicKindR1(item.functionKey)}:{rowKind:'PROCESS_NOTE'})},...(item?.suppliedWithKitResourceRowId?{suppliedWithKitResourceRowId:item.suppliedWithKitResourceRowId}:{}),sourceOnlyPaymentBoundaryR1:{noSecondPaymentOrOrder:true,actualPaidOwnerOrOrderNotAsserted:true}},source_metadata:{...r.source_metadata,source_kind:'PROJECT_SYSTEM',native59NormAuthorityTransferred:false,actualObjectFactsAsserted:false,fullTechnicalAcceptance:false}});
+ })];
+ if(new Set([...old.formulas,...added.formulas].map(f=>f.formula_id)).size!==old.formulas.length+added.formulas.length)throw Error('LINOLEUM_R1_FORMULA_ID_COLLISION');
+ return{parameters,formulas:[...old.formulas,...added.formulas],resources,runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:[...new Set([lp1.selector.parameterId,lp1.parameterPrefix+'net_area_m2',lp1.seamParameterId,lp1.edgeParameterId,...lp1.numericDrivers.map(d=>d.id)])]};
+}
+export function compileLinoleumCurrentWholeR1(submitted:Record<string,unknown>,confirmed:Record<string,unknown>={},actual:unknown=linoleumParentR1065){
+ const effective=Object.hasOwn(submitted,lp1.selector.parameterId)?submitted:{...submitted,[lp1.selector.parameterId]:lp1.selector.legacyValue};
+ return compileLinoleumAutomaticR1({catalogId:lp1.catalogId,compilerVersion:lp1.contract,primaryMeasureParameterId:effective[lp1.selector.parameterId]===lp1.selector.exactValue?lp1.parameterPrefix+'net_area_m2':'q',definition:buildLinoleumCurrentWholeR1(actual),submittedParameters:effective,confirmedParameters:confirmed});
+}
+export function linoleumCurrentWholeExpectationsR1(){return{contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PROJECT_SYSTEM',generatedFromCurrentRows:false,operationResourceBindingRequired:true,evidenceSha256:lp1.primaryPins[0]!.sha256,
+ entries:lp1.resources.map(r=>({expectedResourceId:r.functionKey,sourceId:lp1.sourceId,operationId:lid1('operation:'+r.primaryOperation),condition:lp1.scopeRu,specification:r.authority,unitId:r.unitId,formulaId:r.formulaId,quantityRule:r.quantityBasis,requiredOperationIds:r.operations.map(o=>lid1('operation:'+o)),resolution:{kind:'ROW',rowId:r.rowId}})),legacy59ReboundToOemAuthority:false,fullTechnicalAcceptance:false};}
+/** Ordinary production is held, not routed into a migration main() or granted
+ * new authority by mapping zero native bindings to an unrelated OEM locator. */
+export function linoleumCurrentWholeOrdinaryRequestR1(){return{catalogId:lp1.catalogId,sourceId:lp1.sourceId,existingPublisher:'scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts',status:'SOURCE_AWARE_ORDINARY_TARGET_CONFIG_HELD',expectedCurrentHeader:lp1.parent.header,expectedCurrentShape:lp1.parent.shape,nativeRegistryCounts:[0,0,0],candidateSourceObservation:lp1.formalIntake.newCandidateSourceObservation,legacyTemplateAssumptionSources:{contract:'master-retained-legacy-template-assumptions/r1',templateId:'flooring_interior_linoleum_lay_standard_professional_expanded_v1',parameterSources:{q:['r555-source:flooring_interior_linoleum_lay_standard_professional_expanded_v1']}},nativeRowsMustNotReceiveNewOemBinding:true,newBindingRowIds:buildLinoleumCurrentWholeR1().resources.slice(59).map(r=>r.row_id),existingRetainedGuardAppearsApplicableBySourceReview:true,defaultSelectorUnchanged:true,requiredBeforeRuntime:['existing scoped capture over current source/parameter binding closure','explicit legacy59 historical source disposition without OEM normative rebinding','finite typed partial witness over exact selected resource closure'],newReader:false,newPublisher:false,admissionGranted:false};}
