@@ -130,5 +130,6 @@
   "src/lib/estimate/v4/cm11Ce40KzSelectableFloorR2.test.ts": null,
   "src/lib/estimate/v4/cm11Ce40KzWholeFloorGroupR1.ts": null,
   "scripts/estimate/r4a13/masterRetainedForwardLineageR1.ts": "scripts/estimate/r4a13/masterRetainedForwardLineageR1.ts",
-  "scripts/estimate/r4a13/masterRetainedForwardLineageR1.test.ts": "scripts/estimate/r4a13/masterRetainedForwardLineageR1.test.ts"
+  "scripts/estimate/r4a13/masterRetainedForwardLineageR1.test.ts": "scripts/estimate/r4a13/masterRetainedForwardLineageR1.test.ts",
+  "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts": "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts"
 }

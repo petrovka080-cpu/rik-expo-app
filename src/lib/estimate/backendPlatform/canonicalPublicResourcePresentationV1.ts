@@ -130,7 +130,7 @@ export function canonicalPublicResourceRowKindV1(input: {
   // the explicit source role above or the structural identity below.
   // The request adapter names its material section `materials`; that section
   // still contains physical supplies, including supplies covered by work cost.
-  const physicalCategory=['material','materials','tool','equipment','labor','service','transport','delivery'].includes(input.category??'');
+  const physicalCategory=['material','materials','tool','equipment','labor','construction_work','service','transport','delivery'].includes(input.category??'');
   // Existing immutable definitions already identify their balance counters and
   // duplicate physical machine-hour counters structurally. Do not inspect a
   // Russian name, hide an unresolved real need, or change any stored row.

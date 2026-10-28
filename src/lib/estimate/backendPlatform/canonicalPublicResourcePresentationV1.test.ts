@@ -185,3 +185,33 @@ test('the actual PDF omits an authored batch counter while retaining its real ph
   expect(pdf.html).not.toContain(binding.nameRu);expect(pdf.html).toContain('Дрель с насадкой для перемешивания');expect(pdf.rowCount).toBe(2);
   expect(JSON.stringify({saved,sourceRows})).toBe(before);
 });
+
+import {auditCanonicalPublisherSuccessorOperationResourcesR1} from '../../../../scripts/estimate/r4a13/canonicalDefinitionPublisherR1';
+import {accessControlWholePassageKitMeasuredModelR6,ACCESS_CONTROL_WHOLE_DOOR_SOURCE_R2} from '../v4/accessControlSystemR1';
+
+test.each(['labor','construction_work'])('Included native labour R1049 %s remains visible under its single existing owner',category=>{
+ const input={titleRu:'Труд фактической разгрузки и перемещения оборудования',descriptor:null,category,
+  rowId:'reference:acs:whole-door:r2:loading-labor',costTreatment:'INCLUDED_IN_RESOURCE_ROWS',includedInEstimate:false,includedInProcurement:false,
+  graph:{includedInResourceOwnerRowId:'rc09:labor:acs-device-install',operationCompositionV1:{operationId:'access-control:whole-operations:r1:delivery'}}};
+ const before=JSON.stringify(input);
+ expect(canonicalPublicResourceRowKindV1(input)).toBe('RESOURCE');
+ expect(JSON.stringify(input)).toBe(before);
+ expect(canonicalPublicResourceRowKindV1({...input,costTreatment:'INFORMATIONAL_SCOPE',graph:{...input.graph,purchaseBalanceOwnerRowId:'rc09:labor:acs-device-install'}})).toBe('CALCULATION_DETAIL');
+});
+test('Included native labour R1049 explicit process and calculation roles remain authoritative',()=>{
+ const titleRu='Труд фактической разгрузки и перемещения оборудования';
+ const descriptor={contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:titleRu,nameRu:titleRu,brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:'LABOR'};
+ const input={titleRu,descriptor,category:'construction_work',rowId:'explicit-role',costTreatment:'INCLUDED_IN_RESOURCE_ROWS',includedInEstimate:false,includedInProcurement:false,graph:{includedInResourceOwnerRowId:'whole-work',operationCompositionV1:{operationId:'delivery'}}};
+ expect(canonicalPublicResourceRowKindV1({...input,descriptor:{...descriptor,rowKind:'PROCESS_NOTE'}})).toBe('PROCESS_NOTE');
+ expect(canonicalPublicResourceRowKindV1({...input,descriptor:{...descriptor,rowKind:'CALCULATION_DETAIL'}})).toBe('CALCULATION_DETAIL');
+});
+test('Included native labour R1049 actual ACS loading and cleanup visible while incomplete composition still refuses admission',()=>{
+ const s=ACCESS_CONTROL_WHOLE_DOOR_SOURCE_R2,q=s.kitForwardR6,model=accessControlWholePassageKitMeasuredModelR6(s.profileId);
+ const before=JSON.stringify({rows:model.resources,composition:q.independentComposition});
+ const report=auditCanonicalPublisherSuccessorOperationResourcesR1({resourceDefinitions:model.resources,independentComposition:q.independentComposition});
+ const labourIds=['reference:acs:whole-door:r2:loading-labor','reference:acs:whole-door:r2:cleanup-labor'];
+ expect(report.issues.filter(x=>x.code==='REQUIRED_RESOURCE_MISSING'&&labourIds.includes(x.rowId??''))).toEqual([]);
+ expect(report.issues.some(x=>x.code==='REQUIRED_RESOURCE_CLASS_WITHOUT_VISIBLE_ROWS')).toBe(true);
+ expect(report.definitionAdmissionAllowed).toBe(false);
+ expect(JSON.stringify({rows:model.resources,composition:q.independentComposition})).toBe(before);
+});

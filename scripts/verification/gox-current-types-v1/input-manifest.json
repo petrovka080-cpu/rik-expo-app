@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "455f3ec15e97901656e45824bdce5777d901031df9ca37f2010472650319fa5a",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "16bf29b87fb680305c8303c2dcbf0c79916297c9720f11dfa5fd029b4a1d262c",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "7e876af4e02226c8410b42524445fdc02d598e3dcec708b15032b4b2742d35d1",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1299,8 +1299,8 @@
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts": "59dbd892ef60bd7495b85b2508db64e5cc07a2b380f2cc7894d969e6a5c3dc9c",
     "src/lib/estimate/backendPlatform/canonicalPublicResourceAlternativesV1.ts": "ed5da8cbe6d58095be01861a4f9dd027ef7e3fb9790109d0ced15cd4b5e9026c",
     "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": "79147fe6ae1075f1949cb422464bf391f2d4216ae2b5721e64debe795586078e",
-    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts": "45c1b61d50e8f02b2290d9db9c8ebb7abd2652bade5bdfe88afa3e3104359bea",
-    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": "57e0be99ace2b1625dc95418519fa4d76841a307212b3e1fb8e4dec9fd5e3010",
+    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts": "1dff6f3a90ff748e4d879ebfac011774b2c6a2ec8b8052ddb8752613a216cde8",
+    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": "ea6a143fba3d21890631061559935070be883e33f7aa21316c8ba1f51267bd67",
     "src/lib/estimate/backendPlatform/canonicalPublicSelectedSpecificationV1.ts": "a4003d21680e0ea82d7bfac1a3a60ed0748f4a5e1a2dde47263524a3b072a30b",
     "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts": "1a563f44d0987d3cbd30efea1659d2a9ba066b1fdea77780f76163e53dedbcfa",
     "src/lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1.ts": "c8abe10b60679371d137c5a790592474f3bf317ae75d390be26f7c3ef32f4448",
@@ -3739,7 +3739,7 @@
     "node_modules/zustand/vanilla.d.ts": "4d7d964609a07368d076ce943b07106c5ebee8138c307d3273ba1cf3a0c3c751"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "16bf29b87fb680305c8303c2dcbf0c79916297c9720f11dfa5fd029b4a1d262c",
+  "originalSeedManifestSha256": "7e876af4e02226c8410b42524445fdc02d598e3dcec708b15032b4b2742d35d1",
   "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -3747,7 +3747,7 @@
     "findings": [],
     "patternScanFromPredecessorSourcePlan": "81f630f069c9e53edb8a6faea5d370a0f1ad019dab5b333752352983ecd0fb18",
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 171288403
+    "sourceBytes": 171291749
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
@@ -3755,7 +3755,7 @@
   "stats": {
     "sourceFiles": 2573,
     "dependencyFiles": 1160,
-    "sourceBytes": 171288403
+    "sourceBytes": 171291749
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -4588,6 +4588,18 @@
       "historicalTimeRepresentationOnly": true,
       "oldSingularCaptureHashesAndMetadataPreserved": true,
       "canonicalProductUnchanged": true,
+      "sourceOnly": true,
+      "newProductCandidate": false
+    },
+    "commonIncludedConstructionWorkLabourR1050": {
+      "parent": "57514cf70521a9067d948a094ac57d981e2052fa",
+      "changedSourceFiles": 2,
+      "addressedNewCasesPassed": 4,
+      "oldCasesExcluded": 10,
+      "actualPriorFullTypesRun": 40619014218,
+      "actualACSExistingMasterStructureRefusal": true,
+      "remaining68EmptyClassesStillBlocked": true,
+      "quantityUnitOwnerSourceUnchanged": true,
       "sourceOnly": true,
       "newProductCandidate": false
     }
