@@ -188,7 +188,7 @@
   "scripts/server/stagingBffCatalogRequestMutationPorts.ts": null,
   "scripts/server/stagingBffCatalogTransportReadPort.ts": null,
   "scripts/server/stagingBffDirectorFinanceRpcPort.ts": null,
-  "scripts/server/stagingBffHttpServer.ts": null,
+  "scripts/server/stagingBffHttpServer.ts": "2bf23b9bd1b730eaf670d5ccf713853b919a4aa88985f0edb48c951f7a9f923b",
   "scripts/server/stagingBffPostgresTls.ts": null,
   "scripts/server/stagingBffReadonlyDbPorts.ts": null,
   "scripts/server/stagingBffRequestAuth.ts": null,
@@ -673,5 +673,6 @@
   "tests/scale/bffStagingRequestAuth.test.ts": null,
   "work/stream-c-facade-ct190/prepareFacadeCt190RetainedWorkR1.ts": null,
   "work/stream-c-plumbing-mixer/grohe33265002RegistryDescriptorWorkR1.ts": null,
-  "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": null
+  "work/stream-c-plumbing-mixer/prepareBasinMixerGrohe33265002RetainedWorkR1.ts": null,
+  "tests/scale/bffMfaAssurance.test.ts": "e9177661992ca08c84a6f80f4da0cbe24667e76dd9c5affddb4681b2b8302d1f"
 }

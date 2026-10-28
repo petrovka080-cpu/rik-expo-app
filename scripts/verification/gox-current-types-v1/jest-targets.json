@@ -45,7 +45,8 @@
       "scripts/dev/wholeAppDevelopmentAsyncRoutes.test.js",
       "scripts/dev/warmWholeAppDeveloperRuntime.test.ts",
       "scripts/dev/wholeAppDeveloperReview.contract.test.ts",
-      "scripts/dev/wholeAppEmbeddedBuildTarget.test.js"
+      "scripts/dev/wholeAppEmbeddedBuildTarget.test.js",
+      "tests/scale/bffMfaAssurance.test.ts"
     ]
   }
 }

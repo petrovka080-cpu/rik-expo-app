@@ -238,6 +238,17 @@ const verifySupabaseReadonlyMobileAuth: MobileReadonlyAuthVerifier = async (toke
       verifiedClaims = decoded as Record<string, unknown>;
       if (verifiedClaims.sub !== authBody.id) return null;
     }
+    // /auth/v1/user verified this bearer and supplied the authoritative factors.
+    // An enrolled user must complete the second factor before any BFF read/cache
+    // access. Never infer enrollment or AAL from editable user_metadata.
+    const factors = authBody.factors;
+    if (factors != null && !Array.isArray(factors)) return null;
+    if (Array.isArray(factors)) {
+      if (factors.some((factor) => !factor || typeof factor !== "object" ||
+        typeof factor.status !== "string")) return null;
+      const requiresSecondFactor = factors.some((factor) => factor.status === "verified");
+      if (requiresSecondFactor && verifiedClaims.aal !== "aal2") return null;
+    }
     return {
       userId: authBody.id,
       claims: { ...verifiedClaims, sub: authBody.id, role: "authenticated", app_metadata: authBody.app_metadata ?? {} },

@@ -561,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "455f3ec15e97901656e45824bdce5777d901031df9ca37f2010472650319fa5a",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "69ad13525a2674bd22f2362b3c0ef0fcae88f502fb769ef37d5138a80ee90c2b",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "dc8318cbeb9bc8d9a5d01987edb4596729feef76d66ef0e6d17551f605a0422f",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "bff456466ae6592ad8a28a29bbf4a61bfe053d7d57d1c11854644dcf7938b97a",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2640,7 +2640,7 @@
     "src/screens/warehouse/warehouse.api.bff.contract.ts": "4c35d4b3210e912d58df9d768b2604749123b3d216f339e90efe413cf1321180",
     "src/screens/warehouse/warehouse.api.bff.handler.ts": "993ec8c92dcc1945a6d8ef64100d4f00d713199c00319150e4eb79dbec339f87",
     "src/screens/director/director.finance.bff.handler.ts": "4d68d158854cc54213e0fbd0c27cba554bc1ba36c072b5cf522b131829ca1d0c",
-    "scripts/server/stagingBffHttpServer.ts": "fcdd50171401811051eb49dba5d229bdfc995a5bdc75bd2f8d3235d206f62d7c",
+    "scripts/server/stagingBffHttpServer.ts": "2bf23b9bd1b730eaf670d5ccf713853b919a4aa88985f0edb48c951f7a9f923b",
     "scripts/server/stagingBffCatalogTransportReadPort.ts": "4c70c6bf4acd2c24187ee728120f4c9b79310214aea3cb8e4edb8413ed1c336b",
     "scripts/server/stagingBffWarehouseApiReadPort.ts": "b0a6bbe2bb633a0795b2a94d655f2b7856d3ec06a62ff45011499b1de716d02e",
     "scripts/server/stagingBffReadonlyDbPorts.ts": "b1a1aa06b64f4be487a558157f2acd09a98cd7ec370d271b30fe65fc3587823f",
@@ -2657,7 +2657,8 @@
     "scripts/server/certificates/supabase-official-ca.provenance.json": "e37f22ef069c6c2bf6798324e00392e5e1fc2808627d5d4a66598badca5e6581",
     "supabase/migrations/20261029010000_office_document_company_scope_v1.sql": "40e094e92d46d564fff7b397bf9ee0ed77b7c6e0f2ccee6d1f21c2a2b3178b45",
     "supabase/migrations/20261029011000_office_document_rpc_authorization_v1.sql": "2221904d6481bff446cb441f737ec3fa4022bec55a69bb62ccf2dd2f1367236d",
-    "supabase/migrations/20261029012000_office_financial_relations_scope_v1.sql": "88015abfeb842e06606239f20da65b898a816c13226281e2b70c9dbed673f1ec"
+    "supabase/migrations/20261029012000_office_financial_relations_scope_v1.sql": "88015abfeb842e06606239f20da65b898a816c13226281e2b70c9dbed673f1ec",
+    "tests/scale/bffMfaAssurance.test.ts": "e9177661992ca08c84a6f80f4da0cbe24667e76dd9c5affddb4681b2b8302d1f"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4209,7 +4210,9 @@
   "stats": {
     "sourceFiles": 2656,
     "dependencyFiles": 1531,
-    "sourcePins": 2656
+    "sourcePins": 2656,
+    "r1152BffMfaForwardSourcePinCount": 2657,
+    "r1152BffMfaDeclaredSeeds": 676
   },
   "candidateSourceComposition": {
     "kind": "ActualCanonicalInputsWithoutUnintakenHistoricalPackages",
@@ -4340,6 +4343,26 @@
       },
       "remainingMandatoryBatchesRequireActualExecution": true,
       "fullAuditComplete": false
+    },
+    "bffMfaAssuranceR1152": {
+      "parent": "da966244b0696fba2829d2ee7ac8da7770a34209",
+      "previousCompleteCiRun": 40776892724,
+      "previousCompleteCiCasesPass": 714,
+      "changedProductionFiles": [
+        "scripts/server/stagingBffHttpServer.ts"
+      ],
+      "newTest": "tests/scale/bffMfaAssurance.test.ts",
+      "actualUnitCasesPass": 14,
+      "actualDependencyTypeFiles": 647,
+      "actualTypeDiagnostics": 0,
+      "actualOwnUserProtocolCasesPass": 10,
+      "cleanupResidualRows": 0,
+      "newTestAddedToExistingMandatoryBatch": "developer-runtime",
+      "mandatoryBatchesRemoved": 0,
+      "resourceLimitsChanged": false,
+      "directApiRlsRpcMfaEnforcementFixed": false,
+      "loginResumeUiAccepted": false,
+      "deployed": false
     }
   },
   "existingCiTypesStageBudget": {
