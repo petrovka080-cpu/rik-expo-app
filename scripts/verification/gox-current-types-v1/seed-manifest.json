@@ -134,5 +134,8 @@
   "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts": "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts",
   "src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding.ts": "src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding.ts",
   "tests/estimateDomainFactory/interiorFinishesComplete.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesComplete.contract.test.ts",
-  "tests/estimateDomainFactory/interiorFinishesLinoleumCurrent.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesLinoleumCurrent.contract.test.ts"
+  "tests/estimateDomainFactory/interiorFinishesLinoleumCurrent.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesLinoleumCurrent.contract.test.ts",
+  "src/lib/estimate/v4/domains/interiorFinishesWave1/productionBinding.ts": "src/lib/estimate/v4/domains/interiorFinishesWave1/productionBinding.ts",
+  "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts",
+  "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts"
 }

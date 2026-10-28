@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "EXACT_ACCEPTED_TYPED_SOURCE_SUPERSET_WITH_LINOLEUM_WHOLE_FORWARD_TYPES_ONLY",
+  "snapshotKind": "EXACT_ACCEPTED_TYPED_SUPERSET_PLUS_WHOLE_GLASS_SOURCE_TYPES_ONLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "51c289aa7ec9c8145b9ca7852cfdab6bf6da49df6f63fab5b3a6235a2ea97372",
@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "455f3ec15e97901656e45824bdce5777d901031df9ca37f2010472650319fa5a",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "23426d84cd25f79bdb376f9d811de66f7c09d039ef2a0eded3b392b6773b69b0",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "a2be82b3c753b41bf91d8f2b0a9b1de8e12bee101483f4437f2ddab1f430f134",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1718,7 +1718,7 @@
     "src/lib/estimate/v4/domains/interiorFinishesWave1/domainPackage.ts": "89186cbfd4d189363a57fb5f5143ff06d35ff1d901573ea41e890e32c3fd17c2",
     "src/lib/estimate/v4/domains/interiorFinishesWave1/index.ts": "8ff2eb5b4696dbca42df3eae66576de51ec6bac917932723e9ea04d0e41eea48",
     "src/lib/estimate/v4/domains/interiorFinishesWave1/inventory.ts": "43ccb81be9bb8241b1234b247b4e387e4108c10fa114c6c1e183f94b554534d4",
-    "src/lib/estimate/v4/domains/interiorFinishesWave1/productionBinding.ts": "7c9076f17a5c5b042d6c03c212b0b96a62ccb3099b0e51d031c699618710dea9",
+    "src/lib/estimate/v4/domains/interiorFinishesWave1/productionBinding.ts": "311e5b27fcb07df011f9bbcb12c2c7bda376254b870a329be27531ad56d537f1",
     "src/lib/estimate/v4/domains/professionalDomainVisibleBaselineV1.ts": "897e61b0c9fc566472101a44904cc07fc7d06631f92c7cab2b3c6a30fb13aa51",
     "src/lib/estimate/v4/domains/registeredProfessionalEstimateDomainsV1.ts": "d8f13c87c94c40e3bd6e2bf7d1ebe1abd310dcbe4207ff1178888b408df373db",
     "src/lib/estimate/v4/drywallCeilingP113FullCycleS2723.ts": "e04b96d450971721f85a02d9c9f786dd68b93d6580d1affd68a7349f5a532dae",
@@ -2582,7 +2582,23 @@
     "data/estimate-benchmarks/source-artifacts/linoleum-r1-marmoleum-sheet-installation-uk-file-jan2023-content032021.pdf": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
     "data/estimate-benchmarks/source-packs/linoleum-current-oem-physical-cycle-r1.json": "9db9d4cc606df42dbbddb9b4cd8db25131abdd9f9587d1c890277d9af773f6bd",
     "data/estimate-benchmarks/source-packs/linoleum-whole-quantity-basis-r1.txt": "8a74b4944a44d96efee2fdaf591cb050e35ae319590546f73824479ec101fa98",
-    "tests/estimateDomainFactory/interiorFinishesLinoleumCurrent.contract.test.ts": "4c6ef407990eda9ee2c9a95306a69c120a6a09489ae92cbea54b7b42b71c772e"
+    "tests/estimateDomainFactory/interiorFinishesLinoleumCurrent.contract.test.ts": "4c6ef407990eda9ee2c9a95306a69c120a6a09489ae92cbea54b7b42b71c772e",
+    "data/estimate-benchmarks/fixtures/glass-fleece-current-parent-r1080.json": "f216769da49115e1ff74ceb840b554122ab1d154413d6ff1733afdaca6387ae0",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_GOs10-GOs5-2025-2.jpg": "b6f7eee67893776da61ee40f4d19824b7830f71ebe41633571f7b6169d67e848",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_GOs10-GOs5-2026-1.jpg": "1c1b3f66fa8d3f60fd0c1a4d7b6f47cfe6bf27603cd719385a23f72f9f6fdcd8",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Gos-10kg-2025-1.jpg": "34d68121c1f436fb069ddc968626dc3e43605e1f04954bdaa58d43acffcbd71f",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Gos-10kg-2025-2.jpg": "156729081057400b90a08d43b742c4fbf83b526a5cf8531a0164e3ff86fd5534",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Gos-10kg-2025-3.jpg": "4328bd9d05c266997243a564476e4515bfe03b2b43b4dd46c19cbb82c7fe6c3d",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Steklokholst-2025-1.jpg": "3eacffce9b1977a103974e4b9182ead0fde0f53cf8707c24d86ef0697cd32dd1",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Steklokholst-2025-2.jpg": "5588ff03b4a3cb07c60456cf3741784ad781a479b625c06adecde35a52c6233c",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Steklokholst-2025-3.jpg": "022e603e933ff8eca1b5b0b89880603cd450fa9e882613d55caf185fa1c68ddd",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-wellton-fleece-catalog.html": "7418f8926733cee862585dd40e1bdc9da1592d29281dcb4e512bd06bf3593322",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-wellton-fleece-instructions.html": "874f67afca2d884b4a436a5c9e93008b8dae54a3540ad5ffee34a88afde05e31",
+    "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-wellton-tools.html": "a6a02ca0b0161de48cee0747d296359fe4f26369854d96d4d65d808415f8cf62",
+    "data/estimate-benchmarks/source-packs/glass-fleece-current-oem-physical-cycle-r1.json": "d86af311db9214a36146b23ef1c9f91dcec90105bb7ac7266eada456d0737e0d",
+    "data/estimate-benchmarks/source-packs/glass-fleece-whole-quantity-basis-r1.txt": "48d999bff83391715f56dc77d4c1d53ac783ae09bccb750bac94bbaeb977d9be",
+    "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts": "f156c9cc98d74bcd156a66b01033ff580c25b496b0c4312f6a999b5a81964cd7",
+    "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "af755d4d998170952b64fb77d5742990964b5fa004bd9f216b5ceac4c20bf588"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3747,23 +3763,23 @@
     "node_modules/zustand/vanilla.d.ts": "4d7d964609a07368d076ce943b07106c5ebee8138c307d3273ba1cf3a0c3c751"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "23426d84cd25f79bdb376f9d811de66f7c09d039ef2a0eded3b392b6773b69b0",
+  "originalSeedManifestSha256": "a2be82b3c753b41bf91d8f2b0a9b1de8e12bee101483f4437f2ddab1f430f134",
   "canonicalSourceFreezeSha256": "683c1c85ae8529eb618cb7e463f9179618bb65fb0b086e2c92b17ee95e3e7004",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 174267531,
-    "newInputs": "Actualcatalogparentfixture,4publicprimaryPDFs,sourcepack/TXT,2testfiles,sourceproducer. Noauth/history/runtimecapture."
+    "sourceBytes": 176502512,
+    "newInputs": "Exactexistingcatalogparentfixture,11publicprimaryartifacts,sourcepack/methodTXT,existingWave1producerandbyteexactsplit2tests. Noauth/history/runtimecapture."
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2581,
+    "sourceFiles": 2597,
     "dependencyFiles": 1160,
-    "sourceBytes": 174267531
+    "sourceBytes": 176502512
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -4639,6 +4655,37 @@
       "scope": "Fulltypes ofexactacceptedheldsuperset +newwholelinoleum; notnewproductruntime/sourceidentity orDbpublication",
       "sourceOnly": true,
       "newProductCandidate": false
+    },
+    "glassWholeSourceR1093": {
+      "parent": "60a378d1664c014581308ce207d1d9a652d89e0e",
+      "baseActualTypesRun": 40637988065,
+      "sourceDelta": [
+        "data/estimate-benchmarks/fixtures/glass-fleece-current-parent-r1080.json",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_GOs10-GOs5-2025-2.jpg",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_GOs10-GOs5-2026-1.jpg",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Gos-10kg-2025-1.jpg",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Gos-10kg-2025-2.jpg",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Gos-10kg-2025-3.jpg",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Steklokholst-2025-1.jpg",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Steklokholst-2025-2.jpg",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-TO_Steklokholst-2025-3.jpg",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-wellton-fleece-catalog.html",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-wellton-fleece-instructions.html",
+        "data/estimate-benchmarks/source-artifacts/glass-fleece-r1-wellton-tools.html",
+        "data/estimate-benchmarks/source-packs/glass-fleece-current-oem-physical-cycle-r1.json",
+        "data/estimate-benchmarks/source-packs/glass-fleece-whole-quantity-basis-r1.txt",
+        "src/lib/estimate/v4/domains/interiorFinishesWave1/productionBinding.ts",
+        "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts",
+        "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts"
+      ],
+      "newMeaningfulSourceCasesPassed": 25,
+      "oldSeedKeysPreserved": 136,
+      "newSourceOnly": true,
+      "newProductCandidate": false,
+      "ordinaryFamilySaveColdPdf": false,
+      "quantityHolds": 38,
+      "protectedConditions": 19,
+      "commonCoreChanged": false
     }
   },
   "existingCiTypesStageBudget": {
