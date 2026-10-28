@@ -1215,7 +1215,7 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "30942431a6ed8524195b03b7e4c3c4bbb5fd2ec26993f97aaa2c28048433ac00",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "097d1932e8173e6033e8c1a35a1ce45efd0831627081e1bd7ac79a21ce83c474",
     "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "60da3042d4b2f442d59fb975b768b0b099477764ee259c28f9cdebf24c7d6131",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
@@ -4314,6 +4314,32 @@
       "typeDiagnostics": 0,
       "databaseRoleAssignmentsChanged": false,
       "actualUiAccepted": false
+    },
+    "ct54ConditionPriorityAssertionsR1152": {
+      "parent": "ff6c43467e103650ac6be02d4c70e3a187fee9d8",
+      "onlyTestExpectationsChanged": 2,
+      "productionCodeChanged": false,
+      "reason": "Required application condition remains CONDITION_REQUIRED beside unknown numeric quantity; numeric-only needs remain QUANTITY_REQUIRED.",
+      "independentReviewHandoffSha256": "989f0012365e64427e7ae441b5381021f327b71c7b69e69fa419dbd208000568",
+      "affectedActualJestPass": 2,
+      "affectedActualJestFail": 0,
+      "preservedAssertions": [
+        "quantity:null",
+        "missing condition IDs",
+        "saved traces",
+        "PDF 409",
+        "saved revision immutability",
+        "numeric-only controls"
+      ],
+      "priorUnchangedEvidence": {
+        "run": 40772659957,
+        "typesFiles": 3611,
+        "typeDiagnostics": 0,
+        "admissionPassed": 77,
+        "contractsPassedBeforeCorrection": 370
+      },
+      "remainingMandatoryBatchesRequireActualExecution": true,
+      "fullAuditComplete": false
     }
   },
   "existingCiTypesStageBudget": {

@@ -111,7 +111,7 @@ it('CT54 ordinary artifact gate distinguishes a missing waste-receiver condition
   expect(JSON.stringify(numericOnly)).toBe(numericBefore);
   const withoutFact={...withoutArea};delete withoutFact.ct54_reference_waste_receiver;
   const mixed=await compile(withoutFact),mixedBefore=JSON.stringify(mixed);
-  expect(mixed.compiled.preliminaryNeeds.every(row=>row.need_state==='QUANTITY_REQUIRED')).toBe(true);
+  expect(mixed.compiled.preliminaryNeeds.every(row=>row.need_state==='CONDITION_REQUIRED')).toBe(true);
   expect(mixed.compiled.preliminaryNeeds.every(row=>row.quantity===null)).toBe(true);
   const mixedGate=canonicalEstimateSavedOperationAcceptanceV1({revision:mixed.saved,resources:mixed.resources});
   expect(mixedGate.pdfAllowed).toBe(false);
@@ -859,7 +859,7 @@ it('CT54 missing original access is still a technology condition after every num
 
 it('CT54 a missing wash trace remains a saved condition even beside an unknown water quantity',async()=>{
  const values=ct54CoherenceUnknownPlan();delete values.ct54_plan_wash_reference;const r=await ct54PlanCompile(values),water=ct54PlanRow(r,'water')!;
- expect(water).toMatchObject({quantity:null,need_state:'QUANTITY_REQUIRED'});
+ expect(water).toMatchObject({quantity:null,need_state:'CONDITION_REQUIRED'});
  expect(ct54PlanTrace(water).unresolvedConditionParameterIds).toEqual(['ct54_plan_wash_reference']);
  expect((water as {missing_parameter_ids:string[]}).missing_parameter_ids).toEqual(expect.arrayContaining(['ct54_plan_wash_cycles','ct54_plan_fresh_l_per_wash_cycle','ct54_plan_wash_reference']));
  expect(canonicalEstimateSavedOperationAcceptanceV1({revision:r.saved,resources:r.resources}).pdfAllowed).toBe(false);
