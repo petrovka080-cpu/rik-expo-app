@@ -2598,7 +2598,7 @@
     "data/estimate-benchmarks/source-packs/glass-fleece-current-oem-physical-cycle-r1.json": "d86af311db9214a36146b23ef1c9f91dcec90105bb7ac7266eada456d0737e0d",
     "data/estimate-benchmarks/source-packs/glass-fleece-whole-quantity-basis-r1.txt": "48d999bff83391715f56dc77d4c1d53ac783ae09bccb750bac94bbaeb977d9be",
     "tests/estimateDomainFactory/interiorFinishesWave1.contract.test.ts": "f156c9cc98d74bcd156a66b01033ff580c25b496b0c4312f6a999b5a81964cd7",
-    "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "af755d4d998170952b64fb77d5742990964b5fa004bd9f216b5ceac4c20bf588"
+    "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts": "0215177921859913f63f5eb58d81c68bd04fe72a05c30d6fd8152f8784bfb8c5"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3770,7 +3770,7 @@
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 176502512,
+    "sourceBytes": 176502689,
     "newInputs": "Exactexistingcatalogparentfixture,11publicprimaryartifacts,sourcepack/methodTXT,existingWave1producerandbyteexactsplit2tests. Noauth/history/runtimecapture."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -3779,7 +3779,7 @@
   "stats": {
     "sourceFiles": 2597,
     "dependencyFiles": 1160,
-    "sourceBytes": 176502512
+    "sourceBytes": 176502689
   },
   "candidateSourceComposition": {
     "contract": "common-protected-saved-readback-and-whole-family-source-types/r866",
@@ -4686,6 +4686,17 @@
       "quantityHolds": 38,
       "protectedConditions": 19,
       "commonCoreChanged": false
+    },
+    "glassColdIdentityTypeForwardR1095": {
+      "parent": "fc6ddc5506b8f378e7875dd7fbd4f2c8dd1d5787",
+      "priorFailedRun": 40639554108,
+      "actualDiagnostics": 1,
+      "testOnly": "tests/estimateDomainFactory/interiorFinishesGlassFleeceCurrent.contract.test.ts",
+      "change": "SamecoldJSONrecord explicit5requiredidentityfields,nooriginalsavedfallback/cast/ignore/default/assertionweakening",
+      "prior24SourcePassReused": true,
+      "sourceOnly": true,
+      "newProductCandidate": false,
+      "commonProductionChanged": false
     }
   },
   "existingCiTypesStageBudget": {
