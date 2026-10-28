@@ -198,8 +198,8 @@ describe('Linoleum R2 actual project quantities and pure retained ordinary recip
   expect(basisErrors({parameters:c.parameterDefinitions,formulas:c.formulaDefinitions,resources:c.resourceDefinitions,baseline,
    passport:{decision:buildMasterScopeReadiness(undefined,c.resourceDefinitions,b),capability_matrix:buildMasterCapabilityMatrix(undefined,c.resourceDefinitions,b)}})).toEqual([]);
  });
- it('reproduces only the actual existing preparation routing gap for retained plus an absent new managed source',()=>{
-  const c=recipe(context());expect(preparation(c)).toEqual(['TYPED_QUANTITY_REGISTERED_RETAINED_SOURCE_REQUIRED']);
+ it('requires a fresh real scoped capture after retained plus absent-source routing is admitted',()=>{
+  const c=recipe(context());expect(preparation(c)).toEqual(['TYPED_QUANTITY_RETAINED_MANAGED_FRESH_SCOPED_PREIMAGE_REQUIRED']);
   expect(c.capturedScopedNormativeRegistry).toBeUndefined();expect(pack.freshProof.proposedSourceCount).toBe(0);expect(pack.freshProof.formalCapture).toBe(false);
  });
  it('requires an actual pinned ROOT context and rejects parent drift before any existing publisher request',()=>{

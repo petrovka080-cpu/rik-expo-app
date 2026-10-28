@@ -795,3 +795,14 @@ export function linoleumCurrentProjectQuantityExpectationsR2(){
    ...(e.expectedResourceId==='perimeter-seal'?{condition:'NOT_APPLICABLE ONLY explicit protected NONE_CONFIRMED pure R2; frozen R1 seal need still SOURCE_HELD',quantityRule:'permanent false inclusion; structural AST0 is not material consumption'}:
     e.expectedResourceId==='neutral-cleaner'?{quantityRule:lp2.cleaner.expression}:{})})),oldR1SourceHoldsRetained:true};
 }
+
+
+// Source-owned forward only: exact R1137 arithmetic/owners/authority are retained.
+import {withLinoleumCompositionForwardR1139,linoleumIndependentCompositionR1139,linoleumDefinitionCompositionScopeR1141} from './linoleumCompositionSourceForwardR1139';
+export function buildLinoleumCompositionForwardR1139(actual:unknown=linoleumParentR1115):LinoleumDefinitionR1{
+ return withLinoleumCompositionForwardR1139(buildLinoleumCurrentProjectQuantityR2(actual),linoleumRowHashR1);
+}
+export function linoleumCompositionExpectationsR1139(){
+ const model=buildLinoleumCompositionForwardR1139();
+ return{...linoleumIndependentCompositionR1139(),definitionCompositionScopeV1:linoleumDefinitionCompositionScopeR1141(model,value=>linoleumShaTextR1(linoleumStableR1(value)))};
+}

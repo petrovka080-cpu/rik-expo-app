@@ -1607,7 +1607,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
     formulaDefinitions:config.formulaDefinitions,resourceDefinitions:config.resourceDefinitions,requireOperationBindings:true});
   invariant(operationReferenceErrors.length===0,`${stop(config,'NEW_SUCCESSOR_INDEPENDENT_COMPOSITION')}:${operationReferenceErrors.join(',')}`);
   assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:config.catalogId,
-    resourceDefinitions:config.resourceDefinitions,independentComposition:admissionCompletenessMap});
+    resourceDefinitions:config.resourceDefinitions,parameterDefinitions:config.parameterDefinitions,independentComposition:admissionCompletenessMap});
   const typedQuantityErrors=validateMasterTypedPartialQuantityPreparationR1(config);
   invariant(typedQuantityErrors.length===0,`${stop(config,'TYPED_QUANTITY_PREFLIGHT')}:${typedQuantityErrors.join(',')}`);
   const apply = process.argv.includes("--apply");
@@ -1753,7 +1753,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
   invariant(completenessErrors.length === 0,
     `${stop(config, "INDEPENDENT_COMPLETENESS_MAP")}:${completenessErrors.join(",")}`);
   assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:config.catalogId,
-    resourceDefinitions:resourceRows,independentComposition:admissionCompletenessMap});
+    resourceDefinitions:resourceRows,parameterDefinitions:parameterRows,independentComposition:admissionCompletenessMap});
   const { formulaConsumers, resourceConsumers } = buildMasterParameterCalculationConsumers({
     parameters: parameterRows, formulas: formulaRows, resources: resourceRows,
   });
@@ -2123,7 +2123,7 @@ export async function runMasterSingleDefinitionSuccessorR1(
     // The final effective passport is audited too: metadata-only publication
     // cannot validate a new map and silently persist a different captured map.
     assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
-      resourceDefinitions:plan.resources,independentComposition:plan.passport.decision?.independentCompletenessMap});
+      resourceDefinitions:plan.resources,parameterDefinitions:plan.parameters,independentComposition:plan.passport.decision?.independentCompletenessMap});
     // New sparse baselines carry exact metadata coverage; historical records
     // stay untouched. Missing input values are never manufactured from metadata.
     if(!operationParent&&retainedRepresentative&&config.binding.retainParentBindings?.legacyTemplateAssumptionSources?.approvedSourceEvidence

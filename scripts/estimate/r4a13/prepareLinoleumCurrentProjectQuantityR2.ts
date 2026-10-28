@@ -4,7 +4,7 @@ import {resolve} from 'node:path';
 import fixture from '../../../data/estimate-benchmarks/fixtures/linoleum-current-parent-r1115.json';
 import quantity from '../../../data/estimate-benchmarks/source-packs/linoleum-current-project-quantity-cycle-r2.json';
 import original from '../../../data/estimate-benchmarks/source-packs/linoleum-current-oem-physical-cycle-r1.json';
-import {buildLinoleumCurrentProjectQuantityR2,linoleumCurrentProjectQuantityExpectationsR2,assertLinoleumCurrentProjectQuantityScopeR2}
+import {buildLinoleumCompositionForwardR1139 as buildLinoleumCurrentProjectQuantityR2,linoleumCompositionExpectationsR1139 as linoleumCurrentProjectQuantityExpectationsR2,assertLinoleumCurrentProjectQuantityScopeR2}
  from '../../../src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding';
 import {canonicalEstimateStableJson} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateDeterminism';
 import {assembleMasterSingleDefinitionManagedRegistryCandidateR1,type MasterSingleDefinitionSuccessorConfig} from './prepareMasterSingleDefinitionSuccessorR1';
@@ -27,6 +27,8 @@ export function observedLinoleumParentR1115R2():MasterRetainedParentCaptureR1{
 const sourcePaths=[
  'src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding.ts',
  'scripts/estimate/r4a13/prepareLinoleumCurrentProjectQuantityR2.ts',
+ 'src/lib/estimate/v4/domains/interiorFinishesComplete/linoleumCompositionSourceForwardR1139.ts',
+ 'data/estimate-benchmarks/source-packs/linoleum-independent-operation-composition-r1139.json',
  'data/estimate-benchmarks/fixtures/linoleum-current-parent-r1115.json',
  'data/estimate-benchmarks/fixtures/linoleum-current-parent-r1065.json',
  'data/estimate-benchmarks/source-packs/linoleum-current-project-quantity-cycle-r2.json',

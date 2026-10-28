@@ -1,3 +1,4 @@
+import {canonicalSavedDefinitionCompositionScopeV1} from './canonicalEstimateDefinitionCompositionScopeV1';
 import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 import {canonicalEstimateSha256HexText} from './canonicalEstimateSha256';
 import {canonicalScopeRequirementDecisionV1,canonicalScopeRequirementDecisionIsOpenV1} from './canonicalScopeRequirementV1';
@@ -71,6 +72,11 @@ export function canonicalEstimateSavedOperationAcceptanceV1(input: {
     } catch { evidenceIssue = 'SAVED_OPERATION_COMPOSITION_EVIDENCE_CONFLICT'; }
   }
   const parameters = record(input.revision.input_parameters);
+  let scopedComposition:unknown=evidence.independentComposition;
+  try{scopedComposition=canonicalSavedDefinitionCompositionScopeV1({independentComposition:scopedComposition,
+    savedResources:input.resources,savedParameters:parameters}).independentComposition;}
+  catch{return {contractVersion:'canonical-operation-resource-acceptance/v1',status:'STRUCTURE_INVALID',
+    issues:[{code:'SAVED_DEFINITION_COMPOSITION_SCOPE_INVALID'}],pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false};}
   const originals = input.resources.map(row => ({rowId: String(row.row_id ?? ''),
     operation: record(record(row.calculation_trace).resourceGraph).operationCompositionV1}));
   const context = {revisionId: String(input.revision.id ?? ''), releaseId: String(input.revision.release_id ?? ''),
@@ -111,7 +117,7 @@ export function canonicalEstimateSavedOperationAcceptanceV1(input: {
       operation: display[index].operation, manualTitleOverride,
       publicNameVerified: manualTitleOverride || legacyName != null || presentation != null,
       quantityKnown: row.quantity != null}];
-  }), independentComposition: evidence.independentComposition,
+  }), independentComposition: scopedComposition,
     requireIndependentComposition: evidence.independentComposition !== undefined});
   return evidenceIssue ? {...acceptance, status:'STRUCTURE_INVALID', pdfAllowed:false,
     definitionAdmissionAllowed:false, completeClaimAllowed:false,

@@ -335,7 +335,7 @@
     "scripts/estimate/r4a13/canonicalDefinitionPublisherConditionalSourceScopeR1.test.ts": "1a35b95ea8c04c9879a91e763209b847ecb3f6787f5d0dec096979a66e3c89a8",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherParameterOrdinalsR1.test.ts": "80d99d70c1b35a864f138b6daf3348331b97ae0b15acdd0975825df9b29366fd",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": "d547140084bfcae2e33a48261a3d3b7dd0b6f105ec4357e3a7ff3344ed92c74e",
-    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "591fa0585ee4d6149c78f0f3d6b6702d16e95c04700d3cbe98f1b258764f54ca",
+    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "e4875b5cab24c84f53b2de999d827a86446696172030baa0a1d0c70d677382f8",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherResourceOrderingR1.test.ts": "b3117f2ccb80b2a8007ba33f95b65bdd14064a59d8b4ac9a9520750093b0ea67",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": "22e0c945a463230bed73e7efed680cf7bbd1547b82348737c620e72756bc6691",
     "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845",
@@ -452,7 +452,7 @@
     "scripts/estimate/r4a13/prepareMasterDrywallCeilingPreparationProfileSuccessor.ts": "7f3d7f8c4bd5b057366ac75d1c931887a41c143d1c490855a4e31d56144317bf",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionOperationCoverageR3.test.ts": "297dcdd05a34205b6947bd070c6db8cea1cc47b17a24722a5455f13626843c5c",
     "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.test.ts": "c94c830ddebcd6caeaf27c7831551b0cb06e18f42ba060f745067aaaf0bda096",
-    "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "e9bc1a3d8a298c8adf9b52f0d8201faaff7f140d563f3a7a56cc25ed0463b9cf",
+    "scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts": "7a38f1023444c7a8a9bf2518c9f0ae680820d289cdb9cd367a68517b1a494896",
     "scripts/estimate/r4a13/prepareMasterStripFoundationConcretePlacementProfileSuccessor.ts": "685967f84fb291424437ef9c2ac41c69a3bf65dd8c3e60b92989df4fb125a403",
     "scripts/estimate/r4a13/prepareMasterSurfaceDrainageChannelSuccessor.ts": "912433eb6b61bb988d49abd7d24777ce7de95f4ed4bb7dcf1b2f6bcca6c601ff",
     "scripts/estimate/r4a13/preparePavingCut70AdmittedMasterAppendR2.ts": "214c15286e7ad28d1d094adf145bad923b6ae748ee2daba5254de90ffde17dbd",
@@ -1253,7 +1253,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "a0a61d3e702b8a57c5a98f77d1306170dfcf34700a34ab506c9a7b7d8c6622d1",
     "src/lib/estimate/backendPlatform/canonicalEstimateRevisionWriter.ts": "96f6ae3422394dc523a1637e1573f2b08e3c3182350dbbd6155bce9e6773809e",
     "src/lib/estimate/backendPlatform/canonicalEstimateRowCategory.ts": "986904ce0ab7cce59ab22ad288a2a50375668fce8377295fc58a9ba6e94c040e",
-    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "50095660dc8943927e24ffbf7f7124f39239beafff9a84df5f959e2140d56b14",
+    "src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1.ts": "9321b6be00dd20e4bfb23394e4370f2104ab76e00f24a2f08a592f6e8e67b17c",
     "src/lib/estimate/backendPlatform/canonicalEstimateSearchInput.ts": "8db129b35d8f80b05a79376336fdfa4222a9dcb7c51288f1eae3d24403d62139",
     "src/lib/estimate/backendPlatform/canonicalEstimateSha256.ts": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433",
     "src/lib/estimate/backendPlatform/canonicalExactConditionalSuccessorMigrationV1.ts": "914d3aaf669a97e2f11231c887272a0e4c49206c22782d732ff840c55731d47e",
@@ -1710,7 +1710,7 @@
     "src/lib/estimate/v4/domains/interiorFinishesComplete/index.ts": "ae35194812db5f32ae04d39bcab01a0c55eada88081dfd78bf003ffbd928be80",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/inventory.ts": "bcebf563d0651782d41d7abf0722e04fcf4be4ab37dae5b7cfef9a12e9aac807",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/paintCeresitCt54Ct17ProfessionalV1.ts": "845962204c78e96230a8626cdc4bf32eddc5cd60009e16db115ae511df1b1c5b",
-    "src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding.ts": "d23d41146f9aeef2769a7c966e246cd92cc1981ed0f7a586c5d69f0686a55a09",
+    "src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding.ts": "2e0c0ba7f0f422483b2d3415feba64ae2d9238da2e85821c16a8ddb30e690bf1",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/technologyProfiles.ts": "e35d2fd168a99f7546bd294a7648edd8cfca2056d5ed450af41877d12aeee8f1",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/wallPuttyCeresitCt127Krer15ProfessionalV1.ts": "fbd31616cce1236d1af4ff88b0008a4c5576ce186630a31932f048841f2483c2",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/waterproofingCeresitCl51ProfessionalV1.ts": "f52b0b061939ff1911fb5663af05bbccfb31d8df024d1cbe71b55f352452e929",
@@ -2608,9 +2608,13 @@
     "data/estimate-benchmarks/source-artifacts/linoleum-r2-euroclean888-current-linked-tds.pdf": "a8d55ad04bbe85e83f441f2d7c340207865b26a7a0e3566953f7c3e05567de6a",
     "data/estimate-benchmarks/source-packs/linoleum-current-project-quantity-cycle-r2.json": "d50f5780578f582a0a43b1137ce0b2c94d7b65d7c4fca7cfc25b03b41512e38b",
     "data/estimate-benchmarks/source-packs/linoleum-project-quantity-records-r2.txt": "18919be50a9bb58b84f3e2e4bd214efb68001d7bfb438f3b9bd4e73071fb5fed",
-    "scripts/estimate/r4a13/prepareLinoleumCurrentProjectQuantityR2.ts": "48f8d73cccbde93f1aa0357472582cd428049e04a883b9c830247cc9d4af6d64",
-    "tests/estimateDomainFactory/interiorFinishesLinoleumProjectQuantityR2.contract.test.ts": "87331a6733fa2e7dd165ee6ffd3cafabec0cba82684cd149c6ba96aa63645322",
-    "scripts/estimate/r4a13/masterRetainedManagedTypedQuantityR1.test.ts": "35e3dfcd59f72a888cda704ce337fc03035520ae345ec60048df607afed4064f"
+    "scripts/estimate/r4a13/prepareLinoleumCurrentProjectQuantityR2.ts": "bc24fea25b8ae8d7c50779f74d5457fa3d30cbe7f1b450c0a718584f1849314d",
+    "tests/estimateDomainFactory/interiorFinishesLinoleumProjectQuantityR2.contract.test.ts": "3a050bfa9b26336a94ede2e693788102adb5c9e1f6ad7ccc2716ae86c0dc8de7",
+    "scripts/estimate/r4a13/masterRetainedManagedTypedQuantityR1.test.ts": "35e3dfcd59f72a888cda704ce337fc03035520ae345ec60048df607afed4064f",
+    "data/estimate-benchmarks/source-packs/linoleum-independent-operation-composition-r1139.json": "f24771b6844f743ab8b79ea3aabe2486d1b67dc66a7d6733a037cc8b30e36651",
+    "src/lib/estimate/backendPlatform/canonicalEstimateDefinitionCompositionScopeV1.test.js": "551ea08c8c80d0bdf867db35c328a79aae387d5e301870f9bbac1fa84dbababe",
+    "src/lib/estimate/backendPlatform/canonicalEstimateDefinitionCompositionScopeV1.ts": "309b1bf92a0853c44ca131ca5947ad522aaa3164ee9a80ad8b5345750ec55298",
+    "src/lib/estimate/v4/domains/interiorFinishesComplete/linoleumCompositionSourceForwardR1139.ts": "f65415a7af6c883d3b2a344cfbec40c005fef85f1ee84704266eec100cfb274d"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -3783,20 +3787,21 @@
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
     "sourceBytes": 176502689,
-    "newInputs": "Exact5R6intercomsourcefiles; no auth/history/runtime capture. Existingcoherenttypedheldcompanions retained; no unrelated canonical restore."
+    "newInputs": "Only reviewed method scope/proof/saved acceptance, exactsourceownedconditionalcomposition, persistent18regressions and staleclosed-routing assertion correction; no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
     "sourceFiles": 2609,
-    "dependencyFiles": 1160
+    "dependencyFiles": 1160,
+    "sourcePins": 2613
   },
   "candidateSourceComposition": {
-    "baseActualTypesCI": 40649095495,
-    "baseTypedCommit": "51921c6612fef5a93c367322e20e5629ca1cb274",
-    "delta": "family-only4derivedparameterprovenance kinds and1existingrecipe case invoking actualexplicit-source assembler; common and other26familycases unchanged",
-    "noNewQuantityOrObjectFacts": true
+    "kind": "r1143 exact single candidate after root18 and wholeconfig9",
+    "candidateManifestSha256": "1beae020277cccb8ab12ff2d7188a74707077606e284cb039d1b51c0aec56e80",
+    "parent": "b4f261cc00d8100ff7ba66f4aec451cee2cc5c7c",
+    "noMixedVersions": true
   },
   "existingCiTypesStageBudget": {
     "historicalCommit": "5f63be6042c535e3de797388991c9835d7e0d5e2",

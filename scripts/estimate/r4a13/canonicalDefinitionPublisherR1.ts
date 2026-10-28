@@ -1,3 +1,4 @@
+import {canonicalDefinitionCompositionScopeV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateDefinitionCompositionScopeV1';
 import {resolveMasterScopedNormativeRegistryOptInR1,readMasterScopedNormativeRegistryPreconditionsR1,type MasterResolvedScopedNormativeRegistryR1} from './masterScopedNormativeRegistryPreimageR1';
 import {auditCanonicalEstimateOperationResourcesV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import {canonicalScopeRequirementDecisionV1} from '../../../src/lib/estimate/backendPlatform/canonicalScopeRequirementV1';
@@ -85,11 +86,16 @@ export type CanonicalDefinitionPublishPlan = ReturnType<typeof createCanonicalDe
  * construction remain readable without manufacturing new source evidence.
  * Template rows have no object quantity: do not set quantityKnown from absence. */
 export function auditCanonicalPublisherSuccessorOperationResourcesR1(input:Readonly<{
- resourceDefinitions:readonly CanonicalPublisherJson[];independentComposition?:unknown;
+ resourceDefinitions:readonly CanonicalPublisherJson[];parameterDefinitions?:readonly CanonicalPublisherJson[];independentComposition?:unknown;
 }>){
+ let projection:ReturnType<typeof canonicalDefinitionCompositionScopeV1>;
+ try{projection=canonicalDefinitionCompositionScopeV1({...input,independentComposition:input.independentComposition});}
+ catch{return {contractVersion:'canonical-operation-resource-acceptance/v1' as const,status:'STRUCTURE_INVALID' as const,
+  issues:[{code:'DEFINITION_COMPOSITION_SCOPE_INVALID'}],pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false};}
  return auditCanonicalEstimateOperationResourcesV1({requireIndependentComposition:true,
-  independentComposition:input.independentComposition,
+  independentComposition:projection.independentComposition,
   resources:input.resourceDefinitions.flatMap(row=>{
+   if(projection.inactiveRowIds.has(String(row.row_id)))return [];
    const graph=isObject(row.resource_graph)?row.resource_graph:{};
    // Project source metadata only; no object quantities or financial defaults.
    // Keep the full raw plan for existing source/norm/payment guards, and never
@@ -710,7 +716,7 @@ export async function preflightCanonicalDefinitionPublishPlans(
   for (const plan of plans) automaticPriceInheritanceExcludedResourceIds(plan);
   // Admission follows existing pure guards, and still precedes all DB reads.
   for(const plan of plans)assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
-    resourceDefinitions:plan.resources,independentComposition:plan.passport?.decision?.independentCompletenessMap,definitionPassport:plan.definition.passport});
+    resourceDefinitions:plan.resources,parameterDefinitions:plan.parameters,independentComposition:plan.passport?.decision?.independentCompletenessMap,definitionPassport:plan.definition.passport});
   for(const plan of typedPlans){
     const input=typedQuantityInputs.find(input=>typedQuantityCatalog(input)===plan.definition.catalog_id)!;
     try{
@@ -981,7 +987,7 @@ export async function publishCanonicalDefinitionDraft(
   const excludedPriceInheritanceResourceIds = automaticPriceInheritanceExcludedResourceIds(plan);
   // Every admissible write repeats composition admission before the first INSERT.
   assertCanonicalPublisherSuccessorOperationResourcesR1({catalogId:plan.definition.catalog_id,
-    resourceDefinitions:plan.resources,independentComposition:plan.passport?.decision?.independentCompletenessMap,definitionPassport:plan.definition.passport});
+    resourceDefinitions:plan.resources,parameterDefinitions:plan.parameters,independentComposition:plan.passport?.decision?.independentCompletenessMap,definitionPassport:plan.definition.passport});
   await client.query(`insert into public.estimate_definition_version(
       id,release_id,catalog_id,definition_version,passport,applicability,definition_sha256,
       source_metadata,content_status,content_gate_status)
