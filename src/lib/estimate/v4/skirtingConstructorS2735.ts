@@ -1,4 +1,7 @@
-import {buildAutomaticConstructionOwnerR1, compileAutomaticConstructionOwnerR1,
+import physical from '../../../../data/estimate-benchmarks/source-packs/ready-pvc-skirting-current-physical-cycle-r1.json';
+import {buildMasterParameterCalculationConsumers} from '../backendPlatform/canonicalDefinitionParameterConsumersR1';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
+import {buildAutomaticConstructionOwnerR1, compileAutomaticConstructionOwnerR1, unresolvedApplicationNormTruthR1,
   type AutomaticOwnerDefinition, type AutomaticParameterSpec, type AutomaticRowSpec, type AutomaticInclusionCondition} from './automaticConstructionOwnerR1';
 import {effectivePurchaseBalanceExpressionsR1} from './effectivePurchaseBalanceR1';
 import {buildBaseboardGerflorInstallProfessionalPackagePartsV1} from './domains/interiorFinishesComplete/baseboardGerflorInstallProfessionalV1';
@@ -182,4 +185,145 @@ export const SKIRTING_DEFINITIONS_S2735=Object.freeze({install:buildSkirtingDefi
 export function compileSkirtingConstructorS2735(submittedParameters:Record<string,unknown>,catalogId=SKIRTING_TARGETS_S2735[0].catalogId){
   const target=SKIRTING_TARGETS_S2735.find(item=>item.catalogId===catalogId);if(!target)throw Error('SKIRTING_CATALOG_UNSUPPORTED');
   return compileAutomaticConstructionOwnerR1({compilerVersion:SKIRTING_CONTRACT_S2735,catalogId,primaryMeasureParameterId:'length_m',definition:SKIRTING_DEFINITIONS_S2735[target.operation],submittedParameters});
+}
+
+/** Exact current whole-parent continuation. Existing install/glue constructors
+ * and their defaults above are unchanged. This overlay never reconstructs R410. */
+export const skirtingCurrentPhysicalPackR1=physical;
+export const skirtingCurrentPhysicalFactR1=(key:string)=>'skirting_cycle_fact_'+key;
+export const skirtingCurrentPhysicalQuantityR1=(key:string)=>'skirting_cycle_quantity_'+key.replaceAll('-','_');
+export function buildSkirtingCurrentPhysicalCycleR1(base:AutomaticOwnerDefinition,quantityBasis?:'ACTUAL_CUT_PLAN_R1'):AutomaticOwnerDefinition{
+ const p=physical,id=(key:string)=>p.prefix+':'+key,fact=skirtingCurrentPhysicalFactR1,qty=skirtingCurrentPhysicalQuantityR1,
+  active={kind:'greater_than' as const,parameterId:p.primaryParameterId,value:0},plan=quantityBasis==='ACTUAL_CUT_PLAN_R1'?p.quantityPlan:null;
+ const incomingBody={parameters:base.parameters,formulas:base.formulas,resources:base.resources};
+ // Existing calculation hash rounds to6decimals. Exact retained admission also
+ // compares unrounded stable values, so a finer constraint change cannot hide.
+ if(estimateDeterministicHash(incomingBody)!==p.actualCurrent.retainedBodyEstimateHash
+  ||canonicalEstimateStableJson(incomingBody)!==canonicalEstimateStableJson(p.actualCurrent.retainedBody))
+  throw Error('SKIRTING_ACTUAL_R858_WHOLE_BODY_REQUIRED');
+ if([base.parameters.length,base.formulas.length,base.resources.length].join('/')!==p.actualCurrent.shape.join('/')
+  ||p.catalogId!=='canonical-work:base:flooring_interior_baseboard_install_standard'
+  ||!base.parameters.some(parameter=>parameter.parameter_id==='length_m'&&parameter.unit_id==='m')
+  ||base.parameters.some(parameter=>parameter.truth_metadata.contract!==p.currentNativeContract))throw Error('SKIRTING_ACTUAL_R858_CATALOGUE_AND_NATIVE_LINEAGE_REQUIRED');
+ for(const row of p.actualCurrent.retainedBody.resources){const current=base.resources.find(r=>r.row_id===row.row_id);
+  if(!current||current.formula_id!==row.formula_id||current.unit_id!==row.unit_id||current.cost_owner_id!==row.cost_owner_id)
+   throw Error('SKIRTING_ACTUAL_RETAINED_RESOURCE_IDENTITY_REQUIRED:'+row.row_id);}
+ const operation=(key:string)=>{const o=p.operations.find(item=>item.key===key);if(!o)throw Error('SKIRTING_WHOLE_OPERATION:'+key);
+  return{operationId:id('operation:'+key),operationTitleRu:o.nameRu,processOrdinal:o.ordinal,processRole:'PROCESS' as const,
+   completionCriterionRu:'Операция выполнена по принятому способу, действительным ресурсам и условиям; наличие расчёта не подтверждает объект.'};},
+  composition=(keys:readonly string[])=>{const[first,...rest]=[...new Set(keys)].map(operation);if(!first)throw Error('SKIRTING_EMPTY_OPERATION');
+   return{contractVersion:'canonical-operation-resource/v1',groupId:p.prefix,groupTitleRu:'Монтаж готового плинтуса по отдельной длине',...first,
+    ...(rest.length?{additionalOperations:rest}:{})};},
+  required=(keys:readonly string[])=>[...new Set(['exact_system','product_compatibility','inventory','delivery',
+   ...keys.flatMap(key=>['layout','cutting','dry-fit','end-caps'].includes(key)?['cut_layout','ppe_plan']:
+    key==='preparation'?['line_acceptance','preparation_method','solvent_controls','ppe_plan']:
+    ['adhesive','junction'].includes(key)?['line_acceptance','solvent_controls','ventilation','ppe_plan','respiratory_scope','chemical_eye_scope','quality_plan']:
+    key==='cleanup'?['solvent_controls','ventilation','ppe_plan','respiratory_scope','chemical_eye_scope','waste_receiver','cleanup_scope','hygiene']:
+    key==='acceptance'?['quality_plan','cut_layout','line_acceptance']:[])])].map(fact),
+  conditional=(item:(typeof p.resources)[number]):AutomaticInclusionCondition[]=>{
+   if(!('condition'in item)||!item.condition)return[];const c=item.condition;
+   if('parameterId'in c&&typeof c.parameterId==='string'){
+    if(!('value'in c)||typeof c.value!=='string')throw Error('SKIRTING_PHYSICAL_CONDITION_VALUE');
+    return[{kind:'equals',parameterId:c.parameterId,value:c.value}];
+   }
+   if(!('fact'in c)||typeof c.fact!=='string')throw Error('SKIRTING_PHYSICAL_CONDITION_FACT');const factParameterId=fact(c.fact);
+   if('values'in c&&c.values!==undefined){
+    if(!Array.isArray(c.values)||!c.values.length||!c.values.every(value=>typeof value==='string'))throw Error('SKIRTING_PHYSICAL_CONDITION_VALUES');
+    return[{kind:'or',operands:c.values.map(value=>({kind:'equals',parameterId:factParameterId,value}))}];
+   }
+   if(!('value'in c)||typeof c.value!=='string')throw Error('SKIRTING_PHYSICAL_CONDITION_VALUE');
+   return[{kind:'equals',parameterId:factParameterId,value:c.value}];
+  };
+ const extra=buildAutomaticConstructionOwnerR1({contract:p.contract,semanticOwner:p.prefix,sourceId:p.contract,
+  normId:'PROJECT_SYSTEM:READY_PVC_SKIRTING_WHOLE_PHYSICAL_FUNCTIONS_NOT_NEW_NORM',sourceMetadata:{source_title:'Полный цикл готового плинтуса из ПВХ',
+   source_document_version:'SOURCE_ONLY_UNRUN',definition_hash:estimateDeterministicHash(p),artifact_sha256:p.sources[0]!.sha256,
+   exact_locator:p.sources.map(source=>source.locator).join('; ')},applicabilityRu:p.compatibilityHeld,
+  ordinary:[{id:'length_m',title:'Измеренная чистовая длина плинтуса',kind:'ordinary',valueType:'decimal',unitId:'m',min:0.001}],profile:[],
+  conditional:[...p.facts.map(item=>({id:fact(item.key),title:item.nameRu,kind:'internal' as const,unitId:null,
+   valueType:'values'in item?'enum' as const:'text' as const,...('values'in item?{values:item.values}:{})})),
+   ...(plan?plan.independentNewDrivers.map(driver=>({id:driver.parameterId,title:driver.nameRu,kind:'conditional' as const,valueType:'decimal' as const,
+    unitId:driver.unit,min:driver.min,requiredWhen:active,numericPeerConstraints:driver.numericPeerConstraints})):[]),
+   ...p.resources.map(item=>({id:qty(item.key),title:item.nameRu,kind:'internal' as const,valueType:['piece','pair','trip'].includes(item.unit)?'integer' as const:'decimal' as const,unitId:item.unit,min:0}))],
+  rows:[...p.resources.map(item=>({rowId:id('resource:'+item.key),formulaId:id('formula:'+item.key),section:'Физический состав монтажа плинтуса',
+   category:item.kind==='LABOR'?'labor':item.kind==='MATERIAL'||item.kind==='CONSUMABLE'?'material':item.kind==='SERVICE'?'service':'equipment',
+   title:item.nameRu,unitId:item.unit,expression:qty(item.key),inclusion:{kind:'and' as const,operands:[active,...conditional(item)]},costTreatment:'INFORMATIONAL_SCOPE' as const,procurement:false})),
+   {rowId:id('whole-required-scope'),formulaId:id('formula:whole-required-scope'),section:'Проверка состава',category:'service',
+    title:'Проверка обязательного состава монтажа плинтуса',unitId:'document',expression:'1',inclusion:active,costTreatment:'INFORMATIONAL_SCOPE',procurement:false},
+   {rowId:id(p.cleanupOwnership.markerSuffix),formulaId:id('formula:'+p.cleanupOwnership.markerSuffix),section:'Граница труда очистки',category:'service',
+    title:'Подтверждённое включение очистки в основной монтаж',unitId:'document',expression:'1',
+    inclusion:{kind:'and',operands:[active,{kind:'equals',parameterId:fact(p.cleanupOwnership.includedFactKey),value:p.cleanupOwnership.includedValue}]},
+    costTreatment:'INFORMATIONAL_SCOPE',procurement:false}],
+  deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:['Длина из площади пола','Посты/бригады/расход СИЗ и оснастки по умолчанию',
+   'Универсальная совместимость6086/232','Деревянный/керамический/механический способ по этой норме','Принятые объектные факты изASSUMPTION/VALIDATION_FIXTURE']});
+ let parameters=[...base.parameters,...extra.parameters.filter(parameter=>!base.parameters.some(q=>q.parameter_id===parameter.parameter_id)).map(parameter=>{
+  const condition=p.facts.find(item=>fact(item.key)===parameter.parameter_id),resource=p.resources.find(item=>qty(item.key)===parameter.parameter_id),
+   driver=plan?.independentNewDrivers.find(item=>item.parameterId===parameter.parameter_id);
+  if(driver)return{...parameter,default_value:null,truth_metadata:{...parameter.truth_metadata,visibility_role:'USER_INPUT',value_source_role:'CONDITIONAL_PROJECT_FACT',
+   source_confirmation_required:false,provenance:{consumer_input_role_v1:'OBJECT_FACT'},resource_branch_consumers:['material:skirting:board'],
+   guide:{...(parameter.truth_metadata.guide as Record<string,unknown>),guide_kind:'MEASUREMENT_RULE',source_role:'USER_MEASURED',source_document:p.contract,
+    source_snapshot_hash:p.quantityPlanSha256,source_locator:'quantityPlan.independentNewDrivers.'+driver.key,guide_version:plan!.key,
+    guide_short_ru:driver.nameRu,guide_validation_policy:'MANDATORY_BLOCK'}}};
+  if(resource)return{...parameter,default_value:null,truth_metadata:unresolvedApplicationNormTruthR1(parameter.truth_metadata,resource.returnWhen)};
+  if(!condition)throw Error('SKIRTING_SOURCE_PARAMETER_WITHOUT_OWNER:'+parameter.parameter_id);
+  return{...parameter,required:false,default_value:null,constraints_json:{...parameter.constraints_json,requiredWhen:active},truth_metadata:{...parameter.truth_metadata,
+   visibility_role:'INTERNAL_ONLY',value_source_role:'PROJECT_DOCUMENTATION',source_confirmation_required:true,provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL',
+    source_readback_only_v1:true,consumer_question_allowed:false}}};
+ })].map((parameter,ordinal)=>({...parameter,ordinal}));
+ if(plan)parameters=parameters.map(parameter=>parameter.parameter_id!==plan.derivedExistingParameter.id?parameter:{...parameter,required:false,default_value:null,
+  truth_metadata:{...parameter.truth_metadata,visibility_role:'INTERNAL_ONLY',value_source_role:'VISIBLE_REPLACEABLE_PRELIMINARY_PROFILE',
+   source_confirmation_required:false,runtime_profile_classification:'PRELIMINARY_SOURCE_FORMULA',runtime_profile_value:true,preliminary_compilation_allowed:true,
+   provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL',derived_from_actual_measurements:true},
+   preliminary_value_formula_v1:{version:'canonical-preliminary-parameter-formula:v1',expression:plan.derivedExistingParameter.expression,
+    when:{kind:'literal',value:true},explicitValuePolicy:'REQUIRE_MATCH'},guide:{...(parameter.truth_metadata.guide as Record<string,unknown>),guide_kind:'DERIVED_VALUE_RULE',
+    source_role:'ENGINEERING_DESIGN',source_document:p.contract,source_snapshot_hash:p.quantityPlanSha256,source_locator:'quantityPlan.derivedExistingParameter',
+    guide_version:plan.key,guide_short_ru:'Прибавка из принятой карты раскроя; не процент и не подтверждение заказа.',guide_validation_policy:'MANDATORY_BLOCK'}}});
+ const rehash=(row:typeof base.resources[number])=>{const{row_sha256:_old,...body}=row;return{...body,row_sha256:estimateDeterministicHash(body)};},
+  resources:Array<AutomaticOwnerDefinition['resources'][number]>=base.resources.map(row=>{const keys=p.existingRowConsumers[row.row_id as keyof typeof p.existingRowConsumers];if(!keys)throw Error('SKIRTING_UNMAPPED_ACTUAL_RESOURCE:'+row.row_id);
+   const oldInputs=Array.isArray(row.resource_graph.inputParameterIds)?row.resource_graph.inputParameterIds as string[]:[],name=p.publicNames[row.row_id as keyof typeof p.publicNames],
+    declared=composition(keys),operationCompositionV1=row.row_id===p.cleanupOwnership.wholeLaborRowId?{...declared,
+     additionalOperations:declared.additionalOperations?.map(reference=>reference.operationId===id('operation:cleanup')
+      ?{...reference,whenResourcePresent:[id(p.cleanupOwnership.markerSuffix)]}:reference)}:declared;
+   return rehash({...row,resource_graph:{...row.resource_graph,inputParameterIds:[...new Set([...oldInputs,...required(keys)])],operationCompositionV1,
+    publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:row.title_ru,nameRu:name,
+     brandAndModelRu:null,specificationRu:null,detailsRu:['Точные изделия и совместимость сохранены во внутреннем источнике; нормы, формулы и единственный владелец не меняются.']}},
+    // Retained publisher fingerprints old physical/payment source metadata.
+    // Added consumers/presentation live in resource_graph; the source row stays exact.
+    source_metadata:row.source_metadata});});
+ for(const row of extra.resources){const item=p.resources.find(r=>id('resource:'+r.key)===row.row_id),scope=row.row_id===id('whole-required-scope'),
+  cleanupNote=row.row_id===id(p.cleanupOwnership.markerSuffix);
+  resources.push(rehash({...row,ordinal:resources.length,resource_graph:{...row.resource_graph,inputParameterIds:scope?[]:required(item?.ops??['cleanup']),
+   operationCompositionV1:composition(item?.ops??(cleanupNote?['cleanup']:['adhesive'])),publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',
+    sourceTitleRu:row.title_ru,nameRu:row.title_ru,brandAndModelRu:null,specificationRu:null,
+    detailsRu:[item?.returnWhen??(cleanupNote?'Принятая граница ссылается на единственный ресурс основного труда; документ не задаёт часы очистки.':'Исходные материалы и единственный труд остаются обязательными.')],
+    ...(scope||cleanupNote?{rowKind:'PROCESS_NOTE'}:{resourceKind:item!.kind})},...(scope?{scopeRequirementV1:{contractVersion:'canonical-scope-requirement/v1',kind:'INCLUDED',
+     groupId:p.prefix,groupTitleRu:'Монтаж готового плинтуса по отдельной длине',titleRu:row.title_ru,reasonRu:'Исключён обязательный ресурс выбранного монтажа.',exactScopeWhen:active,
+     coveringRowIds:['material:skirting:board','material:skirting:adhesive','skirting:installation_labor','skirting:preparation_labor'],originalRowIds:[],
+     costExclusionBreaksScopeV1:true,sourceEvidence:[{sha256:p.sources[0]!.sha256,locator:p.sources[0]!.locator}]}}:{})},
+   source_metadata:{...row.source_metadata,sourceRole:scope?'WHOLE_SKIRTING_SCOPE_CHECK':cleanupNote?'PROJECT_CLEANUP_INCLUDED_OWNER_EVIDENCE':'PHYSICAL_FUNCTION_SOURCE_QUANTITY_REQUIRED',
+    sourceQuantityReturnWhen:item?.returnWhen??null,newPaidOwnerAccepted:false,sourceNormAccepted:false,actualObjectFactsAccepted:false,full_technical_acceptance:false}}));}
+ const formulas=[...base.formulas,...extra.formulas],consumers=buildMasterParameterCalculationConsumers({parameters,formulas,resources});
+ return{...base,resources,formulas,parameters:parameters.map(parameter=>({...parameter,truth_metadata:{...parameter.truth_metadata,
+  formula_consumers:consumers.formulaConsumers[parameter.parameter_id],resource_branch_consumers:consumers.resourceConsumers[parameter.parameter_id]}}))};
+}
+export function skirtingCurrentPhysicalCompletenessR1(){const p=physical,id=(key:string)=>p.prefix+':'+key;
+ return{contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'NORMATIVE_OPERATION_MAP',generatedFromCurrentRows:false,
+  evidenceSha256:p.sources[0]!.sha256,operationResourceBindingRequired:true,physicalResourceCoverageComplete:false,fullTechnicalAcceptance:false,
+  entries:[...Object.entries(p.existingRowConsumers).map(([rowId,keys])=>{const row=p.actualCurrent.retainedBody.resources.find(row=>row.row_id===rowId)!;
+   return{expectedResourceId:'retained:'+rowId,operationId:id('operation:'+keys[0]),requiredOperationIds:keys.map(key=>id('operation:'+key)),
+    category:row.category==='labor'?'labor':row.category==='material'?'material':row.category==='equipment'?'equipment':'service',unitId:row.unit_id,
+    sourceId:p.existingSourceId,specification:p.publicNames[rowId as keyof typeof p.publicNames],condition:'ACTUAL_R858_READY_PVC_SOURCE_PROFILE',
+    quantityRule:'RETAINED_CURRENT_QUANTITY_WITH_DISTINCT_PRELIMINARY_AND_ACTUAL_SOURCE_AUTHORITY',formulaId:row.formula_id,resolution:{kind:'ROW',rowId}};}),
+   ...p.resources.map(item=>({expectedResourceId:'physical:'+item.key,operationId:id('operation:'+item.ops[0]),requiredOperationIds:item.ops.map(key=>id('operation:'+key)),
+    category:item.kind==='LABOR'?'labor':item.kind==='MATERIAL'||item.kind==='CONSUMABLE'?'material':item.kind==='SERVICE'?'service':'equipment',unitId:item.unit,
+    specification:item.nameRu,sourceId:item.source,condition:'ACTUAL_APPROVED_METHOD_AND_PHYSICAL_RESOURCE_SCOPE',quantityRule:'SOURCE_HELD_NOT_USER_ZERO_OR_ONE',
+    formulaId:id('formula:'+item.key),resolution:{kind:'ROW',rowId:id('resource:'+item.key)}})),
+   {expectedResourceId:'whole-scope',operationId:id('operation:adhesive'),requiredOperationIds:[id('operation:adhesive')],category:'service',unitId:'document',sourceId:p.contract,
+    specification:'Проверка обязательного состава монтажа плинтуса',condition:'ACTUAL_R858_READY_PVC_SOURCE_PROFILE',quantityRule:'COMMON_REQUIRED_SCOPE_NOT_RESOURCE_NORM',
+    formulaId:id('formula:whole-required-scope'),resolution:{kind:'ROW',rowId:id('whole-required-scope')}},
+   {expectedResourceId:'cleanup-included-scope',operationId:id('operation:cleanup'),requiredOperationIds:[id('operation:cleanup')],category:'service',unitId:'document',sourceId:p.contract,
+    specification:'Подтверждённая граница включённой очистки с одним владельцем основного труда',condition:'SOURCE_CONFIRMED_CLEANUP_INCLUDED_IN_ACCEPTED_INSTALLATION',
+    quantityRule:'DOCUMENT_SCOPE_MARKER_NOT_RESOURCE_NORM_NO_ADDED_HOURS',formulaId:id('formula:'+p.cleanupOwnership.markerSuffix),
+    resolution:{kind:'ROW',rowId:id(p.cleanupOwnership.markerSuffix)}}],
+  additionalSources:p.sources,sourceQuantityReturnWhen:p.resources.map(item=>({key:item.key,returnWhen:item.returnWhen})),
+  actualSiteReadbackRequired:true,oldBaselineNotActualEvidence:true,variantNamesDoNotSetNorms:true};
 }

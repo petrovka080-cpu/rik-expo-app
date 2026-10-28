@@ -587,7 +587,7 @@ import {estimateDeterministicHash as linoleumRowHashR1} from '../../../estimateD
 import {effectivePurchaseBalanceExpressionsR1 as linoleumBalanceR1} from '../../effectivePurchaseBalanceR1';
 
 type LinoleumRecordR1=Record<string,unknown>;
-const lr1=(value:unknown):LinoleumRecordR1=>{if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('LINOLEUM_R1_RECORD_REQUIRED');return value;};
+const lr1=(value:unknown):LinoleumRecordR1=>{if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('LINOLEUM_R1_RECORD_REQUIRED');return Object.fromEntries(Object.entries(value));};
 const lt1=(value:unknown):string=>{if(typeof value!=='string')throw Error('LINOLEUM_R1_TEXT_REQUIRED');return value;};
 const la1=(value:unknown):unknown[]=>{if(!Array.isArray(value))throw Error('LINOLEUM_R1_ARRAY_REQUIRED');return value;};
 const lb1=(value:unknown):boolean=>{if(typeof value!=='boolean')throw Error('LINOLEUM_R1_BOOLEAN_REQUIRED');return value;};
