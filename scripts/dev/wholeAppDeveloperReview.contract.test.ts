@@ -37,7 +37,7 @@ describe("whole-app developer review runtime", () => {
     const marker = resolve(folder, "child-proof.json"), managerFile = resolve(folder, "manager.cjs");
     const stdout = resolve(folder, "child.stdout"), stderr = resolve(folder, "child.stderr"), parentProof = resolve(folder, "parent-proof.json");
     const preload = pathToFileURL(resolve("scripts/dev/waitForBackendStartupManagerExit.mjs")).href;
-    const childCode = "const fs=require('node:fs');fs.writeFileSync(process.argv[1],JSON.stringify({managerDisconnected:!process.connected,parentTokenCleared:!process.env.LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID}));";
+    const childCode = "const fs=require('node:fs');const marker=process.argv[1];fs.writeFileSync(marker+'.tmp',JSON.stringify({managerDisconnected:!process.connected,parentTokenCleared:!process.env.LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID}));fs.renameSync(marker+'.tmp',marker);";
     writeFileSync(managerFile, "const fs=require('node:fs');const {spawn}=require('node:child_process');const out=fs.openSync(" + JSON.stringify(stdout) + ",'a'),err=fs.openSync(" + JSON.stringify(stderr) + ",'a');const child=spawn(process.execPath,['--import'," + JSON.stringify(preload) + ",'-e'," + JSON.stringify(childCode) + "," + JSON.stringify(marker) + "],{env:{...process.env,LOCAL_DEVELOPER_BACKEND_STARTUP_MANAGER_PID:String(process.pid)},windowsHide:true,stdio:['ignore',out,err,'ipc']});child.unref();child.channel.unref();fs.closeSync(out);fs.closeSync(err);setTimeout(()=>fs.writeFileSync(" + JSON.stringify(parentProof) + ",JSON.stringify({childStartedWhileManagerAlive:fs.existsSync(" + JSON.stringify(marker) + ")})),300);\n");
     try {
       const manager = spawnSync(process.execPath, [managerFile], { cwd: resolve("."), windowsHide: true, encoding: "utf8" });
@@ -48,7 +48,7 @@ describe("whole-app developer review runtime", () => {
       expect(JSON.parse(readFileSync(parentProof, "utf8"))).toEqual({ childStartedWhileManagerAlive: false });
       expect(JSON.parse(readFileSync(marker, "utf8"))).toEqual({ managerDisconnected: true, parentTokenCleared: true });
     } finally {
-      for (const file of [marker, managerFile, stdout, stderr, parentProof]) if (existsSync(file)) unlinkSync(file);
+      for (const file of [marker, marker + ".tmp", managerFile, stdout, stderr, parentProof]) if (existsSync(file)) unlinkSync(file);
       rmdirSync(folder);
     }
   });
