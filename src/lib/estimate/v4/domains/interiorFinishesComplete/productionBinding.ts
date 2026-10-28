@@ -709,6 +709,8 @@ const lq2=lp2.quantityReclassification;
 const lprojectGuideR2=(parameterId:string,title:string)=>({guide_kind:'MEASUREMENT_RULE',source_role:'USER_SUPPLIED_OBJECT_FACT',
  guide_validation_policy:'MANDATORY_BLOCK',guide_version:lp2.contract,source_document:lp2.quantityEvidence.path,
  source_snapshot_hash:lp2.quantityEvidence.sha256,source_locator:'45-row disposition:'+parameterId,
+ // Source-guide byte review only: g2/SOURCE_GUIDE_REVIEW_RECEIPT.json SHA256 a6e66d7df53c53c34d83c63fef606603058b568ea7a83bafe896fcfe143bf765.
+ verified_at:'2026-10-28T09:55:11Z',
  guide_short_ru:title,applicability:'Фактические измерения/ведомость предоставления выбранного метода; не норма на м², срок службы или доказательство технологической достаточности.'});
 const lstructuralR2:Readonly<Record<string,string>>={[lp1.selector.parameterId]:lp2.method.value,
  [lp1.seamParameterId]:lp2.method.seam,[lp1.edgeParameterId]:lp2.method.edge};

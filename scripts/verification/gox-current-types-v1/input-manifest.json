@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "EXACT_ACCEPTED_TYPED_SUPERSET_PLUS_WHOLE_GLASS_SOURCE_TYPES_ONLY",
+  "snapshotKind": "CURRENT_FULL_AFFECTED_PROGRAM_RETAINED_MANAGED_AND_GUIDE_METADATA_R1148",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "51c289aa7ec9c8145b9ca7852cfdab6bf6da49df6f63fab5b3a6235a2ea97372",
@@ -335,7 +335,7 @@
     "scripts/estimate/r4a13/canonicalDefinitionPublisherConditionalSourceScopeR1.test.ts": "1a35b95ea8c04c9879a91e763209b847ecb3f6787f5d0dec096979a66e3c89a8",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherParameterOrdinalsR1.test.ts": "80d99d70c1b35a864f138b6daf3348331b97ae0b15acdd0975825df9b29366fd",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherPriceInheritanceR1.test.ts": "d547140084bfcae2e33a48261a3d3b7dd0b6f105ec4357e3a7ff3344ed92c74e",
-    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "e4875b5cab24c84f53b2de999d827a86446696172030baa0a1d0c70d677382f8",
+    "scripts/estimate/r4a13/canonicalDefinitionPublisherR1.ts": "d641892769e1870c2dfd9a6ccbcdf6605fd11e879f8a9e90a7378e0fb290fb93",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherResourceOrderingR1.test.ts": "b3117f2ccb80b2a8007ba33f95b65bdd14064a59d8b4ac9a9520750093b0ea67",
     "scripts/estimate/r4a13/canonicalDefinitionPublisherRetiredAreaR1.test.ts": "22e0c945a463230bed73e7efed680cf7bbd1547b82348737c620e72756bc6691",
     "scripts/estimate/r4a13/canonicalPreparedSearchCloneR1.ts": "e16ac6f05dfb9e487f1795ee1d0b6a4f870793c6bb7af5118257f70719d14845",
@@ -1710,7 +1710,7 @@
     "src/lib/estimate/v4/domains/interiorFinishesComplete/index.ts": "ae35194812db5f32ae04d39bcab01a0c55eada88081dfd78bf003ffbd928be80",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/inventory.ts": "bcebf563d0651782d41d7abf0722e04fcf4be4ab37dae5b7cfef9a12e9aac807",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/paintCeresitCt54Ct17ProfessionalV1.ts": "845962204c78e96230a8626cdc4bf32eddc5cd60009e16db115ae511df1b1c5b",
-    "src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding.ts": "2e0c0ba7f0f422483b2d3415feba64ae2d9238da2e85821c16a8ddb30e690bf1",
+    "src/lib/estimate/v4/domains/interiorFinishesComplete/productionBinding.ts": "e134c0defe3a0cfaced65d79e0c7fb03ea5b4c2a3510a2130cfa61279ec639e1",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/technologyProfiles.ts": "e35d2fd168a99f7546bd294a7648edd8cfca2056d5ed450af41877d12aeee8f1",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/wallPuttyCeresitCt127Krer15ProfessionalV1.ts": "fbd31616cce1236d1af4ff88b0008a4c5576ce186630a31932f048841f2483c2",
     "src/lib/estimate/v4/domains/interiorFinishesComplete/waterproofingCeresitCl51ProfessionalV1.ts": "f52b0b061939ff1911fb5663af05bbccfb31d8df024d1cbe71b55f352452e929",
@@ -3787,7 +3787,7 @@
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
     "sourceBytes": 176502689,
-    "newInputs": "Only reviewed method scope/proof/saved acceptance, exactsourceownedconditionalcomposition, persistent18regressions and staleclosed-routing assertion correction; no runtime/auth/history"
+    "newInputs": "Only exact2filepublisher+sourceguideforward; actual9pureandSQL91/realPGdryrunpassed;no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
@@ -3798,9 +3798,9 @@
     "sourcePins": 2613
   },
   "candidateSourceComposition": {
-    "kind": "r1143 exact single candidate after root18 and wholeconfig9",
-    "candidateManifestSha256": "1beae020277cccb8ab12ff2d7188a74707077606e284cb039d1b51c0aec56e80",
-    "parent": "b4f261cc00d8100ff7ba66f4aec451cee2cc5c7c",
+    "kind": "Exact2fileafteractualSQLmetadataandnoncommittingMasterdryrun",
+    "parent": "8bc0e76cfb2f7fe97b4ad102adba8e7c738cc67c",
+    "candidateManifestSha256": "53309a245af0f67be7bd59ce656ac54f0ab86ce7af39823d5da3f84f6f7ff214",
     "noMixedVersions": true
   },
   "existingCiTypesStageBudget": {

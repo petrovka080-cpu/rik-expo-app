@@ -682,6 +682,39 @@ function assertOrdinaryTypedQuantityPlan(input:CanonicalOrdinaryCompositeTypedQu
  return scope;
 }
 
+/** A retained successor may register its absent managed source in the current
+ * transaction. Its capture, exact new-row coverage and REGISTERED raw reads
+ * remain mandatory; it cannot impersonate registry reuse or rebind old rows. */
+export function assertRetainedManagedTypedQuantityPlanR1(
+  input:MasterRetainedBindingGuardInputR1,plan:CanonicalDefinitionPublishPlan,
+):MasterResolvedScopedNormativeRegistryR1{
+  const retained=masterRetainParentBindingsOptInR1(input);
+  invariant(retained!=null&&input.config.catalogAppend==null&&input.config.projectSourcePackagePath==null
+    &&input.config.binding.reuseExistingNormativeRegistry==null
+    &&!Object.hasOwn(input.config.binding,'ordinaryCompositeSourceV1')
+    &&retained.capturedSourcePreimage?.expected===null
+    &&retained.capturedSourcePreimage.sourceKey===input.newSource.source_key
+    &&input.newSource.metadata?.sourceKind==='PROJECT_SYSTEM',
+    'TYPED_QUANTITY_RETAINED_MANAGED_SCOPE');
+  const scope=resolveMasterScopedNormativeRegistryOptInR1({...input,
+    config:{...input.config,normId:(input.config as CanonicalPublisherJson).normId}} as Parameters<typeof resolveMasterScopedNormativeRegistryOptInR1>[0]);
+  invariant(scope!=null,'TYPED_QUANTITY_RETAINED_MANAGED_FRESH_SCOPED_PREIMAGE_REQUIRED');
+  const oldRows=new Set(retained.capturedParent.resources.map(row=>row.row_id));
+  const added=plan.resources.filter(row=>!oldRows.has(row.row_id));
+  const locatorIds=new Set(input.newLocators.map(locator=>locator.id));
+  const managed=plan.bindings.filter(binding=>locatorIds.has(binding.locator_id));
+  invariant(added.length>0&&managed.length===added.length
+    &&new Set(added.map(row=>row.id)).size===added.length
+    &&new Set(managed.map(binding=>binding.resource_spec_id)).size===managed.length
+    &&added.every(row=>managed.some(binding=>binding.resource_spec_id===row.id))
+    &&managed.every(binding=>added.some(row=>row.id===binding.resource_spec_id)),
+    'TYPED_QUANTITY_RETAINED_MANAGED_EXACT_NEW_RESOURCE_BINDINGS');
+  const basis=plan.passport.decision.partialQuantityBasis;
+  invariant(basis?.kind==='DEFERRED_PROJECT_QUANTITIES','TYPED_QUANTITY_RETAINED_MANAGED_DEFERRED_ONLY');
+  assertMasterTypedPartialQuantityRegistryR1(basis,{newSources:[input.newSource],newLocators:input.newLocators});
+  return scope;
+}
+
 export async function preflightCanonicalDefinitionPublishPlans(
   client: Client,
   plans: readonly CanonicalDefinitionPublishPlan[],
@@ -709,7 +742,11 @@ export async function preflightCanonicalDefinitionPublishPlans(
       try{assertOrdinaryTypedQuantityPlan(input,plan);}catch(error){quantityErrors.push(`${plan.definition.catalog_id}:${String((error as Error).message)}`);}
     }else{
       const registered=input&&!ordinaryTypedQuantityInput(input)?input.config.binding.reuseExistingNormativeRegistry:undefined;
-      if(!registered)quantityErrors.push(`${plan.definition.catalog_id}:TYPED_QUANTITY_REGISTERED_SOURCE_REQUIRED`);
+      if(!registered){
+        if(input&&!ordinaryTypedQuantityInput(input)&&Object.hasOwn(input.config.binding,'retainParentBindings')){
+          try{assertRetainedManagedTypedQuantityPlanR1(input,plan);}catch(error){quantityErrors.push(`${plan.definition.catalog_id}:${String((error as Error).message)}`);}
+        }else quantityErrors.push(`${plan.definition.catalog_id}:TYPED_QUANTITY_REGISTERED_SOURCE_REQUIRED`);
+      }
     }
   }
   invariant(quantityErrors.length===0,`STOP_CANONICAL_PUBLISHER_TYPED_QUANTITY:${quantityErrors.join(',')}`);
@@ -727,6 +764,10 @@ export async function preflightCanonicalDefinitionPublishPlans(
         const scope=assertOrdinaryTypedQuantityPlan(input,plan);
         await readMasterScopedNormativeRegistryPreconditionsR1(client,scope,'REGISTERED');
       }else{
+        if(input.config.binding.reuseExistingNormativeRegistry==null){
+          const scope=assertRetainedManagedTypedQuantityPlanR1(input,plan);
+          await readMasterScopedNormativeRegistryPreconditionsR1(client,scope,'REGISTERED');
+        }
         const registered=await readMasterRetainedBindingPreconditionsR1(client,input,"REGISTERED");
         assertMasterTypedPartialQuantityRegistryR1(plan.passport.decision.partialQuantityBasis,registered);
       }
