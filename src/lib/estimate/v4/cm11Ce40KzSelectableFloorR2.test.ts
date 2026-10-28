@@ -154,3 +154,230 @@ it('one area workowner pays the unknown installation labour and station; a secon
   expectedIncludedManualPhysicalRows:[{rowId:costs.sameInstallationLabour.rowId,quantity:'7',unitPrice:'120.5',unitId:'man_hour'}]});
  expect(proof.manualPhysicalRows).toEqual([{rowId:costs.sameInstallationLabour.rowId,quantity:'7',unitPrice:'120.5',unitId:'man_hour',includedInEstimate:false,amount:null}]);expect(proof.totalAmount).toBe('7700');
 });
+
+
+import currentCm11FixtureR951 from '../../../../data/estimate-benchmarks/fixtures/cm11-ct17-ce40-current-parent-r951.json';
+import {cm11Ce40KzCurrentConsumerDefinitionR3 as currentConsumerDefinition,compileCm11Ce40KzCurrentConsumerR3 as compileCurrentConsumer,
+ cm11Ce40KzCurrentConsumerPackR3 as currentConsumerPack,cm11Ce40KzCurrentConsumerExpectationsR3 as currentConsumerExpectations} from './cm11Ce40KzWholeFloorGroupR1';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
+import {createHash} from 'node:crypto';
+import {readFileSync} from 'node:fs';
+
+const currentConsumerFacts=(L=5,W=6)=>({[s.parameterId]:s.exactValue,floor_length_m:L,floor_width_m:W});
+const currentConsumerSuffix=(result:Awaited<ReturnType<typeof compileCurrentConsumer>>,suffix:string)=>result.rows.find(item=>item.row_id.endsWith(':'+suffix));
+describe('CM11 current R951 whole consumers',()=>{
+ it('pins actual v4 34/117/117 and reuses the whole CE40 regional operation without legacy reconstruction',()=>{
+  const bytes=readFileSync(require.resolve('../../../../data/estimate-benchmarks/fixtures/cm11-ct17-ce40-current-parent-r951.json'));
+  expect(createHash('sha256').update(bytes).digest('hex')).toBe('70093a1a64f3d5235d3b955b3431f7f4122813b29bb01dcd993da94fc00a2ee1');
+  const d=currentConsumerDefinition(),b=currentCm11FixtureR951.currentBody;
+  expect([d.parameters.length,d.formulas.length,d.resources.length]).toEqual([36,118,118]);
+  expect(d.parameters.slice(0,34)).toEqual(b.parameters);expect(d.formulas.slice(0,117)).toEqual(b.formulas);expect(d.runtimeInput).toEqual({});
+  expect(currentConsumerPack.reusedWholeOperation.factory).toBe('ce40ReadyCeramicDefinitionS2754(2)');
+  expect(currentConsumerPack.quantityBoundary.smallTailAssemblyStillHeld).toBe(true);
+ });
+ it('refuses a changed real header and changed real formula body before consumer mapping',()=>{
+  const header=structuredClone(currentCm11FixtureR951);header.header.definition_sha256='0'.repeat(64);
+  expect(()=>currentConsumerDefinition(header)).toThrow('CM11_R3_EXACT_ACTUAL_R951_BODY_REQUIRED');
+  const body=structuredClone(currentCm11FixtureR951);body.currentBody.formulas[0]!.expression_source='q*999';
+  expect(()=>currentConsumerDefinition(body)).toThrow('CM11_R3_EXACT_ACTUAL_R951_BODY_REQUIRED');
+ });
+ it('preserves all current formulas source metadata owners supply and legacy59 while adding only declared consumers',()=>{
+  const d=currentConsumerDefinition(),b=currentCm11FixtureR951.currentBody,changed=new Set(currentConsumerPack.consumerRows.map(x=>x.rowId));
+  for(const before of b.resources){const after=d.resources.find(x=>x.row_id===before.row_id)!;
+   expect(after.formula_id).toBe(before.formula_id);expect(after.unit_id).toBe(before.unit_id);expect(after.cost_owner_id).toBe(before.cost_owner_id);
+   expect(after.procurement_eligible).toBe(before.procurement_eligible);expect(after.inclusion_ast).toEqual(before.inclusion_ast);expect(after.source_metadata).toEqual(before.source_metadata);
+   if(!changed.has(before.row_id)){expect(after.resource_graph).toEqual(before.resource_graph);expect(after.row_sha256).toBe(before.row_sha256);}
+  }
+  expect(d.resources.slice(0,59)).toEqual(b.resources.slice(0,59));
+ });
+ it('shows regional mixed CM11 at laying and regional CE40 at grouting with one unchanged material order owner',()=>{
+  const d=currentConsumerDefinition(),ids=(id:string)=>canonicalEstimateOperationReferences(d.resources.find(x=>x.row_id===id)!.resource_graph.operationCompositionV1).map(x=>x.operationId);
+  expect(ids('ceramic:cm11-10cm-4mm:cm11-consumed')).toContain('cm11-ce40-kz-whole-floor:operation:laying');
+  expect(ids('ceramic:ce40-ready:10x10-2mm:ce40-mixed-plan')).toContain('cm11-ce40-kz-whole-floor:operation:grouting');
+  expect(d.resources.filter(x=>x.row_id==='ceramic:ce40-ready:10x10-2mm:ce40-order'&&x.procurement_eligible)).toHaveLength(1);
+  expect(d.resources.filter(x=>x.row_id==='ceramic:cm11-10cm-4mm:water-order'&&x.procurement_eligible)).toHaveLength(1);
+ });
+ it('exposes one cleaning-water and compatible wash-vessel need at every actual wet consumer without extra litres or orders',async()=>{
+  const d=currentConsumerDefinition(),water=d.resources.find(x=>x.row_id.endsWith(':open-cleaning-water'))!,vessel=d.resources.find(x=>x.row_id.endsWith(':open-wash-vessel'))!;
+  for(const r of [water,vessel])expect(canonicalEstimateOperationReferences(r.resource_graph.operationCompositionV1).map(x=>x.operationId).sort()).toEqual(['priming','cm11-mixing','laying','ce40-mixing','grouting','cleaning'].map(x=>'cm11-ce40-kz-whole-floor:operation:'+x).sort());
+  const r=await compileCurrentConsumer(currentConsumerFacts());
+  const need=r.preliminaryNeeds.find(x=>x.row_id===water.row_id)!;expect(need.quantity).toBeNull();expect(need.need_state).toBe('QUANTITY_REQUIRED');
+  expect(currentConsumerSuffix(r,'water-order')?.quantity).toBe('21.6');expect(r.rows.filter(x=>x.row_id===water.row_id)).toHaveLength(0);
+ });
+ it('shows cement eye and skin protection at mixing laying grouting and cleaning with one included whole-work owner',()=>{
+  const d=currentConsumerDefinition();for(const suffix of ['mix-goggles','mix-gloves']){
+   const row=d.resources.find(x=>x.row_id.endsWith(':'+suffix))!;
+   expect(canonicalEstimateOperationReferences(row.resource_graph.operationCompositionV1).map(x=>x.operationId)).toEqual(expect.arrayContaining(['laying','grouting','cleaning'].map(x=>'cm11-ce40-kz-whole-floor:operation:'+x)));
+   expect(row.cost_owner_id).toBe('cm11-ce40-kz-whole-floor:whole-owner');expect(row.procurement_eligible).toBe(false);
+  }
+ });
+ it('keeps all24 developer norm holds internal and never turns source incompleteness into a user norm question',()=>{
+  const d=currentConsumerDefinition();expect(currentConsumerPack.retainedQuantityNeeds).toHaveLength(24);
+  for(const g of currentConsumerPack.retainedQuantityNeeds){const p=d.parameters.find(x=>x.parameter_id==='kz_floor_open_'+g.key.replaceAll('-','_'))!;
+   expect(p.truth_metadata.visibility_role).toBe('INTERNAL_ONLY');expect(p.truth_metadata.value_source_role).toBe('UNRESOLVED_APPLICATION_NORM');expect(p.default_value).toBeNull();
+  }
+ });
+ it('validates an independent source-authored shared consumer map against real current resources',()=>{
+  const d=currentConsumerDefinition(),map=currentConsumerExpectations();expect(map.sourceKind).toBe('PROJECT_SYSTEM');expect(map.generatedFromCurrentRows).toBe(false);expect(map.entries).toHaveLength(59);
+  expect(validateIndependentCompletenessMapReferences({completenessMap:map,formulaDefinitions:d.formulas.map(f=>({...f})),resourceDefinitions:d.resources.map(r=>({...r})),requireOperationBindings:true})).toEqual([]);expect(validateMasterFormulaGraphConsistency(d.formulas)).toEqual([]);
+ });
+ it.each([[1,1,'2.5','5','0.4','2','0.72'],[2,5,'25','25','4','4','7.2'],[5,6,'75','75','12','12','21.6']])('retains normative consumption separate from nominal packaging and short tails at %s x %s',async(L,W,glue,order,grout,groutOrder,mixingWater)=>{
+  const r=await compileCurrentConsumer(currentConsumerFacts(Number(L),Number(W)));
+  expect(currentConsumerSuffix(r,'cm11-consumed')?.quantity).toBe(glue);expect(currentConsumerSuffix(r,'cm11-order')?.quantity).toBe(order);
+  expect(currentConsumerSuffix(r,'ce40-mixed-plan')?.quantity).toBe(grout);expect(currentConsumerSuffix(r,'ce40-order')?.quantity).toBe(groutOrder);
+  expect(currentConsumerSuffix(r,'water-order')?.quantity).toBe(mixingWater);
+  expect(r.preliminaryNeeds.some(x=>x.row_id.endsWith(':open-batch-provision'))).toBe(Number(L)*Number(W)!==30);
+ });
+ it('refuses zero invalid dimensions and unsupported selector rather than inventing a different product system',async()=>{
+  for(const input of [currentConsumerFacts(0,6),currentConsumerFacts(-1,6),{...currentConsumerFacts(),[s.parameterId]:'wet heated diagonal larger tiles'}])await expect(compileCurrentConsumer(input)).rejects.toThrow();
+ });
+ it('preserves the omitted legacy selection and cold submitted measurements without baseline hydration',async()=>{
+  const omittedInput={q:'10'},before=await compileCurrentConsumer(omittedInput),explicit=await compileCurrentConsumer({q:'10',[s.parameterId]:s.legacyValue});
+  expect(omittedInput).toEqual({q:'10'});expect(before.parameters[s.parameterId]).toBe(s.legacyValue);expect(before.parameters.q).toBe('10');
+  const retainedLegacy=currentCm11FixtureR951.currentBody.resources.slice(0,59),retainedLegacyIds=retainedLegacy.map(row=>row.row_id).sort(),
+   actualDefinitionIds=currentConsumerDefinition().resources.slice(0,59).map(row=>row.row_id).sort(),excluded='tile_stone_interior_tile_floor_lay_standard_materials_37',
+   predecessor=await core(false,'10'),runtimeExpectedIds=[...predecessor.rows,...predecessor.preliminaryNeeds].map(row=>row.row_id).sort(),
+   omittedIds=[...before.rows,...before.preliminaryNeeds].map(row=>row.row_id).sort(),explicitIds=[...explicit.rows,...explicit.preliminaryNeeds].map(row=>row.row_id).sort();
+  expect(retainedLegacyIds).toHaveLength(59);expect(actualDefinitionIds).toEqual(retainedLegacyIds);expect(parent.resources.map(row=>row.row_id).sort()).toEqual(retainedLegacyIds);
+  expect(parent.resources.find(row=>row.row_id===excluded)!.inclusion_ast).toEqual({kind:'literal',value:false});
+  expect(retainedLegacy.find(row=>row.row_id===excluded)!.inclusion_ast).toEqual({kind:'and',operands:[{kind:'equals',parameterId:s.parameterId,value:s.legacyValue},{kind:'literal',value:false}]});
+  expect(runtimeExpectedIds).toEqual(retainedLegacyIds.filter(id=>id!==excluded));expect(new Set(omittedIds).size).toBe(omittedIds.length);
+  expect({missing:runtimeExpectedIds.filter(id=>!omittedIds.includes(id)),extra:omittedIds.filter(id=>!runtimeExpectedIds.includes(id))}).toEqual({missing:[],extra:[]});
+  expect(omittedIds).toEqual(runtimeExpectedIds);expect(explicitIds).toEqual(runtimeExpectedIds);expect(omittedIds).not.toContain(excluded);
+  expect(physical(before)).toEqual(physical(predecessor));expect(physical(explicit)).toEqual(physical(predecessor));
+  expect(before.rows).toEqual(explicit.rows);expect(before.preliminaryNeeds).toEqual(explicit.preliminaryNeeds);expect(before.preliminaryNeeds).toEqual(predecessor.preliminaryNeeds);
+  expect(before.totals).toEqual(explicit.totals);expect(before.totals).toEqual(predecessor.totals);
+  expect(Object.keys(before.parameters).filter(id=>id.startsWith('kz_floor_open_'))).toEqual([]);
+  expect(before.parameters.floor_length_m).toBeUndefined();expect(before.parameters.floor_width_m).toBeUndefined();expect(before.parameters.floor_area_m2).toBeUndefined();
+  const saved:unknown=JSON.parse(JSON.stringify(currentConsumerFacts(2,5)));
+  const record=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  if(!record(saved))throw Error('CM11_R3_SAVED_INPUT_RECORD_REQUIRED');const r=await compileCurrentConsumer(saved);
+  expect(saved).toMatchObject({floor_length_m:2,floor_width_m:5});
+  expect(typeof r.parameters.floor_length_m).toBe('number');expect(typeof r.parameters.floor_width_m).toBe('number');
+  expect(r.parameters.floor_length_m).toBe(saved.floor_length_m);expect(r.parameters.floor_width_m).toBe(saved.floor_width_m);
+  const derivedArea=evaluateFormulaGraph(compileFormulaGraph('floor_length_m*floor_width_m'),{floor_length_m:2,floor_width_m:5});
+  expect(derivedArea).toBe('10');expect(r.parameters.floor_area_m2).toBe(derivedArea);
+  expect(Object.keys(r.parameters).filter(x=>x.startsWith('kz_floor_open_'))).toEqual([]);
+ });
+ it('keeps the same actual source and binding snapshot byte domains without mistaking them for fresh publication admission',()=>{
+  const b=currentCm11FixtureR951.currentBody;expect(b.bindings).toHaveLength(34);expect(b.sources).toHaveLength(1);expect(b.locators).toHaveLength(1);
+  expect(canonicalEstimateStableJson(b)).toBe(canonicalEstimateStableJson(structuredClone(b)));
+  expect(currentConsumerPack.sourceAdmission).toBe('R968_NEW_SOURCE_ABSENCE_OBSERVED_FORMAL_CAPTURE_UNRUN');expect(currentConsumerPack.fullTechnicalAcceptance).toBe(false);
+ });
+});
+
+
+describe('CM11 current R951 saved and sole-owner boundary',()=>{
+ const coreCurrent=(submittedParameters:Record<string,unknown>,rowOverrides:Record<string,Record<string,unknown>>={},confirmedParameters:Record<string,unknown>={})=>{
+  const d=currentConsumerDefinition();return compileCanonicalEstimateCore({operation:'recalculate',catalogId:pack.catalogId,compilerVersion:currentConsumerPack.contract,
+   primaryMeasureParameterId:'floor_area_m2',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],
+   submittedParameters,confirmedParameters,rowOverrides,currencyCode:'KGS',priceItems:[],maximumResourceRows:d.resources.length,hashJson:hash});
+ };
+ it('retains explicit manual physical PPE without another payment or procurement owner',async()=>{
+  const whole='cm11-ce40-kz-whole-floor:whole-owner',gloves='cm11-ce40-kz-whole-floor:mix-gloves',r=await coreCurrent(currentConsumerFacts(),{
+   [whole]:{unitPrice:'77',provenance:{kind:'manual',reason:'Explicit whole-work quote'}},
+   [gloves]:{quantity:'2',unitPrice:'42',provenance:{kind:'manual',reason:'Explicit measured physical requirement, included in work'}}});
+  const child=r.preliminaryNeeds.find(row=>row.row_id===gloves)!;
+  expect(child).toBeDefined();expect(child.quantity).toBe('2');expect(child.unit_price).toBe('42');expect(child.need_state).toBe('QUANTITY_REQUIRED');
+  const d=currentConsumerDefinition(),resource=d.resources.find(row=>row.row_id===gloves)!,formula=d.formulas.find(f=>f.formula_id===resource.formula_id)!;
+  expect(formula.input_parameter_ids).toHaveLength(1);const quantityParameterId=formula.input_parameter_ids[0]!;
+  expect(d.parameters.find(p=>p.parameter_id===quantityParameterId)!.truth_metadata.value_source_role).toBe('UNRESOLVED_APPLICATION_NORM');
+  expect(child.missing_parameter_ids).toContain(quantityParameterId);expect(r.rows.some(row=>row.row_id===gloves)).toBe(false);
+  expect([...r.rows,...r.preliminaryNeeds].filter(row=>row.row_id===gloves)).toHaveLength(1);
+  expect(child.selected).toBe(false);expect(child.procurement_eligible).toBe(false);expect(resource.cost_owner_id).toBe(whole);
+  const record=(value:unknown):Record<string,unknown>=>{if(value===null||typeof value!=='object'||Array.isArray(value))throw Error('CM11_MANUAL_NEED_RECORD_REQUIRED');return value as Record<string,unknown>;},
+   trace=record(child.calculation_trace),graph=record(trace.resourceGraph),inclusion=record(trace.inclusionDecision);
+  expect(graph.costTreatment).toBe('INCLUDED_IN_RESOURCE_ROWS');expect(graph.parentCostOwnerId).toBe(whole);expect(graph.includedInResourceOwnerRowId).toBe(whole);
+  expect(inclusion).toMatchObject({source:'definition_cost_treatment',costTreatment:'INCLUDED_IN_RESOURCE_ROWS',effectiveIncludedInEstimate:false,effectiveIncludedInProcurement:false});
+  const checksum=createHash('sha256').update(canonicalEstimateStableJson(r.revisionProjection)).digest('hex'),
+   commit=buildCanonicalRevisionCommitPayload({rowCount:r.rows.length,currencyCode:'KGS',totals:r.totals,checksumSha256:checksum,compilerVersion:currentConsumerPack.contract,
+    parameters:r.parameters,approvedTemplateBaselineId:null,baselineAssumptions:{},effectiveUserParameters:currentConsumerFacts(),parentRevisionId:null,identityContract:{},preliminaryNeeds:r.preliminaryNeeds}),
+   stored={id:'TEST_ONLY_CM11_MANUAL_PPE_REVISION',release_id:'TEST_ONLY_CM11_CURRENT_RELEASE',definition_version_id:'TEST_ONLY_CM11_CURRENT_DEFINITION',catalog_id:pack.catalogId,
+    row_count:r.rows.length,currency_code:'KGS',checksum_sha256:checksum,input_parameters:r.parameters,amendment_contract:{parameterSources:commit.parameterSources}},
+   coldUnknown:unknown=JSON.parse(JSON.stringify(stored)),cold=record(coldUnknown),
+   artifact=canonicalArtifactPreliminaryNeeds({...cold,id:cold.id,release_id:cold.release_id,catalog_id:cold.catalog_id,checksum_sha256:cold.checksum_sha256,row_count:cold.row_count}),
+   projected=artifact.find(row=>row.row_id===gloves);
+  expect(projected).toBeDefined();expect(projected).toMatchObject({quantity:'2',unit_price:'42',need_state:'QUANTITY_REQUIRED',included_in_estimate:false,included_in_procurement:false,amount:null,ownership_status:'PRELIMINARY_NEED'});
+  expect(artifact.filter(row=>row.row_id===gloves)).toHaveLength(1);expect(canonicalEstimateStableJson(cold)).toBe(canonicalEstimateStableJson(stored));
+  // Raw preliminary needs intentionally have no ordinary-row money flags or
+  // cost_owner_id field; the definition/trace owns coverage, saved projection owns display.
+  expect(r.rows.filter(row=>row.row_id===whole)).toHaveLength(1);expect(r.totals.amount).toBe('2310');
+ });
+ it('replays Core saved-shaped measurements through a cold recalculation with the same quantities and unresolved source holds',async()=>{
+  const first=await coreCurrent(currentConsumerFacts(2,5)),saved:unknown=JSON.parse(JSON.stringify({parameters:first.revisionProjection.parameters}));
+  const record=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  if(!record(saved)||!record(saved.parameters))throw Error('CM11_R3_SAVED_REVISION_PARAMETERS_REQUIRED');
+  const cold=await coreCurrent({[s.parameterId]:saved.parameters[s.parameterId],floor_length_m:saved.parameters.floor_length_m,floor_width_m:saved.parameters.floor_width_m},{},saved.parameters);expect(cold.rows).toEqual(first.rows);expect(cold.preliminaryNeeds).toEqual(first.preliminaryNeeds);expect(cold.totals).toEqual(first.totals);
+  expect(cold.preliminaryNeeds.some(row=>row.row_id.endsWith(':open-cleaning-water'))).toBe(true);
+ });
+});
+
+
+import {prepareCm11Ce40KzCurrentConsumerR3 as prepareCurrentCm11Ordinary} from '../../../../scripts/estimate/r4a13/prepareCm11Ce40KzSelectableFloorR2';
+it('CM11 current ordinary producer refuses absent fresh scoped capture before source files or historical59 admission',()=>{
+ expect(()=>prepareCurrentCm11Ordinary({releaseId:'not-an-admitted-release',searchReleaseId:'not-an-admitted-search',outputRoot:'not-executed',currentReleasePath:'not-executed',sourceRoot:'not-executed',
+  search:{primaryUom:'m2',canonicalNameRu:'Укладка плиточного пола',aliases:[],shortScopeRu:'SOURCE_ONLY',keyDistinguishingParameters:[],clarificationFields:[],
+   includedBoundaries:[],excludedBoundaries:[],extraSearchTermsRu:'',sourceProvenance:{}}})).toThrow('STOP_CM11_CURRENT_CONSUMERS_R3_FRESH_SCOPED_REGISTRY_CAPTURE_REQUIRED');
+});
+
+
+import {validateCanonicalFormulaOutputBoundsV1,parseCanonicalFormulaOutputBoundsV1} from '../backendPlatform/canonicalFormulaOutputBounds';
+describe('CM11 current CT17 adjacent protection',()=>{
+ const protection=currentConsumerPack.adjacentProtection,confirmed=(value:string)=>({[protection.scopeParameterId]:value});
+ it('keeps absent actual adjacent-element scope a CONDITION_REQUIRED even with numeric quantities still unknown',async()=>{
+  const r=await compileCurrentConsumer(currentConsumerFacts());const need=r.preliminaryNeeds.find(row=>row.row_id===protection.rowId)!;
+  expect(need.need_state).toBe('CONDITION_REQUIRED');expect(need.missing_parameter_ids).toContain(protection.scopeParameterId);expect(need.quantity).toBeNull();
+ });
+ it('keeps a known applicable masking method with missing material quantity QUANTITY_REQUIRED',async()=>{
+  const r=await compileCurrentConsumer(currentConsumerFacts(),currentCm11FixtureR951,confirmed(protection.maskRequiredValue));
+  const need=r.preliminaryNeeds.find(row=>row.row_id===protection.rowId)!;expect(need.need_state).toBe('QUANTITY_REQUIRED');
+  expect(need.missing_parameter_ids).toContain(protection.quantityParameterId);expect(need.missing_parameter_ids).not.toContain(protection.scopeParameterId);
+ });
+ it('excludes masking only after explicit trusted no-adjacent-elements observation without supplying zero or a fake roll',async()=>{
+  const r=await compileCurrentConsumer(currentConsumerFacts(),currentCm11FixtureR951,confirmed(protection.noneConfirmedValue));
+  expect(r.rows.some(row=>row.row_id===protection.rowId)).toBe(false);expect(r.preliminaryNeeds.some(row=>row.row_id===protection.rowId)).toBe(false);
+  expect(r.parameters[protection.scopeParameterId]).toBe(protection.noneConfirmedValue);expect(r.parameters[protection.quantityParameterId]).toBeUndefined();
+ });
+ it('refuses user-injected protected no-mask scope through the existing source-managed parameter authority guard',async()=>{
+  await expect(compileCurrentConsumer({...currentConsumerFacts(),[protection.scopeParameterId]:protection.noneConfirmedValue})).rejects.toMatchObject({code:'PARAMETER_VALIDATION_FAILED',message:'source-managed parameter cannot be submitted '+protection.scopeParameterId});
+ });
+ it('does not let a manual material quantity and price hide the missing actual applicability condition',async()=>{
+  const d=currentConsumerDefinition(),r=await compileCanonicalEstimateCore({operation:'recalculate',catalogId:pack.catalogId,compilerVersion:currentConsumerPack.contract,
+   primaryMeasureParameterId:'floor_area_m2',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],
+   submittedParameters:currentConsumerFacts(),confirmedParameters:{},rowOverrides:{[protection.rowId]:{quantity:'10',unitPrice:'42',provenance:{kind:'manual',reason:'Explicit material edit does not confirm survey'}}},
+   currencyCode:'KGS',priceItems:[],maximumResourceRows:d.resources.length,hashJson:hash});
+  expect(r.preliminaryNeeds.find(row=>row.row_id===protection.rowId)?.need_state).toBe('CONDITION_REQUIRED');
+ });
+ it('uses only an exclusive zero bound for an applicable material need and never invents a one-roll norm',()=>{
+  const d=currentConsumerDefinition(),row=d.resources.find(row=>row.row_id===protection.rowId)!,f=d.formulas.find(f=>f.formula_id===row.formula_id)!,
+   bounds=parseCanonicalFormulaOutputBoundsV1(row.resource_graph.formulaOutputBoundsV1,row.unit_id,f.output_unit_id,row.row_id);
+  if(!bounds)throw Error('CM11_CT17_MASKING_BOUNDS_REQUIRED');expect(bounds.exclusiveMinimum).toBe(0);expect(bounds.minimum).toBeUndefined();
+  expect(()=>validateCanonicalFormulaOutputBoundsV1(bounds,'0',row.row_id)).toThrow();
+  expect(validateCanonicalFormulaOutputBoundsV1(bounds,'0.01',row.row_id).status).toBe('PASSED');
+  expect(canonicalEstimateOperationReferences(row.resource_graph.operationCompositionV1).map(o=>o.operationId)).toEqual(['priming','cleaning'].map(o=>'cm11-ce40-kz-whole-floor:operation:'+o));
+ });
+});
+
+
+import {buildCanonicalRevisionCommitPayload} from '../backendPlatform/canonicalEstimateRevisionWriter';
+import {canonicalArtifactPreliminaryNeeds} from '../backendPlatform/canonicalEstimateArtifactContract';
+import {canonicalOperationCompositionEvidenceFromPassportV1,canonicalEstimateSavedOperationAcceptanceV1,assertCanonicalEstimateSavedArtifactStructureV1} from '../backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
+it('CM11 current missing CT17 masking scope survives the existing Core commit cold artifact mapper as its own PDF refusal',async()=>{
+ const compiled=await compileCurrentConsumer(currentConsumerFacts()),evidence=canonicalOperationCompositionEvidenceFromPassportV1({releaseId:'TEST_ONLY_CM11_R3_RELEASE',definitionVersionId:'TEST_ONLY_CM11_R3_DEFINITION',
+  passport:{definition_version_id:'TEST_ONLY_CM11_R3_DEFINITION',payload_sha256:'c'.repeat(64),decision:{independentCompletenessMap:currentConsumerExpectations()}}});
+ if(!evidence)throw Error('CM11_R3_INDEPENDENT_SAVED_EVIDENCE_REQUIRED');
+ const checksum=createHash('sha256').update(canonicalEstimateStableJson({...compiled.revisionProjection,operationCompositionEvidenceV1:evidence})).digest('hex'),
+  commit=buildCanonicalRevisionCommitPayload({rowCount:compiled.rows.length,currencyCode:'KGS',totals:compiled.totals,checksumSha256:checksum,compilerVersion:currentConsumerPack.contract,
+   parameters:compiled.parameters,approvedTemplateBaselineId:null,baselineAssumptions:{},effectiveUserParameters:currentConsumerFacts(),parentRevisionId:null,identityContract:{},preliminaryNeeds:compiled.preliminaryNeeds,operationCompositionEvidenceV1:evidence}),
+  saved={id:'TEST_ONLY_CM11_R3_REVISION',release_id:'TEST_ONLY_CM11_R3_RELEASE',definition_version_id:'TEST_ONLY_CM11_R3_DEFINITION',catalog_id:pack.catalogId,
+   row_count:compiled.rows.length,currency_code:'KGS',checksum_sha256:checksum,input_parameters:compiled.parameters,amendment_contract:{parameterSources:commit.parameterSources}},
+  resources=[...compiled.rows,...canonicalArtifactPreliminaryNeeds(saved)],before=canonicalEstimateStableJson({saved,resources}),
+  cold:unknown=JSON.parse(JSON.stringify({saved,resources}));
+ const record=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+ if(!record(cold)||!record(cold.saved)||!Array.isArray(cold.resources)||!cold.resources.every(record))throw Error('CM11_R3_COLD_ARTIFACT_SHAPE_REQUIRED');
+ const mask=cold.resources.find(row=>row.row_id===currentConsumerPack.adjacentProtection.rowId);expect(mask).toMatchObject({need_state:'CONDITION_REQUIRED'});
+ const gate=canonicalEstimateSavedOperationAcceptanceV1({revision:cold.saved,resources:cold.resources});expect(gate.pdfAllowed).toBe(false);
+ expect(gate.issues).toContainEqual({code:'RESOURCE_CONDITION_UNRESOLVED',rowId:currentConsumerPack.adjacentProtection.rowId});
+ expect(()=>assertCanonicalEstimateSavedArtifactStructureV1(gate)).toThrow(expect.objectContaining({httpStatus:409}));
+ expect(canonicalEstimateStableJson(cold)).toBe(before);
+});

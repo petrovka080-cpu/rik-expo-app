@@ -43,5 +43,1642 @@
     "distribution panel included",
     "complete building power system included",
     "invented price"
-  ]
+  ],
+  "operationComposition": {
+    "contract": "electrical.existing-vvgng-ls-whole-line-source/r1",
+    "groupId": "vvgng:power-line:5x6:r1",
+    "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+    "generatedFromCurrentRows": false,
+    "sourceAuthorityPromoted": false,
+    "projectAuthenticated": false,
+    "publicationAllowed": false,
+    "full": false,
+    "existingCableOrderOwnerRowId": "rc09:vvgng_a_ls_5x6_cable",
+    "operations": [
+      {
+        "key": "delivery",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:delivery",
+        "operationTitleRu": "Доставить и подать кабель",
+        "processOrdinal": 10,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "vvgng:logistics:delivery"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "readback",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:readback",
+        "operationTitleRu": "Проверить трассу и подготовить участок",
+        "processOrdinal": 20,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "vvgng:need:route-layout-tools"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "unwind",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:unwind",
+        "operationTitleRu": "Размотать кабель",
+        "processOrdinal": 30,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "vvgng:equipment:reel-stand"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "lay",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:lay",
+        "operationTitleRu": "Проложить кабель по принятой трассе",
+        "processOrdinal": 40,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "vvgng:labor:installation"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "fix",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:fix",
+        "operationTitleRu": "Закрепить кабель по принятой раскладке",
+        "processOrdinal": 50,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "rc09:halogen_free_cable_clamp"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "mark",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:mark",
+        "operationTitleRu": "Промаркировать кабельную линию",
+        "processOrdinal": 60,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "rc09:fire_resistant_cable_marker"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "terminate",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:terminate",
+        "operationTitleRu": "Подготовить и оконцевать кабель",
+        "processOrdinal": 70,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "rc09:cable_gland_for_5x6",
+          "rc09:copper_lug_6mm2"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "firestop",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:firestop",
+        "operationTitleRu": "Заделать кабельные проходки",
+        "processOrdinal": 80,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "rc09:firestop_cable_penetration_compound"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "qa",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:qa",
+        "operationTitleRu": "Проверить изоляцию и непрерывность защитного проводника",
+        "processOrdinal": 90,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "rc09:power_cable_insulation_continuity_test"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "cleanup",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:cleanup",
+        "operationTitleRu": "Убрать участок и передать отходы",
+        "processOrdinal": 100,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "vvgng:logistics:waste-removal"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      },
+      {
+        "key": "supply",
+        "contractVersion": "canonical-operation-resource/v1",
+        "groupId": "vvgng:power-line:5x6:r1",
+        "groupTitleRu": "Монтаж силовой кабельной линии 5×6 мм²",
+        "operationId": "vvgng:power-line:5x6:r1:supply",
+        "operationTitleRu": "Обеспечить силовой кабель и комплектующие",
+        "processOrdinal": 5,
+        "processRole": "PROCESS",
+        "whenResourcePresent": [
+          "rc09:vvgng_a_ls_5x6_cable"
+        ],
+        "completionCriterionRu": "Получен физический результат по принятому проекту и ППР; наличие ресурсов не подтверждает выполнение, безопасность или приёмку."
+      }
+    ],
+    "bindings": [
+      {
+        "rowId": "rc09:vvgng_a_ls_5x6_cable",
+        "formulaId": "vvgng_a_ls_5x6_cable_order_length_v2",
+        "unitId": "m",
+        "resourceKind": "MATERIAL",
+        "publicNameRu": "Силовой кабель с пониженным дымовыделением, 5×6 мм²",
+        "roles": [
+          "supply",
+          "delivery",
+          "readback",
+          "unwind",
+          "lay",
+          "fix",
+          "mark",
+          "terminate",
+          "firestop",
+          "qa"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "rc09:fire_resistant_cable_marker",
+        "formulaId": "fire_resistant_cable_marker_quantity_v1",
+        "unitId": "pcs",
+        "resourceKind": "CONSUMABLE",
+        "publicNameRu": "Бирки кабельной линии",
+        "roles": [
+          "mark"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "rc09:halogen_free_cable_clamp",
+        "formulaId": "halogen_free_cable_clamp_quantity_v1",
+        "unitId": "pcs",
+        "resourceKind": "MATERIAL",
+        "publicNameRu": "Крепления кабеля",
+        "roles": [
+          "fix"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "rc09:cable_gland_for_5x6",
+        "formulaId": "cable_gland_for_5x6_quantity_v1",
+        "unitId": "pcs",
+        "resourceKind": "MATERIAL",
+        "publicNameRu": "Герметичные кабельные вводы",
+        "roles": [
+          "terminate"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "rc09:copper_lug_6mm2",
+        "formulaId": "copper_lug_6mm2_quantity_v1",
+        "unitId": "pcs",
+        "resourceKind": "MATERIAL",
+        "publicNameRu": "Медные лужёные наконечники 6 мм²",
+        "roles": [
+          "terminate"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": [
+          "klauke-r-series-2021",
+          "klauke-sk65b-matched-scope",
+          "klauke-preparation-method"
+        ]
+      },
+      {
+        "rowId": "rc09:firestop_cable_penetration_compound",
+        "formulaId": "firestop_cable_compound_quantity_v1",
+        "unitId": "kg",
+        "resourceKind": "CONSUMABLE",
+        "publicNameRu": "Состав для кабельных проходок",
+        "roles": [
+          "firestop"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "rc09:power_cable_insulation_continuity_test",
+        "formulaId": "power_cable_test_count_v1",
+        "unitId": "test",
+        "resourceKind": "SERVICE",
+        "publicNameRu": "Измерение изоляции и непрерывности защитного проводника",
+        "roles": [
+          "qa"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": [
+          "fluke-166x-users-r3-2024"
+        ]
+      },
+      {
+        "rowId": "rc09:cable_tray",
+        "formulaId": "cable_tray_length_v1",
+        "unitId": "m",
+        "resourceKind": "MATERIAL",
+        "publicNameRu": "Кабельный лоток",
+        "roles": [
+          "lay"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "rc09:cable_protective_pipe",
+        "formulaId": "cable_protective_pipe_length_v1",
+        "unitId": "m",
+        "resourceKind": "MATERIAL",
+        "publicNameRu": "Защитная труба кабеля",
+        "roles": [
+          "lay"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "rc09:cable_pulling_lubricant",
+        "formulaId": "cable_pulling_lubricant_quantity_v1",
+        "unitId": "kg",
+        "resourceKind": "CONSUMABLE",
+        "publicNameRu": "Смазка для протяжки кабеля",
+        "roles": [
+          "lay"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:labor:installation",
+        "formulaId": "vvgng_ls_cable_installation_labor_v2",
+        "unitId": "man_hour",
+        "resourceKind": "LABOR",
+        "publicNameRu": "Труд электромонтажников",
+        "roles": [
+          "readback",
+          "unwind",
+          "lay",
+          "fix",
+          "mark",
+          "terminate",
+          "firestop"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:labor:testing",
+        "formulaId": "vvgng_ls_cable_testing_labor_v2",
+        "unitId": "man_hour",
+        "resourceKind": "LABOR",
+        "publicNameRu": "Труд специалиста по электроизмерениям",
+        "roles": [
+          "qa"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:equipment:reel-stand",
+        "formulaId": "vvgng_ls_cable_reel_stand_v2",
+        "unitId": "machine_hour",
+        "resourceKind": "MECHANISM",
+        "publicNameRu": "Устройство размотки кабеля",
+        "roles": [
+          "unwind"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:equipment:pulling-device",
+        "formulaId": "vvgng_ls_cable_pulling_device_v2",
+        "unitId": "machine_hour",
+        "resourceKind": "MECHANISM",
+        "publicNameRu": "Устройство протяжки кабеля",
+        "roles": [
+          "lay"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:equipment:crimp-tool",
+        "formulaId": "vvgng_ls_cable_crimp_tool_v2",
+        "unitId": "machine_hour",
+        "resourceKind": "TOOL",
+        "publicNameRu": "Инструмент опрессовки наконечников",
+        "roles": [
+          "terminate"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": [
+          "klauke-k05-whole-tool",
+          "klauke-sk65b-matched-scope"
+        ]
+      },
+      {
+        "rowId": "vvgng:equipment:installation-tester",
+        "formulaId": "vvgng_ls_installation_tester_v2",
+        "unitId": "machine_hour",
+        "resourceKind": "EQUIPMENT",
+        "publicNameRu": "Комплект для электроизмерений",
+        "roles": [
+          "qa"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": [
+          "fluke-166x-users-r3-2024"
+        ]
+      },
+      {
+        "rowId": "vvgng:logistics:delivery",
+        "formulaId": "vvgng_ls_cable_delivery_v2",
+        "unitId": "trip",
+        "resourceKind": "TRANSPORT",
+        "publicNameRu": "Доставка кабеля и комплектующих",
+        "roles": [
+          "delivery"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:logistics:waste-removal",
+        "formulaId": "vvgng_ls_cable_waste_removal_v2",
+        "unitId": "trip",
+        "resourceKind": "TRANSPORT",
+        "publicNameRu": "Передача упаковки и отходов",
+        "roles": [
+          "cleanup"
+        ],
+        "quantityRule": "RETAIN_EXISTING_PROJECT_QUANTITY_AND_SINGLE_OWNER_NOT_A_UNIVERSAL_RATE",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:need:route-layout-tools",
+        "formulaId": "vvgng:formula:need:route-layout-tools",
+        "unitId": null,
+        "quantityUnitUnconfirmed": true,
+        "resourceKind": "TOOL",
+        "publicNameRu": "Средство измерения трассы",
+        "roles": [
+          "readback"
+        ],
+        "quantityRule": "UNRESOLVED_APPLICATION_METHOD_UNIT_AND_QUANTITY_NOT_USER_TECHNICAL_NORM",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:need:route-access",
+        "formulaId": "vvgng:formula:need:route-access",
+        "unitId": null,
+        "quantityUnitUnconfirmed": true,
+        "resourceKind": "EQUIPMENT",
+        "publicNameRu": "Средство доступа к трассе",
+        "roles": [
+          "readback",
+          "unwind",
+          "lay",
+          "fix",
+          "mark",
+          "terminate",
+          "firestop",
+          "qa"
+        ],
+        "quantityRule": "UNRESOLVED_APPLICATION_METHOD_UNIT_AND_QUANTITY_NOT_USER_TECHNICAL_NORM",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:need:site-protection",
+        "formulaId": "vvgng:formula:need:site-protection",
+        "unitId": null,
+        "quantityUnitUnconfirmed": true,
+        "resourceKind": "PPE",
+        "publicNameRu": "Средства защиты монтажника",
+        "roles": [
+          "readback",
+          "unwind",
+          "lay",
+          "fix",
+          "mark",
+          "terminate",
+          "firestop",
+          "qa",
+          "cleanup"
+        ],
+        "quantityRule": "UNRESOLVED_APPLICATION_METHOD_UNIT_AND_QUANTITY_NOT_USER_TECHNICAL_NORM",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:need:sheath-preparation",
+        "formulaId": "vvgng:formula:need:sheath-preparation",
+        "unitId": null,
+        "quantityUnitUnconfirmed": true,
+        "resourceKind": "TOOL",
+        "publicNameRu": "Инструмент разделки оболочки кабеля",
+        "roles": [
+          "terminate"
+        ],
+        "quantityRule": "UNRESOLVED_APPLICATION_METHOD_UNIT_AND_QUANTITY_NOT_USER_TECHNICAL_NORM",
+        "heldTechnicalEvidenceIds": []
+      },
+      {
+        "rowId": "vvgng:need:conductor-stripping",
+        "formulaId": "vvgng:formula:need:conductor-stripping",
+        "unitId": null,
+        "quantityUnitUnconfirmed": true,
+        "resourceKind": "TOOL",
+        "publicNameRu": "Инструмент снятия изоляции жил",
+        "roles": [
+          "terminate"
+        ],
+        "quantityRule": "UNRESOLVED_APPLICATION_METHOD_UNIT_AND_QUANTITY_NOT_USER_TECHNICAL_NORM",
+        "heldTechnicalEvidenceIds": [
+          "knipex-1262180-en-2025"
+        ]
+      },
+      {
+        "rowId": "vvgng:need:termination-interface",
+        "formulaId": "vvgng:formula:need:termination-interface",
+        "unitId": null,
+        "quantityUnitUnconfirmed": true,
+        "resourceKind": "ACCESSORY",
+        "publicNameRu": "Детали контактного соединения",
+        "roles": [
+          "terminate"
+        ],
+        "quantityRule": "UNRESOLVED_APPLICATION_METHOD_UNIT_AND_QUANTITY_NOT_USER_TECHNICAL_NORM",
+        "heldTechnicalEvidenceIds": [
+          "klauke-r-series-2021",
+          "klauke-k05-whole-tool",
+          "klauke-preparation-method"
+        ]
+      },
+      {
+        "rowId": "vvgng:need:test-accessories",
+        "formulaId": "vvgng:formula:need:test-accessories",
+        "unitId": null,
+        "quantityUnitUnconfirmed": true,
+        "resourceKind": "ACCESSORY",
+        "publicNameRu": "Принадлежности для электроизмерений",
+        "roles": [
+          "qa"
+        ],
+        "quantityRule": "UNRESOLVED_APPLICATION_METHOD_UNIT_AND_QUANTITY_NOT_USER_TECHNICAL_NORM",
+        "heldTechnicalEvidenceIds": [
+          "fluke-166x-users-r3-2024"
+        ]
+      }
+    ],
+    "sourceDeclaredCounterRowIds": [
+      "rc09:vvgng_ls_cable_lay",
+      "vvgng:balance:installed-net-length",
+      "vvgng:balance:expected-loss",
+      "vvgng:balance:retained-reserve",
+      "vvgng:balance:total-need",
+      "vvgng:balance:remainder-after-installation-loss",
+      "vvgng:balance:surplus-beyond-reserve"
+    ],
+    "needs": [
+      {
+        "key": "route-layout-tools",
+        "rowId": "vvgng:need:route-layout-tools",
+        "formulaId": "vvgng:formula:need:route-layout-tools",
+        "parameterId": "vvgng_open_route_layout_tools",
+        "publicNameRu": "Средство измерения трассы",
+        "resourceKind": "TOOL",
+        "roles": [
+          "readback"
+        ],
+        "missingFacts": "Не установлены способ обследования и разметки трассы, диапазон и точность прибора, совместимый целый комплект, единица, распределение и количество.",
+        "unitId": null,
+        "quantity": null,
+        "newPaymentOwner": false,
+        "sourceRole": "UNRESOLVED_APPLICATION_NORM"
+      },
+      {
+        "key": "route-access",
+        "rowId": "vvgng:need:route-access",
+        "formulaId": "vvgng:formula:need:route-access",
+        "parameterId": "vvgng_open_route_access",
+        "publicNameRu": "Средство доступа к трассе",
+        "resourceKind": "EQUIPMENT",
+        "roles": [
+          "readback",
+          "unwind",
+          "lay",
+          "fix",
+          "mark",
+          "terminate",
+          "firestop",
+          "qa"
+        ],
+        "missingFacts": "Не установлены фактическая высота и участки трассы, рабочие положения, способ доступа, совместимая целая конструкция, грузоподъёмность, единица и количество. Лестницы и подъёмники из длины кабеля не рассчитываются.",
+        "unitId": null,
+        "quantity": null,
+        "newPaymentOwner": false,
+        "sourceRole": "UNRESOLVED_APPLICATION_NORM"
+      },
+      {
+        "key": "site-protection",
+        "rowId": "vvgng:need:site-protection",
+        "formulaId": "vvgng:formula:need:site-protection",
+        "parameterId": "vvgng_open_site_protection",
+        "publicNameRu": "Средства защиты монтажника",
+        "resourceKind": "PPE",
+        "roles": [
+          "readback",
+          "unwind",
+          "lay",
+          "fix",
+          "mark",
+          "terminate",
+          "firestop",
+          "qa",
+          "cleanup"
+        ],
+        "missingFacts": "Не установлены риски и фактический способ работ, виды и классы средств защиты, размеры, единицы, распределение и количества. Норма перчаток или комплекта СИЗ не назначена.",
+        "unitId": null,
+        "quantity": null,
+        "newPaymentOwner": false,
+        "sourceRole": "UNRESOLVED_APPLICATION_NORM"
+      },
+      {
+        "key": "sheath-preparation",
+        "rowId": "vvgng:need:sheath-preparation",
+        "formulaId": "vvgng:formula:need:sheath-preparation",
+        "parameterId": "vvgng_open_sheath_preparation",
+        "publicNameRu": "Инструмент разделки оболочки кабеля",
+        "resourceKind": "TOOL",
+        "roles": [
+          "terminate"
+        ],
+        "missingFacts": "Нужны фактические наружные размеры кабеля, оболочка и способ разделки, совместимый инструмент с лезвиями и состав целого комплекта. Инструмент розетки или светильника не переносится автоматически.",
+        "unitId": null,
+        "quantity": null,
+        "newPaymentOwner": false,
+        "sourceRole": "UNRESOLVED_APPLICATION_NORM"
+      },
+      {
+        "key": "conductor-stripping",
+        "rowId": "vvgng:need:conductor-stripping",
+        "formulaId": "vvgng:formula:need:conductor-stripping",
+        "parameterId": "vvgng_open_conductor_stripping",
+        "publicNameRu": "Инструмент снятия изоляции жил",
+        "resourceKind": "TOOL",
+        "roles": [
+          "terminate"
+        ],
+        "missingFacts": "Для жил 6 мм² нужны фактическая конструкция, изоляция и принятая длина зачистки. Диапазон зачистки KNIPEX1262180 — 0,2–6 мм², упор 6–18 мм; предел резки монолитной жилы — 2,5 мм², тонкопроволочной — 6 мм² в редакции 2025. Резка многопроволочной жилы 6 мм² не доказана. Не установлены фактический целый инструмент, пригодность, единица, количество и покрытие цены.",
+        "unitId": null,
+        "quantity": null,
+        "newPaymentOwner": false,
+        "sourceRole": "UNRESOLVED_APPLICATION_NORM"
+      },
+      {
+        "key": "termination-interface",
+        "rowId": "vvgng:need:termination-interface",
+        "formulaId": "vvgng:formula:need:termination-interface",
+        "parameterId": "vvgng_open_termination_interface",
+        "publicNameRu": "Детали контактного соединения",
+        "resourceKind": "ACCESSORY",
+        "roles": [
+          "terminate"
+        ],
+        "missingFacts": "Не установлены конструкция жилы, аппарат, шпилька/клемма, контактный пакет и разгрузка натяжения. Кандидат 1R6/K05 относится к меди 6 мм² class 2 и M6; фактический узел не выбран. Нужны точная разделка/число опрессовок, крепёж, момент, подходящий инструмент затяжки и изоляционное восстановление по документации аппарата, единицы/количества и покрытие цены. Пять жил не задают десять наконечников.",
+        "unitId": null,
+        "quantity": null,
+        "newPaymentOwner": false,
+        "sourceRole": "UNRESOLVED_APPLICATION_NORM"
+      },
+      {
+        "key": "test-accessories",
+        "rowId": "vvgng:need:test-accessories",
+        "formulaId": "vvgng:formula:need:test-accessories",
+        "parameterId": "vvgng_open_test_accessories",
+        "publicNameRu": "Принадлежности для электроизмерений",
+        "resourceKind": "ACCESSORY",
+        "roles": [
+          "qa"
+        ],
+        "missingFacts": "Нужны принятая программа RLO/RISO, напряжение, пары и учётная единица испытания, отключаемые цепи и чувствительные нагрузки; фактический 1662EU или другой совместимый прибор с проверкой, полные провода/щупы/зажимы/адаптер обнуления и достижимость точек. Требуются способ записи и выдачи результатов и покрытие существующей ценой. Профиль RLO розетки и функции Safety Pretest/AutoTest 1664 не переносятся; новый оплачиваемый комплект не создан.",
+        "unitId": null,
+        "quantity": null,
+        "newPaymentOwner": false,
+        "sourceRole": "UNRESOLVED_APPLICATION_NORM"
+      }
+    ],
+    "operationRequirements": [
+      {
+        "operationId": "vvgng:power-line:5x6:r1:delivery",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Рейс доставки не доказывает разгрузку, перенос к месту монтажа и включение водителя/такелажника в цену. Нужны фактические масса/габариты, путь, способ, совместимое оснащение и область договора без второго владельца оплаты."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:logistics:delivery"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "PPE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:readback",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TOOL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:route-layout-tools"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:route-access"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:labor:installation"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:unwind",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:route-access"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "MECHANISM": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:equipment:reel-stand"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:labor:installation"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:lay",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable",
+              "rc09:cable_tray",
+              "rc09:cable_protective_pipe"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:cable_pulling_lubricant"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:route-access"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "MECHANISM": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:equipment:pulling-device"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:labor:installation"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:fix",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable",
+              "rc09:halogen_free_cable_clamp"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:route-access"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:labor:installation"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:mark",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:fire_resistant_cable_marker"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:route-access"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:labor:installation"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:terminate",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable",
+              "rc09:cable_gland_for_5x6",
+              "rc09:copper_lug_6mm2"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Не выбраны фактический контактный узел, очистка контактных поверхностей и восстановление изоляции/защитная оболочка. Совместимость, состав, единицы, расход и включение в существующую цену требуют источника аппарата и ведомости; не назначены универсальная смазка, термоусадка или очиститель."
+          },
+          "TOOL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:equipment:crimp-tool",
+              "vvgng:need:sheath-preparation",
+              "vvgng:need:conductor-stripping"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "ACCESSORY": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:termination-interface"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "EQUIPMENT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:route-access"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:labor:installation"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:firestop",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:firestop_cable_penetration_compound"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:route-access"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:labor:installation"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:qa",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "ACCESSORY": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:test-accessories"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "EQUIPMENT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:equipment:installation-tester",
+              "vvgng:need:route-access"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:labor:testing"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "SERVICE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:power_cable_insulation_continuity_test"
+            ],
+            "reasonRu": "Учётная строка программы испытаний сохраняется с прежней ценовой семантикой и не означает оплаченный протокол/выгрузку. Нужны принятые форма, состав результатов, способ передачи и подтверждённое включение услуги в существующего владельца цены; отдельная плата не создана."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:cleanup",
+        "requirements": {
+          "MATERIAL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "CONSUMABLE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Не установлены применимые ёмкости/мешки/очищающие материалы, их единицы, расход, возвратность и покрытие цены. Запас кабеля и масса барабана не принимаются за массу отходов."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Не установлены фактические обрезки и упаковка, способ очистки и совместимый целый инструмент, единица и количество; щётка или пылесос не назначаются по длине кабеля."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нужны фактический сбор/сортировка/очистка, объём, единица и договорное покрытие труда. Существующий монтажный труд на очистку не распределён, транспортный рейс не является нормой уборки, новый уборщик или водитель не добавлен."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:logistics:waste-removal"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          },
+          "PPE": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "vvgng:need:site-protection"
+            ],
+            "reasonRu": "Прямое использование указанных ресурсов; применимость, комплектность, единицы и фактические количества требуют собственного источника и документа объекта."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      },
+      {
+        "operationId": "vvgng:power-line:5x6:r1:supply",
+        "requirements": {
+          "MATERIAL": {
+            "status": "REQUIRED",
+            "rowIds": [
+              "rc09:vvgng_a_ls_5x6_cable"
+            ],
+            "reasonRu": "Целый силовой кабель используется с тем же rowID, количеством заказа и одним владельцем оплаты; потребление и баланс сохранены отдельными арифметическими представлениями."
+          },
+          "CONSUMABLE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TOOL": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "ACCESSORY": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "EQUIPMENT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "MECHANISM": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "LABOR": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "SERVICE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "TRANSPORT": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          },
+          "PPE": {
+            "status": "UNRESOLVED",
+            "rowIds": [],
+            "reasonRu": "Нет подтверждённого состава или основания неприменимости этого класса для фактического способа операции; отсутствие строки не является исключением."
+          }
+        },
+        "sourceId": "s2723_krerm_guidance_and_project_vvgng_ls_power_cable_package_v2"
+      }
+    ],
+    "fixingApplicability": {
+      "parameterId": "cable_fixing_mode",
+      "referenceParameterId": "cable_fixing_layout_reference",
+      "requiredValue": "PROJECT_CABLE_FIXINGS_REQUIRED",
+      "existingSystemValue": "NO_NEW_CABLE_FIXINGS_IN_ACCEPTED_EXISTING_SYSTEM",
+      "scope": "Cable fastening under actual approved layout only; not drilling/anchors by default. Existing support-system readiness is not proved by a selector."
+    },
+    "compatibilityExclusions": [
+      "CAT6A/fire-alarm technical/quantity rules",
+      "ELECOR40x25 preliminary0.5m fixing/productivity/height profile",
+      "Fixture0.75–1.5mm2/socket1.5–2.5mm2 termination fit or2.5mm2 solid cutting limit",
+      "Automatic cable mass/diameter/current/voltage or ten-lug inference from5x6 name"
+    ],
+    "newQuantityNorms": 0,
+    "needsClosed": 0,
+    "heldTechnicalEvidence": {
+      "status": "SOURCE_HELD_CANDIDATES_NOT_ACTUAL_METHOD_SELECTION",
+      "selectedActualContactMethod": null,
+      "selectedActualQaProgram": null,
+      "sourceAuthorityPromoted": false,
+      "projectAuthenticated": false,
+      "newQuantityNorms": 0,
+      "needsClosed": 0,
+      "artifacts": [
+        {
+          "id": "knipex-1262180-en-2025",
+          "url": "https://assets.knipex.net/1262180_en.pdf",
+          "path": "source-evidence/knipex/1262180_en_2025.pdf",
+          "sha256": "449f7b7bfeccb83fe50b3a9ba5a57093217ba0c65771579fbb74f22de34184fa",
+          "locator": "Page1 capability bullets; page2 stripping cross-section",
+          "status": "EXACT_PRIMARY_BYTES_UNREGISTERED"
+        },
+        {
+          "id": "klauke-r-series-2021",
+          "url": "https://www.klauke.com/Media/Default/Downloads/CatalogsBrochures/BRBESTOFR21GB_07-2021_I_GB.pdf",
+          "sha256": null,
+          "locator": "Page1 R-series Cu/class2 table6mm2 M6; page2 K05",
+          "status": "OFFICIAL_WEB_CONTENT_READ_LOCAL_FETCH403_NO_BYTE_PIN"
+        },
+        {
+          "id": "klauke-k05-whole-tool",
+          "url": "https://www.klauke.com/gb/en/k-05-k-05-sp-syncro-crimping-tools-f-tubular-cable-lugs-a-connectors-standard-type-6-50-mm",
+          "sha256": null,
+          "locator": "Features and specifications: synchronised profile selection, hexagonal crimp,6–50mm2",
+          "status": "OFFICIAL_WEB_CONTENT_READ_LOCAL_FETCH403_NO_BYTE_PIN"
+        },
+        {
+          "id": "klauke-sk65b-matched-scope",
+          "url": "https://www.klauke.com/gb/en/sk-65-b-steel-assortment-boxes-with-tubular-cable-lugs-and-crimping-tool",
+          "sha256": null,
+          "locator": "Scope of delivery includes K05 and1R6 without inspection hole",
+          "status": "OFFICIAL_WEB_CONTENT_READ_LOCAL_FETCH403_NO_BYTE_PIN"
+        },
+        {
+          "id": "klauke-preparation-method",
+          "url": "https://www.klauke.com/Media/Default/Downloads/CatalogsBrochures/BRFACH19GB_Klauke%20Fachwissen_02_2019_I_GB.pdf",
+          "sha256": null,
+          "locator": "PDF4/printed6–7 preparation and crimping; PDF11/printed20–21 solid E-series",
+          "status": "OFFICIAL_WEB_CONTENT_READ_LOCAL_FETCH403_NO_BYTE_PIN"
+        },
+        {
+          "id": "fluke-166x-users-r3-2024",
+          "url": "https://media.fluke.com/75807436-7228-4144-8190-b309010baaca_original%20file.pdf",
+          "path": "data/estimate-benchmarks/source-artifacts/master32-panel-tool-provision-r1/fluke-166x-users-r3-2024.pdf",
+          "sha256": "0b1d1a64e4f00e53e7ee4c3d02c4e7dfca53dd57f5a7af4426a296725f455a27",
+          "locator": "PDF23–25 lead zero; PDF30–34 RISO/RLO; PDF68–72 storage/export; PDF7–8 initial accessories",
+          "status": "EXISTING_PRIMARY_BYTES_HASH_RECHECKED_NOT_A_POWER_QA_PROGRAM"
+        }
+      ],
+      "stripping": {
+        "evidenceIds": [
+          "knipex-1262180-en-2025"
+        ],
+        "internalModel": "KNIPEX1262180",
+        "stripMm2": [
+          0.2,
+          6
+        ],
+        "stripConstructions": [
+          "SOLID",
+          "MULTISTRANDED",
+          "FINELY_STRANDED"
+        ],
+        "standardInsulationOnly": true,
+        "lengthStopMm": [
+          6,
+          18
+        ],
+        "solidCutterMaximumMm2": 2.5,
+        "fineStrandedCutterMaximumMm2": 6,
+        "multiStranded6CutEstablished": false,
+        "fittedAssembly": [
+          "BODY",
+          "FITTED_STRIPPING_BLADES",
+          "ADJUSTABLE_LENGTH_STOP",
+          "INTEGRAL_CUTTER"
+        ],
+        "actualAllocatedWholeToolCount": null,
+        "replacementWearNorm": null,
+        "applicabilityRu": "Зачистка жилы 6 мм² входит в заявленный диапазон при совместимой изоляции и принятой длине; резка монолитной жилы 6 мм² этим встроенным резаком не разрешена. Конструкция жилы и редакция инструмента требуют фактической проверки."
+      },
+      "crimpedLugCandidate": {
+        "evidenceIds": [
+          "klauke-r-series-2021",
+          "klauke-k05-whole-tool",
+          "klauke-sk65b-matched-scope",
+          "klauke-preparation-method"
+        ],
+        "internalLug": "Klauke1R6",
+        "internalWholeTool": "KlaukeK05",
+        "conductorMaterial": "COPPER",
+        "conductorClass": 2,
+        "conductorAreaMm2": 6,
+        "stud": "M6",
+        "inspectionHole": false,
+        "wholeToolAssembly": [
+          "MANUAL_TOOL_BODY_AND_HANDLES",
+          "FITTED_SYNCHRONISED_PROFILE_HEADS",
+          "MARKED_SECTION_SELECTOR"
+        ],
+        "crimpProfile": "HEXAGONAL",
+        "toolRangeMm2": [
+          6,
+          50
+        ],
+        "exactInsertionDepthMm": null,
+        "acceptedStripLengthMm": null,
+        "exactCrimpCountPerLug": null,
+        "contactTorqueNm": null,
+        "actualCompatibleJointCount": null,
+        "nonTransferRu": "Типовой комплект изготовителя доказывает совместное наличие инструмента и наконечника, но не монтажный состав объекта. Для монолитной жилы class1 или иного болта этот кандидат не выбран; число наконечников, крепёж, момент и число опрессовок не выводятся из 5×6, M6 или сечения. Крепёж контактного узла и его затяжка определяются документацией ответного аппарата.",
+        "remainingAssemblyFacts": [
+          "Actual conductor class and cable passport",
+          "Actual apparatus contact, stud, stack, spacing and strain relief",
+          "Exact lug insertion depth and crimp count for the selected tool",
+          "Matched torque tool and bit/socket for the apparatus instruction",
+          "Insulation restoration or shroud, cleaning media and actual units where required",
+          "Actual allocated tools and price coverage of the retained crimp-tool owner"
+        ]
+      },
+      "qaCandidate": {
+        "evidenceIds": [
+          "fluke-166x-users-r3-2024"
+        ],
+        "internalInstrument": "Fluke1662EU",
+        "candidateFunctions": [
+          "RISO_EN61557_2",
+          "RLO_EN61557_4"
+        ],
+        "inputTerminals": [
+          "L_RED",
+          "PE_GREEN"
+        ],
+        "risoVoltageChoicesV": [
+          100,
+          250,
+          500,
+          1000
+        ],
+        "selectedActualRisoVoltageV": null,
+        "automaticApplianceSafetyPretest": false,
+        "autoTest1664FunctionTransferred": false,
+        "leadZeroIsCalibration": false,
+        "existingReusableWholePartsSource": "data/estimate-benchmarks/source-packs/electrical-verification-owned-post-r1.json",
+        "existingSocketAdapterReused": false,
+        "socketAdapterGuardWeakened": false,
+        "existingWholeMeasurementPriceOwner": "vvgng:equipment:installation-tester",
+        "wholeInitialAssembly": [
+          "1662EU instrument",
+          "Red and green leads, probes, GS38 caps and clips",
+          "Compatible zero adapter",
+          "Six fitted AA LR6 cells",
+          "Padded strap and protective case"
+        ],
+        "additionalActualNeeds": [
+          "Actual reachable measuring points or compatible extension leads with compensation",
+          "Current instrument verification and functioning fuse/leads",
+          "Accepted circuit isolation and disconnected sensitive loads",
+          "Program-selected voltage, conductor pair schedule, duration, limits and repeats",
+          "Result identifiers linked to the same cable, instrument and program",
+          "Chosen manual or IR-cable/software result-export method and actual price coverage"
+        ],
+        "exportIsIncludedInRloKit": false,
+        "actualWholeKitCount": null,
+        "actualTestCount": null,
+        "actualQaLabourHours": null,
+        "applicabilityRu": "Возможности прибора не являются программой испытаний и результатами линии. Существующий профиль розетки ограничен RLO; его фабрика не принимает чужой owner. Для RISO1662 используются L/PE и принятое напряжение, работа только на обесточенной цепи; Safety Pretest и AutoTest1664 не переносятся."
+      },
+      "actualMeasuredQuantityRules": [
+        {
+          "rowId": "rc09:copper_lug_6mm2",
+          "parameterId": "lug_quantity_piece",
+          "unitId": "pcs",
+          "basis": "ACTUAL_ACCEPTED_TERMINATION_REGISTER",
+          "ruleRu": "Целое число фактически предусмотренных совместимых опрессованных окончаний; пять жил не задают число концов или запас.",
+          "default": null
+        },
+        {
+          "rowId": "rc09:cable_gland_for_5x6",
+          "parameterId": "gland_quantity_piece",
+          "unitId": "pcs",
+          "basis": "ACTUAL_ACCEPTED_ENCLOSURE_ENTRY_REGISTER",
+          "ruleRu": "Целое число применимых вводов по фактическим корпусам и кабельному диаметру; число жил и наконечников не является числом вводов.",
+          "default": null
+        },
+        {
+          "rowId": "rc09:power_cable_insulation_continuity_test",
+          "parameterId": "test_count",
+          "unitId": "test",
+          "basis": "ACTUAL_ACCEPTED_QA_PROGRAM_MEASUREMENT_UNIT",
+          "ruleRu": "Программа определяет, что считается одним испытанием, пары, повторы и число учётных единиц;10пар для5жил или один протокол на линию не назначаются.",
+          "default": null
+        },
+        {
+          "rowId": "vvgng:logistics:delivery",
+          "parameterId": "cable_delivery_trip_count",
+          "unitId": "trip",
+          "basis": "ACTUAL_ACCEPTED_LOGISTICS_PLAN",
+          "ruleRu": "Фактические внешние рейсы по массе/габаритам и условиям поставки. Ноль рейсов не закрывает разгрузку, перенос и труд.",
+          "default": null
+        },
+        {
+          "rowId": "vvgng:logistics:waste-removal",
+          "parameterId": "cable_waste_removal_trip_count",
+          "unitId": "trip",
+          "basis": "ACTUAL_ACCEPTED_WASTE_PLAN",
+          "ruleRu": "Фактические внешние рейсы вывоза. Ноль рейсов не исключает сбор, сортировку, очистку, упаковку и перенос отходов.",
+          "default": null
+        }
+      ],
+      "logisticsAndCleaning": {
+        "sourceRole": "ACTUAL_PROJECT_PLAN_AND_QUOTE_REQUIRED",
+        "externalTripUnit": "trip",
+        "handlingAndCleaningLabourCovered": false,
+        "retainedDeliveryOwner": "vvgng:logistics:delivery",
+        "retainedWasteTransportOwner": "vvgng:logistics:waste-removal",
+        "existingInstallationLabourAssignedToCleanup": false,
+        "newCleanerOrDriverPaymentCreated": false,
+        "exactNeeds": [
+          "VVGNG_LOGISTICS_HANDLING_SCOPE",
+          "VVGNG_CLEANUP_METHOD_BOM_UNIT_OWNER",
+          "VVGNG_QA_RECORD_AND_EXPORT_SCOPE"
+        ],
+        "missingRu": "Нет принятого состава доставки с разгрузкой/переносом, состава сбора и очистки, применимых щёток/тары/расходников, их единиц и количества и подтверждённого покрытия цены трудом/услугой. Транспортный рейс и монтажные часы не доказывают очистку; кабельный запас не является массой отходов."
+      },
+      "retainedProducerMethodBoundary": {
+        "scope": "RETAINED_PROJECT_DECLARED_CRIMPED_COPPER_LUG_AND_CABLE_GLAND_BASELINE",
+        "actualContactMethodSelected": false,
+        "directBareWireFerruleOrSpringContactCovered": false,
+        "optionalDesignationAuthenticatesMethod": false,
+        "meaningRu": "Сохранены существующие строки опрессуемых медных наконечников и кабельных вводов. Это не универсальный состав любого окончания5×6. Иной контактный способ требует точной принятой ветви и штатного независимого состава; название, количество или источник кандидата не разрешают подмену."
+      }
+    }
+  }
 }

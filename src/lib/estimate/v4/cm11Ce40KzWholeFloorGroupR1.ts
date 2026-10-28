@@ -128,3 +128,112 @@ export function compileCm11Ce40KzSelectableFloorR2(parent:LegacyFloor,identity:C
  const s=source.selectableSuccessorR2.selector,choice=submittedParameters[s.parameterId]??s.legacyValue;
  return compileAutomaticConstructionOwnerR1({catalogId:source.catalogId,compilerVersion:p.contract,primaryMeasureParameterId:choice===s.exactValue?'floor_area_m2':'q',definition:cm11Ce40KzSelectableFloorDefinitionR2(parent,identity),submittedParameters});
 }
+
+
+// R3 is an exact current-body continuation. R1/R2 historical factories above
+// remain unchanged; this path never appends the historical59 branch twice.
+import currentCm11ParentR951 from '../../../../data/estimate-benchmarks/fixtures/cm11-ct17-ce40-current-parent-r951.json';
+import currentCm11ConsumersR3 from '../../../../data/estimate-benchmarks/source-packs/cm11-ct17-ce40-current-consumer-cycle-r3.json';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
+import type {CanonicalEstimateFormulaDefinition,CanonicalEstimateResourceDefinition} from '../backendPlatform/canonicalEstimateCompileCore';
+import type {FormulaAst} from '../backendPlatform/formulaGraph';
+
+export const cm11Ce40KzCurrentConsumerPackR3=currentCm11ConsumersR3;
+const currentCm11Record=(value:unknown):Json=>{
+ const record=(candidate:unknown):candidate is Json=>candidate!==null&&typeof candidate==='object'&&!Array.isArray(candidate);
+ if(!record(value))throw Error('CM11_R3_RECORD_REQUIRED');return value;
+};
+const currentCm11Text=(value:unknown):string=>{if(typeof value!=='string')throw Error('CM11_R3_TEXT_REQUIRED');return value;};
+const currentCm11Array=(value:unknown):unknown[]=>{if(!Array.isArray(value))throw Error('CM11_R3_ARRAY_REQUIRED');return value;};
+const currentCm11Boolean=(value:unknown):boolean=>{if(typeof value!=='boolean')throw Error('CM11_R3_BOOLEAN_REQUIRED');return value;};
+const currentCm11Integer=(value:unknown):number=>{if(typeof value!=='number'||!Number.isSafeInteger(value)||value<0)throw Error('CM11_R3_ORDINAL_REQUIRED');return value;};
+function currentCm11Ast(value:unknown):FormulaAst{
+ const v=currentCm11Record(value);
+ if(v.kind==='literal')return{...v,kind:'literal',value:currentCm11Text(v.value)};
+ if(v.kind==='parameter')return{...v,kind:'parameter',id:currentCm11Text(v.id)};
+ if(v.kind==='unary'&&(v.operator==='+'||v.operator==='-'))return{...v,kind:'unary',operator:v.operator,operand:currentCm11Ast(v.operand)};
+ if(v.kind==='binary'&&(v.operator==='+'||v.operator==='-'||v.operator==='*'||v.operator==='/'))return{...v,kind:'binary',operator:v.operator,left:currentCm11Ast(v.left),right:currentCm11Ast(v.right)};
+ if(v.kind==='conditional')return{...v,kind:'conditional',condition:currentCm11Ast(v.condition),whenTrue:currentCm11Ast(v.whenTrue),whenFalse:currentCm11Ast(v.whenFalse)};
+ if(v.kind==='call'&&(v.function==='ceil'||v.function==='floor'||v.function==='max'||v.function==='min'||v.function==='pow'||v.function==='round_to'||v.function==='sqrt'||v.function==='unit_convert'))return{...v,kind:'call',function:v.function,arguments:currentCm11Array(v.arguments).map(currentCm11Ast)};
+ throw Error('CM11_R3_FORMULA_AST_REQUIRED');
+}
+/** Personal R951 raw/parsed parity anchors all ten current sets. The runtime
+ * view validates complete header and body against the separately SHA-pinned
+ * immutable snapshot, before any mapping. A changed actual row, formula, source
+ * registry tuple, baseline or header is refused, even if array counts match. */
+export function cm11Ce40KzCurrentConsumerDefinitionR3(actual:unknown=currentCm11ParentR951):AutomaticOwnerDefinition{
+ const snapshot=currentCm11Record(actual),body=currentCm11Record(snapshot.currentBody);
+ if(canonicalEstimateStableJson(snapshot.header)!==canonicalEstimateStableJson(currentCm11ParentR951.header)
+  ||canonicalEstimateStableJson(snapshot.target)!==canonicalEstimateStableJson(currentCm11ParentR951.target)
+  ||canonicalEstimateStableJson(body)!==canonicalEstimateStableJson(currentCm11ParentR951.currentBody))throw Error('CM11_R3_EXACT_ACTUAL_R951_BODY_REQUIRED');
+ const parameters:AutomaticOwnerDefinition['parameters']=currentCm11Array(body.parameters).map(value=>{const v=currentCm11Record(value);return{
+  ...v,parameter_id:currentCm11Text(v.parameter_id),ordinal:currentCm11Integer(v.ordinal),unit_id:v.unit_id===null?null:currentCm11Text(v.unit_id),title_ru:currentCm11Text(v.title_ru),
+  value_type:currentCm11Text(v.value_type),required:currentCm11Boolean(v.required),default_value:v.default_value,
+  constraints_json:v.constraints_json===null?null:currentCm11Record(v.constraints_json),truth_metadata:currentCm11Record(v.truth_metadata)};});
+ const formulas:CanonicalEstimateFormulaDefinition[]=currentCm11Array(body.formulas).map(value=>{const v=currentCm11Record(value);return{
+  ...v,formula_id:currentCm11Text(v.formula_id),output_unit_id:currentCm11Text(v.output_unit_id),expression_source:currentCm11Text(v.expression_source),
+  ast:currentCm11Ast(v.ast),input_parameter_ids:currentCm11Array(v.input_parameter_ids).map(currentCm11Text),ast_sha256:currentCm11Text(v.ast_sha256)};});
+ const changes=new Map(currentCm11ConsumersR3.consumerRows.map(item=>[item.rowId,item] as const));
+ const resources:CanonicalEstimateResourceDefinition[]=currentCm11Array(body.resources).map(value=>{
+  const v=currentCm11Record(value),rowId=currentCm11Text(v.row_id),graph=currentCm11Record(v.resource_graph),change=changes.get(rowId),
+   oldComposition=currentCm11Record(graph.operationCompositionV1??{});
+  let nextGraph=graph;
+  if(change){
+   const actualBefore=[oldComposition.operationId,...currentCm11Array(oldComposition.additionalOperations).map(x=>currentCm11Record(x).operationId)];
+   if(canonicalEstimateStableJson(actualBefore)!==canonicalEstimateStableJson(change.beforeOperationIds)
+    ||v.formula_id!==change.formulaId||v.unit_id!==change.unitId||v.cost_owner_id!==change.costOwnerId||v.procurement_eligible!==change.procurementEligible)throw Error('CM11_R3_CONSUMER_PREIMAGE_CHANGED:'+rowId);
+   nextGraph={...graph,operationCompositionV1:operations(change.operationKeys)};
+  }
+  const content={...v,resource_graph:nextGraph};
+  return{...content,id:currentCm11Text(v.id),row_id:rowId,ordinal:currentCm11Integer(v.ordinal),section:currentCm11Text(v.section),category:currentCm11Text(v.category),
+   title_ru:currentCm11Text(v.title_ru),unit_id:currentCm11Text(v.unit_id),formula_id:currentCm11Text(v.formula_id),inclusion_ast:currentCm11Record(v.inclusion_ast),resource_graph:nextGraph,
+   procurement_eligible:currentCm11Boolean(v.procurement_eligible),cost_owner_id:v.cost_owner_id===null?null:currentCm11Text(v.cost_owner_id),
+   source_metadata:v.source_metadata===null?null:currentCm11Record(v.source_metadata),row_sha256:change?hash({...content,row_sha256:undefined}):currentCm11Text(v.row_sha256)};
+ });
+ if(parameters.length!==34||formulas.length!==117||resources.length!==117||[...changes.keys()].some(id=>!resources.some(row=>row.row_id===id)))throw Error('CM11_R3_CURRENT_SHAPE_REQUIRED');
+ // Current source/derived authority stays in the original parameters. Baseline
+ // input_values, source confirmation and accepted site facts are never hydrated.
+ const protection=currentCm11ConsumersR3.adjacentProtection,extra=buildAutomaticConstructionOwnerR1({contract:currentCm11ConsumersR3.contract,
+  semanticOwner:n,sourceId:protection.sourceId,normId:'CT17_ADJACENT_PROTECTION_FUNCTION_NO_QUANTITY_NORM',
+  sourceMetadata:{source_title:protection.titleRu,source_document_version:'CT17ru_KZ exact existing PDF1',definition_hash:protection.primaryArtifactSha256,
+   artifact_sha256:protection.primaryArtifactSha256,exact_locator:protection.sourceLocator},applicabilityRu:p.scopeRu,ordinary:[],profile:[],
+  conditional:[{id:protection.scopeParameterId,title:protection.scopeTitleRu,valueType:'enum',unitId:null,kind:'internal',values:[protection.maskRequiredValue,protection.noneConfirmedValue]},
+   {id:protection.quantityParameterId,title:protection.titleRu,valueType:'decimal',unitId:protection.unitId,kind:'internal',min:0}],
+  rows:[{rowId:protection.rowId,formulaId:protection.formulaId,section:p.titleRu,title:protection.titleRu,category:protection.category,unitId:protection.unitId,
+   expression:protection.quantityParameterId,inclusion:{kind:'equals',parameterId:protection.scopeParameterId,value:protection.maskRequiredValue},
+   inputParameterIds:[protection.scopeParameterId],procurement:false,costTreatment:'INFORMATIONAL_SCOPE',
+   formulaOutputBounds:{schemaVersion:'canonical_formula_output_bounds_v1',unitId:protection.unitId,exclusiveMinimum:0,reasonRu:'При подтверждённой необходимости маскирования требуется положительное количество материала по принятому плану; нулевое количество не подтверждает защиту.'}}],
+  deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:[protection.quantityReasonRu]});
+ const exactWhen={kind:'equals',parameterId:source.selectableSuccessorR2.selector.parameterId,value:source.selectableSuccessorR2.selector.exactValue};
+ const newParameters=extra.parameters.map((par,index)=>({...par,ordinal:parameters.length+index,truth_metadata:par.parameter_id===protection.scopeParameterId?
+  {...par.truth_metadata,visibility_role:'INTERNAL_ONLY',source_readback_only:true,value_source_role:'SITE_SURVEY',source_confirmation_required:true,
+   preliminary_compilation_allowed:true,visible_when:exactWhen,resource_branch_consumers:[protection.rowId],provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'},
+   actual_readback_required:protection.sourceConfirmation}:
+  unresolvedApplicationNormTruthR1({...par.truth_metadata,visible_when:exactWhen},protection.quantityReasonRu)}));
+ const newResources=extra.resources.map((row,index)=>{const content={...row,ordinal:resources.length+index,inclusion_ast:{kind:'and',operands:[exactWhen,row.inclusion_ast]},
+  resource_graph:{...row.resource_graph,operationCompositionV1:operations(protection.operations)},
+  source_metadata:{...row.source_metadata,sourceRole:'UNRESOLVED_APPLICATION_NORM',normativeTrace:[],normative_source_ids:[],physicalFunctionSourceId:protection.sourceId,
+   physicalFunctionPrimarySha256:protection.primaryArtifactSha256,physicalFunctionSourceLocator:protection.sourceLocator,physicalNeedNotPriceGap:true,
+   missingPhysicalQuantityReasonRu:protection.quantityReasonRu,full_technical_acceptance:false}};return{...content,row_sha256:hash({...content,row_sha256:undefined})};});
+ return{parameters:[...parameters,...newParameters],formulas:[...formulas,...extra.formulas],resources:[...resources,...newResources],runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['q','floor_length_m','floor_width_m']};
+}
+export function compileCm11Ce40KzCurrentConsumerR3(submittedParameters:Record<string,unknown>,actual:unknown=currentCm11ParentR951,confirmedParameters:Record<string,unknown>={}){
+ const s=source.selectableSuccessorR2.selector,
+  // The established omitted-selector compatibility default selects only the
+  // retained method. It is not a baseline, quantity or accepted object fact.
+  effective=Object.hasOwn(submittedParameters,s.parameterId)?submittedParameters:{...submittedParameters,[s.parameterId]:s.legacyValue},choice=effective[s.parameterId];
+ return compileAutomaticConstructionOwnerR1({catalogId:source.catalogId,compilerVersion:currentCm11ConsumersR3.contract,
+  primaryMeasureParameterId:choice===s.exactValue?'floor_area_m2':'q',definition:cm11Ce40KzCurrentConsumerDefinitionR3(actual),submittedParameters:effective,confirmedParameters});
+}
+/** The new authored operation map is independent of the generated current
+ * resources. Retained source/locator tuples are not replaced by this map. */
+export function cm11Ce40KzCurrentConsumerExpectationsR3(){const updates=new Map(currentCm11ConsumersR3.consumerRows.map(item=>[item.rowId,item] as const));return{
+ contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PROJECT_SYSTEM',generatedFromCurrentRows:false,
+ operationResourceBindingRequired:true,evidenceSha256:currentCm11ConsumersR3.evidence[0]!.sha256,
+ entries:[...cm11Ce40KzSelectableFloorCompletenessR2().entries.map(entry=>{const item=updates.get(entry.resolution.rowId);return item?{
+  ...entry,sourceId:currentCm11ConsumersR3.sourceId,requiredOperationIds:item.operationKeys.map(op=>r('operation:'+op)),
+  quantityRule:'EXACT_RETAINED_FORMULA_NO_NEW_NORM',resolution:item.includedInWholeOwner?{kind:'INCLUDED_COMPONENT_ROW',rowId:item.rowId,parentRowId:owner}:{kind:'ROW',rowId:item.rowId}}:entry;}),{expectedResourceId:'ct17-adjacent-protection',sourceId:currentCm11ConsumersR3.adjacentProtection.sourceId,
+  operationId:'priming',requiredOperationIds:currentCm11ConsumersR3.adjacentProtection.operations.map(op=>r('operation:'+op)),condition:p.scopeRu,
+  specification:currentCm11ConsumersR3.adjacentProtection.titleRu,unitId:'linear_m',category:'material',formulaId:currentCm11ConsumersR3.adjacentProtection.formulaId,
+  quantityRule:'FUNCTION_FROM_CT17_QUANTITY_SOURCE_HELD',resolution:{kind:'ROW',rowId:currentCm11ConsumersR3.adjacentProtection.rowId}}],
+ fullTechnicalAcceptance:false,openSourceObligations:[...p.gaps.map(g=>g.reasonRu),currentCm11ConsumersR3.adjacentProtection.quantityReasonRu]};}

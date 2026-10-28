@@ -1,3 +1,8 @@
+import surfacePack from '../../../../data/estimate-benchmarks/source-packs/led-luminaire-installation-balanced-s27-23.json';
+import {buildAutomaticConstructionOwnerR1,type AutomaticOwnerDefinition} from './automaticConstructionOwnerR1';
+import {buildMasterParameterCalculationConsumers} from '../backendPlatform/canonicalDefinitionParameterConsumersR1';
+import {canonicalEstimateSha256HexText} from '../backendPlatform/canonicalEstimateSha256';
+import {canonicalEstimateStableJson} from '../backendPlatform/canonicalEstimateDeterminism';
 import {
   compileCanonicalEstimateCore,
   type CanonicalEstimateCompileCoreResult,
@@ -312,13 +317,146 @@ export async function compileLedLuminaireInstallationR1(
   if (catalogId !== LED_LUMINAIRE_INSTALLATION_CATALOG_ID) {
     throw new Error(`LED_LUMINAIRE_INSTALLATION_CATALOG_UNSUPPORTED:${catalogId}`);
   }
+  const whole=ledSurfaceWholeDefinitionR1();
   return compileCanonicalEstimateCore({ operation: "compile",
     compilerVersion: "canonical-estimate-compiler.led-luminaire-installation-r1", catalogId,
     primaryMeasureParameterId: "luminaire_count",
-    parameterDefinitions: [...LED_LUMINAIRE_INSTALLATION_PARAMETERS],
-    formulaDefinitions: [...LED_LUMINAIRE_INSTALLATION_FORMULAS],
-    resourceDefinitions: [...LED_LUMINAIRE_INSTALLATION_RESOURCES], submittedParameters,
+    parameterDefinitions: [...whole.parameters],
+    formulaDefinitions: [...whole.formulas],
+    resourceDefinitions: [...whole.resources], submittedParameters,
     confirmedParameters: { ...LED_LUMINAIRE_INSTALLATION_RUNTIME_INPUT },
     currencyCode: "KGS", priceItems: [], maximumResourceRows: 30,
     hashJson: async (value) => JSON.stringify(value) });
 }
+
+/** Whole-cycle authority for the existing31/23/23 owner. Manufacturer supply
+ * does not authenticate an object, an installation norm, an order or a price. */
+export const LED_SURFACE_WHOLE_SOURCE_R1=surfacePack.wholeCycle;
+const surfaceWhole=LED_SURFACE_WHOLE_SOURCE_R1;
+export const LED_SURFACE_WHOLE_SOURCE_SHA_R1=canonicalEstimateSha256HexText(canonicalEstimateStableJson(surfaceWhole));
+export const ledSurfaceFactoryComponentRowIdsR1=surfaceWhole.factoryComponents.map(c=>surfaceWhole.prefix+':'+c.key);
+function ledSurfaceOperationR1(key:string):Record<string,any>{
+ const op=surfaceWhole.operations.find(o=>o.key===key);if(!op)throw Error('LED_SURFACE_EXACT_OPERATION_REQUIRED:'+key);
+ const {key:_key,...body}=op;return {...body,contractVersion:'canonical-operation-resource/v1'};
+}
+function ledSurfaceUsesR1(keys:readonly string[]):Record<string,any>{
+ if(!keys.length)throw Error('LED_SURFACE_RESOURCE_CONSUMER_REQUIRED');
+ const uses=keys.map(ledSurfaceOperationR1);return {...uses[0],additionalOperations:uses.slice(1)};
+}
+const ledSurfaceRehashR1=(row:CanonicalEstimateResourceDefinition):CanonicalEstimateResourceDefinition=>{
+ const {row_sha256:_old,...body}=row;return {...body,row_sha256:estimateDeterministicHash(body)};
+};
+export function assertLedSurfaceWholeFactoryDefinitionR1(d:Pick<AutomaticOwnerDefinition,'formulas'|'resources'>):void{
+ for(const c of surfaceWhole.factoryComponents){
+  const id=surfaceWhole.prefix+':'+c.key,row=d.resources.find(r=>r.row_id===id),formula=d.formulas.find(f=>f.formula_id===surfaceWhole.prefix+':formula:'+c.key);
+  if(!row||row.unit_id!==c.unitId||row.cost_owner_id!==surfaceWhole.paidFactoryOwnerRowId
+   ||row.procurement_eligible!==false||row.resource_graph.costTreatment!=='INCLUDED_IN_RESOURCE_ROWS'
+   ||row.resource_graph.includedInResourceOwnerRowId!==surfaceWhole.paidFactoryOwnerRowId
+   ||formula?.expression_source!=='luminaire_count*'+c.countPerLuminaire)
+   throw Error('LED_SURFACE_FACTORY_COMPONENT_OWNER_OR_QUANTITY_DRIFT:'+id);
+  const first=row.resource_graph.operationCompositionV1 as Record<string,any>;
+  const ops=[first,...(first?.additionalOperations??[])].map(o=>o?.operationId);
+  if(c.uses.some(k=>!ops.includes(surfaceWhole.prefix+':'+k)))throw Error('LED_SURFACE_FACTORY_COMPONENT_CONSUMER_LOST:'+id);
+ }
+}
+/** Pass the personally verified actual parent body in ordinary intake. The
+ * default source arrays are authoring inputs only, never a fresh DB receipt. */
+export function ledSurfaceWholeDefinitionR1(parent:Pick<AutomaticOwnerDefinition,'parameters'|'formulas'|'resources'>={
+ parameters:LED_LUMINAIRE_INSTALLATION_PARAMETERS,formulas:LED_LUMINAIRE_INSTALLATION_FORMULAS,resources:LED_LUMINAIRE_INSTALLATION_RESOURCES,
+}):AutomaticOwnerDefinition{
+ if(parent.parameters.length!==31||parent.formulas.length!==23||parent.resources.length!==23
+  ||surfaceWhole.factoryComponents.length!==6||surfaceWhole.operations.length!==14
+  ||surfaceWhole.privateProductEvidence.powerW!==36||surfaceWhole.privateProductEvidence.ip!=='IP40'
+  ||surfaceWhole.privateProductEvidence.protectionClass!=='I'
+  ||surfaceWhole.sources[0]?.sha256!=='da725fcbbc72468a473855484bc102b5bee4d88f3ff7d2cdd1334fe7ded88d84')throw Error('LED_SURFACE_EXACT_CURRENT_AND_FACTORY_SOURCE_REQUIRED');
+ for(const old of LED_LUMINAIRE_INSTALLATION_RESOURCES){const current=parent.resources.find(r=>r.row_id===old.row_id);
+  if(!current||current.ordinal!==old.ordinal||current.unit_id!==old.unit_id||current.formula_id!==old.formula_id||current.cost_owner_id!==old.cost_owner_id)
+   throw Error('LED_SURFACE_CURRENT_LOGICAL_RESOURCE_DRIFT:'+old.row_id);}
+ for(const old of LED_LUMINAIRE_INSTALLATION_FORMULAS){const current=parent.formulas.find(f=>f.formula_id===old.formula_id);
+  if(!current||current.output_unit_id!==old.output_unit_id||current.expression_source!==old.expression_source
+   ||canonicalEstimateStableJson(current.input_parameter_ids)!==canonicalEstimateStableJson(old.input_parameter_ids))throw Error('LED_SURFACE_CURRENT_FORMULA_DRIFT:'+old.formula_id);}
+ const selected={kind:'equals' as const,parameterId:surfaceWhole.factoryProfileId,value:surfaceWhole.factoryProfileValue};
+ const fit={kind:'equals' as const,parameterId:surfaceWhole.factoryFitId,value:surfaceWhole.factoryFitValue};
+ const facts=[surfaceWhole.factoryProfileId,surfaceWhole.factoryDocumentId,surfaceWhole.factoryFitId];
+ const extra=buildAutomaticConstructionOwnerR1({contract:surfaceWhole.contract,semanticOwner:LED_LUMINAIRE_INSTALLATION_CATALOG_ID,
+  sourceId:LED_LUMINAIRE_INSTALLATION_SOURCE_ID,normId:'MANUFACTURER_EXACT_FACTORY_BOM_NOT_INSTALLATION_NORM',
+  sourceMetadata:{source_title:'Точное заводское исполнение линейного светильника и штатного комплекта',source_document_version:surfaceWhole.contract,
+   definition_hash:LED_SURFACE_WHOLE_SOURCE_SHA_R1,artifact_sha256:surfaceWhole.sources[0].sha256,exact_locator:surfaceWhole.sources.map(s=>s.locatorRu).join('; ')},
+  applicabilityRu:surfaceWhole.scopeRu,ordinary:[{id:'luminaire_count',title:'Подтверждённое число монтируемых светильников',kind:'ordinary',valueType:'integer',unitId:'pcs',min:1}],profile:[],
+  conditional:[{id:surfaceWhole.factoryProfileId,title:'Точное физическое исполнение заводского комплекта',kind:'conditional',valueType:'enum',unitId:null,values:[surfaceWhole.factoryProfileValue]},
+   {id:surfaceWhole.factoryDocumentId,title:'Ведомость точной ревизии и совместимого монтажа',kind:'conditional',valueType:'text',unitId:null,requiredWhen:selected},
+   {id:surfaceWhole.factoryFitId,title:'Применимость полного монтажного узла',kind:'conditional',valueType:'enum',unitId:null,values:[surfaceWhole.factoryFitValue],requiredWhen:selected},
+   {id:surfaceWhole.additionalMountingId,title:'Отдельный объём дополнительного крепления',kind:'conditional',valueType:'enum',unitId:null,
+    values:[surfaceWhole.noAdditionalMountingValue,surfaceWhole.additionalMountingValue],requiredWhen:selected}],
+  rows:surfaceWhole.factoryComponents.map(c=>({rowId:surfaceWhole.prefix+':'+c.key,formulaId:surfaceWhole.prefix+':formula:'+c.key,
+   section:'Заводское изделие и штатное крепление',category:'material',title:c.titleRu,unitId:c.unitId,expression:'luminaire_count*'+c.countPerLuminaire,
+   inputParameterIds:facts,costTreatment:'INCLUDED_IN_RESOURCE_ROWS',procurement:false,inclusion:{kind:'and',operands:[selected,fit]}})),
+  deferMissingProjectFactsToRows:true,excludedUnownedAssumptions:surfaceWhole.returnWhen.map(n=>n.id+': '+n.returnWhen)});
+ const parameters=[...parent.parameters.map(p=>p.parameter_id==='separate_driver_mode'?{...p,constraints_json:{...p.constraints_json,
+  // A supplied NOT_REQUIRED remains valid; a second external driver conflicts
+  // with this exact assembled factory variant, using an existing common rule.
+  forbiddenWhen:{kind:'and',operands:[selected,{kind:'equals',parameterId:'separate_driver_mode',value:'REQUIRED'}]}}}:p),
+  ...extra.parameters.filter(p=>p.parameter_id!=='luminaire_count').map((p,i)=>({...p,ordinal:31+i,truth_metadata:{...p.truth_metadata,
+   value_source_role:'PROJECT_SPECIFIC_INPUT',visibility_role:'USER_INPUT',source_confirmation_required:false,
+   provenance:{consumer_input_role_v1:'OBJECT_FACT'},actualProjectAuthenticated:false,
+   guide:{...p.truth_metadata.guide as Record<string,unknown>,guide_kind:'PROJECT_DEFINED',source_role:'PROJECT_DOCUMENTATION',
+    guide_validation_policy:'MANDATORY_BLOCK',guide_version:surfaceWhole.contract,source_snapshot_hash:LED_SURFACE_WHOLE_SOURCE_SHA_R1,
+    source_document:LED_LUMINAIRE_INSTALLATION_SOURCE_ID,source_locator:'EXACT_FACTORY_REVISION_AND_ACTUAL_COMPATIBLE_MOUNTING_DOCUMENT_REQUIRED',
+    applicability:surfaceWhole.scopeRu,verified_at:'2026-10-28T00:00:00+06:00',evidenceReviewOnlyNotProjectAdmission:true}}}))];
+ const resources=[...parent.resources.map(r=>{
+  const uses=(surfaceWhole.resourceUses as Record<string,string[]>)[r.row_id],isCounter=!uses;
+  if(isCounter&&!['rc09:led_luminaire_install','rc09:luminaire_pe_continuity_test'].includes(r.row_id)&&!r.row_id.startsWith('led:balance:'))throw Error('LED_SURFACE_EXACT_LEGACY_ROW_REQUIRED:'+r.row_id);
+  const kind=(surfaceWhole.resourceKinds as Record<string,string>)[r.row_id]??'MATERIAL';
+  return ledSurfaceRehashR1({...r,
+   // Existing source-owned ordinary inclusion; no duplicate charge for supplied
+   // screws/plugs. A distinct additional project kit retains its own old owner.
+   ...(r.row_id==='rc09:luminaire_mounting_anchor_set'?{inclusion_ast:{kind:'and',operands:[r.inclusion_ast,{kind:'or',operands:[
+    {kind:'not',operand:selected},{kind:'equals',parameterId:surfaceWhole.additionalMountingId,value:surfaceWhole.additionalMountingValue}]}]}}:{}),
+   resource_graph:{...r.resource_graph,
+   ...(uses?{operationCompositionV1:ledSurfaceUsesR1(uses)}:{calculationDetailV1:true}),
+   publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:r.title_ru,nameRu:r.title_ru,
+    brandAndModelRu:null,specificationRu:null,...(isCounter?{rowKind:'CALCULATION_DETAIL'}:{resourceKind:kind}),
+    detailsRu:[isCounter?'Расчётные сведения; отдельный физический ресурс, монтажный этап и повторная оплата не создаются.':'Полный применимый состав и количества остаются отдельными требованиями источника и объекта.']}},
+   source_metadata:{...r.source_metadata,wholeCycleSourceSha256:LED_SURFACE_WHOLE_SOURCE_SHA_R1,
+    actualProjectAuthenticated:false,physicalKitOrPriceNotClosedByOperationBinding:true}});
+ }),...extra.resources.map((r,i)=>{
+  const c=surfaceWhole.factoryComponents[i]!;
+  return ledSurfaceRehashR1({...r,ordinal:23+i,cost_owner_id:surfaceWhole.paidFactoryOwnerRowId,resource_graph:{...r.resource_graph,
+   parentCostOwnerId:surfaceWhole.paidFactoryOwnerRowId,includedInResourceOwnerRowId:surfaceWhole.paidFactoryOwnerRowId,
+   operationCompositionV1:ledSurfaceUsesR1(c.uses),
+   publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:c.titleRu,nameRu:c.titleRu,
+    resourceKind:'MATERIAL',brandAndModelRu:null,specificationRu:null,detailsRu:[c.basis,'Количество применения=N, а не объём заказа, наличие или цена. Штатная совместимость с основанием требует подтверждения.']}},
+   source_metadata:{...r.source_metadata,normativeTrace:[],normative_source_ids:[],sourceRole:'MANUFACTURER_FACTORY_INCLUDED_COMPONENT_NOT_INSTALLATION_NORM',
+    wholeFactoryBOMSource:surfaceWhole.sources,quantityBasis:c.basis,quantityDriver:'luminaire_count',factoryCountPerUnit:c.countPerLuminaire,
+    independentPurchaseAllowed:false,automaticGenericPriceInheritanceAllowed:false,actualProjectAuthenticated:false,
+    factorySourceRevisionRequired:true,currentWebEanEquivalenceProved:false,full_technical_acceptance:false}});
+ })];
+ const formulas=[...parent.formulas,...extra.formulas],consumers=buildMasterParameterCalculationConsumers({parameters,formulas,resources});
+ assertLedSurfaceWholeFactoryDefinitionR1({formulas,resources});
+ return{parameters:parameters.map(p=>({...p,truth_metadata:{...p.truth_metadata,formula_consumers:consumers.formulaConsumers[p.parameter_id],
+  resource_branch_consumers:consumers.resourceConsumers[p.parameter_id]}})),formulas,resources,
+  runtimeInput:{...LED_LUMINAIRE_INSTALLATION_RUNTIME_INPUT},runtimeClassification:{...LED_LUMINAIRE_INSTALLATION_RUNTIME_CLASSIFICATION},
+  runtimeSourceIds:{...LED_LUMINAIRE_INSTALLATION_RUNTIME_SOURCE_IDS},ordinaryParameterIds:['luminaire_count']};
+}
+export function ledSurfaceWholeCompletenessR1(){
+ const counterIds=['rc09:led_luminaire_install','rc09:luminaire_pe_continuity_test',...LED_LUMINAIRE_INSTALLATION_RESOURCES.filter(r=>r.row_id.startsWith('led:balance:')).map(r=>r.row_id)];
+ const entry=(rowId:string,formulaId:string,unitId:string,keys:readonly string[])=>({expectedResourceId:rowId,formulaId,unitId,
+  sourceId:LED_LUMINAIRE_INSTALLATION_SOURCE_ID,operationId:surfaceWhole.prefix+':'+keys[0],requiredOperationIds:keys.map(k=>surfaceWhole.prefix+':'+k),
+  condition:'Exact existing surface36IP40 scope; actual method/complete provisions/source conditions still required.',resolution:{kind:'ROW' as const,rowId}});
+ return{contract:'rik-expo-app.s26-3.independent-completeness-map.v1',sourceKind:'PROJECT_SYSTEM',generatedFromCurrentRows:false,
+  operationResourceBindingRequired:true,evidenceSha256:LED_SURFACE_WHOLE_SOURCE_SHA_R1,
+  operationRoster:surfaceWhole.operations.map(({key:_key,...op})=>op),
+  operationRequirements:surfaceWhole.independentClassRequirements.map(op=>({operationId:op.operationId,sourceId:LED_LUMINAIRE_INSTALLATION_SOURCE_ID,
+   requirements:Object.fromEntries(op.classes.map(({kind,...requirement})=>[kind,requirement]))})),
+  entries:[...LED_LUMINAIRE_INSTALLATION_RESOURCES.filter(r=>!counterIds.includes(r.row_id)).map(r=>entry(r.row_id,r.formula_id,r.unit_id,(surfaceWhole.resourceUses as Record<string,string[]>)[r.row_id]!)),
+   ...surfaceWhole.factoryComponents.map(c=>({...entry(surfaceWhole.prefix+':'+c.key,surfaceWhole.prefix+':formula:'+c.key,c.unitId,c.uses),
+    resolution:{kind:'INCLUDED_COMPONENT_ROW' as const,rowId:surfaceWhole.prefix+':'+c.key,parentRowId:surfaceWhole.paidFactoryOwnerRowId}})),
+   ...counterIds.map(rowId=>({expectedResourceId:rowId,operationId:surfaceWhole.prefix+':accept-scope',sourceId:LED_LUMINAIRE_INSTALLATION_SOURCE_ID,condition:'Preserved nonphysical calculation detail, not an onsite subwork or another paid resource.',
+    resolution:{kind:'NOT_APPLICABLE' as const,reasonRu:'Сохранён исходный расчётный показатель; физическое применение представлено отдельными ресурсами с одним владельцем.'}}))]};
+}
+export const LED_SURFACE_FACTORY_DEMO_R1=Object.freeze({
+ [surfaceWhole.factoryProfileId]:surfaceWhole.factoryProfileValue,
+ [surfaceWhole.factoryDocumentId]:'EXPLICIT_DEMO_NOT_OBJECT_DOCUMENT: exact source revision and compatible method fixture',
+ [surfaceWhole.factoryFitId]:surfaceWhole.factoryFitValue,
+ [surfaceWhole.additionalMountingId]:surfaceWhole.noAdditionalMountingValue,
+});

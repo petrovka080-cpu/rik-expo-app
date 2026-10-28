@@ -1,3 +1,5 @@
+import acsDoorSourceR1 from '../../../../data/estimate-benchmarks/source-packs/access-control-single-door-method-r1.json';
+import {unresolvedApplicationNormTruthR1} from './automaticConstructionOwnerR1';
 import acsWholeOperations from '../../../../data/estimate-benchmarks/source-packs/access-control-six-whole-operation-references-r1.json';
 import {buildAutomaticConstructionOwnerR1,type AutomaticOwnerDefinition,type AutomaticParameterSpec} from './automaticConstructionOwnerR1';
 import {
@@ -523,4 +525,248 @@ export function withAccessControlWholeOperationReferencesR1(input:Readonly<{
     return{...next,row_sha256:estimateDeterministicHash(next)};
   });
   return{...base,parameters,resources:nextResources};
+}
+
+export const ACCESS_CONTROL_SINGLE_DOOR_SOURCE_R1=acsDoorSourceR1;
+/** Source-domain precondition, before requesting an ordinary estimate. All
+ * evidence arrives through the existing trusted project-binding owner, never
+ * inferred from a consumer's generic device name or a manufacturer example.
+ * A source-compatible input is still not source/physical/runtime admission. */
+export function assessAccessControlSingleDoorMethodR1(boundActual:unknown){
+ const source=acsDoorSourceR1,record=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+ const actual=record(boundActual)?boundActual:{},records=record(actual.records)?actual.records:{};
+ const missing=source.requiredObjectRecords.filter(r=>typeof records[r.id]!=='string'||!String(records[r.id]).trim()).map(r=>r.id);
+ const issues:string[]=[];
+ if(actual.methodId!==source.candidateMethodId)issues.push('ACTUAL_SUPPORTED_WHOLE_TECHNOLOGY_NOT_SELECTED');
+ if(actual.bindingChannel!=='SERVER_REVIEWED_PROJECT_RECORDS')issues.push('TRUSTED_ACTUAL_BINDING_REQUIRED');
+ if(actual.controllerModel!=='С2000-2'||actual.controllerVersion!=='2.75'||actual.readerModel!=='Proxy-3M'||actual.lockModel!=='AL-300 PRemium-12V')issues.push('EXACT_DEVICE_VERSION_COMPATIBILITY_REQUIRED');
+ const counts=record(actual.counts)?actual.counts:{};
+ if(Object.entries(source.conditionalTopology).filter(([key])=>key!=='notDoorQuantityNorm').some(([key,value])=>counts[key]!==value))issues.push('ACTUAL_ONE_DOOR_TWO_READER_INVENTORY_REQUIRED');
+ if(!['WIEGAND26','WIEGAND44'].includes(String(actual.readerInterface))||actual.controllerInterface!==actual.readerInterface)issues.push('MATCHED_INTERFACE_AND_ACTUAL_CARD_CODES_REQUIRED');
+ if(actual.cardStandard!=='MIFARE')issues.push('ACTUAL_CARD_READER_STANDARD_MISMATCH');
+ if(actual.supplyTopology!=='COMMON_SOURCE_STAR_WITH_SEPARATE_LOCK_PAIR')issues.push('EXACT_POWER_BRANCH_TOPOLOGY_REQUIRED');
+ if(actual.lockControl!=='AL300_COMMAND_CLOSE_COMMON_FIG3'||actual.relayProgram!=='ON_FOR_TIME')issues.push('LOCK_COMMAND_AND_RELAY_PROGRAM_MISMATCH');
+ if(actual.doorDirection!=='OUTWARD_SWING')issues.push('OTHER_DOOR_MOUNTING_WHOLE_METHOD_REQUIRED');
+ if(actual.readerMetalBase!==true&&actual.readerMetalBase!==false)issues.push('ACTUAL_READER_BASE_REQUIRED');
+ const numeric=record(actual.electricalAndGeometry)?actual.electricalAndGeometry:{};
+ const value=(id:string):number|null=>typeof numeric[id]==='number'&&Number.isFinite(numeric[id])?numeric[id] as number:null;
+ const absent=source.compatibilityFields.filter(id=>value(id)===null);if(absent.length)issues.push('MISSING_MEASURED_COMPATIBILITY:'+absent.join(','));
+ const lower=[['lockMinV',source.limits.lockMinV],['controllerMinV',source.limits.controllerMinV],['readerMinV',source.limits.readerMinV],
+  ['readerSeparationM',source.limits.readerSeparationMinM],['readerLockSeparationM',source.limits.readerLockSeparationMinM],['doorThicknessMm',source.limits.doorThicknessMinMm]] as const;
+ const upper=[['lockMaxV',source.limits.lockMaxV],['controllerMaxV',source.limits.controllerMaxV],['readerMaxV',source.limits.readerMaxV],
+  ['readerGroundDifferenceV',source.limits.readerGroundDifferenceMaxV],['maxReaderDistanceM',source.limits.readerDistanceMaxM],['doorThicknessMm',source.limits.doorThicknessMaxMm],
+  ['psuLoadA',source.limits.selectedPsuLoadMaxA],['relayCurrentA',source.limits.controllerRelayMaxA],['relayVoltageV',source.limits.controllerRelayMaxV],['relayPowerW',source.limits.controllerRelayMaxW]] as const;
+ for(const[id,min]of lower){const measured=value(id);if(measured!==null&&measured<min)issues.push('BELOW_SOURCE_LIMIT:'+id);}
+ for(const[id,max]of upper){const measured=value(id);if(measured!==null&&(measured<0||measured>max))issues.push('ABOVE_OR_INVALID_SOURCE_LIMIT:'+id);}
+ for(const[minId,maxId]of [['lockMinV','lockMaxV'],['controllerMinV','controllerMaxV'],['readerMinV','readerMaxV']]as const){
+  const min=value(minId),max=value(maxId);if(min!==null&&max!==null&&min>max)issues.push('REVERSED_MEASURED_INTERVAL:'+minId);
+ }
+ if(actual.readerMetalBase===true&&(typeof actual.spacerThicknessMm!=='number'||!Number.isFinite(actual.spacerThicknessMm)||actual.spacerThicknessMm<source.limits.metalSpacerMinMm))issues.push('METAL_BASE_NONMETALLIC_SPACER_REQUIRED');
+ const blocked=missing.length>0||issues.length>0;
+ return{contract:'acs-single-door-source-method-assessment/r1',status:blocked?'BLOCKED':'COMPATIBILITY_INPUTS_PRESENT',
+  ownerRowId:source.existingOwnerRowId,missingActualRecordIds:missing,issues,visibleBlocked:blocked,
+  estimateCompilationAllowed:false,sourceAdmission:false,documentAuthenticityAttested:false,quantityNormAccepted:false,
+  physicalProvisionAccepted:false,executionOrCommissioningPass:false,fullTechnicalAcceptance:false,
+  next:'Existing ROOT ordinary owner must validate full current source/physical/selector bindings before any estimate. This assessment alone never opens a compile/PDF route.'} as const;
+}
+
+export const ACCESS_CONTROL_WHOLE_DOOR_SOURCE_R2=acsDoorSourceR1.wholeDoorR2;
+
+/** Explicit internal source candidate over the saved broad R737 owner. This is
+ * not the broad catalog factory, a second compiler or an admission route. */
+export function accessControlWholeDoorModelR2(profileId:string):AutomaticOwnerDefinition{
+ const s=acsDoorSourceR1.wholeDoorR2;if(profileId!==s.profileId)throw Error('ACS_EXPLICIT_INTERNAL_WHOLE_DOOR_PROFILE_REQUIRED');
+ const p=s.currentParentModel,active={kind:'greater_than' as const,parameterId:'acs_controlled_door_count',value:0},unknown=s.resources.filter(x=>x.quantityParameterId!==null);
+ const nativeParameters=p.parameters as unknown as AutomaticOwnerDefinition['parameters'];
+ const controls=[{id:s.decisionId,title:'Применимость полного метода контролируемого прохода',values:s.decisions},{id:s.retentionId,title:'Фактическое закрепление резьбы замка',values:s.retentionMethods},{id:s.markingId,title:'Фактический метод маркировки',values:s.markingMethods},{id:s.quantityForwardR3.mountMethodId,title:'Подтверждённый заводской настенный метод контроллера',values:s.quantityForwardR3.mountMethods}];
+ const nativeSpecs:AutomaticParameterSpec[]=nativeParameters.map(x=>{if(!['decimal','integer','text','enum'].includes(x.value_type))throw Error('ACS_NATIVE_SPEC_TYPE_REVIEW_REQUIRED:'+x.parameter_id);const constraints=x.constraints_json??{};return{id:x.parameter_id,title:x.title_ru,kind:'internal' as const,valueType:x.value_type as AutomaticParameterSpec['valueType'],unitId:x.unit_id,...(Array.isArray(constraints.values)?{values:constraints.values as string[]}:{})};});
+ const specs:AutomaticParameterSpec[]=[...nativeSpecs,
+  ...unknown.map(x=>({id:x.quantityParameterId!,title:x.nameRu,kind:'ordinary' as const,valueType:['pcs','pair','trip'].includes(x.unitId)?'integer' as const:'decimal' as const,unitId:x.unitId,min:0})),
+  ...s.organisationalInputs.map(x=>({id:x.id,title:x.titleRu,kind:'conditional' as const,valueType:'integer' as const,unitId:x.unitId,min:x.min,resourceBranchConsumers:[s.scopeRowId]})),
+  ...s.actualRecords.map(x=>({id:x.id,title:x.titleRu,kind:'conditional' as const,valueType:'text' as const,unitId:null,resourceBranchConsumers:[s.scopeRowId]})),
+  ...controls.map(x=>({id:x.id,title:x.title,kind:'conditional' as const,valueType:'enum' as const,unitId:null,values:x.values,resourceBranchConsumers:[s.scopeRowId]}))];
+ // Exactly two mutually exclusive registered factory variants form the complete domain.
+ // Their supported equality conjunction is false for either known selection,
+ // unresolved when missing; UNKNOWN/other supplied values remain enum errors.
+ if(s.quantityForwardR3.mountMethods.length!==2||new Set(s.quantityForwardR3.mountMethods).size!==2)throw Error('ACS_MOUNT_COMPLEMENT_DOMAIN_REVIEW_REQUIRED_R911');
+ const condition=(r:typeof s.resources[number])=>r.key==='controller-mount-fix'?{kind:'and' as const,operands:[active,{kind:'and' as const,operands:s.quantityForwardR3.mountMethods.map(value=>({kind:'equals' as const,parameterId:s.quantityForwardR3.mountMethodId,value}))}]}:'conditionalDecision'in r?{kind:'and' as const,operands:[active,{kind:'equals' as const,parameterId:r.conditionalDecision!.parameterId,value:r.conditionalDecision!.value}]}:active;
+ const built=buildAutomaticConstructionOwnerR1({contract:s.contract,semanticOwner:s.catalogId,sourceId:s.sourceId,normId:'EXACT_WHOLE_CONTROLLED_DOOR_SOURCE_CANDIDATE_NOT_UNIVERSAL_DEVICE_OR_LABOUR_NORM',
+  sourceMetadata:{source_title:s.titleRu,source_document_version:s.contract,definition_hash:s.projectDocumentSha256,artifact_sha256:s.projectDocumentSha256,exact_locator:'R737 actual61/36/36; existing source-methodR1; captured exact controller/reader/AL300/RIP/AB/AT-H805A/AT-H200GN primaries'},
+  applicabilityRu:'Один фактически выбранный полный дверной проход с двумя считывателями и независимым аварийным освобождением. Схема объекта, питание, эвакуационные условия и текущая привязка источников требуют самостоятельного подтверждения.',
+  ordinary:specs.filter(x=>x.kind!=='conditional'),profile:[],conditional:specs.filter(x=>x.kind==='conditional'),deferMissingProjectFactsToRows:true,
+  rows:[...s.effectiveOwners.map(x=>({rowId:x.rowId,formulaId:x.formulaId,title:'Фактическое устройство дверного прохода',section:'Оборудование',category:'equipment' as const,unitId:x.unitId,expression:x.expression,procurement:true,costTreatment:'OWN_COST' as const,effectiveQuantityOutput:{parameterId:x.parameterId,unitId:x.unitId}})),
+   ...s.resources.map(x=>({rowId:x.rowId,formulaId:x.formulaId,title:x.nameRu,section:'Ресурсы дверного прохода',category:x.resourceKind==='SERVICE'?'service' as const:x.resourceKind==='LABOR'?'construction_work' as const:'material' as const,unitId:x.unitId,expression:x.expression,inclusion:condition(x),procurement:false,costTreatment:'INCLUDED_IN_RESOURCE_ROWS' as const,purchaseBalanceOwnerRowId:x.costOwnerRowId})),
+   {rowId:s.scopeRowId,formulaId:s.scopeFormulaId,title:'Применимость и полный состав дверного прохода',section:'Контроль состава',category:'service',unitId:'door',expression:'acs_controlled_door_count',inclusion:active,procurement:false,costTreatment:'INFORMATIONAL_SCOPE'}],
+  excludedUnownedAssumptions:['No fixture8doors/2controllers','No devicecount from door area or multiplier','No one-reader topology by excluding second reader','No EXIT as emergencyrelease','No 10V fullreserve as compatible10.8Vlock','No17Ah as autonomy','No B-M5torque for H-M5','No factory screw count from grouped kit','No complete pack per singleUDP','No extra externalcontact ifbuiltin','No labour/machinehour from30min/5s/2min','No perdoor tools/posts/PPE/logistics','No source-only or diagnosticPASS as actualwholePASS','No broadprimary replacement/READY']});
+ const nativeIds=new Set(nativeParameters.map(x=>x.parameter_id)),unknownIds=new Set(unknown.map(x=>x.quantityParameterId)),orgIds=new Set(s.organisationalInputs.map(x=>x.id)),effectiveIds=new Set(s.effectiveOwners.map(x=>x.parameterId));
+ const parameterForwards=new Map(s.nativeParameterForwards.map(x=>[x.parameterId,x.after]));
+ const parameters=[...nativeParameters.map(x=>parameterForwards.has(x.parameter_id)?parameterForwards.get(x.parameter_id)! as unknown as typeof x:x),...built.parameters.filter(x=>!nativeIds.has(x.parameter_id)).map((x,i)=>{
+  const base={...x,ordinal:nativeParameters.length+i,required:false,default_value:null};
+  if(effectiveIds.has(x.parameter_id))return{...base,constraints_json:{...x.constraints_json,conditionalWholeIntegerV1:{contractVersion:'canonical-conditional-whole-integer/v1',when:{kind:'equals',parameterId:s.decisionId,value:'DOCUMENTED_COMPATIBLE'}}},truth_metadata:{...x.truth_metadata,source_confirmation_required:false,provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'}}};
+  if(unknownIds.has(x.parameter_id))return{...base,truth_metadata:{...unresolvedApplicationNormTruthR1(x.truth_metadata,'Точный расход, состав, запас или применимая норма этой позиции не подтверждены. Число дверей, паспортные интервалы, ёмкость и часы не являются количеством.'),visible_when:{kind:'literal',value:false},runtime_profile_value:false,hidden_default_forbidden:true}};
+  return{...base,constraints_json:{...x.constraints_json,requiredWhen:active},truth_metadata:{...x.truth_metadata,value_source_role:'PROJECT_SPECIFIC_INPUT',visibility_role:'INTERNAL_ONLY',runtime_profile_value:false,hidden_default_forbidden:true,source_confirmation_required:orgIds.has(x.parameter_id),provenance:{consumer_input_role_v1:'OBJECT_FACT',input_channel_v1:'SERVER_REVIEWED_PROJECT_RECORDS'},...(controls.some(c=>c.id===x.parameter_id)&&x.parameter_id!==s.quantityForwardR3.mountMethodId?{unknown_enum_values:['UNKNOWN']}:{})}};
+ })];
+ const ops=new Map(s.operationRoster.map(x=>[x.operationId,x])),nativeBinding=new Map(s.nativeBindings.map(x=>[x.rowId,x])),sourceRows=new Map(s.resources.map(x=>[x.rowId,x]));
+ const op=(id:string)=>{const x=ops.get(id);if(!x)throw Error('ACS_WHOLE_OPERATION_MISSING:'+id);return x;};
+ const hash=(r:CanonicalEstimateResourceDefinition)=>{const{row_sha256:_old,...v}=r;return{...v,row_sha256:estimateDeterministicHash(v)};};
+ const saved=p.resources as unknown as readonly CanonicalEstimateResourceDefinition[],savedFormulas=p.formulas as unknown as readonly CanonicalEstimateFormulaDefinition[];
+ const native=saved.map(r=>{
+  const d=nativeBinding.get(r.row_id);if(!d)throw Error('ACS_ACTUAL_NATIVE_ROW_MISSING:'+r.row_id);const linked=d.operationIds.map(op),old=r.resource_graph.operationCompositionV1 as Record<string,unknown>|undefined;
+  const prior=Array.isArray(old?.additionalOperations)?old!.additionalOperations as readonly Record<string,unknown>[]:[],seen=new Set([old?.operationId,...prior.map(x=>x.operationId)]);
+  if(old&&linked.length&&old.groupId!==s.operationRoster[0]!.groupId)throw Error('ACS_NATIVE_OPERATION_GROUP_MISMATCH:'+r.row_id);
+  const operation=old?{...old,additionalOperations:[...prior,...linked.filter(x=>!seen.has(x.operationId))]}:linked.length?{...linked[0]!,additionalOperations:linked.slice(1)}:undefined;
+  const effective=s.effectiveOwners.find(x=>x.rowId===r.row_id),shadow=effective?built.resources.find(x=>x.row_id===r.row_id):undefined,isContact=r.row_id===s.builtInContactForward.rowId;
+  return hash({...r,...(isContact?{cost_owner_id:s.builtInContactForward.afterPhysicalOwnerRowId,procurement_eligible:false}:{}),source_metadata:{...r.source_metadata,acsWholeProfileSourceR2:{profileId:s.profileId,sourceAdmission:false,explicitBuiltInContactCostForward:isContact}},resource_graph:{...r.resource_graph,
+   ...(operation?{operationCompositionV1:operation}:{}),...(shadow?{effectiveQuantityOutputV1:shadow.resource_graph.effectiveQuantityOutputV1}:{}),
+   ...(r.row_id==='rc09:acs_controller'?{purchaseBalanceV1:{unitId:'pcs',balanceScope:'new_order_vs_required_consumption',requirementBasis:'selected_supply_order',consumedExpression:'acs_controller_count+acs_controller_retained_spare_piece',plannedConsumptionExpression:'acs_controller_count',stockExpression:'0',reserveExpression:'0',orderQuantumExpression:'acs_controller_supplier_pack_size_piece',manualQuantumViolationPolicy:'retain-raw-and-block-quantum'}}:{}),
+   ...(isContact?{costTreatment:'INCLUDED_IN_RESOURCE_ROWS',parentCostOwnerId:s.builtInContactForward.afterPhysicalOwnerRowId,includedInResourceOwnerRowId:s.builtInContactForward.afterPhysicalOwnerRowId,purchaseBalanceOwnerRowId:s.builtInContactForward.afterPhysicalOwnerRowId,sourceOnlyBuiltInContactForwardR2:true}:{}),
+   acsWholeSourceRelationshipR2:{sameSavedRow:true,nativeUnitFormulaAndPriceBindingPreserved:true,existingBroadR5ScopeRetained:true,physicalCompositionAccepted:false}}});
+ });
+ const extras=built.resources.filter(x=>!s.effectiveOwners.some(y=>y.rowId===x.row_id)).map((r,i)=>{
+  const d=sourceRows.get(r.row_id),linked=d?d.operationIds.map(op):[...s.operationRoster],first=linked[0]!;
+  let next=hash({...r,ordinal:native.length+i,procurement_eligible:false,source_metadata:{...r.source_metadata,sourceAdmission:false},resource_graph:{...r.resource_graph,operationCompositionV1:{...first,additionalOperations:linked.slice(1)},physicalPriceCoverageAccepted:false,actualExecutedWholePass:false,
+   ...(d?{costTreatment:'INCLUDED_IN_RESOURCE_ROWS',parentCostOwnerId:d.costOwnerRowId,includedInResourceOwnerRowId:d.costOwnerRowId,purchaseBalanceOwnerRowId:d.costOwnerRowId,acsWholeSourceQuantityR2:{authority:d.authority,quantityUnknown:d.quantityUnknown,inventoryNotConsumption:d.inventoryNotConsumption,sourceRuleNotPhysicalClosure:true,...('installedConsumptionExpression'in d?{installedConsumptionExpression:d.installedConsumptionExpression,installedConsumptionNotAdditionalPhysicalResource:true}:{})},...(!d.quantityUnknown?{derivedQuantityEditPolicyV1:{contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',unitId:d.unitId,parameterIds:compileFormulaGraph(d.expression).inputParameterIds,reasonRu:'Источник количества — фактический измеритель или поставка существующего владельца. Явная ручная правка сохраняется без второй оплаты и без признания состава.'}}:{})}:{})}});
+  if(r.row_id===s.scopeRowId)next=hash({...next,resource_graph:{...next.resource_graph,inputParameterIds:[...s.actualRecords.map(x=>x.id),...s.organisationalInputs.map(x=>x.id),...controls.map(x=>x.id)],scopeRequirementV1:{contractVersion:'canonical-scope-requirement/v1',kind:'OBJECT_SCOPE',objectFactMode:'PROJECT_APPLICABILITY_ONLY',groupId:s.operationRoster[0]!.groupId,groupTitleRu:'Полный метод контролируемого прохода',titleRu:'Совместимость и полное обеспечение выбранной двери',reasonRu:'Только целая подтверждённая схема двери, аварийного освобождения, питания, ресурсов и контроля; исключение строки оплаты или известное ручное количество не заменяют обязательный факт.',
+   exactScopeWhen:{kind:'and',operands:[active,{kind:'equals',parameterId:s.decisionId,value:'DOCUMENTED_COMPATIBLE'}]},objectFactParameterId:s.decisionId,unknownObjectValues:['UNKNOWN'],requiredFactParameterIds:[...s.actualRecords.map(x=>x.id),...s.organisationalInputs.map(x=>x.id),...controls.map(x=>x.id)],coveringRowIds:[],originalRowIds:[...s.nativeBindings.filter(x=>!x.rowId.includes('acs-controller-balance:')).map(x=>x.rowId),...s.resources.map(x=>x.rowId)],sourceEvidence:[{sha256:s.projectDocumentSha256,locator:'Source-only whole door method R2 over actual R737; allobject/source/supply/runtime admission remains required'}]}}});
+  return next;
+ });
+ const formulaForwards=new Map(s.nativeFormulaForwards.map(x=>[x.formulaId,x]));
+ const profileFormulas=savedFormulas.map(x=>{const f=formulaForwards.get(x.formula_id);if(!f)return x;const c=compileFormulaGraph(f.afterExpression);return{...x,expression_source:f.afterExpression,ast:c.ast,input_parameter_ids:c.inputParameterIds,ast_sha256:estimateDeterministicHash(c.ast)};});
+ const resources=[...native,...extras],formulas=[...profileFormulas,...built.formulas.filter(x=>!s.effectiveOwners.some(y=>y.formulaId===x.formula_id))];
+ if(new Set(parameters.map(x=>x.parameter_id)).size!==parameters.length||new Set(formulas.map(x=>x.formula_id)).size!==formulas.length||new Set(resources.map(x=>x.row_id)).size!==resources.length)throw Error('ACS_WHOLE_SOURCE_ID_COLLISION');
+ return{parameters,formulas,resources,runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{},ordinaryParameterIds:['acs_system_count','acs_controlled_door_count','acs_controller_count','acs_reader_count','acs_lock_count','acs_exit_device_count']};
+}
+
+/** Document-input preconditions only. It does not approve an egress design,
+ * authenticate a record, calculate an estimate or attest an executed test. */
+export function assessAccessControlWholeDoorInputsR2(value:unknown){
+ const rec=(x:unknown):x is Record<string,unknown>=>x!==null&&typeof x==='object'&&!Array.isArray(x),s=acsDoorSourceR1.wholeDoorR2,a=rec(value)?value:{},docs=rec(a.records)?a.records:{},issues:string[]=[];
+ const missing=s.actualRecords.filter(x=>typeof docs[x.id]!=='string'||!String(docs[x.id]).trim()).map(x=>x.id);
+ if(a.profileId!==s.profileId||a.bindingChannel!=='SERVER_REVIEWED_PROJECT_RECORDS'||a.allControllerFactoryPartsFromSelectedNewOrder!==true)issues.push('EXPLICIT_REVIEWED_INTERNAL_DOOR_PROFILE_REQUIRED');
+ if(a.scope!=='WHOLE_CONTROLLED_PASSAGE'||a.topology!=='ONE_DOOR_TWO_READER_ENTRY_EXIT')issues.push('WHOLE_PASSAGE_REQUIRED_NOT_DEVICE_BENCH_OR_BROAD_EIGHT_DOORS');
+ const exact={doorCount:1,controllerInstalledCount:1,readerCount:2,lockCount:1,psuCount:1,batteryCount:1,exitCount:1,emergencyCount:1};
+ if(Object.entries(exact).some(([k,v])=>a[k]!==v))issues.push('EXACT_ACTUAL_TOPOLOGY_INVENTORY_REQUIRED_NOT_DOOR_MULTIPLIER');
+ if(a.controller!=='C2000_2_FW2_75'||a.reader!=='PROXY3M'||a.lock!=='AL300_PREMIUM_12V'||a.psu!=='RIP12_ISP101'||a.battery!=='AB1217K_12V_17AH_H_M5'||a.exit!=='AT_H805A_NON_LED'||a.emergency!=='AT_H200_GN')issues.push('EXACT_COMPATIBLE_WHOLE_DEVICE_EXECUTIONS_REQUIRED');
+ if(a.doorDirection!=='OUTWARD_SWING'||typeof a.doorThicknessMm!=='number'||!Number.isFinite(a.doorThicknessMm)||a.doorThicknessMm<35||a.doorThicknessMm>47)issues.push('OTHER_COMPLETE_DOOR_MOUNTING_METHOD_REQUIRED');
+ for(const [k,min,max]of[['lockMinimumTerminalV',10.8,14.4],['lockMaximumTerminalV',10.8,14.4],['controllerMinimumTerminalV',10.2,15],['controllerMaximumTerminalV',10.2,15],['readerMinimumTerminalV',8,15],['readerMaximumTerminalV',8,15]]as const){const n=a[k];if(typeof n!=='number'||!Number.isFinite(n)||n<min||n>max)issues.push('ACTUAL_TERMINAL_VOLTAGE_OUTSIDE_EXECUTION:'+k);}
+ for(const [lo,hi]of[['lockMinimumTerminalV','lockMaximumTerminalV'],['controllerMinimumTerminalV','controllerMaximumTerminalV'],['readerMinimumTerminalV','readerMaximumTerminalV']]as const)if(typeof a[lo]==='number'&&typeof a[hi]==='number'&&(a[lo]as number)>(a[hi]as number))issues.push('MALFORMED_TERMINAL_VOLTAGE_ENVELOPE');
+ for(const [k,min,max]of[['readerGroundDifferenceV',0,0.5],['readerDistanceM',0,100],['readerSeparationM',0.5,Number.MAX_VALUE],['readerLockSeparationM',1,Number.MAX_VALUE],['psuMaxLoadA',0,5],['emergencySwitchedA',0,2],['emergencySwitchedV',0,30]]as const){const n=a[k];if(typeof n!=='number'||!Number.isFinite(n)||n<min||n>max)issues.push('ACTUAL_COMPATIBILITY_LIMIT:'+k);}
+ if(a.batteryTerminal!=='H_M5_PLATE_BOLT_AND_NUT'||typeof a.batteryTorqueNm!=='number'||!Number.isFinite(a.batteryTorqueNm)||a.batteryTorqueNm<2.375||a.batteryTorqueNm>2.625)issues.push('EXACT_H_M5_TERMINAL_AND_2_5NM_TORQUE_REQUIRED_NOT_INTERNAL_B_M5');
+ if(a.lockRelayProgram!=='ON_FOR_TIME_APPROVED_COMMAND_CLOSE'||a.independentEmergencyPowerInterruption!==true||a.controllerExitUsedAsEmergencyRelease===true)issues.push('INDEPENDENT_APPROVED_EMERGENCY_POWER_RELEASE_REQUIRED');
+ if(a.builtinReedUsed!==true||a.externalContactExtraOrdered===true||a.hallConflatedWithDoorReed===true)issues.push('BUILTIN_REED_AND_HALL_DISTINCT_SINGLE_SUPPLY_OWNER_REQUIRED');
+ if(a.actualReaderExternalPowerAndGndReviewed!==true||a.readerPoweredFromControllerTerminals!==false)issues.push('EXTERNAL_READER_POWER_AND_COMMON_GND_REQUIRED_180MA_GT_100MA');
+ if(a.readerFormat!==a.controllerReaderFormat||a.readerFormat!=='WIEGAND26')issues.push('EXACT_SAME_SUPPORTED_CREDENTIAL_FORMAT_REQUIRED');
+ for(const k of ['actualElectricalPosts','actualDrillingPosts','actualTestPosts','actualBatteryPosts','actualConfigurationPosts'])if(typeof a[k]!=='number'||!Number.isSafeInteger(a[k])||(a[k]as number)<1)issues.push('ACTUAL_EQUIPPED_POST_INVENTORY_REQUIRED:'+k);
+ if(typeof a.actualMetalReaderCount!=='number'||!Number.isSafeInteger(a.actualMetalReaderCount)||a.actualMetalReaderCount<0||a.actualMetalReaderCount>2)issues.push('ACTUAL_METAL_READER_COUNT_REQUIRED');
+ if(a.routeVariant!=='ACTUAL_READY_ROUTE_SEPARATE_LOCK_PAIR_NO_NEW_FIRE_BARRIER')issues.push('OTHER_ROUTE_REQUIRES_COMPLETE_METHOD');
+ for(const k of ['actualDoorAndEgressReviewed','actualEmergencyContactMapAndIndependentMonitorReviewed','actualFireReleaseDecisionReviewed','actualTerminalEnvelopeAndCutoffReviewed','actualFullLoadAutonomyAndTransferReviewed','actualBatteryFitHardwareAndProtectionReviewed','actualNoSharedControllerLockSupplyPair','actualMeasuredRouteCableSectionAndEndsReviewed','actualReaderMetalSpacersAndDistancesReviewed','actualProtectionAndSuppressionReviewed','actualNativeAggregatesExcludeFactoryPartsReviewed','actualEquippedPostsAndStockReviewed','actualSafetyIsolationPpeAndAccessReviewed','actualSourceRevisionAndSoftwareResolved','actualCredentialProgrammeReviewed','actualFullDoorPowerFaultProgrammeReviewed','actualResultsBackupRestoreHandoverReviewed','actualCleanupAndWasteReviewed'])if(a[k]!==true)issues.push('ACTUAL_CONDITION_REQUIRED:'+k);
+ const bindings=rec(a.sourceBindings)?a.sourceBindings:{};
+ for(const name of ['bolid-s2000-2-v275-ret-aug25.pdf','accordtec-at-h200-gn-passport.pdf','accordtec-at-h805a-linked-passport.pdf']){const p=s.primarySources.find(x=>'path'in x&&x.path.replace(/\\/g,'/').endsWith('/'+name));if(!p||!('sha256'in p)||bindings[name]!==p.sha256)issues.push('EXACT_PRIMARY_BINDING_REQUIRED:'+name);}
+ if(a.deviceBenchPassUsedAsWholePass===true||a.plannedDoorCounterUsedAsExecutedPass===true||a.manualKnownQuantityUsedAsSafetyFact===true||a.reserveTwoMinutesUsedAsAutonomy===true)issues.push('FALSE_WHOLE_PASS_OR_SAFETY_PROMOTION_FORBIDDEN');
+ return{status:missing.length||issues.length?'BLOCKED':'DOCUMENT_INPUTS_PRESENT',missingActualRecordIds:missing,issues,sourceAdmission:false,projectApproval:false,egressDesignApproved:false,documentAuthenticityAttested:false,estimateCompilationAllowed:false,physicalCompositionAccepted:false,executedWholeDoorPass:false,deviceBenchPassIsWholeDoorPass:false,nativeDoorTestCountIsExecution:false,factorySupplyGuardPassed:false,fullBroadAcsAccepted:false,FULL:false}as const;
+}
+
+
+export const ACCESS_CONTROL_WHOLE_QUANTITY_SOURCE_R3=acsDoorSourceR1.wholeDoorR2.quantityForwardR3;
+/** Source-owned projection for the existing ordinary publisher. The same
+ * compiler, row IDs, quantities and paid owners are retained. */
+export function accessControlWholeDoorOrdinaryModelR3(profileId:string):AutomaticOwnerDefinition{
+ const s=acsDoorSourceR1.wholeDoorR2,q=s.quantityForwardR3,base=accessControlWholeDoorModelR2(profileId);
+ const declared=new Map(q.resourceDeclarations.map(r=>[r.rowId,r])),ops=new Map(s.operationRoster.map(o=>[o.operationId,o]));
+ const resources=base.resources.map(r=>{
+  const d=declared.get(r.row_id),scope=r.row_id===s.scopeRowId;
+  if(!d&&!scope)throw Error('ACS_R3_EXACT_SOURCE_DECLARATION_REQUIRED:'+r.row_id);
+  if(d&&(d.formulaId!==r.formula_id||d.unitId!==r.unit_id))throw Error('ACS_R3_SOURCE_FORMULA_UNIT_MISMATCH:'+r.row_id);
+  const linked=(d?.operationIds??s.operationRoster.map(o=>o.operationId)).map(id=>{const op=ops.get(id);if(!op)throw Error('ACS_R3_SOURCE_OPERATION_MISSING:'+id);return op;});
+  const{row_sha256:_old,...body}=r;
+  const graph={...r.resource_graph,publicResourcePresentationV1:{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:r.title_ru,
+   nameRu:d?.publicNameRu??'Совместимость и состав контролируемого прохода',brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:d?.resourceKind??'SERVICE',
+   ...((d?.rowKind??'PROCESS_NOTE')==='RESOURCE'?{}:{rowKind:d?.rowKind??'PROCESS_NOTE'})},
+   ...(linked.length?{operationCompositionV1:{...linked[0]!,...(linked.length>1?{additionalOperations:linked.slice(1)}:{})}}:{}),
+   acsQuantitySourceProjectionR3:{contract:q.contract,sourceAdmission:false,physicalClosure:false,sourceClassReviewAccepted:false}};
+  const next={...body,resource_graph:graph};return{...next,row_sha256:estimateDeterministicHash(next)};
+ });
+ const parameters=base.parameters.map(p=>({...p,truth_metadata:{...p.truth_metadata,contract:q.contract,semantic_parameter_key:s.catalogId+':'+p.parameter_id}}));
+ return{...base,parameters,resources};
+}
+
+export const ACS_PASSAGE_MEASUREMENT_SOURCE_R5=acsDoorSourceR1.wholeDoorR2.passageForwardR5;
+/** Same registered ACS owner and same full passage. These measured balances
+ * are source-owned arithmetic over reviewed records, never per-door norms. */
+export function accessControlWholePassageMeasuredModelR5(profileId:string):AutomaticOwnerDefinition{
+ const s=acsDoorSourceR1.wholeDoorR2,q=s.passageForwardR5,base=accessControlWholeDoorOrdinaryModelR3(profileId),active={kind:'greater_than' as const,parameterId:'acs_controlled_door_count',value:0};
+ const addition=buildAutomaticConstructionOwnerR1({contract:q.contract,semanticOwner:s.catalogId,sourceId:s.sourceId,normId:'EXACT_ACTUAL_PASSAGE_MATERIAL_BALANCE_NOT_APPLICATION_NORM',sourceMetadata:{source_title:q.titleRu,source_document_version:q.contract,definition_hash:q.projectMethod.sha256,artifact_sha256:q.projectMethod.sha256,exact_locator:'R867 actualwholeparent; AL300PR20260521§2.2/4.5/5.6; actualsamebatchmaterialissue/return andmeasuredcableschedule'},applicabilityRu:'Тот же выбранный полный дверной проход. Измеренные массы одного совместимого материала в кг и фактические длины одного кабельного потребителя в м задаются раздельно. Программа аварийного освобождения учитывает остаточное усилие при снятии питания.',ordinary:[{id:'acs_controlled_door_count',title:'Подтверждённые контролируемые двери',kind:'internal',valueType:'integer',unitId:'door',min:1}],profile:[],conditional:[...q.measurements.map(m=>({id:m.id,title:m.titleRu,kind:'conditional' as const,valueType:'decimal' as const,unitId:m.unitId,min:0})),{id:q.quantityRecordId,title:'Проверенный кабельный журнал и материальный баланс партии',kind:'conditional',valueType:'text',unitId:null,resourceBranchConsumers:[s.scopeRowId]},{id:q.emergencyDecisionId,title:'Допуск независимого освобождения и остаточного усилия',kind:'conditional',valueType:'enum',unitId:null,values:['INDEPENDENT_RELEASE_AND_RESIDUAL_REVIEWED','POWER_CUT_WITHOUT_FORCE_REVIEW','UNKNOWN'],resourceBranchConsumers:[s.scopeRowId]}],deferMissingProjectFactsToRows:true,rows:q.quantityRules.map(x=>({rowId:x.rowId,formulaId:x.formulaId,title:x.nameRu,section:'Измеренное обеспечение дверного прохода',category:x.category,unitId:x.unitId,expression:x.expression,inclusion:active,procurement:false,costTreatment:'INCLUDED_IN_RESOURCE_ROWS' as const,purchaseBalanceOwnerRowId:x.costOwnerRowId})),excludedUnownedAssumptions:['No applicationnorm fromissued/returnedmasswithoutactualrecord','No density/kg/litre conversion ordefaultzero','No returnmass>issuedmassclampedtozero','No fourwire/0.4mlocktail asroutecablelength','No extra payment or newprocurement for existing same-owner child','No powercut aszeroresidualforce orwholeegressapproval','No regulatedSKATsource asautomaticreplacement/PSUcount/autonomy']});
+ const ids=new Set(base.parameters.map(p=>p.parameter_id)),numeric=new Set(q.measurements.map(m=>m.id)),facts=[q.quantityRecordId,q.emergencyDecisionId],parameters=[...base.parameters,...addition.parameters.filter(p=>!ids.has(p.parameter_id)).map(p=>({...p,required:false,default_value:null,constraints_json:{...p.constraints_json,...(numeric.has(p.parameter_id)?{}:{requiredWhen:active})},truth_metadata:{...p.truth_metadata,value_source_role:'PROJECT_SPECIFIC_INPUT',visibility_role:'INTERNAL_ONLY',runtime_profile_value:false,hidden_default_forbidden:true,source_confirmation_required:true,provenance:{consumer_input_role_v1:'OBJECT_FACT',input_channel_v1:'SERVER_REVIEWED_PROJECT_RECORDS'},...(p.parameter_id===q.emergencyDecisionId?{unknown_enum_values:['UNKNOWN','POWER_CUT_WITHOUT_FORCE_REVIEW']}:{})}}))].map((p,i)=>({...p,ordinal:i})),rebind=new Map(q.quantityRules.map(x=>[x.rowId,x])),reboundFormulaIds=new Set(q.quantityRules.map(x=>x.formulaId));
+ const formulas=[...base.formulas.filter(f=>!reboundFormulaIds.has(f.formula_id)),...addition.formulas],sourceRows=new Map(s.resources.map(x=>[x.rowId,x])),declarations=new Map(q.resourceDeclarations.map(x=>[x.rowId,x])),programme=new Map(q.wholeOperationProgrammeR5.operationProgramme.map(x=>[x.operationId,x])),toolSpecs=new Map(q.physicalToolSpecificationsR5.map(x=>[x.rowId,x]));
+ const resources=base.resources.map(r=>{
+  const rule=rebind.get(r.row_id),physical=sourceRows.get(r.row_id),toolSpec=toolSpecs.get(r.row_id),originalScope=r.resource_graph.scopeRequirementV1 as Record<string,unknown>|undefined,graph:Record<string,unknown>={...r.resource_graph};
+  const stageIds=r.row_id===s.scopeRowId?s.operationRoster.map(x=>x.operationId):(declarations.get(r.row_id)?.operationIds??[]),stages=stageIds.map(id=>{const op=s.operationRoster.find(x=>x.operationId===id),proof=programme.get(id);if(!op||!proof)throw Error('ACS_PASSAGE_R5_OPERATION_PROGRAMME_REQUIRED:'+id);return{...op,completionCriterionRu:proof.completionCriterionRu};});
+  if(stages.length){graph.operationCompositionV1={...stages[0]!,...(stages.length>1?{additionalOperations:stages.slice(1)}:{})};graph.sourceWholePassageProgrammeR5={contract:q.wholeOperationProgrammeR5.contract,projectMethodSha256:q.projectMethod.sha256,stageIds,sourceProgrammeApproved:false,actualWorkExecuted:false,benchTestIsWholeDoorAcceptance:false};}
+  if(rule){const prior=base.formulas.find(f=>f.formula_id===r.formula_id)!;graph.sourceMeasuredQuantityR5={contract:q.contract,sourceMethodSha256:q.projectMethod.sha256,originalParameterId:rule.originalQuantityParameterId,originalFormula:prior,originalSourceMetadata:r.source_metadata,legacySourceMetadataSha256:estimateDeterministicHash(r.source_metadata),quantityRule:rule.expression,validation:'NON_NEGATIVE_ARITHMETIC_OUTPUT_NOT_COMPATIBILITY_PEER',actualLedgerAccepted:false,formulaNotNorm:true,ownerPriceCoverageAccepted:false};graph.formulaOutputBoundsV1={schemaVersion:'canonical_formula_output_bounds_v1',unitId:r.unit_id,minimum:0,reasonRu:r.unit_id==='kg'?'Возврат того же материала не может превышать выданную массу. Проверьте фактический журнал партии.':'Проверьте неотрицательные фактические длины трассы, сервисных петель и окончаний.'};graph.derivedQuantityEditPolicyV1={contractVersion:'canonical-derived-quantity-edit-policy/v1',mode:'PARAMETERS_ONLY',unitId:r.unit_id,parameterIds:compileFormulaGraph(rule.expression).inputParameterIds,reasonRu:'Количество следует принятому измеренному журналу или балансу; ручная правка сохраняется без превращения её в норму или второй платёж.'};}
+  if(toolSpec){const priorPresentation=r.resource_graph.publicResourcePresentationV1 as Record<string,unknown>|undefined;graph.publicResourcePresentationV1={...priorPresentation,sourceTitleRu:toolSpec.publicNameRu,nameRu:toolSpec.publicNameRu};graph.exactPhysicalToolSpecificationR5={contract:q.contract,sourceEvidence:toolSpec.sourceEvidence,previousTitleRu:r.title_ru,previousPresentation:priorPresentation,sourceMetadataPreserved:true,actualStockAndCompleteExecutionAccepted:false,newQuantityOrPayment:false};}
+  if(r.row_id===s.scopeRowId){if(!originalScope)throw Error('ACS_PASSAGE_EXISTING_SCOPE_REQUIRED');const priorFacts=originalScope.requiredFactParameterIds as string[],allFacts=[...new Set([...priorFacts,...facts])];graph.inputParameterIds=[...new Set([...(r.resource_graph.inputParameterIds as string[]??[]),...facts])];graph.scopeRequirementV1={...originalScope,reasonRu:'Принятая полная схема прохода, совместимое питание и независимое аварийное освобождение обязательны. AL300 имеет различное остаточное усилие при штатной команде и снятии питания; известные количества или ручная оплата не подтверждают этот режим.',requiredFactParameterIds:allFacts,projectOperationContextsV1:[{when:active,resourceRowIds:s.quantityForwardR3.resourceDeclarations.filter(d=>d.rowKind==='RESOURCE').map(d=>d.rowId),applicabilityWhen:active,requiredFactParameterIds:allFacts,unknownFactValues:{[s.decisionId]:['UNKNOWN'],[s.retentionId]:['UNKNOWN'],[s.markingId]:['UNKNOWN'],[s.quantityForwardR3.mountMethodId]:['UNKNOWN'],[q.emergencyDecisionId]:['UNKNOWN','POWER_CUT_WITHOUT_FORCE_REVIEW']}}]};}
+  const{row_sha256:_old,...body}=r,next={...body,...(physical?{cost_owner_id:physical.costOwnerRowId}:{}),...(toolSpec?{title_ru:toolSpec.publicNameRu}:{}),resource_graph:graph};return{...next,row_sha256:estimateDeterministicHash(next)};
+ });
+ if(new Set(parameters.map(p=>p.parameter_id)).size!==parameters.length||new Set(formulas.map(f=>f.formula_id)).size!==formulas.length||new Set(resources.map(r=>r.row_id)).size!==resources.length)throw Error('ACS_PASSAGE_R5_ID_COLLISION');
+ return{...base,parameters,formulas,resources,runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{}};
+}
+
+
+export const ACS_WHOLE_KIT_MEASUREMENT_SOURCE_R6=acsDoorSourceR1.wholeDoorR2.kitForwardR6;
+/** Source arithmetic for the SAME18stage owner. Neither a mains-cable
+ * selection nor a heat-shrink application norm is inferred from the numbers. */
+export function accessControlWholePassageKitMeasuredModelR6(profileId:string):AutomaticOwnerDefinition {
+ const s=acsDoorSourceR1.wholeDoorR2,q=s.kitForwardR6;
+ const base=accessControlWholePassageMeasuredModelR5(profileId);
+ const addition=buildAutomaticConstructionOwnerR1({
+  contract:q.contract,semanticOwner:s.catalogId,sourceId:s.sourceId,
+  normId:'ACTUAL_COMPLETE_ROUTE_AND_ALLOCATED_CUT_SUM_NOT_APPLICATION_NORM',
+  sourceMetadata:{source_title:q.titleRu,source_document_version:q.contract,
+   definition_hash:q.projectMethod.sha256,artifact_sha256:q.projectMethod.sha256,
+   exact_locator:'R6 source method: actual local mains route/service/ends; actual compatible tube cuts mm/1000'},
+  applicabilityRu:'Тот же подтверждённый полный дверной проход. Длины относятся к фактическому сетевому вводу и принятым отрезкам совместимой изоляционной трубки; схема, питание и материал отдельно обязательны.',
+  ordinary:q.measurements.map(m=>({id:m.id,title:m.titleRu,kind:'ordinary' as const,valueType:'decimal' as const,unitId:m.unitId,min:0})),
+  profile:[],conditional:[],deferMissingProjectFactsToRows:true,
+  rows:q.quantityRules.map(r=>({rowId:r.rowId,formulaId:r.formulaId,title:r.nameRu,
+   section:'Измеренное обеспечение существующего прохода',category:'material' as const,
+   unitId:r.unitId,expression:r.expression,procurement:false,costTreatment:'INCLUDED_IN_RESOURCE_ROWS' as const,
+   purchaseBalanceOwnerRowId:r.costOwnerRowId})),
+  excludedUnownedAssumptions:['No cable length from core count, area or fixture',
+   'No shrink ratio or20mm per terminal as consumed tubing','No compatible method from known/manual quantities',
+   'No optional mount activation or changed outward door profile','No free measuring equipment/labour/source admission']});
+ const parameterIds=new Set(base.parameters.map(p=>p.parameter_id));
+ const parameters=[...base.parameters,...addition.parameters.filter(p=>!parameterIds.has(p.parameter_id)).map(p=>({
+  ...p,required:false,default_value:null,truth_metadata:{...p.truth_metadata,
+   source_confirmation_required:false,hidden_default_forbidden:true,runtime_profile_value:false}}))]
+  .map((p,ordinal)=>({...p,ordinal}));
+ const rules=new Map(q.quantityRules.map(r=>[r.rowId,r]));
+ const reboundFormulaIds=new Set(q.quantityRules.map(r=>r.formulaId));
+ const formulas=[...base.formulas.filter(f=>!reboundFormulaIds.has(f.formula_id)),...addition.formulas];
+ const resources=base.resources.map(r=>{
+  const rule=rules.get(r.row_id),graph:Record<string,unknown>={...r.resource_graph};
+  if(rule){
+   const originalFormula=base.formulas.find(f=>f.formula_id===r.formula_id);
+   if(!originalFormula||r.unit_id!==rule.unitId||r.cost_owner_id!==rule.costOwnerRowId)
+    throw Error('ACS_R6_EXISTING_ROW_FORMULA_UNIT_OWNER_REQUIRED:'+r.row_id);
+   graph.sourceMeasuredKitR6={contract:q.contract,sourceMethodSha256:q.projectMethod.sha256,
+    originalParameterId:rule.originalQuantityParameterId,originalFormula,
+    originalSourceMetadata:r.source_metadata,quantityRule:rule.expression,
+    actualLedgerRecordId:q.quantityRecordId,actualLedgerAccepted:false,
+    applicationNorm:false,compatibilityAccepted:false,priceCoverageAccepted:false};
+   graph.formulaOutputBoundsV1={schemaVersion:'canonical_formula_output_bounds_v1',
+    unitId:r.unit_id,minimum:0,reasonRu:'Фактические длины трассы и принятых отрезков не могут быть отрицательными.'};
+   graph.derivedQuantityEditPolicyV1={contractVersion:'canonical-derived-quantity-edit-policy/v1',
+    mode:'PARAMETERS_ONLY',unitId:r.unit_id,parameterIds:compileFormulaGraph(rule.expression).inputParameterIds,
+    reasonRu:'Количество по принятому измеренному журналу; ручная правка не подтверждает метод, норму или второй платёж.'};
+  }
+  if(r.row_id===q.compatibleKitSource.outwardOptionalKit.existingAggregateRowId)
+   graph.exactCompatibleOptionalMountSourceR6={...q.compatibleKitSource.outwardOptionalKit,
+    originalQuantityParameterRetained:true,originalFormulaRetained:true,heterogeneousPcsNotAssemblyCount:true};
+  const{row_sha256:_previous,...body}=r,next={...body,resource_graph:graph};
+  return{...next,row_sha256:estimateDeterministicHash(next)};
+ });
+ if(new Set(parameters.map(p=>p.parameter_id)).size!==parameters.length||
+    new Set(formulas.map(f=>f.formula_id)).size!==formulas.length||
+    new Set(resources.map(r=>r.row_id)).size!==resources.length)throw Error('ACS_R6_EXISTING_ID_COLLISION');
+ return{...base,parameters,formulas,resources,ordinaryParameterIds:[...base.ordinaryParameterIds,...q.measurements.map(p=>p.id)],runtimeInput:{},runtimeClassification:{},runtimeSourceIds:{}};
 }
