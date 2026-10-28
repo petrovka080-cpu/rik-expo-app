@@ -1,0 +1,1515 @@
+{
+  "contract": "linoleum-current-project-quantity-cycle/r2",
+  "sourceId": "project-system:linoleum-current-project-quantity-cycle-r2",
+  "sourceKind": "PROJECT_SYSTEM",
+  "titleRu": "Укладка натурального рулонного покрытия пола",
+  "catalogId": "canonical-work:base:flooring_interior_linoleum_lay_standard",
+  "priorFrozenSourceId": "project-system:linoleum-current-oem-physical-cycle-r1",
+  "namespace": "linoleum:current-whole-r1:",
+  "parent": {
+    "header": {
+      "definition_version_id": "fc974920-937d-5b15-833e-5cd316687dc4",
+      "approved_template_baseline_id": "1a20cb1b-2c25-5a88-9acb-9d413e542943",
+      "definition_version": 3,
+      "definition_sha256": "6b1f546143fa1215937275c50266e7526d50c9d1f0f36c281046b9e5eb8fd836"
+    },
+    "bodySha256": "2f1a3e60569014e8b77ae51459414a0b1d5609de80864b723ff3b46b7146e4e7",
+    "shape": [
+      1,
+      59,
+      59
+    ],
+    "sourceBindingLocatorCounts": [
+      0,
+      0,
+      0
+    ],
+    "sourceObservationIsNotAuthority": true
+  },
+  "freshProof": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\current-linoleum-r2-cat6a-bodies-r1115\\ACTUAL_CURRENT_FAMILY_PARENT_PROOF.json",
+    "sha256": "108573f315c45e5d4ac1fa2c6d22da6125151fb43a5a0d58fe751ee487eb227a",
+    "all20RawSetsPersonallyVerified": true,
+    "proposedSourceCount": 0,
+    "formalCapture": false
+  },
+  "method": {
+    "parameterId": "linoleum_method_r1",
+    "value": "NATURAL_JUTE_2_5MM_611_EN_B1_UNHEATED",
+    "version": "linoleum-current-project-quantity-cycle/r2",
+    "seam": "NET_FIT",
+    "edge": "ROLLER",
+    "perimeter": "NONE_CONFIRMED",
+    "narrowMethodNotAllFamily": true
+  },
+  "quantityEvidence": {
+    "path": "data/estimate-benchmarks/source-packs/linoleum-project-quantity-records-r2.txt",
+    "sha256": "18919be50a9bb58b84f3e2e4bd214efb68001d7bfb438f3b9bd4e73071fb5fed",
+    "sourceClass": "AUTHORED_PROJECT_MEASUREMENT_INSTRUCTIONS_NOT_ACTUAL_OBJECT_RECORD"
+  },
+  "primaryPins": [
+    {
+      "url": "https://forbo.blob.core.windows.net/forbodocuments/6056fb08-45ea-458e-9dd0-c24d82fd1b40/pdf-product-specification.pdf",
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\finishing\\linoleum-ordinary-current\\source-review\\euroclean888-current-linked-tds.pdf",
+      "sha256": "a8d55ad04bbe85e83f441f2d7c340207865b26a7a0e3566953f7c3e05567de6a",
+      "bytes": 340001,
+      "pages": 2,
+      "sourcePath": "data/estimate-benchmarks/source-artifacts/linoleum-r2-euroclean888-current-linked-tds.pdf"
+    },
+    {
+      "url": "https://forbo.blob.core.windows.net/forbodocuments/9bd3ad5a-8dd4-4fb9-9ee7-87dcd2823f6b/safety data sheet_eurocol_888_euroclean_uni_uk.pdf",
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\finishing\\linoleum-ordinary-current\\source-review\\euroclean888-current-linked-sds.pdf",
+      "sha256": "bcdd024518485b6810446dcbfc1e46453252a41a733bb2b013cb0d765770fb37",
+      "bytes": 211651,
+      "pages": 9,
+      "sourcePath": "data/estimate-benchmarks/source-artifacts/linoleum-r2-euroclean888-current-linked-sds.pdf"
+    }
+  ],
+  "existingPrimaryPins": [
+    {
+      "name": "marmoleum-sheet-installation-uk-file-jan2023-content032021.pdf",
+      "url": "https://forbo.blob.core.windows.net/forbodocuments/15634/Forbo%20Marmoleum%20Sheet%20Installation%20Guide%20UK%20January%202023.pdf",
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\finishing\\linoleum-whole-current\\source-artifacts\\marmoleum-sheet-installation-uk-file-jan2023-content032021.pdf",
+      "bytes": 965631,
+      "sha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "pages": 10,
+      "sourcePath": "data/estimate-benchmarks/source-artifacts/linoleum-r1-marmoleum-sheet-installation-uk-file-jan2023-content032021.pdf"
+    },
+    {
+      "name": "marmoleum-floorcare-uk-sept2022.pdf",
+      "url": "https://forbo.blob.core.windows.net/forbodocuments/6926/Forbo%20Marmoleum%20Floor%20Care%20Sept%202022%20UK.pdf",
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\finishing\\linoleum-whole-current\\source-artifacts\\marmoleum-floorcare-uk-sept2022.pdf",
+      "bytes": 90150,
+      "sha256": "4cd5d162e77bd7e55a169615965d4701ceb56e3dffaee742c38d0afdbb93836f",
+      "pages": 2,
+      "sourcePath": "data/estimate-benchmarks/source-artifacts/linoleum-r1-marmoleum-floorcare-uk-sept2022.pdf"
+    },
+    {
+      "name": "eurocol611-current-linked-tds.pdf",
+      "url": "https://forbo.blob.core.windows.net/forbodocuments/c67007e6-7c69-4841-b715-22306c4ce195/pdf-product-specification.pdf",
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\finishing\\linoleum-whole-current\\source-artifacts\\eurocol611-current-linked-tds.pdf",
+      "bytes": 741783,
+      "sha256": "8fc365868fb2b6d1f94b7ec99f4d6fe296bd7ad63e0be7f21b65a26f6e8159d8",
+      "pages": 3,
+      "discoveredViaPinnedIndex": true,
+      "sourcePath": "data/estimate-benchmarks/source-artifacts/linoleum-r1-eurocol611-current-linked-tds.pdf"
+    },
+    {
+      "name": "eurocol611-current-linked-sds-uk.pdf",
+      "url": "https://forbo.blob.core.windows.net/forbodocuments/c209b979-b244-45ef-b93c-a12c7844a348/sd0220_eurocol_611_eurostar_lino%20plus_uk.pdf",
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\finishing\\linoleum-whole-current\\source-artifacts\\eurocol611-current-linked-sds-uk.pdf",
+      "bytes": 360307,
+      "sha256": "1ada29f5887a3325b6c5dc11ccbc4ff0a9dad4decdc34a5793887b2410101638",
+      "pages": 10,
+      "discoveredViaPinnedIndex": true,
+      "sourcePath": "data/estimate-benchmarks/source-artifacts/linoleum-r1-eurocol611-current-linked-sds-uk.pdf"
+    }
+  ],
+  "quantityReclassification": [
+    {
+      "needId": "linoleum:current-whole-r1:moisture-test",
+      "functionKey": "moisture-test",
+      "quantityParameterId": "linoleum_r1_held_moisture_test",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACCEPTED_EVENT_RECORDS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:moisture-test",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:acceptance"
+      ],
+      "compatibilityAuthority": "UK:p1",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Каждая принятая точка/услуга испытания по подписанному плану и уникальному акту; метод/схема отбора отдельно. Не число приборов и не1услуга по площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:climate-meter",
+      "functionKey": "climate-meter",
+      "quantityParameterId": "linoleum_r1_held_climate_meter",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:climate-meter",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:acceptance",
+        "linoleum:current-whole-r1:operation:incoming",
+        "linoleum:current-whole-r1:operation:protection-qa"
+      ],
+      "compatibilityAuthority": "UK:p1;611:p2",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Число отдельных предоставленных исправных приборов по инвентарным ID; не число измерений и не продолжительность акклиматизации.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:inspection-light",
+      "functionKey": "inspection-light",
+      "quantityParameterId": "linoleum_r1_held_inspection_light",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:inspection-light",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:acceptance",
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:protection-qa"
+      ],
+      "compatibilityAuthority": "UK:p1",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Число дополнительных светильников по инвентарной ведомости; пригодность существующего освещения подтверждается отдельно, числом0 неизвестность не закрывается.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:measure-tools",
+      "functionKey": "measure-tools",
+      "quantityParameterId": "linoleum_r1_held_measure_tools",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:measure-tools",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:acceptance",
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:junctions",
+        "linoleum:current-whole-r1:operation:protection-qa"
+      ],
+      "compatibilityAuthority": "UK:p3-5",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Число отдельных средств обмера по перечню ID и назначениям; pcs не означает полный универсальный комплект. Длины и пригодность контролируются планом.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:handling-trolley",
+      "functionKey": "handling-trolley",
+      "quantityParameterId": "linoleum_r1_held_handling_trolley",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:handling-trolley",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:incoming",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:waste-logistics"
+      ],
+      "compatibilityAuthority": "PROJECT:handling",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Количество фактически предоставленных тележек с известной грузоподъёмностью; схема перевозки/масса рулонов отдельно. Не тонны и не рейсы.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:upright-storage",
+      "functionKey": "upright-storage",
+      "quantityParameterId": "linoleum_r1_held_upright_storage",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:upright-storage",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:incoming"
+      ],
+      "compatibilityAuthority": "UK:p1,3",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Число предоставленных удерживающих приспособлений по ведомости с принятой схемой вертикального хранения; не число рулонов автоматически.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:vacuum",
+      "functionKey": "vacuum",
+      "quantityParameterId": "linoleum_r1_held_vacuum",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:vacuum",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:base-clean",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "UK:p1,7,10",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Отдельные фактически предоставленные совместимые пылесосы; паспорт, режим и комплектность подтверждаются отдельно. Не машино-часы.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:vacuum-nozzle",
+      "functionKey": "vacuum-nozzle",
+      "quantityParameterId": "linoleum_r1_held_vacuum_nozzle",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:vacuum-nozzle",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:base-clean",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "UK:p7,10",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Отдельные насадки, включая реально поставленные в составе пылесоса; встроенная/комплектная насадка не второй заказ. Фильтр не заменяет насадку.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:vacuum-filter",
+      "functionKey": "vacuum-filter",
+      "quantityParameterId": "linoleum_r1_held_vacuum_filter",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:vacuum-filter",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:base-clean",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "PROJECT:vacuum manual",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Выданные совместимые фильтры минус пригодный неиспользованный возврат. Установленный исходный фильтр учитывается только раз; износ на м² не задан.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:vacuum-bag",
+      "functionKey": "vacuum-bag",
+      "quantityParameterId": "linoleum_r1_held_vacuum_bag",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:vacuum-bag",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:base-clean",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "PROJECT:vacuum manual",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Выданные совместимые мешки минус пригодный неиспользованный возврат; вместимость/смены по реальному журналу, без плотности отходов.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:pencil",
+      "functionKey": "pencil",
+      "quantityParameterId": "linoleum_r1_held_pencil",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:pencil",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "UK:p3-4",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:knife",
+      "functionKey": "knife",
+      "quantityParameterId": "linoleum_r1_held_knife",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:knife",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "UK:p3-5",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактические рукоятки ножа; прямые и крючковые лезвия отдельные потребители, не новый нож на каждое лезвие.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:straight-blade",
+      "functionKey": "straight-blade",
+      "quantityParameterId": "linoleum_r1_held_straight_blade",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:straight-blade",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "UK:p3",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:hooked-blade",
+      "functionKey": "hooked-blade",
+      "quantityParameterId": "linoleum_r1_held_hooked_blade",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:hooked-blade",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "UK:p3,5",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:straightedge",
+      "functionKey": "straightedge",
+      "quantityParameterId": "linoleum_r1_held_straightedge",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:straightedge",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:junctions",
+        "linoleum:current-whole-r1:operation:protection-qa"
+      ],
+      "compatibilityAuthority": "UK:p3",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:wall-scriber",
+      "functionKey": "wall-scriber",
+      "quantityParameterId": "linoleum_r1_held_wall_scriber",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:wall-scriber",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "UK:p3-4",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:recess-scriber",
+      "functionKey": "recess-scriber",
+      "quantityParameterId": "linoleum_r1_held_recess_scriber",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:recess-scriber",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:net-seam"
+      ],
+      "compatibilityAuthority": "UK:p5",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:stir-tool",
+      "functionKey": "stir-tool",
+      "quantityParameterId": "linoleum_r1_held_stir_tool",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:stir-tool",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:adhesive"
+      ],
+      "compatibilityAuthority": "611:p2",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:b1-spreader",
+      "functionKey": "b1-spreader",
+      "quantityParameterId": "linoleum_r1_held_b1_spreader",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:b1-spreader",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam"
+      ],
+      "compatibilityAuthority": "UK:p2;611:p2",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные исправные шпатели точной принятой геометрии; дополнительные изношенные/сменные по выдаче, не универсальная норма срока службы.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:floor-roller",
+      "functionKey": "floor-roller",
+      "quantityParameterId": "linoleum_r1_held_floor_roller",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:floor-roller",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam"
+      ],
+      "compatibilityAuthority": "UK:p2-3,9",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Число фактически предоставленных напольных катков, масса68кг — свойство совместимости, не количество и не расход.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:hand-roller",
+      "functionKey": "hand-roller",
+      "quantityParameterId": "linoleum_r1_held_hand_roller",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:hand-roller",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "UK:p2-3,5",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные ручные ролики; нужен для стыка независимо от варианта прижатия краёв. Повторные операции используют тот же ID.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:rubbing-hammer",
+      "functionKey": "rubbing-hammer",
+      "quantityParameterId": "linoleum_r1_held_rubbing_hammer",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:rubbing-hammer",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "UK:p2-3",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактические молотки альтернативы HAMMER; в pure R2 ROLLER неприменим, исходный R1 сохраняется.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:wipe",
+      "functionKey": "wipe",
+      "quantityParameterId": "linoleum_r1_held_wipe",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:wipe",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:junctions",
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "UK:p2,5;611:p2",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:water-vessel",
+      "functionKey": "water-vessel",
+      "quantityParameterId": "linoleum_r1_held_water_vessel",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:water-vessel",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "PROJECT:provision",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Физические ёмкости с известной вместимостью по инвентарной ведомости; не число наполнений и не литры воды.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:chemical-glove",
+      "functionKey": "chemical-glove",
+      "quantityParameterId": "linoleum_r1_held_chemical_glove",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pair",
+      "soleOwnerRowId": "linoleum:current-whole-r1:chemical-glove",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:junctions",
+        "linoleum:current-whole-r1:operation:handover-clean",
+        "linoleum:current-whole-r1:operation:waste-logistics"
+      ],
+      "compatibilityAuthority": "611SDS:8.2",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Выданные пары минус пригодный неиспользованный возврат; состав/размер/время прорыва по изготовителю перчаток для611 и888. Ни nitrile ни срок службы не принимаются по умолчанию.",
+      "sourcePinSha256": "1ada29f5887a3325b6c5dc11ccbc4ff0a9dad4decdc34a5793887b2410101638",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:chemical-goggle",
+      "functionKey": "chemical-goggle",
+      "quantityParameterId": "linoleum_r1_held_chemical_goggle",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:chemical-goggle",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:handover-clean",
+        "linoleum:current-whole-r1:operation:waste-logistics"
+      ],
+      "compatibilityAuthority": "611SDS:8.2",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные совместимые защитные очки; нельзя заменить условие пригодности числом.",
+      "sourcePinSha256": "1ada29f5887a3325b6c5dc11ccbc4ff0a9dad4decdc34a5793887b2410101638",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:cut-protection",
+      "functionKey": "cut-protection",
+      "quantityParameterId": "linoleum_r1_held_cut_protection",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pair",
+      "soleOwnerRowId": "linoleum:current-whole-r1:cut-protection",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:junctions",
+        "linoleum:current-whole-r1:operation:waste-logistics"
+      ],
+      "compatibilityAuthority": "PROJECT:risk assessment",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Выданные пары защиты при раскрое минус пригодный неиспользованный возврат; не считать химические перчатки автоматически противорезными.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:knee-protection",
+      "functionKey": "knee-protection",
+      "quantityParameterId": "linoleum_r1_held_knee_protection",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pair",
+      "soleOwnerRowId": "linoleum:current-whole-r1:knee-protection",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "PROJECT:risk assessment",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные пары наколенников по ведомости, не пары на м².",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:work-footwear",
+      "functionKey": "work-footwear",
+      "quantityParameterId": "linoleum_r1_held_work_footwear",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pair",
+      "soleOwnerRowId": "linoleum:current-whole-r1:work-footwear",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:incoming",
+        "linoleum:current-whole-r1:operation:base-clean",
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:junctions",
+        "linoleum:current-whole-r1:operation:waste-logistics"
+      ],
+      "compatibilityAuthority": "PROJECT:risk assessment",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные пары обуви по принятому риску и выданным размерам; не новый комплект на каждую операцию.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:manual-groover",
+      "functionKey": "manual-groover",
+      "quantityParameterId": "linoleum_r1_held_manual_groover",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:manual-groover",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:hot-weld"
+      ],
+      "compatibilityAuthority": "UK:p7",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:weld-trimmer",
+      "functionKey": "weld-trimmer",
+      "quantityParameterId": "linoleum_r1_held_weld_trimmer",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:weld-trimmer",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:hot-weld"
+      ],
+      "compatibilityAuthority": "UK:p8",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:weld-trim-guide",
+      "functionKey": "weld-trim-guide",
+      "quantityParameterId": "linoleum_r1_held_weld_trim_guide",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:weld-trim-guide",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:hot-weld"
+      ],
+      "compatibilityAuthority": "UK:p8",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:weld-brush",
+      "functionKey": "weld-brush",
+      "quantityParameterId": "linoleum_r1_held_weld_brush",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:weld-brush",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:hot-weld"
+      ],
+      "compatibilityAuthority": "UK:p7;PROJECT:tool manual",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:power-provision",
+      "functionKey": "power-provision",
+      "quantityParameterId": "linoleum_r1_held_power_provision",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:power-provision",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:hot-weld"
+      ],
+      "compatibilityAuthority": "UK:p7;LEISTER161334",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:hot-tool-rest",
+      "functionKey": "hot-tool-rest",
+      "quantityParameterId": "linoleum_r1_held_hot_tool_rest",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:hot-tool-rest",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:hot-weld"
+      ],
+      "compatibilityAuthority": "UK:p7;PROJECT:tool manual",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:perimeter-seal",
+      "functionKey": "perimeter-seal",
+      "quantityParameterId": "linoleum_r1_held_perimeter_seal",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "GENUINE_SOURCE_HELD",
+      "unitId": "l",
+      "soleOwnerRowId": "linoleum:current-whole-r1:perimeter-seal",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:junctions"
+      ],
+      "compatibilityAuthority": "UK:p10",
+      "numericSourceClass": "SOURCE_HELD",
+      "recordColumns": [],
+      "guideRu": "Настоящий SOURCE_HELD: назначение влажностного барьера требует принятого узла и точного продукта/геометрии. UKp10 не даёт универсального расхода силикона. Pure NET_FIT/NONE не покрывает этот метод.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Принят точный продукт/узел/метод и его количественная зависимость; R1 quantity/source hold retained",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:barrier",
+      "functionKey": "barrier",
+      "quantityParameterId": "linoleum_r1_held_barrier",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:barrier",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:incoming",
+        "linoleum:current-whole-r1:operation:protection-qa",
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "PROJECT:occupation plan",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленные ограждения/знаки по схеме доступа и уникальным ID; количество перестановок не равно количеству изделий.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:neutral-cleaner",
+      "functionKey": "neutral-cleaner",
+      "quantityParameterId": "linoleum_r1_held_neutral_cleaner",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SOURCE_DOSE_TIMES_DEDICATED_MEASURED_VOLUME",
+      "unitId": "l",
+      "soleOwnerRowId": "linoleum:current-whole-r1:neutral-cleaner",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "FLOORCARE:p1",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "dedicatedColdCleaningWaterLitres"
+      ],
+      "guideRu": "Точный888BG175222V08: для intensive first care100мл/8л чистой холодной воды. Qл=Wfloorcleanл*0.100/8. Не40мл регулярного ухода; не общий wash-meter и не м² пола.",
+      "sourcePinSha256": "a8d55ad04bbe85e83f441f2d7c340207865b26a7a0e3566953f7c3e05567de6a",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:mop",
+      "functionKey": "mop",
+      "quantityParameterId": "linoleum_r1_held_mop",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:mop",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "FLOORCARE:p1",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактические ручные держатели/мопы по ведомости; совместимые сменные насадки отдельно; механическая полировка не принята.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:mop-pad",
+      "functionKey": "mop-pad",
+      "quantityParameterId": "linoleum_r1_held_mop_pad",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:mop-pad",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "FLOORCARE:p1",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:waste-sack",
+      "functionKey": "waste-sack",
+      "quantityParameterId": "linoleum_r1_held_waste_sack",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:waste-sack",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:junctions",
+        "linoleum:current-whole-r1:operation:waste-logistics"
+      ],
+      "compatibilityAuthority": "UK:p10;PROJECT:waste plan",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "issuedQuantity",
+        "usableUnusedReturnQuantity"
+      ],
+      "guideRu": "Фактически предоставленные единицы по инвентарной ведомости или принятые выдача/возврат; точная совместимость и износ не выводятся из площади.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:wet-waste-vessel",
+      "functionKey": "wet-waste-vessel",
+      "quantityParameterId": "linoleum_r1_held_wet_waste_vessel",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:wet-waste-vessel",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:adhesive",
+        "linoleum:current-whole-r1:operation:handover-clean",
+        "linoleum:current-whole-r1:operation:waste-logistics"
+      ],
+      "compatibilityAuthority": "611:p2;611SDS:13",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактически предоставленная герметичная тара по отдельным потокам и принятому получателю. Не слив в канализацию; вместимость отдельно от числа ёмкостей.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:sharps-vessel",
+      "functionKey": "sharps-vessel",
+      "quantityParameterId": "linoleum_r1_held_sharps_vessel",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:sharps-vessel",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:layout",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:waste-logistics"
+      ],
+      "compatibilityAuthority": "PROJECT:risk assessment",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Фактические ёмкости для лезвий с принятым безопасным заполнением; не выводить из кг отходов.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:quality-service",
+      "functionKey": "quality-service",
+      "quantityParameterId": "linoleum_r1_held_quality_service",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACCEPTED_EVENT_RECORDS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:quality-service",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:acceptance",
+        "linoleum:current-whole-r1:operation:laying",
+        "linoleum:current-whole-r1:operation:net-seam",
+        "linoleum:current-whole-r1:operation:hot-weld",
+        "linoleum:current-whole-r1:operation:protection-qa"
+      ],
+      "compatibilityAuthority": "UK:p1,5,8,10",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Уникальные принятые события контроля по плану/актам. Это число проверок, не отдельный платный пост и не повтор труда исполнителя.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    },
+    {
+      "needId": "linoleum:current-whole-r1:handover-doc",
+      "functionKey": "handover-doc",
+      "quantityParameterId": "linoleum_r1_held_handover_doc",
+      "before": "UNRESOLVED_APPLICATION_NORM",
+      "after": "DISTINCT_ACCEPTED_EVENT_RECORDS",
+      "unitId": "pcs",
+      "soleOwnerRowId": "linoleum:current-whole-r1:handover-doc",
+      "consumerOperationIds": [
+        "linoleum:current-whole-r1:operation:protection-qa",
+        "linoleum:current-whole-r1:operation:handover-clean"
+      ],
+      "compatibilityAuthority": "UK:p10",
+      "numericSourceClass": "AUTHORED_MEASUREMENT_RULE_REQUIRING_ACTUAL_PROJECT_RECORD_NOT_AREA_NORM",
+      "recordColumns": [
+        "traceId",
+        "recordId",
+        "exactResourceId",
+        "physicalUnitOrEventId",
+        "providedCount"
+      ],
+      "guideRu": "Число реальных уникальных передаваемых комплектов документов по реестру; повторная копия/открытие не новый платный документ.",
+      "sourcePinSha256": "e007f18f37a8d3db97c94e2e37bbfb60c2c3a518ce749a3b1a0756aee0e7e16f",
+      "unknownRule": "Absent record/quantity stays UNKNOWN; no0/1; source compatibility remains protected independently",
+      "returnWhen": "Подписанный фактический документ с уникальными ID/единицами/принадлежностью операции; без двойного учёта, цена/закупка не возникают",
+      "quantityNormClaimed": false,
+      "actualObjectFactClaimed": false
+    }
+  ],
+  "cleaner": {
+    "waterParameterId": "linoleum_r2_floor_cleaning_water_l",
+    "expression": "linoleum_r2_floor_cleaning_water_l*0.100/8",
+    "unitId": "l",
+    "sourceVersion": "BG175222 VersionV08 Stand2021-06-16",
+    "pdfGeneratedDate": "28-10-2026",
+    "sourceGeneratedDateIsNotIssuerVersion": true,
+    "dose100mlPer8lOnlyConstructionCleaning": true,
+    "regular40mlRejectedForThisMethod": true,
+    "wholeMeterNotDoseBasis": true,
+    "physicalWaterOwner": "linoleum:current-whole-r1:clean-water"
+  },
+  "scopeHolds": [
+    "Perimeter-seal exact product/geometry still SOURCE_HELD outside narrow NONE method",
+    "HOT_WELD full original BOM/SDS/power/cord/trial and Leister429 still SOURCE_HELD outside NET_FIT method",
+    "No manufacturer norm for inventory sufficiency/service-life/project labour; actual record counts are project quantities, not norms",
+    "611 linked SDS identity versus exact delivered EN611 must be proved;888 exact delivered identity/glove compatibility also protected",
+    "Actual project records/accepted trial/cutplan/inventory/stock/supplier quantum/time remain absent",
+    "Existing typed preparation retained+new managed registry routing requires ROOT review; no fake existing tuple"
+  ],
+  "oldHoldsRetained": [
+    "LEGACY59 has0actual normative/source/binding/locator rows; preserve q as exact historical assumption, not OEM norm",
+    "58functionmap is not admitted whole calculation",
+    "exact delivered611identity/SDS mismatch-title must be resolved by actual supplier",
+    "Leister official PDF429bytepin; BOM provenance held",
+    "prepared absorbent floor; actual repair/levelling not selected by generic q",
+    "roll packing/width/stockoffcut suitability must be accepted piecewise",
+    "neutral cleaner dose TDS missing",
+    "inventory full kits/rental/service-life/timesheet not area norms",
+    "no KG legal adoption of citedUK/DEstandards",
+    "formal existing retained capture and target config/witness assembly pendingROOT; no common guard defect proved"
+  ],
+  "newBindingRowIds": [
+    "linoleum:current-whole-r1:moisture-test",
+    "linoleum:current-whole-r1:climate-meter",
+    "linoleum:current-whole-r1:inspection-light",
+    "linoleum:current-whole-r1:measure-tools",
+    "linoleum:current-whole-r1:vehicle",
+    "linoleum:current-whole-r1:handling-trolley",
+    "linoleum:current-whole-r1:upright-storage",
+    "linoleum:current-whole-r1:vacuum",
+    "linoleum:current-whole-r1:vacuum-nozzle",
+    "linoleum:current-whole-r1:vacuum-filter",
+    "linoleum:current-whole-r1:vacuum-bag",
+    "linoleum:current-whole-r1:pencil",
+    "linoleum:current-whole-r1:knife",
+    "linoleum:current-whole-r1:straight-blade",
+    "linoleum:current-whole-r1:hooked-blade",
+    "linoleum:current-whole-r1:straightedge",
+    "linoleum:current-whole-r1:wall-scriber",
+    "linoleum:current-whole-r1:recess-scriber",
+    "linoleum:current-whole-r1:covering",
+    "linoleum:current-whole-r1:adhesive",
+    "linoleum:current-whole-r1:stir-tool",
+    "linoleum:current-whole-r1:b1-spreader",
+    "linoleum:current-whole-r1:floor-roller",
+    "linoleum:current-whole-r1:hand-roller",
+    "linoleum:current-whole-r1:rubbing-hammer",
+    "linoleum:current-whole-r1:wipe",
+    "linoleum:current-whole-r1:clean-water",
+    "linoleum:current-whole-r1:water-vessel",
+    "linoleum:current-whole-r1:chemical-glove",
+    "linoleum:current-whole-r1:chemical-goggle",
+    "linoleum:current-whole-r1:cut-protection",
+    "linoleum:current-whole-r1:knee-protection",
+    "linoleum:current-whole-r1:work-footwear",
+    "linoleum:current-whole-r1:manual-groover",
+    "linoleum:current-whole-r1:hotair-tool",
+    "linoleum:current-whole-r1:weld-tube",
+    "linoleum:current-whole-r1:weld-speed",
+    "linoleum:current-whole-r1:spare-heater",
+    "linoleum:current-whole-r1:weld-case",
+    "linoleum:current-whole-r1:weld-trimmer",
+    "linoleum:current-whole-r1:weld-trim-guide",
+    "linoleum:current-whole-r1:weld-brush",
+    "linoleum:current-whole-r1:weld-cable",
+    "linoleum:current-whole-r1:power-provision",
+    "linoleum:current-whole-r1:hot-tool-rest",
+    "linoleum:current-whole-r1:perimeter-seal",
+    "linoleum:current-whole-r1:protection-cover",
+    "linoleum:current-whole-r1:barrier",
+    "linoleum:current-whole-r1:neutral-cleaner",
+    "linoleum:current-whole-r1:mop",
+    "linoleum:current-whole-r1:mop-pad",
+    "linoleum:current-whole-r1:waste-sack",
+    "linoleum:current-whole-r1:wet-waste-vessel",
+    "linoleum:current-whole-r1:sharps-vessel",
+    "linoleum:current-whole-r1:waste-haul",
+    "linoleum:current-whole-r1:labour",
+    "linoleum:current-whole-r1:quality-service",
+    "linoleum:current-whole-r1:handover-doc",
+    "linoleum:current-whole-r1:adhesive-rate-check",
+    "linoleum:current-whole-r1:covering-balance-check",
+    "linoleum:current-whole-r1:trial-area-check",
+    "linoleum:current-whole-r1:covering-order",
+    "linoleum:current-whole-r1:adhesive-order",
+    "linoleum:current-whole-r1:edge-roller-scope",
+    "linoleum:current-whole-r1:netfit-scope"
+  ],
+  "classificationCounts": {
+    "DISTINCT_ACCEPTED_EVENT_RECORDS": 3,
+    "DISTINCT_ACTUALLY_PROVIDED_PHYSICAL_UNITS": 30,
+    "GENUINE_SOURCE_HELD": 1,
+    "SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN": 10,
+    "SOURCE_DOSE_TIMES_DEDICATED_MEASURED_VOLUME": 1
+  },
+  "defaultLegacyUnchanged": true,
+  "native59AuthorityTransferred": false,
+  "objectClosures": 0,
+  "quantityNormClosures": 0,
+  "newCards": 0,
+  "newPaidOwners": 0,
+  "newProcurementOwners": 0,
+  "runtime": "UNRUN",
+  "full": false
+}

@@ -697,3 +697,101 @@ export function linoleumCurrentWholeExpectationsR1(){return{contract:'rik-expo-a
 /** Ordinary production is held, not routed into a migration main() or granted
  * new authority by mapping zero native bindings to an unrelated OEM locator. */
 export function linoleumCurrentWholeOrdinaryRequestR1(){return{catalogId:lp1.catalogId,sourceId:lp1.sourceId,existingPublisher:'scripts/estimate/r4a13/prepareMasterSingleDefinitionSuccessorR1.ts',status:'SOURCE_AWARE_ORDINARY_TARGET_CONFIG_HELD',expectedCurrentHeader:lp1.parent.header,expectedCurrentShape:lp1.parent.shape,nativeRegistryCounts:[0,0,0],candidateSourceObservation:lp1.formalIntake.newCandidateSourceObservation,legacyTemplateAssumptionSources:{contract:'master-retained-legacy-template-assumptions/r1',templateId:'flooring_interior_linoleum_lay_standard_professional_expanded_v1',parameterSources:{q:['r555-source:flooring_interior_linoleum_lay_standard_professional_expanded_v1']}},nativeRowsMustNotReceiveNewOemBinding:true,newBindingRowIds:buildLinoleumCurrentWholeR1().resources.slice(59).map(r=>r.row_id),existingRetainedGuardAppearsApplicableBySourceReview:true,defaultSelectorUnchanged:true,requiredBeforeRuntime:['existing scoped capture over current source/parameter binding closure','explicit legacy59 historical source disposition without OEM normative rebinding','finite typed partial witness over exact selected resource closure'],newReader:false,newPublisher:false,admissionGranted:false};}
+
+
+// R2 is an explicit pure source recipe. R1 legacy/weld/seal branches above and
+// their unresolved needs are immutable. No import selects R2 or rewrites a draft.
+import linoleumParentR1115 from '../../../../../../data/estimate-benchmarks/fixtures/linoleum-current-parent-r1115.json';
+import linoleumQuantityR2 from '../../../../../../data/estimate-benchmarks/source-packs/linoleum-current-project-quantity-cycle-r2.json';
+const lp2=linoleumQuantityR2;
+export const linoleumCurrentProjectQuantityPackR2=lp2;
+const lq2=lp2.quantityReclassification;
+const lprojectGuideR2=(parameterId:string,title:string)=>({guide_kind:'MEASUREMENT_RULE',source_role:'USER_SUPPLIED_OBJECT_FACT',
+ guide_validation_policy:'MANDATORY_BLOCK',guide_version:lp2.contract,source_document:lp2.quantityEvidence.path,
+ source_snapshot_hash:lp2.quantityEvidence.sha256,source_locator:'45-row disposition:'+parameterId,
+ guide_short_ru:title,applicability:'Фактические измерения/ведомость предоставления выбранного метода; не норма на м², срок службы или доказательство технологической достаточности.'});
+const lstructuralR2:Readonly<Record<string,string>>={[lp1.selector.parameterId]:lp2.method.value,
+ [lp1.seamParameterId]:lp2.method.seam,[lp1.edgeParameterId]:lp2.method.edge};
+function linoleumProjectTruthR2(old:LinoleumRecordR1,id:string,title:string):LinoleumRecordR1{
+ const {unresolved_norm_reason:_hold,...rest}=old;
+ return {...rest,visibility_role:'USER_INPUT',value_source_role:'CONDITIONAL_PROJECT_FACT',source_confirmation_required:false,
+  provenance:{consumer_input_role_v1:'ADVANCED_OPTION'},visible_when:lexact1,guide:lprojectGuideR2(id,title)};
+}
+/** Counts remain unknown until actual signed records exist. Provision is not a
+ * productivity norm. The only new dose has an exact separate cleaning-water input. */
+export function buildLinoleumCurrentProjectQuantityR2(actual:unknown=linoleumParentR1115):LinoleumDefinitionR1{
+ const base=buildLinoleumCurrentWholeR1(actual),seal=lq2.find(r=>r.functionKey==='perimeter-seal')!,clean=lq2.find(r=>r.functionKey==='neutral-cleaner')!,
+  quantities=new Map(lq2.filter(r=>!['perimeter-seal','neutral-cleaner'].includes(r.functionKey)).map(r=>[r.quantityParameterId,r])),
+  numeric=new Map(lp1.numericDrivers.map(d=>[d.id,d])),none=lp1.parameterPrefix+'perimeter_scope';
+ const parameters:LinoleumDefinitionR1['parameters'][number][]=base.parameters
+ .filter(p=>p.parameter_id!==seal.quantityParameterId&&p.parameter_id!==clean.quantityParameterId).map(p=>{
+  const id=p.parameter_id;
+  if(Object.hasOwn(lstructuralR2,id))return {...p,required:false,default_value:null,constraints_json:{values:[lstructuralR2[id]!]},truth_metadata:{...p.truth_metadata,
+   visibility_role:'INTERNAL_ONLY',value_source_role:'COMPILER_DERIVED_RESOURCE_QUANTITY',source_confirmation_required:false,
+   provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'},guide:{...lprojectGuideR2(id,'Версия явно выбранного узкого метода; не факт объекта.'),guide_kind:'PROJECT_DEFINED',source_role:'PROJECT_DOCUMENTATION'}}};
+  const q=quantities.get(id);
+  if(q)return {...p,title_ru:(q.after==='SIGNED_ISSUED_MINUS_USABLE_UNUSED_RETURN'?'Выдано за вычетом пригодного возврата: ':q.after==='DISTINCT_ACCEPTED_EVENT_RECORDS'?'Количество принятых событий: ':'Фактически предоставлено: ')+(lp1.resources.find(r=>r.rowId===q.needId)!.nameRu),required:false,default_value:null,value_type:q.unitId==='pcs'||q.unitId==='pair'?'integer':'decimal',constraints_json:{min:0},
+   truth_metadata:linoleumProjectTruthR2(p.truth_metadata,id,q.guideRu)};
+  const d=numeric.get(id);
+  if(d)return {...p,required:false,default_value:null,truth_metadata:linoleumProjectTruthR2(p.truth_metadata,id,d.titleRu+'; отдельный фактический документ безdefault.')};
+  if(id===lp1.parameterPrefix+'clean_method'||id===lp1.parameterPrefix+'safety')return {...p,title_ru:p.title_ru+'; точный очиститель888BG175222V08/SDS6.0/17.03.2023',truth_metadata:{...p.truth_metadata,guide:{...lr1(p.truth_metadata.guide),guide_version:lp2.contract,source_document:lp2.primaryPins[0]!.sourcePath,source_snapshot_hash:lp2.primaryPins[0]!.sha256,guide_short_ru:'Ручная первоначальная очистка только совместимым888BG175222V08, точнаяSDS6.0/17.03.2023, риск/защита глаз/подходящие химические перчатки по их изготовителю; не норма износа. Условия611 и его deliveredSDS не отменяются.'}}};
+  if(id===none)return {...p,required:false,default_value:null,constraints_json:{...p.constraints_json,values:[lp2.method.perimeter],requiredWhen:lexact1},
+   truth_metadata:{...p.truth_metadata,provenance:{...lr1(p.truth_metadata.provenance),source_readback_only_v1:true,consumer_question_allowed:false},
+    guide:{...lr1(p.truth_metadata.guide),guide_version:lp2.contract,source_document:lp2.quantityEvidence.path,source_snapshot_hash:lp2.quantityEvidence.sha256,
+     guide_short_ru:'Только фактическое принятое отсутствие узла герметизации; NONE не выводится из неизвестного расхода. Не подставлять при неизвестном узле.'}}};
+  return p;
+ });
+ const reference=parameters.find(p=>p.parameter_id===lp1.parameterPrefix+'wash_start_l')!;
+ parameters.push({...reference,parameter_id:lp2.cleaner.waterParameterId,ordinal:parameters.length,title_ru:'Вода отдельной партии первоначальной очистки пола',unit_id:'l',value_type:'decimal',required:false,default_value:null,constraints_json:{min:0},
+  truth_metadata:linoleumProjectTruthR2(reference.truth_metadata,lp2.cleaner.waterParameterId,'Фактические литры чистой холодной воды только для100мл/8л первоначальной очистки. Не вода промывки инструмента; не площадь; та же партия в общем счётчике учитывается один раз.')});
+ const formulas=base.formulas.map(f=>{
+  const expression=f.formula_id===lid1('formula:neutral-cleaner')?lp2.cleaner.expression:f.formula_id===lid1('formula:perimeter-seal')?'0':null;
+  if(expression===null)return f;
+  const compiled=linoleumFormulaR1(expression);return {...f,expression_source:expression,ast:compiled.ast,input_parameter_ids:compiled.inputParameterIds,
+   ast_sha256:linoleumShaTextR1(linoleumStableR1(compiled.ast))};
+ });
+ const resources=base.resources.map(r=>{
+  if(!r.row_id.startsWith(ln1))return r;
+  const sealRow=r.row_id===lid1('perimeter-seal'),graph=r.resource_graph,trace=Array.isArray(r.source_metadata?.normativeTrace)?r.source_metadata.normativeTrace.map(value=>({...lr1(value),sourceId:lp2.sourceId,source_id:lp2.sourceId,normVersion:lp2.contract})):[];
+  return linoleumRehashR1({...r,...(sealRow?{inclusion_ast:{kind:'literal',value:false}}:{}),resource_graph:{...graph,
+   inputParameterIds:[...new Set([...(Array.isArray(graph.inputParameterIds)?graph.inputParameterIds.filter((x):x is string=>typeof x==='string'):[]),none])],
+   ...(sealRow?{notApplicablePureMethodR2:{contract:lp2.contract,reason:'EXPLICIT_NET_FIT_ROLLER_NONE_ONLY;not a zero physical quantity',originalSourceId:lp1.sourceId,
+    archivedQuantityParameterId:seal.quantityParameterId,archivedExpression:seal.quantityParameterId,sourceNormStillHeld:true,notAnObjectClosure:true}}:{}),
+   sourceOnlyPaymentBoundaryR1:{noSecondPaymentOrOrder:true,actualPaidOwnerOrOrderNotAsserted:true}},source_metadata:{...r.source_metadata,normativeTrace:trace,
+    projectQuantityCycleR2:{contract:lp2.contract,quantityNormAdded:false,actualObjectFactsAsserted:false,providedCountDoesNotProveSufficiency:true,
+     scope:lp2.method,perimeterNormArchivedNotResolved:true}}});
+ });
+ const definition:LinoleumDefinitionR1={...base,parameters:parameters.map((p,i)=>({...p,ordinal:i})),formulas,resources,
+  runtimeInput:lstructuralR2,runtimeClassification:{},runtimeSourceIds:Object.fromEntries(Object.keys(lstructuralR2).map(id=>[id,[lp2.sourceId]])),
+  ordinaryParameterIds:parameters.filter(p=>p.truth_metadata.visibility_role==='USER_INPUT'&&p.parameter_id!=='q').map(p=>p.parameter_id)};
+ assertLinoleumCurrentProjectQuantityScopeR2(definition);return definition;
+}
+/** A source-owned shape invariant, not an admission bypass. The ordinary shared
+ * publisher still performs capture, retained arithmetic and source checks. */
+export function assertLinoleumCurrentProjectQuantityScopeR2(d:LinoleumDefinitionR1):void{
+ const old=linoleumActualCurrentR1(linoleumParentR1115),none=lp1.parameterPrefix+'perimeter_scope',seal=d.resources.find(r=>r.row_id===lid1('perimeter-seal')),
+  f=d.formulas.find(f=>f.formula_id===lid1('formula:perimeter-seal')),p=d.parameters.find(p=>p.parameter_id===none);
+ if(linoleumStableR1(d.parameters.slice(0,1))!==linoleumStableR1(old.parameters)||linoleumStableR1(d.formulas.slice(0,59))!==linoleumStableR1(old.formulas)
+  ||d.resources.length!==124||d.formulas.length!==124||new Set(d.resources.map(r=>r.row_id)).size!==124)throw Error('LINOLEUM_R2_RETAINED_NATIVE_DRIFT');
+ for(const [id,value]of Object.entries(lstructuralR2)){
+  const method=d.parameters.find(p=>p.parameter_id===id);
+  if(method?.truth_metadata.visibility_role!=='INTERNAL_ONLY'||linoleumStableR1(method.constraints_json?.values)!==linoleumStableR1([value])||d.runtimeInput[id]!==value)throw Error('LINOLEUM_R2_PURE_METHOD_REQUIRED');
+ }
+ if(!seal||linoleumStableR1(seal.inclusion_ast)!==linoleumStableR1({kind:'literal',value:false})||f?.expression_source!=='0'||f.input_parameter_ids.length!==0||f.output_unit_id!=='l'||linoleumStableR1(f.ast)!==linoleumStableR1(linoleumFormulaR1('0').ast)
+  ||lr1(seal.resource_graph.notApplicablePureMethodR2).sourceNormStillHeld!==true||p?.truth_metadata.visibility_role!=='INTERNAL_ONLY'
+  ||p.truth_metadata.provenance===null||lr1(p.truth_metadata.provenance).source_readback_only_v1!==true
+  ||linoleumStableR1(p.constraints_json?.values)!==linoleumStableR1(['NONE_CONFIRMED'])||linoleumStableR1(p.constraints_json?.requiredWhen)!==linoleumStableR1(lexact1))throw Error('LINOLEUM_R2_NONE_SCOPE_BOUNDARY_REQUIRED');
+ if(d.resources.filter(r=>r.row_id.startsWith(ln1)).some(r=>r.procurement_eligible!==false||r.resource_graph.costTreatment!=='INFORMATIONAL_SCOPE'
+  ||!Array.isArray(r.resource_graph.inputParameterIds)||!r.resource_graph.inputParameterIds.includes(none)))throw Error('LINOLEUM_R2_PROTECTED_NONE_CONSUMER_REQUIRED');
+ if(d.parameters.some(p=>p.truth_metadata.value_source_role==='UNRESOLVED_APPLICATION_NORM'))throw Error('LINOLEUM_R2_GENUINE_NORM_NOT_A_PROJECT_COUNT');
+}
+export function compileLinoleumCurrentProjectQuantityR2(submitted:Record<string,unknown>,confirmed:Record<string,unknown>={},actual:unknown=linoleumParentR1115){
+ return compileLinoleumAutomaticR1({catalogId:lp2.catalogId,compilerVersion:lp2.contract,primaryMeasureParameterId:lp1.parameterPrefix+'net_area_m2',
+  definition:buildLinoleumCurrentProjectQuantityR2(actual),submittedParameters:submitted,confirmedParameters:confirmed});
+}
+export function linoleumCurrentProjectQuantityExpectationsR2(){
+ const old=linoleumCurrentWholeExpectationsR1();return {...old,sourceId:lp2.sourceId,scope:lp2.method,
+  entries:old.entries.map(e=>({...e,sourceId:lp2.sourceId,
+   ...(e.expectedResourceId==='perimeter-seal'?{condition:'NOT_APPLICABLE ONLY explicit protected NONE_CONFIRMED pure R2; frozen R1 seal need still SOURCE_HELD',quantityRule:'permanent false inclusion; structural AST0 is not material consumption'}:
+    e.expectedResourceId==='neutral-cleaner'?{quantityRule:lp2.cleaner.expression}:{})})),oldR1SourceHoldsRetained:true};
+}

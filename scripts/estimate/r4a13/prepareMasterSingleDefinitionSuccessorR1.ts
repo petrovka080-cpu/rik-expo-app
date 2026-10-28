@@ -1545,6 +1545,25 @@ export function validateMasterTypedPartialQuantityPreparationR1(config: Pick<Mas
     if(Object.hasOwn(config.binding,'ordinaryCompositeSourceV1'))mixed.push('TYPED_QUANTITY_ORDINARY_RETAINED_CONFLICT');
     try{assertMasterTypedPartialQuantityRegistryR1(basis,{newSources:[registry.source],newLocators:registry.locators});}
     catch(error){mixed.push(String((error as Error).message));}
+  }else if(retained&&!registry&&!Object.hasOwn(config.binding,'ordinaryCompositeSourceV1')){
+    try{
+      invariant(basis.kind==='DEFERRED_PROJECT_QUANTITIES'&&config.catalogAppend==null&&config.projectSourcePackagePath==null
+        &&config.sourceMetadata?.source_kind==='PROJECT_SYSTEM','TYPED_QUANTITY_RETAINED_MANAGED_DEFERRED_SCOPE');
+      invariant([config.contract,config.stopCode,config.catalogId,config.parentReleaseId,config.sourceId,config.normId].every(value=>
+        typeof value==='string'&&value.length>0)&&config.locator!=null,'TYPED_QUANTITY_RETAINED_MANAGED_CONFIG');
+      const candidate=assembleMasterSingleDefinitionManagedRegistryCandidateR1(config as MasterSingleDefinitionSuccessorConfig,
+        {projectSourcePackage:null,projectSourcePackageSet:null}).retentionCandidate;
+      const captured=masterRetainParentBindingsOptInR1(candidate);
+      invariant(captured!=null,'TYPED_QUANTITY_RETAINED_MANAGED_PARENT_REQUIRED');
+      const scoped=resolveMasterScopedNormativeRegistryOptInR1(candidate);
+      invariant(scoped!=null,'TYPED_QUANTITY_RETAINED_MANAGED_FRESH_SCOPED_PREIMAGE_REQUIRED');
+      const oldIds=new Set(captured.capturedParent.resources.map(row=>row.row_id));
+      const newIds=config.resourceDefinitions.filter(row=>!oldIds.has(row.row_id)).map(row=>row.row_id);
+      const ids=resolveMasterSingleDefinitionBindingRowIds(config,config.resourceDefinitions,[basis.source.locatorId]);
+      invariant(newIds.length>0&&ids.length===newIds.length&&newIds.every(id=>ids.includes(id)),
+        'TYPED_QUANTITY_RETAINED_MANAGED_EXACT_NEW_RESOURCE_BINDINGS');
+      assertMasterTypedPartialQuantityRegistryR1(basis,{newSources:[candidate.newSource],newLocators:candidate.newLocators});
+    }catch(error){mixed.push(String((error as Error).message));}
   }else if(!retained&&!registry&&Object.hasOwn(config.binding,'ordinaryCompositeSourceV1')){
     try{
       invariant(basis.kind==='DEFERRED_PROJECT_QUANTITIES'&&config.catalogAppend==null&&config.projectSourcePackagePath==null
