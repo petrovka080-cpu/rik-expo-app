@@ -150,7 +150,8 @@ describe("whole-app developer review runtime", () => {
       const expected = createHash("sha256");
       for (const path of [...files].sort()) expected.update(relative(process.cwd(), path).replaceAll("\\", "/"))
         .update("\0").update(readFileSync(path)).update("\0");
-      const reads = jest.fn(readSync);
+      const reads = jest.fn((fd: number, buffer: Buffer, offset: number, length: number, position: number | null) =>
+        readSync(fd, buffer, offset, length, position));
       const hashClosure = runInNewContext(code + ";backendRuntimeClosureSha256", {
         readFileSync, readSync: reads, openSync, closeSync, existsSync, statSync,
         resolve, dirname, relative, createHash, Buffer, process,

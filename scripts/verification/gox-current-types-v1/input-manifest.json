@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "dc8318cbeb9bc8d9a5d01987edb4596729feef76d66ef0e6d17551f605a0422f",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "4340c808c3ebc5f5d370dfdd7f5a5aef07f8771f96e472ee271c8f9fe30d0d08",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "db9cf36e938cc1137792ab38e24041a9b4f8e7d5b2ab1823bb51349349a68298",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2458,7 +2458,7 @@
     "scripts/dev/wholeAppDevelopmentAsyncRoutes.test.js": "7136f402d6e3c84fa90b3f6f9d734b07b14b1f8c8152788300fd7b9c9f4ddb2c",
     "scripts/dev/warmWholeAppDeveloperRuntime.cjs": "dba64055b8dbb34144f713eac6bef69fb21b0fd242982b6e3bfe7eae1b234017",
     "scripts/dev/warmWholeAppDeveloperRuntime.test.ts": "8d0f7f6173deb52b201d0b4d6aad472eb1310d6880b5adde7d64163b257f06ec",
-    "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "af96d71aad645983b5f8856bffc9a4d17896b58d733e57d14f8689409db94460",
+    "scripts/dev/wholeAppDeveloperReview.contract.test.ts": "ded3d006903375b24dfd729578acd132b8b8b8545424faedb963d571d18ce8f5",
     "scripts/dev/wholeAppEmbeddedBuildTarget.test.js": "d06db891ac5b9e8d525042416d8ddb1a48535805ae9bbf2cd4c6c880b0efe307",
     "src/features/consumerRepair/ConsumerRepairEstimateNotes.tsx": "4740e1e39093c4297dacc97ee56468a3d01535d0e67c860601663d081094989a",
     "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx": "2b61603fdc89e36e6769088a988965bb92019ad98fad75578db90ab227f09487",
@@ -4399,6 +4399,25 @@
       "thisScopeRetainsFullTypecheck": true,
       "unchangedCommonJestBatchesReusedNotRelabelledSameCommit": true,
       "newMfaSqlSourceIsSeparateLocalRollbackProofNotIncludedInThisSnapshot": true,
+      "fullAuditComplete": false
+    },
+    "runtimeReadSpyTypingR1152": {
+      "parent": "287aa9c4d527f8191479a5af6ed57be134650024",
+      "actualPriorTypeRun": 40785602383,
+      "priorTypeProgramFiles": 3613,
+      "priorCodes": [
+        2532,
+        2493
+      ],
+      "reason": "Jest inferred the final 3-argument Node readSync overload; actual VM code uses five positional arguments. Explicit actual-call wrapper preserves realfs and <=64KiB assertion.",
+      "productionCodeChanged": false,
+      "limitsOrAssertionsRemoved": false,
+      "actualAffectedJestPass": 1,
+      "actualDependencyTypeFiles": 562,
+      "actualDependencyTypeDiagnostics": 0,
+      "existingWorkflowScope": "developer-runtime",
+      "priorUnchangedCommon7BatchesRun": 40783106155,
+      "priorUnchangedCommonCasesPass": 672,
       "fullAuditComplete": false
     }
   },
