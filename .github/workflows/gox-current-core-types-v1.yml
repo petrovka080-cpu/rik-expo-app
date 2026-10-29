@@ -45,6 +45,7 @@ jobs:
       - run: npm ci
       - run: python -m pip install psutil==7.1.0
       - name: Full current affected program with memory guard
+        id: full_types
         shell: pwsh
         env:
           SOURCE_COMMIT: ${{ github.sha }}

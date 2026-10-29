@@ -3,7 +3,7 @@
   "snapshotKind": "PRIVATE_PROSPECTIVE10_CURRENT139_PLUS_A10_BEFORE_CANONICAL_APPLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
-    ".github/workflows/gox-current-core-types-v1.yml": "d6203eb1df14dde8bec0b35e3e39ab4ff1375efb22b0af9fff4de8a1e62c0c77",
+    ".github/workflows/gox-current-core-types-v1.yml": "ebcf6963ba78b301d60637c5cfa71a237ac3b9584e7ffa0f191bf43a4611dd67",
     "AGENTS.md": "6bf38d72ef535c73fbaddc2e51909fb4fe82311472894d07e70861ac87d1096c",
     "app/(tabs)/office/index.tsx": "4773281a7daac103265ce6a5d28828f22b7cc1f733cece454dbc4105634d3e8f",
     "app/_layout.tsx": "909c1adf79905785adb2e710a04ee4b25b9fbdaa877acf51f44c29240f0af8cc",
@@ -4788,6 +4788,15 @@
       "resourcePolicyChanged": false,
       "canonicalApplied": false,
       "fullAuditOrAclAccepted": false
+    },
+    "all8OutcomeGateIdCorrectionR1153": {
+      "parent": "1da5af79372f81994f9841c2c77bb7a915f5676f",
+      "cause": "Prior YAML kept CRLF so exact LF insertion did not create full_types step id; all8guards referenced undefinedid and skipped. PriorCI is types-only evidence, NOTall8PASS.",
+      "beforeWorkflowSha256": "d6203eb1df14dde8bec0b35e3e39ab4ff1375efb22b0af9fff4de8a1e62c0c77",
+      "afterWorkflowSha256": "ebcf6963ba78b301d60637c5cfa71a237ac3b9584e7ffa0f191bf43a4611dd67",
+      "all8StillFatal": true,
+      "resourcePolicyChanged": false,
+      "canonicalSourceChanged": false
     }
   },
   "existingCiTypesStageBudget": {
