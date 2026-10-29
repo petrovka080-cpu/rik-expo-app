@@ -697,5 +697,6 @@
   "src/lib/entryBootstrap.contract.test.ts": "d573c7c87278c032d4434d4fd61a17567ea07580391be3a52f06ee64f9db309c",
   "tests/strict-null/authLifecycle.phase1.test.ts": "9d9220bbca7c61173b5a792950f6e42c56411ac49e2d623a0ad58cc56c6e42e2",
   "tests/api/authLifecycleTransport.contract.test.ts": "089a4fb70d9e9b77e3602f0dd7366253243cf4b367bc2d2fc9e478a8f723fd66",
-  "tests/app/nativeIntentPublicRequest.contract.test.ts": "644b73a8fdaa0606fcb3a3b028a1a498d153005214ce472db57f3f48c79b6ba4"
+  "tests/app/nativeIntentPublicRequest.contract.test.ts": "644b73a8fdaa0606fcb3a3b028a1a498d153005214ce472db57f3f48c79b6ba4",
+  "tests/security/shellQuoteBoundary.test.js": "823b934219346b1acde928b66330d35fe59001304851f66a4fdc7f27d87519c5"
 }

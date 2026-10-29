@@ -290,7 +290,7 @@
     "expo-env.d.ts": "6fc02634da46d3edc5a88eec9173ba6bf709726be3cba83c73ebd8e859d5c147",
     "jest.config.js": "e8ec12f711ce53a030fb7e9ac6b51ca3dccf32035357a77de39b7b0632720708",
     "jest.setup.js": "88956f4429b53e19936bb3c0704c524fd097e8a68b457691716c1cd5753ae1c1",
-    "package-lock.json": "ee6621c44b5b63a18b8f7c7e164d39608621d55990f4fac817c00a1e5203c1fe",
+    "package-lock.json": "e89922b8cf1dce1fd5b9ab9c86fc96e503f68db28398e0a619c2382a55031405",
     "package.json": "c23e73dec82fe210a856fb9f0340848afcab68a5a5dc55a144ba028d466eef96",
     "scripts/dev/ensureLocalDeveloperCanonicalBackend.ts": "90c63b5c7526a5e69939c805b9d0ebee93adcfe6f8904d908b097bab9603ec1b",
     "scripts/dev/runFormworkFramiXlifePileCapDistinctProjectDifferentialWebAcceptance.ts": "612481635ec44d67e5104630ef0b8b8df961502a6579a58e8c35a5ac86e0446e",
@@ -561,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "c8da40112f004794f359d1f51d9cd31100a55c1e5875845adde1c9af40c2c063",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "d76801f0ca990b02534e2e5b9b6ff5794c91da35b5472bb4a649c1a1e7ca5c71",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "8d117096fdbe2551c82973cc7ec7f1b4cc8df205ec4cd482709207f36d851d89",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "9b7ebc576e360bebd0751debee3f2e4e276b58450833b2f239a95100ce4aa5c7",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2676,7 +2676,8 @@
     "src/lib/entryBootstrap.contract.test.ts": "d573c7c87278c032d4434d4fd61a17567ea07580391be3a52f06ee64f9db309c",
     "tests/strict-null/authLifecycle.phase1.test.ts": "9d9220bbca7c61173b5a792950f6e42c56411ac49e2d623a0ad58cc56c6e42e2",
     "tests/api/authLifecycleTransport.contract.test.ts": "089a4fb70d9e9b77e3602f0dd7366253243cf4b367bc2d2fc9e478a8f723fd66",
-    "tests/app/nativeIntentPublicRequest.contract.test.ts": "644b73a8fdaa0606fcb3a3b028a1a498d153005214ce472db57f3f48c79b6ba4"
+    "tests/app/nativeIntentPublicRequest.contract.test.ts": "644b73a8fdaa0606fcb3a3b028a1a498d153005214ce472db57f3f48c79b6ba4",
+    "tests/security/shellQuoteBoundary.test.js": "823b934219346b1acde928b66330d35fe59001304851f66a4fdc7f27d87519c5"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4481,6 +4482,34 @@
       "actualMfaLoginUiAccepted": false,
       "actualPostgrestMfaAccepted": false,
       "nonTotpCompatibilityPending": true,
+      "fullAuditComplete": false
+    },
+    "shellQuoteMinimumFixedLockR1152": {
+      "parent": "e96c4052feb05092140ae18c55d157aee7594e84",
+      "advisory": "https://github.com/advisories/GHSA-pqg4-j6r4-53mv",
+      "oldLockedVersion": "1.10.0",
+      "newLockedVersion": "1.11.0",
+      "fixedOfficialArchiveIntegrityVerified": true,
+      "changedLockPackageEntries": 1,
+      "changedLockFields": [
+        "version",
+        "resolved",
+        "integrity"
+      ],
+      "otherLockPackagesChanged": 0,
+      "rootPackageJsonChanged": false,
+      "localNodeModulesStillOld": true,
+      "isolatedExactArtifactCasesPass": 12,
+      "newMandatoryInstalledPackageCases": 12,
+      "osShellCommandsExecutedByRegression": false,
+      "canonicalCurrentOwnedPaths": 71,
+      "priorUnchanged7CommonBatchesPass": 672,
+      "priorUnchangedCommonBatchesRun": 40791364047,
+      "priorExactAll8Cases795Pass": true,
+      "newValidationScope": "developer-runtime",
+      "fullTypesRetained": true,
+      "actualRuntimeExploitReachabilityProven": false,
+      "allProjectChangesCommitted": false,
       "fullAuditComplete": false
     }
   },
