@@ -98,7 +98,7 @@ describe('canonical PDF reload recovery through the real common materialization 
   expect(await restoreWebPdfPreviewSession(pending.session.sessionId)).toBe(false);
  });
  it('migrates a disposable legacy preview namespace by purging cache, without blocking the verified canonical owner',async()=>{
-  const doc=descriptor(),first=createPreparingDocumentPreviewSession({...doc,contentIdentity:undefined});
+  const doc=descriptor(),first=createPreparingDocumentPreviewSession(doc);
   const asset=await materializeDocumentPreviewSessionAsset(first.session.sessionId,{...doc,contentIdentity:undefined},first.session.preparationToken);
   await persistWebPdfPreviewSession({session:first.session,asset,namespace:'old-generated-preview',identity:{
    tenantId:'consumer-repair',companyId:'company-1',userId:'user-1',sessionBoundaryId:'user-1:draft-1',
@@ -121,11 +121,30 @@ describe('canonical PDF reload recovery through the real common materialization 
   await materializeDocumentPreviewSessionAsset(pending.session.sessionId,doc,pending.session.preparationToken);
   expect(getDocumentSessionSnapshot(pending.session.sessionId).session?.status).toBe('ready');
  });
- it.each(['checksumSha256','artifactSha256','releaseId','definitionVersionId','rendererVersion','currency'] as const)('does not seed a cache with incomplete %s identity',async field=>{
-  const doc=descriptor();doc.contentIdentity={...identity,[field]:''};
-  const pending=createPreparingDocumentPreviewSession(doc);
-  expect(await persistCanonicalWebPdfPreview({doc,session:pending.session,asset:{assetId:'asset',uri:doc.uri,fileSource:doc.fileSource,sourceKind:doc.fileSource.kind,
-    fileName:doc.fileName,title:doc.title,mimeType:'application/pdf',documentType:'request',originModule:'reports',source:'generated',createdAt:new Date().toISOString()}})).toBe(false);
+ it.each(['ownerUserId','viewerUserId','revisionId','checksumSha256','artifactSha256','releaseId','definitionVersionId','rendererVersion','currency'] as const)('does not seed a cache with incomplete %s identity',async field=>{
+  for(const value of ['',undefined]){
+   const doc=descriptor();doc.contentIdentity={...identity,[field]:value};
+   const pending=createPreparingDocumentPreviewSession(doc);
+   expect(await persistCanonicalWebPdfPreview({doc,session:pending.session,asset:{assetId:'asset',uri:doc.uri,fileSource:doc.fileSource,sourceKind:doc.fileSource.kind,
+     fileName:doc.fileName,title:doc.title,mimeType:'application/pdf',documentType:'request',originModule:'reports',source:'generated',createdAt:new Date().toISOString()}})).toBe(false);
+  }
   expect(globalThis.fetch).not.toHaveBeenCalled();
+ });
+ it('does not retarget the viewing principal if descriptor identity mutates during the first auth read',async()=>{
+  type AuthResult={session:{user:{id:string}};degraded:boolean};
+  const gate:{complete?:(value:AuthResult)=>void}={};
+  mockSessionSafe.mockImplementationOnce(()=>new Promise<AuthResult>(resolve=>{gate.complete=resolve;}));
+  const doc=descriptor(),mutableIdentity={...identity};doc.contentIdentity=mutableIdentity;
+  const pending=createPreparingDocumentPreviewSession(doc);
+  const materializing=materializeDocumentPreviewSessionAsset(pending.session.sessionId,doc,pending.session.preparationToken);
+  for(let tick=0;tick<20&&!gate.complete;tick++)await Promise.resolve();
+  const complete=gate.complete;if(!complete)throw new Error('First auth read was not reached');
+  mutableIdentity.viewerUserId='user-2';
+  complete({session:{user:{id:'user-2'}},degraded:false});
+  await expect(materializing).rejects.toMatchObject({name:'AbortError'});
+  expect(globalThis.fetch).not.toHaveBeenCalled();
+  expect(getDocumentSessionSnapshot(pending.session.sessionId).session?.status).toBe('error');
+  clearDocumentSessions();
+  expect(await restoreWebPdfPreviewSession(pending.session.sessionId)).toBe(false);
  });
 });

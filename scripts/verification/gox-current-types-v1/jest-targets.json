@@ -17,7 +17,9 @@
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdfPurposeJobErrorR1153.test.ts",
       "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts",
       "tests/realtime/realtimeClientBudget.test.ts",
-      "src/lib/realtime/realtime.lifecycle.test.ts"
+      "src/lib/realtime/realtime.lifecycle.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts"
     ],
     "owners": [
       "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts",
@@ -33,7 +35,8 @@
       "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx",
       "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts",
       "src/lib/documents/pdfWebPreviewCache.test.ts",
-      "src/lib/pdf/pdfInstantCache.test.ts"
+      "src/lib/pdf/pdfInstantCache.test.ts",
+      "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts"
     ],
     "ui-contract": [
       "tests/requestEstimate/requestEstimateViewModel.contract.test.ts",

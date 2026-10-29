@@ -3,7 +3,7 @@ import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
 import {canonicalEstimateSha256HexText} from './canonicalEstimateSha256';
 import {canonicalOperationCompositionEvidenceFromPassportV1,canonicalEstimateSavedOperationAcceptanceV1,
  canonicalProfessionalPdfReviewAcknowledgmentV1,canonicalProfessionalPdfReviewEligibilityV1,
- canonicalManualPreliminaryReviewEligibilityV1,assertCanonicalProfessionalPdfIssuanceV1} from './canonicalEstimateSavedOperationAcceptanceV1';
+ canonicalManualPreliminaryReviewEligibilityV1,assertCanonicalProfessionalPdfIssuanceV1,assertCanonicalProfessionalPdfReadinessSnapshotV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 import {canonicalArtifactPreliminaryNeeds,type CanonicalArtifactRow} from './canonicalEstimateArtifactContract';
 import {buildCanonicalProfessionalPdfProjection,assertCanonicalProfessionalPdfMoneyCells} from './canonicalProfessionalPdf';
 import {resolveCanonicalSavedOperationOrdinalsV1,canonicalEstimateResourceOperationSections} from './canonicalEstimateOperationComposition';
@@ -69,7 +69,8 @@ test('modern three unknown physical quantities and missing prices preview saved 
  expect(canonicalProfessionalPdfReviewEligibilityV1({revision:f.revision,resources:f.resources()})).toMatchObject({eligible:true,unknownQuantityCount:3});
  const ack=f.ack();expect(ack.unknownQuantityCount).toBe(6); // Saved report acknowledgment counts raw notes; UI DTO counts physical rows.
  const p=f.render();expect(p.html).toContain('Не рассчитано');expect(p.html).toContain('<tr class="operation">');
- expect((p.html.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gu)??[]).filter(row=>row.includes('<td class="numeric">Не рассчитано</td>')&&!row.includes('<td>Справочная запись</td>'))).toHaveLength(3);
+ const printedRows:string[]=p.html.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gu)??[];
+ expect(printedRows.filter(row=>row.includes('<td class="numeric">Не рассчитано</td>')&&!row.includes('<td>Справочная запись</td>'))).toHaveLength(3);
  expect(p.pricedRowCount).toBe(0);expect(p.missingPriceRowCount).toBe(2);expect(p.grandTotalStatus).toBe('PARTIAL_NEEDS_PRICE');
  expect([...p.html.matchAll(/<td class="money">(.*?)<\/td>/gu)].every(match=>match[1]==='')).toBe(true);
  expect(p.html).toContain('Состав подработ и полнота обеспечения не подтверждены');
@@ -79,7 +80,8 @@ test('modern three unknown physical quantities and missing prices preview saved 
 test('zero ordinary rows and all physical quantities unknown still use the same renderer with truthful preliminary status',()=>{
  const f=fixture(true),before=JSON.stringify(f);expect(f.rows).toHaveLength(0);expect(f.revision.row_count).toBe(0);
  expect(canonicalProfessionalPdfReviewEligibilityV1({revision:f.revision,resources:f.resources()})).toMatchObject({eligible:true,unknownQuantityCount:3});
- const p=f.render();expect((p.html.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gu)??[]).filter(row=>row.includes('<td class="numeric">Не рассчитано</td>')&&!row.includes('<td>Справочная запись</td>'))).toHaveLength(3);
+ const p=f.render();const printedRows:string[]=p.html.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gu)??[];
+ expect(printedRows.filter(row=>row.includes('<td class="numeric">Не рассчитано</td>')&&!row.includes('<td>Справочная запись</td>'))).toHaveLength(3);
  expect(p.pricedRowCount).toBe(0);expect(p.html).not.toContain('>Полная<');expect(JSON.stringify(f)).toBe(before);
 });
 

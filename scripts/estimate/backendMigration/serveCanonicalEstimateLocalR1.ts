@@ -3803,7 +3803,8 @@ async function buildArtifactClaimedJob(
   job: JsonRecord,
 ): Promise<void> {
   const revisionId = String(job.parent_revision_id ?? "");
-  const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(job.input_payload?.issuancePurpose);
+  const inputPayload = job.input_payload as JsonRecord | null | undefined;
+  const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(inputPayload?.issuancePurpose);
   if(issuancePurpose==='PRELIMINARY_REVIEW'&&job.operation!=='professional_pdf')throw Object.assign(new Error('invalid PDF purpose'),{code:'ARTIFACT_PURPOSE_INVALID'});
   const revision = (
     await client.query("select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1", [
@@ -3824,7 +3825,7 @@ async function buildArtifactClaimedJob(
     });
   if(issuancePurpose!=='PRELIMINARY_REVIEW')assertCanonicalPurchaseSupplyRevisionV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)], revision.amendment_contract);
   if (job.operation === "procurement") assertCanonicalPurchaseSupplyReadyV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)]);
-  const reviewAcknowledgmentV1=job.input_payload?.reviewAcknowledgmentV1 as import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewAcknowledgmentV1|undefined;
+  const reviewAcknowledgmentV1=inputPayload?.reviewAcknowledgmentV1 as import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewAcknowledgmentV1|undefined;
   if(issuancePurpose==='PRELIMINARY_REVIEW'&&reviewAcknowledgmentV1?.actorUserId!==String(job.owner_user_id))throw Object.assign(new Error('review actor mismatch'),{code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'});
   const artifactAcceptance=assertCanonicalProfessionalPdfIssuanceV1({revision,resources:[...allRows,...canonicalArtifactPreliminaryNeeds(revision,{issuancePurpose})],issuancePurpose,reviewAcknowledgmentV1});
   const selection = issuancePurpose==='PRELIMINARY_REVIEW'
@@ -3975,7 +3976,7 @@ async function buildArtifactClaimedJob(
           definitionVersionId,
           pageCount,
           grandTotalStatus,
-        }),...(issuancePurpose==='PRELIMINARY_REVIEW'?{jobId:String(job.id),snapshotReadReportV1:job.input_payload?.snapshotReadReportV1}:{})},
+        }),...(issuancePurpose==='PRELIMINARY_REVIEW'?{jobId:String(job.id),snapshotReadReportV1:inputPayload?.snapshotReadReportV1}:{})},
       }),
     ],
   );

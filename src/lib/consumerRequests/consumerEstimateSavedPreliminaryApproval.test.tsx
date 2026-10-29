@@ -76,7 +76,7 @@ test('legacy58 58 saved priced rows permit only exact manual preliminary acknowl
  expect(JSON.stringify(approved.items)).toBe(before);
  expect(approved.events.at(-1)).toMatchObject({eventType:'consumer_approved_canonical_preliminary',payload:{pdfArtifactCreated:false,unknownQuantityCount:0,full:false}});
  expect(approved.events.at(-1)?.payload).not.toHaveProperty('artifactId');
- expect(approved.estimateDraftRevisionState!.revisions.at(-1)!.pdfArtifactId).toBeFalsy();
+ expect(Reflect.get(approved.estimateDraftRevisionState!.revisions.at(-1)!,'pdfArtifactId')).toBeFalsy();
  expect(validateConsumerRepairRequestForMarketplace(bundle.draft.id,bundle.draft.consumerUserId).errors).toEqual(expect.arrayContaining([expect.objectContaining({code:'ESTIMATE_MANUAL_SOURCE_REVIEW_REQUIRED'})]));
 });
 test.each(['quantity','unit','title','price','rowCode','category','payable','procurement','estimate','owner','unknown','object','safety','supply','withdrawal','checksum','release'] as const)
@@ -116,7 +116,7 @@ test.each(['normal','summary-only','emergency'] as const)('legacy58 durable %s c
  expect(consumerEstimateManualApprovalStatusRu(cold)).toBe('Подтверждена вручную как предварительная');
  expect(cold.durableHistorySummary?.canonicalRevisionChecksumSha256).toBe(revision.checksumSha256);
  expect(cold.durableHistorySummary?.pdfArtifactId).toBeFalsy();
- expect(cold.estimateDraftRevisionState?.revisions.at(-1)?.pdfArtifactId).toBeFalsy();
+ expect(Reflect.get(cold.estimateDraftRevisionState?.revisions.at(-1)??{},'pdfArtifactId')).toBeFalsy();
 });
 test('controller cold zero-needs legacy58 recovers only after one fresh exact backend GET, without edits or compilation',async()=>{
  const{bundle,revision}=fixture();
@@ -195,7 +195,7 @@ test('report slot conflict stays fail closed without STANDARD fallback or READY 
  jest.spyOn(client,'getCanonicalEstimateArtifact').mockRejectedValue(new CanonicalEstimateApiError('purpose conflict',{code:'ARTIFACT_PURPOSE_CONFLICT',httpStatus:409}));
  const build=jest.spyOn(client,'buildCanonicalEstimateArtifact'),show=jest.spyOn(preview,'prepareAndPreviewPdfDocument');
  await action.completeHistoryPdfOpen();expect(action.handleCanonicalArtifactOpenError).toHaveBeenCalledWith(expect.objectContaining({code:'ARTIFACT_PURPOSE_CONFLICT'}));
- expect(build).not.toHaveBeenCalled();expect(show).not.toHaveBeenCalled();expect(getConsumerRepairRequest(bundle.draft.id).estimateDraftRevisionState!.revisions.at(-1)!.pdfArtifactId).toBeFalsy();
+ expect(build).not.toHaveBeenCalled();expect(show).not.toHaveBeenCalled();expect(Reflect.get(getConsumerRepairRequest(bundle.draft.id).estimateDraftRevisionState!.revisions.at(-1)!,'pdfArtifactId')).toBeFalsy();
 });
 test('unavailable revision transport does not claim missing object inputs or promise manual eligibility',()=>{
  let view!:TestRenderer.ReactTestRenderer;
@@ -366,7 +366,7 @@ test.each(['current','history'] as const)('explicit %s review reads exact Ready 
  await open();
  expect(get).toHaveBeenCalledWith(expect.objectContaining({revisionId:revision.revisionId,issuancePurpose:'PRELIMINARY_REVIEW'}));
  expect(build).not.toHaveBeenCalled();expect(show).toHaveBeenCalledTimes(1);expect(action.handleCanonicalArtifactOpenError).not.toHaveBeenCalled();
- expect(getConsumerRepairRequest(target.draft.id).estimateDraftRevisionState!.revisions.at(-1)!.pdfArtifactId).toBeFalsy();
+ expect(Reflect.get(getConsumerRepairRequest(target.draft.id).estimateDraftRevisionState!.revisions.at(-1)!,'pdfArtifactId')).toBeFalsy();
 });
 for(const surface of ['current','history'] as const)test.each(['NOT_FOUND','ARTIFACT_PRESENTATION_REFRESH_REQUIRED'] as const)
  ('explicit '+surface+' review creates only after %s',async code=>{
@@ -414,7 +414,7 @@ test('saved history review opens exact cached PDF without durable manual approva
  expect(getConsumerRepairRequest(bundle.draft.id).draft.status).toBe('draft');
  expect(consumerEstimateManualQuantityApprovalRecord(getConsumerRepairRequest(bundle.draft.id))).toBeNull();
  expect(JSON.stringify(getConsumerRepairRequest(bundle.draft.id).items)).toBe(before);
- expect(getConsumerRepairRequest(bundle.draft.id).estimateDraftRevisionState!.revisions.at(-1)!.pdfArtifactId).toBeFalsy();
+ expect(Reflect.get(getConsumerRepairRequest(bundle.draft.id).estimateDraftRevisionState!.revisions.at(-1)!,'pdfArtifactId')).toBeFalsy();
 });
 test('cold saved PDF review uses fresh read eligibility without quantity edits, recompile or approval',async()=>{
  const{bundle,revision}=fixture(),cold=decodeConsumerRepairBundleFromDurableStorage(JSON.parse(JSON.stringify(
@@ -492,7 +492,8 @@ test('same revision with a new server diagnostic digest receives a distinct stab
  const build=jest.spyOn(client,'buildCanonicalEstimateArtifact').mockRejectedValue(new CanonicalEstimateApiError('stop after key',{code:'FORBIDDEN',httpStatus:403}));
  await action.completePdfOpen();
  const first=build.mock.calls[0][0].idempotencyKey;
- const next=structuredClone(revision);next.professionalPdfReviewEligibilityV1!.auditSha256='9'.repeat(64);
+ const next:CanonicalEstimateRevisionView={...structuredClone(revision),
+  professionalPdfReviewEligibilityV1:{...revision.professionalPdfReviewEligibilityV1!,auditSha256:'9'.repeat(64)}};
  jest.mocked(client.getCanonicalEstimateRevision).mockResolvedValue(next);
  await action.completePdfOpen();await action.completePdfOpen();
  const second=build.mock.calls[1][0].idempotencyKey;

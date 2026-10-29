@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "ACTUAL_CANONICAL_CURRENT_CORE_AND_NODE_APP_AUDIT_FIXES_R1152",
+  "snapshotKind": "PRIVATE_PROSPECTIVE_SEVEN_CORRECTIONS_OVER_EXACT_CURRENT139_BEFORE_CANONICAL_APPLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "51c289aa7ec9c8145b9ca7852cfdab6bf6da49df6f63fab5b3a6235a2ea97372",
@@ -318,7 +318,7 @@
     "scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryReadSetR1.ts": "520d80b9c68bfa42894bcddce6be5c4d3ac1f506486d55ad851d909b46fe71a5",
     "scripts/estimate/backendMigration/canonicalSelectedMaterialDeliveryServerR1.ts": "3622f74a8c3a67db56d5da91287de9ad95d63b69cf7a6a1ba05ddc533f8f68b2",
     "scripts/estimate/backendMigration/roofRetainedHistoryContextR1.ts": "aa338df982d127439f35ab6d4e120ae49ca4e534ac75dcf15c9010b444e711ee",
-    "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": "dab8d91b599bdb1edc547cacf7e5d95ec60fbd18c81cc2302b1518aadcdd3a0c",
+    "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts": "e244f1aebb1dd838097f23591160b7d514b7f19aae16d89504666157d804c2d8",
     "scripts/estimate/batch001008R3/batch001DrywallGoldFixtureR3.ts": "a72df97a02221e699380c6b15ca17f1d62b2dc58eb25460ef1e956e2b57952e6",
     "scripts/estimate/buildAsphaltRelatedR8Inventory.ts": "c384816684ae0b6f3e68f47ffd385923a38c0a4558401630b046fe66719de270",
     "scripts/estimate/buildControlledPilotHealthDashboard.ts": "11eb9952703e60b0794ea3f2052022f9624f6ab8c4fd770539aec47c6e4d43b2",
@@ -561,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "122cae468d745666c8bb1f683d7ed6665ce8d37d6a522288405c8bd9e4ea8b3e",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "a2650faa31148f612ca30b4dcb3d3cb076a4d619f41c6abf964feae47dc289e7",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "807c42fd5c61560df36b4d262a1116d20d2b1a39ebe9963ea454b958050aafe8",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "855eebca0e9ef7f9f03ee88eca3ea810b142783a90b0a98ce09efdf9af3adc51",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2694,17 +2694,17 @@
     "scripts/render/serveExpoWebStaging.mjs": "f60c228b0af262e03beba2993526e67687dc0a5efd751a0ce0d33199ce839564",
     "tests/scale/renderExpoWebStagingServer.contract.test.ts": "4bfa3a9668dc485357742dc457f9659ea49051ec167ac006caa05796a965090a",
     "src/lib/estimate/backendPlatform/canonicalManualPreliminaryReviewEligibilityR1153.test.ts": "05d1f06fd04cca2e914d7acc075a8c138b33d755701ae57687ae4786e7d81082",
-    "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx": "577790521610dcbd60d99e16c74ea61c99342b81aa447a8fef08c7a9919cebe4",
+    "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx": "adb64444d1fbcfbe281f6b5fdf372834f85abb43f6dad731f92a8fd8d3c85e7c",
     "src/lib/consumerRequests/__fixtures__/savedLegacyCarpet58ReviewV1.json": "d35bd04cecb2232fe55ea4d76c32ab9b431d3e3f081659d9e99b73d4f340e160",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdfPurposeJobErrorR1153.test.ts": "7b5a59640a890b76e69055f62365836f3072b239c3f3d198941e98c24fb1f00d",
-    "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts": "c79161a71dea53358421aa9f65dfa3b7e7b00155bb052ab42e3ce7716ef3213e",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts": "4ae196bca6c051ee8412ba7029d2f52a8a4f3fa1d1295f425331ff172dfc51e9",
+    "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts": "eff6abbab31d144bd697c723b9686c937723ff58bcdf2181ccfe0d964fb7d3b7",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts": "f6511f29d79ae993025e764f781572128b7b0f34c4a72183900db8c3c3c44ac7",
     "src/lib/consumerRequests/consumerEstimateProfessionalPdfReview.ts": "bbd80d9340f478f7f95b2d2a44b49b73a145220dc7a84d95fdebac0693573255",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.groupedSavedEvidenceR1153.test.ts": "43b13245274aeba144934c469f66026dc90f13bd7fd4b90ab13faa39df97fd3c",
     "src/lib/estimatePresentation/buildCanonicalParameterCards.r3.test.ts": "3d14434693c91796ecc2dfe625b529c8a39c9aa15bfcc33d6213b7a64ce159b1",
-    "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts": "6f3d687df77b5107483ad0963db3b2a670c1e6965a5cafd75b4d3a2bf514ce27",
-    "src/lib/documents/pdfCanonicalWebPreviewPersistence.ts": "258eadee981272aa8bb6751db51b2e5ed4eee3e9bd47e7392fe296ae9b3ea454",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts": "d08642a9baab6bcd84acdcddd6250cbaec8f041673013509043c3a03d216e559",
+    "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts": "b4f63b31393e9e4f41ed48ff7977e175e287afc395fafa13f25f87aa3f501c6f",
+    "src/lib/documents/pdfCanonicalWebPreviewPersistence.ts": "6a27ebfcfcfcb973088faa54efb201dc90f40b4a5de622c6a38f274aa364c1a5",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts": "f54609070c40e5c0260e44f0db5ecdee6bcb780e418693f42cc0c1f577410648",
     "supabase/migrations/20261029150000_professional_pdf_readonly_snapshot_report.sql": "239740d375bdaea37092f3ccef22eaadb25ddbfa2af8a8bdf5e0dd5cb6b2ce7c",
     "tests/realtime/realtimeClientBudget.test.ts": "fbb87a6bea70752b1a66ea54aee58cacacb707ad2bd737e6d9b97956635b659d",
     "scripts/dev/metroNavigationAndroidAssets.cjs": "af5e92c622d94f64715979eefcb8cde06f86574caa5aea52b8fb44d01bfb29f4",
@@ -4261,8 +4261,8 @@
     "node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.d.ts": "ecf40ba1d79472eacf1dc2c54eae5ae9638aa8da8340f5c1166b6efb585aca13"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "a2650faa31148f612ca30b4dcb3d3cb076a4d619f41c6abf964feae47dc289e7",
-  "canonicalSourceFreezeSha256": "6a10d7677fe02cb51e6e8a5e3cbf61d0d62a61bfd85edd127baca9910e542e02",
+  "originalSeedManifestSha256": "855eebca0e9ef7f9f03ee88eca3ea810b142783a90b0a98ce09efdf9af3adc51",
+  "canonicalSourceFreezeSha256": "eed1017fe7ca406723521d16b0436cb855b6706965b0aab9f14dd0c8100a572f",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
@@ -4272,7 +4272,7 @@
     "newInputs": "Only exact2filepublisher+sourceguideforward; actual9pureandSQL91/realPGdryrunpassed;no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
-  "sourceFreezeReferenceIsPredecessor": false,
+  "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
     "sourceFiles": 2724,
@@ -4711,6 +4711,56 @@
         "src/lib/pdf/pdfInstantCache.test.ts"
       ],
       "existingCiHarnessPreservedFromExactParent": "0fd42e1e4d07387a85467833ebad7006c8526321"
+    },
+    "prospectiveCi26CorrectionsR1153": {
+      "parent": "e7102ff347839e388015a5e964f0f4d6cf5d10ad",
+      "createdAtUtc": "2026-10-29T17:26:27.285059+00:00",
+      "privatePatchSha256": "132478acf49c7b3617ce91ab2f0ddfffe1a2d06789f4acfe25e97b28da996485",
+      "canonicalPredecessorSourceTreeHash": "efa2e5177bdd315968d02b338b36636b26956999343d1aeb9a85e242a44e3054",
+      "changedPaths": [
+        "scripts/estimate/backendMigration/serveCanonicalEstimateLocalR1.ts",
+        "src/lib/documents/pdfCanonicalWebPreviewPersistence.ts",
+        "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts",
+        "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts",
+        "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx",
+        "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts",
+        "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts"
+      ],
+      "supplierPins": [
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\backend-artifact-payload-type254-r1153\\PRIVATE_PATCH.json",
+          "sha256": "6999f82c151a92d206419ebf7784c7d82ebd56f406deb646ca44d9c3ab82defa"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\low-current\\pdf-canonical-web-preview-ci139-forward-r1153\\PDF_CANONICAL_WEB_PREVIEW_CI139_GUARDED_FORWARD_R1153.json",
+          "sha256": "cfc3389084d08219824b8611c0f285db19fcdc2d539d4bbcf8ee417e316609a3"
+        },
+        {
+          "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\finishing\\carpet-whole-current\\saved-preliminary-approval-r1153\\ci139-fixture-type-forward-r1153\\ROOT_CI139_FOUR_FIXTURE_TYPE_GUARDED_FORWARD_R1153.json",
+          "sha256": "9b5bf35d28b203ed25a27a055631b14313c0a962fbdfd48127789576cff7ac79"
+        }
+      ],
+      "astModulePathReviewSha256": "0a46615bf70700dd1d6b8bd0bd56081c45137bf48812aa28d2089d8133d956a0",
+      "affectedTestsByExistingBatch": {
+        "ui-cold": [
+          "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts",
+          "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx",
+          "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts"
+        ],
+        "contracts": [
+          "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts",
+          "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts"
+        ]
+      },
+      "sourceOnly": true,
+      "canonicalChangesApplied": false,
+      "existingValidationScope": "all",
+      "allEightBatchesRequireFreshExecution": true,
+      "actualTypeOrJestPassClaimed": false,
+      "normalPhysicalSourceRestorationAndCompiler": true,
+      "diagnosticSuppressionAdded": false,
+      "purposeAuthChecksumOwnerAndOrdinaryStrictGuardsPreserved": true,
+      "sourceHistoryAndRuntimeSecretsExcluded": true
     }
   },
   "existingCiTypesStageBudget": {

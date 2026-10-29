@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {canonicalEstimateStableJson} from './canonicalEstimateDeterminism';
-import {canonicalArtifactPreliminaryNeeds,type CanonicalArtifactRow} from './canonicalEstimateArtifactContract';
+import {canonicalArtifactPreliminaryNeeds,type CanonicalArtifactRow,type CanonicalArtifactRevision} from './canonicalEstimateArtifactContract';
 import {canonicalProfessionalPdfReviewAcknowledgmentV1,canonicalProfessionalPdfReviewEligibilityV1,
  assertCanonicalProfessionalPdfIssuanceV1,canonicalProfessionalPdfReviewSnapshotDigestV1} from './canonicalEstimateSavedOperationAcceptanceV1';
 import {buildCanonicalProfessionalPdfProjection,assertCanonicalProfessionalPdfMoneyCells} from './canonicalProfessionalPdf';
@@ -13,9 +13,9 @@ const operation=(id='prepare',criterion='Проверочный этап зав�
 const graph=(row:R)=>(row.calculation_trace as {resourceGraph:R}).resourceGraph;
 /** Synthetic storage shapes test readability, never catalog/source admission. */
 function fixture(){
- const revision:R={id:'11111111-1111-4111-8111-111111111111',release_id:'22222222-2222-4222-8222-222222222222',
+ const revision:CanonicalArtifactRevision={id:'11111111-1111-4111-8111-111111111111',release_id:'22222222-2222-4222-8222-222222222222',
   definition_version_id:'33333333-3333-4333-8333-333333333333',catalog_id:'TEST_ONLY_REPORT',currency_code:'KGS',
-  row_count:1,definition_withdrawal_reason:null,input_parameters:{},amendment_contract:{parameterSources:{preliminaryNeeds:[]}}};
+  checksum_sha256:undefined,row_count:1,definition_withdrawal_reason:null,input_parameters:{},amendment_contract:{parameterSources:{preliminaryNeeds:[]}}};
  const row=(id:string,ordinal:number):CanonicalArtifactRow=>({row_id:id,ordinal,revision_id:revision.id,title_ru:'Труба '+id,
   physical_row_type:'material',category:'material',unit_id:'m',quantity:'2',unit_price:'5',amount:'10',currency_code:'KGS',
   semantic_owner:'TEST_ONLY:'+id,ownership_status:'OWNED',included_in_estimate:true,included_in_procurement:true,procurement_eligible:true,
@@ -153,7 +153,7 @@ if(externalPath){
  const bytes=readFileSync(externalPath);
  if(createHash('sha256').update(bytes).digest('hex')!=='b2ab4bddbcac870b4595197cde0c600f4e41a3139e6b5d12713a71876e0d1ada')
   throw new Error('PRIVATE_REPORT_SNAPSHOTS_PIN_MISMATCH');
- const saved=JSON.parse(bytes.toString('utf8')) as {revision:R;resources:CanonicalArtifactRow[]|null}[];
+ const saved=JSON.parse(bytes.toString('utf8')) as {revision:CanonicalArtifactRevision;resources:CanonicalArtifactRow[]|null}[];
  if(saved.length!==10)throw new Error('PRIVATE_REPORT_EXPECTED_TEN_CASES');
  for(const [index,s] of saved.entries())test('ROOT approved saved report case '+(index+1)+' is readable without mutation',()=>{
   const before=JSON.stringify(s),ordinary=s.resources??(s.revision.row_count===0?[]:null);

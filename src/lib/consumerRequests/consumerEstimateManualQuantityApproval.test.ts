@@ -154,7 +154,7 @@ test.each(['normal','summary-only','emergency'] as const)('manual confirmation s
   expect(reloaded.structuredEstimatePayload).toBeNull();
   expect(reloaded.durableHistorySummary?.manualQuantityApproval).toEqual(ack);
   expect(reloaded.durableHistorySummary?.pdfArtifactId).toBeFalsy();
-  expect(reloaded.estimateDraftRevisionState?.revisions.at(-1)?.pdfArtifactId).toBeFalsy();
+  expect(Reflect.get(reloaded.estimateDraftRevisionState?.revisions.at(-1)??{},'pdfArtifactId')).toBeFalsy();
   expect(reloaded.durableHistorySummary?.canonicalRevisionChecksumSha256).toBe(ack.checksumSha256);
   expect(consumerEstimateHasConfirmedManualQuantities(reloaded)).toBe(true);
   expect(compactConsumerRepairBundleForDurableStorage(reloaded).durableHistorySummary?.manualQuantityApproval).toEqual(ack);
