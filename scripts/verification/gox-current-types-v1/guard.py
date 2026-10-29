@@ -44,6 +44,7 @@ def main():
     remaining = []; source_drift = ['UNCHECKED']; dependency_drift = ['UNCHECKED']
     closure = 'NO_CHILD_STARTED'; expected_paths = set(); actual_paths = set()
     head_before = head_after = seed_sha = run_id = None
+    transform_cache_proof = transform_marker = transform_marker_sha = None
 
     def git_head():
         return subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True, timeout=20).strip()
@@ -87,8 +88,33 @@ def main():
             targets = targets_spec['batches'][args.batch]
             assert targets and len(targets) == len(set(targets)) and all(t in source for t in targets), 'EXACT_TARGET_MEMBERSHIP'
             expected_paths = {(root / target).resolve().as_posix().casefold() for target in targets}
+            # Native Jest source transforms are shared only inside this exact run.
+            # Tests and fresh result files still execute independently in every batch.
+            github_run_id = os.environ['GITHUB_RUN_ID']
+            assert github_run_id.isdigit(), 'EXACT_CACHE_RUN_ID_REQUIRED'
+            manifest_sha = sha(manifest)
+            transform_dir = out.parent.parent / ('gox-jc-' + github_run_id + '-' + manifest_sha[:12])
+            assert transform_dir.parent == out.parent.parent and not transform_dir.is_relative_to(root), 'CACHE_OUTSIDE_PRODUCT_REQUIRED'
+            assert not transform_dir.is_symlink(), 'CACHE_SYMLINK_FORBIDDEN'
+            transform_marker = transform_dir / 'ROOT_EXACT_INPUT_IDENTITY.json'
+            cache_identity = dict(contract='gox-exact-run-jest-transform-cache/v1', sourceCommit=args.commit,
+                githubRunId=github_run_id, inputManifestSha256=manifest_sha,
+                jestConfigSha256=sha(root / 'jest.config.js'), babelConfigSha256=sha(root / 'babel.config.js'),
+                packageLockSha256=sha(root / 'package-lock.json'), sourcePins=len(source), dependencyPins=len(deps), nodeExecutable=node)
+            preexisting_cache = transform_dir.exists()
+            if preexisting_cache:
+                assert transform_marker.is_file() and not transform_marker.is_symlink(), 'CACHE_IDENTITY_REQUIRED'
+                assert json.loads(transform_marker.read_text('utf-8')) == cache_identity, 'CACHE_SNAPSHOT_IDENTITY_MISMATCH'
+            else:
+                transform_dir.mkdir()
+                with transform_marker.open('x', encoding='utf-8') as stream:
+                    json.dump(cache_identity, stream, sort_keys=True)
+            transform_marker_sha = sha(transform_marker)
+            transform_cache_proof = dict(mode='NATIVE_TRANSFORMS_ONLY_FRESH_TEST_EXECUTION_AND_RESULTS',
+                identity=cache_identity, markerSha256=transform_marker_sha, reusedWithinExactRun=preexisting_cache,
+                identityVerifiedAfter=False)
             command = [node, '--max-old-space-size=768', '--max-semi-space-size=8', str(root / 'node_modules/jest/bin/jest.js'),
-                '--config', str(root / 'jest.config.js'), '--runInBand', '--no-cache', '--bail=1', '--json',
+                '--config', str(root / 'jest.config.js'), '--runInBand', '--cache', '--cacheDirectory', str(transform_dir), '--bail=1', '--json',
                 '--outputFile', str(out / 'jest-results.json'), '--runTestsByPath', *targets]
             env.update(EXPO_NO_DOTENV='1', EXPO_NO_TELEMETRY='1', CI='true')
         free, commit = memory(); minfree = free; mincommit = commit
@@ -161,6 +187,12 @@ def main():
             result = json.loads(result_path.read_text('utf-8')) if result_path.is_file() else {}
         except BaseException as exc:
             errors.append('RESULT_PARSE: ' + repr(exc))
+        if transform_cache_proof is not None:
+            try:
+                assert sha(transform_marker) == transform_marker_sha, 'CACHE_IDENTITY_CHANGED_DURING_STAGE'
+                transform_cache_proof['identityVerifiedAfter'] = True
+            except BaseException as exc:
+                errors.append('TRANSFORM_CACHE_IDENTITY: ' + repr(exc))
         if args.stage == 'types':
             identity_ok = seed_sha is not None and run_id is not None and all([
                 result.get('runId') == run_id, result.get('sourceHeadExpected') == args.commit,
@@ -182,6 +214,7 @@ def main():
             seedCount=len(result.get('seedFiles', [])), fullProgramFileCount=result.get('fullProgramFileCount'), resultIdentityAccepted=identity_ok,
             stage=args.stage, batch=args.batch, expectedJestSuitePaths=sorted(expected_paths), actualJestSuitePaths=sorted(actual_paths),
             jestPassed=result.get('numPassedTests'), jestFailed=result.get('numFailedTests'),
+            jestTransformCache=transform_cache_proof,
             resourcePolicy=dict(heapMiB=2816 if args.stage == 'types' else 768, admissionPhysicalMiB=4096, admissionCommitMiB=3072, maxOwnedRssMiB=maxrss, maxOwnedPrivateMiB=maxprivate, osPhysicalReserveMiB=3072, commitStopMiB=512, timeoutSeconds=timeout),
             peakOwnedRssBytes=peakrss, peakOwnedPrivateBytes=peakprivate, minimumPhysicalFreeBytes=minfree, minimumCommitHeadroomBytes=mincommit,
             ownedJobClosure=closure, remainingOwnedProcesses=remaining, elapsedSeconds=time.monotonic()-start,

@@ -560,7 +560,7 @@
     "scripts/verification/android-waterproof-current-v1/owned_launcher_job_snapshot_retry_v1.py": "eca1e2d3a3a420a90d874c4a87f92faf37a35fc6e13ea2d9b13bf27fa92d19c1",
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
-    "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
+    "scripts/verification/gox-current-types-v1/guard.py": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "3a293965c809f37ba9a134797dc7d850c4b1a0ad9fa812361ac06612ca36b370",
     "scripts/verification/gox-current-types-v1/seed-manifest.json": "bcdac672e0853c9bc996fd7d558d791fdd82a32588fc94f6b4e5f39a1ea71be8",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
@@ -4275,7 +4275,7 @@
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 176503703,
+    "sourceBytes": 176506286,
     "newInputs": "Only exact2filepublisher+sourceguideforward; actual9pureandSQL91/realPGdryrunpassed;no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4964,6 +4964,21 @@
       "fullCompileInputAnd113SuffixUnchanged": true,
       "skipMuteShardPolicyChanges": false,
       "all8FreshRequired": true,
+      "canonicalApplied": false
+    },
+    "exactRunNativeJestTransformCacheR1153": {
+      "parent": "e8f72af26ddeb3353d44ae8b752b2a88b759bf94",
+      "actualTimeoutRun": 40942573430,
+      "beforeGuardSha256": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
+      "afterGuardSha256": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
+      "cause": "All8 child commands explicitly disabled normal Jest transforms cache; repeated unchanged source transformation under120s stage. First genuine749completed113in103s, later workers25percent slower in independent type/otherbatch timings.",
+      "cacheIdentity": "Fresh runId plus full input manifest SHA/source-dependency-config-lock-node identity; marker verified before and after each batch. Native Jest keys include source content/config.",
+      "testsAndResultGateUnchanged": true,
+      "all113ProductTestBytesUnchanged": true,
+      "all8FreshExecutionRequired": true,
+      "budgetHeapTimeSkipShardChanges": false,
+      "cacheBuiltByNormalGuardedJestChildren": true,
+      "cacheOutsideProductAndArtifacts": true,
       "canonicalApplied": false
     }
   },
