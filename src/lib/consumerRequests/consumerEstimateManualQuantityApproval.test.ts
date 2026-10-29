@@ -704,7 +704,8 @@ test('memoized real fixture compilation isolates new bundles sessions and stores
  expect(same.session).not.toBe(unresolved.session);expect(different.session).not.toBe(known.session);
  expect(same.session.draftId).toBe(same.base.draft.id);expect(different.session.draftId).toBe(different.base.draft.id);
  expect(getConsumerRepairRequest(same.base.draft.id).items[0]!.titleRu).not.toBe('TEST_ONLY_EDITED_FIXTURE_ROW');
- expect(getConsumerRepairRequest(same.base.draft.id).canonicalParameterSession!.invalidParameterIds).not.toContain('TEST_ONLY_EDITED_SESSION');
+ expect(getConsumerRepairRequest(same.base.draft.id).canonicalParameterSession).toBeNull();
+ expect(same.session.invalidParameterIds).not.toContain('TEST_ONLY_EDITED_SESSION');
  expect(consumerEstimateUnresolvedQuantityItems(same.base)).toHaveLength(4);
  expect(consumerEstimateUnresolvedQuantityItems(different.base)).toHaveLength(0);
 });

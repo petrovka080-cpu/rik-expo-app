@@ -2697,7 +2697,7 @@
     "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx": "adb64444d1fbcfbe281f6b5fdf372834f85abb43f6dad731f92a8fd8d3c85e7c",
     "src/lib/consumerRequests/__fixtures__/savedLegacyCarpet58ReviewV1.json": "d35bd04cecb2232fe55ea4d76c32ab9b431d3e3f081659d9e99b73d4f340e160",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdfPurposeJobErrorR1153.test.ts": "7b5a59640a890b76e69055f62365836f3072b239c3f3d198941e98c24fb1f00d",
-    "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts": "c3bd5cebe1247235285546dc4c618a0af0d9de487df3fb6b639cd6d392d94d4d",
+    "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts": "8559c1c9414372cc62f4d4a2e6c6308a6eb6b45ca77d9f060fb07a80eb318979",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts": "f6511f29d79ae993025e764f781572128b7b0f34c4a72183900db8c3c3c44ac7",
     "src/lib/consumerRequests/consumerEstimateProfessionalPdfReview.ts": "bbd80d9340f478f7f95b2d2a44b49b73a145220dc7a84d95fdebac0693573255",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.groupedSavedEvidenceR1153.test.ts": "43b13245274aeba144934c469f66026dc90f13bd7fd4b90ab13faa39df97fd3c",
@@ -4268,14 +4268,14 @@
     "node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.d.ts": "ecf40ba1d79472eacf1dc2c54eae5ae9638aa8da8340f5c1166b6efb585aca13"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "d3ad8656d3b57653821d5852e198a267bec95e1b74bb301d4f9ec8305b47650a",
+  "originalSeedManifestSha256": "0206b8f20a93415ee15f3a3769cec83971ca4f08597df9187ab3bdd9c9559070",
   "canonicalSourceFreezeSha256": "eed1017fe7ca406723521d16b0436cb855b6706965b0aab9f14dd0c8100a572f",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 176502689,
+    "sourceBytes": 176502722,
     "newInputs": "Only exact2filepublisher+sourceguideforward; actual9pureandSQL91/realPGdryrunpassed;no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4930,6 +4930,18 @@
       "all8FreshRequired": true,
       "timeoutHeapOwnedCapsRaised": false,
       "productRuntimeSourceChanged": false
+    },
+    "manualFixtureStoredSessionContractCausalR1153": {
+      "parent": "749b61500c996838d07f1efc011cef8a79c8a14f",
+      "actualFailedRun": 40936817148,
+      "sourceManifestSha256": "35ed8af7561f96ea72630d12b65dc04d1539937e38d9d297edaf968e02a8907d",
+      "privatePatchSha256": "bf4e0f796a6ebcf3340fd9c5b6105f1aa958bbc83bbf78ebe631bdd7f6dd532b",
+      "exactOriginal112AndMemoBytesPreserved": true,
+      "falseStoredSessionDereferenceCorrectedToNullContract": true,
+      "freshSessionIsolationAsserted": true,
+      "fullTypesAndAll8FreshRequired": true,
+      "skipOrPolicyChange": false,
+      "canonicalApplied": false
     }
   },
   "existingCiTypesStageBudget": {
