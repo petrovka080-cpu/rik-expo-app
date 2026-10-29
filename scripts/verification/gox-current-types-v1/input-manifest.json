@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "3a293965c809f37ba9a134797dc7d850c4b1a0ad9fa812361ac06612ca36b370",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "0206b8f20a93415ee15f3a3769cec83971ca4f08597df9187ab3bdd9c9559070",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "bcdac672e0853c9bc996fd7d558d791fdd82a32588fc94f6b4e5f39a1ea71be8",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2697,7 +2697,7 @@
     "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx": "adb64444d1fbcfbe281f6b5fdf372834f85abb43f6dad731f92a8fd8d3c85e7c",
     "src/lib/consumerRequests/__fixtures__/savedLegacyCarpet58ReviewV1.json": "d35bd04cecb2232fe55ea4d76c32ab9b431d3e3f081659d9e99b73d4f340e160",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdfPurposeJobErrorR1153.test.ts": "7b5a59640a890b76e69055f62365836f3072b239c3f3d198941e98c24fb1f00d",
-    "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts": "8559c1c9414372cc62f4d4a2e6c6308a6eb6b45ca77d9f060fb07a80eb318979",
+    "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts": "100f538eb2cdb3bad1e6af70e479995c444624d8a6975e327e11983919891efe",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts": "f6511f29d79ae993025e764f781572128b7b0f34c4a72183900db8c3c3c44ac7",
     "src/lib/consumerRequests/consumerEstimateProfessionalPdfReview.ts": "bbd80d9340f478f7f95b2d2a44b49b73a145220dc7a84d95fdebac0693573255",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.groupedSavedEvidenceR1153.test.ts": "43b13245274aeba144934c469f66026dc90f13bd7fd4b90ab13faa39df97fd3c",
@@ -4268,14 +4268,14 @@
     "node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.d.ts": "ecf40ba1d79472eacf1dc2c54eae5ae9638aa8da8340f5c1166b6efb585aca13"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "0206b8f20a93415ee15f3a3769cec83971ca4f08597df9187ab3bdd9c9559070",
+  "originalSeedManifestSha256": "bcdac672e0853c9bc996fd7d558d791fdd82a32588fc94f6b4e5f39a1ea71be8",
   "canonicalSourceFreezeSha256": "eed1017fe7ca406723521d16b0436cb855b6706965b0aab9f14dd0c8100a572f",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 176502722,
+    "sourceBytes": 176503703,
     "newInputs": "Only exact2filepublisher+sourceguideforward; actual9pureandSQL91/realPGdryrunpassed;no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4953,6 +4953,18 @@
       "productAndAll113TestBytesUnchanged": true,
       "all8FreshRequired": true,
       "suppressionOrBudgetChange": false
+    },
+    "pureDefinitionFixtureMemoizationR1153": {
+      "parent": "c0a5d87cdd5dbd4cd684e3e419dc01befaf64396",
+      "actualTimeoutRun": 40940070761,
+      "manifestSha256": "8b83460f6aa5a2d24b38661074785c1fb68278c1cb8ec9835aef699745f2c9cc",
+      "combinedPatchSha256": "526e6e35511129807859328393a25652c08d3c91dc0ef5ad1d34a3c8efcda179",
+      "realFactoryPerExactSourceVariantOnMiss": true,
+      "fullDefinitionStructuredClonePerCaller": true,
+      "fullCompileInputAnd113SuffixUnchanged": true,
+      "skipMuteShardPolicyChanges": false,
+      "all8FreshRequired": true,
+      "canonicalApplied": false
     }
   },
   "existingCiTypesStageBudget": {

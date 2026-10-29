@@ -60,11 +60,27 @@ async function compileApprovalFixtureInput(compileInput:CanonicalEstimateCompile
   throw error;
  }
 }
+// Cache only the real source-factory result for its exact existing variant.
+// Every caller receives a fresh definition; Core input identity stays complete.
+type ApprovalFixtureDefinition=ReturnType<typeof definition>|ReturnType<typeof buildMaster30FactoryKitSuccessorR1>;
+const approvalFixtureDefinitions=new Map<string,ApprovalFixtureDefinition>();
+function prepareApprovalFixtureDefinition(unknownUnitProfile:boolean,catalogId:string):ApprovalFixtureDefinition{
+ const factoryInput=unknownUnitProfile
+  ?{factory:'buildMaster30FactoryKitSuccessorR1',capturedRepresentativeCatalogId:catalogId}
+  :{factory:'interiorWallFinishingProvisionGroupDefinitionR7',branch:'improved-wall-01',catalogId};
+ const key=canonicalEstimateStableJson(factoryInput);
+ let prepared=approvalFixtureDefinitions.get(key);
+ if(!prepared){
+  prepared=unknownUnitProfile?buildMaster30FactoryKitSuccessorR1(master30CapturedRepresentativeR1(catalogId)):definition();
+  approvalFixtureDefinitions.set(key,prepared);
+ }
+ return structuredClone(prepared);
+}
 async function prepareApprovalFixture(manual=true,unknownUnitProfile=false,zeroFirst=false) {
   let base:ConsumerRepairDraftBundle;let session:NonNullable<ConsumerRepairDraftBundle['canonicalParameterSession']>;
   const kitProfile=master30FactoryKitsPackR1.profiles.find(p=>p.key==='electrical')!;
   const catalogId=unknownUnitProfile?master30FactoryKitsPackR1.targets.find(t=>t.profileKey==='electrical')!.catalogId:'canonical-work:base:plaster_paint_interior_paint_wall_paint_standard';
-  const d=unknownUnitProfile?buildMaster30FactoryKitSuccessorR1(master30CapturedRepresentativeR1(catalogId)):definition();
+  const d=prepareApprovalFixtureDefinition(unknownUnitProfile,catalogId);
   const compileInput:CanonicalEstimateCompileCoreInput = { operation: 'recalculate', compilerVersion: pack.contract, catalogId,
     primaryMeasureParameterId: unknownUnitProfile?kitProfile.countId:parameter(geometry.areaId), parameterDefinitions: [...d.parameters] as unknown as CanonicalEstimateCompileCoreInput['parameterDefinitions'], formulaDefinitions: [...d.formulas] as unknown as CanonicalEstimateCompileCoreInput['formulaDefinitions'],
     resourceDefinitions: [...d.resources] as unknown as CanonicalEstimateCompileCoreInput['resourceDefinitions'], submittedParameters: unknownUnitProfile?{[master30FactoryKitsPackR1.selectorId]:kitProfile.choiceRu,[kitProfile.countId]:'3'}:{ [parameter(geometry.areaId)]: '20.1' }, confirmedParameters: {},
