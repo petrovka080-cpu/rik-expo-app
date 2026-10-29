@@ -29,6 +29,17 @@ import {ct54ReadyFacadeDefinitionS2763,ct54ReadyFacadeControlFactsS2763} from '.
 import {canonicalEstimateOperationReference} from './canonicalEstimateOperationComposition';
 import type {CanonicalEstimateCatalogItem} from './contracts';
 
+function readOnlySavedReportOptions(revision:CanonicalArtifactRevision,rows:CanonicalArtifactRow[]){
+ const resources=[...rows,...canonicalArtifactPreliminaryNeeds(revision)];
+ expect(()=>buildCanonicalProfessionalPdfProjection({revision,rows,preliminaryNeeds:canonicalArtifactPreliminaryNeeds(revision),
+  workTitleRu:'TEST_ONLY_UNVERIFIED_COMPOSITION'})).toThrow();
+ const reviewAcknowledgmentV1=canonicalProfessionalPdfReviewAcknowledgmentV1({revision,resources,
+  request:{revisionId:String(revision.id),releaseId:String(revision.release_id),definitionVersionId:String(revision.definition_version_id),
+   checksumSha256:String(revision.checksum_sha256),acknowledgedPreliminaryReview:true},
+  actorUserId:'TEST_ONLY_SAVED_REPORT_OWNER',acknowledgedAt:'2026-10-30T00:00:00Z'});
+ return{issuancePurpose:'PRELIMINARY_REVIEW' as const,reviewAcknowledgmentV1};
+}
+
 const binding=(rowId:string)=>publicBindings.bindings.find(x=>x.rowId===rowId)!;
 const wp='hydrotest:internal-steel:dn50:krer16-005-01:',tp='ceramic-floor:cement-mortar:krer11-01-027-03:';
 
@@ -179,11 +190,11 @@ it('projects actual saved facade operations into PDF and procurement without alt
   confirmedParameters:{},currencyCode:'KGS',maximumResourceRows:d.resources.length,
   hashJson:value=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex')});
  const revision={id:'11111111-1111-4111-8111-111111111111',release_id:'22222222-2222-4222-8222-222222222222',catalog_id:'canonical-work:base:facade_interior_facade_paint_apply_standard',
-  checksum_sha256:'a'.repeat(64),row_count:result.rows.length,input_parameters:result.parameters,totals:result.totals,currency_code:'KGS',
+  definition_version_id:'TEST_ONLY_SAVED_DISPLAY_DEFINITION',checksum_sha256:'a'.repeat(64),row_count:result.rows.length,input_parameters:result.parameters,totals:result.totals,currency_code:'KGS',
   amendment_contract:{parameterSources:{preliminaryNeeds:result.preliminaryNeeds,userParameters:{q:result.parameters.q,
    ct54_15l_stock_cans:'0',ct54_15l_reserve_cans:'0',ct54_15l_supplier_can_multiple:'1'}}}};
  const before=JSON.stringify({revision,rows:result.rows}),needs=canonicalArtifactPreliminaryNeeds(revision),
-  pdf=buildCanonicalProfessionalPdfProjection({revision,rows:result.rows,preliminaryNeeds:needs,workTitleRu:'Окраска фасада',
+  pdf=buildCanonicalProfessionalPdfProjection({...readOnlySavedReportOptions(revision,result.rows),revision,rows:result.rows,preliminaryNeeds:needs,workTitleRu:'Окраска фасада',
    parameterSchema:d.parameters.map(p=>({parameterId:p.parameter_id,ordinal:p.ordinal,valueType:p.value_type,unitId:p.unit_id,
     titleRu:p.title_ru,required:p.required,defaultValue:p.default_value,constraints:p.constraints_json,
     visibilityRole:p.truth_metadata.visibility_role,valueSourceRole:p.truth_metadata.value_source_role,
@@ -376,7 +387,7 @@ it('projects electrical saved quantities through shared operations PDF and procu
   overrides={[electricalOwner]:{unitPrice:'7',provenance},[labour]:{unitPrice:'11',provenance}},
   result=await compileElectrical(facts,overrides,options);
  const revision={id:'11111111-1111-4111-8111-111111111111',release_id:'22222222-2222-4222-8222-222222222222',
-  catalog_id:electricalPack.catalogId,checksum_sha256:'a'.repeat(64),row_count:result.rows.length,
+  catalog_id:electricalPack.catalogId,definition_version_id:'TEST_ONLY_SAVED_DISPLAY_DEFINITION',checksum_sha256:'a'.repeat(64),row_count:result.rows.length,
   input_parameters:result.parameters,totals:result.totals,currency_code:'KGS',
   amendment_contract:{rowOverrides:overrides,parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
  type ElectricalSavedNamedRow = (typeof result.rows)[number] & Pick<(typeof d.resources)[number], 'title_ru'>;
@@ -389,7 +400,7 @@ it('projects electrical saved quantities through shared operations PDF and procu
    ((whole.calculation_trace as Record<string,unknown>).resourceGraph as Record<string,unknown>).operationCompositionV1}]);
  expect(sections.flatMap(s=>s.resourceIds)).toEqual([labour]);
  expect(sections.flatMap(s=>s.sharedResources).map(r=>r.rowId)).toEqual(Array(5).fill(labour));
- const pdf=buildCanonicalProfessionalPdfProjection({revision,rows:result.rows,
+ const pdf=buildCanonicalProfessionalPdfProjection({...readOnlySavedReportOptions(revision,result.rows),revision,rows:result.rows,
   preliminaryNeeds:canonicalArtifactPreliminaryNeeds(revision),workTitleRu:'Монтаж кабель-канала ELECOR'}),
   supply=buildCanonicalProcurementProjection({revision,procurementRows:result.rows.filter(r=>r.included_in_procurement),sourceRows:result.rows});
  const name=row({rowId:owner.row_id,titleRu:owner.title_ru});
@@ -427,14 +438,14 @@ it('projects the current39 functional work title without changing electrical own
   provenance={kind:'manual',reason:'TEST_ONLY current39 work-title display; no real PPR or source admission'},
   overrides={[electricalOwner]:{unitPrice:'7',provenance}},result=await compileElectrical(electricalFacts(),overrides);
  const revision={id:'TEST_ONLY_CURRENT39_TITLE_REVISION',release_id:'TEST_ONLY_CURRENT39_TITLE_RELEASE',
-  catalog_id:electricalPack.catalogId,checksum_sha256:'a'.repeat(64),row_count:result.rows.length,
+  catalog_id:electricalPack.catalogId,definition_version_id:'TEST_ONLY_SAVED_DISPLAY_DEFINITION',checksum_sha256:'a'.repeat(64),row_count:result.rows.length,
   input_parameters:result.parameters,totals:result.totals,currency_code:'KGS',
   amendment_contract:{rowOverrides:overrides,parameterSources:{preliminaryNeeds:result.preliminaryNeeds}}};
  const before=JSON.stringify({revision,rows:result.rows,needs:result.preliminaryNeeds}),owner=result.rows.find(r=>r.row_id===electricalOwner);
  if(!owner||typeof owner.title_ru!=='string')throw Error('TEST_CURRENT39_EXISTING_NAMED_OWNER_REQUIRED');
  expect(owner).toMatchObject({row_id:electricalOwner,unit_id:'pcs',quantity:'50',unit_price:'7',amount:'350'});
  expect(result.rows.filter(r=>r.row_id===electricalOwner)).toHaveLength(1);expect(result.preliminaryNeeds).toHaveLength(7);
- const pdf=buildCanonicalProfessionalPdfProjection({revision,rows:result.rows,preliminaryNeeds:canonicalArtifactPreliminaryNeeds(revision),workTitleRu:source}),
+ const pdf=buildCanonicalProfessionalPdfProjection({...readOnlySavedReportOptions(revision,result.rows),revision,rows:result.rows,preliminaryNeeds:canonicalArtifactPreliminaryNeeds(revision),workTitleRu:source}),
   supply=buildCanonicalProcurementProjection({revision,procurementRows:result.rows.filter(r=>r.included_in_procurement),sourceRows:result.rows});
  expect(pdf.html).toContain(functional);expect(pdf.html).not.toContain(source);
  expect(supply.rows.filter(r=>r.rowId===electricalOwner)).toHaveLength(1);

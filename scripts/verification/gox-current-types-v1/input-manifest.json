@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "fecc69458f78fe43c7e57476920ae2f934ea2f1182670ca5f850e2a627973c64",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "fe6f42e7e24cf647e4e8b6d0b04ad76955aa80f374582d421bf3449c6c9427da",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "a80f846c401de6d0b20ea998078bfc36bf9a790778af9e797641897fc934eb18",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -1204,7 +1204,7 @@
     "src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769.test.ts": "9852e4b52f208198ce0a5a3e879d70f5dcd981c3a4ab195efd6d56bb5f985bb2",
     "src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769.ts": "754c1edc61d396b8e67fa70ec99edc3185abd66b2b0bc64a22e085213ccd8e7b",
     "src/lib/estimate/backendPlatform/canonicalConcretePlacementPromptServerR1.ts": "23685d082b757ab926554b9c6e92acf59b2ac10ae47683f0955f59d5c24f9746",
-    "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "7c813a7d27975d4f35618d7ccf6772caa7b45037ec2c5d261108d16d8bf90179",
+    "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "891eda86667073ef69338b1338e5a94d0abb29c9215b1afb5c80422d267df7dc",
     "src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1.ts": "7117f1b24a60dfa54b4febbbfdbce1262d1ade3b9932b4fa627596fe5280acd9",
     "src/lib/estimate/backendPlatform/canonicalCt126SixDryWallMigrationS2769.ts": "94787a6f56e653fe8ab8411943dce48d92c4b4ca45343be5c751e36eed95a61a",
     "src/lib/estimate/backendPlatform/canonicalCt29OrdinaryManualMigrationR1.ts": "99fdeeaf6df3083e8aac0ffa09bdf9313554fa1c0c47d7cf012bc2d1c8a049e7",
@@ -2734,13 +2734,16 @@
     "render.yaml": "263a45f3833c9e107830c48f81f57c9f3b05ffa60988bacc18df45e9e01fe369",
     "scripts/e2e/checkAndroidEmulatorHealth.ts": "054f23c27e7f9d71b7f3d15fc1933d3e4b0310db44a3d1fd3fc65729645f17c6",
     "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentation.r52.test.ts": "5a43c6a5f8178d9a3099f4209d7d91c0d14c09157c940c106e1db30fa0ead6b5",
-    "tests/releasePipeline/sourceTreeHashStable.contract.test.ts": "011e4b2ad12a7685c60c503f462c7fe37e23854198fdeda0b2c87597d9f2c48f",
+    "tests/releasePipeline/sourceTreeHashStable.contract.test.ts": "34395825d5a5a846d265e766f1364a1e54650bc1b020977e545c97ab137b90d8",
     "tests/releasePipeline/releasePipelineContractUtils.ts": "4c3dd678fdc1082086707c93a9e5e3f02b65102d7426bfdb3e4c3634cfe3998f",
     "tests/releasePipeline/sourceChangedAfterFreezeBlocked.contract.test.ts": "33404267499bfc9d5802ad024c89624a00423be8903fef577cb46950510d9d07",
     "tests/releasePipeline/sourceFreezeWritesOnlyIgnoredRuntime.contract.test.ts": "21cb9f876c593e3e121b57dccbb5109351c2544b1a42828e05a775f169ed757e",
     "scripts/release/assertSourceFrozen.ts": "9069edcac786275c84e51ae4c0c30761d848e5b3878719d1c107ec20ca374ad6",
     "scripts/release/freezeReleaseSource.ts": "4d62ad950b75b0efac36c1c4cc4bb3c9718f1370235b3fdb4e80d394e7abe41f",
-    "scripts/release/releaseCandidateState.ts": "24d4d655085fd3f98e050b2ef093888e7e12cbc856a7a6e5c66ceb3747442a44"
+    "scripts/release/releaseCandidateState.ts": "24d4d655085fd3f98e050b2ef093888e7e12cbc856a7a6e5c66ceb3747442a44",
+    "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts": "7c1c2452010caed88e5cb457b2050b71d83627e75799dd8f645b33ea2071bc23",
+    "tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts": "3c8da334f0f33210db898810508ce07970b4aaaa32e8eda3617f8b09c497f474",
+    "tests/e2e/androidOfficialRouteToScreenAck.contract.test.ts": "dddeb63120a04c9c2c6040f5b576b92da2132aaa8270c8c8b715d67386e5af96"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4276,23 +4279,23 @@
     "node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.d.ts": "ecf40ba1d79472eacf1dc2c54eae5ae9638aa8da8340f5c1166b6efb585aca13"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "fe6f42e7e24cf647e4e8b6d0b04ad76955aa80f374582d421bf3449c6c9427da",
+  "originalSeedManifestSha256": "a80f846c401de6d0b20ea998078bfc36bf9a790778af9e797641897fc934eb18",
   "canonicalSourceFreezeSha256": "071d83d3b9565b9365a973bbbed00de08a5e82347aa055006be6d71461b62d1a",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 176566448,
+    "sourceBytes": 176613629,
     "newInputs": "Only exact2filepublisher+sourceguideforward; actual9pureandSQL91/realPGdryrunpassed;no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2739,
+    "sourceFiles": 2742,
     "dependencyFiles": 1531,
-    "sourcePins": 2739,
+    "sourcePins": 2742,
     "r1152BffMfaForwardSourcePinCount": 2657,
     "r1152BffMfaDeclaredSeeds": 676,
     "r1153CurrentDeclaredSeeds": 766
@@ -5058,6 +5061,28 @@
       "all67TargetsByteIdentical": true,
       "sourceGuardAndProductBytesUnchanged": true,
       "noTypeSuppressionOrPolicyChange": true,
+      "canonicalApplied": false
+    },
+    "actualFiveFixtureAndProofInputCorrectionsR1153": {
+      "parent": "d4310bfbcbb5ba24c1e396c641b87303e4fc5ebc",
+      "actualRunId": 40956580718,
+      "actualResultSha256": "d4575aa14a96698cb77d68cf7d78364e586c9bbf2ac273a113ae1b86d31f2359",
+      "priorActualPassedTests": 1555,
+      "priorActualFailedTests": 5,
+      "historicalDisplayCases": 3,
+      "threeNewStrictStandardRejectionAssertions": true,
+      "readOnlySavedReviewUsesExistingExactAck": true,
+      "noSavedRowOrCalculationMutation": true,
+      "nestedTrackedPathLegacyInclusionPreserved": true,
+      "fullLegacyAndFrontendPayloadEqualityAssertionRetained": true,
+      "missingProofInputsCopiedExactBytesAsRawInputsOnly": [
+        "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts",
+        "tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts",
+        "scripts/release/android/routeToScreenAck.ts",
+        "tests/e2e/androidOfficialRouteToScreenAck.contract.test.ts"
+      ],
+      "all67TargetsAndAllProductBytesUnchanged": true,
+      "noSkipsSuppressionOrPolicyChange": true,
       "canonicalApplied": false
     }
   },

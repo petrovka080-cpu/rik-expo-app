@@ -234,7 +234,7 @@
   "src/lib/estimate/backendPlatform/canonicalAggressiveFloorActualThicknessMigrationS2769.ts": null,
   "src/lib/estimate/backendPlatform/canonicalAggressiveFloorProtectionDustMigrationS2769.test.ts": null,
   "src/lib/estimate/backendPlatform/canonicalAggressiveFloorProtectionDustMigrationS2769.ts": null,
-  "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "7c813a7d27975d4f35618d7ccf6772caa7b45037ec2c5d261108d16d8bf90179",
+  "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "891eda86667073ef69338b1338e5a94d0abb29c9215b1afb5c80422d267df7dc",
   "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "bbdc7b78e179a7248c85065fbc80757787b6d45d1b43d5d28b49491e9f35f069",
   "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "245087684cd5d872f1db4e883bcd9b0c9bab13e9bfaa370b2adeaa0b81861298",
   "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": null,
@@ -761,7 +761,7 @@
   "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentation.r52.test.ts": "5a43c6a5f8178d9a3099f4209d7d91c0d14c09157c940c106e1db30fa0ead6b5",
   "scripts/dev/printLocalDeveloperBuildIdentity.ts": "85022ef52700423e3ed6acb8c691c7927770a83776efba0f61cacc7ddc3fed4d",
   "scripts/release/computeReleaseFingerprints.ts": "c9f40f58b2cc5d460ffb5a5bd53b6f97bc3675abb9d3894dab19119de1a69914",
-  "tests/releasePipeline/sourceTreeHashStable.contract.test.ts": "011e4b2ad12a7685c60c503f462c7fe37e23854198fdeda0b2c87597d9f2c48f",
+  "tests/releasePipeline/sourceTreeHashStable.contract.test.ts": "34395825d5a5a846d265e766f1364a1e54650bc1b020977e545c97ab137b90d8",
   "tests/releasePipeline/releasePipelineContractUtils.ts": "4c3dd678fdc1082086707c93a9e5e3f02b65102d7426bfdb3e4c3634cfe3998f",
   "tests/releasePipeline/sourceChangedAfterFreezeBlocked.contract.test.ts": "33404267499bfc9d5802ad024c89624a00423be8903fef577cb46950510d9d07",
   "tests/releasePipeline/sourceFreezeWritesOnlyIgnoredRuntime.contract.test.ts": "21cb9f876c593e3e121b57dccbb5109351c2544b1a42828e05a775f169ed757e"

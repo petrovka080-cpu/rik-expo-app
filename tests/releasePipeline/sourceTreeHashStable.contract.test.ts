@@ -109,12 +109,15 @@ it("keeps complete legacy product/JS payload bytes for UTF8, binary, empty, trac
     const frontend = computeFrontendReleaseFingerprintPayloads();
     expect(frontend).toEqual({ productSourceHash: product, jsBundleFingerprint: js });
     expect(Object.keys(frontend)).toEqual(["productSourceHash", "jsBundleFingerprint"]);
+    // Preserve the legacy inclusion of nested generated-looking tracked paths.
     expect(product.files.map(file => file.path)).toEqual([
-      "app/index.tsx", "assets/binary.dat", "assets/empty.bin", "migrations/one.sql", "package.json",
-      "src/alpha.ts", "src/untracked.ts", "src/кириллица.ts", "supabase/migrations/two.sql",
+      "app/index.tsx", "assets/binary.dat", "assets/coverage/generated.bin", "assets/empty.bin", "migrations/one.sql", "package.json",
+      "src/.cache/generated.js", "src/alpha.ts", "src/dist/generated.js", "src/node_modules/generated.js",
+      "src/untracked.ts", "src/кириллица.ts", "supabase/migrations/two.sql",
     ]);
     expect(js.files.map(file => file.path)).toEqual([
-      "app/index.tsx", "assets/binary.dat", "assets/empty.bin", "src/alpha.ts", "src/untracked.ts", "src/кириллица.ts",
+      "app/index.tsx", "assets/binary.dat", "assets/coverage/generated.bin", "assets/empty.bin",
+      "src/.cache/generated.js", "src/alpha.ts", "src/dist/generated.js", "src/node_modules/generated.js", "src/untracked.ts", "src/кириллица.ts",
     ]);
     expect(product.files.find(file => file.path === "assets/empty.bin")).toMatchObject({ bytes: 0 });
     expect(product.files.find(file => file.path === "assets/binary.dat")).toMatchObject({ bytes: 64 * 1024 * 2 + 17 });
