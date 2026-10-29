@@ -1,9 +1,9 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "PRIVATE_PROSPECTIVE_SEVEN_CORRECTIONS_OVER_EXACT_CURRENT139_BEFORE_CANONICAL_APPLY",
+  "snapshotKind": "PRIVATE_PROSPECTIVE10_CURRENT139_PLUS_A10_BEFORE_CANONICAL_APPLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
-    ".github/workflows/gox-current-core-types-v1.yml": "51c289aa7ec9c8145b9ca7852cfdab6bf6da49df6f63fab5b3a6235a2ea97372",
+    ".github/workflows/gox-current-core-types-v1.yml": "d6203eb1df14dde8bec0b35e3e39ab4ff1375efb22b0af9fff4de8a1e62c0c77",
     "AGENTS.md": "6bf38d72ef535c73fbaddc2e51909fb4fe82311472894d07e70861ac87d1096c",
     "app/(tabs)/office/index.tsx": "4773281a7daac103265ce6a5d28828f22b7cc1f733cece454dbc4105634d3e8f",
     "app/_layout.tsx": "909c1adf79905785adb2e710a04ee4b25b9fbdaa877acf51f44c29240f0af8cc",
@@ -561,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "807c42fd5c61560df36b4d262a1116d20d2b1a39ebe9963ea454b958050aafe8",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "855eebca0e9ef7f9f03ee88eca3ea810b142783a90b0a98ce09efdf9af3adc51",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "055278e98053125cc7523dbede324d637ba658ac01e31e878e8393e761f99eaf",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "ecd282b71574ac3f746142a720966031f49ab60a7d51ceee052c8920444241b1",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2693,7 +2693,7 @@
     "supabase/migrations/20261029110000_saved_professional_pdf_review_purpose.sql": "b700e45c49072a26c98df0ccd55b1af4a0ff9af18acfb730f3fa9859c0908469",
     "scripts/render/serveExpoWebStaging.mjs": "f60c228b0af262e03beba2993526e67687dc0a5efd751a0ce0d33199ce839564",
     "tests/scale/renderExpoWebStagingServer.contract.test.ts": "4bfa3a9668dc485357742dc457f9659ea49051ec167ac006caa05796a965090a",
-    "src/lib/estimate/backendPlatform/canonicalManualPreliminaryReviewEligibilityR1153.test.ts": "05d1f06fd04cca2e914d7acc075a8c138b33d755701ae57687ae4786e7d81082",
+    "src/lib/estimate/backendPlatform/canonicalManualPreliminaryReviewEligibilityR1153.test.ts": "068a2b6987d740c31be64ee759a77a7981a23fc7181be6f5031ce47ad6f10fcc",
     "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx": "adb64444d1fbcfbe281f6b5fdf372834f85abb43f6dad731f92a8fd8d3c85e7c",
     "src/lib/consumerRequests/__fixtures__/savedLegacyCarpet58ReviewV1.json": "d35bd04cecb2232fe55ea4d76c32ab9b431d3e3f081659d9e99b73d4f340e160",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdfPurposeJobErrorR1153.test.ts": "7b5a59640a890b76e69055f62365836f3072b239c3f3d198941e98c24fb1f00d",
@@ -2725,7 +2725,11 @@
     "scripts/dev/metroAndroidBundleTransport.cjs": "f974b6b3d68f8b95fd52d7dbafa39e649a485ebb6860df28973bd75405c5f36b",
     "src/lib/realtime/realtime.lifecycle.test.ts": "f5a6aa6c41e6cc8be4f13c0e05e4e395c90d36783c330904423d0596537408de",
     "src/lib/documents/pdfWebPreviewCache.test.ts": "14ded9d6bd04bc53e5f91802f176ab3be4b70b755d344df9abf108a504541d1d",
-    "src/lib/pdf/pdfInstantCache.test.ts": "3650e5cb3003c5d611703897d392e3fc9fe874568c0bf10eb5a0c5ae040db40b"
+    "src/lib/pdf/pdfInstantCache.test.ts": "3650e5cb3003c5d611703897d392e3fc9fe874568c0bf10eb5a0c5ae040db40b",
+    "src/lib/api/proposalAttachments.service.ts": "0b7f7efd431e8cbe48f7d4f8ac443b61742521bfd1ea85371f05ed10cd481a5b",
+    "src/lib/api/proposalAttachments.service.test.ts": "eba9690df263f56f95e0e590bbedd0f6a336c1904abfc5f40d4eed2c189687bc",
+    "src/screens/accountant/accountant.attachments.test.ts": "1edeb6d59e205c6daa1cb921933d2ea955a01a2f3c1d0bd129c6680f6e3100ef",
+    "src/screens/accountant/accountant.attachments.ts": "41dd523981e705ca824101551a2fd5b39ad6de49c99b27f30bf92b930e4b53d0"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4261,7 +4265,7 @@
     "node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.d.ts": "ecf40ba1d79472eacf1dc2c54eae5ae9638aa8da8340f5c1166b6efb585aca13"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "855eebca0e9ef7f9f03ee88eca3ea810b142783a90b0a98ce09efdf9af3adc51",
+  "originalSeedManifestSha256": "ecd282b71574ac3f746142a720966031f49ab60a7d51ceee052c8920444241b1",
   "canonicalSourceFreezeSha256": "eed1017fe7ca406723521d16b0436cb855b6706965b0aab9f14dd0c8100a572f",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -4275,12 +4279,12 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2724,
+    "sourceFiles": 2728,
     "dependencyFiles": 1531,
-    "sourcePins": 2724,
+    "sourcePins": 2728,
     "r1152BffMfaForwardSourcePinCount": 2657,
     "r1152BffMfaDeclaredSeeds": 676,
-    "r1153CurrentDeclaredSeeds": 752
+    "r1153CurrentDeclaredSeeds": 756
   },
   "candidateSourceComposition": {
     "kind": "ActualCanonicalInputsWithoutUnintakenHistoricalPackages",
@@ -4761,6 +4765,29 @@
       "diagnosticSuppressionAdded": false,
       "purposeAuthChecksumOwnerAndOrdinaryStrictGuardsPreserved": true,
       "sourceHistoryAndRuntimeSecretsExcluded": true
+    },
+    "fixtureAndAttachmentBoundaryR1153": {
+      "parent": "e97de058cf2f55262f6e66c3ae7c1186d62a9c02",
+      "createdAtUtc": "2026-10-29T17:38:26.477408+00:00",
+      "combinedPatchSha256": "230c6152182aa9bf8c49cc68dc2fa73218942dfaef8e3b3aa93aa81ad9096a02",
+      "canonicalPredecessorSourceTreeHash": "efa2e5177bdd315968d02b338b36636b26956999343d1aeb9a85e242a44e3054",
+      "newSubjectPaths": [
+        "src/lib/estimate/backendPlatform/canonicalManualPreliminaryReviewEligibilityR1153.test.ts",
+        "src/lib/api/proposalAttachments.service.ts",
+        "src/lib/api/proposalAttachments.service.test.ts"
+      ],
+      "additionalExactFrozenPaths": [
+        "src/lib/api/proposalAttachments.service.test.ts",
+        "src/lib/api/proposalAttachments.service.ts",
+        "src/screens/accountant/accountant.attachments.test.ts",
+        "src/screens/accountant/accountant.attachments.ts"
+      ],
+      "astReviewSha256": "4db4627908585cbdf78ec8e93a2ecf75901afb032133b4246107929e33b3ec73",
+      "workflowAllEightOutcomesAfterSuccessfulTypes": true,
+      "failedBatchStillFailsJob": true,
+      "resourcePolicyChanged": false,
+      "canonicalApplied": false,
+      "fullAuditOrAclAccepted": false
     }
   },
   "existingCiTypesStageBudget": {

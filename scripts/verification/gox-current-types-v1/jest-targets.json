@@ -19,7 +19,9 @@
       "tests/realtime/realtimeClientBudget.test.ts",
       "src/lib/realtime/realtime.lifecycle.test.ts",
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts",
-      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts"
+      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts",
+      "src/lib/api/proposalAttachments.service.test.ts",
+      "src/screens/accountant/accountant.attachments.test.ts"
     ],
     "owners": [
       "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts",

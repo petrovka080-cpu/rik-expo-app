@@ -712,7 +712,7 @@
   "scripts/render/serveExpoWebStaging.mjs": "f60c228b0af262e03beba2993526e67687dc0a5efd751a0ce0d33199ce839564",
   "tests/scale/renderExpoWebStagingServer.contract.test.ts": "4bfa3a9668dc485357742dc457f9659ea49051ec167ac006caa05796a965090a",
   "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.ts": "b0a218d22b0c62c6c97fe9579150bf7b3ccd25c9cfcd04c54e52eb6f54138ac4",
-  "src/lib/estimate/backendPlatform/canonicalManualPreliminaryReviewEligibilityR1153.test.ts": "05d1f06fd04cca2e914d7acc075a8c138b33d755701ae57687ae4786e7d81082",
+  "src/lib/estimate/backendPlatform/canonicalManualPreliminaryReviewEligibilityR1153.test.ts": "068a2b6987d740c31be64ee759a77a7981a23fc7181be6f5031ce47ad6f10fcc",
   "src/features/consumerRepair/useCanonicalOperationCompositionDiagnostic.ts": "ec7886adb2f482a53fcc1e672892d10203e3c3007a7a0e8057f11e7705370530",
   "src/lib/consumerRequests/consumerCanonicalBackendRevisionProjection.ts": "2c2790f2dd5e624e4b8b4775b4be684fe131d6f13692c8d66a2f4ada02946685",
   "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.ts": "383e00817dd21b967e731ab2fe8916dd0de2debc08ce1c31adf8aea69603cf67",
@@ -750,5 +750,9 @@
   "scripts/dev/metroAndroidBundleTransport.cjs": "f974b6b3d68f8b95fd52d7dbafa39e649a485ebb6860df28973bd75405c5f36b",
   "src/lib/realtime/realtime.lifecycle.test.ts": "f5a6aa6c41e6cc8be4f13c0e05e4e395c90d36783c330904423d0596537408de",
   "src/lib/documents/pdfWebPreviewCache.test.ts": "14ded9d6bd04bc53e5f91802f176ab3be4b70b755d344df9abf108a504541d1d",
-  "src/lib/pdf/pdfInstantCache.test.ts": "3650e5cb3003c5d611703897d392e3fc9fe874568c0bf10eb5a0c5ae040db40b"
+  "src/lib/pdf/pdfInstantCache.test.ts": "3650e5cb3003c5d611703897d392e3fc9fe874568c0bf10eb5a0c5ae040db40b",
+  "src/lib/api/proposalAttachments.service.ts": "0b7f7efd431e8cbe48f7d4f8ac443b61742521bfd1ea85371f05ed10cd481a5b",
+  "src/lib/api/proposalAttachments.service.test.ts": "eba9690df263f56f95e0e590bbedd0f6a336c1904abfc5f40d4eed2c189687bc",
+  "src/screens/accountant/accountant.attachments.test.ts": "1edeb6d59e205c6daa1cb921933d2ea955a01a2f3c1d0bd129c6680f6e3100ef",
+  "src/screens/accountant/accountant.attachments.ts": "41dd523981e705ca824101551a2fd5b39ad6de49c99b27f30bf92b930e4b53d0"
 }

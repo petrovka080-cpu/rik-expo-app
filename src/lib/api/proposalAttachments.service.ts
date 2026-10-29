@@ -101,6 +101,7 @@ type LoadOptions = {
   groupKey?: string | null;
   screen?: PlatformScreen;
   viewerRole?: string | null;
+  // Legacy callers cannot override a successful canonical empty scope.
   fallbackOnEmpty?: boolean;
   signedUrlTtlSec?: number;
 };
@@ -122,6 +123,21 @@ const toErrorText = (error: unknown) => {
     }
   }
   return "Unknown attachment error";
+};
+
+// Only an absent canonical RPC version permits the legacy transport. Errors from
+// the authoritative scope, payload validation or signing cannot widen access.
+const isMissingCanonicalEvidenceRpc = (error: unknown) => {
+  if (!error || typeof error !== "object") return false;
+  const record = error as Record<string, unknown>;
+  if (record.code !== "PGRST202") return false;
+  if ([record.status, record.statusCode].some((status) => status != null && status !== 404 && status !== "404")) {
+    return false;
+  }
+  if (typeof record.message !== "string") return false;
+  const signature = /^Could not find the function public\.proposal_attachment_evidence_scope_v1\(([^)]*)\) in the schema cache\.?$/.exec(record.message);
+  return signature?.[1].split(",").map((parameter) => parameter.trim()).sort().join(",") ===
+    "p_group_key,p_proposal_id,p_viewer_role";
 };
 
 const classifyOwnerType = (evidenceKind: AttachmentEvidenceKind): AttachmentOwnerType => {
@@ -387,37 +403,58 @@ export async function listCanonicalProposalAttachments(
 
   let primaryError: unknown = null;
   let primaryRawCount = 0;
-  let primaryWasEmpty = false;
+  let compatibilityAllowed = false;
 
   try {
-    const rawRows = await loadCanonicalRows(client, proposalId, opts?.screen, opts?.viewerRole);
+    const rawRows = await loadCanonicalRows(client, proposalId, opts?.screen, opts?.viewerRole).catch((error: unknown) => {
+      compatibilityAllowed = isMissingCanonicalEvidenceRpc(error);
+      throw error;
+    });
     primaryRawCount = rawRows.length;
     const primaryRows = await mapRows(client, proposalId, "canonical", rawRows, signedUrlTtlSec);
     const filtered = filterRowsByGroupKey(primaryRows, opts?.groupKey);
-    if (filtered.rows.length > 0 || opts?.fallbackOnEmpty !== true) {
-      observation.success({
-        rowCount: filtered.rows.length,
-        sourceKind: CANONICAL_SOURCE_KIND,
-        fallbackUsed: false,
-        extra: {
-          proposalId,
-          state: filtered.rows.length > 0 ? "ready" : "empty",
-        },
-      });
-      return {
-        rows: filtered.rows,
+    observation.success({
+      rowCount: filtered.rows.length,
+      sourceKind: CANONICAL_SOURCE_KIND,
+      fallbackUsed: false,
+      extra: {
+        proposalId,
         state: filtered.rows.length > 0 ? "ready" : "empty",
-        sourceKind: CANONICAL_SOURCE_KIND,
-        fallbackUsed: false,
-        rawCount: primaryRawCount,
-        mappedCount: primaryRows.length,
-        filteredCount: filtered.filteredCount,
-        errorMessage: null,
-      };
-    }
-    primaryWasEmpty = true;
+      },
+    });
+    return {
+      rows: filtered.rows,
+      state: filtered.rows.length > 0 ? "ready" : "empty",
+      sourceKind: CANONICAL_SOURCE_KIND,
+      fallbackUsed: false,
+      rawCount: primaryRawCount,
+      mappedCount: primaryRows.length,
+      filteredCount: filtered.filteredCount,
+      errorMessage: null,
+    };
   } catch (error) {
     primaryError = error;
+  }
+
+  if (!compatibilityAllowed) {
+    const errorMessage = toErrorText(primaryError);
+    observation.error(primaryError, {
+      rowCount: 0,
+      sourceKind: CANONICAL_SOURCE_KIND,
+      fallbackUsed: false,
+      errorStage: "canonical_loader",
+      extra: { proposalId },
+    });
+    return {
+      rows: [],
+      state: "error",
+      sourceKind: CANONICAL_SOURCE_KIND,
+      fallbackUsed: false,
+      rawCount: primaryRawCount,
+      mappedCount: 0,
+      filteredCount: 0,
+      errorMessage,
+    };
   }
 
   let fallbackError: unknown = null;
@@ -457,29 +494,6 @@ export async function listCanonicalProposalAttachments(
     };
   } catch (error) {
     fallbackError = error;
-  }
-
-  if (primaryWasEmpty && !primaryError) {
-    observation.success({
-      rowCount: 0,
-      sourceKind: CANONICAL_SOURCE_KIND,
-      fallbackUsed: false,
-      extra: {
-        proposalId,
-        state: "empty",
-        fallbackError: fallbackError ? toErrorText(fallbackError) : null,
-      },
-    });
-    return {
-      rows: [],
-      state: "empty",
-      sourceKind: CANONICAL_SOURCE_KIND,
-      fallbackUsed: false,
-      rawCount: primaryRawCount,
-      mappedCount: 0,
-      filteredCount: 0,
-      errorMessage: null,
-    };
   }
 
   const errorMessage = primaryError ? toErrorText(primaryError) : toErrorText(fallbackError);

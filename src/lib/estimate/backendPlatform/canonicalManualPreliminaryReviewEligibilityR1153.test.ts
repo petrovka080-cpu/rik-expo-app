@@ -12,7 +12,7 @@ function fixture(){
   amendment_contract:{parameterSources:{preliminaryNeeds:[]}},currency_code:'KGS'};
  const row:CanonicalArtifactRow={revision_id:revision.id,row_id:'test-row',ordinal:0,category:'work',section:'labor',title_ru:'Укладка покрытия',
   semantic_owner:revision.catalog_id+':test-row',physical_row_type:'labor',unit_id:'m2',quantity:'2',unit_price:null,amount:null,currency_code:'KGS',
-  ownership_status:'OWNED',included_in_estimate:true,included_in_procurement:false,procurement_eligible:false,
+  row_sha256:'b'.repeat(64),ownership_status:'OWNED',included_in_estimate:true,included_in_procurement:false,procurement_eligible:false,
   calculation_trace:{resourceGraph:{semanticOwner:revision.catalog_id+':test-row',physicalRowType:'work',canonicalUnit:'m2'}}};
  return{revision,resources:[row]};
 }
