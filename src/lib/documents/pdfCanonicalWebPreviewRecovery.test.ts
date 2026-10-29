@@ -325,4 +325,29 @@ describe('canonical PDF exact saved recovery with real registry, IDB and artifac
   expect(mockRevision).not.toHaveBeenCalled();expect(mockArtifact).not.toHaveBeenCalled();expect(mockBuild).not.toHaveBeenCalled();
   expect(getDocumentSessionSnapshot(generic.session.sessionId).asset?.uri).toBe(doc.uri);
  });
+ it('diagnoses the exact recovery lazy-import boundary outside the production catch',async()=>{
+  // Keep this last: existing recovery cases retain their original cold loading.
+  // Await the same five imports with the same Promise.all shape, not mocked
+  // replacements or an eager product import. CI must expose the original error.
+  const load=async<T,>(stage:string,read:()=>Promise<T>):Promise<T>=>{
+   try{return await read();}catch(error){
+    throw new Error('TEST_ONLY_RECOVERY_LAZY_IMPORT:'+stage+'\n'+(error instanceof Error?error.stack??error.message:String(error)));
+   }
+  };
+  const [client,contracts,rendererModule,artifactModule,eligibility]=await Promise.all([
+   load('canonicalEstimateClient',()=>import('../estimate/backendPlatform/canonicalEstimateClient')),
+   load('contracts',()=>import('../estimate/backendPlatform/contracts')),
+   load('canonicalProfessionalPdf',()=>import('../estimate/backendPlatform/canonicalProfessionalPdf')),
+   load('canonicalEstimateArtifactContract',()=>import('../estimate/backendPlatform/canonicalEstimateArtifactContract')),
+   load('consumerEstimateProfessionalPdfReview',()=>import('../consumerRequests/consumerEstimateProfessionalPdfReview')),
+  ]);
+  expect(typeof client.assertCanonicalEstimateArtifactIdentity).toBe('function');
+  expect(typeof contracts.CanonicalEstimateApiError).toBe('function');
+  expect(rendererModule.CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe(renderer);
+  expect(artifactModule.CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION).toBe(currentArtifact.metadata.templateVersion);
+  expect(eligibility.consumerEstimateProfessionalPdfReviewEligible(revision)).toBe(true);
+  expect(()=>client.assertCanonicalEstimateArtifactIdentity({artifact:currentArtifact,revision,expectedKind:'pdf',
+   expectedDocumentProfile:'professional_v1',expectedIssuancePurpose:'PRELIMINARY_REVIEW',expectedCatalogId:revision.catalogId,expectedRowCount:revision.rowCount})).not.toThrow();
+  expect(mockRevision).not.toHaveBeenCalled();expect(mockArtifact).not.toHaveBeenCalled();expect(mockBuild).not.toHaveBeenCalled();
+ });
 });

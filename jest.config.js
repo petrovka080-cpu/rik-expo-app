@@ -1,5 +1,18 @@
+const expoPreset = require("jest-expo/jest-preset");
+const sourceTransformKey = "\\.[jt]sx?$";
+const [sourceTransformer, sourceOptions] = expoPreset.transform[sourceTransformKey];
+
 module.exports = {
   preset: "jest-expo",
+  // Preserve Expo's caller, Babel config and asset transforms; lower import()
+  // asynchronously for Jest's existing CommonJS registry and mocks.
+  transform: {
+    ...expoPreset.transform,
+    [sourceTransformKey]: [sourceTransformer, {
+      ...sourceOptions,
+      plugins: [...(sourceOptions.plugins || []), require.resolve("@babel/plugin-transform-dynamic-import")],
+    }],
+  },
   sandboxInjectedGlobals: ["Math"],
   setupFiles: ["<rootDir>/jest.setup.js"],
   collectCoverageFrom: [
