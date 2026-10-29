@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "fecc69458f78fe43c7e57476920ae2f934ea2f1182670ca5f850e2a627973c64",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "e0941c72e0e120e93f19d311a7fd547b449bf16cde8264f6622f56661de20455",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "fe6f42e7e24cf647e4e8b6d0b04ad76955aa80f374582d421bf3449c6c9427da",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -4276,14 +4276,14 @@
     "node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.d.ts": "ecf40ba1d79472eacf1dc2c54eae5ae9638aa8da8340f5c1166b6efb585aca13"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "e0941c72e0e120e93f19d311a7fd547b449bf16cde8264f6622f56661de20455",
+  "originalSeedManifestSha256": "fe6f42e7e24cf647e4e8b6d0b04ad76955aa80f374582d421bf3449c6c9427da",
   "canonicalSourceFreezeSha256": "071d83d3b9565b9365a973bbbed00de08a5e82347aa055006be6d71461b62d1a",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 176566788,
+    "sourceBytes": 176566448,
     "newInputs": "Only exact2filepublisher+sourceguideforward; actual9pureandSQL91/realPGdryrunpassed;no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -4295,7 +4295,7 @@
     "sourcePins": 2739,
     "r1152BffMfaForwardSourcePinCount": 2657,
     "r1152BffMfaDeclaredSeeds": 676,
-    "r1153CurrentDeclaredSeeds": 769
+    "r1153CurrentDeclaredSeeds": 766
   },
   "candidateSourceComposition": {
     "kind": "ActualCanonicalInputsWithoutUnintakenHistoricalPackages",
@@ -5042,6 +5042,23 @@
       "privateSavedDataUploaded": false,
       "allPolicyAndPassPredicatesUnchanged": true,
       "noClaimOfMeasuredStartupSaving": true
+    },
+    "textReadOnlySeedRegistrationCausalR1153": {
+      "parent": "ef09137940d1c093a83c9543fbc700b0f5fcfb45",
+      "actualFailureRunId": 40955255510,
+      "actualFailureResultSha256": "929f17605ceb7c14212c09ac2b1b1ecababc83780697c3b0866e882b4d109b24",
+      "cause": "ROOT registered three unchanged text-only fs.readFileSync test inputs as unrelated TS program roots; freezeReleaseSource dependency is outside that intended program.",
+      "removedOnlyUnintendedNewRoots": [
+        "scripts/release/assertSourceFrozen.ts",
+        "scripts/release/freezeReleaseSource.ts",
+        "scripts/release/releaseCandidateState.ts"
+      ],
+      "sourcePinsForAllThreeRetained": true,
+      "all13ChangedSourceAndTestsRemainRoots": true,
+      "all67TargetsByteIdentical": true,
+      "sourceGuardAndProductBytesUnchanged": true,
+      "noTypeSuppressionOrPolicyChange": true,
+      "canonicalApplied": false
     }
   },
   "existingCiTypesStageBudget": {

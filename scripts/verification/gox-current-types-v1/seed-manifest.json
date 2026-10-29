@@ -764,8 +764,5 @@
   "tests/releasePipeline/sourceTreeHashStable.contract.test.ts": "011e4b2ad12a7685c60c503f462c7fe37e23854198fdeda0b2c87597d9f2c48f",
   "tests/releasePipeline/releasePipelineContractUtils.ts": "4c3dd678fdc1082086707c93a9e5e3f02b65102d7426bfdb3e4c3634cfe3998f",
   "tests/releasePipeline/sourceChangedAfterFreezeBlocked.contract.test.ts": "33404267499bfc9d5802ad024c89624a00423be8903fef577cb46950510d9d07",
-  "tests/releasePipeline/sourceFreezeWritesOnlyIgnoredRuntime.contract.test.ts": "21cb9f876c593e3e121b57dccbb5109351c2544b1a42828e05a775f169ed757e",
-  "scripts/release/assertSourceFrozen.ts": "9069edcac786275c84e51ae4c0c30761d848e5b3878719d1c107ec20ca374ad6",
-  "scripts/release/freezeReleaseSource.ts": "4d62ad950b75b0efac36c1c4cc4bb3c9718f1370235b3fdb4e80d394e7abe41f",
-  "scripts/release/releaseCandidateState.ts": "24d4d655085fd3f98e050b2ef093888e7e12cbc856a7a6e5c66ceb3747442a44"
+  "tests/releasePipeline/sourceFreezeWritesOnlyIgnoredRuntime.contract.test.ts": "21cb9f876c593e3e121b57dccbb5109351c2544b1a42828e05a775f169ed757e"
 }
