@@ -1,4 +1,4 @@
-import { canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu } from './canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu,canonicalPublicGeneratedResourceNameRu,canonicalPublicGeneratedResourceSpecificationsRu } from './canonicalPublicEstimateLanguageRu';
 import simpleBindings from '../../../../data/estimate-benchmarks/source-packs/public-subwork-resource-presentation-r2.json';
 import calculationDetailRoles from '../../../../data/estimate-benchmarks/source-packs/public-calculation-detail-roles-r1.json';
 import {canonicalPublicSelectedSpecificationV1} from './canonicalPublicSelectedSpecificationV1';
@@ -68,6 +68,15 @@ export function canonicalPublicResourceDisplayPresentationV1(input: Parameters<t
   // exact saved row. Never repair or borrow a malformed source descriptor.
   if (input.descriptor != null && !parseCanonicalPublicResourcePresentationV1(input.descriptor)) return null;
   const saved = canonicalPublicResourcePresentationV1(input);
+  const generatedName=(input.descriptor==null||saved)?canonicalPublicGeneratedResourceNameRu(input):null;
+  if(generatedName){
+    const projectParts=(canonicalPublicGeneratedResourceSpecificationsRu(input)??[]).map(spec=>spec.value);
+    const detailsRu=[...new Set([...(saved?.detailsRu??[]),...projectParts])];
+    if(detailsRu.length>16)return null; // Keep the full source title instead of truncating evidence.
+    return{contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:input.titleRu,
+      nameRu:generatedName,brandAndModelRu:null,specificationRu:saved?.specificationRu??(projectParts.join('; ')||null),detailsRu,
+      ...(saved?.rowKind?{rowKind:saved.rowKind}:{}),...(saved?.resourceKind?{resourceKind:saved.resourceKind}:{})};
+  }
   const binding = simpleBindings.bindings.find(binding => binding.rowId===input.rowId
     && (binding.sourceTitleRu===input.titleRu || (saved!=null&&input.titleRu.startsWith(binding.sourceTitleRu+' — '))));
   const {rowId:_bindingRow,...boundDescriptor}=binding??{};

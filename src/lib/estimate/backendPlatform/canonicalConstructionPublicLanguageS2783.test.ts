@@ -1,3 +1,10 @@
+import {buildSkirtingDefinitionS2735} from '../v4/skirtingConstructorS2735';
+import {canonicalPublicGeneratedResourceNameRu} from './canonicalPublicEstimateLanguageRu';
+import {canonicalProfessionalPdfReviewAcknowledgmentV1,assertCanonicalProfessionalPdfIssuanceV1} from './canonicalEstimateSavedOperationAcceptanceV1';
+import type {CanonicalArtifactRow,CanonicalArtifactRevision} from './canonicalEstimateArtifactContract';
+import {buildCanonicalProcurementPreviewRows} from '../../../features/consumerRepair/canonicalProcurementPreviewRows';
+import type {EstimateDraftRevision} from '../estimateDraftRevisionContract';
+import type {ConsumerRepairRequestItem} from '../../consumerRequests/consumerRequestTypes';
 import socketPublicPack from '../../../../data/estimate-benchmarks/source-packs/socket-complete-surface-2pe-project-r266.json';
 import {elecorMechanicalProjectFixingsDefinitionR1 as electricalDefinition, compileElecorMechanicalProjectFixingsR1 as compileElectrical,
   elecorMechanicalProjectFixingsControlInputR1 as electricalFacts, elecorMechanicalProjectFixingsOwnerR1 as electricalOwner,
@@ -134,8 +141,8 @@ it('distinguishes actual crane choices without overriding an authored contextual
  expect(canonicalEstimateParameterChoiceLabelRu('selected_delivery_selection','NOT_SELECTED')).toBe('Не добавлять отдельную доставку');
 });
 it('versions new document projections while historical artifact bytes and source titles remain independent',()=>{
- expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe('canonical-professional-pdf.r4-a13-readable-saved-report-template92');
- expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r28-public-selected-specification');
+ expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe('canonical-professional-pdf.r4-a13-functional-generated-resource-names-template93');
+ expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r29-functional-generated-resource-names');
  const b=binding(wp+'whole-worker');expect(b.sourceTitleRu).toContain('разряда5,3');expect(b.nameRu).not.toContain('разряда5,3');
  expect(details({rowId:b.rowId,titleRu:b.sourceTitleRu})).toEqual([]);
  expect(b.detailsRu?.join(' ')).toContain('разряда5,3');
@@ -434,4 +441,193 @@ it('projects the current39 functional work title without changing electrical own
  expect(supply.rows.find(r=>r.rowId===electricalOwner)).toMatchObject({quantity:'50',unitPrice:'7',amount:'350'});
  expect(canonicalArtifactVisibleRowTitle(owner,result.parameters)).toBe(row({rowId:owner.row_id,titleRu:owner.title_ru}));
  expect(JSON.stringify({revision,rows:result.rows,needs:result.preliminaryNeeds})).toBe(before);
+});
+
+// Synthetic saved shapes use the real shared resource definitions, never user rows.
+const generatedNameParameters={skirting_colour_batch:'TEST_ONLY_COLOUR_BATCH',board_order_pieces:2,
+ adhesive_product:'FORBO_232',adhesive_rate_ml_m:40};
+const generatedNames=[
+ ['material:skirting:board','Плинтус ПВХ, 60×10 мм, длина 2 м — TEST_ONLY_COLOUR_BATCH'],
+ ['material:skirting:adhesive','Монтажный клей, картридж 310 мл'],
+ ['material:skirting:end-cap','Торцевая вставка для плинтуса'],
+] as const;
+function generatedNameRow(rowId:string):CanonicalArtifactRow {
+ const source=buildSkirtingDefinitionS2735('install').resources.find(resource=>resource.row_id===rowId);
+ if(!source)throw Error('TEST_ONLY_EXISTING_SHARED_RESOURCE_REQUIRED');
+ const graph={...source.resource_graph},rawIds=graph.titleSpecificationParameterIds;
+ const ids=Array.isArray(rawIds)?rawIds.filter((id):id is string=>typeof id==='string'):[];
+ const parameters:Readonly<Record<string,unknown>>=generatedNameParameters;
+ const suffix=ids.map(id=>String(parameters[id])).join(', ');
+ return{row_id:rowId,ordinal:0,title_ru:source.title_ru+(suffix?' — '+suffix:''),physical_row_type:'material',category:'material',
+  unit_id:source.unit_id,quantity:'2',unit_price:null,amount:null,currency_code:null,semantic_owner:'TEST_ONLY:'+rowId,
+  included_in_estimate:true,included_in_procurement:true,procurement_eligible:true,ownership_status:'OWNED',
+  calculation_trace:{resourceGraph:{...graph,semanticOwner:'TEST_ONLY:'+rowId,costOwner:'resource',costTreatment:'OWN_COST'}}};
+}
+function generatedNameGraph(row:CanonicalArtifactRow):Record<string,unknown> {
+ const trace=row.calculation_trace;
+ if(!trace||typeof trace!=='object'||Array.isArray(trace))throw Error('TEST_ONLY_TRACE_REQUIRED');
+ const graph=(trace as Record<string,unknown>).resourceGraph;
+ if(!graph||typeof graph!=='object'||Array.isArray(graph))throw Error('TEST_ONLY_GRAPH_REQUIRED');
+ return graph as Record<string,unknown>;
+}
+function generatedNameReport(){
+ const rows:CanonicalArtifactRow[]=generatedNames.map(([id],ordinal)=>({...generatedNameRow(id),ordinal,revision_id:'11111111-1111-4111-8111-111111111111'}));
+ const revision:CanonicalArtifactRevision={id:'11111111-1111-4111-8111-111111111111',release_id:'22222222-2222-4222-8222-222222222222',
+  definition_version_id:'33333333-3333-4333-8333-333333333333',catalog_id:'TEST_ONLY_SHARED_RESOURCE_PRESENTATION',
+  checksum_sha256:'',row_count:rows.length,currency_code:'KGS',definition_withdrawal_reason:null,created_at:'2026-10-29T16:42:00+06:00',
+  input_parameters:{...generatedNameParameters},amendment_contract:{parameterSources:{preliminaryNeeds:[]}}};
+ const hash=(value:unknown)=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex');
+ const rehash=()=>{
+  for(const r of rows){const{row_sha256:_old,...body}=r;r.row_sha256=hash(body);}
+  revision.checksum_sha256=hash({rows,needs:[]});
+ };
+ rehash();
+ const pdf=()=>{
+  rehash();
+  const reviewAcknowledgmentV1=canonicalProfessionalPdfReviewAcknowledgmentV1({revision,resources:rows,
+   request:{revisionId:revision.id,releaseId:revision.release_id,definitionVersionId:revision.definition_version_id,
+    checksumSha256:revision.checksum_sha256,acknowledgedPreliminaryReview:true},actorUserId:'TEST_ONLY_OWNER',acknowledgedAt:'2026-10-30T00:00:00Z'});
+  const before=JSON.stringify({revision,rows}),projection=buildCanonicalProfessionalPdfProjection({revision,rows,workTitleRu:'Проверочная работа',
+   issuancePurpose:'PRELIMINARY_REVIEW',reviewAcknowledgmentV1});
+  expect(JSON.stringify({revision,rows})).toBe(before);
+  return projection;
+ };
+ return{rows,revision,pdf};
+}
+
+it.each(generatedNames)('uses exact generated source %s through shared UI, saved and artifact naming without mutating evidence',(id,name)=>{
+ const saved=generatedNameRow(id),before=JSON.stringify(saved),graph=generatedNameGraph(saved),titleRu=String(saved.title_ru);
+ expect(presentation({rowId:id,titleRu,descriptor:undefined,graph,parameters:generatedNameParameters})?.nameRu).toBe(name);
+ expect(canonicalArtifactVisibleRowTitle(saved,generatedNameParameters)).toBe(name);
+ const parts=canonicalArtifactSpecificationParts(saved,generatedNameParameters);
+ expect(parts.filter(part=>part.parameterId!=='resource_presentation_v1').flatMap(part=>part.publicParts??part.parts)).toEqual(id==='material:skirting:board'?['TEST_ONLY_COLOUR_BATCH']:[]);
+ if(id==='material:skirting:adhesive')expect(parts.flatMap(part=>part.parts)).toContain('FORBO_232');
+ expect(JSON.stringify(saved)).toBe(before);
+ expect(canonicalArtifactVisibleRowTitle({...saved,calculation_trace:{...saved.calculation_trace as Record<string,unknown>,manualTitleOverride:true}},generatedNameParameters)).toBe(titleRu);
+});
+
+it.each(['foreign-row','changed-title','missing-graph','wrong-ids','reordered-ids','replace-mode','changed-value','malformed-value','malformed-labels','malformed-descriptor','stale-descriptor'])
+ ('retains unproven generated wording for %s',variant=>{
+ const id='material:skirting:adhesive',saved=generatedNameRow(id),graph={...generatedNameGraph(saved)};
+ const input:Parameters<typeof presentation>[0]={rowId:id,titleRu:String(saved.title_ru),descriptor:undefined,graph,parameters:{...generatedNameParameters}};
+ if(variant==='foreign-row')input.rowId='foreign:'+id;
+ if(variant==='changed-title')input.titleRu+=' — другое изделие';
+ if(variant==='missing-graph')input.graph=undefined;
+ if(variant==='wrong-ids')graph.titleSpecificationParameterIds=['unrelated-service-scope'];
+ if(variant==='reordered-ids')graph.titleSpecificationParameterIds=['adhesive_rate_ml_m','adhesive_product'];
+ if(variant==='replace-mode')graph.titleSpecificationMode='REPLACE';
+ if(variant==='changed-value')input.parameters={...generatedNameParameters,adhesive_product:'OTHER_PRODUCT'};
+ if(variant==='malformed-value')input.parameters={...generatedNameParameters,adhesive_rate_ml_m:{unknown:true}};
+ if(variant==='malformed-labels')graph.titleSpecificationParameterLabelsRu=[];
+ if(variant==='malformed-descriptor')input.descriptor={contractVersion:'canonical-public-resource-presentation/v1'};
+ if(variant==='stale-descriptor')input.descriptor={contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:'Другой сохранённый источник',
+  nameRu:'Другое изделие',brandAndModelRu:null,specificationRu:null,detailsRu:[]};
+ expect(presentation(input)).toBeNull();
+});
+
+it('uses only exact declared APPEND fields on a safe report copy and an explicitly compact saved need',()=>{
+ const saved=generatedNameRow('material:skirting:adhesive'),graph={...generatedNameGraph(saved)},titleRu=String(saved.title_ru);
+ delete graph.titleSpecificationMode; // Existing report deliberately removes calculation authority.
+ expect(presentation({rowId:String(saved.row_id),titleRu,descriptor:undefined,graph,parameters:generatedNameParameters})?.nameRu).toBe(generatedNames[1][1]);
+ expect(presentation({rowId:String(saved.row_id),titleRu,descriptor:undefined,parameters:generatedNameParameters,compactPreliminaryNeed:true})?.nameRu).toBe(generatedNames[1][1]);
+ expect(presentation({rowId:'unknown-resource',titleRu,descriptor:undefined,parameters:generatedNameParameters,compactPreliminaryNeed:true})).toBeNull();
+ expect(canonicalPublicGeneratedResourceNameRu({rowId:String(saved.row_id),titleRu,graph,parameters:generatedNameParameters,manualTitleOverride:true})).toBeNull();
+ const custom='Мой монтажный клей FORBO_232';
+ expect(canonicalArtifactVisibleRowTitle({...saved,title_ru:custom,calculation_trace:{manualTitleOverride:true}},generatedNameParameters)).toBe(custom);
+});
+
+it('renders functional names in saved-report rows and warnings while preserving the real saved instant and no STANDARD grant',()=>{
+ const f=generatedNameReport();f.rows[0].quantity=null;
+ const p=f.pdf();
+ for(const [,name]of generatedNames)expect(p.html).toContain(name);
+ expect(p.html).not.toMatch(/Gerflor|Forbo|FORBO_232/u);expect(p.html).toContain('TEST_ONLY_COLOUR_BATCH');
+ expect(p.html).toContain('Плинтус ПВХ, 60×10 мм, длина 2 м — TEST_ONLY_COLOUR_BATCH: количество не рассчитано');
+ expect(p.html).not.toContain('сохранённая валюта не распознана');
+ expect(p.html).toContain('<strong>Версия сохранена:</strong>');expect(p.html).toContain('10:42');expect(p.html).toContain(' UTC');
+ expect(p.html).not.toContain('<strong>Сформировано:</strong>');
+ expect(()=>assertCanonicalProfessionalPdfIssuanceV1({revision:f.revision,resources:f.rows})).toThrow();
+});
+
+it.each(['priced-null','malformed-currency','missing-price-field'])('keeps saved-report currency warnings for %s',variant=>{
+ const f=generatedNameReport(),r=f.rows[0];
+ if(variant==='priced-null'){r.unit_price='5';r.amount='10';}
+ if(variant==='malformed-currency')r.currency_code='???';
+ if(variant==='missing-price-field')delete r.unit_price;
+ const p=f.pdf();expect(p.html).toContain('сохранённая валюта не распознана; цена и сумма не показаны');
+ expect(p.html).not.toContain('class="money">10,00 сом</td>');
+});
+
+it('uses the saved graph and parameter values in procurement preview without creating a second owner or rewriting rows',()=>{
+ const id='material:skirting:adhesive',saved=generatedNameRow(id),revision:EstimateDraftRevision={
+  estimateDraftId:'TEST_ONLY_DRAFT',revisionId:'11111111-1111-4111-8111-111111111111',previousRevisionId:null,source:'initial_prompt',
+  rawInput:'',selectedTemplateId:'TEST_ONLY_SHARED_RESOURCE_PRESENTATION',matchedFamily:'TEST_ONLY',estimateLevel:'PRELIMINARY_QUANTITY_BOQ',
+  rawInputFacts:[],rawInputFactMetrics:{explicit_input_facts_ignored:0,explicit_input_unit_mismatches:0,explicit_input_facts_overwritten_by_default:0},
+  params:Object.fromEntries(Object.entries(generatedNameParameters).map(([key,value])=>[key,{value,source:'derived' as const,lastChangedAt:'2026-10-30T00:00:00Z'}])),
+  assumptions:[],missingInputs:[],boq:{sections:[],rows:[{rowId:id,rowType:'material',titleRu:String(saved.title_ru),quantity:2,unit:'ml',unitPrice:null,
+   currency:'KGS',includedInProcurement:true,calculationTrace:JSON.stringify(saved.calculation_trace),sourceParameters:{}}]},
+  trace:{traceId:'TEST_ONLY_TRACE',revisionId:'11111111-1111-4111-8111-111111111111',selectedTemplateId:'TEST_ONLY_SHARED_RESOURCE_PRESENTATION',params:[],rows:[],staleTraceAccepted:false},
+  status:'draft_ready',artifacts:{snapshotId:null,pdfArtifactId:null,buyerHandoffId:null,artifactsValidForRevisionId:null}};
+ const artifactFixture=generatedNameReport(),artifactBefore=JSON.stringify(artifactFixture);
+ const artifact=buildCanonicalProcurementProjection({revision:artifactFixture.revision,procurementRows:artifactFixture.rows,sourceRows:artifactFixture.rows});
+ expect(artifact.rows.map(row=>row.titleRu)).toEqual(generatedNames.map(([,name])=>name));
+ expect(artifact.rows.map(row=>row.quantity)).toEqual(['2','2','2']);
+ const boardSpecification=artifact.rows[0].specifications.find(spec=>spec.parameterId==='skirting_colour_batch');
+ expect(boardSpecification?.publicParts).toEqual(['TEST_ONLY_COLOUR_BATCH']);expect(boardSpecification?.parts).toEqual(['TEST_ONLY_COLOUR_BATCH']);
+ expect(JSON.stringify(artifactFixture)).toBe(artifactBefore);
+ const before=JSON.stringify(revision),rows=buildCanonicalProcurementPreviewRows(revision);
+ expect(rows).toHaveLength(1);expect(rows[0]).toMatchObject({rowId:id,titleRu:generatedNames[1][1],quantity:2,unitPrice:null});
+ expect(JSON.stringify(revision)).toBe(before);
+ const originalPreviewRow=revision.boq.rows[0],board=generatedNameRow('material:skirting:board');
+ revision.boq.rows[0]={...originalPreviewRow,rowId:String(board.row_id),titleRu:String(board.title_ru),calculationTrace:JSON.stringify(board.calculation_trace)};
+ const reopened:EstimateDraftRevision=JSON.parse(JSON.stringify(revision)),reopenedBefore=JSON.stringify(reopened);
+ expect(buildCanonicalProcurementPreviewRows(reopened)[0].titleRu).toBe(generatedNames[0][1]);
+ expect(JSON.stringify(reopened)).toBe(reopenedBefore);
+ revision.boq.rows[0]=originalPreviewRow;
+ revision.boq.rows[0].sourceParameters={canonicalManualTitleOverride:true};
+ expect(buildCanonicalProcurementPreviewRows(revision)[0].titleRu).toBe(saved.title_ru);
+ revision.boq.rows=[];
+ const need:ConsumerRepairRequestItem={id,requestDraftId:'TEST_ONLY_DRAFT',itemType:'material',titleRu:String(saved.title_ru),quantity:null,unit:'ml',
+  currency:'KGS',source:'ai_suggested',editableByConsumer:true,createdAt:'2026-10-30T00:00:00Z',sourceParameters:{canonicalPreliminaryNeed:true,
+   canonicalBackendRevisionId:revision.revisionId,rowCode:id,includedInProcurement:true}};
+ expect(buildCanonicalProcurementPreviewRows(revision,[need])).toMatchObject([{rowId:id,titleRu:generatedNames[1][1],quantity:null,preliminary:true}]);
+ need.sourceParameters={...need.sourceParameters,canonicalBackendRevisionId:'foreign-revision'};
+ expect(buildCanonicalProcurementPreviewRows(revision,[need])).toEqual([]);
+});
+it('preserves the exact saved descriptor taxonomy while projecting a functional generated name',()=>{
+ const saved=generatedNameRow('material:skirting:adhesive'),titleRu=String(saved.title_ru),descriptor={contractVersion:'canonical-public-resource-presentation/v1',
+  sourceTitleRu:titleRu,nameRu:titleRu,brandAndModelRu:null,specificationRu:null,detailsRu:[],resourceKind:'CONSUMABLE'};
+ // nameRu must itself satisfy the existing 180-character descriptor contract.
+ descriptor.nameRu='Монтажный клей';
+ expect(presentation({rowId:String(saved.row_id),titleRu,descriptor,graph:generatedNameGraph(saved),parameters:generatedNameParameters}))
+  .toMatchObject({nameRu:generatedNames[1][1],resourceKind:'CONSUMABLE'});
+});
+
+it('does not conceal another selected product even when its APPEND suffix matches the changed parameters',()=>{
+ const saved=generatedNameRow('material:skirting:adhesive'),titleRu=String(saved.title_ru).replace('FORBO_232, 40','OTHER_PRODUCT, 40');
+ expect(presentation({rowId:String(saved.row_id),titleRu,descriptor:undefined,graph:generatedNameGraph(saved),
+  parameters:{...generatedNameParameters,adhesive_product:'OTHER_PRODUCT'}})).toBeNull();
+});
+it('preserves project colour and batch plus an exact saved descriptor specification without exposing source product fields',()=>{
+ const saved=generatedNameRow('material:skirting:board'),titleRu=String(saved.title_ru),graph=generatedNameGraph(saved);
+ const descriptor={contractVersion:'canonical-public-resource-presentation/v1',sourceTitleRu:titleRu,nameRu:'Плинтус ПВХ',
+  brandAndModelRu:'TEST_ONLY_INTERNAL_SOURCE_MODEL',specificationRu:'Класс поверхности S1',detailsRu:['Проектная партия B17'],resourceKind:'MATERIAL'};
+ const before=JSON.stringify({saved,descriptor}),projected=presentation({rowId:String(saved.row_id),titleRu,descriptor,graph,parameters:generatedNameParameters});
+ expect(projected).toMatchObject({nameRu:generatedNames[0][1],specificationRu:'Класс поверхности S1',
+  detailsRu:['Проектная партия B17','TEST_ONLY_COLOUR_BATCH'],brandAndModelRu:null,resourceKind:'MATERIAL'});
+ expect(JSON.stringify({saved,descriptor})).toBe(before);
+ const parameters={...generatedNameParameters,skirting_colour_batch:'Gerflor6086, ПВХ60×10мм; цвет/декор и партия ещё не подтверждены'};
+ const source=buildSkirtingDefinitionS2735('install').resources.find(resource=>resource.row_id===saved.row_id)!;
+ const defaultTitle=source.title_ru+' — '+parameters.skirting_colour_batch+', '+parameters.board_order_pieces;
+ const pending=presentation({rowId:String(saved.row_id),titleRu:defaultTitle,descriptor:undefined,graph,parameters});
+ expect(pending?.nameRu).toContain('Цвет/декор и партия ещё не подтверждены');expect(pending?.nameRu).not.toMatch(/Gerflor|6086/u);
+ expect(canonicalArtifactSpecificationParts({...saved,title_ru:defaultTitle},parameters).find(spec=>spec.parameterId==='skirting_colour_batch'))
+  .toMatchObject({value:parameters.skirting_colour_batch,parts:parameters.skirting_colour_batch.split(/\s*;\s*/u),publicParts:['Цвет/декор и партия ещё не подтверждены']});
+});
+
+it('retains the full saved title when a project selection cannot fit the public presentation contract',()=>{
+ const saved=generatedNameRow('material:skirting:board'),graph=generatedNameGraph(saved),parameters={...generatedNameParameters,skirting_colour_batch:'X'.repeat(181)};
+ const source=buildSkirtingDefinitionS2735('install').resources.find(resource=>resource.row_id===saved.row_id)!;
+ const titleRu=source.title_ru+' — '+parameters.skirting_colour_batch+', '+parameters.board_order_pieces;
+ expect(presentation({rowId:String(saved.row_id),titleRu,descriptor:undefined,graph,parameters})).toBeNull();
+ expect(canonicalArtifactVisibleRowTitle({...saved,title_ru:titleRu},parameters)).toBe(titleRu);
 });

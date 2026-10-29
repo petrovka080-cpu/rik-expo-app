@@ -28,7 +28,7 @@ import {isCanonicalEstimateConsumerSuppliedParameter,isCanonicalEstimateUserEdit
 import type {CanonicalEstimateCatalogItem} from './contracts';
 
 export const CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION =
-  "canonical-professional-pdf.r4-a13-readable-saved-report-template92" as const;
+  "canonical-professional-pdf.r4-a13-functional-generated-resource-names-template93" as const;
 
 /** All catalogs use the same money-cell contract; status text belongs outside
  * the resource table. Reject a regression before a worker creates the PDF. */
@@ -270,9 +270,13 @@ function canonicalSavedReportView(revision:CanonicalArtifactRevision,ordinary:Ca
   const nonpayable=needs.includes(row)||trace.physicalScopeExcludedV1!=null||['INCLUDED_IN_RESOURCE_ROWS','INFORMATIONAL_SCOPE','CONTROL_OR_DOCUMENT'].includes(String(graph.costTreatment));
   const paid=!nonpayable&&row.included_in_estimate===true;
   const amount=!unsafeMoney&&paid&&q!=null&&p!=null&&currency!=null&&numeric(row.amount)?row.amount:null;
-  const title=typeof row.title_ru==='string'&&row.title_ru.trim()?row.title_ru:'Наименование не указано';
+  const sourceTitle=typeof row.title_ru==='string'&&row.title_ru.trim()?row.title_ru:'Наименование не указано';
+  const title=canonicalArtifactVisibleRowTitle({...row,title_ru:sourceTitle},objectValue(revision.input_parameters));
+  // The compiler stores no row currency when no price exists. Only this exact
+  // explicit-null shape is lawful absence; malformed or priced rows still warn.
+  const unpricedWithoutCurrency=['currency_code','unit_price','amount'].every(key=>Object.hasOwn(currencyCarrier,key)&&currencyCarrier[key]===null);
   if(q==null)warnings.add(title+': количество не рассчитано или не подтверждено.');
-  if(!rowCurrencyMissing&&currency==null)warnings.add(title+': сохранённая валюта не распознана; цена и сумма не показаны.');
+  if(!rowCurrencyMissing&&currency==null&&!unpricedWithoutCurrency)warnings.add(title+': сохранённая валюта не распознана; цена и сумма не показаны.');
   if(row.unit_price!=null&&p==null||row.amount!=null&&amount==null&&paid)warnings.add(title+': денежные данные неполны или противоречивы; неподтверждённая сумма не показана.');
   if(typeof row.unit_id!=='string'||!row.unit_id)warnings.add(title+': единица не указана.');
   if(graph.supplyMode==='RENTAL_RETURNABLE')warnings.add(title+': условия аренды, состав ставки и срок требуют проверки; пересчёт не выполнялся.');
@@ -282,7 +286,7 @@ function canonicalSavedReportView(revision:CanonicalArtifactRevision,ordinary:Ca
   if(graph.compositionSelectionDecisionV1!=null||trace.physicalScopeExcludedV1!=null)warnings.add(title+': сохранённые сведения об исключениях и применимости требуют проверки.');
   if(row.need_state==='SUPPLY_CONFIRMATION_REQUIRED'||Object.hasOwn(trace,'purchaseSupplyBlocksV1'))warnings.add(title+': есть незавершённые или противоречивые сведения поставки. Это не разрешение на закупку.');
   if(unassigned.has(String(row.row_id)))warnings.add(title+': связь с подработой не подтверждена; позиция доступна в непривязанном разделе.');
-  return{...row,title_ru:title,ordinal:index,quantity:q,unit_id:typeof row.unit_id==='string'?row.unit_id:'',unit_price:currency?p:null,currency_code:currency??'',amount,
+  return{...row,title_ru:sourceTitle,ordinal:index,quantity:q,unit_id:typeof row.unit_id==='string'?row.unit_id:'',unit_price:currency?p:null,currency_code:currency??'',amount,
    included_in_estimate:paid,included_in_procurement:false,procurement_eligible:false,
    calculation_trace:{...trace,resourceGraph:{...remainingGraph,...(operation?{operationCompositionV1:operation}:{})}}};
  });
@@ -534,7 +538,7 @@ export function buildCanonicalProfessionalPdfProjection(input: {
       ${explicitDemo ? '<div class="notice"><strong>Проверочный пример. Не является утверждённой проектной сметой.</strong></div>' : ""}
       ${fixtureSupplyUnconfirmed ? '<div class="notice">Проверочный пример; поставка не подтверждена.</div>' : ""}
       ${nullableText(revision.source_request_text) ? `<div><strong>Исходный запрос:</strong> ${escapeCanonicalArtifactHtml(canonicalPublicEstimateRequestTextRu(String(revision.source_request_text)))}</div>` : ""}
-      <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Сформировано:</strong> ${escapeCanonicalArtifactHtml(generatedDate)}</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(workTitleRu)}</div><div><strong>${workMeasure ? "Объём работы" : "Первичная мера"}:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
+      <div class="meta-grid"><div><strong>Номер:</strong> ${escapeCanonicalArtifactHtml(documentNumber)}</div><div><strong>Статус:</strong> ${documentStatusRu}</div><div><strong>Версия сохранена:</strong> ${escapeCanonicalArtifactHtml(generatedDate)} UTC</div><div><strong>Валюта:</strong> ${escapeCanonicalArtifactHtml(currencyLabel)}</div><div><strong>Объект:</strong> ${escapeCanonicalArtifactHtml(workTitleRu)}</div><div><strong>${workMeasure ? "Объём работы" : "Первичная мера"}:</strong> ${escapeCanonicalArtifactHtml(`${primaryValue} ${primaryUnit}`)}</div><div><strong>Версия:</strong> ${escapeCanonicalArtifactHtml(String(Number.isFinite(revisionNumber) ? revisionNumber : 1))}</div></div>
     </header>
     ${currentMeasurements.length?`<div class="notice current-measurements"><strong>Данные расчёта:</strong> ${currentMeasurements.map(escapeCanonicalArtifactHtml).join('; ')}.</div>`:''}
     <div class="summary"><div><strong>Позиций сметы</strong><br>${publicResourceRows.length}</div><div><strong>Количество известно</strong><br>${knownQuantityRowCount}; ещё не рассчитано ${missingQuantityRowCount}${scopeGroups.length?`; групп состава и этапов: ${scopeGroups.length}`:''}</div><div><strong>${pricedSummary}</strong></div></div>

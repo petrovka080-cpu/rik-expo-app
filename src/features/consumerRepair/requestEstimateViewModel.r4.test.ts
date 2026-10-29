@@ -1,3 +1,5 @@
+import {consumerRepairRowPublicResourcePresentation} from './consumerRepairRowMetadata';
+import {buildSkirtingDefinitionS2735} from '../../lib/estimate/v4/skirtingConstructorS2735';
 import scsScopePack from '../../../data/estimate-benchmarks/source-packs/low-current-nk688m-jackrapid-method-post-r24.json';
 import acsScopePack from '../../../data/estimate-benchmarks/source-packs/access-control-six-whole-operation-references-r1.json';
 import {canonicalPublicResourcePresentationV1 as sourceBoundPresentation} from '../../lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1';
@@ -451,4 +453,33 @@ it.each([false,true])('retains declared and unassigned UNKNOWN rows after cold r
   expect(vm.sections.find(section=>section.items.some(row=>row.id===general.id))?.operation??null).toBeNull();
   expect(vm.workProcessGroups?.flatMap(group=>group.operations).map(operation=>operation.operationId)).toEqual(['route']);
   expect(JSON.stringify(stored)).toBe(saved);expect(JSON.stringify(cold)).toBe(saved);
+});
+it.each([
+ ['material:skirting:board','Плинтус ПВХ, 60×10 мм, длина 2 м — TEST_ONLY_COLOUR_BATCH'],
+ ['material:skirting:adhesive','Монтажный клей, картридж 310 мл'],
+ ['material:skirting:end-cap','Торцевая вставка для плинтуса'],
+])('shares source-bound generated resource %s across editor, summary and cold saved replay while retaining an explicit rename',(rowId,name)=>{
+ const resource=buildSkirtingDefinitionS2735('install').resources.find(value=>value.row_id===rowId);
+ if(!resource)throw Error('TEST_ONLY_EXISTING_SHARED_RESOURCE_REQUIRED');
+ const parameters:Record<string,unknown>={skirting_colour_batch:'TEST_ONLY_COLOUR_BATCH',board_order_pieces:2,adhesive_product:'FORBO_232',adhesive_rate_ml_m:40};
+ const rawIds=resource.resource_graph.titleSpecificationParameterIds,ids=Array.isArray(rawIds)?rawIds.filter((id):id is string=>typeof id==='string'):[];
+ const suffix=ids.map(id=>String(parameters[id])).join(', '),title=resource.title_ru+(suffix?' — '+suffix:'');
+ const item:ConsumerRepairRequestItem={...canonicalItem(rowId,title,'d'.repeat(64),0),itemType:'material',category:'MATERIAL',unit:resource.unit_id,
+  calculationTrace:JSON.stringify({resourceGraph:resource.resource_graph})};
+ const bundle=serverBoundBundle([item],parameters),before=JSON.stringify(bundle),reopened:ConsumerRepairDraftBundle=JSON.parse(before);
+ for(const saved of [bundle,reopened]){
+  const currentItem=saved.items[0],vm=buildRequestEstimateViewModel(saved);
+  if(!currentItem||!vm)throw Error('TEST_ONLY_VERIFIED_DISPLAY_REQUIRED');
+  expect(requestEstimatePublicItemTitle(currentItem,saved)).toBe(name);
+  expect(vm.sections.flatMap(section=>section.items)).toMatchObject([{id:item.id,titleRu:name,quantity:1,unit:resource.unit_id,unitPrice:null}]);
+  expect(vm.visibleLines.map(line=>line.text).join(' ')).toContain(name);
+  if(rowId==='material:skirting:board')expect(consumerRepairRowPublicResourcePresentation(vm.sections.flatMap(section=>section.items)[0]))
+   .toMatchObject({specificationRu:'TEST_ONLY_COLOUR_BATCH',detailsRu:['TEST_ONLY_COLOUR_BATCH']});
+  expect(vm.visibleLines.map(line=>line.text).join(' ')).not.toMatch(/Gerflor|Forbo|FORBO_232/u);
+ }
+ expect(JSON.stringify(bundle)).toBe(before);expect(reopened.items[0].titleRu).toBe(title);
+ const manual={...item,sourceParameters:{...item.sourceParameters,canonicalManualTitleOverride:true}};
+ const manualBundle=serverBoundBundle([manual],parameters),manualReopened:ConsumerRepairDraftBundle=JSON.parse(JSON.stringify(manualBundle));
+ expect(requestEstimatePublicItemTitle(manualReopened.items[0],manualReopened)).toBe(title);
+ expect(buildRequestEstimateViewModel(manualReopened)?.visibleLines.map(line=>line.text).join(' ')).toContain(title);
 });

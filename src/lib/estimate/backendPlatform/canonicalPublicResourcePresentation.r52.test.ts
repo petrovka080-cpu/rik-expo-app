@@ -26,7 +26,7 @@ test.each(roofRows)('r52 changed source title %s cannot reuse the exact entry', 
  expect(display({rowId,titleRu:titleRu+' — другой неподтверждённый материал',descriptor:null})).toBeNull();
 });
 test('r52 the ordinary PDF cache version changes when public resource output changes',()=>{
- expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe('canonical-professional-pdf.r4-a13-public-selected-specification-template82');
+ expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe('canonical-professional-pdf.r4-a13-functional-generated-resource-names-template93');
  expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).not.toBe('canonical-professional-pdf.r4-a13-public-selected-specification-template81');
 });
 
@@ -37,4 +37,4 @@ test('r52 an explicit user work title remains unchanged',()=>expect(workTitle(va
 test('r52 a one-layer operation cannot reuse the two-layer title',()=>{const other=valleyOperation.replace('двух','одного');expect(workTitle(other)).toBe(other);});
 test('r52 another layer count has no authority from the exact valley entry',()=>{const other=valleyOperation.replace('двух','трёх');expect(workTitle(other)).toBe(other);});
 
-test('r52 the ordinary procurement cache also versions changed public names',()=>{expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r28-public-selected-specification');expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).not.toBe('canonical-procurement.r27-public-selected-specification');});
+test('r52 the ordinary procurement cache also versions changed public names',()=>{expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r29-functional-generated-resource-names');expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).not.toBe('canonical-procurement.r27-public-selected-specification');});

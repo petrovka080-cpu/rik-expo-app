@@ -296,6 +296,96 @@ export function canonicalPublicEstimateRowDetailsRu(input: {
   return authored?.detailsRu ?? [];
 }
 
+// Exact shared resource identities, reused by every work that consumes them.
+// These are display names; saved product/source/applicability evidence is kept.
+const functionalResourceBindings: readonly Readonly<{
+  rowId:string; sourceTitleRu:string; nameRu:string; detailsRu:readonly string[];
+  titleSpecificationParameterIds:readonly string[];selectedParameterValues?:Readonly<Record<string,string>>;
+  publicSpecificationParameters?:readonly Readonly<{id:string;exactValueBindings?:readonly Readonly<{sourceValue:string;nameRu:string}>[]}>[];
+}>[] = [
+  {rowId:'material:skirting:board',sourceTitleRu:'Gerflor Design Skirting6086, ПВХ60×10мм, планка2м; выбранная кратность поставки',
+    nameRu:'Плинтус ПВХ, 60×10 мм, длина 2 м',detailsRu:[],titleSpecificationParameterIds:['skirting_colour_batch','board_order_pieces'],
+    publicSpecificationParameters:[{id:'skirting_colour_batch',exactValueBindings:[{
+      sourceValue:'Gerflor6086, ПВХ60×10мм; цвет/декор и партия ещё не подтверждены',nameRu:'Цвет/декор и партия ещё не подтверждены'}]}]},
+  {rowId:'material:skirting:adhesive',sourceTitleRu:'Forbo Eurocol232 Eurosol Montage, картридж310мл; расход20–40мл/м по выбранному способу',
+    nameRu:'Монтажный клей, картридж 310 мл',detailsRu:[],titleSpecificationParameterIds:['adhesive_product','adhesive_rate_ml_m'],selectedParameterValues:{adhesive_product:'FORBO_232'}},
+  {rowId:'material:skirting:end-cap',sourceTitleRu:'Торцевая вставка Gerflor6087; количество по окончаниям линии',
+    nameRu:'Торцевая вставка для плинтуса',detailsRu:[],titleSpecificationParameterIds:[]},
+];
+
+/** Project selections stay public; exact source defaults get readable wording.
+ * Product identifiers and quantity/norm fields are not public specifications. */
+function generatedResourceSpecifications(binding:typeof functionalResourceBindings[number],parameters?:Readonly<Record<string,unknown>>){
+  return (binding.publicSpecificationParameters??[]).flatMap(field=>{
+    const raw=parameters&&Object.hasOwn(parameters,field.id)?parameters[field.id]:null;
+    if(typeof raw!=='string'||!raw.trim())return [];
+    const value=raw.trim(),authored=field.exactValueBindings?.find(entry=>entry.sourceValue===value);
+    return [{parameterId:field.id,value:authored?.nameRu??canonicalPublicEstimateChoiceLabelRu(value)}];
+  });
+}
+
+/** Match the compiler's exact authored APPEND, never a brand/SKU pattern.
+ * Only reviewed naming fields may leave the public name; unrelated service
+ * scope selections and unknown source variants keep their complete title. */
+export function canonicalPublicGeneratedResourceNameRu(input:{
+  rowId?:string|null;titleRu:string;manualTitleOverride?:boolean;graph?:unknown;
+  parameters?:Readonly<Record<string,unknown>>;compactPreliminaryNeed?:boolean;
+}):string|null {
+  if(input.manualTitleOverride||input.titleRu.length>2000)return null;
+  const binding=functionalResourceBindings.find(value=>value.rowId===input.rowId);
+  if(!binding)return null;
+  const parameters=input.parameters;
+  // Do not hide an unrepresentable project selection behind a short alias.
+  if(parameters&&(binding.publicSpecificationParameters??[]).some(field=>{
+    const raw=Object.hasOwn(parameters,field.id)?parameters[field.id]:null;
+    return raw!=null&&(typeof raw!=='string'||raw.length>500);
+  }))return null;
+  const publicSpecifications=generatedResourceSpecifications(binding,parameters);
+  const nameRu=binding.nameRu+(publicSpecifications.length?' — '+publicSpecifications.map(spec=>spec.value).join('; '):'');
+  if(nameRu.length>180)return null;
+  const selected=Object.entries(binding.selectedParameterValues??{});
+  // A historical literal source title is sufficient without parameter context;
+  // a supplied contradictory product never borrows that display authority.
+  if(parameters&&selected.some(([id,value])=>Object.hasOwn(parameters,id)&&parameters[id]!==value))return null;
+  if(input.titleRu===binding.sourceTitleRu)return nameRu;
+  if(!binding.titleSpecificationParameterIds.length||!parameters)return null;
+  // APPEND additionally requires the reviewed exact product selection. This
+  // is source identity for naming, never material/quantity/source admission.
+  if(selected.some(([id,value])=>!Object.hasOwn(parameters,id)||parameters[id]!==value))return null;
+  if(input.graph!=null&&(typeof input.graph!=='object'||Array.isArray(input.graph)))return null;
+  let graph=input.graph as Readonly<Record<string,unknown>>|null|undefined;
+  if(!graph||!Object.keys(graph).length){
+    if(!input.compactPreliminaryNeed)return null;
+    graph={titleSpecificationParameterIds:binding.titleSpecificationParameterIds};
+  }
+  if((graph.titleSpecificationMode??'APPEND')!=='APPEND'
+    ||(graph.titleSpecificationSeparator??' — ')!==' — ')return null;
+  const ids=graph.titleSpecificationParameterIds;
+  if(!Array.isArray(ids)||ids.length!==binding.titleSpecificationParameterIds.length
+    ||ids.some((id,index)=>id!==binding.titleSpecificationParameterIds[index]))return null;
+  const rawLabels=graph.titleSpecificationParameterLabelsRu;
+  if(rawLabels!=null&&(typeof rawLabels!=='object'||Array.isArray(rawLabels)))return null;
+  const labels=rawLabels as Readonly<Record<string,unknown>>|null|undefined,values:string[]=[];
+  for(const id of binding.titleSpecificationParameterIds){
+    const raw=Object.hasOwn(parameters,id)?parameters[id]:null;
+    if(raw==null||raw==='')continue;
+    const value=typeof raw==='number'&&Number.isFinite(raw)?String(raw):typeof raw==='string'?raw.trim():null;
+    if(value==null||value.length>2000)return null;
+    if(!value)continue;
+    const label=labels&&Object.hasOwn(labels,id)?labels[id]:null;
+    if(label!=null&&(typeof label!=='string'||!label.trim()||label.length>100))return null;
+    values.push(typeof label==='string'?label.trim()+': '+value:value);
+  }
+  return values.length&&input.titleRu===binding.sourceTitleRu+' — '+values.join(', ')?nameRu:null;
+}
+
+/** Same exact display proof, with explicit public project fields only. */
+export function canonicalPublicGeneratedResourceSpecificationsRu(input:Parameters<typeof canonicalPublicGeneratedResourceNameRu>[0]):readonly Readonly<{parameterId:string;value:string}>[]|null{
+  if(canonicalPublicGeneratedResourceNameRu(input)===null)return null;
+  const binding=functionalResourceBindings.find(value=>value.rowId===input.rowId)!;
+  return generatedResourceSpecifications(binding,input.parameters);
+}
+
 function publicRowBinding(input: {rowId?: string | null; titleRu: string; sourceTitleRu?: string}) {
   const matches=(binding:{rowId:string;sourceTitleRu:string})=>binding.rowId === input.rowId
     && (binding.sourceTitleRu === (input.sourceTitleRu ?? input.titleRu)

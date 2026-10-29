@@ -2,7 +2,7 @@ import {canonicalPublicResourceCategoryTitleRuV1} from './canonicalPublicResourc
 import { canonicalMaterialQuantityBasisFromRow } from "./canonicalMaterialQuantityProjection";
 import { normalizePublicBoqNameRu } from "../publicBoqNaming";
 import { canonicalPublicResourceDisplayPresentationV1 as canonicalPublicResourcePresentationV1 } from './canonicalPublicResourcePresentationV1';
-import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateFixtureTextRu, canonicalPublicEstimateOperationReferenceRu, canonicalPublicEstimateSelectedSpecificationIsInRowNameRu } from './canonicalPublicEstimateLanguageRu';
+import { canonicalPublicEstimateRowNameRu, canonicalPublicEstimateRowDetailsRu, canonicalPublicEstimateChoiceLabelRu, canonicalPublicEstimateWorkTitleRu, canonicalPublicEstimateFixtureTextRu, canonicalPublicEstimateOperationReferenceRu, canonicalPublicEstimateSelectedSpecificationIsInRowNameRu, canonicalPublicGeneratedResourceSpecificationsRu } from './canonicalPublicEstimateLanguageRu';
 import { assertCanonicalPurchaseReadinessV1 } from "./canonicalPurchaseBalanceV1";
 import { assertCanonicalPurchaseSupplyRowV1, parseCanonicalExactPurchaseQuantityV1 } from "./canonicalPurchaseSupplyReadinessV1";
 import { assertCanonicalPurchaseSupplyRevisionV1, assertCanonicalPurchaseSupplyReadyV1, canonicalPurchaseSupplyBlocksV1 } from "./canonicalPurchaseSupplyReadinessV1";
@@ -18,8 +18,8 @@ import {canonicalScopeRequirementDecisionV1,canonicalScopeRequirementHasAddition
   canonicalScopeRequirementDecisionIsOpenV1} from './canonicalScopeRequirementV1';
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r12";
-export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r28-public-selected-specification";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:44";
+export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r29-functional-generated-resource-names";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:45";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -180,6 +180,10 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
     .map(canonicalPublicEstimateFixtureTextRu)
     .filter(part => !selectedParts.includes(part)
       && part !== selectedSpecification && !selectedValues.has(part.trim())))];
+  // Suppress only exact product/quantity fields; selected project colour/batch
+  // remains public even when the generated resource name is functional.
+  const generatedSpecifications=presentation!==null?canonicalPublicGeneratedResourceSpecificationsRu({rowId:String(row.row_id??''),titleRu:String(row.title_ru??''),graph,parameters,
+    manualTitleOverride:objectValue(row.calculation_trace).manualTitleOverride===true,compactPreliminaryNeed:row.ownership_status==='PRELIMINARY_NEED'}):null;
   const specificationInName = canonicalPublicSelectedSpecificationV1({rowId:String(row.row_id??''),titleRu:String(row.title_ru??''),graph,parameters,
     manualTitleOverride:objectValue(row.calculation_trace).manualTitleOverride===true,compactPreliminaryNeed:row.ownership_status==='PRELIMINARY_NEED'})!==null || canonicalPublicEstimateSelectedSpecificationIsInRowNameRu({
     rowId: typeof row.row_id === 'string' ? row.row_id : null,
@@ -187,7 +191,9 @@ export function canonicalArtifactSpecificationParts(row: CanonicalArtifactRow, p
     sourceTitleRu: typeof row.title_ru === 'string' ? row.title_ru : '',
     manualTitleOverride: objectValue(row.calculation_trace).manualTitleOverride === true,
   });
-  return [...selected.map(spec => specificationInName ? {...spec,publicParts:[]} : spec),
+  return [...selected.map(spec => generatedSpecifications!==null
+      ?{...spec,publicParts:generatedSpecifications.filter(value=>value.parameterId===spec.parameterId).map(value=>value.value)}
+      :specificationInName?{...spec,publicParts:[]}:spec),
     ...(details.length ? [{ parameterId: 'resource_presentation_v1', value: details.join('; '), parts: details }] : [])];
 }
 

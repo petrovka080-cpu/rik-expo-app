@@ -80,18 +80,29 @@ function exactQuantity(source: Record<string, unknown> | null | undefined, fallb
   return saved ? saved.quantityText : fallback;
 }
 
+/** Read display evidence only; malformed saved traces never grant naming authority. */
+function publicResourceGraph(trace: unknown): unknown {
+  if(typeof trace!=='string'||trace.length>1048576)return undefined;
+  try{const value:unknown=JSON.parse(trace);
+    return value!=null&&typeof value==='object'&&!Array.isArray(value)
+      ?(value as Record<string,unknown>).resourceGraph:undefined;
+  }catch{return undefined;}
+}
+
 export function buildCanonicalProcurementPreviewRows(
   revision: EstimateDraftRevision | null,
   items: readonly ConsumerRepairRequestItem[] = [],
 ): CanonicalProcurementPreviewRow[] {
   if (!revision) return [];
   const displayContext=legacyDisplayContext(revision,items);
+  const parameters=Object.fromEntries(Object.entries(revision.params??{}).map(([id,param])=>[id,param.value]));
   const rows: CanonicalProcurementPreviewRow[] = revision.boq.rows
     .filter((row) => row.includedInProcurement || supplyWarning(row.rowId, row.unit, row.titleRu, row.sourceParameters) != null)
     .map((row) => {
       const manualTitleOverride = row.sourceParameters?.canonicalManualTitleOverride === true;
       const presentation = canonicalPublicResourceDisplayPresentationV1({ rowId: row.rowId, titleRu: row.titleRu,
-        descriptor: row.sourceParameters?.canonicalPublicResourcePresentationV1, manualTitleOverride });
+        descriptor: row.sourceParameters?.canonicalPublicResourcePresentationV1, manualTitleOverride,
+        graph:publicResourceGraph(row.calculationTrace),parameters });
       const titleRu = canonicalLegacyResourceNameV1(row.rowId,displayContext,manualTitleOverride) ?? canonicalPublicEstimateRowNameRu({ rowId: row.rowId, sourceTitleRu: row.titleRu,
         titleRu: manualTitleOverride ? row.titleRu : presentation?.nameRu
           ?? publicBoqDisplayNameRu({ sourceNameRu: row.titleRu, rowType: row.rowType }), manualTitleOverride });
@@ -136,8 +147,11 @@ export function buildCanonicalProcurementPreviewRows(
     if (source?.canonicalPreliminaryNeed !== true || source.canonicalBackendRevisionId !== revision.revisionId) continue;
     const rowId = String(source.rowCode ?? item.id);
     if (includedIds.has(rowId)) continue;
-    const titleRu = canonicalLegacyResourceNameV1(rowId,displayContext,source.canonicalManualTitleOverride===true) ?? canonicalPublicEstimateRowNameRu({ rowId, titleRu: item.titleRu,
-      manualTitleOverride: source.canonicalManualTitleOverride === true });
+    const manualTitleOverride=source.canonicalManualTitleOverride===true;
+    const presentation=canonicalPublicResourceDisplayPresentationV1({rowId,titleRu:item.titleRu,manualTitleOverride,
+      descriptor:source.canonicalPublicResourcePresentationV1,graph:publicResourceGraph(item.calculationTrace),parameters,compactPreliminaryNeed:true});
+    const titleRu = canonicalLegacyResourceNameV1(rowId,displayContext,manualTitleOverride) ?? canonicalPublicEstimateRowNameRu({ rowId,
+      titleRu:manualTitleOverride?item.titleRu:presentation?.nameRu??item.titleRu,sourceTitleRu:item.titleRu,manualTitleOverride });
     const warning = supplyWarning(rowId, item.unit, titleRu, source);
     if (warning) {
       rows.push({ rowId, titleRu, quantity: null, preliminary: true, supplyBlocked: true,

@@ -21,7 +21,9 @@
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.modernMissingValuesR1153.test.ts",
       "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts",
       "src/lib/api/proposalAttachments.service.test.ts",
-      "src/screens/accountant/accountant.attachments.test.ts"
+      "src/screens/accountant/accountant.attachments.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentation.r52.test.ts"
     ],
     "owners": [
       "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts",
@@ -77,7 +79,10 @@
       "tests/security/shellQuoteBoundary.test.js",
       "tests/notifications/notifyLifecycle.test.ts",
       "tests/scale/renderExpoWebStagingServer.contract.test.ts",
-      "scripts/dev/metroNavigationAndroidAssets.test.js"
+      "scripts/dev/metroNavigationAndroidAssets.test.js",
+      "tests/releasePipeline/sourceTreeHashStable.contract.test.ts",
+      "tests/releasePipeline/sourceChangedAfterFreezeBlocked.contract.test.ts",
+      "tests/releasePipeline/sourceFreezeWritesOnlyIgnoredRuntime.contract.test.ts"
     ]
   }
 }

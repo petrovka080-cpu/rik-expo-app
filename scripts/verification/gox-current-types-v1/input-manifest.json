@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "PRIVATE_PROSPECTIVE14_BEFORE_CANONICAL_APPLY",
+  "snapshotKind": "PRIVATE_PROSPECTIVE13_COMMON_NAMES_AND_FRESH_FRONTEND_HASHES_BEFORE_CANONICAL_APPLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "ebcf6963ba78b301d60637c5cfa71a237ac3b9584e7ffa0f191bf43a4611dd67",
@@ -561,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "3a293965c809f37ba9a134797dc7d850c4b1a0ad9fa812361ac06612ca36b370",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "bcdac672e0853c9bc996fd7d558d791fdd82a32588fc94f6b4e5f39a1ea71be8",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "fecc69458f78fe43c7e57476920ae2f934ea2f1182670ca5f850e2a627973c64",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "e0941c72e0e120e93f19d311a7fd547b449bf16cde8264f6622f56661de20455",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -609,7 +609,7 @@
     "src/features/consumerRepair/RequestEstimateStageRequirements.tsx": "fed85f910e3b5c0d7a7d3eb4f4fca99a444c7440be98f0f74c59ec4af8a289d1",
     "src/features/consumerRepair/RequestEstimateSummaryCard.tsx": "10e30965d34ad185955dd0e58ef723d9998e7d451fd74d7a08514595c6dda0ef",
     "src/features/consumerRepair/canonicalExactPurchaseEditingV1.ts": "be2422009cab9bcbc477e6f84ab32f144bc801ca5773d809301683d113e5ae25",
-    "src/features/consumerRepair/canonicalProcurementPreviewRows.ts": "aea0da4c8bab30d0df4d3c5ad6f5be3de9b69178d1832c5749bd2ba7b6fab7a9",
+    "src/features/consumerRepair/canonicalProcurementPreviewRows.ts": "63ebdc9c613154d386155e332ebeeaf78e9f5d729c7e9187f815f92347afc217",
     "src/features/consumerRepair/consumerAsphaltLevelExistingStandardR566.test.ts": "df2663410bfc37228d31d4877af079edfc4f5e4f05b9727f990f05eb92462a9a",
     "src/features/consumerRepair/consumerCanonicalArtifactHydration.test.ts": "587a011f9f1f6d1629a68a48709a5e416f60a6024abd1e7e7f890134a407b270",
     "src/features/consumerRepair/consumerCanonicalArtifactHydration.ts": "2bdb33828e701182c726f565d4528723d5576c3fcce065466b4420128309d8e4",
@@ -643,7 +643,7 @@
     "src/features/consumerRepair/consumerRepairRowMetadata.ts": "c1bc6bfae092fc3ff6fe8abc61df6e1770964308068ba0b556528a12dc19aad5",
     "src/features/consumerRepair/consumerRepairRowRequirements.test.ts": "f8fa31e29dec8bb7255e414e52d610973c728cbbdb7ebebb1a62d44e573e0f2a",
     "src/features/consumerRepair/requestEstimateScreenActions.ts": "37d1d0ec76d6d5fc05c082fa2a99514360a992d3fcf6e74aa9433006daa8c135",
-    "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts": "49278866d3e227596630e1d8e793997bb1e50958df40e8b9d63e519b0a3fb887",
+    "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts": "1a68963389b1ebc06db3d304d1120ce426b14ddc57cf46f1363366edb254fc70",
     "src/features/consumerRepair/requestEstimateViewModel.ts": "34c6355d212d99da3e52f05eede526e1b1a8b6e4ba1d78cd75d8d2a69e25cef7",
     "src/features/consumerRepair/useCanonicalOperationCompositionDiagnostic.ts": "ec7886adb2f482a53fcc1e672892d10203e3c3007a7a0e8057f11e7705370530",
     "src/features/consumerRepair/useCanonicalPreliminaryNeedEvidence.ts": "827d0e189b727e971b4a6118cb0c7334c77fbd9bcd5cbb06c53367cdf7e5c299",
@@ -1204,7 +1204,7 @@
     "src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769.test.ts": "9852e4b52f208198ce0a5a3e879d70f5dcd981c3a4ab195efd6d56bb5f985bb2",
     "src/lib/estimate/backendPlatform/canonicalConcreteBasePlannedPreparationMigrationS2769.ts": "754c1edc61d396b8e67fa70ec99edc3185abd66b2b0bc64a22e085213ccd8e7b",
     "src/lib/estimate/backendPlatform/canonicalConcretePlacementPromptServerR1.ts": "23685d082b757ab926554b9c6e92acf59b2ac10ae47683f0955f59d5c24f9746",
-    "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "11f9a5ebf05646ee037ee33fd266f0dfa32cb6839df1859fe0f897a77f7fd40e",
+    "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "7c813a7d27975d4f35618d7ccf6772caa7b45037ec2c5d261108d16d8bf90179",
     "src/lib/estimate/backendPlatform/canonicalConsumerPromptPlanServerR1.ts": "7117f1b24a60dfa54b4febbbfdbce1262d1ade3b9932b4fa627596fe5280acd9",
     "src/lib/estimate/backendPlatform/canonicalCt126SixDryWallMigrationS2769.ts": "94787a6f56e653fe8ab8411943dce48d92c4b4ca45343be5c751e36eed95a61a",
     "src/lib/estimate/backendPlatform/canonicalCt29OrdinaryManualMigrationR1.ts": "99fdeeaf6df3083e8aac0ffa09bdf9313554fa1c0c47d7cf012bc2d1c8a049e7",
@@ -1215,8 +1215,8 @@
     "src/lib/estimate/backendPlatform/canonicalDerivedQuantityEditPolicyV1.ts": "167801c79266072382141b6aeea9b95644198e5453afb0615bc7e9b81cc1441a",
     "src/lib/estimate/backendPlatform/canonicalEffectiveResourceQuantityV1.ts": "278c22b35fb08cfb57dc1390f9f0c2ff774ebcb0629d06ff09e6398fc065b635",
     "src/lib/estimate/backendPlatform/canonicalEstimateApprovedBaseline.ts": "5cea1e5266e0df466490b6304d8bbedaa3e102e3d6fd5d626e20c9109485b0c1",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "2475f93c4c5e129d1459a92e1fb9fd2e30ad55698483cadd09da6f3b1b52d952",
-    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "1bdeacf289138fb1375bacb69b4a1d12595489ffc85a62be1dafd396f993221f",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "bbdc7b78e179a7248c85065fbc80757787b6d45d1b43d5d28b49491e9f35f069",
+    "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "245087684cd5d872f1db4e883bcd9b0c9bab13e9bfaa370b2adeaa0b81861298",
     "src/lib/estimate/backendPlatform/canonicalEstimateAuth.transport.ts": "f7f207f3ffecd953ea0c89908ef7e9e1d3a87da6c99d16a7d1c4dbf0f8cdc3c5",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": "26d50d440889a678eef6abdcdc9ad9c52895fc068484d893ecec9cff723ea6f9",
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.ts": "feb9c4d6efd2fd862090e8e6d40d16143a68394549eb97413f199940e833959b",
@@ -1291,16 +1291,16 @@
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.test.ts": "68a81598f210d4e4566e7ff931bcc9328233619d30ca026a9257b9e413544d76",
     "src/lib/estimate/backendPlatform/canonicalPrimaryMeasureSelectionV1.ts": "ea3b6b327964ce0f6527327cadd717e6e66ffcc551009fc89462545e3bf8bf24",
     "src/lib/estimate/backendPlatform/canonicalProcurementOperationAllocation.test.ts": "69e677cfdf6fc0106c97436e8433450604cb1e8537847e1e3fe1615ffd878730",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "396e22ec5ee6e98d37db71c9a8a134d4b08ad53e950b3b410b834b0885093ab0",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "95e73e9bca57c4fc0095fe54920160d2d7f6013cbb5b6c31ba39f60025fd2e6c",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.test.ts": "20743de64b05b287bd26b0cd4475d09962ff4a3d4d122c473a1a49fda3611132",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.ts": "f91eb830c58d562385b72ea3d7ff83e843667407ece9a40581f6483f0258f6b8",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.test.ts": "3aa6ed34ddd2b0e7bd35aa67674e5cfed153f1e0802c169a43b180fc1f1a2f3b",
     "src/lib/estimate/backendPlatform/canonicalPublicCatalogVisibilityV1.ts": "cf73e5767efe06a52a5b54ebbb83124d939fd24237cdf8d811c15ac707cc9931",
     "src/lib/estimate/backendPlatform/canonicalPublicEstimateInputWordingRu.ts": "d083dab58274d98404d95407cd25bedb688d140b843ed5397ac45dbb315dc6c1",
-    "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts": "96add16e9a591e6d5484bf9c4a4423d5480f7ee5f72beb1f6aa8a258723b696a",
+    "src/lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu.ts": "3548d19697a501bd96949c85a78aed9f2115fc0bbbac942184c96d3532272e16",
     "src/lib/estimate/backendPlatform/canonicalPublicResourceAlternativesV1.ts": "ed5da8cbe6d58095be01861a4f9dd027ef7e3fb9790109d0ced15cd4b5e9026c",
     "src/lib/estimate/backendPlatform/canonicalPublicResourceCategoryV1.test.ts": "79147fe6ae1075f1949cb422464bf391f2d4216ae2b5721e64debe795586078e",
     "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.test.ts": "0ab3c663967ee4b7da2e68359a14a66948668c030f053a04461b0a6c3a432def",
-    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": "852fe6bf36b4aacaf25b8c62ef92fa89b1f90fe872b026bb5dd70890c84391bc",
+    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentationV1.ts": "f1cdce7321ad1981770485d3ff08b04155606edd034d5dcb0dc133f3833267b9",
     "src/lib/estimate/backendPlatform/canonicalPublicSelectedSpecificationV1.ts": "a4003d21680e0ea82d7bfac1a3a60ed0748f4a5e1a2dde47263524a3b072a30b",
     "src/lib/estimate/backendPlatform/canonicalPurchaseBalanceV1.ts": "1a563f44d0987d3cbd30efea1659d2a9ba066b1fdea77780f76163e53dedbcfa",
     "src/lib/estimate/backendPlatform/canonicalPurchaseSupplyReadinessV1.ts": "c8abe10b60679371d137c5a790592474f3bf317ae75d390be26f7c3ef32f4448",
@@ -2462,9 +2462,9 @@
     "scripts/dev/wholeAppEmbeddedBuildTarget.test.js": "d06db891ac5b9e8d525042416d8ddb1a48535805ae9bbf2cd4c6c880b0efe307",
     "src/features/consumerRepair/ConsumerRepairEstimateNotes.tsx": "4740e1e39093c4297dacc97ee56468a3d01535d0e67c860601663d081094989a",
     "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx": "2b61603fdc89e36e6769088a988965bb92019ad98fad75578db90ab227f09487",
-    "scripts/release/computeReleaseFingerprints.ts": "4ac1915c343f0d6b9efe96ddabd0ee097506c96d78415927891e251952c72b7c",
+    "scripts/release/computeReleaseFingerprints.ts": "c9f40f58b2cc5d460ffb5a5bd53b6f97bc3675abb9d3894dab19119de1a69914",
     "android/app/src/main/res/xml/network_security_config.xml": "c18af8f6bc8bce27c4bd5b904697ae834f7977e70d2937e6f26a6c559331209a",
-    "scripts/dev/printLocalDeveloperBuildIdentity.ts": "42942a12cc952bc4506b217b4d6e327bc85129cb85136b114577873d72bf6f38",
+    "scripts/dev/printLocalDeveloperBuildIdentity.ts": "85022ef52700423e3ed6acb8c691c7927770a83776efba0f61cacc7ddc3fed4d",
     "scripts/dev/waitForBackendStartupManagerExit.mjs": "9d898517bbe5214eef20a306cc17101c08e013d17a4d57de49cb5b8ae85b6ef3",
     "src/features/consumerRepair/consumerCanonicalParameterEditor.finiteMembershipR53.test.ts": "ce2a3613e262009f80f317c07d4446b47e7654d0a2cdcdf19d69a4a8fc69ecc7",
     "data/estimate-benchmarks/source-packs/led-luminaire-installation-balanced-s27-23.json": "12f55c7019365f0b22d34197323c7c2f50ff66251028d3b156c13e441da486c1",
@@ -2732,7 +2732,15 @@
     "src/screens/accountant/accountant.attachments.ts": "41dd523981e705ca824101551a2fd5b39ad6de49c99b27f30bf92b930e4b53d0",
     "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts": "92aafe01a4d1084fb52a9ff2097b5b9c5769bd441e2c1caad220ad9393e159d5",
     "render.yaml": "263a45f3833c9e107830c48f81f57c9f3b05ffa60988bacc18df45e9e01fe369",
-    "scripts/e2e/checkAndroidEmulatorHealth.ts": "054f23c27e7f9d71b7f3d15fc1933d3e4b0310db44a3d1fd3fc65729645f17c6"
+    "scripts/e2e/checkAndroidEmulatorHealth.ts": "054f23c27e7f9d71b7f3d15fc1933d3e4b0310db44a3d1fd3fc65729645f17c6",
+    "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentation.r52.test.ts": "5a43c6a5f8178d9a3099f4209d7d91c0d14c09157c940c106e1db30fa0ead6b5",
+    "tests/releasePipeline/sourceTreeHashStable.contract.test.ts": "011e4b2ad12a7685c60c503f462c7fe37e23854198fdeda0b2c87597d9f2c48f",
+    "tests/releasePipeline/releasePipelineContractUtils.ts": "4c3dd678fdc1082086707c93a9e5e3f02b65102d7426bfdb3e4c3634cfe3998f",
+    "tests/releasePipeline/sourceChangedAfterFreezeBlocked.contract.test.ts": "33404267499bfc9d5802ad024c89624a00423be8903fef577cb46950510d9d07",
+    "tests/releasePipeline/sourceFreezeWritesOnlyIgnoredRuntime.contract.test.ts": "21cb9f876c593e3e121b57dccbb5109351c2544b1a42828e05a775f169ed757e",
+    "scripts/release/assertSourceFrozen.ts": "9069edcac786275c84e51ae4c0c30761d848e5b3878719d1c107ec20ca374ad6",
+    "scripts/release/freezeReleaseSource.ts": "4d62ad950b75b0efac36c1c4cc4bb3c9718f1370235b3fdb4e80d394e7abe41f",
+    "scripts/release/releaseCandidateState.ts": "24d4d655085fd3f98e050b2ef093888e7e12cbc856a7a6e5c66ceb3747442a44"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4268,26 +4276,26 @@
     "node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.d.ts": "ecf40ba1d79472eacf1dc2c54eae5ae9638aa8da8340f5c1166b6efb585aca13"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "bcdac672e0853c9bc996fd7d558d791fdd82a32588fc94f6b4e5f39a1ea71be8",
-  "canonicalSourceFreezeSha256": "eed1017fe7ca406723521d16b0436cb855b6706965b0aab9f14dd0c8100a572f",
+  "originalSeedManifestSha256": "e0941c72e0e120e93f19d311a7fd547b449bf16cde8264f6622f56661de20455",
+  "canonicalSourceFreezeSha256": "071d83d3b9565b9365a973bbbed00de08a5e82347aa055006be6d71461b62d1a",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 176506286,
+    "sourceBytes": 176566788,
     "newInputs": "Only exact2filepublisher+sourceguideforward; actual9pureandSQL91/realPGdryrunpassed;no runtime/auth/history"
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2731,
+    "sourceFiles": 2739,
     "dependencyFiles": 1531,
-    "sourcePins": 2731,
+    "sourcePins": 2739,
     "r1152BffMfaForwardSourcePinCount": 2657,
     "r1152BffMfaDeclaredSeeds": 676,
-    "r1153CurrentDeclaredSeeds": 758
+    "r1153CurrentDeclaredSeeds": 769
   },
   "candidateSourceComposition": {
     "kind": "ActualCanonicalInputsWithoutUnintakenHistoricalPackages",
@@ -4980,6 +4988,60 @@
       "cacheBuiltByNormalGuardedJestChildren": true,
       "cacheOutsideProductAndArtifacts": true,
       "canonicalApplied": false
+    },
+    "commonNamesAndFreshFrontendFingerprintsR1153": {
+      "parent": "dbd3dc6dd88ad08802a4973fdc0de93a72fc5bb2",
+      "createdAtUtc": "2026-10-29T21:07:18.752036+00:00",
+      "combinedPatchSha256": "cb964420336b1f0fc04883cd5e9121b679d3d38ea1f57b3418715f783729846f",
+      "sourceFilesBefore": 144,
+      "sourceFilesProspective": 150,
+      "productAndTestFiles": 13,
+      "all67TestLeavesRequiredFresh": true,
+      "newAuthoredCases": 33,
+      "astReceiptSha256": "3124ab0e90dc60426e19aad857ff2ad1ad8ec23deb4174be06c79eefaccc8f49",
+      "astResultSha256": "1a510539f41dcadf99ce267094b3e20cedd98fb03bd456b7302f5f859a005c61",
+      "explicitNewModuleSetsReviewed": {
+        "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts": [
+          "../../lib/estimate/v4/skirtingConstructorS2735",
+          "./consumerRepairRowMetadata"
+        ],
+        "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": [
+          "../../../features/consumerRepair/canonicalProcurementPreviewRows",
+          "../../consumerRequests/consumerRequestTypes",
+          "../estimateDraftRevisionContract",
+          "../v4/skirtingConstructorS2735",
+          "./canonicalEstimateSavedOperationAcceptanceV1"
+        ],
+        "tests/releasePipeline/sourceTreeHashStable.contract.test.ts": [
+          "../../scripts/dev/printLocalDeveloperBuildIdentity",
+          "node:child_process",
+          "node:fs",
+          "node:os",
+          "node:path"
+        ]
+      },
+      "addedTestLeaves": {
+        "contracts": [
+          "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts",
+          "src/lib/estimate/backendPlatform/canonicalPublicResourcePresentation.r52.test.ts"
+        ],
+        "developer-runtime": [
+          "tests/releasePipeline/sourceTreeHashStable.contract.test.ts",
+          "tests/releasePipeline/sourceChangedAfterFreezeBlocked.contract.test.ts",
+          "tests/releasePipeline/sourceFreezeWritesOnlyIgnoredRuntime.contract.test.ts"
+        ]
+      },
+      "keptEveryPrevious62TestLeaf": true,
+      "historicalThreePublicLanguageFailuresMustBeRerun": true,
+      "rawReadDependencies": [
+        "scripts/release/assertSourceFrozen.ts",
+        "scripts/release/freezeReleaseSource.ts",
+        "scripts/release/releaseCandidateState.ts"
+      ],
+      "canonicalApplied": false,
+      "privateSavedDataUploaded": false,
+      "allPolicyAndPassPredicatesUnchanged": true,
+      "noClaimOfMeasuredStartupSaving": true
     }
   },
   "existingCiTypesStageBudget": {
