@@ -3,12 +3,12 @@ import { recordSwallowedError } from "./observability/swallowedError";
 let audio: HTMLAudioElement | null = null;
 
 export async function initDing() {
-  if (!audio) audio = new Audio('/notify.mp3'); // from public/
+  if (!audio) audio = new Audio('/notify.wav'); // from public/
 }
 
 export async function playDing() {
   try {
-    if (!audio) audio = new Audio('/notify.mp3');
+    if (!audio) audio = new Audio('/notify.wav');
     await audio.play();
   } catch (error) {
     recordSwallowedError({
@@ -27,6 +27,8 @@ export async function unloadDing() {
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
+      audio.removeAttribute("src");
+      audio.load();
     }
   } catch (error) {
     recordSwallowedError({

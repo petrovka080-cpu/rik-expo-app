@@ -56,7 +56,8 @@
       "tests/strict-null/authLifecycle.phase1.test.ts",
       "tests/api/authLifecycleTransport.contract.test.ts",
       "tests/app/nativeIntentPublicRequest.contract.test.ts",
-      "tests/security/shellQuoteBoundary.test.js"
+      "tests/security/shellQuoteBoundary.test.js",
+      "tests/notifications/notifyLifecycle.test.ts"
     ]
   }
 }

@@ -561,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "8d117096fdbe2551c82973cc7ec7f1b4cc8df205ec4cd482709207f36d851d89",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "9b7ebc576e360bebd0751debee3f2e4e276b58450833b2f239a95100ce4aa5c7",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "64d7e6a28f870117d5338b0af614278f12c8f88fe97578ecc829500c08c2d3c3",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "80384cc4dfb0aac00626ef7252851ce3d63dd4f4f36be4cdd981ff7fba4cffe2",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2677,7 +2677,13 @@
     "tests/strict-null/authLifecycle.phase1.test.ts": "9d9220bbca7c61173b5a792950f6e42c56411ac49e2d623a0ad58cc56c6e42e2",
     "tests/api/authLifecycleTransport.contract.test.ts": "089a4fb70d9e9b77e3602f0dd7366253243cf4b367bc2d2fc9e478a8f723fd66",
     "tests/app/nativeIntentPublicRequest.contract.test.ts": "644b73a8fdaa0606fcb3a3b028a1a498d153005214ce472db57f3f48c79b6ba4",
-    "tests/security/shellQuoteBoundary.test.js": "823b934219346b1acde928b66330d35fe59001304851f66a4fdc7f27d87519c5"
+    "tests/security/shellQuoteBoundary.test.js": "823b934219346b1acde928b66330d35fe59001304851f66a4fdc7f27d87519c5",
+    "src/lib/notify.native.ts": "15f5586f848aed17aa7e27f88af2ab50568a7bc024b1b901ba46cf8c4e5c6523",
+    "src/lib/notify.web.ts": "2e2216b055573950ad5fcf085dac360a73297d82e2a5ee4ebc6458b737e6a1f6",
+    "assets/notify.wav": "95c6fdf8f859e5f0015fd442277742ac7a232b2b26d8718bea8bba05c89150df",
+    "public/notify.wav": "95c6fdf8f859e5f0015fd442277742ac7a232b2b26d8718bea8bba05c89150df",
+    "assets/notify-tone.source.json": "1e397b13c52c7a6047065e17220dc8adc407c17a0c5e90b6804202469045060e",
+    "tests/notifications/notifyLifecycle.test.ts": "8b614fac9f3bd59f2a1f4b27915f06523a5fc99969051ddbb7b6e3d90fa838f5"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4509,6 +4515,37 @@
       "newValidationScope": "developer-runtime",
       "fullTypesRetained": true,
       "actualRuntimeExploitReachabilityProven": false,
+      "allProjectChangesCommitted": false,
+      "fullAuditComplete": false
+    },
+    "notificationAudioOwnershipR1152": {
+      "parent": "bb2324752fff40823d95ca1f72d412559a526a55",
+      "sourcePaths": [
+        "src/lib/notify.native.ts",
+        "src/lib/notify.web.ts",
+        "assets/notify.wav",
+        "public/notify.wav",
+        "assets/notify-tone.source.json",
+        "tests/notifications/notifyLifecycle.test.ts"
+      ],
+      "originalProceduralWaveNoExternalSamples": true,
+      "wavDecodedFramesEach": 4851,
+      "wavBytesEach": 9746,
+      "nativeRaceBaselineFailed": 5,
+      "baselineControlPassed": 1,
+      "affectedNative6Web3CasesPassed": 9,
+      "testFileExplicitModuleOnlyAfterLocalPass": true,
+      "singleFlightNativeLoad": true,
+      "generationProtectedReplayAndDisposal": true,
+      "webSourceAndDecoderReleased": true,
+      "actualPlaybackOrRamSoakAccepted": false,
+      "oldZeroMp3AssetsDeleted": false,
+      "currentOwnedPaths": 77,
+      "existingValidationScope": "developer-runtime",
+      "fullTypesRetained": true,
+      "unchangedCommon7BatchesReusedFromE96": 672,
+      "unchangedCommonRun": 40791364047,
+      "priorFreshFixedLockActualModuleTestsPass": 12,
       "allProjectChangesCommitted": false,
       "fullAuditComplete": false
     }

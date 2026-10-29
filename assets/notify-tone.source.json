@@ -1,0 +1,18 @@
+{
+  "format": "PCM WAV",
+  "provenance": "Original procedural waveform generated for this project; no external recording or third-party samples.",
+  "sampleRateHz": 22050,
+  "channels": 1,
+  "bitsPerSample": 16,
+  "frames": 4851,
+  "durationSeconds": 0.22,
+  "peakScale": 0.18,
+  "synthesis": "(0.65*sin(2*pi*880*t)+0.35*sin(2*pi*1320*t))*0.18*sin(pi*i/(frames-1))^2, rounded to signed16 PCM",
+  "sha256": "95c6fdf8f859e5f0015fd442277742ac7a232b2b26d8718bea8bba05c89150df",
+  "bytesPerAsset": 9746,
+  "consumers": {
+    "nativeMetro": "assets/notify.wav",
+    "webPublic": "public/notify.wav"
+  },
+  "actualDevicePlaybackAccepted": false
+}

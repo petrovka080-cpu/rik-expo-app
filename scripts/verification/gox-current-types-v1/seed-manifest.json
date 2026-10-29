@@ -698,5 +698,8 @@
   "tests/strict-null/authLifecycle.phase1.test.ts": "9d9220bbca7c61173b5a792950f6e42c56411ac49e2d623a0ad58cc56c6e42e2",
   "tests/api/authLifecycleTransport.contract.test.ts": "089a4fb70d9e9b77e3602f0dd7366253243cf4b367bc2d2fc9e478a8f723fd66",
   "tests/app/nativeIntentPublicRequest.contract.test.ts": "644b73a8fdaa0606fcb3a3b028a1a498d153005214ce472db57f3f48c79b6ba4",
-  "tests/security/shellQuoteBoundary.test.js": "823b934219346b1acde928b66330d35fe59001304851f66a4fdc7f27d87519c5"
+  "tests/security/shellQuoteBoundary.test.js": "823b934219346b1acde928b66330d35fe59001304851f66a4fdc7f27d87519c5",
+  "src/lib/notify.native.ts": "15f5586f848aed17aa7e27f88af2ab50568a7bc024b1b901ba46cf8c4e5c6523",
+  "src/lib/notify.web.ts": "2e2216b055573950ad5fcf085dac360a73297d82e2a5ee4ebc6458b737e6a1f6",
+  "tests/notifications/notifyLifecycle.test.ts": "8b614fac9f3bd59f2a1f4b27915f06523a5fc99969051ddbb7b6e3d90fa838f5"
 }
