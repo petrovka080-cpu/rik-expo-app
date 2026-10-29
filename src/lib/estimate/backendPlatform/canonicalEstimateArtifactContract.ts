@@ -19,7 +19,7 @@ import {canonicalScopeRequirementDecisionV1,canonicalScopeRequirementHasAddition
 
 export const CANONICAL_PROCUREMENT_SCHEMA_VERSION = "canonical_estimate_procurement_r12";
 export const CANONICAL_PROCUREMENT_GENERATOR_VERSION = "canonical-procurement.r28-public-selected-specification";
-export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:41";
+export const CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION = "professional-estimate-pdf:44";
 
 /** Keep caller idempotency within each renderer; do not collide with legacy jobs. */
 export function canonicalProcurementRequestKey(idempotencyKey: string): string {
@@ -99,6 +99,7 @@ export function selectCanonicalArtifactRows(sourceRows: CanonicalArtifactRow[]) 
 
 export function canonicalArtifactPreliminaryNeeds(
   revision: CanonicalArtifactRevision,
+  options?: {issuancePurpose?: 'STANDARD'|'PRELIMINARY_REVIEW'},
 ): CanonicalArtifactRow[] {
   const amendment = objectValue(revision.amendment_contract);
   const parameterSources = objectValue(amendment.parameterSources);
@@ -106,12 +107,19 @@ export function canonicalArtifactPreliminaryNeeds(
     ? parameterSources.preliminaryNeeds
     : [];
   return needs.flatMap((value): CanonicalArtifactRow[] => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+    const report=options?.issuancePurpose==='PRELIMINARY_REVIEW';
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      if(report)throw Object.assign(new Error('Сохранённые данные потребности повреждены.'),{code:'ARTIFACT_SAVED_SNAPSHOT_UNREADABLE'});
+      return [];
+    }
     const need = value as Record<string, unknown>;
     // Validate the raw immutable need before this presentation adapter clears flags/amount.
-    assertCanonicalPurchaseSupplyRowV1(need, revision.amendment_contract);
-    if (!String(need.row_id ?? "").trim() || !String(need.need_sha256 ?? "").trim()) return [];
-    const supplyBlocked = canonicalPurchaseSupplyBlocksV1(objectValue(need.calculation_trace).purchaseSupplyBlocksV1).length > 0;
+    if(!report)assertCanonicalPurchaseSupplyRowV1(need, revision.amendment_contract);
+    if (!String(need.row_id ?? "").trim() || !String(need.need_sha256 ?? "").trim()) {
+      if(report)throw Object.assign(new Error('Не удалось связать потребность с сохранённой версией.'),{code:'ARTIFACT_SAVED_SNAPSHOT_UNREADABLE'});
+      return [];
+    }
+    const supplyBlocked = !report&&canonicalPurchaseSupplyBlocksV1(objectValue(need.calculation_trace).purchaseSupplyBlocksV1).length > 0;
     return [{
       ...need,
       row_id: need.row_id,
@@ -122,7 +130,7 @@ export function canonicalArtifactPreliminaryNeeds(
       ownership_status: "PRELIMINARY_NEED",
       row_sha256: need.need_sha256,
       amount: null,
-      currency_code: supplyBlocked ? need.currency_code ?? null : null,
+      currency_code: need.unit_price == null ? (supplyBlocked ? need.currency_code ?? null : null) : need.currency_code ?? revision.currency_code,
     }];
   });
 }
@@ -384,10 +392,15 @@ export function buildCanonicalArtifactMetadata(input: {
   selectedProcurementRowCount: number;
   definitionVersionId?: string | null;
   pageCount?: number | null;
+  issuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+  reviewAcknowledgmentV1?:import('./contracts').CanonicalProfessionalPdfReviewAcknowledgmentV1;
+  operationResourceAcceptanceV1?:unknown;
   grandTotalStatus?: "COMPLETE" | "PARTIAL_NEEDS_PRICE" | null;
 }) {
   return {
     artifactKind: input.operation,
+    ...(input.issuancePurpose==='PRELIMINARY_REVIEW'?{issuancePurpose:input.issuancePurpose,
+      reviewAcknowledgmentV1:input.reviewAcknowledgmentV1,operationResourceAcceptanceV1:input.operationResourceAcceptanceV1}:{}),
     renderer: input.renderer,
     ...(input.operation === "professional_pdf"
       ? { templateVersion: CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION }
@@ -410,11 +423,16 @@ export function buildCanonicalArtifactMetadata(input: {
     selectedProcurementRowCount: input.operation === "procurement"
       ? input.selectedProcurementRowCount
       : null,
-    includesExcludedDisposition: false,
+    includesExcludedDisposition: input.issuancePurpose==='PRELIMINARY_REVIEW',
     includesParametersAndTotals: true,
   };
 }
 
+/** Purpose is part of artifact identity; old absence means only STANDARD. */
+export function canonicalProfessionalArtifactPurposeMatchesV1(metadata:unknown,expected:unknown='STANDARD'):boolean {
+  const m=objectValue(metadata),actual=Object.hasOwn(m,'issuancePurpose')?m.issuancePurpose:'STANDARD';
+  return (expected==='STANDARD'||expected==='PRELIMINARY_REVIEW')&&actual===expected;
+}
 export function canonicalProfessionalArtifactMetadataIdentityMatches(input: {
   metadata: unknown;
   revision: CanonicalArtifactRevision;
@@ -428,12 +446,24 @@ export function canonicalProfessionalArtifactMetadataIdentityMatches(input: {
   // Version 6 introduced the bound revision/definition/page metadata contract.
   // Later renderer changes must keep validating it for historical documents.
   // Versions 1–5 still use the outer artifact revision/checksum identity guard.
+  const purpose=Object.hasOwn(metadata,'issuancePurpose')?metadata.issuancePurpose:'STANDARD';
+  if(!canonicalProfessionalArtifactPurposeMatchesV1(metadata,purpose)
+    ||purpose==='PRELIMINARY_REVIEW'&&version!==currentVersion)return false;
   if (version < 6) return true;
   const definitionVersionId = nullableText(metadata.definitionVersionId);
   const expectedDefinitionVersionId = nullableText(
     input.revision.definition_version_id ?? input.revision.definitionVersionId,
   );
   const pageCount = Number(metadata.pageCount);
+  if(purpose==='PRELIMINARY_REVIEW'){
+    const ack=objectValue(metadata.reviewAcknowledgmentV1),r=input.revision;
+    if(ack.contractVersion!=='canonical-professional-pdf-review-ack/v1'||ack.issuancePurpose!==purpose
+      ||ack.acknowledgedPreliminaryReview!==true||ack.revisionId!==r.id||ack.releaseId!==r.release_id
+      ||ack.definitionVersionId!==expectedDefinitionVersionId||ack.checksumSha256!==r.checksum_sha256
+      ||typeof ack.actorUserId!=='string'||!ack.actorUserId||!Number.isFinite(Date.parse(String(ack.acknowledgedAt)))
+      ||!Number.isSafeInteger(ack.unknownQuantityCount)||Number(ack.unknownQuantityCount)<0
+      ||!/^[a-f0-9]{64}$/u.test(String(ack.auditSha256)))return false;
+  }
   return metadata.artifactKind === "professional_pdf"
     && nullableText(metadata.revisionId) === nullableText(input.revision.id)
     && definitionVersionId != null
@@ -545,9 +575,10 @@ export function canonicalArtifactSection(row: Record<string, unknown>): string {
  * stay stored, but are not evidence of the current renderer's acceptance. */
 export function assertCanonicalProfessionalArtifactCurrentPresentationV1(input:{
   metadata:unknown;revision:CanonicalArtifactRevision;rendererVersion:string;
+  expectedIssuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
 }):void {
   const metadata=objectValue(input.metadata);
-  if(metadata.templateVersion!==CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION
+  if(!canonicalProfessionalArtifactPurposeMatchesV1(metadata,input.expectedIssuancePurpose) || metadata.templateVersion!==CANONICAL_PROFESSIONAL_PDF_TEMPLATE_VERSION
     ||metadata.renderer!==input.rendererVersion||metadata.generatorVersion!==input.rendererVersion
     ||nullableText(metadata.sourceReleaseId)!==nullableText(input.revision.release_id)
     ||nullableText(metadata.sourceCatalogId)!==nullableText(input.revision.catalog_id)
@@ -556,4 +587,13 @@ export function assertCanonicalProfessionalArtifactCurrentPresentationV1(input:{
     ||!canonicalProfessionalArtifactMetadataIdentityMatches(input))
     throw Object.assign(new Error('Сохранённый PDF нужно заново сформировать для этой же версии сметы.'),{
       code:'ARTIFACT_PRESENTATION_REFRESH_REQUIRED',httpStatus:409});
+}
+
+/** One new SQL lifecycle condition, not a generic database-error whitelist.
+ * Source/passport/supply/authentication failures retain their original guards. */
+export function normalizeCanonicalProfessionalPdfPurposeJobErrorV1(error:unknown):unknown {
+  const e=objectValue(error);
+  if(e.code!=='55000'||e.message!=='ARTIFACT_PURPOSE_CONFLICT')return error;
+  return Object.assign(new Error('Для этой версии уже существует PDF в другом режиме. Откройте сохранённый документ.'),{
+    code:'ARTIFACT_PURPOSE_CONFLICT',httpStatus:409,retryable:false});
 }

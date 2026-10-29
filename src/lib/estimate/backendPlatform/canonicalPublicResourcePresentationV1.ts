@@ -202,10 +202,15 @@ export function canonicalPublicSavedResourceRowKindV1(row: Readonly<Record<strin
   const objectValue=(value:unknown):Record<string,unknown>=>value!=null&&typeof value==='object'&&!Array.isArray(value)
     ? value as Record<string,unknown>:{};
   const trace=objectValue(row.calculation_trace),graph=objectValue(trace.resourceGraph);
-  if(row.ownership_status==='PRELIMINARY_NEED'
-    &&(row.need_state==='QUANTITY_REQUIRED'||trace.needState==='QUANTITY_REQUIRED'))return 'RESOURCE';
-  return canonicalPublicResourceRowKindV1({titleRu:String(row.title_ru),descriptor:graph.publicResourcePresentationV1,
+  const declared=canonicalPublicResourceRowKindV1({titleRu:String(row.title_ru),descriptor:graph.publicResourcePresentationV1,
     manualTitleOverride:trace.manualTitleOverride===true,costTreatment:graph.costTreatment,
     includedInEstimate:row.included_in_estimate===true,includedInProcurement:row.included_in_procurement===true,
     unitPrice:row.unit_price,amount:row.amount,rowId:String(row.row_id),graph,category:String(row.category??'')});
+  // A genuine unpaid source process note stays a note after the preliminary
+  // adapter. All classifier safety checks above still apply. Unknown physical
+  // provisions and included calculation-detail rows remain visible resources.
+  if(declared==='PROCESS_NOTE'&&['INFORMATIONAL_SCOPE','CONTROL_OR_DOCUMENT'].includes(String(graph.costTreatment)))return declared;
+  if(row.ownership_status==='PRELIMINARY_NEED'
+    &&(row.need_state==='QUANTITY_REQUIRED'||trace.needState==='QUANTITY_REQUIRED'))return 'RESOURCE';
+  return declared;
 }

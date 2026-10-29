@@ -118,7 +118,22 @@ function localDeveloperMetroConfig() {
   return getSentryExpoConfig(__dirname);
 }
 
+// Production Expo inlines EXPO_PUBLIC_* values inside transformed modules.
+// Metro's ordinary file cache key does not include those process values.
+function withPublicEnvTransformCache(config, runtime = process) {
+  const entries = Object.keys(runtime.env)
+    .filter((name) => name.startsWith("EXPO_PUBLIC_") && typeof runtime.env[name] === "string")
+    .sort()
+    .map((name) => [name, runtime.env[name]]);
+  if (entries.length === 0) return config;
+  const digest = require("node:crypto").createHash("sha256")
+    .update(JSON.stringify(entries)).digest("hex");
+  config.cacheVersion = [config.cacheVersion ?? "", "expo-public-env-v1", digest].join(":");
+  return config;
+}
+
 const config = localDeveloperMetroConfig();
+withPublicEnvTransformCache(config);
 // Verification reports and archived source copies are never application modules.
 // Keep the files intact, but do not index them in either Expo/Sentry Metro mode.
 const generatedRuntimeRoot = require("node:path").resolve(__dirname, ".release-runtime");

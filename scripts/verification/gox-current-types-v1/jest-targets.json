@@ -10,7 +10,14 @@
       "src/features/consumerRepair/consumerCanonicalArtifactHydration.test.ts",
       "scripts/estimate/r4a13/masterTypedPartialQuantityBasisR1.test.ts",
       "scripts/estimate/r4a13/masterScopedNormativeRegistryPreimageR1.test.ts",
-      "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts"
+      "tests/estimateCalculator/professionalUnitRegistry.contract.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.preliminaryReviewR1153.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateClient.preliminaryReviewR1153.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalManualPreliminaryReviewEligibilityR1153.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalProfessionalPdfPurposeJobErrorR1153.test.ts",
+      "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts",
+      "tests/realtime/realtimeClientBudget.test.ts",
+      "src/lib/realtime/realtime.lifecycle.test.ts"
     ],
     "owners": [
       "src/lib/estimate/v4/manufacturerDoorFanFactoryKitsR1.test.ts",
@@ -22,14 +29,19 @@
       "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx"
     ],
     "ui-cold": [
-      "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts"
+      "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
+      "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx",
+      "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts",
+      "src/lib/documents/pdfWebPreviewCache.test.ts",
+      "src/lib/pdf/pdfInstantCache.test.ts"
     ],
     "ui-contract": [
       "tests/requestEstimate/requestEstimateViewModel.contract.test.ts",
       "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx"
     ],
     "ui-procurement": [
-      "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx"
+      "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx",
+      "src/features/consumerRepair/ConsumerRepairRequestScreenView.compositionGate.test.tsx"
     ],
     "admission": [
       "scripts/estimate/r4a13/mandatorySuccessorOperationAdmissionR1.test.ts",
@@ -57,7 +69,9 @@
       "tests/api/authLifecycleTransport.contract.test.ts",
       "tests/app/nativeIntentPublicRequest.contract.test.ts",
       "tests/security/shellQuoteBoundary.test.js",
-      "tests/notifications/notifyLifecycle.test.ts"
+      "tests/notifications/notifyLifecycle.test.ts",
+      "tests/scale/renderExpoWebStagingServer.contract.test.ts",
+      "scripts/dev/metroNavigationAndroidAssets.test.js"
     ]
   }
 }

@@ -28,7 +28,9 @@ export function canonicalEstimateOperationReference(value: unknown): CanonicalEs
   const candidate = value as Record<string, unknown>;
   const keys = ["groupId", "groupTitleRu", "operationId", "operationTitleRu", "completionCriterionRu"] as const;
   if (candidate.contractVersion !== "canonical-operation-resource/v1"
-    || keys.some(key => typeof candidate[key] !== "string" || !String(candidate[key]).trim())) return null;
+    || keys.some(key => typeof candidate[key] !== "string" || !String(candidate[key]).trim())
+    || Object.hasOwn(candidate,'processOrdinal') && (typeof candidate.processOrdinal!=='number' || !Number.isFinite(candidate.processOrdinal))
+    || Object.hasOwn(candidate,'processRole') && !['PROCESS','REFERENCE_ONLY','COST_SUMMARY'].includes(String(candidate.processRole))) return null;
   if (candidate.whenResourcePresent != null && (!Array.isArray(candidate.whenResourcePresent)
     || candidate.whenResourcePresent.length === 0 || candidate.whenResourcePresent.length > 64
     || candidate.whenResourcePresent.some(id => typeof id !== 'string' || !id.trim())
@@ -62,6 +64,36 @@ export function canonicalEstimateOperationReferences(value: unknown): CanonicalE
   return references;
 }
 
+/** Resolve optional order only from the same immutable row/roster references.
+ * An absent value can use one unambiguous supplied PROCESS ordinal. Explicit
+ * conflicting/malformed values are never overwritten; no source/title lookup. */
+export function resolveCanonicalSavedOperationOrdinalsV1<T extends {operation?:unknown}>(resources:readonly T[]):readonly T[]{
+  const key=(op:CanonicalEstimateOperationReference)=>canonicalEstimateStableJson({
+    contractVersion:op.contractVersion,groupId:op.groupId,groupTitleRu:op.groupTitleRu,
+    operationId:op.operationId,operationTitleRu:op.operationTitleRu,completionCriterionRu:op.completionCriterionRu,
+    processRole:op.processRole??'PROCESS',whenResourcePresent:op.whenResourcePresent??[]});
+  const candidates=new Map<string,Set<number>>();
+  for(const resource of resources)for(const op of canonicalEstimateOperationReferences(resource.operation)){
+    if((op.processRole??'PROCESS')!=='PROCESS'||!Object.hasOwn(op,'processOrdinal'))continue;
+    const values=candidates.get(key(op))??new Set<number>();values.add(op.processOrdinal!);candidates.set(key(op),values);
+  }
+  const ordinal=(op:CanonicalEstimateOperationReference)=>{
+    if((op.processRole??'PROCESS')!=='PROCESS'||Object.hasOwn(op,'processOrdinal'))return undefined;
+    const values=candidates.get(key(op));return values?.size===1?[...values][0]:undefined;
+  };
+  return resources.map(resource=>{
+    const primary=canonicalEstimateOperationReference(resource.operation);if(!primary)return resource;
+    const supplied=resource.operation as Record<string,unknown>,primaryOrdinal=ordinal(primary);
+    let changed=primaryOrdinal!==undefined;
+    const related=Array.isArray(primary.additionalOperations)?primary.additionalOperations.map(item=>{
+      const op=canonicalEstimateOperationReferences({...primary,additionalOperations:[item]})[1];
+      if(!op||Object.hasOwn(item,'processOrdinal'))return item;
+      const value=ordinal(op);if(value===undefined)return item;changed=true;return{...item,processOrdinal:value};
+    }):primary.additionalOperations;
+    return changed?{...resource,operation:{...supplied,...(primaryOrdinal===undefined?{}:{processOrdinal:primaryOrdinal}),
+      ...(related===undefined?{}:{additionalOperations:related})}}:resource;
+  });
+}
 export type CanonicalLegacyOperationDisplayResourceV1 = {
   rowId: string; sourceRowId?: string; operation: unknown;
 };
@@ -166,6 +198,7 @@ export function canonicalEstimateResourceOperationSections(
   legacyDisplayContext?: CanonicalLegacyOperationDisplayContextV1,
 ): CanonicalEstimateResourceOperationSection[] {
   resources = resolveCanonicalLegacyOperationDisplayV1(resources, legacyDisplayContext);
+  resources = resolveCanonicalSavedOperationOrdinalsV1(resources);
   const sections = new Map<string, CanonicalEstimateResourceOperationSection>();
   const presentResourceIds = new Set(resources.flatMap(resource => [resource.rowId,...(resource.sourceRowId?[resource.sourceRowId]:[])]));
   // The first applicable consumer owns the one visible resource row.
@@ -295,6 +328,7 @@ export function canonicalEstimateWorkProcess(
   legacyDisplayContext?: CanonicalLegacyOperationDisplayContextV1,
 ): CanonicalEstimateWorkProcessGroup[] {
   resources = resolveCanonicalLegacyOperationDisplayV1(resources, legacyDisplayContext);
+  resources = resolveCanonicalSavedOperationOrdinalsV1(resources);
   const presentResourceIds = new Set(resources.flatMap(resource => [resource.rowId,...(resource.sourceRowId?[resource.sourceRowId]:[])]));
   const groups = new Map<string, {
     group: CanonicalEstimateWorkProcessGroup;
@@ -364,6 +398,11 @@ export function canonicalLegacyResourceNameV1(
  * It audits composition; it never calculates quantities, prices or replacements.
  * Independent evidence must name real operations and their expected resources.
  */
+/** Same name validity rule for strict audit and saved legacy review issuance. */
+export function canonicalEstimatePublicResourceNameIsValidV1(nameRu:string,manualTitleOverride=false):boolean {
+  return nameRu.trim().length>0 && nameRu.length<=180
+    && (manualTitleOverride || !/сверх доказанной поставки|по фактическому основанию|инструмент квалифицированного/iu.test(nameRu));
+}
 export type CanonicalEstimateOperationResourceAcceptanceV1 = Readonly<{
   contractVersion: 'canonical-operation-resource-acceptance/v1';
   status: 'ACCEPTED' | 'COMPOSITION_UNVERIFIED' | 'STRUCTURE_INVALID';
@@ -388,6 +427,13 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
   const key=(v:string)=>v.trim().replace(/\s+/gu,' ').toLocaleLowerCase('ru-RU');
   const kinds=new Set<string>(['MATERIAL','CONSUMABLE','TOOL','ACCESSORY','EQUIPMENT','MECHANISM','LABOR','SERVICE','TRANSPORT','PPE']);
   const physical=new Set(['MATERIAL','CONSUMABLE','TOOL','ACCESSORY','EQUIPMENT','MECHANISM','PPE']);
+  const independent=record(input.independentComposition)?input.independentComposition:null;
+  const originalRoster=independent&&Array.isArray(independent.operationRoster)?independent.operationRoster:[];
+  const resources=resolveCanonicalSavedOperationOrdinalsV1(input.resources);
+  // Only saved rows donate order, exactly as UI/PDF. Roster-only metadata must
+  // not silently supply a different display order to the audit.
+  const roster=originalRoster.map(operation=>resolveCanonicalSavedOperationOrdinalsV1([
+    ...resources,{operation}]).at(-1)!.operation);
   const operationBody=(op:CanonicalEstimateOperationReference)=>({contractVersion:op.contractVersion,
     groupId:op.groupId,groupTitleRu:op.groupTitleRu,operationId:op.operationId,
     operationTitleRu:op.operationTitleRu,completionCriterionRu:op.completionCriterionRu,
@@ -395,21 +441,21 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
     whenResourcePresent:op.whenResourcePresent??[]});
   const sameOperation=(a:CanonicalEstimateOperationReference,b:CanonicalEstimateOperationReference)=>
     canonicalEstimateStableJson(operationBody(a))===canonicalEstimateStableJson(operationBody(b));
-  const rows=new Map<string,(typeof input.resources)[number]>(),uses=new Map<string,CanonicalEstimateOperationReference[]>();
+  const rows=new Map<string,(typeof resources)[number]>(),uses=new Map<string,CanonicalEstimateOperationReference[]>();
   const operations=new Map<string,CanonicalEstimateOperationReference>();
-  if(input.resources.length===0)errors.push({code:'RESOURCES_EMPTY'});
-  for(const row of input.resources){
+  if(resources.length===0)errors.push({code:'RESOURCES_EMPTY'});
+  for(const row of resources){
     if(!text(row.rowId)||rows.has(row.rowId)){errors.push({code:'RESOURCE_ID_MISSING_OR_DUPLICATED',rowId:row.rowId});continue;}
     rows.set(row.rowId,row);
     // A number without its declared measure cannot be issued as an estimate.
     // Keep the visible partial row; never guess a unit from its title/category.
     if(!text(row.unitId))unverified.push({code:'RESOURCE_UNIT_UNRESOLVED',rowId:row.rowId});
-    if(!text(row.nameRu)||row.nameRu.length>180||(!row.manualTitleOverride&&/сверх доказанной поставки|по фактическому основанию|инструмент квалифицированного/iu.test(row.nameRu)))
+    if(!canonicalEstimatePublicResourceNameIsValidV1(row.nameRu,row.manualTitleOverride))
       errors.push({code:'PUBLIC_RESOURCE_NAME_INVALID',rowId:row.rowId});
     if(!row.manualTitleOverride&&row.publicNameVerified!==true)unverified.push({code:'PUBLIC_RESOURCE_NAME_UNVERIFIED',rowId:row.rowId});
     if(!row.resourceKind||!kinds.has(row.resourceKind))unverified.push({code:'RESOURCE_KIND_UNVERIFIED',rowId:row.rowId});
     const parsedRefs=canonicalEstimateOperationReferences(row.operation);
-    const refs=parsedRefs.filter(op=>(!op.whenResourcePresent||op.whenResourcePresent.some(id=>input.resources.some(r=>r.rowId===id)))
+    const refs=parsedRefs.filter(op=>(!op.whenResourcePresent||op.whenResourcePresent.some(id=>resources.some(r=>r.rowId===id)))
       &&op.processRole!=='REFERENCE_ONLY'&&op.processRole!=='COST_SUMMARY');
     uses.set(row.rowId,refs);
     if(refs.length===0)errors.push({code:'RESOURCE_OPERATION_MISSING',rowId:row.rowId});
@@ -426,8 +472,7 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
       else operations.set(op.operationId,op);
     }
   }
-  const independent=record(input.independentComposition)?input.independentComposition:null;
-  const roster=independent&&Array.isArray(independent.operationRoster)?independent.operationRoster:[];
+
   const entries=independent&&Array.isArray(independent.entries)?independent.entries:[];
   const evidenceValid=independent?.contract==='rik-expo-app.s26-3.independent-completeness-map.v1'
     &&['NORMATIVE_OPERATION_MAP','TECHNOLOGY_MAP','PRODUCT_SYSTEM_TDS','PROJECT_SYSTEM'].includes(text(independent.sourceKind))
@@ -515,7 +560,7 @@ export function auditCanonicalEstimateOperationResourcesV1(input: Readonly<{
   }
   for(const rowId of new Set(input.unresolvedConditionRowIds ?? []))
     unverified.push({code:'RESOURCE_CONDITION_UNRESOLVED',rowId});
-  const quantityUnknown=input.resources.some(row=>row.quantityKnown===false);
+  const quantityUnknown=resources.some(row=>row.quantityKnown===false);
   if(quantityUnknown)unverified.push({code:'RESOURCE_QUANTITY_UNRESOLVED'});
   const status=errors.length?'STRUCTURE_INVALID':unverified.length?'COMPOSITION_UNVERIFIED':'ACCEPTED';
   const unresolvedOnly=(issue:Issue)=>issue.code==='RESOURCE_QUANTITY_UNRESOLVED'||issue.code==='RESOURCE_UNIT_UNRESOLVED'

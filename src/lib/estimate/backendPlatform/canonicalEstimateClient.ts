@@ -1,3 +1,4 @@
+import {canonicalProfessionalArtifactPurposeMatchesV1} from './canonicalEstimateArtifactContract';
 import {assertCanonicalCatalogPromptExtractionV1,assertCanonicalCatalogPromptBytesV1,
   MAX_CANONICAL_CATALOG_PROMPT_REQUEST_BYTES_V1,readCanonicalCatalogPromptJsonV1} from "./canonicalCatalogPromptExtractionV1";
 import type {CanonicalCatalogPromptExtractionV1} from "./contracts";
@@ -541,13 +542,21 @@ export function migrateCanonicalEstimateLegacyRevision(
   });
 }
 
+function assertArtifactPurposeInputV1(input:{kind:string;documentProfile?:string;issuancePurpose?:unknown}):void {
+  if(input.issuancePurpose!==undefined&&input.issuancePurpose!=='STANDARD'&&input.issuancePurpose!=='PRELIMINARY_REVIEW'
+    ||input.issuancePurpose==='PRELIMINARY_REVIEW'&&(input.kind!=='pdf'||input.documentProfile!=='professional_v1'))
+    throw new CanonicalEstimateApiError('Некорректный режим PDF.',{code:'ARTIFACT_PURPOSE_INVALID',httpStatus:400});
+}
 export function createCanonicalEstimateArtifact(input: {
   revisionId: string;
   kind: "pdf" | "procurement";
   documentProfile?: "professional_v1";
+  issuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+  reviewRequest?:import('./contracts').CanonicalProfessionalPdfReviewRequestV1;
   idempotencyKey: string;
   signal?: AbortSignal | null;
 }) {
+  assertArtifactPurposeInputV1(input);
   return invoke<CanonicalEstimateJobAccepted & { artifactId: string; artifactStatus: string }>(
     `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}`,
     {
@@ -555,6 +564,8 @@ export function createCanonicalEstimateArtifact(input: {
       body: {
         idempotencyKey: input.idempotencyKey,
         ...(input.documentProfile ? { documentProfile: input.documentProfile } : {}),
+        ...(input.issuancePurpose?{issuancePurpose:input.issuancePurpose}:{}),
+        ...(input.reviewRequest?{reviewRequest:input.reviewRequest}:{}),
       },
       signal: input.signal,
       requestClass: "mutation_request",
@@ -566,13 +577,17 @@ export function getCanonicalEstimateArtifact(input: {
   revisionId: string;
   kind: "pdf" | "procurement";
   documentProfile?: "professional_v1";
+  issuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+  reviewRequest?:import('./contracts').CanonicalProfessionalPdfReviewRequestV1;
   signal?: AbortSignal | null;
 }) {
+  assertArtifactPurposeInputV1(input);
   const profileQuery = input.documentProfile
     ? `?documentProfile=${encodeURIComponent(input.documentProfile)}`
     : "";
+  const purposeQuery=input.issuancePurpose?`${profileQuery?'&':'?'}issuancePurpose=${encodeURIComponent(input.issuancePurpose)}`:'';
   return invoke<CanonicalEstimateArtifactView>(
-    `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}${profileQuery}`,
+    `revisions/${encodeURIComponent(input.revisionId)}/artifacts/${input.kind}${profileQuery}${purposeQuery}`,
     { signal: input.signal, requestClass: "ui_scope_load" },
   );
 }
@@ -581,6 +596,8 @@ export async function buildCanonicalEstimateArtifact(input: {
   revisionId: string;
   kind: "pdf" | "procurement";
   documentProfile?: "professional_v1";
+  issuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
+  reviewRequest?:import('./contracts').CanonicalProfessionalPdfReviewRequestV1;
   idempotencyKey: string;
   signal?: AbortSignal | null;
 }) {
@@ -602,9 +619,12 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
   revision: CanonicalEstimateRevisionView;
   expectedKind: "pdf" | "procurement";
   expectedDocumentProfile?: "professional_v1";
+  expectedIssuancePurpose?:import('./contracts').CanonicalProfessionalPdfIssuancePurpose;
   expectedCatalogId?: string | null;
   expectedRowCount?: number | null;
 }): void {
+  if(!canonicalProfessionalArtifactPurposeMatchesV1(input.artifact.metadata,input.expectedIssuancePurpose))
+    throw new CanonicalEstimateApiError('Документ сформирован для другого режима проверки.',{code:'ARTIFACT_PURPOSE_CONFLICT',httpStatus:409});
   const metadataCatalogId = String(input.artifact.metadata?.sourceCatalogId ?? "").trim();
   const metadataRowCount = Number(input.artifact.metadata?.sourceRowCount);
   const metadataChecksum = String(
@@ -647,8 +667,16 @@ export function assertCanonicalEstimateArtifactIdentity(input: {
   );
 }
 
-export function getCanonicalEstimateRevision(revisionId: string, signal?: AbortSignal | null) {
-  return invoke<CanonicalEstimateRevisionView>(`revisions/${encodeURIComponent(revisionId)}`, {
+export function getCanonicalEstimateRevision(revisionId: string, options?: AbortSignal | null | {
+  issuancePurpose: 'PRELIMINARY_REVIEW'; signal?: AbortSignal | null;
+}) {
+  const reportOptions = options != null && 'issuancePurpose' in options ? options : null;
+  if (reportOptions && reportOptions.issuancePurpose !== 'PRELIMINARY_REVIEW') {
+    throw new CanonicalEstimateApiError('Invalid revision read purpose', {code:'ARTIFACT_PURPOSE_INVALID',httpStatus:400});
+  }
+  const signal = options != null && 'issuancePurpose' in options ? options.signal : options;
+  const query = reportOptions ? '?issuancePurpose=PRELIMINARY_REVIEW' : '';
+  return invoke<CanonicalEstimateRevisionView>(`revisions/${encodeURIComponent(revisionId)}${query}`, {
     signal,
     requestClass: "ui_scope_load",
   });

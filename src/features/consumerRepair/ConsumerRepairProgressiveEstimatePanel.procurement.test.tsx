@@ -114,6 +114,29 @@ it("opens an explicit empty purchase list without turning normative demand into 
   act(() => renderer.unmount());
 });
 
+it.each([false, true])("respects the common guard before opening a nonempty purchase list: allowed=%s", (allowed) => {
+  const current = revision(false) as unknown as EstimateDraftRevision;
+  const before = JSON.stringify(current);
+  let renderer!: ReactTestRenderer;
+  const onOpenProcurement = jest.fn(() => {
+    expect(renderer.root.findAllByProps({ testID: "consumer-estimate-procurement-list" })).toHaveLength(0);
+    return allowed;
+  });
+  act(() => { renderer = TestRenderer.create(React.cloneElement(panel(current as never), { onOpenProcurement })); });
+  const beforeView = renderer.toJSON();
+  expect(buildCanonicalProcurementPreviewRows(current)).toHaveLength(1);
+  act(() => renderer.root.findByProps({ testID: "consumer-estimate-open-procurement" }).props.onPress());
+  expect(onOpenProcurement).toHaveBeenCalledTimes(1);
+  expect(renderer.root.findAllByProps({ testID: "consumer-estimate-procurement-list" }).length > 0).toBe(allowed);
+  if (allowed) {
+    expect(renderer.root.findAllByProps({ testID: "consumer-estimate-procurement-row-material:anchor-group:anchor-bolts" }).length).toBeGreaterThan(0);
+  } else {
+    expect(renderer.toJSON()).toEqual(beforeView);
+  }
+  expect(JSON.stringify(current)).toBe(before);
+  act(() => renderer.unmount());
+});
+
 it("restores a saved empty purchase artifact while preserving its excluded physical demand", () => {
   const current = revision(true) as unknown as EstimateDraftRevision;
   current.boq.rows[0].includedInProcurement = false;

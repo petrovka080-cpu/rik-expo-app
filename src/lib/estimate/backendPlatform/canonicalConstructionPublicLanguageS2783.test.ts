@@ -134,7 +134,7 @@ it('distinguishes actual crane choices without overriding an authored contextual
  expect(canonicalEstimateParameterChoiceLabelRu('selected_delivery_selection','NOT_SELECTED')).toBe('Не добавлять отдельную доставку');
 });
 it('versions new document projections while historical artifact bytes and source titles remain independent',()=>{
- expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe('canonical-professional-pdf.r4-a13-public-selected-specification-template82');
+ expect(CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION).toBe('canonical-professional-pdf.r4-a13-readable-saved-report-template92');
  expect(CANONICAL_PROCUREMENT_GENERATOR_VERSION).toBe('canonical-procurement.r28-public-selected-specification');
  const b=binding(wp+'whole-worker');expect(b.sourceTitleRu).toContain('разряда5,3');expect(b.nameRu).not.toContain('разряда5,3');
  expect(details({rowId:b.rowId,titleRu:b.sourceTitleRu})).toEqual([]);

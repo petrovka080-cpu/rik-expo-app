@@ -1,0 +1,1718 @@
+{
+  "acceptance": {
+    "status": "STRUCTURE_INVALID",
+    "issues": [
+      {
+        "code": "INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED"
+      }
+    ],
+    "pdfAllowed": false,
+    "contractVersion": "canonical-operation-resource-acceptance/v1",
+    "unresolvedQuantityCount": 0
+  },
+  "provenance": "SYNTHETIC_58_ROW_LEGACY_SHAPE_NO_USER_DATA_NO_SOURCE_ADMISSION",
+  "revision": {
+    "definition_version_id": "33333333-cccc-4333-8333-333333333333",
+    "catalog_id": "synthetic-work:legacy-carpet",
+    "row_count": 58,
+    "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "release_id": "22222222-bbbb-4222-8222-222222222222",
+    "id": "11111111-aaaa-4111-8111-111111111111",
+    "input_parameters": {
+      "q": "1"
+    },
+    "amendment_contract": {
+      "parameterSources": {
+        "preliminaryNeeds": []
+      },
+      "releaseMigration": null,
+      "rowOverrides": {},
+      "customRows": []
+    },
+    "definition_withdrawal_reason": null
+  },
+  "resources": [
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 0,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_1",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_1",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_1",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 11.0,
+      "amount": 11.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 1,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_2",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_2",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_2",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 12.0,
+      "amount": 12.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 2,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "l",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_3",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_3",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_3",
+      "unit_id": "l",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 13.0,
+      "amount": 13.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 3,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "linear_m",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_4",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_4",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_4",
+      "unit_id": "linear_m",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 14.0,
+      "amount": 14.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 4,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "kg",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_5",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_5",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_5",
+      "unit_id": "kg",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 15.0,
+      "amount": 15.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 5,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_6",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_6",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_6",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 16.0,
+      "amount": 16.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 6,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_7",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_7",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_7",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 17.0,
+      "amount": 17.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 7,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_8",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_8",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_8",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 18.0,
+      "amount": 18.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 8,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "piece",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_9",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_9",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_9",
+      "unit_id": "piece",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 19.0,
+      "amount": 19.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 9,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "piece",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_10",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_10",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_10",
+      "unit_id": "piece",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 20.0,
+      "amount": 20.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 10,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "piece",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_11",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_11",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_11",
+      "unit_id": "piece",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 21.0,
+      "amount": 21.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 11,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "piece",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_12",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_12",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_12",
+      "unit_id": "piece",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 22.0,
+      "amount": 22.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 12,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "piece",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_13",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_13",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_13",
+      "unit_id": "piece",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 23.0,
+      "amount": 23.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 13,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "piece",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_14",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_14",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_14",
+      "unit_id": "piece",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 24.0,
+      "amount": 24.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 14,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "piece",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_15",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_15",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_15",
+      "unit_id": "piece",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 25.0,
+      "amount": 25.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 15,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_16",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_16",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_16",
+      "unit_id": "set",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 26.0,
+      "amount": 26.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 16,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_17",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_17",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_17",
+      "unit_id": "set",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 27.0,
+      "amount": 27.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 17,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_18",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_18",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_18",
+      "unit_id": "set",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 28.0,
+      "amount": 28.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 18,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_19",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_19",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_19",
+      "unit_id": "set",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 29.0,
+      "amount": 29.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 19,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_20",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_20",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_20",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 30.0,
+      "amount": 30.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "work",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 20,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_21",
+          "physicalRowType": "work"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_21",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_21",
+      "unit_id": "set",
+      "title_ru": "Ресурс для крепления напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 31.0,
+      "amount": 31.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "work",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 21,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_22",
+          "physicalRowType": "work"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_22",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_22",
+      "unit_id": "m2",
+      "title_ru": "Ресурс для крепления напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 32.0,
+      "amount": 32.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "work",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 22,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_23",
+          "physicalRowType": "work"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_23",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_23",
+      "unit_id": "m2",
+      "title_ru": "Ресурс для крепления напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 33.0,
+      "amount": 33.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "work",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 23,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_24",
+          "physicalRowType": "work"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_24",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_24",
+      "unit_id": "m2",
+      "title_ru": "Ресурс для крепления напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 34.0,
+      "amount": 34.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "work",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 24,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_25",
+          "physicalRowType": "work"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_25",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_25",
+      "unit_id": "set",
+      "title_ru": "Ресурс для крепления напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 35.0,
+      "amount": 35.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "work",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 25,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_26",
+          "physicalRowType": "work"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_26",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_26",
+      "unit_id": "m2",
+      "title_ru": "Ресурс для крепления напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 36.0,
+      "amount": 36.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "work",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 26,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_27",
+          "physicalRowType": "work"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_27",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_27",
+      "unit_id": "set",
+      "title_ru": "Ресурс для крепления напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 37.0,
+      "amount": 37.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 27,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_28",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_28",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_28",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 38.0,
+      "amount": 38.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 28,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_29",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_29",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_29",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 39.0,
+      "amount": 39.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 29,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_30",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_30",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_30",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 40.0,
+      "amount": 40.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 30,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_31",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_31",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_31",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 41.0,
+      "amount": 41.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 31,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_32",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_32",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_32",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 42.0,
+      "amount": 42.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 32,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "linear_m",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_33",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_33",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_33",
+      "unit_id": "linear_m",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 43.0,
+      "amount": 43.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 33,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_34",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_34",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_34",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 44.0,
+      "amount": 44.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 34,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_35",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_35",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_35",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 45.0,
+      "amount": 45.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 35,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_36",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_36",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_36",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 46.0,
+      "amount": 46.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Работы и труд",
+      "currency_code": "KGS",
+      "category": "labor",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 36,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_37",
+          "physicalRowType": "labor"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_37",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_37",
+      "unit_id": "m2",
+      "title_ru": "Труд монтажника напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 47.0,
+      "amount": 47.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "labor",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Механизмы и оборудование",
+      "currency_code": "KGS",
+      "category": "equipment",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 37,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_38",
+          "physicalRowType": "equipment"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_38",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_38",
+      "unit_id": "set",
+      "title_ru": "Ручной инструмент для укладки покрытия",
+      "included_in_procurement": false,
+      "unit_price": 48.0,
+      "amount": 48.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "equipment",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Механизмы и оборудование",
+      "currency_code": "KGS",
+      "category": "equipment",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 38,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_39",
+          "physicalRowType": "equipment"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_39",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_39",
+      "unit_id": "set",
+      "title_ru": "Ручной инструмент для укладки покрытия",
+      "included_in_procurement": false,
+      "unit_price": 49.0,
+      "amount": 49.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "equipment",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Механизмы и оборудование",
+      "currency_code": "KGS",
+      "category": "equipment",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 39,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_40",
+          "physicalRowType": "equipment"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_40",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_40",
+      "unit_id": "set",
+      "title_ru": "Ручной инструмент для укладки покрытия",
+      "included_in_procurement": false,
+      "unit_price": 50.0,
+      "amount": 50.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "equipment",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Механизмы и оборудование",
+      "currency_code": "KGS",
+      "category": "equipment",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 40,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_41",
+          "physicalRowType": "equipment"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_41",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_41",
+      "unit_id": "set",
+      "title_ru": "Ручной инструмент для укладки покрытия",
+      "included_in_procurement": false,
+      "unit_price": 51.0,
+      "amount": 51.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "equipment",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Механизмы и оборудование",
+      "currency_code": "KGS",
+      "category": "equipment",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 41,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_42",
+          "physicalRowType": "equipment"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_42",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_42",
+      "unit_id": "set",
+      "title_ru": "Ручной инструмент для укладки покрытия",
+      "included_in_procurement": false,
+      "unit_price": 52.0,
+      "amount": 52.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "equipment",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Доставка и логистика",
+      "currency_code": "KGS",
+      "category": "transport",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 42,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_43",
+          "physicalRowType": "transport"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_43",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_43",
+      "unit_id": "set",
+      "title_ru": "Доставка напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 53.0,
+      "amount": 53.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Доставка и логистика",
+      "currency_code": "KGS",
+      "category": "transport",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 43,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_44",
+          "physicalRowType": "transport"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_44",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_44",
+      "unit_id": "set",
+      "title_ru": "Доставка напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 54.0,
+      "amount": 54.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Доставка и логистика",
+      "currency_code": "KGS",
+      "category": "transport",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 44,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_45",
+          "physicalRowType": "transport"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_45",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_45",
+      "unit_id": "set",
+      "title_ru": "Доставка напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 55.0,
+      "amount": 55.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Доставка и логистика",
+      "currency_code": "KGS",
+      "category": "transport",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 45,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_46",
+          "physicalRowType": "transport"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_46",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_46",
+      "unit_id": "set",
+      "title_ru": "Доставка напольного покрытия",
+      "included_in_procurement": false,
+      "unit_price": 56.0,
+      "amount": 56.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 46,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_47",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_47",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_47",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 57.0,
+      "amount": 57.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 47,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_48",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_48",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_48",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 58.0,
+      "amount": 58.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 48,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_49",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_49",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_49",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 59.0,
+      "amount": 59.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Материалы и изделия",
+      "currency_code": "KGS",
+      "category": "material",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 49,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_50",
+          "physicalRowType": "material"
+        }
+      },
+      "procurement_eligible": true,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_50",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_50",
+      "unit_id": "m2",
+      "title_ru": "Ковровое напольное покрытие",
+      "included_in_procurement": true,
+      "unit_price": 60.0,
+      "amount": 60.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "material",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Контроль качества и услуги",
+      "currency_code": "KGS",
+      "category": "service",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 50,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_51",
+          "physicalRowType": "service"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_51",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_51",
+      "unit_id": "set",
+      "title_ru": "Проверка основания перед укладкой покрытия",
+      "included_in_procurement": false,
+      "unit_price": 61.0,
+      "amount": 61.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Контроль качества и услуги",
+      "currency_code": "KGS",
+      "category": "service",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 51,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_52",
+          "physicalRowType": "service"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_52",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_52",
+      "unit_id": "set",
+      "title_ru": "Проверка основания перед укладкой покрытия",
+      "included_in_procurement": false,
+      "unit_price": 62.0,
+      "amount": 62.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Контроль качества и услуги",
+      "currency_code": "KGS",
+      "category": "service",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 52,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_53",
+          "physicalRowType": "service"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_53",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_53",
+      "unit_id": "set",
+      "title_ru": "Проверка основания перед укладкой покрытия",
+      "included_in_procurement": false,
+      "unit_price": 63.0,
+      "amount": 63.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Контроль качества и услуги",
+      "currency_code": "KGS",
+      "category": "service",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 53,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_54",
+          "physicalRowType": "service"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_54",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_54",
+      "unit_id": "set",
+      "title_ru": "Проверка основания перед укладкой покрытия",
+      "included_in_procurement": false,
+      "unit_price": 64.0,
+      "amount": 64.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Контроль качества и услуги",
+      "currency_code": "KGS",
+      "category": "service",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 54,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_55",
+          "physicalRowType": "service"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_55",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_55",
+      "unit_id": "set",
+      "title_ru": "Проверка основания перед укладкой покрытия",
+      "included_in_procurement": false,
+      "unit_price": 65.0,
+      "amount": 65.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Контроль качества и услуги",
+      "currency_code": "KGS",
+      "category": "service",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 55,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "m2",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_56",
+          "physicalRowType": "service"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_56",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_56",
+      "unit_id": "m2",
+      "title_ru": "Проверка основания перед укладкой покрытия",
+      "included_in_procurement": false,
+      "unit_price": 66.0,
+      "amount": 66.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Контроль качества и услуги",
+      "currency_code": "KGS",
+      "category": "service",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 56,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_57",
+          "physicalRowType": "service"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_57",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_57",
+      "unit_id": "set",
+      "title_ru": "Проверка основания перед укладкой покрытия",
+      "included_in_procurement": false,
+      "unit_price": 67.0,
+      "amount": 67.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    },
+    {
+      "row_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "section": "Контроль качества и услуги",
+      "currency_code": "KGS",
+      "category": "service",
+      "revision_id": "11111111-aaaa-4111-8111-111111111111",
+      "ordinal": 57,
+      "calculation_trace": {
+        "compilerVersion": "synthetic-legacy-review-test",
+        "resourceGraph": {
+          "canonicalUnit": "set",
+          "semanticOwner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_58",
+          "physicalRowType": "service"
+        }
+      },
+      "procurement_eligible": false,
+      "quantity": 1.0,
+      "row_id": "synthetic_legacy_carpet_58",
+      "semantic_owner": "synthetic-work:legacy-carpet:synthetic_legacy_carpet_58",
+      "unit_id": "set",
+      "title_ru": "Проверка основания перед укладкой покрытия",
+      "included_in_procurement": false,
+      "unit_price": 68.0,
+      "amount": 68.0,
+      "ownership_status": "OWNED",
+      "normative_trace": [],
+      "physical_row_type": "service",
+      "included_in_estimate": true
+    }
+  ]
+}

@@ -21,6 +21,7 @@ export const CANONICAL_BACKEND_REVISION_PROJECTION_VERSION =
   "canonical-estimate-backend-projection.v1" as const;
 
 export type ConsumerRepairCanonicalArtifactReadyBinding = {
+  issuancePurpose?: 'STANDARD'|'PRELIMINARY_REVIEW';
   artifactId: string;
   kind: "pdf" | "procurement";
   revisionId: string;
@@ -48,7 +49,7 @@ function rowType(item: ConsumerRepairRequestItem): ProfessionalBoqRow["rowType"]
   return "other";
 }
 
-function projectedRow(item: ConsumerRepairRequestItem): ProfessionalBoqRow {
+export function projectedRow(item: ConsumerRepairRequestItem): ProfessionalBoqRow {
   const source = item.sourceParameters ?? {};
   const rowId = typeof source.rowCode === "string" && source.rowCode.trim()
     ? source.rowCode.trim()
@@ -68,7 +69,7 @@ function projectedRow(item: ConsumerRepairRequestItem): ProfessionalBoqRow {
     formulaId: item.formulaId ?? null,
     quantityFormula: item.quantityFormula ?? null,
     calculationTrace: item.calculationTrace ?? null,
-    sourceParameters: item.sourceParameters ?? null,
+    sourceParameters: item.sourceParameters == null ? null : JSON.parse(JSON.stringify(item.sourceParameters)) as Record<string,unknown>,
     templateId: item.templateId ?? null,
     templateVersion: item.templateVersion ?? null,
     normId: item.normId ?? null,
@@ -164,18 +165,18 @@ export function missingCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepair
 }
 
 /** Add naming evidence only; never replace items, facts, prices or history. */
-export function enrichCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepairDraftBundle,
-  metadata: CanonicalPreliminaryNamingEvidence): ConsumerRepairDraftBundle {
+export function canonicalPreliminaryNamingEvidenceMatchesProjection(bundle: ConsumerRepairDraftBundle,
+  metadata: CanonicalPreliminaryNamingEvidence): boolean {
   const state = bundle.estimateDraftRevisionState;
   const existing = state?.revisions.find(row => row.revisionId === metadata.revisionId);
   const identity = existing?.resolvedIdentity;
-  if (!state || !existing || !identity || metadata.compilerOwner !== 'backend') return bundle;
+  if (!state || !existing || !identity || metadata.compilerOwner !== 'backend') return false;
   const {checksum, ...withoutChecksum} = identity;
   if (identity.compilerVersion !== CANONICAL_BACKEND_REVISION_PROJECTION_VERSION
     || identity.canonicalModelId !== 'canonical-estimate-backend'
     || identity.canonicalModelVersion !== metadata.releaseId || existing.selectedTemplateId !== metadata.catalogId
     || existing.applicableBoqSignature !== metadata.checksumSha256
-    || checksum !== resolvedEstimateIdentityChecksum(withoutChecksum)) return bundle;
+    || checksum !== resolvedEstimateIdentityChecksum(withoutChecksum)) return false;
   const savedRows = existing.preliminaryRows;
   const candidates = Array.isArray(metadata.preliminaryNeeds) ? preliminaryRowProjection(metadata.preliminaryNeeds) : null;
   const candidatesById = new Map(candidates?.map(row => [row.rowId, row]));
@@ -194,9 +195,18 @@ export function enrichCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepairD
         || !canonicalPublicResourcePresentationMatchesV1(old.publicResourcePresentation,next?.publicResourcePresentation)
         || (Object.hasOwn(old,'category')&&old.category!==next?.category)
         || (Object.hasOwn(old,'costTreatment')&&old.costTreatment!==next?.costTreatment));
-    }) || !savedRows.some(row => row.canonicalNeedAdmissionV1 == null
-      || !Object.hasOwn(row.canonicalNeedAdmissionV1,'category')
-      || !Object.hasOwn(row.canonicalNeedAdmissionV1,'costTreatment'))) return bundle;
+    })) return false;
+  return true;
+}
+
+export function enrichCanonicalPreliminaryNamingEvidence(bundle: ConsumerRepairDraftBundle,
+  metadata: CanonicalPreliminaryNamingEvidence): ConsumerRepairDraftBundle {
+  if(!canonicalPreliminaryNamingEvidenceMatchesProjection(bundle,metadata))return bundle;
+  const state=bundle.estimateDraftRevisionState!,existing=state.revisions.find(row=>row.revisionId===metadata.revisionId)!;
+  const savedRows=existing.preliminaryRows!;
+  if(!savedRows.some(row=>row.canonicalNeedAdmissionV1==null
+    ||!Object.hasOwn(row.canonicalNeedAdmissionV1,'category')||!Object.hasOwn(row.canonicalNeedAdmissionV1,'costTreatment')))return bundle;
+  const candidatesById=new Map(preliminaryRowProjection(metadata.preliminaryNeeds).map(row=>[row.rowId,row]));
   return {...bundle, estimateDraftRevisionState: {...state, revisions: state.revisions.map(row => row !== existing ? row
     : {...row, preliminaryRows: savedRows.map(saved => {
       const old=saved.canonicalNeedAdmissionV1,next=candidatesById.get(saved.rowId)!.canonicalNeedAdmissionV1!;
@@ -432,6 +442,7 @@ export function bindCanonicalBackendArtifactToCurrentRevisionProjection(input: {
   bundle: ConsumerRepairDraftBundle;
   artifact: ConsumerRepairCanonicalArtifactReadyBinding;
 }): ConsumerRepairDraftBundle {
+  if((input.artifact.issuancePurpose??'STANDARD')!=='STANDARD')throw new Error('CANONICAL_REVIEW_ARTIFACT_CANNOT_BIND_READY');
   const state = input.bundle.estimateDraftRevisionState;
   const revision = state?.revisions.find((candidate) =>
     candidate.revisionId === state.currentRevisionId

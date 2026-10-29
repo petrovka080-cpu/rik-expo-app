@@ -1,5 +1,5 @@
 import React from "react";
-import { enrichCanonicalPreliminaryNamingEvidence,canonicalPreliminaryNamingEvidenceReadRevisionIds,
+import { enrichCanonicalPreliminaryNamingEvidence,canonicalPreliminaryNamingEvidenceMatchesProjection,canonicalPreliminaryNamingEvidenceReadRevisionIds,
   type CanonicalPreliminaryNamingEvidence } from '../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import { canonicalPreviewQuantityCounts, canonicalPreviewPublicRows } from './consumerCanonicalPreviewQuantityCounts';
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -108,8 +108,8 @@ export async function loadConsumerRepairCanonicalNamingEvidence(input: {
     || !canonicalPreliminaryNamingEvidenceReadRevisionIds(latest).includes(revisionId)) return null;
   const evidence: CanonicalPreliminaryNamingEvidence = {compilerOwner: 'backend',
     revisionId: revision.revisionId, releaseId: revision.releaseId, catalogId: revision.catalogId,
-    checksumSha256: revision.checksumSha256, preliminaryNeeds: revision.preliminaryNeeds};
-  if (evidence.revisionId !== revisionId) return null;
+    checksumSha256: revision.checksumSha256, preliminaryNeeds: revision.preliminaryNeeds,contentWithdrawalReasonRu:revision.contentWithdrawalReasonRu};
+  if (evidence.revisionId !== revisionId || !canonicalPreliminaryNamingEvidenceMatchesProjection(latest,evidence)) return null;
   const named = enrichCanonicalPreliminaryNamingEvidence(latest, evidence);
   const enriched = revisionId === currentBinding.revisionId && named.draft.status === 'draft'
     && !named.structuredEstimatePayload?.canonicalBackend

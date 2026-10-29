@@ -89,6 +89,11 @@ type StickyActionsProps = {
   approvalManualQuantityCount?: number;
   approvalManualUnresolvedRowCount?: number;
   manualQuantityApprovalAvailable?: boolean;
+  manualSavedPreliminaryAvailable?: boolean;
+  professionalPdfReviewRequired?:boolean;
+  pdfSavedSnapshotAvailable?:boolean;
+  preliminaryReviewIdentity?: {revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;unknownQuantityCount?:number;auditSha256?:string};
+  onOpenPreliminaryReviewPdf?:(expected:{revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string})=>void;
   onApproveManualQuantities?: () => void;
   approvalIncompleteStages?: readonly CanonicalScopeRequirementGroupV1[];
   approvalMissingPriceCount?: number;
@@ -124,6 +129,8 @@ export function ConsumerRepairRequestStickyActions({
   approvalManualQuantityCount = 0,
   approvalManualUnresolvedRowCount = 0,
   manualQuantityApprovalAvailable = false,
+  manualSavedPreliminaryAvailable = false,
+  pdfSavedSnapshotAvailable=hasSnapshot,
   onApproveManualQuantities,
   approvalIncompleteStages = [],
   approvalMissingPriceCount = 0,
@@ -153,13 +160,16 @@ export function ConsumerRepairRequestStickyActions({
   const canApplyAndApprove = approvalPendingRowEditCount > 0
     && approvalBlockedBeyondPendingEdits === false
     && approvalUnresolvedRowCount === 0 && !approvalBlockedByParameters;
-  const approvalDisabled = Boolean(contentWithdrawalReasonRu) || approvalCommitBusy || deleteCommitBusy
+  const revisionReadUnavailable=operationCompositionDiagnostic?.state==='UNAVAILABLE';
+  const savedReviewGuardBlocked=compositionPdfBlocked&&!manualApproval
+    &&operationCompositionDiagnostic?.revision?.manualPreliminaryReviewEligibilityV1?.status==='BLOCKED';
+  const approvalDisabled = revisionReadUnavailable || savedReviewGuardBlocked || Boolean(contentWithdrawalReasonRu) || approvalCommitBusy || deleteCommitBusy
     || (approvalPendingRowEditCount > 0 ? !canApplyAndApprove : approvalBlockedByEstimate);
   const approvalActionHint = approvalMissingPriceCount > 0
     ? `Цена или состав цены ещё не подтверждены в ${approvalMissingPriceCount} поз. Их можно уточнить позже.`
     : undefined;
   const allIncompleteStagesNeedApplication=approvalIncompleteStages.length>0&&approvalIncompleteStages.every(group=>group.statuses.every(status=>['PROJECT_SCOPE_OPEN','PARTLY_INCLUDED','LEGACY_SOURCE_REQUIRED'].includes(status)));
-  const approvalBlockedLabel = contentWithdrawalReasonRu
+  const approvalBlockedLabel = revisionReadUnavailable ? 'Проверка сохранённой версии недоступна' : savedReviewGuardBlocked ? 'Сохранённая версия требует проверки' : contentWithdrawalReasonRu
     ? "Расчёт требует исправления"
     : approvalCommitBusy
     ? "Подтверждаем смету…"
@@ -198,23 +208,23 @@ export function ConsumerRepairRequestStickyActions({
       {operationCompositionDiagnostic ? <Text style={styles.approvalBlockedNoticeText}
         accessibilityRole="alert" testID="consumer-repair-operation-composition-diagnostic">
         {operationCompositionDiagnostic.state==='PENDING'?'Проверяем состав сохранённой сметы…'
-          :operationCompositionDiagnostic.state==='UNAVAILABLE'?'Проверка состава этой версии пока недоступна. Перед выдачей PDF и списка закупки приложение проверит состав.'
+          :operationCompositionDiagnostic.state==='UNAVAILABLE'?'Не удалось прочитать сохранённую версию или проверить соединение с расчётным сервисом. Это не означает, что не заполнены данные объекта. Сохранённые строки и цены не изменены; повторите открытие после восстановления связи.'
           :compositionPdfBlocked?(operationCompositionDiagnostic.acceptance?.status==='COMPOSITION_UNVERIFIED'
-            ?'Состав подработ не проверен. PDF пока недоступен. Список закупки также недоступен; смету можно просматривать и подтвердить вручную как предварительную.'
-            :'Состав сметы требует исправления. PDF и список закупки пока недоступны; сохранённые позиции, количества и цены не изменены.')
+            ?(manualApproval?'Состав подработ не проверен. Предварительный PDF доступен для чтения; закупка требует проверки. Доступно явное ручное подтверждение предварительной версии.':'Состав подработ не проверен. Предварительный PDF доступен для чтения. Подтверждение сметы и закупка требуют отдельных проверок.')
+            :'Состав сметы требует исправления. Предварительный PDF показывает сохранённые сведения и предупреждения; список закупки пока недоступен.')
           :operationCompositionDiagnostic.acceptance?.status==='COMPOSITION_UNVERIFIED'
-            ?'Состав подработ ещё не подтверждён полностью. Можно вручную подтвердить предварительную версию; это не означает, что все необходимые ресурсы проверены.'
+            ?(manualApproval?'Состав подработ ещё не подтверждён полностью. Доступно ручное подтверждение предварительной версии.':'Состав подработ ещё не подтверждён полностью. Для подтверждения нужна проверка сохранённой версии и обязательных данных.')
             :'Состав подработ и ресурсов проверен.'}
       </Text>:null}
       {manualApproval && !finalized ? <Text style={styles.approvalBlockedNoticeText}>
-        {approvalManualUnresolvedRowCount > 0
+        {manualSavedPreliminaryAvailable ? 'Сохранённая версия доступна для ручного подтверждения как предварительная. Состав подработ и ресурсов не подтверждён.' : approvalManualUnresolvedRowCount > 0
           ? `Сохранена предварительная версия. Не рассчитаны количества в ${approvalManualUnresolvedRowCount} поз.; вы можете подтвердить эту версию вручную.`
           : 'Количества сохранены. Вы можете подтвердить их как введённые вручную. Автоматическая проверка этих позиций ещё не завершена.'}
       </Text> : null}
       {manualConfirmationVisible && manualApproval && !approvalDisabled ? <View style={styles.approvalBlockedNotice}
         testID="consumer-repair-manual-quantity-confirmation">
-        <Text style={styles.approvalBlockedNoticeTitle}>{approvalManualUnresolvedRowCount > 0 ? 'Подтвердить предварительную версию вручную?' : 'Подтвердить введённые количества?'}</Text>
-        <Text style={styles.approvalBlockedNoticeText}>{approvalManualUnresolvedRowCount > 0
+        <Text style={styles.approvalBlockedNoticeTitle}>{manualSavedPreliminaryAvailable||approvalManualUnresolvedRowCount>0?'Подтвердить предварительную версию вручную?':'Подтвердить введённые количества?'}</Text>
+        <Text style={styles.approvalBlockedNoticeText}>{manualSavedPreliminaryAvailable ? 'Сохранится подтверждение этой версии как предварительной. Неизвестных количеств: 0. Полнота состава и допуск к выполнению, оплате и закупке не подтверждаются. PDF остаётся отдельным действием.' : approvalManualUnresolvedRowCount > 0
           ? `Не рассчитаны количества в ${approvalManualUnresolvedRowCount} поз. Они останутся видимыми и не войдут в итог, оплату или закупку. Сохранится ручное подтверждение предварительной версии; автоматическая проверка не завершена.`
           : 'Будет сохранена текущая версия с вашими количествами. Неподтверждённые нормы останутся отмечены в сведениях о расчёте; эти позиции не добавятся автоматически в оплату или закупку.'}</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Подтвердить вручную"
@@ -235,12 +245,12 @@ export function ConsumerRepairRequestStickyActions({
           : firstIncompleteStage ? incompleteReason
           : approvalMissingObjectParameterCount === 0 ? 'Нормы и коэффициенты вводить не требуется. Нерассчитанные позиции пока не входят в стоимость.' : 'В составе сметы показано, какие данные ещё нужны для расчёта.'}</Text>
       </View> : null}
-      {hasBundle && (hasSnapshot || finalized) ? (
+      {hasBundle && (hasSnapshot || finalized || pdfSavedSnapshotAvailable) ? (
         <Pressable
           accessibilityLabel="PDF"
           accessibilityRole="button"
-          accessibilityState={{ busy: pdfOpenBusy, disabled: pdfOpenBusy || compositionPdfBlocked }}
-          disabled={pdfOpenBusy || compositionPdfBlocked}
+          accessibilityState={{ busy: pdfOpenBusy, disabled: pdfOpenBusy || !pdfSavedSnapshotAvailable }}
+          disabled={pdfOpenBusy || !pdfSavedSnapshotAvailable}
           onPress={finalized ? onOpenPdf : onMakePdf}
           style={[styles.bottomActionButton, styles.bottomActionSecondary]}
           testID={finalized ? "consumer-repair-open-pdf" : "consumer-estimate-make-pdf"}
@@ -445,7 +455,7 @@ type ContentProps = {
   onLoadMoreWorkSuggestions: () => void;
   onPrepareDraft: () => void;
   onMakePdf: () => void;
-  onOpenProcurement: () => void;
+  onOpenProcurement: () => boolean | void;
   onRefineCanonicalParameters?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;

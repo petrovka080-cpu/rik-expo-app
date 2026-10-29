@@ -110,3 +110,13 @@ describe("shared professional unit registry", () => {
     }
   });
 
+
+it('synchronizes the existing canonical backend item count with pcs without collapsing semantic count bases',()=>{
+  const definition=resolveProfessionalUnitDefinition('item');
+  expect(definition).toBe(resolveProfessionalUnitDefinition('pcs'));
+  expect(definition).toMatchObject({code:'pcs',dimension:'count',canonicalSiUnit:'pcs',conversionFactorToSi:1,discrete:true});
+  expect(normalizeCanonicalProfessionalBoqUnit('item')).toBe('pcs');expect(formatEstimateUnitLabel('item')).toBe('шт.');
+  expect(definition?.code).not.toBe(resolveProfessionalUnitDefinition('set')?.code);
+  expect(definition?.code).not.toBe(resolveProfessionalUnitDefinition('pair')?.code);
+  for(const unknown of ['unknown_item','item_pack','item_pair'])expect(resolveProfessionalUnitDefinition(unknown)).toBeNull();
+});

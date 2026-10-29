@@ -322,7 +322,7 @@ describe("canonical estimate artifact contract", () => {
       grandTotalStatus: "PARTIAL_NEEDS_PRICE",
       pageCount: 4,
       generatorVersion: "canonical-professional-pdf.r4-a6",
-      templateVersion: "professional-estimate-pdf:41",
+      templateVersion: "professional-estimate-pdf:44",
     });
     expect(canonicalProfessionalArtifactMetadataIdentityMatches({
       metadata,
@@ -492,7 +492,7 @@ test.each(['PROCESS_NOTE','CALCULATION_DETAIL'])(
   });
 
 it('separates archived metadata identity from current PDF issuance and preserves old bytes/source',()=>{
-  const renderer='canonical-professional-pdf.r4-a13-verified-operation-composition-template89';
+  const renderer='canonical-professional-pdf.r4-a13-saved-numeric-preview-template91';
   const saved={...revision,definition_version_id:'definition-version-1'};
   const current=buildCanonicalArtifactMetadata({operation:'professional_pdf',renderer,revision:saved,
     sourceRowCount:3,projectedRowCount:3,selectedProcurementRowCount:0,definitionVersionId:'definition-version-1',

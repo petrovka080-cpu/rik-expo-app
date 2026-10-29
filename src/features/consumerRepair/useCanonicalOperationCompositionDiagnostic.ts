@@ -1,10 +1,12 @@
+import type {CanonicalEstimateRevisionView} from '../../lib/estimate/backendPlatform/contracts';
 import * as React from 'react';
 import {getCanonicalEstimateRevision} from '../../lib/estimate/backendPlatform/canonicalEstimateClient';
 import type {CanonicalEstimateOperationResourceAcceptanceV1} from '../../lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 
 export type CanonicalOperationCompositionDiagnostic = Readonly<{
   state:'PENDING'|'AVAILABLE'|'UNAVAILABLE';
-  acceptance?:CanonicalEstimateOperationResourceAcceptanceV1;
+  errorCode?:string;
+  acceptance?:CanonicalEstimateOperationResourceAcceptanceV1; revision?:CanonicalEstimateRevisionView;
 }>;
 
 /** Transient read of the same immutable saved revision on cold/detail reopen.
@@ -23,8 +25,8 @@ export function useCanonicalOperationCompositionDiagnostic(binding:{revisionId:s
       const matches=revision.revisionId===revisionId&&revision.releaseId===releaseId
         &&(!checksum||revision.checksumSha256===checksum);
       setRead({identity,diagnostic:matches&&acceptance?.contractVersion==='canonical-operation-resource-acceptance/v1'
-        ? {state:'AVAILABLE',acceptance}:{state:'UNAVAILABLE'}});
-    }).catch(()=>{if(!disposed)setRead({identity,diagnostic:{state:'UNAVAILABLE'}});});
+        ? {state:'AVAILABLE',acceptance,revision}:{state:'UNAVAILABLE'}});
+    }).catch(error=>{if(!disposed)setRead({identity,diagnostic:{state:'UNAVAILABLE',errorCode:typeof error?.code==='string'?error.code:'REVISION_READ_UNAVAILABLE'}});});
     return()=>{disposed=true;};
   },[identity,revisionId,releaseId,checksum]);
   return !identity?null:read?.identity===identity?read.diagnostic:{state:'PENDING'};

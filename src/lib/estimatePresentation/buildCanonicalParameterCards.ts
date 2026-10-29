@@ -224,11 +224,11 @@ function guideForParameter(parameter: CanonicalParameter, asphalt: WorkSpecificP
     guideShortRu = `По проекту/методике: введите подтверждённый технологический запас${unit ? `, ${unit}` : ""}`;
     guideKind = "PROJECT_DEFINED";
   } else if (parameter.valueType === "number") {
-    guideShortRu = `По проекту или обмеру: фиксированная числовая норма не установлена${unit ? `, ${unit}` : ""}`;
+    guideShortRu = `Укажите фактическое значение из обмера или принятого документа${unit ? `, ${unit}` : ""}. Пример формата не заменяет данные объекта.`;
     guideKind = "MEASUREMENT_RULE";
   } else {
-    guideShortRu = "По проекту: фиксированная числовая норма не установлена";
-    guideKind = "NO_NUMERIC_NORM";
+    guideShortRu = "Укажите точное согласованное обозначение, условие или ссылку из принятого документа. Не подбирайте значение наугад.";
+    guideKind = "PROJECT_DEFINED";
   }
   return {
     guideShortRu: publicParameterText(guideShortRu),
@@ -408,6 +408,9 @@ export function buildCanonicalParameterCards(input: {
           : "optional",
       choices,
       ...guide,
+      guideDetailsRu: [...(guide.guideDetailsRu ?? []),
+        ...(canonicalPublicEstimateParameterTitleRu(parameter.parameterId, parameter.label, context) !== parameter.label
+          ? ['Полное описание: ' + publicParameterText(parameter.label)] : [])],
       structuredGroup: structuredGroupForParameter(asphalt),
       derivedCountParameterKey: COMPOSITE_DERIVED_COUNT[parameter.parameterId],
     };

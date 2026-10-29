@@ -1,3 +1,4 @@
+import {consumerEstimateManualCommitRevisionMatches} from './consumerEstimateManualQuantityApproval';
 import { CONSUMER_REPAIR_CONTEXT, assertConsumerRepairScope } from "./consumerRequestAccessPolicy";
 import {
   assertConsumerRepairCanonicalDraftWriteSource,
@@ -1679,7 +1680,9 @@ export function approveConsumerRepairRequestDraft(input: {
   userId?: string;
   generatedAt?: string;
   manualQuantityApproval?: import('./consumerEstimateManualQuantityApproval').ConsumerEstimateManualQuantityApproval;
+  savedRevisionRead?:import('../estimate/backendPlatform/contracts').CanonicalEstimateRevisionView;
   canonicalArtifact?: {
+    issuancePurpose?:'STANDARD'|'PRELIMINARY_REVIEW';
     artifactId: string;
     revisionId: string;
     releaseId: string;
@@ -1689,7 +1692,10 @@ export function approveConsumerRepairRequestDraft(input: {
 }): ConsumerRepairDraftBundle {
   let bundle = getConsumerRepairBundle(input.requestDraftId);
   const userId = input.userId ?? bundle.draft.consumerUserId;
-  const validation = validateConsumerRepairRequestForApprove(input.requestDraftId, userId, input.manualQuantityApproval);
+  if(input.manualQuantityApproval&&!consumerEstimateManualCommitRevisionMatches(bundle,input.manualQuantityApproval,input.savedRevisionRead))
+    throw new ConsumerRepairValidationError([{code:'ESTIMATE_CURRENT_ITEMS_PARITY_REQUIRED',
+      messageRu:'Перед ручным подтверждением нужна свежая проверка той же сохранённой версии. Версия изменилась, недоступна или отозвана.',field:'canonicalRevision'}]);
+  const validation = validateConsumerRepairRequestForApprove(input.requestDraftId, userId, input.manualQuantityApproval,input.savedRevisionRead);
   if (!validation.ok) {
     bundle = saveConsumerRepairBundle(withEvent(
       {
@@ -1713,9 +1719,20 @@ export function approveConsumerRepairRequestDraft(input: {
 
   const canonicalBinding = canonicalBackendBindingForItems(bundle.items);
   if (canonicalBinding) {
+    if(input.manualQuantityApproval){
+      if(bundle.draft.status==='consumer_approved')return cloneConsumerRepairValue(bundle);
+      assertConsumerRepairDraftActionAllowed({currentStatus:bundle.draft.status,action:'approve'});
+      const draft=approveDraftRecord(bundle.draft),ack=input.manualQuantityApproval;
+      return saveConsumerRepairBundle(withEvent({...bundle,draft},createConsumerRepairEvent({
+        requestDraftId:input.requestDraftId,eventType:ack.mode==='MANUAL_PRELIMINARY'?'consumer_approved_canonical_preliminary':'consumer_approved_canonical_manual_quantities',actorType:'consumer',actorUserId:userId,
+        payload:{revisionId:ack.revisionId,releaseId:ack.releaseId,checksumSha256:ack.checksumSha256,manualQuantityApproval:ack,
+          unknownQuantityCount:ack.unresolvedQuantityRowIds?.length??0,acknowledgmentOnly:true,pdfArtifactCreated:false,
+          sourceAdmission:false,paymentAdmission:false,procurementAdmission:false,full:false},
+      })));
+    }
     const artifact = input.canonicalArtifact;
     if (
-      !artifact || artifact.status !== "ready" || !artifact.artifactId.trim() ||
+      !artifact || (artifact.issuancePurpose??'STANDARD')!=='STANDARD' || artifact.status !== "ready" || !artifact.artifactId.trim() ||
       artifact.revisionId !== canonicalBinding.revisionId ||
       artifact.releaseId !== canonicalBinding.releaseId
     ) {

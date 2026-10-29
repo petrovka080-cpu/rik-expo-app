@@ -491,6 +491,16 @@ export async function materializeDocumentPreviewSessionAsset(
       throw stale;
     }
     const asset = await materializePdfAsset(doc);
+    if (Platform.OS === "web" && doc.contentIdentity?.ownerUserId) {
+      const { persistCanonicalWebPdfPreview } = require("./pdfCanonicalWebPreviewPersistence") as typeof import("./pdfCanonicalWebPreviewPersistence");
+      const pending = getDocumentSession(sessionId);
+      if (!pending || pending.preparationToken !== token) {
+        throw Object.assign(new Error("PDF preparation attempt is no longer active"), { name: "AbortError" });
+      }
+      // Persist the exact immutable bytes before exposing a ready viewer. The
+      // existing Web cache and logout cleanup own lifetime and principal scope.
+      await persistCanonicalWebPdfPreview({ doc, session: pending, asset });
+    }
     if (!completeDocumentPreviewSessionAsset(sessionId, asset, token)) {
       const stale = new Error("PDF preparation attempt is no longer active");
       stale.name = "AbortError";

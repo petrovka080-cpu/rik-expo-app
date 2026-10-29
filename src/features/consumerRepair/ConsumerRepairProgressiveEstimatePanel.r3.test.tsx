@@ -1,5 +1,5 @@
 import React from "react";
-import { Keyboard, Text, TextInput } from "react-native";
+import { Keyboard, StyleSheet, Text, TextInput } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import {
@@ -7,6 +7,7 @@ import {
   canonicalConsumerEditableFieldValue,
   canonicalConsumerParameterInlineGuide,
   canonicalConsumerParameterPlaceholder,
+  canonicalConsumerParameterShortExample,
   ConsumerRepairDraftQuickActions,
   ConsumerRepairProgressiveEstimatePanel,
   InlineParamEditor,
@@ -120,7 +121,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
       expect(canonicalConsumerParameterPlaceholder({
         parameter: { parameterId, valueType: 'string', source: 'USER_EXPLICIT' } as never,
         baselineDisplay: '', guideShortRu: 'Проверьте фактическое бетонное основание и укажите результат проверки.',
-      })).toBe('Проверьте фактическое бетонное основание и укажите результат проверки.');
+      })).toBe(parameterId.includes('reference') ? 'Например: акт № 12' : 'Например: по спецификации № 12');
     }
     expect(canonicalConsumerParameterInlineGuide({
       parameter: { parameterId: 'minimum_anchor_edge_distance_mm', source: 'PROJECT_SPECIFIC' } as never,
@@ -146,7 +147,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
         referenceValue: 0.12,
       } as never,
       baselineDisplay: "0,12 чел.-ч/м³",
-    })).toBe("Предварительно принято: 0,12 чел.-ч/м³");
+    })).toBe("Например: по спецификации № 12");
     expect(canonicalConsumerEditableFieldValue({
       cardValue: 0.15,
       revisionValue: 0.15,
@@ -229,7 +230,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
         normativeSource: null,
       } as never,
       baselineDisplay: "",
-    })).toBe(`${example} — укажите значение из проекта или спецификации, не применяйте пример как норму.`);
+    })).toBe(example);
   });
 
   it("renders an attached line photo as a viewable thumbnail bound to the canonical row", () => {
@@ -462,9 +463,10 @@ describe("InlineParamEditor R3 parameter guide", () => {
     expect(renderer.root.findByProps({ testID: "request-estimate-parameter-panel" })).toBeTruthy();
     act(() => renderer.root.findByProps({ testID: "request-estimate-automatic-parameters-toggle" }).props.onPress());
     expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.value).toBe("35");
-    expect(renderer.root.findByProps({
+    expect(renderer.root.findAllByProps({
       testID: "editable-param-inline-guide-excavator_productivity_m3_h",
-    }).props.children).toBe("принято 35");
+    })).toHaveLength(0);
+    expect(renderer.root.findByProps({ testID: "editable-param-guide-details-excavator_productivity_m3_h" })).toBeTruthy();
     expect(renderer.root.findByProps({ testID: "editable-param-chip-excavator_productivity_m3_h" })
       .findAllByType("Text" as never)
       .map((node) => String(node.props.children ?? ""))
@@ -521,7 +523,7 @@ describe("InlineParamEditor R3 parameter guide", () => {
     expect(cards).toEqual([]);
   });
 
-  it("держит серую норму внутри пустого input и сохраняет её подписью после ввода", () => {
+  it("показывает короткую норму в пустом input без дополнительных абзацев", () => {
     const onChange = jest.fn();
     let renderer!: ReactTestRenderer;
     act(() => {
@@ -541,19 +543,72 @@ describe("InlineParamEditor R3 parameter guide", () => {
     });
 
     const input = renderer.root.findByProps({ testID: "editable-param-popover-input" });
-    expect(input.props.placeholder).toBe("Введите");
+    expect(input.props.placeholder).toBe("Норма: 1,5–2,0 л/м²");
     expect(input.props.placeholderTextColor).toBe("#64748B");
-    expect(renderer.root.findByProps({ testID: "editable-param-inline-guide-primer_consumption" }).props.children)
-      .toBe("норма 1,5–2,0");
+    expect(renderer.root.findAllByProps({ testID: "editable-param-inline-guide-primer_consumption" })).toHaveLength(0);
     expect(renderer.root.findAllByProps({ testID: "editable-param-guide-primer_consumption" })).toHaveLength(0);
 
     act(() => input.props.onFocus());
     expect(renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.placeholder)
-      .toBe("Введите");
-    expect(renderer.root.findByProps({ testID: "editable-param-inline-guide-primer_consumption" }).props.children)
-      .toBe("норма 1,5–2,0");
+      .toBe("Норма: 1,5–2,0 л/м²");
+    expect(renderer.root.findAllByProps({ testID: "editable-param-inline-guide-primer_consumption" })).toHaveLength(0);
 
     act(() => renderer.root.findByProps({ testID: "editable-param-popover-input" }).props.onChangeText("1,7"));
     expect(onChange).toHaveBeenCalledWith("primer_consumption", "1,7");
   });
+});
+
+describe("COMMON compact example-only inputs for every estimate",()=>{
+ const mounted:ReactTestRenderer[]=[];
+ afterEach(()=>{for(const v of mounted.splice(0))act(()=>v.unmount());});
+ const renderField=(props:Partial<React.ComponentProps<typeof InlineParamEditor>>={})=>{
+  const onChange=jest.fn();let view!:ReactTestRenderer;
+  act(()=>{view=TestRenderer.create(<InlineParamEditor paramKey="fixture" label="Данные объекта" inputKind="number" value="" dirty={false}
+   guideShortRu="Подробное объяснение источника и назначения, которое остаётся под i." onChange={onChange} {...props}/>);});
+  mounted.push(view);return{view,onChange};
+ };
+ it.each([
+  {key:"volume",kind:"number" as const,unit:"л",example:"Например: 1,5"},
+  {key:"count",kind:"number" as const,unit:"шт.",example:"Например: 2",validation:{integer:true,min:1}},
+  {key:"delivery_payment_scope_reference",kind:"text" as const,unit:undefined,example:"Например: перевозка и разгрузка"},
+  {key:"cleaner_designation",kind:"text" as const,unit:undefined,example:"Например: очиститель по спецификации"},
+ ])("keeps only a short example in $key input, with its unit beside it and no automatic value",f=>{
+  const{view,onChange}=renderField({paramKey:f.key,inputKind:f.kind,unitLabel:f.unit,numericValidation:f.validation,
+   purposeRu:"Подробное назначение",sourceSummaryRu:"Подробный источник",embeddedGuideRu:"Подробная норма"});
+  const input=view.root.findByProps({testID:"editable-param-popover-input"});
+  expect(input.props.placeholder).toBe(f.example);expect(input.props.value).toBe("");
+  expect(view.root.findAllByType(Text).map(x=>String(x.props.children)).join(' ')).not.toMatch(/Подробн/u);
+  if(f.unit)expect(view.root.findByProps({testID:'editable-param-unit-'+f.key}).props.children).toBe(f.unit);
+  expect(onChange).not.toHaveBeenCalled();
+ });
+ it('does not overwrite a saved value, and preserves explicit edits',()=>{
+  const{view,onChange}=renderField({value:'2,5',unitLabel:'л'}),input=view.root.findByProps({testID:'editable-param-popover-input'});
+  expect(input.props.value).toBe('2,5');expect(input.props.placeholder).toBeUndefined();expect(onChange).not.toHaveBeenCalled();
+  act(()=>input.props.onChangeText('3,5'));expect(onChange).toHaveBeenCalledWith('fixture','3,5');
+ });
+ it('keeps published choices without selecting a value',()=>{
+  const{view,onChange}=renderField({paramKey:'choice',inputKind:'select',choices:[{value:'A',labelRu:'Первый'},{value:'B',labelRu:'Второй'}]});
+  expect(view.root.findAllByType(TextInput)).toHaveLength(0);expect(onChange).not.toHaveBeenCalled();
+  act(()=>view.root.findByProps({testID:'editable-param-option-choice-B'}).props.onPress());expect(onChange).toHaveBeenCalledWith('choice','B');
+ });
+ it('keeps a short example and unit for composite subfields',()=>{
+  const{view,onChange}=renderField({paramKey:'composite',inputKind:'text',value:JSON.stringify([{itemId:'part',position:1,values:{length:''}}]),
+   structuredGroup:{itemLabelRu:'Участок',minimumItems:0,maximumItems:5,fields:[{key:'length',labelRu:'Длина',inputKind:'number',unitRu:'м',required:true,choices:[],guideShortRu:'Длина участка по фактическому обмеру.'}]}});
+  const input=view.root.findByProps({testID:'editable-param-composite-input-composite-part-length'});
+  expect(input.props.placeholder).toBe('Например: 1,5');expect(input.props.value).toBe('');expect(onChange).not.toHaveBeenCalled();
+  expect(view.root.findAllByType(Text).map(x=>String(x.props.children)).join(' ')).toContain('м');
+ });
+ it('respects numeric integer and range syntax without inserting any example',()=>{
+  const validation={min:5.75,max:6.25},before=JSON.stringify(validation);
+  expect(canonicalConsumerParameterShortExample({inputKind:'number',numericValidation:validation})).toBe('Например: 5,75');
+  expect(canonicalConsumerParameterShortExample({inputKind:'number',numericValidation:{integer:true,min:1}})).toBe('Например: 2');
+  expect(JSON.stringify(validation)).toBe(before);
+ });
+ it.each([
+  ['delivery_payment_scope_reference','Что входит в доставку'],['cleaner_designation','Средство для очистки'],
+  ['cleaner_package_l','Объём упаковки очистителя'],['qa_interval_m_check','Через сколько метров проверять работу'],
+ ])('uses a simple shared label for %s without changing the parameter id', (id,title)=>{
+  const {canonicalPublicEstimateParameterTitleRu}=require('../../lib/estimate/backendPlatform/canonicalPublicEstimateLanguageRu');
+  expect(canonicalPublicEstimateParameterTitleRu(id,'Длинное техническое название')).toBe(title);
+ });
 });

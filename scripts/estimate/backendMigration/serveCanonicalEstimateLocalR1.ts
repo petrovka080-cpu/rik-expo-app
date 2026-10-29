@@ -1,6 +1,8 @@
+import {normalizeCanonicalProfessionalPdfPurposeJobErrorV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
+import {canonicalProfessionalPdfReviewEligibilityV1,canonicalManualPreliminaryReviewEligibilityV1,canonicalProfessionalPdfIssuancePurposeV1,canonicalProfessionalPdfReviewAcknowledgmentV1,assertCanonicalProfessionalPdfIssuanceV1,assertCanonicalProfessionalPdfPurposeMatchesV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
 import {canonicalOperationCompositionEvidenceFromPassportV1,canonicalSavedOperationCompositionEvidenceV1,type CanonicalOperationCompositionEvidenceV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
 import {assertCanonicalProfessionalArtifactCurrentPresentationV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract';
-import {canonicalEstimateSavedOperationAcceptanceV1, assertCanonicalEstimateSavedArtifactStructureV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
+import {canonicalProfessionalPdfReportOriginalAuditV1,canonicalEstimateSavedOperationAcceptanceV1, assertCanonicalEstimateSavedArtifactStructureV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateSavedOperationAcceptanceV1';
 import type {CanonicalEstimateOperationResourceAcceptanceV1} from '../../../src/lib/estimate/backendPlatform/canonicalEstimateOperationComposition';
 import { attachCanonicalPhysicalNormEvidenceV1, canonicalPhysicalNormRevisionFromStorageV1 } from '../../../src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection';
 import {deriveCanonicalCatalogPromptExtractionV1} from "../../../src/lib/estimate/backendPlatform/canonicalConcretePlacementPromptServerR1";
@@ -2229,6 +2231,10 @@ async function createArtifactJob(
   revisionId: string,
   kind: "pdf" | "professional_pdf" | "procurement",
 ) {
+  const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(body.issuancePurpose);
+  if(issuancePurpose==='PRELIMINARY_REVIEW'&&kind!=='professional_pdf'
+    ||issuancePurpose==='STANDARD'&&Object.hasOwn(body,'reviewRequest'))
+    throw Object.assign(new Error('invalid PDF purpose request'),{code:'ARTIFACT_PURPOSE_INVALID',httpStatus:400});
   const idempotencyKey = String(body.idempotencyKey ?? "").trim();
   if (!idempotencyKey || idempotencyKey.length > 200)
     throw Object.assign(new Error("idempotencyKey is required"), {
@@ -2251,7 +2257,7 @@ async function createArtifactJob(
       code: "NOT_FOUND",
       httpStatus: 404,
     });
-  const contentAdmission = await assertArtifactContentAdmission(
+  const contentAdmission = issuancePurpose==='PRELIMINARY_REVIEW' ? null : await assertArtifactContentAdmission(
     String(sourceRevision.catalog_id),
     kind === "procurement"
       ? "procurement_artifact_create"
@@ -2264,7 +2270,7 @@ async function createArtifactJob(
       // The same saved state is checked before cache lookup/job creation. The
       // worker repeats the guard; a UI flag cannot authorize procurement.
       const supplyRevision = (await client.query(
-        "select * from public.estimate_revision where id=$1 and (owner_user_id=$2 or organization_id=$3) for update",
+        "select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1 and (owner_user_id=$2 or organization_id=$3) for update",
         [revisionId, currentOwnerId(), currentTenantId()],
       )).rows[0];
       if (!supplyRevision) throw Object.assign(new Error("revision not found"), {code:"NOT_FOUND",httpStatus:404});
@@ -2272,12 +2278,18 @@ async function createArtifactJob(
         "select * from public.estimate_revision_row where revision_id=$1 order by ordinal", [revisionId],
       )).rows;
       if (supplySourceRows.length !== supplyRevision.row_count) throw Object.assign(new Error("artifact source invalid"), {code:"ARTIFACT_SOURCE_INVALID"});
-      const supplyRows = [...supplySourceRows, ...canonicalArtifactPreliminaryNeeds(supplyRevision)];
-      assertCanonicalEstimateSavedArtifactStructureV1(canonicalEstimateSavedOperationAcceptanceV1({revision:supplyRevision,resources:supplyRows}));
-      assertCanonicalPurchaseSupplyRevisionV1(supplyRows, supplyRevision.amendment_contract);
+      const reportPriceRecords=issuancePurpose==='PRELIMINARY_REVIEW'
+        ? (await client.query('select revision_id::text,row_id,price_snapshot_id::text,resolution_trace from public.estimate_revision_row_price where revision_id=$1',[revisionId])).rows : null;
+      const savedRows=reportPriceRecords ? canonicalArtifactRowsWithPriceRecordsV1({revisionId,rows:supplySourceRows,prices:reportPriceRecords}) : supplySourceRows;
+      const supplyRows = [...savedRows, ...canonicalArtifactPreliminaryNeeds(supplyRevision,{issuancePurpose})];
+      const reviewAcknowledgmentV1=issuancePurpose==='PRELIMINARY_REVIEW'
+        ?canonicalProfessionalPdfReviewAcknowledgmentV1({revision:supplyRevision,resources:supplyRows,
+          request:body.reviewRequest,actorUserId:currentOwnerId(),acknowledgedAt:new Date().toISOString()}):undefined;
+      assertCanonicalProfessionalPdfIssuanceV1({revision:supplyRevision,resources:supplyRows,issuancePurpose,reviewAcknowledgmentV1});
+      if(issuancePurpose!=='PRELIMINARY_REVIEW')assertCanonicalPurchaseSupplyRevisionV1(supplyRows, supplyRevision.amendment_contract);
       if (kind === "procurement") assertCanonicalPurchaseSupplyReadyV1(supplyRows);
       const candidateCapabilityId =
-        contentAdmission.decision.mode === "isolated_candidate_test"
+        contentAdmission?.decision.mode === "isolated_candidate_test"
           ? await resolveCandidateCapabilityId(client)
           : null;
       await client.query("select set_config('request.jwt.claim.sub',$1,true)", [
@@ -2287,7 +2299,7 @@ async function createArtifactJob(
         "select set_config('request.estimate_tenant_id_r541',$1,true)",
         [currentTenantId()],
       );
-      await client.query(
+      if(contentAdmission)await client.query(
         "select set_config('request.estimate_admission_r3',$1,true)",
         [
           JSON.stringify({
@@ -2303,7 +2315,10 @@ async function createArtifactJob(
           }),
         ],
       );
-      const created = kind === "professional_pdf"
+      const created = kind==='professional_pdf'&&issuancePurpose==='PRELIMINARY_REVIEW'
+        ? await client.query('select * from public.estimate_create_professional_pdf_job_v2($1,$2,$3,$4::jsonb)',
+          [idempotencyKey,revisionId,CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,JSON.stringify({issuancePurpose,reviewAcknowledgmentV1})])
+        : kind === "professional_pdf"
         ? await client.query(
           "select * from public.estimate_create_professional_pdf_job_v2($1,$2,$3)",
           [idempotencyKey, revisionId, CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION],
@@ -2319,7 +2334,7 @@ async function createArtifactJob(
       return created.rows[0];
     } catch (error) {
       await client.query("rollback");
-      throw error;
+      throw normalizeCanonicalProfessionalPdfPurposeJobErrorV1(error);
     }
   });
   if (result.job_id)
@@ -3788,8 +3803,10 @@ async function buildArtifactClaimedJob(
   job: JsonRecord,
 ): Promise<void> {
   const revisionId = String(job.parent_revision_id ?? "");
+  const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(job.input_payload?.issuancePurpose);
+  if(issuancePurpose==='PRELIMINARY_REVIEW'&&job.operation!=='professional_pdf')throw Object.assign(new Error('invalid PDF purpose'),{code:'ARTIFACT_PURPOSE_INVALID'});
   const revision = (
-    await client.query("select * from public.estimate_revision where id=$1", [
+    await client.query("select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1", [
       revisionId,
     ])
   ).rows[0];
@@ -3805,15 +3822,19 @@ async function buildArtifactClaimedJob(
     throw Object.assign(new Error("artifact source invalid"), {
       code: "ARTIFACT_SOURCE_INVALID",
     });
-  assertCanonicalPurchaseSupplyRevisionV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)], revision.amendment_contract);
+  if(issuancePurpose!=='PRELIMINARY_REVIEW')assertCanonicalPurchaseSupplyRevisionV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)], revision.amendment_contract);
   if (job.operation === "procurement") assertCanonicalPurchaseSupplyReadyV1([...allRows, ...canonicalArtifactPreliminaryNeeds(revision)]);
-  assertCanonicalEstimateSavedArtifactStructureV1(canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[...allRows,...canonicalArtifactPreliminaryNeeds(revision)]}));
-  const selection = selectCanonicalArtifactRows(allRows);
+  const reviewAcknowledgmentV1=job.input_payload?.reviewAcknowledgmentV1 as import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewAcknowledgmentV1|undefined;
+  if(issuancePurpose==='PRELIMINARY_REVIEW'&&reviewAcknowledgmentV1?.actorUserId!==String(job.owner_user_id))throw Object.assign(new Error('review actor mismatch'),{code:'ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID'});
+  const artifactAcceptance=assertCanonicalProfessionalPdfIssuanceV1({revision,resources:[...allRows,...canonicalArtifactPreliminaryNeeds(revision,{issuancePurpose})],issuancePurpose,reviewAcknowledgmentV1});
+  const selection = issuancePurpose==='PRELIMINARY_REVIEW'
+    ? {sourceRows:allRows,estimateRows:[],professionalPdfRows:allRows,procurementRows:[]}
+    : selectCanonicalArtifactRows(allRows);
   const estimateRows = selection.estimateRows;
   const rows = job.operation === "procurement"
     ? selection.procurementRows
     : job.operation === "professional_pdf"
-      ? selection.professionalPdfRows
+      ? issuancePurpose==='PRELIMINARY_REVIEW' ? allRows : selection.professionalPdfRows
       : estimateRows;
   let bytes: Buffer;
   let contentType: string;
@@ -3861,10 +3882,10 @@ async function buildArtifactClaimedJob(
     const projection = buildCanonicalProfessionalPdfProjection({
       revision,
       rows,
-      preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision),
+      preliminaryNeeds: canonicalArtifactPreliminaryNeeds(revision,{issuancePurpose}), issuancePurpose, reviewAcknowledgmentV1,
       parameterTitlesRu: Object.fromEntries(parameterDefinitions.map(parameter => [String(parameter.parameter_id), String(parameter.title_ru ?? "")])),
-      parameterSchema: localParameterSessionSchema(String(revision.catalog_id),parameterDefinitions,null) as CanonicalEstimateCatalogItem['parameterSchema'],
-      expectedProjectedRowCount: selection.professionalPdfRows.length,
+      ...(issuancePurpose==='PRELIMINARY_REVIEW'?{}:{parameterSchema: localParameterSessionSchema(String(revision.catalog_id),parameterDefinitions,null) as CanonicalEstimateCatalogItem['parameterSchema']}),
+      expectedProjectedRowCount: rows.length,
       workTitleRu: String(
         revision.display_title_ru
           ?? revision.canonical_work_title_ru
@@ -3943,18 +3964,18 @@ async function buildArtifactClaimedJob(
         contentType,
         byteSize: bytes.byteLength,
         sha256: artifactSha256,
-        metadata: buildCanonicalArtifactMetadata({
+        metadata: {...buildCanonicalArtifactMetadata({
           operation: job.operation as
             "pdf" | "professional_pdf" | "procurement",
           renderer,
           revision,
           sourceRowCount: selection.sourceRows.length,
           projectedRowCount: artifactProjectedRowCount,
-          selectedProcurementRowCount: selection.procurementRows.length,
+          selectedProcurementRowCount: selection.procurementRows.length, issuancePurpose,reviewAcknowledgmentV1,operationResourceAcceptanceV1:artifactAcceptance,
           definitionVersionId,
           pageCount,
           grandTotalStatus,
-        }),
+        }),...(issuancePurpose==='PRELIMINARY_REVIEW'?{jobId:String(job.id),snapshotReadReportV1:job.input_payload?.snapshotReadReportV1}:{})},
       }),
     ],
   );
@@ -4356,17 +4377,27 @@ function localDraftView(row: Record<string, any>) {
 
 // Call only after the existing actor check or signed-file identity check.
 // The signed-file route intentionally has no logged-in principal.
-async function localSavedOperationAcceptanceV1(revisionId:string) {
+async function localSavedOperationAcceptanceV1(revisionId:string,issuance?:{issuancePurpose?:unknown;reviewAcknowledgmentV1?:unknown},
+  reviewEligibility?:(value:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalManualPreliminaryReviewEligibilityV1)=>void,
+  pdfReviewEligibility?:(value:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewEligibilityV1)=>void,
+  readPurpose?:'PRELIMINARY_REVIEW') {
   const acceptance=await findAcrossModelDatabases(async client=>{
     await client.query('begin isolation level repeatable read read only');
     try {
-      const revision=(await client.query('select * from public.estimate_revision where id=$1',[revisionId])).rows[0];
+      const revision=(await client.query('select r.*,public.estimate_definition_withdrawal_reason_v1(r.definition_version_id) definition_withdrawal_reason from public.estimate_revision r where id=$1',[revisionId])).rows[0];
       if(!revision){await client.query('rollback');return null;}
-      const rows=(await client.query('select * from public.estimate_revision_row where revision_id=$1 order by ordinal',[revisionId])).rows;
+      let rows=(await client.query('select * from public.estimate_revision_row where revision_id=$1 order by ordinal',[revisionId])).rows;
+      if(issuance||reviewEligibility||pdfReviewEligibility){const prices=(await client.query('select revision_id::text,row_id,price_snapshot_id::text,resolution_trace from public.estimate_revision_row_price where revision_id=$1',[revisionId])).rows;
+        rows=canonicalArtifactRowsWithPriceRecordsV1({revisionId,rows,prices});}
       if(rows.length!==Number(revision.row_count))throw Object.assign(new Error('revision source invalid'),{code:'ARTIFACT_SOURCE_INVALID',httpStatus:409});
       // No independent roster is persisted on this revision storage contract.
       // Absence remains UNVERIFIED; never load the active factory/map.
-      const result=canonicalEstimateSavedOperationAcceptanceV1({revision,resources:[...rows,...canonicalArtifactPreliminaryNeeds(revision)]});
+      const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(issuance?.issuancePurpose??readPurpose);
+      const resources=[...rows,...canonicalArtifactPreliminaryNeeds(revision,{issuancePurpose})];
+      const result=issuancePurpose==='PRELIMINARY_REVIEW'?canonicalProfessionalPdfReportOriginalAuditV1({revision,resources}):canonicalEstimateSavedOperationAcceptanceV1({revision,resources});
+      reviewEligibility?.(canonicalManualPreliminaryReviewEligibilityV1({revision,resources}));
+      pdfReviewEligibility?.(canonicalProfessionalPdfReviewEligibilityV1({revision,resources}));
+      if(issuance)assertCanonicalProfessionalPdfIssuanceV1({revision,resources,...issuance});
       await client.query('rollback');return result;
     } catch(error){await client.query('rollback');throw error;}
   });
@@ -4377,9 +4408,12 @@ async function localSavedOperationAcceptanceV1(revisionId:string) {
 function localRevisionView(
   revision: Record<string, any>,
   environment: {
+    issuancePurpose?:'PRELIMINARY_REVIEW';
     contentAdmission?: AdmissionDecision;
     legacyWarningRu?: string | null;
     operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
+    manualPreliminaryReviewEligibilityV1?:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalManualPreliminaryReviewEligibilityV1;
+    professionalPdfReviewEligibilityV1?:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewEligibilityV1;
   } = {},
 ) {
   return canonicalEstimateRevisionDetailFromStorage(revision, {
@@ -4675,9 +4709,11 @@ async function route(
         httpStatus: 401,
       });
     }
-    assertCanonicalEstimateSavedArtifactStructureV1(await localSavedOperationAcceptanceV1(String(artifact.revision_id)));
-    if(artifact.artifact_kind==='professional_pdf')assertCanonicalProfessionalArtifactCurrentPresentationV1({
-      metadata:artifact.metadata,rendererVersion:CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+    const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(url.searchParams.get('issuancePurpose')??undefined);
+    assertCanonicalProfessionalPdfPurposeMatchesV1(artifact.metadata,issuancePurpose);
+    await localSavedOperationAcceptanceV1(String(artifact.revision_id),{issuancePurpose,reviewAcknowledgmentV1:artifact.metadata?.reviewAcknowledgmentV1});
+    if(artifact.artifact_kind==='professional_pdf'||artifact.artifact_kind==='professional_pdf_review')assertCanonicalProfessionalArtifactCurrentPresentationV1({
+      metadata:artifact.metadata,rendererVersion:CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,expectedIssuancePurpose:issuancePurpose,
       revision:{...artifact,id:artifact.revision_id,checksum_sha256:artifact.revision_checksum_sha256}});
     const bytes = readFileSync(artifactFilePath(artifact.storage_key));
     response.writeHead(200, {
@@ -5885,6 +5921,7 @@ async function route(
     path.length === 2 &&
     path[0] === "revisions"
   ) {
+    const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(url.searchParams.get('issuancePurpose')??undefined);
     const revision = await findAcrossModelDatabases(
       async (client) =>
         (
@@ -5899,11 +5936,11 @@ async function route(
         code: "NOT_FOUND",
         httpStatus: 404,
       });
-    const contentAdmission = legacyReadContentAdmission(
+    const contentAdmission = issuancePurpose==='PRELIMINARY_REVIEW'?null:legacyReadContentAdmission(
       revision,
       "revision_read",
     );
-    const selectedMaterialDeliveryContext=isSelectedMaterialDeliveryCatalogR1(String(revision.catalog_id))?await withDatabaseClient(await modelDatabaseUrlForRevision(path[1]),async client=>{
+    const selectedMaterialDeliveryContext=issuancePurpose!=='PRELIMINARY_REVIEW'&&isSelectedMaterialDeliveryCatalogR1(String(revision.catalog_id))?await withDatabaseClient(await modelDatabaseUrlForRevision(path[1]),async client=>{
       await client.query('begin isolation level repeatable read read only');
       try{
         const context=await canonicalSelectedDeliveryPreviewR1(client,{parentRevisionId:String(revision.id),catalogId:String(revision.catalog_id),
@@ -5915,12 +5952,17 @@ async function route(
         throw error;
       }
     }):null;
-    const operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(revision.id));
+    let manualPreliminaryReviewEligibilityV1:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalManualPreliminaryReviewEligibilityV1|undefined;
+    let professionalPdfReviewEligibilityV1:import('../../../src/lib/estimate/backendPlatform/contracts').CanonicalProfessionalPdfReviewEligibilityV1|undefined;
+    const operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(revision.id),undefined,
+      issuancePurpose==='PRELIMINARY_REVIEW'?undefined:value=>{manualPreliminaryReviewEligibilityV1=value;},
+      value=>{professionalPdfReviewEligibilityV1=value;},issuancePurpose==='PRELIMINARY_REVIEW'?issuancePurpose:undefined);
     return send(response, 200, {...localRevisionView(revision, {
-      operationResourceAcceptanceV1,
-      contentAdmission: contentAdmission.decision,
-      legacyWarningRu:
-        "Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
+      operationResourceAcceptanceV1,manualPreliminaryReviewEligibilityV1,professionalPdfReviewEligibilityV1,
+      ...(issuancePurpose==='PRELIMINARY_REVIEW'?{issuancePurpose}:{contentAdmission:contentAdmission?.decision}),
+      legacyWarningRu:issuancePurpose==='PRELIMINARY_REVIEW'
+        ?"Предварительный отчёт о сохранённых данных; не подтверждает готовность расчёта."
+        :"Старая версия создана прежней моделью расчёта; для нового расчёта сформируйте исправленную версию.",
     }),...(selectedMaterialDeliveryContext?{selectedMaterialDeliveryContext}:{})});
   }
   if (request.method === "GET" && path.length === 5 && path[0] === "revisions"
@@ -6162,6 +6204,9 @@ async function route(
     if (request.method === "POST")
       return send(response, 202, await createArtifactJob(body, path[1], kind));
     if (request.method === "GET") {
+      const issuancePurpose=canonicalProfessionalPdfIssuancePurposeV1(url.searchParams.get('issuancePurpose')??undefined);
+      if(issuancePurpose==='PRELIMINARY_REVIEW'&&kind!=='professional_pdf')throw Object.assign(new Error('invalid PDF purpose'),{code:'ARTIFACT_PURPOSE_INVALID',httpStatus:400});
+      const storedArtifactKind=issuancePurpose==='PRELIMINARY_REVIEW'?'professional_pdf_review':kind;
       const modelDatabaseUrl = await modelDatabaseUrlForRevision(path[1]);
       const artifact = await withDatabaseClient(
         modelDatabaseUrl,
@@ -6175,7 +6220,7 @@ async function route(
         where a.revision_id=$1 and a.artifact_kind=$2
           and (r.owner_user_id=$3 or r.organization_id=$4)
       `,
-              [path[1], kind, currentOwnerId(), currentTenantId()],
+              [path[1], storedArtifactKind, currentOwnerId(), currentTenantId()],
             )
           ).rows[0],
       );
@@ -6184,11 +6229,20 @@ async function route(
           code: "NOT_FOUND",
           httpStatus: 404,
         });
-      const operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(artifact.revision_id));
-      if(artifact.status==='ready')assertCanonicalEstimateSavedArtifactStructureV1(operationResourceAcceptanceV1);
+      assertCanonicalProfessionalPdfPurposeMatchesV1(artifact.metadata,issuancePurpose);
       if(artifact.status==='ready'&&kind==='professional_pdf')assertCanonicalProfessionalArtifactCurrentPresentationV1({
-        metadata:artifact.metadata,rendererVersion:CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,
+        metadata:artifact.metadata,rendererVersion:CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION,expectedIssuancePurpose:issuancePurpose,
         revision:{...artifact,id:artifact.revision_id,checksum_sha256:artifact.revision_checksum_sha256}});
+      let operationResourceAcceptanceV1:CanonicalEstimateOperationResourceAcceptanceV1;
+      try {
+        operationResourceAcceptanceV1=await localSavedOperationAcceptanceV1(String(artifact.revision_id),artifact.status==='ready'?{issuancePurpose,reviewAcknowledgmentV1:artifact.metadata?.reviewAcknowledgmentV1}:undefined,
+          undefined,undefined,issuancePurpose==='PRELIMINARY_REVIEW'?issuancePurpose:undefined);
+      } catch(error) {
+        if(issuancePurpose==='PRELIMINARY_REVIEW'&&artifact.status==='ready'
+          &&(error as {code?:unknown}).code==='ARTIFACT_REVIEW_ACKNOWLEDGMENT_INVALID')
+          throw Object.assign(new Error('saved report diagnostics changed; explicit refresh required'),{code:'ARTIFACT_PRESENTATION_REFRESH_REQUIRED',httpStatus:409});
+        throw error;
+      }
       const forwardedProtocol = String(
         request.headers["x-forwarded-proto"] ?? "",
       )
@@ -6204,7 +6258,7 @@ async function route(
       });
       const signedUrl =
         artifact.status === "ready"
-          ? `${protocol}://${request.headers.host ?? `127.0.0.1:${PORT}`}/canonical-estimate/artifact-files/${artifact.id}?expires=${signedUrlExpiresAtMs}&signature=${encodeURIComponent(signature)}`
+          ? `${protocol}://${request.headers.host ?? `127.0.0.1:${PORT}`}/canonical-estimate/artifact-files/${artifact.id}?expires=${signedUrlExpiresAtMs}&signature=${encodeURIComponent(signature)}&issuancePurpose=${issuancePurpose}`
           : null;
       const sourceMetadata = artifact.metadata ?? {};
       if (
@@ -6250,7 +6304,7 @@ async function route(
         sourceOwnerUserId: artifact.owner_user_id,
         sourceOrganizationId: artifact.organization_id ?? null,
       };
-      const contentAdmission = legacyReadContentAdmission(
+      const contentAdmission = issuancePurpose==='PRELIMINARY_REVIEW'?null:legacyReadContentAdmission(
         artifact,
         "artifact_read",
         true,
@@ -6267,7 +6321,7 @@ async function route(
           artifact.byte_size == null ? null : Number(artifact.byte_size),
         sha256: artifact.sha256,
         metadata,
-        contentAdmission: contentAdmission.decision,
+        ...(contentAdmission?{contentAdmission:contentAdmission.decision}:{}),
         operationResourceAcceptanceV1,
         errorCode: artifact.error_code,
         createdAt: artifact.created_at,

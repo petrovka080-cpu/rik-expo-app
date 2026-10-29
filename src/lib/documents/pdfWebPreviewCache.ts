@@ -50,6 +50,7 @@ const ACTIVE_PRINCIPAL_STORAGE_KEY = "rik.pdf-preview.active-principal.v2";
 
 let databasePromise: Promise<IDBDatabase> | null = null;
 let activePrincipalKey: string | null = null;
+let principalEpoch = 0;
 
 function canUsePersistentWebCache(): boolean {
   return (
@@ -209,8 +210,10 @@ export async function persistWebPdfPreviewSession(input: {
   asset: DocumentAsset;
   namespace: string;
   identity: WebPdfPreviewCacheIdentity;
+  assertCurrentPrincipal?: () => Promise<void>;
 }): Promise<boolean> {
   if (!canUsePersistentWebCache()) return false;
+  const epoch = principalEpoch;
   const identity = normalizeWebPdfPreviewCacheIdentity(input.identity);
   const identityCanonical = canonicalWebPdfPreviewCacheIdentity(identity);
   const principalKey = activatePrincipal(identity);
@@ -246,6 +249,11 @@ export async function persistWebPdfPreviewSession(input: {
     };
   }
 
+  await input.assertCurrentPrincipal?.();
+  if (epoch !== principalEpoch || readBrowserActivePrincipal() !== principalKey) {
+    throw Object.assign(new Error("PDF cache principal changed during persistence"), { name: "AbortError" });
+  }
+
   const persistedSession: PersistedPdfSession = {
     sessionId: input.session.sessionId,
     cacheKey,
@@ -268,6 +276,9 @@ export async function persistWebPdfPreviewSession(input: {
   transaction.objectStore(ASSET_STORE).put(persistedAsset);
   transaction.objectStore(SESSION_STORE).put(persistedSession);
   await transactionDone(transaction);
+  if (epoch !== principalEpoch) {
+    throw Object.assign(new Error("PDF cache principal changed during persistence"), { name: "AbortError" });
+  }
   void prunePersistentSessions(database).catch(() => {
     // Cache pruning is best-effort and never blocks a valid PDF open.
   });
@@ -282,6 +293,7 @@ export async function restoreWebPdfPreviewSession(
   if (!sessionId) return false;
   if (getDocumentSessionSnapshot(sessionId).session) return true;
 
+  const epoch = principalEpoch;
   const database = await openDatabase();
   const readTransaction = database.transaction(SESSION_STORE, "readonly");
   const persistedSession = await requestResult(
@@ -299,6 +311,7 @@ export async function restoreWebPdfPreviewSession(
     || persistedAsset.identityCanonical !== persistedSession.identityCanonical
   ) return false;
 
+  if (epoch !== principalEpoch || readBrowserActivePrincipal() !== activePrincipal) return false;
   const objectUrl = URL.createObjectURL(persistedAsset.blob);
   restoreInMemoryDocumentPreviewSession({
     sessionId,
@@ -334,6 +347,7 @@ export async function restoreWebPdfPreviewSession(
 }
 
 export async function clearWebPdfPreviewCacheForSessionBoundary(): Promise<void> {
+  principalEpoch += 1;
   activePrincipalKey = null;
   try {
     globalThis.sessionStorage?.removeItem(ACTIVE_PRINCIPAL_STORAGE_KEY);

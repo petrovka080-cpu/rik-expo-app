@@ -20,6 +20,9 @@ module.exports = {
       lines: 60,
     },
   },
+  // Generated whole-app exports are runtime outputs, not Jest modules. Keep
+  // historical captured JSON parents outside runtime/ importable by product tests.
+  modulePathIgnorePatterns: ["<rootDir>/\\.release-runtime/r568/runtime/"],
   testPathIgnorePatterns: [
     "/node_modules/",
     "/dist/",

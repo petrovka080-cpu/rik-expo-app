@@ -10,7 +10,7 @@ import {roofStageRestoreTargetsV1} from '../../lib/estimate/backendPlatform/cano
 import {roofStageRestoreTargetsV2} from '../../lib/estimate/backendPlatform/canonicalRoofScreedMigrationV1';
 import {roofStageRestoreTargetsV3} from '../../lib/estimate/backendPlatform/canonicalRoofMetalTrimMigrationV1';
 import {roofStageRestoreTargetsV4,roofStageExcludeTargetsV4} from '../../lib/estimate/backendPlatform/canonicalRoofLowerLayersMigrationV1';
-import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNamingEvidenceRevisionIds,
+import { enrichCanonicalPreliminaryNamingEvidence, missingCanonicalPreliminaryNamingEvidenceRevisionIds,canonicalPreliminaryNamingEvidenceReadRevisionIds,canonicalPreliminaryNamingEvidenceMatchesProjection,
   type CanonicalPreliminaryNamingEvidence } from '../../lib/consumerRequests/consumerCanonicalBackendRevisionProjection';
 import { canonicalPurchaseShortageMessageV1 } from "../../lib/estimate/backendPlatform/canonicalPurchaseBalanceV1";
 import { publishMountedAndroidPdfCaller } from "../../lib/pdf/androidPdfCallerReadiness";
@@ -32,7 +32,8 @@ import {
 } from "../../lib/consumerRequests/consumerRequestService";
 import { ConsumerRepairValidationError } from "../../lib/consumerRequests/consumerRequestMarketplaceService";
 import { consumerRepairEstimateApprovalParameterErrors } from "../../lib/consumerRequests/consumerRequestValidationService";
-import { consumerEstimateManualQuantityApprovalCandidate, consumerEstimateManualQuantityApprovalMatches } from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
+import { consumerEstimateManualQuantityApprovalCandidate, consumerEstimateSavedPreliminaryApprovalCandidate, consumerEstimateManualQuantityApprovalRecord, consumerEstimateManualQuantityApprovalMatches } from '../../lib/consumerRequests/consumerEstimateManualQuantityApproval';
+import {consumerEstimateProfessionalPdfReviewEligible,consumerEstimateSavedReportBinding,type ConsumerEstimateSavedReportBinding} from '../../lib/consumerRequests/consumerEstimateProfessionalPdfReview';
 import { consumerRepairSourceRequestDraftId } from "../../lib/consumerRequests/consumerRequestHistoryLineage";
 import { logger } from "../../lib/logger";
 import { createConsumerEstimateHydrationTrace, createConsumerEstimatePresentationTrace } from "../../lib/consumerRequests/consumerEstimateHydrationTrace";
@@ -68,6 +69,7 @@ import {
 import {
   CanonicalEstimateApiError,
   type CanonicalEstimateParameterInputValue,
+  type CanonicalEstimateRevisionView,
   type CanonicalEstimateRowOverride,
 } from "../../lib/estimate/backendPlatform/contracts";
 import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
@@ -506,6 +508,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     });
   }
   componentWillUnmount(): void {
+    this.historyReviewGeneration += 1;
     this.canonicalRevisionOpenGeneration += 1;
     this.canonicalNamingEvidenceDisposed = true;
     this.canonicalNamingEvidenceGeneration += 1;
@@ -1146,11 +1149,12 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     const bundle = this.state.bundle, load = this.props.onLoadCanonicalNamingEvidence;
     const binding = consumerRepairCanonicalBackendBinding(bundle);
     const revisionIds=missingCanonicalPreliminaryNamingEvidenceRevisionIds(bundle);
-    // Both saved manual numbers and saved null quantities need a fresh read
+    // Every saved canonical draft, including zero-needs legacy rows, needs a fresh read
     // of this exact revision after durable compaction removes the payload.
     if(bundle?.draft.status==='draft' && binding && !bundle.structuredEstimatePayload?.canonicalBackend
       && !bundle.canonicalBackendApprovalEvidence
-      && bundle.items.some(item=>item.sourceParameters?.canonicalPreliminaryNeed===true)
+      && bundle.items.length>0
+      && canonicalPreliminaryNamingEvidenceReadRevisionIds(bundle).includes(binding.revisionId)
       && !revisionIds.includes(binding.revisionId))revisionIds.push(binding.revisionId);
     if (!bundle || !binding || !load || !revisionIds.length
       || bundle.draft.consumerUserId !== this.props.consumerUserId || this.canonicalNamingEvidenceDisposed) return;
@@ -1167,7 +1171,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         const latest = current.bundle, owner = consumerRepairCanonicalBackendBinding(latest);
         if (!latest || latest.draft.id !== bundle.draft.id || latest.draft.consumerUserId !== this.props.consumerUserId
           || owner?.revisionId !== binding.revisionId || owner.releaseId !== binding.releaseId
-          || evidence.revisionId !== revisionId) return null;
+          || evidence.revisionId !== revisionId || !canonicalPreliminaryNamingEvidenceMatchesProjection(latest,evidence)) return null;
         const named = enrichCanonicalPreliminaryNamingEvidence(latest, evidence);
         const enriched = evidence.revisionId===owner.revisionId && named.draft.status==='draft'
           ? {...named,canonicalBackendApprovalEvidence:evidence} : named;
@@ -1412,6 +1416,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
     throw error;
   }
   private handleCanonicalArtifactOpenError = (error: unknown): void => {
+    if (error instanceof ConsumerEstimateActionContextError) {
+      this.handleActionContextError(error);
+      return;
+    }
     if (error instanceof ConsumerRepairValidationError) {
       this.handleValidationError(error);
       return;
@@ -1424,7 +1432,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       statusMessage: identityFailure
         ? "PDF для выбранной версии сметы не найден. Другой документ не был открыт."
         : quarantined
-          ? "Для этой старой версии новый PDF создавать нельзя. Если ранее созданный PDF отсутствует, сформируйте исправленную смету."
+          ? "Сохранённая версия сейчас не допущена источником к выпуску PDF. Смета и история сохранены; требуется проверка источника."
         : error instanceof CanonicalEstimateApiError
           ? error.message
           : "PDF выбранной версии не удалось открыть. Другой документ не был открыт.",
@@ -2074,8 +2082,18 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         });
         return;
       }
-      const manualQuantityApproval = mode === 'manual-quantities'
+      let manualQuantityApproval = mode === 'manual-quantities'
         ? consumerEstimateManualQuantityApprovalCandidate({ ...synced, canonicalParameterSession: parameterSession }) : null;
+      let savedRevisionRead:Awaited<ReturnType<typeof getCanonicalEstimateRevision>>|undefined;
+      if(mode==='manual-quantities'){
+        savedRevisionRead=await getCanonicalEstimateRevision(canonical.revisionId);
+        const backend=synced.structuredEstimatePayload?.canonicalBackend??synced.canonicalBackendApprovalEvidence;
+        if(savedRevisionRead.revisionId!==canonical.revisionId||savedRevisionRead.releaseId!==canonical.releaseId
+          ||savedRevisionRead.catalogId!==backend?.catalogId||savedRevisionRead.checksumSha256!==backend?.checksumSha256||savedRevisionRead.contentWithdrawalReasonRu)
+          throw new ConsumerEstimateActionContextError('Подтверждение остановлено: сохранённая версия изменилась или недоступна.');
+        manualQuantityApproval=manualQuantityApproval??consumerEstimateSavedPreliminaryApprovalCandidate(
+          {...synced,canonicalParameterSession:parameterSession},savedRevisionRead);
+      }
       if (mode === 'manual-quantities' && !manualQuantityApproval) {
         this.setState({ statusMessage: 'Текущая версия требует дополнительных проверок. Проверьте сохранённые количества и состояние расчёта.' });
         return;
@@ -2089,7 +2107,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         });
         return;
       }
-      const parameterErrors = consumerRepairEstimateApprovalParameterErrors(synced, manualQuantityApproval);
+      const parameterErrors = consumerRepairEstimateApprovalParameterErrors(synced, manualQuantityApproval,savedRevisionRead);
       if (parameterErrors.length > 0) {
         this.setState({
           bundle: synced,
@@ -2099,7 +2117,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         });
         return;
       }
-      const canonicalArtifact = await buildCanonicalEstimateArtifact({
+      let canonicalArtifact:Awaited<ReturnType<typeof buildCanonicalEstimateArtifact>>|undefined;
+      if(!manualQuantityApproval){
+        canonicalArtifact = await buildCanonicalEstimateArtifact({
           revisionId: canonical.revisionId,
           // Approval keeps the established backend archival artifact contract.
           // The user-facing PDF button independently requests the professional profile;
@@ -2117,9 +2137,10 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         canonicalArtifact.revisionId !== canonical.revisionId ||
         canonicalArtifact.releaseId !== canonical.releaseId
       ) throw new Error("CANONICAL_APPROVAL_PDF_NOT_READY_OR_REVISION_MISMATCH");
+      }
       if (manualQuantityApproval && ((this.state.pendingCanonicalRowEditCount ?? 0) > 0
         || this.state.bundle?.draft.id !== synced.draft.id
-        || !consumerEstimateManualQuantityApprovalMatches({...this.state.bundle,canonicalParameterSession:parameterSession},manualQuantityApproval))) {
+        || !consumerEstimateManualQuantityApprovalMatches({...this.state.bundle,canonicalParameterSession:parameterSession},manualQuantityApproval,savedRevisionRead))) {
         this.setState({ statusMessage: 'Во время подготовки подтверждения смета изменилась. Примените новые правки и подтвердите сохранённую версию ещё раз.' });
         return;
       }
@@ -2127,13 +2148,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         requestDraftId: synced.draft.id,
         userId: this.props.consumerUserId,
         ...(manualQuantityApproval ? { manualQuantityApproval } : {}),
-        canonicalArtifact: {
-          artifactId: canonicalArtifact.artifactId,
-          revisionId: canonicalArtifact.revisionId,
-          releaseId: canonicalArtifact.releaseId,
-          status: "ready" as const,
-          sha256: canonicalArtifact.sha256,
-        },
+        ...(savedRevisionRead?{savedRevisionRead}:{}),
+        ...(canonicalArtifact?{canonicalArtifact:{artifactId:canonicalArtifact.artifactId,revisionId:canonicalArtifact.revisionId,
+          releaseId:canonicalArtifact.releaseId,status:'ready' as const,sha256:canonicalArtifact.sha256}}:{}),
       });
       await awaitConsumerRepairBundleDurableCommit({
         requestDraftId: bundle.draft.id,
@@ -2175,7 +2192,9 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         approvedHistoryPage,
         statusMessage: manualQuantityApproval
           ? manualQuantityApproval.mode === 'MANUAL_PRELIMINARY'
-            ? 'Предварительная смета подтверждена вручную и сохранена в истории. Неизвестные количества остались нерассчитанными; автоматическая проверка не завершена.'
+            ? manualQuantityApproval.basis==='SAVED_VERSION_REVIEW'
+              ? 'Сохранённая версия подтверждена вручную как предварительная. Состав ещё требует проверки; PDF и закупка не подтверждены.'
+              : 'Предварительная смета подтверждена вручную и сохранена в истории. Неизвестные количества остались нерассчитанными; автоматическая проверка не завершена.'
             : 'Смета с ручными количествами подтверждена и сохранена в истории. Автоматическая проверка этих позиций ещё не завершена.'
           : "Смета подтверждена и сохранена в истории. Можно выбрать следующую работу.",
       }), () => {
@@ -2203,229 +2222,118 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
       this.setState({ approvalCommitBusy: false });
     }
   };
-  private completePdfOpen = async () => {
-    let stage = "action_context";
-    try {
-      const current = this.resolvedDraftBundle(this.ensureDraftBundle());
-      if (!current) return;
-      const context = this.actionContext("openProfessionalPdf", current);
-      {
-        stage = "revision_read";
-        const revision = await getCanonicalEstimateRevision(context.revisionId);
-        if (
-          revision.releaseId !== context.releaseId ||
-          (context.definitionId != null && revision.catalogId !== context.definitionId)
-        ) {
-          throw new ConsumerEstimateActionContextError(
-            "PDF не открыт: backend вернул другую версию или другую работу.",
-          );
-        }
-        stage = "catalog_read";
-        const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
-        let artifact;
-        if (currentCatalog.releaseId !== revision.releaseId) {
-          stage = "saved_artifact_read";
-          try {
-            artifact = await getCanonicalEstimateArtifact({
-              revisionId: context.revisionId,
-              kind: "pdf",
-              documentProfile: "professional_v1",
-            });
-          } catch (error) {
-            if (!(error instanceof CanonicalEstimateApiError) || !["NOT_FOUND","ARTIFACT_PRESENTATION_REFRESH_REQUIRED"].includes(error.code)) throw error;
-            throw new CanonicalEstimateApiError(
-              "Для этой старой версии ранее созданный PDF не найден.",
-              { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
-            );
-          }
-        } else {
-          stage = "artifact_build";
-          artifact = await buildCanonicalEstimateArtifact({
-            revisionId: context.revisionId,
-            kind: "pdf",
-            documentProfile: "professional_v1",
-            idempotencyKey: `consumer-professional-pdf-${CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION}-${context.revisionId}`,
-          });
-        }
-        stage = "artifact_identity";
-        assertCanonicalEstimateArtifactIdentity({
-          artifact,
-          revision,
-          expectedKind: "pdf",
-          expectedDocumentProfile: "professional_v1",
-          expectedCatalogId: context.definitionId ?? revision.catalogId,
-          expectedRowCount: revision.rowCount,
-        });
-        if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
-        stage = "artifact_bind";
-        const artifactBoundBundle = bindConsumerRepairCanonicalArtifactReady({
-          requestDraftId: current.draft.id,
-          artifact: {
-            artifactId: artifact.artifactId,
-            kind: "pdf",
-            revisionId: artifact.revisionId,
-            releaseId: artifact.releaseId,
-          },
-        });
-        this.updateCurrentBundle(
-          artifactBoundBundle,
-          "Профессиональный PDF готов для текущей версии сметы.",
-        );
-        stage = "viewer_open";
-        await prepareAndPreviewPdfDocument({
-          supabase,
-          descriptor: createPdfDocumentDescriptor({
-          uri: artifact.signedUrl,
-          expectedByteSize: artifact.byteSize ?? undefined,
-          title: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || current.draft.title || current.draft.selectedWorkTitleRu || "Смета"),
-          documentType: "request",
-          source: "generated",
-          originModule: "reports",
-          entityId: current.draft.id,
-          contentIdentity: {
-            revisionId: revision.revisionId,
-            rendererVersion: String(artifact.metadata?.generatorVersion ?? artifact.metadata?.renderer ?? CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION),
-            displayTitle: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || current.draft.title || ""),
-            documentStatus: String(artifact.metadata?.grandTotalStatus ?? revision.status ?? ""),
-          },
-        }),
-          router,
-          // The action context owns the exact local return identity. Reusing it
-          // prevents PDF back from replacing unsaved state with a new canonical
-          // projection after Android activity/process recreation.
-          returnTo: context.returnRoute,
-          callerRouteKey: this.props.pdfCallerRouteKey,
-        });
-        this.setState({ statusMessage: Platform.OS === "web"
-          ? "Профессиональный PDF выбранной версии открыт."
-          : "Профессиональный PDF передан приложению для просмотра." });
-        return;
-      }
-    } catch (error) {
-      logger.error("ConsumerRepairPdfOpen", "canonical PDF open failed", {
-        stage,
-        errorName: error instanceof Error ? error.name : "unknown",
-        errorCode: error instanceof CanonicalEstimateApiError || error instanceof ConsumerEstimateActionContextError
-          ? error.code : null,
-      });
-      this.handleCanonicalArtifactOpenError(error);
-    } finally {
-      this.setState({ pdfOpenBusy: false });
-    }
-  };
-  private makePdf = () => {
-    if (this.state.pdfOpenBusy) return;
-    this.setState(
-      {
-        pdfOpenBusy: true,
-        statusMessage: "\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0435\u043c PDF\u2026",
-      },
-      () => {
-        // Start from the committed busy state immediately. Deferring the only
-        // action behind requestAnimationFrame made a valid tap look inert when
-        // the browser throttled frames or Android was still settling a scroll.
-        void this.completePdfOpen();
-      },
-    );
-  };
-  private completeHistoryPdfOpen = async (requestDraftId?: string) => {
-    const requestedBundle = requestDraftId
-      ? this.findKnownHistoryBundle(requestDraftId) ?? (this.state.bundle?.draft.id === requestDraftId ? this.state.bundle : null)
-      : this.state.bundle;
-    const historyRecord = requestDraftId ? this.findKnownHistoryRecord(requestDraftId) : null;
-    const canonical = consumerRepairCanonicalBackendBinding(requestedBundle ?? null) ?? (
-      historyRecord?.sourceRevisionId && historyRecord.sourceReleaseId
-        ? { revisionId: historyRecord.sourceRevisionId, releaseId: historyRecord.sourceReleaseId }
-        : null
-    );
-    if (canonical) {
-      const context = requestedBundle
-        ? this.actionContext("openHistoryRevision", requestedBundle)
-        : null;
-      const revision = await getCanonicalEstimateRevision(canonical.revisionId);
-      if (
-        revision.revisionId !== canonical.revisionId ||
-        revision.releaseId !== canonical.releaseId ||
-        (context != null && (
-          revision.revisionId !== context.revisionId ||
-          revision.releaseId !== context.releaseId
-        ))
-      ) {
-        throw new ConsumerEstimateActionContextError("PDF не открыт: историческая версия не совпала.");
-      }
+  private historyReviewGeneration=0;
+  /** Every ordinary PDF tap reads the immutable saved snapshot. It does not
+   * approve, recompile, bind a STANDARD artifact or save the local projection. */
+  private completeSavedPreliminaryReport=async(requestDraftId?:string,expected?:{
+    revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  })=>{
+    const generation=++this.historyReviewGeneration,ownerId=this.props.consumerUserId,
+      currentAction=!requestDraftId,
+      targetId=requestDraftId??this.state.bundle?.draft.id;
+    let reportStage='target_binding';
+    try{
+      if(!targetId)throw new ConsumerEstimateActionContextError('Сначала сохраните версию сметы для PDF.');
+      const resolveTarget=()=>{
+        const saved=this.state.bundle?.draft.id===targetId?this.state.bundle:this.findKnownHistoryBundle(targetId),
+          record=this.findKnownHistoryRecord(targetId),
+          binding:ConsumerEstimateSavedReportBinding|null=consumerEstimateSavedReportBinding(saved)??(record?.sourceRevisionId&&record.sourceReleaseId
+            ?{revisionId:record.sourceRevisionId,releaseId:record.sourceReleaseId}:null);
+        if(saved&&saved.draft.consumerUserId!==ownerId)
+          throw new ConsumerEstimateActionContextError('Выбранная смета принадлежит другому пользователю.');
+        if(!binding)throw new ConsumerEstimateActionContextError('У выбранной сметы нет сохранённой версии для PDF.');
+        return{saved,binding};
+      };
+      const initial=resolveTarget(),binding=initial.binding;
+      let reportRevision:CanonicalEstimateRevisionView|undefined;
+      const assertTarget=()=>{
+        const latest=resolveTarget().binding;
+        if(generation!==this.historyReviewGeneration||this.props.consumerUserId!==ownerId
+          ||currentAction&&this.state.bundle?.draft.id!==targetId
+          ||latest.revisionId!==binding.revisionId||latest.releaseId!==binding.releaseId
+          ||binding.checksumSha256&&latest.checksumSha256&&latest.checksumSha256!==binding.checksumSha256
+          ||reportRevision&&latest.checksumSha256&&latest.checksumSha256!==reportRevision.checksumSha256
+          ||reportRevision&&latest.catalogId&&latest.catalogId!==reportRevision.catalogId
+          ||reportRevision&&latest.definitionVersionId&&latest.definitionVersionId!==reportRevision.definitionVersionId)
+          throw new ConsumerEstimateActionContextError('Выбранная сохранённая версия изменилась. Повторите запрос PDF.');
+      };
+      if(expected&&(expected.revisionId!==binding.revisionId||expected.releaseId!==binding.releaseId
+        ||binding.checksumSha256&&binding.checksumSha256!==expected.checksumSha256))
+        throw new ConsumerEstimateActionContextError('Выбранная сохранённая версия PDF не совпала.');
+      reportStage='revision_read';
+      const revision=await getCanonicalEstimateRevision(binding.revisionId,{issuancePurpose:'PRELIMINARY_REVIEW'});
+      reportRevision=revision;
+      assertTarget();
+      if(revision.revisionId!==binding.revisionId||revision.releaseId!==binding.releaseId
+        ||binding.checksumSha256&&revision.checksumSha256!==binding.checksumSha256
+        ||binding.catalogId&&revision.catalogId!==binding.catalogId
+        ||binding.definitionVersionId&&revision.definitionVersionId!==binding.definitionVersionId
+        ||expected&&(revision.definitionVersionId!==expected.definitionVersionId||revision.checksumSha256!==expected.checksumSha256)
+        ||!consumerEstimateProfessionalPdfReviewEligible(revision))
+        throw new ConsumerEstimateActionContextError('Сохранённая версия не совпала или недоступна для чтения.');
+      const reportRequest={revisionId:revision.revisionId,kind:'pdf' as const,documentProfile:'professional_v1' as const,
+        issuancePurpose:'PRELIMINARY_REVIEW' as const,reviewRequest:{revisionId:revision.revisionId,releaseId:revision.releaseId,
+          definitionVersionId:revision.definitionVersionId!,checksumSha256:revision.checksumSha256,acknowledgedPreliminaryReview:true as const},
+        idempotencyKey:'consumer-report-'+CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION+'-'+revision.revisionId+'-'+revision.professionalPdfReviewEligibilityV1!.auditSha256};
+      reportStage='artifact_read';
       let artifact;
-      try {
-        artifact = await getCanonicalEstimateArtifact({
-          revisionId: canonical.revisionId,
-          kind: "pdf",
-          documentProfile: "professional_v1",
-        });
-      } catch (error) {
-        if (!(error instanceof CanonicalEstimateApiError) || !["NOT_FOUND","ARTIFACT_PRESENTATION_REFRESH_REQUIRED"].includes(error.code)) throw error;
-        const currentCatalog = await getCanonicalEstimateCatalogItem(revision.catalogId);
-        if (currentCatalog.releaseId !== revision.releaseId) {
-          throw new CanonicalEstimateApiError(
-            "PDF этой исторической версии требует повторного оформления, но её источник сейчас не допускает новый выпуск. Сохранённая смета и история доступны для просмотра.",
-            { code: "REVISION_CONTENT_QUARANTINED", httpStatus: 409 },
-          );
-        }
-        artifact = await buildCanonicalEstimateArtifact({
-          revisionId: canonical.revisionId,
-          kind: "pdf",
-          documentProfile: "professional_v1",
-          idempotencyKey: `consumer-history-professional-pdf-${CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION}-${canonical.revisionId}`,
-        });
+      try{
+        artifact=await getCanonicalEstimateArtifact({revisionId:revision.revisionId,kind:'pdf',
+          documentProfile:'professional_v1',issuancePurpose:'PRELIMINARY_REVIEW'});
+      }catch(error){
+        if(!(error instanceof CanonicalEstimateApiError)||!['NOT_FOUND','ARTIFACT_PRESENTATION_REFRESH_REQUIRED'].includes(error.code))throw error;
+        assertTarget();
+        reportStage='artifact_build';
+        artifact=await buildCanonicalEstimateArtifact(reportRequest);
       }
-      assertCanonicalEstimateArtifactIdentity({
-        artifact,
-        revision,
-        expectedKind: "pdf",
-        expectedDocumentProfile: "professional_v1",
-        expectedCatalogId: context?.definitionId ?? revision.catalogId,
-        expectedRowCount: revision.rowCount,
-      });
-      if (!artifact.signedUrl) throw new Error("CANONICAL_PDF_SIGNED_URL_MISSING");
-      await prepareAndPreviewPdfDocument({
-        supabase,
-        descriptor: createPdfDocumentDescriptor({
-        uri: artifact.signedUrl,
-        expectedByteSize: artifact.byteSize ?? undefined,
-        title: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || requestedBundle?.draft.title || requestedBundle?.draft.selectedWorkTitleRu || historyRecord?.title || "Смета"),
-        documentType: "request",
-        source: "generated",
-        originModule: "reports",
-        entityId: requestedBundle?.draft.id ?? requestDraftId ?? revision.revisionId,
-        contentIdentity: {
-          revisionId: revision.revisionId,
-          rendererVersion: String(artifact.metadata?.generatorVersion ?? artifact.metadata?.renderer ?? CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION),
-          displayTitle: canonicalPublicEstimateWorkTitleRu(revision.displayTitleRu || requestedBundle?.draft.title || historyRecord?.title || ""),
-          documentStatus: String(artifact.metadata?.grandTotalStatus ?? revision.status ?? ""),
-        },
-      }),
-        router,
-        // A history PDF must return to the current workspace, not attempt to
-        // restore the archived estimate as an active draft on reload.
-        returnTo: this.state.bundle?.draft.status === "draft"
-          ? `/request?draftId=${encodeURIComponent(this.state.bundle.draft.id)}`
-          : "/request",
-        callerRouteKey: this.props.pdfCallerRouteKey,
-      });
-      this.setState({ statusMessage: Platform.OS === "web"
-        ? "Профессиональный PDF выбранной версии открыт из истории."
-        : "Профессиональный PDF из истории передан приложению для просмотра." });
-      return;
-    }
-    if (requestedBundle) {
-      throw new ConsumerEstimateActionContextError(
-        "PDF не открыт: у выбранной сметы нет подтверждённой backend-версии.",
-      );
-    }
-    throw new ConsumerEstimateActionContextError(
-      "PDF не открыт: выбранная запись истории не найдена.",
-    );
+      if(artifact.status==='queued'||artifact.status==='building'){
+        if(artifact.revisionId!==revision.revisionId||artifact.releaseId!==revision.releaseId||artifact.kind!=='pdf')
+          throw new ConsumerEstimateActionContextError('Получен отчёт другой сохранённой версии.');
+        assertTarget();
+        reportStage='artifact_build';
+        artifact=await buildCanonicalEstimateArtifact(reportRequest);
+      }
+      reportStage='artifact_identity';
+      assertCanonicalEstimateArtifactIdentity({artifact,revision,expectedKind:'pdf',expectedDocumentProfile:'professional_v1',
+        expectedIssuancePurpose:'PRELIMINARY_REVIEW',expectedCatalogId:revision.catalogId,expectedRowCount:revision.rowCount});
+      if(!artifact.signedUrl)throw new Error('CANONICAL_REPORT_PDF_SIGNED_URL_MISSING');
+      assertTarget();
+      const returnTo=this.state.bundle?.draft.status==='draft'?'/request?draftId='+encodeURIComponent(this.state.bundle.draft.id):'/request';
+      reportStage='viewer_prepare';
+      await prepareAndPreviewPdfDocument({supabase,descriptor:createPdfDocumentDescriptor({uri:artifact.signedUrl,
+        expectedByteSize:artifact.byteSize??undefined,title:'Предварительный отчёт сохранённой сметы',
+        documentType:'request',source:'generated',originModule:'reports',entityId:targetId,
+        contentIdentity:{revisionId:revision.revisionId,releaseId:revision.releaseId,definitionVersionId:revision.definitionVersionId!,
+          checksumSha256:revision.checksumSha256,issuancePurpose:'PRELIMINARY_REVIEW',documentStatus:'PRELIMINARY_READ',artifactSha256:artifact.sha256??undefined,
+          rendererVersion:String(artifact.metadata?.generatorVersion??CANONICAL_PROFESSIONAL_PDF_GENERATOR_VERSION),
+          ownerUserId:String(artifact.metadata?.sourceOwnerUserId),viewerUserId:ownerId,organizationId:revision.organizationId??undefined,
+          currency:revision.currencyCode}}),router,returnTo,callerRouteKey:this.props.pdfCallerRouteKey});
+      if(generation===this.historyReviewGeneration)this.setState({statusMessage:'Предварительный отчёт сохранённой версии открыт. Несохранённые правки в него не входят. Подтверждение сметы и закупка остаются отдельными действиями.'});
+    }catch(error){if(generation===this.historyReviewGeneration){
+      try{logger.releaseEvidence('RikEstimatePdfOpen','SAVED_REPORT_OPEN_FAILED',{
+        stage:reportStage,errorType:error instanceof ConsumerEstimateActionContextError?'action_context':
+          error instanceof CanonicalEstimateApiError?'api':error instanceof TypeError?'type_error':'other_error',
+        code:error instanceof CanonicalEstimateApiError&&/^[A-Z0-9_]{1,80}$/u.test(error.code)?error.code:
+          error instanceof ConsumerEstimateActionContextError?'SAVED_REPORT_CONTEXT_INVALID':'SAVED_REPORT_OPEN_FAILED',
+      });}catch{/* Diagnostics must not replace the original action failure. */}
+      this.handleCanonicalArtifactOpenError(error);
+    }}
+    finally{if(generation===this.historyReviewGeneration)this.setState({pdfOpenBusy:false});}
   };
-  private openPdf = (requestDraftId?: string) => {
-    void this.completeHistoryPdfOpen(requestDraftId).catch(this.handleCanonicalArtifactOpenError);
+  private openPreliminaryReviewPdf=(expected:{revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string})=>{
+    this.setState({pdfOpenBusy:true});void this.completePreliminaryReviewPdfOpen(expected);
+  };
+  private completePreliminaryReviewPdfOpen=(expected?:{revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string})=>
+    this.completeSavedPreliminaryReport(undefined,expected);
+  private completePdfOpen=()=>this.completeSavedPreliminaryReport();
+  private makePdf=()=>{
+    if(this.state.pdfOpenBusy)return;
+    this.setState({pdfOpenBusy:true,statusMessage:'Открываем PDF сохранённой версии…'},()=>{void this.completePdfOpen();});
+  };
+  private completeHistoryPdfOpen=(requestDraftId?:string)=>this.completeSavedPreliminaryReport(requestDraftId);
+  private openPdf=(requestDraftId?:string)=>{
+    this.setState({pdfOpenBusy:true,statusMessage:'Открываем PDF сохранённой версии…'});
+    void this.completeHistoryPdfOpen(requestDraftId);
   };
   private openDraftFromHistory = (requestDraftId: string) => {
     this.canonicalRevisionOpenGeneration += 1;
@@ -3896,7 +3804,7 @@ export class ConsumerRepairRequestScreenController extends React.Component<Consu
         onSendHistoryToMarket={this.sendHistoryToMarket} onCloseCatalogPicker={this.closeCatalogPicker}
         onSelectCatalogItem={this.addCatalogItem} onCreateNew={this.createNew}
         onDeleteDraft={this.deleteDraft}
-        onApproveDraft={this.approveDraft} onApproveManualQuantities={this.approveManualQuantitiesDraft}
+        onApproveDraft={this.approveDraft} onApproveManualQuantities={this.approveManualQuantitiesDraft} onOpenPreliminaryReviewPdf={this.openPreliminaryReviewPdf}
         onApplyAndApproveDraft={this.applyAndApproveDraft} onPrepareDraft={this.prepareDraft}
         onSelectRoadScope={this.selectRoadScope}
         onOpenHistory={this.ensureHistoryLoaded}

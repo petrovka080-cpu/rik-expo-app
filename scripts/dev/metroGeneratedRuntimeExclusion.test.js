@@ -7,6 +7,7 @@ const projectRoot = path.resolve("/gox[review]+/canonical");
 
 function loadConfig(localReview, inheritedBlockList, options = {}) {
   const config = {
+    cacheVersion: options.cacheVersion,
     resolver: { blockList: inheritedBlockList },
     transformer: { inheritedTransformOption: "retained" },
     cacheStores: [options.store || { get() {}, set() {}, clear() {} }],
@@ -18,7 +19,7 @@ function loadConfig(localReview, inheritedBlockList, options = {}) {
     module: result,
     process: {
       platform: options.platform || "win32",
-      env: { LOCAL_DEVELOPER_REVIEW: localReview ? "1" : "0", EXPO_PUBLIC_RELEASE_LABEL: options.label },
+      env: { LOCAL_DEVELOPER_REVIEW: localReview ? "1" : "0", EXPO_PUBLIC_RELEASE_LABEL: options.label, ...options.env },
     },
     require(name) {
       if (name === "expo/metro-config") return { getDefaultConfig: getConfig };
@@ -106,5 +107,39 @@ describe("whole-app local Metro memory settings", () => {
     const config = loadConfig(false, undefined, { ...options, store });
     expect(config.cacheStores[0]).toBe(store);
     expect(config.transformer.unstable_compactOutput).toBeUndefined();
+  });
+});
+
+
+describe("Metro public environment transform identity", () => {
+  const env = {
+    EXPO_PUBLIC_RELEASE_SOURCE_TREE_HASH: "source-a",
+    EXPO_PUBLIC_RELEASE_PRODUCT_SOURCE_HASH: "product-a",
+    EXPO_PUBLIC_RELEASE_JS_BUNDLE_FINGERPRINT: "bundle-a",
+    EXPO_PUBLIC_BUILD_COMMIT: "commit-a",
+    EXPO_PUBLIC_BUILD_TIME: "time-a",
+    EXPO_PUBLIC_CANONICAL_ESTIMATE_DEFINITION_RELEASE_ID: "release-a",
+    EXPO_PUBLIC_CANONICAL_ESTIMATE_SEARCH_RELEASE_ID: "search-a",
+    EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID: "capability-a",
+    EXPO_PUBLIC_SUPABASE_URL: "https://example.invalid",
+    EXPO_PUBLIC_SUPABASE_ANON_KEY: "public-test-key",
+  };
+  const version = (values, base = "upstream-v3") => loadConfig(false, undefined, { env: values, cacheVersion: base }).cacheVersion;
+  it.each(Object.keys(env))("invalidates inlined transforms when %s changes", (name) => {
+    expect(version({ ...env, [name]: env[name] + "-changed" })).not.toBe(version(env));
+  });
+  it("keeps the same snapshot key across process environment order and private variables", () => {
+    const reversed = Object.fromEntries(Object.entries(env).reverse());
+    expect(version(reversed)).toBe(version(env));
+    expect(version({ ...env, PRIVATE_BACKEND_SECRET: "different" })).toBe(version(env));
+  });
+  it("retains the upstream cache namespace and never embeds public values in the key", () => {
+    const key = version(env);
+    expect(key).toMatch(/^upstream-v3:expo-public-env-v1:[a-f0-9]{64}$/);
+    expect(version(env, "upstream-v4")).not.toBe(key);
+    for (const value of Object.values(env)) expect(key).not.toContain(value);
+  });
+  it("preserves ordinary upstream caching when no public variables exist", () => {
+    expect(version({})).toBe("upstream-v3");
   });
 });

@@ -40,7 +40,7 @@ type Props = {
   showPdfAction?: boolean;
   pdfOpenBusy?: boolean;
   onMakePdf?: () => void;
-  onOpenProcurement?: () => void;
+  onOpenProcurement?: () => boolean | void;
   onRefineCanonicalParameters?: () => void;
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
@@ -287,7 +287,7 @@ export function ConsumerRepairDraftPanel({
           </Text>
           <Text style={styles.status}>
             {estimateDraftSession?.status === "PARAMETERS_REQUIRED"
-              ? "Заполните обязательные параметры расчёта. До этого позиции, PDF, закупка и подтверждение сметы недоступны."
+              ? "Заполните обязательные параметры расчёта. До этого позиции, закупка и подтверждение сметы недоступны."
               : estimateDraftSession?.status === "LEGACY_REVIEW_REQUIRED"
                 ? "Откройте историческую версию для просмотра или создайте явную копию без автоматического переноса параметров."
                 : "Контекст расчёта изменился или компиляция завершилась ошибкой. Создайте расчёт из текущих подтверждённых данных."}

@@ -55,6 +55,27 @@ const rowStorage = (overrides: Record<string, unknown> = {}): Record<string, unk
 });
 
 describe("canonical revision read mapping", () => {
+  it('reads an exact report header despite malformed action metadata, without publishing action authority',()=>{
+    const storage=revisionStorage({definition_version_id:'40000000-0000-4000-8000-000000000009',
+      amendment_contract:{parameterSources:{roofStageRestorationV1:{invalid:true},roofPrimerPrerequisiteV1:{invalid:true}},
+        preliminaryNeeds:[{need_state:'CONDITION_REQUIRED',purchase_supply_blocks:{invalid:true}}]},
+      definition_withdrawal_reason:'Источник отозван'});
+    const before=JSON.stringify(storage);
+    const view=canonicalEstimateRevisionDetailFromStorage(storage,{issuancePurpose:'PRELIMINARY_REVIEW'});
+    expect(view).toMatchObject({revisionId:storage.id,releaseId:storage.release_id,definitionVersionId:storage.definition_version_id,
+      checksumSha256:storage.checksum_sha256,rowCount:storage.row_count,contentWithdrawalReasonRu:'Источник отозван'});
+    expect(view.amendmentContract).toEqual(storage.amendment_contract);
+    expect(view).not.toHaveProperty('contentAdmission');expect(view).not.toHaveProperty('manualPreliminaryReviewEligibilityV1');
+    expect(view).not.toHaveProperty('roofStageRestorationV1');expect(view).not.toHaveProperty('roofPrimerPrerequisiteV1');
+    expect(JSON.stringify(storage)).toBe(before);
+    expect(()=>canonicalEstimateRevisionDetailFromStorage(storage)).toThrow();
+  });
+  it('report header does not invent absent price evidence; ordinary full read remains strict',()=>{
+    const storage=revisionStorage();delete storage.price_snapshot_ids;
+    const report=canonicalEstimateRevisionDetailFromStorage(storage,{issuancePurpose:'PRELIMINARY_REVIEW'});
+    expect(report).not.toHaveProperty('priceSnapshotIds');expect(report.checksumSha256).toBe(storage.checksum_sha256);
+    expect(()=>canonicalEstimateRevisionDetailFromStorage(storage)).toThrow(CanonicalEstimateRevisionReadContractError);
+  });
   it("exposes an external withdrawal without altering the saved numbers or checksum", () => {
     const row = revisionStorage({ definition_withdrawal_reason: "Неверная технология" });
     const before = JSON.stringify(row);

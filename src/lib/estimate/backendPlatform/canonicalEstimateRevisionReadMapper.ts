@@ -57,33 +57,58 @@ function requiredPriceSnapshotIds(row: StorageRecord): string[] {
 export function canonicalEstimateRevisionDetailFromStorage(
   row: StorageRecord,
   environment: {
+    issuancePurpose?: 'PRELIMINARY_REVIEW';
     contentAdmission?: AdmissionDecision;
     operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
+    manualPreliminaryReviewEligibilityV1?:import('./contracts').CanonicalManualPreliminaryReviewEligibilityV1;
+    professionalPdfReviewEligibilityV1?:import('./contracts').CanonicalProfessionalPdfReviewEligibilityV1;
     legacyWarningRu?: string | null;
     principalOrganizationId?: string | null;
   } = {},
 ): CanonicalEstimateRevisionView {
-  const needTransport = projectCanonicalEstimatePreliminaryNeedTransport(row);
-  const rawPrerequisite=record(record(row.amendment_contract).parameterSources).roofPrimerPrerequisiteV1;
+  const eligibility=environment.manualPreliminaryReviewEligibilityV1;
+  if(eligibility!==undefined&&(eligibility.contractVersion!=='canonical-manual-preliminary-review-eligibility/v1'
+    ||typeof eligibility.eligible!=='boolean'||eligibility.status!==(eligibility.eligible?'ELIGIBLE':'BLOCKED')
+    ||eligibility.revisionId!==String(row.id??'')||eligibility.releaseId!==String(row.release_id??'')
+    ||eligibility.definitionVersionId!==String(row.definition_version_id??'')||eligibility.checksumSha256!==String(row.checksum_sha256??'')
+    ||!Number.isSafeInteger(eligibility.unknownQuantityCount)||eligibility.unknownQuantityCount<0
+    ||!/^[a-f0-9]{64}$/u.test(eligibility.auditSha256)||typeof eligibility.reasonRu!=='string'||!eligibility.reasonRu))
+    throw new CanonicalEstimateRevisionReadContractError('server preliminary review eligibility identity is invalid');
+  const pdfEligibility=environment.professionalPdfReviewEligibilityV1;
+  if(pdfEligibility!==undefined&&(pdfEligibility.contractVersion!=='canonical-professional-pdf-review-eligibility/v1'
+    ||typeof pdfEligibility.eligible!=='boolean'||pdfEligibility.status!==(pdfEligibility.eligible?'ELIGIBLE':'BLOCKED')
+    ||pdfEligibility.revisionId!==String(row.id??'')||pdfEligibility.releaseId!==String(row.release_id??'')
+    ||pdfEligibility.definitionVersionId!==String(row.definition_version_id??'')||pdfEligibility.checksumSha256!==String(row.checksum_sha256??'')
+    ||!Number.isSafeInteger(pdfEligibility.unknownQuantityCount)||pdfEligibility.unknownQuantityCount<0
+    ||!/^[a-f0-9]{64}$/u.test(pdfEligibility.auditSha256)||typeof pdfEligibility.reasonRu!=='string'||!pdfEligibility.reasonRu))
+    throw new CanonicalEstimateRevisionReadContractError('server PDF review eligibility identity is invalid');
+  const reportRead = environment.issuancePurpose === 'PRELIMINARY_REVIEW';
+  // This header only selects the immutable report. It grants no editing,
+  // restoration, migration, source admission or purchase authority.
+  const needTransport = reportRead
+    ? {amendmentContract: record(row.amendment_contract), preliminaryNeeds: undefined}
+    : projectCanonicalEstimatePreliminaryNeedTransport(row);
+  const readParameterSources = reportRead ? {} : record(record(row.amendment_contract).parameterSources);
+  const rawPrerequisite=readParameterSources.roofPrimerPrerequisiteV1;
   const prerequisite=readRoofPrimerPrerequisiteDecisionV1(rawPrerequisite);
-  const compositionSelectionV1=parseCanonicalCompositionSelectionV1(record(record(row.amendment_contract).parameterSources).compositionSelectionV1);
-  const roofPreparationMigrationV1=readRoofPreparationMigrationProofV1(record(record(row.amendment_contract).parameterSources).roofPreparationMigrationV1);
-  const rawRestoration=record(record(row.amendment_contract).parameterSources).roofStageRestorationV1;
+  const compositionSelectionV1=parseCanonicalCompositionSelectionV1(readParameterSources.compositionSelectionV1);
+  const roofPreparationMigrationV1=readRoofPreparationMigrationProofV1(readParameterSources.roofPreparationMigrationV1);
+  const rawRestoration=readParameterSources.roofStageRestorationV1;
   const roofStageRestorationV1=readRoofStageRestorationV1(rawRestoration);
   if(rawRestoration!=null&&(!roofStageRestorationV1||roofStageRestorationV1.definitionId!==row.definition_version_id||roofStageRestorationV1.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored stage restoration receipt is invalid');
-  const rawRestorationV2=record(record(row.amendment_contract).parameterSources).roofStageRestorationV2;
+  const rawRestorationV2=readParameterSources.roofStageRestorationV2;
   const roofStageRestorationV2=readRoofStageRestorationV2(rawRestorationV2);
   if(rawRestorationV2!=null&&(!roofStageRestorationV2||roofStageRestorationV2.definitionId!==row.definition_version_id||roofStageRestorationV2.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored screed stage restoration receipt is invalid');
-  const rawRestorationV3=record(record(row.amendment_contract).parameterSources).roofStageRestorationV3;
+  const rawRestorationV3=readParameterSources.roofStageRestorationV3;
   const roofStageRestorationV3=readRoofStageRestorationV3(rawRestorationV3);
   if(rawRestorationV3!=null&&(!roofStageRestorationV3||roofStageRestorationV3.definitionId!==row.definition_version_id||roofStageRestorationV3.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored metal trim stage restoration receipt is invalid');
-  const rawRestorationV4=record(record(row.amendment_contract).parameterSources).roofStageRestorationV4;
+  const rawRestorationV4=readParameterSources.roofStageRestorationV4;
   const roofStageRestorationV4=readRoofStageRestorationV4(rawRestorationV4);
   if(rawRestorationV4!=null&&(!roofStageRestorationV4||roofStageRestorationV4.definitionId!==row.definition_version_id||roofStageRestorationV4.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored lower layer restoration receipt is invalid');
-  const rawRestorationV5=record(record(row.amendment_contract).parameterSources).roofStageRestorationV5;
+  const rawRestorationV5=readParameterSources.roofStageRestorationV5;
   const roofStageRestorationV5=readRoofStageRestorationV5(rawRestorationV5);
   if(rawRestorationV5!=null&&(!roofStageRestorationV5||roofStageRestorationV5.definitionId!==row.definition_version_id||roofStageRestorationV5.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored gutter restoration receipt is invalid');
-  const rawRestorationV6=record(record(row.amendment_contract).parameterSources).roofStageRestorationV6;
+  const rawRestorationV6=readParameterSources.roofStageRestorationV6;
   const roofStageRestorationV6=readRoofStageRestorationV6(rawRestorationV6);
   if(rawRestorationV6!=null&&(!roofStageRestorationV6||roofStageRestorationV6.definitionId!==row.definition_version_id||roofStageRestorationV6.catalogId!==row.catalog_id))throw new CanonicalEstimateRevisionReadContractError('stored screed25 restoration receipt is invalid');
   if(rawPrerequisite!=null&&!prerequisite)throw new CanonicalEstimateRevisionReadContractError('stored preparation reference is invalid');
@@ -99,7 +124,7 @@ export function canonicalEstimateRevisionDetailFromStorage(
     revisionNumber: Number(row.revision_number),
     status: String(row.status ?? "") as CanonicalEstimateRevisionView["status"],
     currencyCode: String(row.currency_code ?? ""),
-    priceSnapshotIds: requiredPriceSnapshotIds(row),
+    ...(reportRead ? {} : {priceSnapshotIds: requiredPriceSnapshotIds(row)}),
     parameters: record(row.input_parameters),
     ...(prerequisite?{roofPrimerPrerequisiteV1:prerequisite}:{}),
     ...(compositionSelectionV1?{compositionSelectionV1}:{}),
@@ -141,8 +166,10 @@ export function canonicalEstimateRevisionDetailFromStorage(
     parameterSchemaHash: nullableText(row.parameter_schema_hash),
     inputHash: nullableText(row.input_hash),
     outputHash: nullableText(row.output_hash ?? row.checksum_sha256),
-    ...(environment.contentAdmission == null ? {} : { contentAdmission: environment.contentAdmission }),
+    ...(reportRead || environment.contentAdmission == null ? {} : { contentAdmission: environment.contentAdmission }),
     ...(environment.operationResourceAcceptanceV1 == null ? {} : { operationResourceAcceptanceV1: environment.operationResourceAcceptanceV1 }),
+    ...(reportRead || eligibility===undefined?{}:{manualPreliminaryReviewEligibilityV1:eligibility}),
+    ...(pdfEligibility===undefined?{}:{professionalPdfReviewEligibilityV1:pdfEligibility}),
     ...(environment.legacyWarningRu === undefined ? {} : { legacyWarningRu: environment.legacyWarningRu }),
     ...(row.definition_withdrawal_reason == null ? {} : {
       contentWithdrawalReasonRu: String(row.definition_withdrawal_reason),

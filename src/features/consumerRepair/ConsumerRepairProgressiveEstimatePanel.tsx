@@ -118,7 +118,7 @@ type Props = ItemEditorHandlers & ParameterHandlers & {
   showPdfAction?: boolean;
   pdfOpenBusy?: boolean;
   onMakePdf?: () => void;
-  onOpenProcurement?: () => void;
+  onOpenProcurement?: () => boolean | void;
   onRefineCanonicalParameters?: () => void;
 };
 
@@ -197,42 +197,38 @@ export function canonicalConsumerParameterPlaceholder(input: {
   unitLabel?: string | null;
 }): string {
   const validation = input.parameter?.validation;
-  const hasValidatedRange = Boolean(
-    input.parameter?.normativeSource &&
-    validation?.min != null &&
-    validation?.max != null &&
-    validation.max > validation.min
-  );
-  const validatedRange = hasValidatedRange
-    ? `Допустимо: ${compactRuNumber(validation!.min!)}–${compactRuNumber(validation!.max!)}`
-    : null;
-  if (input.parameter?.source === "ASSUMED" && input.baselineDisplay.trim()) {
-    return `Предварительно принято: ${input.baselineDisplay.trim()}${validatedRange ? ` · ${validatedRange.toLocaleLowerCase("ru-RU")}` : ""}`;
+  if (input.parameter?.normativeSource && validation?.min != null && validation?.max != null && validation.max > validation.min) {
+    return `Допустимо: ${compactRuNumber(validation.min)}–${compactRuNumber(validation.max)}`;
   }
-  const guide = String(input.guideShortRu ?? "").trim();
-  if (validatedRange) return `${validatedRange}. ${guide || 'Источник и область применения доступны по «i».'}`;
+  return canonicalConsumerParameterShortExample({
+    paramKey: input.parameter?.parameterId ?? '',
+    inputKind: input.parameter?.valueType === 'number' ? 'number' : 'text',
+    numericValidation: validation, guideShortRu: input.guideShortRu ?? '',
+  });
+}
 
-  const parameterId = input.parameter?.parameterId ?? "";
-  const valueType = input.parameter?.valueType;
-  const unit = String(input.unitLabel ?? input.parameter?.unit ?? "").trim();
-  const constructionExample = canonicalConstructionParameterExample(parameterId);
-  if (constructionExample) {
-    return `${constructionExample} — укажите значение из проекта или спецификации, не применяйте пример как норму.`;
+export function canonicalConsumerParameterShortExample(input: {
+  paramKey?: string; inputKind: AiEstimateParameterCard['inputKind'];
+  guideShortRu?: string; numericValidation?: CanonicalParameter['validation'];
+}): string {
+  const guide = input.guideShortRu?.trim() ?? '';
+  if (guide.length <= 64 && /^(?:Норма|Допустимо|Например|Пример)[: ]/u.test(guide)) return guide;
+  const id = input.paramKey ?? '';
+  const construction = canonicalConstructionParameterExample(id);
+  if (construction) return construction;
+  if (input.inputKind === 'number') {
+    const v = input.numericValidation;
+    let n = v?.integer ? 2 : 1.5;
+    if (v?.min != null && Number.isFinite(v.min)) n = Math.max(n, v.min);
+    if (v?.max != null && Number.isFinite(v.max)) n = Math.min(n, v.max);
+    if (v?.integer) n = v.max != null && Math.ceil(n) > v.max ? Math.floor(n) : Math.ceil(n);
+    return 'Например: ' + compactRuNumber(n);
   }
-  if (guide && !/^по проекту\.?$/iu.test(guide)) return guide;
-  if (/(?:reference|drawing|schedule|confirmation|approval|certificate|document)(?:_|$)/iu.test(parameterId)) {
-    return "Укажите документ или результат проверки, который подтверждает эти данные. Если их нет, оставьте поле для уточнения.";
-  }
-  if (/(?:location|zone|section|segment|area_name)(?:_|$)/iu.test(parameterId)) {
-    return "Укажите конкретный участок, например «оси А–Б, участок 1».";
-  }
-  if (/(?:designation|specification|grade|class)(?:_|$)/iu.test(parameterId)) {
-    return "Введите обозначение из чертежа или спецификации; не подбирайте значение наугад.";
-  }
-  if (valueType === "number") {
-    return `Введите подтверждённое число${unit ? `, ${unit}` : ""}. Где взять: обмер, чертёж или ведомость объёмов.`;
-  }
-  return "Введите конкретное значение из обмера, чертежа или спецификации; не указывайте наугад.";
+  if (id === 'delivery_payment_scope_reference') return 'Например: перевозка и разгрузка';
+  if (id === 'cleaner_designation') return 'Например: очиститель по спецификации';
+  if (/(?:reference|drawing|confirmation|certificate|document)(?:_|$)/iu.test(id)) return 'Например: акт № 12';
+  if (/(?:location|zone|section|segment|area_name)(?:_|$)/iu.test(id)) return 'Например: участок 1';
+  return 'Например: по спецификации № 12';
 }
 
 function canonicalConstructionParameterExample(parameterId: string): string | null {
@@ -507,8 +503,8 @@ export class ConsumerRepairProgressiveEstimatePanel extends React.PureComponent<
   };
 
   private openProcurement = () => {
+    if (this.props.onOpenProcurement?.() === false) return;
     this.setState({ procurementOpen: true, positionsOpen: false });
-    this.props.onOpenProcurement?.();
   };
 
   private openIncompleteRequirements = () => {
@@ -869,7 +865,10 @@ type InlineParamEditorProps = {
   choices?: { value: string; labelRu: string }[];
   guideShortRu: string;
   embeddedGuideRu?: string;
-  showGuide?: boolean;
+  purposeRu?: string;
+  sourceSummaryRu?: string;
+  exampleRu?: string;
+  numericValidation?: CanonicalParameter["validation"];
   structuredGroup?: AiEstimateParameterCard["structuredGroup"];
   clarificationControl?: AiEstimateParameterCard["clarificationControl"];
   onChange: (paramKey: string, rawValue: string) => void;
@@ -982,7 +981,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
   };
 
   render(): React.ReactElement {
-    const { paramKey, label, inputKind, value, unitLabel, dirty, error, hint, choices, guideShortRu, embeddedGuideRu, structuredGroup, clarificationControl, onChange } = this.props;
+    const { paramKey, label, inputKind, value, unitLabel, dirty, error, hint, choices, guideShortRu, structuredGroup, clarificationControl, onChange } = this.props;
     const keyboardType = inputKind === "number" ? "decimal-pad" : "default";
     const compositeItems = this.compositeItems();
     const compactScalar = !structuredGroup
@@ -1013,7 +1012,8 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
                     const focusId = `${item.itemId}:${field.key}`;
                     const fieldValue = item.values[field.key] ?? "";
                     return <View key={field.key} style={styles.typedCompositeField}>
-                      <Text style={styles.inlineParamEditorTitle}>{field.labelRu}{field.required ? " *" : ""}</Text>
+                      <Text style={styles.inlineParamEditorTitle}>{field.labelRu}{field.required ? " *" : ""}{field.unitRu ? `, ${field.unitRu}` : ""}</Text>
+
                       {field.choices.length > 0 ? <View style={styles.batchActions}>{field.choices.map((choice) => <Pressable key={choice.value} onPress={() => this.updateCompositeField(item.itemId, field.key, choice.value)} style={[styles.inlineParamButton, styles.inlineParamChoiceButton, fieldValue === choice.value ? styles.inlineParamPrimaryButton : null]}><Text style={[fieldValue === choice.value ? styles.inlineParamPrimaryText : styles.inlineParamButtonText, styles.inlineParamChoiceText]}>{choice.labelRu}</Text></Pressable>)}</View> : <TextInput
                         value={fieldValue}
                         importantForAutofill="no"
@@ -1022,15 +1022,15 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
                         onBlur={() => this.blurControl(focusId)}
                         onSelectionChange={(event) => this.rememberSelection(focusId, event)}
                         keyboardType={field.inputKind === "number" ? "decimal-pad" : "default"}
-                        placeholder={fieldValue.trim() ? undefined : field.guideShortRu}
+                        testID={`editable-param-composite-input-${paramKey}-${item.itemId}-${field.key}`}
+                        placeholder={fieldValue.trim() ? undefined : canonicalConsumerParameterShortExample({paramKey: field.key, inputKind: field.inputKind, guideShortRu: field.guideShortRu})}
                         placeholderTextColor="#64748B"
                         accessibilityLabel={field.labelRu}
                         accessibilityHint={`${field.guideShortRu}${field.unitRu ? `, ${field.unitRu}` : ""}`}
                         selection={this.activeSelection(focusId)}
                         style={styles.inlineParamInput}
                       />}
-                      <Text style={styles.inlineGuideChip}>{field.guideShortRu}</Text>
-                      {field.unitRu ? <Text style={styles.inlineParamUnit}>{field.unitRu}</Text> : null}
+
                     </View>;
                   })}
                 </View>
@@ -1070,7 +1070,7 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
               ))}
             </View>
           ) : (
-            <View style={compactScalar ? styles.inlineParamInputShell : null}>
+            <View style={styles.inlineParamInputShell}>
               <TextInput
                 value={value}
                 importantForAutofill="no"
@@ -1079,32 +1079,18 @@ export class InlineParamEditor extends React.PureComponent<InlineParamEditorProp
                 onBlur={() => this.blurControl(paramKey)}
                 onSelectionChange={(event) => this.rememberSelection(paramKey, event)}
                 keyboardType={keyboardType}
-                placeholder={value.trim() ? undefined : embeddedGuideRu ? "Введите" : guideShortRu}
+                placeholder={value.trim() ? undefined : canonicalConsumerParameterShortExample({paramKey,inputKind,guideShortRu,numericValidation:this.props.numericValidation})}
                 placeholderTextColor="#64748B"
                 accessibilityLabel={label}
                 accessibilityHint={`${guideShortRu}${unitLabel ? `, ${unitLabel}` : ""}`}
                 selection={this.activeSelection(paramKey)}
-                style={[styles.inlineParamInput, compactScalar ? styles.inlineParamInputCompact : null]}
+                style={[styles.inlineParamInput, styles.inlineParamInputCompact]}
                 testID="editable-param-popover-input"
               />
-              {compactScalar && embeddedGuideRu ? (
-                <Text
-                  numberOfLines={1}
-                  pointerEvents="none"
-                  style={styles.inlineParamEmbeddedGuide}
-                  testID={`editable-param-inline-guide-${paramKey}`}
-                >
-                  {embeddedGuideRu}
-                </Text>
-              ) : null}
+              {unitLabel ? <Text style={styles.compactParameterUnit} testID={`editable-param-unit-${paramKey}`}>{unitLabel}</Text> : null}
             </View>
           )}
-          {this.props.showGuide !== false && !structuredGroup && !compactScalar && guideShortRu ? (
-            <Text style={styles.inlineGuideChip} testID={`editable-param-guide-${paramKey}`}>
-              {guideShortRu}
-            </Text>
-          ) : null}
-          {!compactScalar && hint ? <Text style={styles.parameterMeta}>{hint}</Text> : null}
+
           {dirty ? (
             <Text style={styles.inlineParamDirty} testID={`editable-param-dirty-${paramKey}`}>
               Изменено
@@ -1757,6 +1743,16 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           >
             {`${wording ? '' : `№ ${parameterOrdinal}. `}${label}`}{card.missing && actionLabel && card.requiredFor !== 'better_accuracy' ? " *" : ""}
           </Text>
+          {!editableInPlace && card.unitRu ? <Text style={styles.compactParameterUnit}>{card.unitRu}</Text> : null}
+          <Pressable
+            accessibilityLabel={`Источник параметра: ${label}`}
+            accessibilityRole="button"
+            onPress={() => this.toggleGuideDetails(card.key)}
+            style={styles.guideInfoButton}
+            testID={`editable-param-guide-details-${card.key}`}
+          >
+            <Text style={styles.guideInfoButtonText}>i</Text>
+          </Pressable>
           {editableInPlace ? (
             <InlineParamEditor
               paramKey={card.key}
@@ -1769,7 +1765,10 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
               hint={validationHint}
               choices={card.choices}
               guideShortRu={placeholder}
-              showGuide={!visibleGuide}
+              purposeRu={card.whyItMattersRu}
+              sourceSummaryRu={card.sourceSummaryRu}
+              exampleRu={card.exampleRu}
+              numericValidation={canonicalParameter?.validation}
               embeddedGuideRu={wording?.source ?? canonicalConsumerParameterInlineGuide({
                 parameter: canonicalParameter,
                 baselineValue: baseline,
@@ -1780,16 +1779,6 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
               onChange={this.changeDraftValue}
             />
           ) : <Text style={styles.parameterMeta}>{meta}</Text>}
-          {card.unitRu ? <Text style={styles.compactParameterUnit}>{card.unitRu}</Text> : null}
-          <Pressable
-            accessibilityLabel={`Источник параметра: ${label}`}
-            accessibilityRole="button"
-            onPress={() => this.toggleGuideDetails(card.key)}
-            style={styles.guideInfoButton}
-            testID={`editable-param-guide-details-${card.key}`}
-          >
-            <Text style={styles.guideInfoButtonText}>i</Text>
-          </Pressable>
         </View>
         {fieldStatus.kind==='invalid'&&validationHint ? (
           <Text style={styles.parameterMeta} testID={`editable-param-range-${card.key}`}>{validationHint}</Text>
@@ -1808,6 +1797,7 @@ export class ParameterDisclosurePanel extends React.PureComponent<ParameterDiscl
           {validationHint ? <Text style={styles.parameterMeta}>{validationHint}</Text> : null}
           {(card.guideDetailsRu ?? []).map((line, index) => <Text key={`${card.key}:guide:${index}`} style={styles.parameterMeta}>{line}</Text>)}
           {card.whyItMattersRu ? <Text style={styles.parameterMeta}>Зачем: {card.whyItMattersRu}</Text> : null}
+          {card.exampleRu ? <Text style={styles.parameterMeta}>Пример: {card.exampleRu}</Text> : null}
           {card.changesInEstimateRu ? <Text style={styles.parameterMeta}>{card.changesInEstimateRu}</Text> : null}
           {card.missingValueConsequenceRu ? <Text style={styles.parameterMeta}>Если пропустить: {card.missingValueConsequenceRu}</Text> : null}
         </View> : null}
@@ -2622,15 +2612,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   inlineParamEditor: {
-    flex: 1,
-    minWidth: 150,
-  },
-  inlineParamEditorCompact: {
     flexGrow: 0,
     flexShrink: 1,
-    flexBasis: 190,
-    minWidth: 120,
-    maxWidth: 220,
+    flexBasis: "100%",
+    width: "100%",
+    minWidth: 0,
+  },
+  inlineParamEditorCompact: {
+    width: "100%",
+    minWidth: 0,
+    maxWidth: "100%",
   },
   inlineParamEditorBody: {
     gap: 4,

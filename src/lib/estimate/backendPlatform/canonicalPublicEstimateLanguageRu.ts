@@ -175,6 +175,13 @@ const functionalParameterBindings = [
 ] as const;
 
 export function canonicalPublicEstimateParameterTitleRu(parameterId: string, titleRu: string, context: CanonicalPublicInputContext = {}): string {
+  const simple: Readonly<Record<string,string>> = {
+    delivery_payment_scope_reference: 'Что входит в доставку',
+    cleaner_designation: 'Средство для очистки',
+    cleaner_package_l: 'Объём упаковки очистителя',
+    qa_interval_m_check: 'Через сколько метров проверять работу',
+  };
+  if (simple[parameterId]) return simple[parameterId];
   const authored = publicBindings.parameterBindings.find(binding => binding.parameterId === parameterId
     && (!('catalogId' in binding) || binding.catalogId === context.catalogId)
     && binding.sourceTitleRu === titleRu);

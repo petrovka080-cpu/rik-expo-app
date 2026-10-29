@@ -150,6 +150,29 @@ export type CanonicalEstimateLegacyRevisionRequest = {
   rows: CanonicalEstimateLegacyRow[];
 };
 
+/** Transient server read result, not a persisted approval or source authority. */
+export type CanonicalManualPreliminaryReviewEligibilityV1 = Readonly<{
+  contractVersion:'canonical-manual-preliminary-review-eligibility/v1';
+  revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  eligible:boolean;status:'ELIGIBLE'|'BLOCKED';unknownQuantityCount:number;auditSha256:string;reasonRu:string;
+}>;
+/** Transient server-owned document preview eligibility; never approval authority.
+ * unknownQuantityCount counts visible physical RESOURCE rows, not process notes. */
+export type CanonicalProfessionalPdfReviewEligibilityV1 = Readonly<{
+  contractVersion:'canonical-professional-pdf-review-eligibility/v1';
+  revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  eligible:boolean;status:'ELIGIBLE'|'BLOCKED';unknownQuantityCount:number;auditSha256:string;reasonRu:string;
+}>;
+/** Review intent is separate from final/manual approval and source admission. */
+export type CanonicalProfessionalPdfIssuancePurpose = 'STANDARD' | 'PRELIMINARY_REVIEW';
+export type CanonicalProfessionalPdfReviewRequestV1 = Readonly<{
+  revisionId:string;releaseId:string;definitionVersionId:string;checksumSha256:string;
+  acknowledgedPreliminaryReview:true;
+}>;
+export type CanonicalProfessionalPdfReviewAcknowledgmentV1 = CanonicalProfessionalPdfReviewRequestV1 & Readonly<{
+  contractVersion:'canonical-professional-pdf-review-ack/v1';issuancePurpose:'PRELIMINARY_REVIEW';
+  actorUserId:string;acknowledgedAt:string;unknownQuantityCount:number;auditSha256:string;
+}>;
 export type CanonicalEstimateArtifactView = {
   apiVersion: typeof ESTIMATE_PLATFORM_API_VERSION;
   artifactId: string;
@@ -284,6 +307,8 @@ export type CanonicalEstimateRevisionView = {
   outputHash?: string | null;
   contentAdmission?: AdmissionDecision;
   operationResourceAcceptanceV1?: CanonicalEstimateOperationResourceAcceptanceV1;
+  manualPreliminaryReviewEligibilityV1?:CanonicalManualPreliminaryReviewEligibilityV1;
+  professionalPdfReviewEligibilityV1?:CanonicalProfessionalPdfReviewEligibilityV1;
   legacyWarningRu?: string | null;
   /** Current external admission annotation; the saved revision is unchanged. */
   contentWithdrawalReasonRu?: string | null;

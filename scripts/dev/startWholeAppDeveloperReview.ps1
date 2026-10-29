@@ -10,12 +10,17 @@
   [string]$PreparedReferenceManifestSha256 = "",
   [ValidateSet("Combined", "Web")]
   [string]$WarmupTarget = "Combined",
+  [ValidateSet('Metro','StaticExport')]
+  [string]$WebServingMode = 'Metro',
   [switch]$ReuseTransformCache,
   [ValidateRange(1024, 65535)]
   [int]$Port = 8081
 )
 
 $ErrorActionPreference = "Stop"
+if ($WebServingMode -eq 'StaticExport' -and ($WarmupTarget -ne 'Web' -or $EmbeddedBuildTarget -ne 'Host' -or $PrepareBuildOnly)) {
+  throw 'WHOLE_APP_STATIC_EXPORT_REQUIRES_HOST_WEB_REVIEW'
+}
 if ($PrepareBuildOnly -and ($PreflightOnly -or $VerifyFullTypecheck)) {
   throw "WHOLE_APP_BUILD_PREPARATION_SWITCH_CONFLICT"
 }
@@ -381,6 +386,9 @@ if ($ProviderConfigAvailable -and $SupabaseCli) {
   }
   finally {
     $ErrorActionPreference = "Stop"
+if ($WebServingMode -eq 'StaticExport' -and ($WarmupTarget -ne 'Web' -or $EmbeddedBuildTarget -ne 'Host' -or $PrepareBuildOnly)) {
+  throw 'WHOLE_APP_STATIC_EXPORT_REQUIRES_HOST_WEB_REVIEW'
+}
     Pop-Location
   }
 }
@@ -599,7 +607,16 @@ $listeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction 
 foreach ($pidValue in @($listeners | Select-Object -ExpandProperty OwningProcess -Unique)) {
   $owner = Get-CimInstance Win32_Process -Filter "ProcessId=$pidValue" -ErrorAction SilentlyContinue
   $normalized = ([string]$owner.CommandLine).Replace("\", "/")
-  if ($owner.Name -ne "node.exe" -or -not $normalized.Contains($Root.Replace("\", "/")) -or $normalized -notmatch "expo[/\\]bin[/\\]cli") {
+  $ownedFrontend = $normalized -match "expo[/\\]bin[/\\]cli"
+  if (-not $ownedFrontend -and $normalized.Contains('scripts/render/serveExpoWebStaging.mjs') -and $normalized.Contains(($RuntimeRoot+'\static-web\').Replace([IO.Path]::DirectorySeparatorChar,[char]'/'))) {
+    $priorStaticPath=Join-Path $RuntimeRoot 'static-web.json'
+    if(Test-Path -LiteralPath $priorStaticPath){
+      $priorStatic=Get-Content -LiteralPath $priorStaticPath -Raw|ConvertFrom-Json
+      $ownedFrontend=$priorStatic.schema_version -ceq 'rik-expo-app.whole-app-static-web-runtime.v1' -and [int]$priorStatic.pid -eq $pidValue `
+        -and (Get-Process -Id $pidValue -ErrorAction Stop).StartTime.ToUniversalTime().Ticks -eq [long]$priorStatic.started_utc_ticks
+    }
+  }
+  if ($owner.Name -ne "node.exe" -or -not $normalized.Contains($Root.Replace("\", "/")) -or -not $ownedFrontend) {
     Fail-Review "PORT_8081_FOREIGN_OWNER_PID_$pidValue" "освободите порт после проверки владельца"
   }
   $OwnedMetroProcess = Get-Process -Id $pidValue -ErrorAction Stop
@@ -714,6 +731,142 @@ if ($VerifyFullTypecheck) {
     Write-Warning "Full typecheck admission rejected: freeKiB=$TypecheckFreeKiB requiredKiB=$TypecheckRequiredFreeKiB diskFreeBytes=$TypecheckDiskFree; no compiler executed."
   }
   Write-Host "full_typecheck_exit=$FullTypecheckExitCode"
+}
+# Opt-in Web-only build-and-serve branch. The existing Combined/Android Metro
+# path below remains the default. No persistent bundler or replacement backend.
+if($WebServingMode -eq 'StaticExport'){
+  $StaticDeadlineMs=98000L
+  function Assert-StaticStartupBudget {
+    if($ReviewClock.ElapsedMilliseconds -ge $StaticDeadlineMs){throw 'WHOLE_APP_STATIC_STARTUP_98S_DEADLINE'}
+  }
+  function Assert-StaticSourceFreeze {
+    Assert-StaticStartupBudget
+    $freshRaw=& $Node --import tsx (Join-Path $Root 'scripts/dev/printLocalDeveloperBuildIdentity.ts') 2>$null
+    if($LASTEXITCODE -ne 0 -or -not $freshRaw){throw 'WHOLE_APP_STATIC_IDENTITY_UNREADABLE'}
+    $fresh=$freshRaw|ConvertFrom-Json
+    foreach($field in @('sourceTreeHash','productSourceHash','jsBundleFingerprint')){
+      if([string]$fresh.$field -cne [string]$Identity.$field){throw 'WHOLE_APP_STATIC_SOURCE_DRIFT'}
+    }
+    if((Get-FileHash -LiteralPath $ReleaseManifestPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $ReleaseManifestSha256){throw 'WHOLE_APP_STATIC_RELEASE_POINTER_DRIFT'}
+  }
+  function Assert-StaticBootstrapScripts([string]$Html,[string]$StaticRoot,$Files){
+    # Installed Expo dev export hashes empty source: root index.js and route
+    # app/index.tsx then collide. HTTP200/runtime-only scripts cannot prove boot.
+    $scriptRefs=@([regex]::Matches($Html,'<script\b[^>]*\bsrc=["'']([^"'']+\.js)(?:\?[^"'']*)?["'']')|ForEach-Object {$_.Groups[1].Value})
+    $hasBootstrap=$false
+    foreach($ref in $scriptRefs){
+      if($ref -match '^[a-z]+:' -or $ref.Contains('..')){throw 'WHOLE_APP_STATIC_EXTERNAL_ENTRY_REJECTED'}
+      $relative=$ref.TrimStart('/');$asset=$Files|Where-Object path -CEQ $relative
+      if(-not $asset){throw 'WHOLE_APP_STATIC_ENTRY_OUTSIDE_EXPORTED_MANIFEST'}
+      # Metro getAppendScripts appends __r(<JSON module id>); on its own line.
+      # Registration-only __d chunks and an unlinked entry do not start the app.
+      if(Select-String -LiteralPath (Join-Path $StaticRoot $relative) -Pattern '^\s*__r\([^\r\n]*\);\s*$' -Quiet){$hasBootstrap=$true}
+    }
+    if(-not $hasBootstrap){throw 'WHOLE_APP_STATIC_BOOTSTRAP_ENTRY_MISSING'}
+  }
+  function Read-StaticHttpProof([string]$Uri,[string]$ExpectedSha,[string]$ExpectedMime){
+    Assert-StaticStartupBudget
+    $handler=[Net.Http.HttpClientHandler]::new();$handler.AllowAutoRedirect=$false
+    $client=[Net.Http.HttpClient]::new($handler)
+    $client.Timeout=[TimeSpan]::FromMilliseconds([Math]::Min(10000,[Math]::Max(1,$StaticDeadlineMs-$ReviewClock.ElapsedMilliseconds)))
+    $response=$null;$stream=$null;$hash=[Security.Cryptography.SHA256]::Create()
+    try{
+      $response=$client.GetAsync($Uri,[Net.Http.HttpCompletionOption]::ResponseHeadersRead).GetAwaiter().GetResult()
+      if([int]$response.StatusCode -ne 200){throw 'WHOLE_APP_STATIC_HTTP_STATUS_INVALID'}
+      $mime=[string]$response.Content.Headers.ContentType.MediaType
+      if($ExpectedMime -and $mime -cne $ExpectedMime){throw 'WHOLE_APP_STATIC_HTTP_MIME_INVALID'}
+      $stream=$response.Content.ReadAsStreamAsync().GetAwaiter().GetResult();$buffer=[byte[]]::new(65536);$bytes=0L
+      while(($read=$stream.Read($buffer,0,$buffer.Length)) -gt 0){Assert-StaticStartupBudget;$bytes+=$read;[void]$hash.TransformBlock($buffer,0,$read,$buffer,0)}
+      [void]$hash.TransformFinalBlock([byte[]]::new(0),0,0)
+      $actual=([BitConverter]::ToString($hash.Hash)).Replace('-','').ToLowerInvariant()
+      if($bytes -le 0 -or $actual -cne $ExpectedSha){throw 'WHOLE_APP_STATIC_HTTP_BYTES_MISMATCH'}
+      return @{uri_sha256=Get-Sha256 $Uri;sha256=$actual;bytes=$bytes;content_type=$mime}
+    }finally{if($stream){$stream.Dispose()};if($response){$response.Dispose()};$hash.Dispose();$client.Dispose();$handler.Dispose()}
+  }
+  $StaticExporter=$null;$StaticServer=$null
+  try{
+    Assert-StaticStartupBudget
+    $expoConfig=Get-Content -LiteralPath (Join-Path $Root 'app.json') -Raw|ConvertFrom-Json
+    if($expoConfig.expo.web.PSObject.Properties['output'] -and [string]$expoConfig.expo.web.output -cne 'single'){throw 'WHOLE_APP_STATIC_SINGLE_OUTPUT_REQUIRED'}
+    $staticParent=[IO.Path]::GetFullPath((Join-Path $RuntimeRoot 'static-web'))
+    $StaticOutput=[IO.Path]::GetFullPath((Join-Path $staticParent ($FrontendBuildStamp.tuple_sha256+'-'+[Guid]::NewGuid().ToString('N'))))
+    if(-not $StaticOutput.StartsWith($staticParent+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase) -or (Test-Path -LiteralPath $StaticOutput)){throw 'WHOLE_APP_STATIC_FRESH_OUTPUT_REQUIRED'}
+    $ExportArguments=@($ExpoCli,'export','--platform','web','--no-minify','--max-workers','1','--output-dir',$StaticOutput)
+    if(-not $ReuseTransformCache){$ExportArguments+='--clear'}
+    $StaticExporter=Start-Process -FilePath $Node -ArgumentList $ExportArguments -WorkingDirectory $Root -WindowStyle Hidden `
+      -RedirectStandardOutput (Join-Path $RuntimeRoot 'static-export.stdout.log') -RedirectStandardError (Join-Path $RuntimeRoot 'static-export.stderr.log') -PassThru
+    $remaining=[Math]::Max(1,$StaticDeadlineMs-$ReviewClock.ElapsedMilliseconds)
+    if(-not $StaticExporter.WaitForExit([int]$remaining)){Stop-Process -Id $StaticExporter.Id -Force -ErrorAction SilentlyContinue;throw 'WHOLE_APP_STATIC_EXPORT_98S_DEADLINE'}
+    if($StaticExporter.ExitCode -ne 0){throw 'WHOLE_APP_STATIC_EXPORT_FAILED'}
+    Record-ReviewStage 'static_export_process_fully_exited'
+    if(@(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue).Count -ne 0){throw 'WHOLE_APP_STATIC_EXPORT_LEFT_PORT_LISTENER'}
+    Assert-StaticSourceFreeze
+    $indexPath=Join-Path $StaticOutput 'index.html'
+    if(-not(Test-Path -LiteralPath $indexPath -PathType Leaf)){throw 'WHOLE_APP_STATIC_INDEX_MISSING'}
+    $exportFiles=@(Get-ChildItem -LiteralPath $StaticOutput -Recurse -File|ForEach-Object {@{path=[IO.Path]::GetRelativePath($StaticOutput,$_.FullName).Replace([IO.Path]::DirectorySeparatorChar,[char]'/');bytes=$_.Length;sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}})
+    if(-not($exportFiles|Where-Object {$_.path -match '\.js$'})){throw 'WHOLE_APP_STATIC_COMPLETE_BUNDLE_MISSING'}
+    # Expo copies the complete public directory. Verify every byte, including
+    # PDF modules, all fonts, cmaps and decoder wasm; do not subset the app.
+    foreach($public in @(Get-ChildItem -LiteralPath (Join-Path $Root 'public') -Recurse -File)){
+      $relative=[IO.Path]::GetRelativePath((Join-Path $Root 'public'),$public.FullName).Replace([IO.Path]::DirectorySeparatorChar,[char]'/')
+      $exported=$exportFiles|Where-Object path -CEQ $relative
+      if(-not $exported -or $exported.sha256 -cne (Get-FileHash -LiteralPath $public.FullName -Algorithm SHA256).Hash.ToLowerInvariant()){throw 'WHOLE_APP_STATIC_PUBLIC_ASSET_DRIFT'}
+    }
+    $jsFiles=@($exportFiles|Where-Object {$_.path -match '\.js$'})
+    Assert-StaticBootstrapScripts ([IO.File]::ReadAllText($indexPath)) $StaticOutput $exportFiles
+    $frontendLiteralChecks=@([string]$Identity.sourceTreeHash,[string]$Identity.productSourceHash,[string]$Identity.jsBundleFingerprint,$BuildCommit,[string]$BackendManager.definition_release_id,[string]$BackendManager.search_release_id,[string]$BackendManager.capability_id,$WholeAppUrl,$WholeAppKey,'http://127.0.0.1:8765')
+    foreach($literal in $frontendLiteralChecks){
+      $found=$false
+      foreach($asset in $jsFiles){if(Select-String -LiteralPath (Join-Path $StaticOutput $asset.path) -SimpleMatch -Pattern $literal -Quiet){$found=$true;break}}
+      if(-not $found){throw 'WHOLE_APP_STATIC_COMPILED_FRONTEND_TUPLE_MISSING'}
+    }
+    $manifest=[ordered]@{schema_version='rik-expo-app.whole-app-static-export.v1';web_output='single';serving_mode='StaticExport';canonical_root=$Root;source_tree_hash=[string]$Identity.sourceTreeHash;product_source_hash=[string]$Identity.productSourceHash;js_bundle_fingerprint=[string]$Identity.jsBundleFingerprint;build_commit=$BuildCommit;build_branch=$BuildBranch;frontend_build_stamp_tuple_sha256=[string]$FrontendBuildStamp.tuple_sha256;definition_release_id=[string]$BackendManager.definition_release_id;search_release_id=[string]$BackendManager.search_release_id;master_sha256=[string]$BackendManager.master_sha256;capability_id=[string]$BackendManager.capability_id;provider_url_fingerprint=$ProviderFingerprint;provider_public_fingerprint=$PublicKeyFingerprint;exporter_pid=$StaticExporter.Id;exporter_exited=$true;files=$exportFiles}
+    $manifestPath=Join-Path $StaticOutput 'whole-app-static-export.json'
+    [IO.File]::WriteAllText($manifestPath,($manifest|ConvertTo-Json -Depth 6),[Text.UTF8Encoding]::new($false))
+    $manifestSha=(Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if($DeferBackendForColdBundle){
+      $preparedStaticBackend=$BackendManager
+      $raw=& $Node --import tsx (Join-Path $Root 'scripts/dev/ensureLocalDeveloperCanonicalBackend.ts') --return-after-start 2>$null
+      if($LASTEXITCODE -ne 0 -or -not $raw){throw 'WHOLE_APP_STATIC_BACKEND_START_FAILED'}
+      $BackendManager=$raw|ConvertFrom-Json
+      foreach($field in @('capability_id','definition_release_id','search_release_id','master_sha256')){if($BackendManager.$field -cne $preparedStaticBackend.$field){throw 'WHOLE_APP_STATIC_BACKEND_TUPLE_DRIFT'}}
+    }
+    Assert-WholeAppBackendRuntimeIdentity -BackendManager $BackendManager -WaitForStartup
+    $priorStaticEnv=@{};foreach($key in @('PORT','HOST','AI_ESTIMATE_RUNTIME','RENDER_GIT_COMMIT','RENDER_GIT_BRANCH')){$priorStaticEnv[$key]=[Environment]::GetEnvironmentVariable($key,'Process')}
+    try{
+      $env:PORT=[string]$Port;$env:HOST='127.0.0.1';$env:AI_ESTIMATE_RUNTIME='staging';$env:RENDER_GIT_COMMIT=$BuildCommit;$env:RENDER_GIT_BRANCH=$BuildBranch
+      $StaticServer=Start-Process -FilePath $Node -ArgumentList @((Join-Path $Root 'scripts/render/serveExpoWebStaging.mjs'),'--root',$StaticOutput,'--port',[string]$Port) -WorkingDirectory $Root -WindowStyle Hidden `
+        -RedirectStandardOutput (Join-Path $RuntimeRoot 'static-web.stdout.log') -RedirectStandardError (Join-Path $RuntimeRoot 'static-web.stderr.log') -PassThru
+    }finally{foreach($key in $priorStaticEnv.Keys){[Environment]::SetEnvironmentVariable($key,$priorStaticEnv[$key],'Process')}}
+    $startedTicks=$StaticServer.StartTime.ToUniversalTime().Ticks;$health=$null
+    while(-not $health){Assert-StaticStartupBudget;$StaticServer.Refresh();if($StaticServer.HasExited){throw 'WHOLE_APP_STATIC_SERVER_EXITED'};try{$health=Invoke-RestMethod -Uri "http://127.0.0.1:$Port/health" -TimeoutSec 1}catch{Start-Sleep -Milliseconds 100}}
+    if($health.status -cne 'ok' -or $health.source_sha -cne $BuildCommit -or $health.branch -cne $BuildBranch -or $health.runtime -cne 'staging'){throw 'WHOLE_APP_STATIC_HEALTH_IDENTITY_INVALID'}
+    $listeners=@(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction Stop|Select-Object -ExpandProperty OwningProcess -Unique)
+    if($listeners.Count -ne 1 -or $listeners[0] -ne $StaticServer.Id){throw 'WHOLE_APP_STATIC_PORT_OWNER_INVALID'}
+    $proofs=@();$indexSha=(Get-FileHash -LiteralPath $indexPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    foreach($route in @('/','/office/foreman','/request')){$proofs+=Read-StaticHttpProof "http://127.0.0.1:$Port$route" $indexSha 'text/html'}
+    $html=[IO.File]::ReadAllText($indexPath);$refs=@([regex]::Matches($html,'(?:src|href)=["'']([^"'']+\.(?:js|css))(?:\?[^"'']*)?["'']')|ForEach-Object {$_.Groups[1].Value})
+    if(-not($refs|Where-Object {$_ -match '\.js$'})){throw 'WHOLE_APP_STATIC_ENTRY_ASSET_MISSING'}
+    foreach($relative in @($refs)+@('/pdfjs/pdf.mjs','/pdfjs/pdf.worker.mjs','/pdfjs/standard_fonts/LiberationSans-Regular.ttf','/pdfjs/wasm/qcms_bg.wasm')){
+      if($relative -match '^[a-z]+:' -or $relative.Contains('..')){throw 'WHOLE_APP_STATIC_EXTERNAL_ENTRY_REJECTED'}
+      $rel=$relative.TrimStart('/');$asset=$exportFiles|Where-Object path -CEQ $rel;if(-not $asset){throw 'WHOLE_APP_STATIC_ENTRY_OUTSIDE_EXPORTED_MANIFEST'}
+      $mime=switch -Regex ($rel){'\.m?js$'{'text/javascript';break}'\.css$'{'text/css';break}'\.ttf$'{'font/ttf';break}'\.wasm$'{'application/wasm';break}}
+      $proofs+=Read-StaticHttpProof "http://127.0.0.1:$Port/$rel" $asset.sha256 $mime
+    }
+    Assert-StaticSourceFreeze
+    foreach($asset in $exportFiles){if((Get-FileHash -LiteralPath (Join-Path $StaticOutput $asset.path) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $asset.sha256){throw 'WHOLE_APP_STATIC_EXPORTED_BYTES_DRIFT'}}
+    Assert-WholeAppBackendRuntimeIdentity -BackendManager $BackendManager
+    $StaticServer.Refresh();if($StaticServer.HasExited -or $StaticServer.StartTime.ToUniversalTime().Ticks -ne $startedTicks){throw 'WHOLE_APP_STATIC_SERVER_LIFETIME_INVALID'}
+    $receipt=[ordered]@{schema_version='rik-expo-app.whole-app-static-web-runtime.v1';serving_mode='StaticExport';warmup_target='Web';runtime_profile='whole_app_staging_plus_local_estimate';canonical_root=$Root;git_root=[IO.Path]::GetFullPath($GitRoot);pid=$StaticServer.Id;started_utc_ticks=$startedTicks;port=$Port;health_uri="http://127.0.0.1:$Port/health";static_root=$StaticOutput;export_manifest_path=$manifestPath;export_manifest_sha256=$manifestSha;source_tree_hash=[string]$Identity.sourceTreeHash;product_source_hash=[string]$Identity.productSourceHash;js_bundle_fingerprint=[string]$Identity.jsBundleFingerprint;build_commit=$BuildCommit;build_branch=$BuildBranch;master_sha256=[string]$BackendManager.master_sha256;definition_release_id=[string]$BackendManager.definition_release_id;search_release_id=[string]$BackendManager.search_release_id;capability_id=[string]$BackendManager.capability_id;release_manifest_sha256=$ReleaseManifestSha256;frontend_build_stamp_tuple_sha256=[string]$FrontendBuildStamp.tuple_sha256;provider_url_fingerprint=$ProviderFingerprint;provider_public_fingerprint=$PublicKeyFingerprint;estimate_backend_runtime_identity_verified=[bool]$BackendManager.runtime_identity_verified;estimate_backend_authenticated_probe_pending=-not [bool]$BackendManager.authenticated_runtime_manifest_verified;backend_pid=[int]$BackendManager.backend_pid;exporter_pid=$StaticExporter.Id;exporter_exited=$true;metro_service_running=$false;android_transport_ready=$false;http_asset_proofs=$proofs;launch_duration_ms=$ReviewClock.ElapsedMilliseconds;launch_stages=$ReviewStages.ToArray();caps_changed=$false}
+    $receipt|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $RuntimeRoot 'static-web.json') -Encoding utf8
+    Write-Host 'runtime_action=started_whole_app_static_web_plus_local_estimate';Write-Host "backend_pid=$($BackendManager.backend_pid)";Write-Host "static_web_pid=$($StaticServer.Id)"
+    if($VerifyFullTypecheck -and $FullTypecheckExitCode -ne 0){throw 'FULL_TYPECHECK_NOT_GREEN_STATIC_RUNTIME_RESTORED'}
+    exit 0
+  }catch{
+    if($StaticExporter -and -not $StaticExporter.HasExited){Stop-Process -Id $StaticExporter.Id -Force -ErrorAction SilentlyContinue}
+    if($StaticServer -and -not $StaticServer.HasExited){Stop-Process -Id $StaticServer.Id -Force -ErrorAction SilentlyContinue}
+    Fail-Review 'WHOLE_APP_STATIC_EXPORT_START_RED' ([string]$_.Exception.Message)
+  }
 }
 $MetroStdout = Join-Path $RuntimeRoot "metro.stdout.log"
 Record-ReviewStage "optional_typecheck"

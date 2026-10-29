@@ -41,6 +41,18 @@ export type DocumentDescriptor = {
     rendererVersion?: string;
     displayTitle?: string;
     documentStatus?: string;
+    issuancePurpose?: 'STANDARD'|'PRELIMINARY_REVIEW';
+    releaseId?:string;
+    definitionVersionId?:string;
+    checksumSha256?:string;
+    /** Authenticated artifact owner and saved tenant for reload-safe Web cache. */
+    ownerUserId?:string;
+    /** Authorized viewing actor; may differ from a revision creator in a tenant. */
+    viewerUserId?:string;
+    /** Exact generated file bytes, independent of the saved revision hash. */
+    artifactSha256?:string;
+    organizationId?:string;
+    currency?:string;
   };
 };
 
