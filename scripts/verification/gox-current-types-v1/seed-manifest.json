@@ -756,5 +756,5 @@
   "src/screens/accountant/accountant.attachments.test.ts": "1edeb6d59e205c6daa1cb921933d2ea955a01a2f3c1d0bd129c6680f6e3100ef",
   "src/screens/accountant/accountant.attachments.ts": "41dd523981e705ca824101551a2fd5b39ad6de49c99b27f30bf92b930e4b53d0",
   "src/lib/estimate/backendPlatform/canonicalEstimatePhotoAttachmentService.ts": "b8f89a353045fd843f824384c5b34b8cc2e4e1fd8d7f0084990312f31874e8a8",
-  "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts": "f9f86a16ddb8e921e8a41c2626de9f4fcf1b77d9c97b5a941a303c60d2b38fd2"
+  "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts": "92aafe01a4d1084fb52a9ff2097b5b9c5769bd441e2c1caad220ad9393e159d5"
 }

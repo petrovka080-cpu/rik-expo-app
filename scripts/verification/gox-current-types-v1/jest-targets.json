@@ -30,20 +30,20 @@
       "tests/estimateNorms/wallPaintConstructorS2735.contract.test.ts"
     ],
     "ui-render": [
-      "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx"
+      "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx",
+      "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx",
+      "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts"
     ],
     "ui-cold": [
-      "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts",
-      "src/lib/consumerRequests/consumerEstimateSavedPreliminaryApproval.test.tsx",
-      "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts",
-      "src/lib/documents/pdfWebPreviewCache.test.ts",
-      "src/lib/pdf/pdfInstantCache.test.ts",
-      "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts"
+      "src/lib/consumerRequests/consumerEstimateManualQuantityApproval.test.ts"
     ],
     "ui-contract": [
       "tests/requestEstimate/requestEstimateViewModel.contract.test.ts",
       "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx",
-      "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts"
+      "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts",
+      "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts",
+      "src/lib/documents/pdfWebPreviewCache.test.ts",
+      "src/lib/pdf/pdfInstantCache.test.ts"
     ],
     "ui-procurement": [
       "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx",
