@@ -8,7 +8,7 @@ import { consumerEstimateManualQuantityApprovalCandidate as candidate, consumerE
 import { interiorWallFinishingProvisionGroupDefinitionR7 as definition, interiorWallFinishingProvisionPackR7 as pack } from '../estimate/v4/interiorWallFinishingProvisionGroupR7';
 import { interiorWallFinishingGeometryParameterR3 as parameter, interiorWallFinishingGeometryRowR3 as row,
   interiorWallFinishingGeometryPackR3 as geometry } from '../estimate/v4/interiorWallFinishingGeometryGroupR3';
-import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput } from '../estimate/backendPlatform/canonicalEstimateCompileCore';
+import { compileCanonicalEstimateCore, type CanonicalEstimateCompileCoreInput, type CanonicalEstimateCompileCoreResult } from '../estimate/backendPlatform/canonicalEstimateCompileCore';
 import { canonicalEstimateStableJson } from '../estimate/backendPlatform/canonicalEstimateDeterminism';
 import { projectCanonicalEstimatePreliminaryNeedTransport } from '../estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport';
 import { canonicalEstimateRevisionRowFromStorage } from '../estimate/backendPlatform/canonicalEstimateRevisionReadMapper';
@@ -41,18 +41,38 @@ jest.mock('@expo/vector-icons',()=>({Ionicons:()=>null}));
 let base: ConsumerRepairDraftBundle;
 let freshRevision:CanonicalEstimateRevisionView;
 let session: NonNullable<ConsumerRepairDraftBundle['canonicalParameterSession']>;
+// Share only real immutable fixture compilation; request/store/session creation
+// below still runs for every call. The full data input is the cache identity.
+const approvalFixtureCompilations = new Map<string, Promise<CanonicalEstimateCompileCoreResult>>();
+async function compileApprovalFixtureInput(compileInput:CanonicalEstimateCompileCoreInput):Promise<CanonicalEstimateCompileCoreResult>{
+ const {hashJson,...serializableCompileInput}=compileInput;
+ void hashJson; // Exclude exactly this root callback, never a data field.
+ const key=canonicalEstimateStableJson(serializableCompileInput);
+ let pending=approvalFixtureCompilations.get(key);
+ if(!pending){
+  pending=compileCanonicalEstimateCore(compileInput);
+  approvalFixtureCompilations.set(key,pending);
+ }
+ try{
+  return structuredClone(await pending);
+ }catch(error){
+  if(approvalFixtureCompilations.get(key)===pending)approvalFixtureCompilations.delete(key);
+  throw error;
+ }
+}
 async function prepareApprovalFixture(manual=true,unknownUnitProfile=false,zeroFirst=false) {
   let base:ConsumerRepairDraftBundle;let session:NonNullable<ConsumerRepairDraftBundle['canonicalParameterSession']>;
   const kitProfile=master30FactoryKitsPackR1.profiles.find(p=>p.key==='electrical')!;
   const catalogId=unknownUnitProfile?master30FactoryKitsPackR1.targets.find(t=>t.profileKey==='electrical')!.catalogId:'canonical-work:base:plaster_paint_interior_paint_wall_paint_standard';
   const d=unknownUnitProfile?buildMaster30FactoryKitSuccessorR1(master30CapturedRepresentativeR1(catalogId)):definition();
-  const result = await compileCanonicalEstimateCore({ operation: 'recalculate', compilerVersion: pack.contract, catalogId,
+  const compileInput:CanonicalEstimateCompileCoreInput = { operation: 'recalculate', compilerVersion: pack.contract, catalogId,
     primaryMeasureParameterId: unknownUnitProfile?kitProfile.countId:parameter(geometry.areaId), parameterDefinitions: [...d.parameters] as unknown as CanonicalEstimateCompileCoreInput['parameterDefinitions'], formulaDefinitions: [...d.formulas] as unknown as CanonicalEstimateCompileCoreInput['formulaDefinitions'],
     resourceDefinitions: [...d.resources] as unknown as CanonicalEstimateCompileCoreInput['resourceDefinitions'], submittedParameters: unknownUnitProfile?{[master30FactoryKitsPackR1.selectorId]:kitProfile.choiceRu,[kitProfile.countId]:'3'}:{ [parameter(geometry.areaId)]: '20.1' }, confirmedParameters: {},
     rowOverrides: manual ? Object.fromEntries(pack.requiredNeeds.map(need => [row('open-'+need.id),
       { quantity: '10', provenance: { kind: 'manual', reason: 'EXPLICIT_MANUAL_APPROVAL_DIAGNOSTIC_ONLY' } }])) : zeroFirst?{[row('open-'+pack.requiredNeeds[0]!.id)]:{quantity:'0',provenance:{kind:'manual',reason:'EXACT_SAVED_ZERO_NO_PAYMENT_DIAGNOSTIC'}}}:{},
     priceItems: [], currencyCode: 'KGS', maximumResourceRows: d.resources.length,
-    hashJson: value => createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex') });
+    hashJson: value => createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex') };
+  const result = await compileApprovalFixtureInput(compileInput);
   const stored = { id: '11111111-1111-4111-8111-111111111111', release_id: '22222222-2222-4222-8222-222222222222',
     catalog_id: catalogId, definition_version_id: '33333333-3333-4333-8333-333333333333', checksum_sha256: manual ? 'a'.repeat(64) : createHash('sha256').update(canonicalEstimateStableJson(result)).digest('hex'),
     row_count: result.rows.length, input_parameters: result.parameters, totals: result.totals, currency_code: 'KGS',
@@ -654,4 +674,37 @@ test('selected PDF need uses exact fresh graph-only treatment and coverage just 
  expect(item.sourceParameters).toMatchObject({includedInEstimate:true,includedInProcurement:false,payable:false,canonicalCostTreatment:'OWN_COST',
   canonicalCommercialCostCoverageDecisionV1:{ownerRowId:'TEST_ONLY:owner'}});
  expect(professionalProjectionMatches(bundle,read)).toBe(true);expect(consumerEstimateManualSavedProjectionParity(bundle)).toBe(false);
+});
+test('memoized real fixture compilation isolates new bundles sessions and stores across same and different inputs',async()=>{
+ const unresolved=await prepareApprovalFixture(false),known=await prepareApprovalFixture(true);
+ const snapshot=(fixture:Awaited<ReturnType<typeof prepareApprovalFixture>>)=>structuredClone({
+  parameters:fixture.revision.parameters,totals:fixture.revision.totals,
+  items:fixture.base.items.map(item=>({titleRu:item.titleRu,quantity:item.quantity,unit:item.unit,unitPrice:item.unitPrice,rowCode:item.sourceParameters?.rowCode})),
+  sessionParameters:fixture.session.parameters,sessionInvalidParameterIds:fixture.session.invalidParameterIds,
+ });
+ const expectedUnresolved=snapshot(unresolved),expectedKnown=snapshot(known);
+ expect(consumerEstimateUnresolvedQuantityItems(unresolved.base)).toHaveLength(4);
+ expect(consumerEstimateUnresolvedQuantityItems(known.base)).toHaveLength(0);
+ expect(consumerEstimateManualPreliminaryItems(known.base)).toHaveLength(4);
+ unresolved.base.items[0]!.titleRu='TEST_ONLY_EDITED_FIXTURE_ROW';unresolved.base.items[0]!.quantity=999;
+ // These fields directly reference the returned compile result; a missing
+ // structuredClone on a cache hit would poison the next fixture.
+ unresolved.revision.parameters[parameter(geometry.areaId)]='999';
+ unresolved.revision.totals.amount='999';
+ // The canonical session itself is frozen by its real builder. Apply an edit
+ // through a mutable session copy attached to the received bundle, as a caller.
+ const editedSession=structuredClone(unresolved.session);
+ editedSession.invalidParameterIds=['TEST_ONLY_EDITED_SESSION'];
+ editedSession.parameters=editedSession.parameters.map((value,index)=>index===0?{...value,label:'TEST_ONLY_EDITED_SESSION_LABEL'}:value);
+ unresolved.base.canonicalParameterSession=editedSession;saveConsumerRepairBundle(unresolved.base);
+ expect(snapshot(known)).toEqual(expectedKnown);
+ const same=await prepareApprovalFixture(false),different=await prepareApprovalFixture(true);
+ expect(snapshot(same)).toEqual(expectedUnresolved);expect(snapshot(different)).toEqual(expectedKnown);
+ expect(same.base.draft.id).not.toBe(unresolved.base.draft.id);expect(different.base.draft.id).not.toBe(known.base.draft.id);
+ expect(same.session).not.toBe(unresolved.session);expect(different.session).not.toBe(known.session);
+ expect(same.session.draftId).toBe(same.base.draft.id);expect(different.session.draftId).toBe(different.base.draft.id);
+ expect(getConsumerRepairRequest(same.base.draft.id).items[0]!.titleRu).not.toBe('TEST_ONLY_EDITED_FIXTURE_ROW');
+ expect(getConsumerRepairRequest(same.base.draft.id).canonicalParameterSession!.invalidParameterIds).not.toContain('TEST_ONLY_EDITED_SESSION');
+ expect(consumerEstimateUnresolvedQuantityItems(same.base)).toHaveLength(4);
+ expect(consumerEstimateUnresolvedQuantityItems(different.base)).toHaveLength(0);
 });
