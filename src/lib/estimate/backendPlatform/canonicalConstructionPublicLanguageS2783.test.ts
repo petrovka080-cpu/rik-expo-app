@@ -29,6 +29,17 @@ import {ct54ReadyFacadeDefinitionS2763,ct54ReadyFacadeControlFactsS2763} from '.
 import {canonicalEstimateOperationReference} from './canonicalEstimateOperationComposition';
 import type {CanonicalEstimateCatalogItem} from './contracts';
 
+/** Domain fixture IDs use eh_; an immutable saved snapshot must be born with
+ * the same cryptographic hash callback as the canonical backend Core call. */
+function compileElectricalSavedSnapshot(input:Parameters<typeof compileElectrical>[0],
+ rowOverrides?:Parameters<typeof compileElectrical>[1],options:NonNullable<Parameters<typeof compileElectrical>[2]>={}){
+ const d=electricalDefinition(undefined,options);
+ return compileCanonicalEstimateCore({operation:rowOverrides?'recalculate':'compile',catalogId:electricalPack.catalogId,compilerVersion:electricalPack.contract,
+  primaryMeasureParameterId:'elecor_route_m',parameterDefinitions:[...d.parameters],formulaDefinitions:[...d.formulas],resourceDefinitions:[...d.resources],
+  submittedParameters:input,confirmedParameters:{},rowOverrides,currencyCode:'KGS',priceItems:[],maximumResourceRows:d.resources.length,
+  hashJson:value=>createHash('sha256').update(canonicalEstimateStableJson(value)).digest('hex')});
+}
+
 function readOnlySavedReportOptions(revision:CanonicalArtifactRevision,rows:CanonicalArtifactRow[]){
  const resources=[...rows,...canonicalArtifactPreliminaryNeeds(revision)];
  expect(()=>buildCanonicalProfessionalPdfProjection({revision,rows,preliminaryNeeds:canonicalArtifactPreliminaryNeeds(revision),
@@ -385,7 +396,7 @@ it('projects electrical saved quantities through shared operations PDF and procu
   elecor_whole_post_delivery_trips:'0',elecor_whole_post_waste_trips:'0'};
  const provenance={kind:'manual',reason:'TEST_ONLY saved display quantities and per-unit prices, no source admission'},
   overrides={[electricalOwner]:{unitPrice:'7',provenance},[labour]:{unitPrice:'11',provenance}},
-  result=await compileElectrical(facts,overrides,options);
+  result=await compileElectricalSavedSnapshot(facts,overrides,options);
  const revision={id:'11111111-1111-4111-8111-111111111111',release_id:'22222222-2222-4222-8222-222222222222',
   catalog_id:electricalPack.catalogId,definition_version_id:'TEST_ONLY_SAVED_DISPLAY_DEFINITION',checksum_sha256:'a'.repeat(64),row_count:result.rows.length,
   input_parameters:result.parameters,totals:result.totals,currency_code:'KGS',
@@ -411,7 +422,7 @@ it('projects electrical saved quantities through shared operations PDF and procu
  expect(supply.rows.some(r=>r.rowId===labour)).toBe(false);
  expect(result.rows.filter(r=>r.row_id===labour)).toHaveLength(1);
  expect(canonicalArtifactVisibleRowTitle({...owner,calculation_trace:{...(owner.calculation_trace as Record<string,unknown>),manualTitleOverride:true}},result.parameters)).toBe(owner.title_ru);
- const manualTitle='Мой выбранный комплект крепежа 535463',manual=await compileElectrical(facts,
+ const manualTitle='Мой выбранный комплект крепежа 535463',manual=await compileElectricalSavedSnapshot(facts,
   {...overrides,[electricalOwner]:{...overrides[electricalOwner],titleRu:manualTitle}},options),
   manualOwner=manual.rows.find(r=>r.row_id===electricalOwner)!;
  expect(manualOwner).toMatchObject({title_ru:manualTitle,quantity:owner.quantity,unit_price:owner.unit_price,amount:owner.amount});
@@ -436,7 +447,7 @@ it('projects the current39 functional work title without changing electrical own
  const source='Материалы IEK ELECOR 60×40: прямой участок и крепёж по ППР — частичный состав',
   functional='Материалы для прямого участка кабель-канала 60 × 40 мм и крепёж по ППР',
   provenance={kind:'manual',reason:'TEST_ONLY current39 work-title display; no real PPR or source admission'},
-  overrides={[electricalOwner]:{unitPrice:'7',provenance}},result=await compileElectrical(electricalFacts(),overrides);
+  overrides={[electricalOwner]:{unitPrice:'7',provenance}},result=await compileElectricalSavedSnapshot(electricalFacts(),overrides);
  const revision={id:'TEST_ONLY_CURRENT39_TITLE_REVISION',release_id:'TEST_ONLY_CURRENT39_TITLE_RELEASE',
   catalog_id:electricalPack.catalogId,definition_version_id:'TEST_ONLY_SAVED_DISPLAY_DEFINITION',checksum_sha256:'a'.repeat(64),row_count:result.rows.length,
   input_parameters:result.parameters,totals:result.totals,currency_code:'KGS',

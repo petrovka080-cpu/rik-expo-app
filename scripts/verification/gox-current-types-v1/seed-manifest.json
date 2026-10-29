@@ -234,7 +234,7 @@
   "src/lib/estimate/backendPlatform/canonicalAggressiveFloorActualThicknessMigrationS2769.ts": null,
   "src/lib/estimate/backendPlatform/canonicalAggressiveFloorProtectionDustMigrationS2769.test.ts": null,
   "src/lib/estimate/backendPlatform/canonicalAggressiveFloorProtectionDustMigrationS2769.ts": null,
-  "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "891eda86667073ef69338b1338e5a94d0abb29c9215b1afb5c80422d267df7dc",
+  "src/lib/estimate/backendPlatform/canonicalConstructionPublicLanguageS2783.test.ts": "ab8690e515a3f89acee31b06efab038ba32a84f8104de6388e576ad132f534b3",
   "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.test.ts": "bbdc7b78e179a7248c85065fbc80757787b6d45d1b43d5d28b49491e9f35f069",
   "src/lib/estimate/backendPlatform/canonicalEstimateArtifactContract.ts": "245087684cd5d872f1db4e883bcd9b0c9bab13e9bfaa370b2adeaa0b81861298",
   "src/lib/estimate/backendPlatform/canonicalEstimateClient.authRefresh.test.ts": null,
