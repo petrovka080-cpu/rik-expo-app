@@ -1141,7 +1141,24 @@ function PdfViewerScreen() {
     ],
   );
 
+  // Rendering may clear/replace asset and change these callback identities.
+  // Those outputs are not a new open attempt. Keep current diagnostics/actions
+  // available to one route/retry-owned bootstrap without cancelling itself.
+  const bootstrapCallbacksRef = React.useRef({
+    recordViewerBreadcrumb, markError, enterLoading,
+    scheduleWebIframeReadyFallback, handoffPdfPreview,
+  });
+  bootstrapCallbacksRef.current = {
+    recordViewerBreadcrumb, markError, enterLoading,
+    scheduleWebIframeReadyFallback, handoffPdfPreview,
+  };
+
   React.useEffect(() => {
+    const recordViewerBreadcrumb = (...args: Parameters<typeof bootstrapCallbacksRef.current.recordViewerBreadcrumb>) => bootstrapCallbacksRef.current.recordViewerBreadcrumb(...args);
+    const markError = (...args: Parameters<typeof bootstrapCallbacksRef.current.markError>) => bootstrapCallbacksRef.current.markError(...args);
+    const enterLoading = () => bootstrapCallbacksRef.current.enterLoading();
+    const scheduleWebIframeReadyFallback = (...args: Parameters<typeof bootstrapCallbacksRef.current.scheduleWebIframeReadyFallback>) => bootstrapCallbacksRef.current.scheduleWebIframeReadyFallback(...args);
+    const handoffPdfPreview = (...args: Parameters<typeof bootstrapCallbacksRef.current.handoffPdfPreview>) => bootstrapCallbacksRef.current.handoffPdfPreview(...args);
     beginBootstrapCycle();
     clearWebIframeReadyFallback();
     clearLoadingTimeout();
@@ -1320,6 +1337,7 @@ function PdfViewerScreen() {
         });
         try {
           await validateEmbeddedPreviewResolution(resolvedResolution);
+          if (cancelled) return;
           recordViewerBreadcrumb("viewer_validation_success", {
             uri: resolvedAsset.uri,
             uriKind: resolvedResolution.scheme,
@@ -1412,14 +1430,11 @@ function PdfViewerScreen() {
     };
   }, [
     beginBootstrapCycle,
+    bootstrapCallbacksRef,
     clearLoadingTimeout,
     clearWebIframeReadyFallback,
     clearWebRenderUri,
     commitEmptyState,
-    enterLoading,
-    handoffPdfPreview,
-    markError,
-    recordViewerBreadcrumb,
     route.receivedSessionId,
     route.canonicalRecovery,
     route.canonicalRecoveryInvalid,
@@ -1428,8 +1443,11 @@ function PdfViewerScreen() {
     isMountedRef,
     setSession,
     setAsset,
-    scheduleWebIframeReadyFallback,
     sessionId,
+    openToken,
+    returnTo,
+    viewerRouteKey,
+    navigationRef,
     setErrorText,
     setIsReadyToRender,
     setState,

@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "PRIVATE_CAUSAL_REAL_PROFESSIONAL_GET_DTO_FIXTURE_BEFORE_SAME_25_APPLY",
+  "snapshotKind": "PRIVATE_CAUSAL_PDF_BOOTSTRAP_CALLBACK_STABILITY_AND_REAL_MOUNTED_SCREEN_BEFORE_2_APPLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "ebcf6963ba78b301d60637c5cfa71a237ac3b9584e7ffa0f191bf43a4611dd67",
@@ -10,7 +10,7 @@
     "app/auth/login.tsx": "852516a258395686fc8b7e398224fcf09ac5556dfc5675f88d864c959bd72ea0",
     "app/auth/register.tsx": "f56d56acc214278c37f8b9fc18b2d6652bd0be7f4c4b64ce0bdbb20add129864",
     "app/auth/reset.tsx": "9b87ff283ab1cbaa8856755b179fe5ee071e44beb39347c8edec3cb126928a64",
-    "app/pdf-viewer.tsx": "39b83555c9b0ecefe42fe6474ee42af0c936026fe00157e36014dc6ac50d2db6",
+    "app/pdf-viewer.tsx": "6a4d9cebb51d16a9eebd7ddb41e014d3a27382b70db076ed874f879a3a86dd3a",
     "babel.config.js": "11eed46b1f157201829e27ba6c08cdb47b11e7c715dfaa7d9bbbd447ad25d819",
     "data/estimate-benchmarks/fixtures/aggressive-floor-actual-thickness-binding-historical-four-s27-69.json": "a775d6bb4ff4484abdab7b024a43c00a224004a6553e5493e2d4b51afbb51e6d",
     "data/estimate-benchmarks/fixtures/aggressive-floor-four-v3-parents-s27-69.json": "acba0c779c25229adef88b0b0d1aa9e45dce3049abeb3f09703ef0f5b012ab18",
@@ -561,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "73826cf966ff2b1f8d1beb87a9ca77053f648dfccfebfdadf300f86418fcef5f",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "407fe2ac990fa706b0cc3e9f5e6ed155b1971063cf799c78df127644e33e0f75",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "77cd973995db7066972add4418b5073c14e623496a1f1587c3a74431917a64b8",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "ceed59854da89d1f805b2764aecafc09a5f5ad623a2afa378057a26dba6c8ec8",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2953,7 +2953,8 @@
     "public/pdfjs/wasm/jbig2.wasm": "e6bee67724a7b5436fe8162638e3708cfc8d52b6342db69a49715e30ff27cfdc",
     "public/pdfjs/wasm/openjpeg.wasm": "67b8e2b162da472e98cb48d3d32e3e38fff481b9b32ff4818e78bb248af88ab2",
     "public/pdfjs/wasm/openjpeg_nowasm_fallback.js": "07c3c3361827308741bc31c561b59e705ebb4d1e8efb84e4d24884e230dbb894",
-    "public/pdfjs/wasm/qcms_bg.wasm": "6017eca5939cde1836e88e6d8cd27ae039246f206515ea4487bdfd0e3fb16e26"
+    "public/pdfjs/wasm/qcms_bg.wasm": "6017eca5939cde1836e88e6d8cd27ae039246f206515ea4487bdfd0e3fb16e26",
+    "src/lib/pdf/PdfViewerCanonicalRecovery.lifecycle.test.tsx": "4b829ac303b640767be9fcf48751db1caab463e833c54ec6ce03575c98cf5589"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4494,26 +4495,26 @@
     "node_modules/@babel/plugin-transform-dynamic-import/README.md": "6b56d36661f678d5d4645ddc5168d0f47df23f95c23d3b426fac9b186f2c1872"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "407fe2ac990fa706b0cc3e9f5e6ed155b1971063cf799c78df127644e33e0f75",
+  "originalSeedManifestSha256": "ceed59854da89d1f805b2764aecafc09a5f5ad623a2afa378057a26dba6c8ec8",
   "canonicalSourceFreezeSha256": "5a23e545a959b5d16f403b813ee94932b2f8af08b485de57c5e8bebe232c1012",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 182662787,
+    "sourceBytes": 182677462,
     "newInputs": "Exact official Jest-only pinned import-transform dependency/config; one appended uncaught recovery diagnostic with previous36 intact; all198 unchanged tracked public PDF.js/vendor bytes. No private history/auth/environment data."
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2952,
+    "sourceFiles": 2953,
     "dependencyFiles": 1536,
-    "sourcePins": 2952,
+    "sourcePins": 2953,
     "r1152BffMfaForwardSourcePinCount": 2657,
     "r1152BffMfaDeclaredSeeds": 676,
-    "r1153CurrentDeclaredSeeds": 787
+    "r1153CurrentDeclaredSeeds": 788
   },
   "candidateSourceComposition": {
     "kind": "ActualCanonicalInputsWithoutUnintakenHistoricalPackages",
@@ -5387,6 +5388,21 @@
       "actualAll79StillRequired": true,
       "rootDiffRead": true,
       "combinedPatchSha256": "a4359e39da7db237ced26f6e0257ebfd6f72c965c44f11b62e3a869007fcf393"
+    },
+    "mountedPdfBootstrapCallbackBoundaryR1153": {
+      "parentAcceptedRun": 40972768538,
+      "parentTests": 1707,
+      "canonicalBefore": 166,
+      "canonicalAfter": 167,
+      "authorManifestSha256": "ca5bf518445a490f0d07e10962a0eb02d489f82c9cbcde07b9b2877a6aaa7c8e",
+      "sourceAstraAcknowledged": true,
+      "prior79AllRetained": true,
+      "mountedNewLeaf": "src/lib/pdf/PdfViewerCanonicalRecovery.lifecycle.test.tsx",
+      "mountedExpandedCasesAuthoredUnrun": 14,
+      "sourceGuardsAndRecovery39Unchanged": true,
+      "noAlternateLifecycleOrAuthorizationCache": true,
+      "actualAll80StillRequired": true,
+      "combinedPatchSha256": "b23d61a7f4b9fb90effe8274c014e0f0a33934cde1f3d26fdf6b418548d694db"
     }
   },
   "existingCiTypesStageBudget": {

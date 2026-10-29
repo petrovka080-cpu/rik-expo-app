@@ -57,7 +57,8 @@
       "src/lib/pdf/PdfViewerWebShell.visibility.test.ts",
       "src/lib/pdf/pdfViewerWebFallback.visibility.test.ts",
       "src/lib/pdf/pdfViewerWebFallback.test.ts",
-      "src/lib/pdf/pdfViewerWebIframeReadyFallback.test.ts"
+      "src/lib/pdf/pdfViewerWebIframeReadyFallback.test.ts",
+      "src/lib/pdf/PdfViewerCanonicalRecovery.lifecycle.test.tsx"
     ],
     "ui-procurement": [
       "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx",
