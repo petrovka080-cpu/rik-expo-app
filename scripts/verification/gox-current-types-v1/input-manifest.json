@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "3a293965c809f37ba9a134797dc7d850c4b1a0ad9fa812361ac06612ca36b370",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "d3ad8656d3b57653821d5852e198a267bec95e1b74bb301d4f9ec8305b47650a",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "0206b8f20a93415ee15f3a3769cec83971ca4f08597df9187ab3bdd9c9559070",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -4942,6 +4942,17 @@
       "fullTypesAndAll8FreshRequired": true,
       "skipOrPolicyChange": false,
       "canonicalApplied": false
+    },
+    "exactSeedManifestPinCausalR1153": {
+      "parent": "83408aabfae5a7fc0227137b8d266b083f996def",
+      "actualFailedRun": 40939449690,
+      "cause": "GIT_BLOB_EXPECTED_SHA256_MISMATCH:scripts/verification/gox-current-types-v1/seed-manifest.json",
+      "beforePin": "d3ad8656d3b57653821d5852e198a267bec95e1b74bb301d4f9ec8305b47650a",
+      "afterPin": "0206b8f20a93415ee15f3a3769cec83971ca4f08597df9187ab3bdd9c9559070",
+      "actualParentSeedBlobVerified": true,
+      "productAndAll113TestBytesUnchanged": true,
+      "all8FreshRequired": true,
+      "suppressionOrBudgetChange": false
     }
   },
   "existingCiTypesStageBudget": {
