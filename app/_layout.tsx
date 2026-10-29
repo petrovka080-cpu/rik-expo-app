@@ -5,7 +5,7 @@ import "../src/lib/runtime/installWeakRefPolyfill";
 import "../src/lib/runtime/installExpoVectorIconWebFontFace";
 import "../src/lib/runtime/installWebFontTimeoutFallback";
 import * as ExpoLinking from "expo-linking";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState, DevSettings, InteractionManager, Linking as RNLinking, Platform } from "react-native";
 import {
   Stack,
@@ -22,6 +22,8 @@ import { Host } from "react-native-portalize";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import { BuildIdentityDiagnostic } from "../src/components/BuildIdentityDiagnostic";
 import { ConfigRecoveryState } from "../src/components/auth/ConfigRecoveryState";
+import { AuthAssuranceContext } from "../src/components/auth/AuthAssuranceContext";
+import { AuthAssuranceOverlay } from "../src/components/auth/AuthAssuranceOverlay";
 import { LocalDeveloperReviewBanner } from "../src/components/auth/LocalDeveloperReviewBanner";
 import { applyRootLayoutWebContainerStyle } from "../src/lib/entry/rootLayoutWebContainer";
 import { AppQueryProvider } from "../src/lib/query/queryClient";
@@ -29,7 +31,7 @@ import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
 import { useAndroidPdfReturnRecovery } from "../src/lib/pdf/useAndroidPdfReturnRecovery";
 import { buildCurrentRouteReturnTo } from "../src/lib/authRouting";
-import { getSessionSafe, supabaseClientAvailability } from "../src/lib/supabaseClient";
+import { signOutSafely, supabaseClientAvailability } from "../src/lib/supabaseClient";
 import {
   addNativeViewUrlListener,
   clearLatestNativeViewUrl,
@@ -259,8 +261,16 @@ function RootLayout() {
     segments,
   });
   const pendingIntentAuthStatus = authState.authSessionState.status;
-  const setPendingIntentAuthSessionState = authState.setAuthSessionState;
-  const loadPendingIntentRole = authState.loadRoleForCurrentSession;
+  const recheckAuthAssurance = authState.retryAuthAssurance;
+  const signOutCurrentSession = useCallback(async () => (await signOutSafely("local")).status === "signed_out", []);
+  const assuranceActions = useMemo(() => ({
+    userId: authState.authenticatedUserId,
+    required: authState.authSessionState.status === "mfa_required",
+    recheck: recheckAuthAssurance,
+    signOut: signOutCurrentSession,
+  }), [authState.authenticatedUserId, authState.authSessionState.status, recheckAuthAssurance, signOutCurrentSession]);
+  const assuranceBlocked = !authState.sessionLoaded || authState.assuranceStatus !== "idle"
+    || (authState.authSessionState.status === "mfa_required" && pathname !== "/auth/mfa");
 
   // AUTH-LIFECYCLE: Route-coupled auth guard / redirect decisions
   useAuthGuard({
@@ -290,24 +300,7 @@ function RootLayout() {
         return;
       }
       pendingIntentAuthRecoveryLaunchIdRef.current = launchId;
-      void getSessionSafe({
-        caller: "request_estimate_pending_intent",
-      })
-        .then(({ session, degraded }) => {
-          const pending = requestEstimateIntentLifecycle.getPending();
-          if (
-            degraded ||
-            !session?.user ||
-            pending?.target.payload.launchId !== launchId
-          ) {
-            return;
-          }
-          setPendingIntentAuthSessionState({
-            status: "authenticated",
-            reason: "auth_event_authenticated",
-          });
-          void loadPendingIntentRole(session.user);
-        })
+      void recheckAuthAssurance()
         .catch((error: unknown) => {
           recordPlatformObservability({
             screen: "request",
@@ -333,9 +326,8 @@ function RootLayout() {
         });
     },
     [
-      loadPendingIntentRole,
       pendingIntentAuthStatus,
-      setPendingIntentAuthSessionState,
+      recheckAuthAssurance,
     ],
   );
 
@@ -1144,7 +1136,7 @@ function RootLayout() {
         platformOs: Platform.OS,
         pathname,
         sessionLoaded: authState.sessionLoaded,
-        authSessionStatus: authState.authSessionState.status,
+        authSessionStatus: authState.authSessionState.status === "mfa_required" ? "unknown" : authState.authSessionState.status,
       })
     ) {
       return undefined;
@@ -1195,6 +1187,7 @@ function RootLayout() {
   }
 
   return (
+    <AuthAssuranceContext.Provider value={assuranceActions}>
     <AppQueryProvider>
       <SafeAreaProvider>
         <Host>
@@ -1203,6 +1196,7 @@ function RootLayout() {
               style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
               edges={Platform.OS === "web" ? [] : ["top"]}
             >
+              <AuthAssuranceOverlay blocked={assuranceBlocked} unavailable={authState.assuranceStatus === "unavailable"} onRetry={recheckAuthAssurance} onSignOut={signOutCurrentSession}>
               <LocalDeveloperReviewBanner
                 authenticatedRole={authState.authenticatedRole}
                 automaticOwnerRestoreEnabled={!pathname.startsWith("/auth")}
@@ -1228,7 +1222,7 @@ function RootLayout() {
               <DeferredPlatformOfflineStatusHost
                 enabled={
                   authState.sessionLoaded &&
-                  authState.authSessionState.status === "authenticated"
+                  authState.authSessionState.status === "authenticated" && authState.assuranceStatus === "idle"
                 }
               />
               <Stack screenOptions={{ headerShown: false }}>
@@ -1248,11 +1242,13 @@ function RootLayout() {
                   }}
                 />
               </Stack>
+              </AuthAssuranceOverlay>
             </SafeAreaView>
           </GlobalBusyProvider>
         </Host>
       </SafeAreaProvider>
     </AppQueryProvider>
+    </AuthAssuranceContext.Provider>
   );
 }
 

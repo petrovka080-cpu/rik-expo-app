@@ -74,6 +74,13 @@ export function buildAuthLoginHref(
     : AUTH_LOGIN_ROUTE;
 }
 
+export function buildAuthMfaHref(returnTo: string | string[] | null | undefined) {
+  const safeReturnTo = normalizePostAuthReturnTo(returnTo);
+  return safeReturnTo
+    ? { pathname: "/auth/mfa" as const, params: { returnTo: safeReturnTo } }
+    : "/auth/mfa" as const;
+}
+
 export function buildCurrentRouteReturnTo(
   pathname: string | null | undefined,
   params: Readonly<Record<string, string | string[] | undefined>> = {},

@@ -46,7 +46,16 @@
       "scripts/dev/warmWholeAppDeveloperRuntime.test.ts",
       "scripts/dev/wholeAppDeveloperReview.contract.test.ts",
       "scripts/dev/wholeAppEmbeddedBuildTarget.test.js",
-      "tests/scale/bffMfaAssurance.test.ts"
+      "tests/scale/bffMfaAssurance.test.ts",
+      "src/lib/auth/useMfaSessionAssuranceGate.test.tsx",
+      "src/lib/auth/useAuthLifecycle.mfa.test.tsx",
+      "src/components/auth/MfaChallengeScreen.test.tsx",
+      "src/lib/authRouting.test.ts",
+      "src/lib/auth/useAuthLifecycle.fingerprint.test.ts",
+      "src/lib/entryBootstrap.contract.test.ts",
+      "tests/strict-null/authLifecycle.phase1.test.ts",
+      "tests/api/authLifecycleTransport.contract.test.ts",
+      "tests/app/nativeIntentPublicRequest.contract.test.ts"
     ]
   }
 }

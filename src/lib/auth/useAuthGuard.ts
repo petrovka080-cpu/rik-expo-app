@@ -25,6 +25,7 @@ import { recordPlatformObservability } from "../observability/platformObservabil
 import {
   POST_AUTH_ENTRY_ROUTE,
   buildAuthLoginHref,
+  buildAuthMfaHref,
   resolvePostAuthReturnTo,
 } from "../authRouting";
 import {
@@ -56,6 +57,8 @@ export function useAuthGuard(
 ) {
   const {
     authSessionState,
+    assuranceStatus,
+    acceptSessionAfterAssurance,
     sessionLoaded,
     setAuthSessionState,
     isPdfViewerRouteRef,
@@ -90,13 +93,15 @@ export function useAuthGuard(
     (args: {
       decision: Extract<
         AuthRouteDecision,
-        { type: "redirect_login" | "redirect_post_auth_entry" }
+        { type: "redirect_login" | "redirect_post_auth_entry" | "redirect_mfa" }
       >;
     }): "replace" | "navigate_fallback" | "failed" => {
       const transitionTarget = (
         args.decision.type === "redirect_login"
           ? buildAuthLoginHref(currentReturnTo)
-          : resolvePostAuthReturnTo(authReturnTo)
+          : args.decision.type === "redirect_mfa"
+            ? buildAuthMfaHref(currentReturnTo ?? authReturnTo)
+            : resolvePostAuthReturnTo(authReturnTo)
       ) as Href;
       try {
         router.replace(transitionTarget);
@@ -187,7 +192,7 @@ export function useAuthGuard(
     (
       decision: Extract<
         AuthRouteDecision,
-        { type: "redirect_login" | "redirect_post_auth_entry" }
+        { type: "redirect_login" | "redirect_post_auth_entry" | "redirect_mfa" }
       >,
       extra?: Record<string, unknown>,
     ) => {
@@ -282,6 +287,7 @@ export function useAuthGuard(
       sessionState: authSessionState,
       inAuthStack,
       isPdfViewerRoute: isPdfViewerRouteRef.current,
+      isMfaRoute: pathname === "/auth/mfa",
       hasRecentAuthExit:
         authSessionState.status === "unauthenticated" &&
         authExitAgeMs != null &&
@@ -364,10 +370,7 @@ export function useAuthGuard(
                 },
               });
               lastRouteDecisionKeyRef.current = null;
-              setAuthSessionState({
-                status: "authenticated",
-                reason: "post_auth_settle_authenticated",
-              });
+              await acceptSessionAfterAssurance(result.session, "post_auth_settle_authenticated");
               return;
             }
 
@@ -469,7 +472,7 @@ export function useAuthGuard(
       return;
     }
 
-    if (decision.type === "redirect_post_auth_entry") {
+    if (decision.type === "redirect_post_auth_entry" || decision.type === "redirect_mfa") {
       cancelAuthExitSettleDelay();
       resetPendingAuthExitSessionProbe();
       executeRouteDecision(decision, {
@@ -507,11 +510,12 @@ export function useAuthGuard(
     cancelAuthExitSettleDelay,
     executeRouteDecision,
     setAuthSessionState,
+    acceptSessionAfterAssurance,
   ]);
 
   // --- First usable UI marker ---
   useEffect(() => {
-    if (!sessionLoaded || usableUiMarkerRef.current) return;
+    if (!sessionLoaded || assuranceStatus !== "idle" || authSessionState.status === "mfa_required" || authSessionState.status === "unknown" || usableUiMarkerRef.current) return;
     usableUiMarkerRef.current = true;
     recordPlatformObservability({
       screen: "request",
@@ -525,19 +529,17 @@ export function useAuthGuard(
         pathname,
       },
     });
-  }, [authSessionState.status, pathname, sessionLoaded]);
+  }, [assuranceStatus, authSessionState.status, pathname, sessionLoaded]);
 
   // --- Queue worker lifecycle ---
   useEffect(() => {
     if (!sessionLoaded) return;
 
-    if (authSessionState.status === "authenticated") {
+    if (authSessionState.status === "authenticated" && assuranceStatus === "idle") {
       ensureQueueWorker();
       return;
     }
 
-    if (authSessionState.status === "unauthenticated") {
-      stopQueueWorker();
-    }
-  }, [authSessionState.status, sessionLoaded]);
+    stopQueueWorker();
+  }, [assuranceStatus, authSessionState.status, sessionLoaded]);
 }
