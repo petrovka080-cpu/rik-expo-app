@@ -32,6 +32,7 @@ export type DocumentAsset = {
   sizeBytes?: number;
   expiresAt?: string;
   entityId?: string;
+  contentIdentity?:DocumentDescriptor["contentIdentity"];
 };
 
 export type DocumentSessionStatus = "preparing" | "ready" | "error";
@@ -176,6 +177,7 @@ function createAssetForLocalUri(
     source: doc.source,
     createdAt: doc.createdAt || nowIso(),
     entityId: doc.entityId,
+    ...(doc.contentIdentity?{contentIdentity:{...doc.contentIdentity}}:{}),
     sizeBytes,
   };
 }
@@ -214,6 +216,9 @@ const evictSession = (sessionId: string) => {
     assets.delete(assetId);
   }
 };
+
+/** Remove only this preview; used when a restored authorization becomes stale. */
+export function discardDocumentSession(sessionId:string):void{evictSession(String(sessionId||"").trim());}
 
 export function cleanupExpiredDocumentSessions() {
   for (const [sessionId, session] of sessions.entries()) {
@@ -361,6 +366,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
     source: doc.source,
     createdAt: doc.createdAt || nowIso(),
     entityId: doc.entityId,
+    ...(doc.contentIdentity?{contentIdentity:{...doc.contentIdentity}}:{}),
     sizeBytes,
   };
   assets.set(assetId, asset);
@@ -533,6 +539,7 @@ export function createInMemoryDocumentPreviewSession(
     source: doc.source,
     createdAt: doc.createdAt || nowIso(),
     entityId: doc.entityId,
+    ...(doc.contentIdentity?{contentIdentity:{...doc.contentIdentity}}:{}),
   };
   assets.set(assetId, asset);
   const session = createDocumentSession(asset, "ready");
@@ -543,13 +550,15 @@ export function restoreInMemoryDocumentPreviewSession(input: {
   sessionId: string;
   doc: DocumentDescriptor;
   sessionCreatedAt?: string;
+  replaceExisting?:boolean;
 }): { session: DocumentSession; asset: DocumentAsset } {
   cleanupExpiredDocumentSessions();
   const sessionId = String(input.sessionId || "").trim();
   if (!sessionId) throw new Error("Document preview session id is empty.");
 
   const existing = getDocumentSessionSnapshot(sessionId);
-  if (existing.session && existing.asset) {
+  if(input.replaceExisting)evictSession(sessionId);
+  if (existing.session && existing.asset && !input.replaceExisting) {
     return {
       session: existing.session,
       asset: existing.asset,
@@ -571,6 +580,7 @@ export function restoreInMemoryDocumentPreviewSession(input: {
     source: input.doc.source,
     createdAt: input.doc.createdAt || nowIso(),
     entityId: input.doc.entityId,
+    ...(input.doc.contentIdentity?{contentIdentity:{...input.doc.contentIdentity}}:{}),
   };
   const createdAt = input.sessionCreatedAt || nowIso();
   const session: DocumentSession = {

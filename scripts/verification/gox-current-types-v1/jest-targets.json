@@ -45,7 +45,19 @@
       "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts",
       "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts",
       "src/lib/documents/pdfWebPreviewCache.test.ts",
-      "src/lib/pdf/pdfInstantCache.test.ts"
+      "src/lib/pdf/pdfInstantCache.test.ts",
+      "src/lib/documents/pdfCanonicalWebPreviewRecovery.test.ts",
+      "src/lib/documents/pdfDocumentViewerEntry.test.ts",
+      "src/lib/pdf/pdfViewer.readiness.test.ts",
+      "src/lib/pdf/PdfViewerScreenContent.recovery.test.tsx",
+      "src/lib/documents/pdfDocumentSessions.test.ts",
+      "src/lib/documents/pdfDocumentPreviewAction.test.ts",
+      "src/lib/pdf/usePdfViewerDiagnostics.test.ts",
+      "src/lib/pdf/pdfViewerContract.test.ts",
+      "src/lib/pdf/PdfViewerWebShell.visibility.test.ts",
+      "src/lib/pdf/pdfViewerWebFallback.visibility.test.ts",
+      "src/lib/pdf/pdfViewerWebFallback.test.ts",
+      "src/lib/pdf/pdfViewerWebIframeReadyFallback.test.ts"
     ],
     "ui-procurement": [
       "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx",

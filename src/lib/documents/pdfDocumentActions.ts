@@ -1,4 +1,4 @@
-import type { DocumentDescriptor } from "./pdfDocument";
+import {canonicalPdfRecoveryReferenceFromDescriptor,type DocumentDescriptor} from "./pdfDocument";
 import {
   beginPdfOpenVisibilityWait,
   createPdfOpenFlowContext,
@@ -289,6 +289,7 @@ export async function prepareAndPreviewPdfDocument(
       } : null;
 
       if (args.router && earlyViewerSession) {
+        const canonicalRecovery=canonicalPdfRecoveryReferenceFromDescriptor(args.descriptor);
         const {
           safeSessionId,
           safeOpenToken,
@@ -298,6 +299,7 @@ export async function prepareAndPreviewPdfDocument(
           visibilityWait?.token,
           args.returnTo,
           args.callerRouteKey,
+          ...(canonicalRecovery?[canonicalRecovery] as const:[] as const),
         );
         recordPdfOpenStage({
           context: baseContext,

@@ -375,18 +375,92 @@ export function useAuthLifecycle(deps: {
     return false;
   }, [acceptSessionAfterAssurance, beginSessionRead, cancelAssurance, clearSessionBoundaryState, markUnavailable, setAuthSessionState]);
 
-  // Resume uses the same gate and subscriber. Do not clear offline drafts when
-  // Auth is unavailable; the root overlay retains the mounted route state.
+  // Resume uses the same gate and subscriber. A focus transfer to/from an iframe
+  // can blur the window while the document still has focus; that is not an app
+  // return. Only that observed internal pair, or duplicate signals for one
+  // in-flight return, are coalesced. Unknown/unpaired focus still checks MFA.
   useEffect(() => {
-    const resume = () => {
-      if (authPrincipalFingerprintRef.current !== null) void retryAuthAssurance();
+    const web = Platform.OS === "web";
+    const documentActivity = () => {
+      let visible: boolean | null = null;
+      let focusWithin: boolean | null = null;
+      if (typeof document !== "undefined") {
+        try {
+          const visibility = document.visibilityState;
+          visible = visibility === "visible" ? true : visibility === "hidden" ? false : null;
+        } catch { /* Missing browser facts must not authorize a focus skip. */ }
+        try {
+          const focused = document.hasFocus();
+          focusWithin = typeof focused === "boolean" ? focused : null;
+        } catch { /* Recheck on an ambiguous activation. */ }
+      }
+      return { visible, focusWithin };
     };
-    const subscription = AppState.addEventListener("change", (state) => { if (state === "active") resume(); });
-    const focus = () => { if (document.visibilityState !== "hidden") resume(); };
-    if (Platform.OS === "web" && typeof window !== "undefined") window.addEventListener("focus", focus);
+    const isDocumentActive = (activity: ReturnType<typeof documentActivity>) =>
+      activity.visible === true && activity.focusWithin === true;
+    let returnPending = web ? !isDocumentActive(documentActivity()) : AppState.currentState !== "active";
+    let activationHandled = false;
+    let internalFocusPending = false;
+    let coalescedFocusPending = false;
+    let activationEpoch = 0;
+    const depart = () => {
+      activationEpoch += 1;
+      returnPending = true;
+      activationHandled = false;
+      internalFocusPending = false;
+      coalescedFocusPending = false;
+    };
+    const resume = () => authPrincipalFingerprintRef.current !== null ? retryAuthAssurance() : undefined;
+    const activateDocument = (source: "focus" | "visibility" | "app_state") => {
+      const activity = documentActivity();
+      if (activity.visible === false || (source !== "focus" && activity.focusWithin === false)) {
+        depart();
+        return;
+      }
+      const active = isDocumentActive(activity);
+      if (source === "focus") {
+        const internalOrDuplicate = active && !returnPending && (internalFocusPending || coalescedFocusPending);
+        internalFocusPending = false;
+        coalescedFocusPending = false;
+        if (internalOrDuplicate) return;
+      } else if (active && !returnPending && activationHandled) return;
+      // Do not turn missing/contradictory document facts into a known activation.
+      returnPending = !active;
+      activationHandled = active;
+      if (active && source !== "focus") coalescedFocusPending = true;
+      const epoch = ++activationEpoch;
+      const pending = resume();
+      if (coalescedFocusPending) {
+        const clearDuplicate = () => { if (activationEpoch === epoch) coalescedFocusPending = false; };
+        if (pending) void pending.then(clearDuplicate, clearDuplicate);
+        else clearDuplicate();
+      }
+    };
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state !== "active") { depart(); return; }
+      if (web) activateDocument("app_state");
+      else if (returnPending || !activationHandled) { returnPending = false; activationHandled = true; resume(); }
+    });
+    const blur = () => {
+      if (isDocumentActive(documentActivity()) && !returnPending) {
+        internalFocusPending = true;
+        coalescedFocusPending = false;
+      } else depart();
+    };
+    const focus = () => activateDocument("focus");
+    const visibility = () => activateDocument("visibility");
+    if (web && typeof window !== "undefined") {
+      window.addEventListener("blur", blur);
+      window.addEventListener("focus", focus);
+    }
+    if (web && typeof document !== "undefined") document.addEventListener("visibilitychange", visibility);
     return () => {
       subscription.remove();
-      if (Platform.OS === "web" && typeof window !== "undefined") window.removeEventListener("focus", focus);
+      if (web && typeof window !== "undefined") {
+        window.removeEventListener("blur", blur);
+        window.removeEventListener("focus", focus);
+      }
+      if (web && typeof document !== "undefined") document.removeEventListener("visibilitychange", visibility);
     };
   }, [retryAuthAssurance]);
 

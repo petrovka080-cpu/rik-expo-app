@@ -1,3 +1,4 @@
+import {parseCanonicalPdfRecoveryReference,type CanonicalPdfRecoveryReference} from "../documents/pdfDocument";
 import type {
   DocumentAsset,
   DocumentSession,
@@ -18,6 +19,7 @@ export type PdfViewerRouteParams = {
   originModule?: string | string[];
   source?: string | string[];
   entityId?: string | string[];
+  canonicalRecovery?:string|string[];
 };
 
 export type PdfViewerRouteValidation =
@@ -47,6 +49,8 @@ export type PdfViewerRouteModel = {
   originModule: string | null;
   source: string | null;
   entityId: string | null;
+  canonicalRecovery:CanonicalPdfRecoveryReference|null;
+  canonicalRecoveryInvalid?:boolean;
   validation: PdfViewerRouteValidation;
   directSnapshotParams: PdfViewerDirectSourceParams;
 };
@@ -79,6 +83,8 @@ export function resolvePdfViewerRouteModel(
   const source = takeParam(params.source);
   const entityId = takeParam(params.entityId);
   const hasUri = uri.length > 0;
+  const canonicalRecovery=Array.isArray(params.canonicalRecovery)&&params.canonicalRecovery.length!==1?null:parseCanonicalPdfRecoveryReference(takeParam(params.canonicalRecovery));
+  const canonicalRecoveryInvalid=params.canonicalRecovery!=null&&!canonicalRecovery;
   const validation: PdfViewerRouteValidation =
     sessionId || hasUri
       ? {
@@ -107,6 +113,7 @@ export function resolvePdfViewerRouteModel(
     originModule: toNullable(originModule),
     source: toNullable(source),
     entityId: toNullable(entityId),
+    canonicalRecovery,canonicalRecoveryInvalid,
     validation,
     directSnapshotParams: {
       uri: uri || undefined,
@@ -122,10 +129,11 @@ export function resolvePdfViewerRouteModel(
 }
 
 export function resolvePdfViewerSnapshot(args: {
-  route: Pick<PdfViewerRouteModel, "directSnapshotParams">;
+  route: Pick<PdfViewerRouteModel, "directSnapshotParams"|"canonicalRecoveryInvalid">;
   registrySnapshot: PdfViewerSnapshot;
 }): PdfViewerSnapshot {
   const { route, registrySnapshot } = args;
+  if(route.canonicalRecoveryInvalid)return {session:null,asset:null};
   if (registrySnapshot.session) return registrySnapshot;
   return (
     resolvePdfViewerDirectSnapshot(route.directSnapshotParams) ?? {

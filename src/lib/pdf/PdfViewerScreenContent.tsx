@@ -12,7 +12,7 @@ import type { DocumentAsset } from "../documents/pdfDocumentSessions";
 import type { PdfViewerEmbeddedSource, PdfViewerResolution } from "./pdfViewerContract";
 import type { PdfViewerContentModel } from "./pdfViewer.readiness";
 import { VIEWER_TEXT } from "./pdfViewer.constants";
-import { MenuAction, EmptyState, CenteredPanel } from "./pdfViewer.components";
+import { MenuAction, CenteredPanel } from "./pdfViewer.components";
 import {
   PdfViewerNativeShell,
   type PdfViewerNativeWebViewComponent,
@@ -105,9 +105,13 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
   switch (contentModel.kind) {
     case "empty":
       return (
-        <EmptyState
+        <CenteredPanel
           title={contentModel.title}
           subtitle={contentModel.subtitle}
+          actionLabel={contentModel.allowRecovery?"Открыть сохранённую версию":"Вернуться к смете"}
+          onAction={contentModel.allowRecovery?onRetry:props.onBack}
+          secondaryLabel={contentModel.allowRecovery?"Вернуться к смете":undefined}
+          onSecondaryAction={contentModel.allowRecovery?props.onBack:undefined}
         />
       );
     case "error":
@@ -127,9 +131,13 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
       );
     case "missing-asset":
       return (
-        <EmptyState
+        <CenteredPanel
           title={contentModel.title}
           subtitle={contentModel.subtitle}
+          actionLabel={contentModel.allowRecovery?"Открыть сохранённую версию":"Вернуться к смете"}
+          onAction={contentModel.allowRecovery?onRetry:props.onBack}
+          secondaryLabel={contentModel.allowRecovery?"Вернуться к смете":undefined}
+          onSecondaryAction={contentModel.allowRecovery?props.onBack:undefined}
         />
       );
     case "unsupported":
@@ -163,9 +171,10 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
     case "embedded-web":
       if (!asset) {
         return (
-          <EmptyState
-            title="Document not found"
-            subtitle="Missing document asset."
+          <CenteredPanel
+            title="Просмотр PDF недоступен"
+            subtitle="Файл просмотра недоступен. Вернитесь к сохранённой смете."
+            actionLabel="Вернуться к смете" onAction={props.onBack}
           />
         );
       }
@@ -186,9 +195,10 @@ function renderViewerBody(props: PdfViewerScreenContentProps) {
     case "embedded-native":
       if (!source || resolvedSource.kind !== "resolved-embedded") {
         return (
-          <EmptyState
-            title="Document not found"
-            subtitle="Missing document asset."
+          <CenteredPanel
+            title="Просмотр PDF недоступен"
+            subtitle="Файл просмотра недоступен. Вернитесь к сохранённой смете."
+            actionLabel="Вернуться к смете" onAction={props.onBack}
           />
         );
       }

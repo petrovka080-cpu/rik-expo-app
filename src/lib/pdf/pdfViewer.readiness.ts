@@ -8,6 +8,10 @@ import {
   type PdfViewerState,
 } from "./pdfViewerContract";
 
+import type {WebPdfPreviewRestoreReason} from '../documents/pdfWebPreviewCache';
+import type {CanonicalPdfRecoveryResult} from '../documents/pdfCanonicalWebPreviewPersistence';
+export type PdfViewerRecoveryReason=WebPdfPreviewRestoreReason|Extract<CanonicalPdfRecoveryResult,{recovered:false}>['reason'];
+
 export type PdfViewerReadinessModel = {
   initialState: PdfViewerState;
   resolvedSource: PdfViewerResolution;
@@ -22,7 +26,7 @@ export type PdfViewerFallbackEligibility = {
 };
 
 export type PdfViewerContentModel =
-  | { kind: "empty"; title: string; subtitle: string }
+  | { kind: "empty"; title: string; subtitle: string;allowRecovery:boolean }
   | {
       kind: "error";
       title: string;
@@ -31,7 +35,7 @@ export type PdfViewerContentModel =
       allowRetry: boolean;
       retryLabel?: string;
     }
-  | { kind: "missing-asset"; title: string; subtitle: string }
+  | { kind: "missing-asset"; title: string; subtitle: string;allowRecovery:boolean }
   | {
       kind: "unsupported";
       title: string;
@@ -100,6 +104,8 @@ export function resolvePdfViewerContentModel(args: {
   isReadyToRender: boolean;
   hasRenderableSource: boolean;
   retryRequiresRecreation?: boolean;
+  canRecoverCanonical?:boolean;
+  recoveryReason?:PdfViewerRecoveryReason|null;
 }): PdfViewerContentModel {
   const fallback = resolvePdfViewerFallbackEligibility({
     asset: args.asset,
@@ -109,19 +115,22 @@ export function resolvePdfViewerContentModel(args: {
   if (args.state === "empty") {
     return {
       kind: "empty",
-      title: "Document not found",
-      subtitle: "Viewer session was not found or has expired.",
+      title: "Просмотр PDF недоступен",
+      subtitle: ['AUTHORIZATION_UNAVAILABLE','AUTHORIZATION_CHANGED','ACCESS_DENIED'].includes(args.recoveryReason??'')
+        ?'Не удалось подтвердить доступ к сохранённой версии. Проверьте вход и откройте документ снова.'
+        :'Этот просмотр больше недоступен. Откройте документ снова из той же сохранённой версии сметы.',
+      allowRecovery:args.canRecoverCanonical===true,
     };
   }
 
   if (args.state === "error") {
     return {
       kind: "error",
-      title: "Unable to open document",
-      subtitle: args.errorText || "Preview failed to load.",
+      title: "Не удалось открыть PDF",
+      subtitle: args.errorText || "Не удалось загрузить просмотр сохранённого документа.",
       allowOpenExternal: fallback.canOpenExternally,
       allowRetry: fallback.canRetry,
-      retryLabel: args.retryRequiresRecreation ? "Вернуться к смете" : "Повторить",
+      retryLabel:args.canRecoverCanonical?"Открыть сохранённую версию":args.retryRequiresRecreation||!args.asset?"Вернуться к смете":"Повторить",
     };
   }
 
@@ -131,8 +140,9 @@ export function resolvePdfViewerContentModel(args: {
     }
     return {
       kind: "missing-asset",
-      title: "Document not found",
-      subtitle: "Missing document asset.",
+      title: "Просмотр PDF недоступен",
+      subtitle: "Файл этого просмотра недоступен. Откройте документ из сохранённой версии сметы.",
+      allowRecovery:args.canRecoverCanonical===true,
     };
   }
 
@@ -149,11 +159,11 @@ export function resolvePdfViewerContentModel(args: {
     }
     return {
       kind: "unsupported",
-      title: "Unable to open document",
+      title: "Не удалось открыть PDF",
       subtitle:
         args.resolvedSource.kind === "unsupported-mobile-source"
           ? args.resolvedSource.errorMessage
-          : "Preview failed to load.",
+          : "Не удалось загрузить просмотр сохранённого документа.",
       allowOpenExternal: fallback.canOpenExternally,
       allowRetry: fallback.canRetry,
     };
@@ -166,8 +176,9 @@ export function resolvePdfViewerContentModel(args: {
   if (!args.hasRenderableSource) {
     return {
       kind: "missing-asset",
-      title: "Document not found",
-      subtitle: "Missing document asset.",
+      title: "Просмотр PDF недоступен",
+      subtitle: "Файл этого просмотра недоступен. Откройте документ из сохранённой версии сметы.",
+      allowRecovery:args.canRecoverCanonical===true,
     };
   }
 

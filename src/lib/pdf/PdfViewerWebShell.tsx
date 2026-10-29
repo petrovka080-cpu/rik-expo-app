@@ -40,6 +40,73 @@ function decodeHtmlDataUri(uri: string): string {
   }
 }
 
+/** Event-driven layout authority for this exact iframe, never an auth bypass. */
+export function observePdfViewerFallbackVisibility(input: {
+  iframe: HTMLIFrameElement;
+  renderInstanceKey: string;
+  onLoad: () => void;
+  onError: () => void;
+}): () => void {
+  let stopped = false;
+  let epoch = 0;
+  let lastSignature = '';
+  let current = { active: false, width: 0, height: 0, epoch: 0 };
+  const sample = (resend = false) => {
+    if (stopped) return;
+    const bounds = input.iframe.getBoundingClientRect();
+    const style = window.getComputedStyle(input.iframe);
+    const positive = Number.isFinite(bounds.width) && Number.isFinite(bounds.height)
+      && bounds.width > 0 && bounds.height > 0;
+    const active = document.visibilityState === 'visible' && positive
+      && style.display !== 'none' && style.visibility !== 'hidden' && style.visibility !== 'collapse';
+    const width = active ? Math.min(16384, Math.max(1, Math.round(bounds.width))) : 0;
+    const height = active ? Math.min(16384, Math.max(1, Math.round(bounds.height))) : 0;
+    const signature = active ? width + 'x' + height : 'inactive';
+    const changed = signature !== lastSignature;
+    if (!changed && !resend) return;
+    if (changed) {
+      if (epoch >= Number.MAX_SAFE_INTEGER) return;
+      epoch += 1;
+      lastSignature = signature;
+      current = { active, width, height, epoch };
+    }
+    input.iframe.contentWindow?.postMessage({
+      type: 'pdf-viewer-visibility', renderInstanceKey: input.renderInstanceKey,
+      ...current,
+    }, window.location.origin);
+  };
+  const receive = (event: MessageEvent) => {
+    if (stopped || event.source !== input.iframe.contentWindow || event.origin !== window.location.origin) return;
+    const message = event.data;
+    if (!message || message.renderInstanceKey !== input.renderInstanceKey) return;
+    if (message.type === 'pdf-viewer-layout-request') { sample(true); return; }
+    if (message.type !== 'pdf-viewer-render') return;
+    // Re-read actual geometry before accepting a late child receipt, even if
+    // its ResizeObserver/visibility callback is still queued.
+    sample();
+    if (!current.active || message.visibilityEpoch !== current.epoch) return;
+    if (message.kind === 'ready') input.onLoad();
+    else if (message.kind === 'error') input.onError();
+  };
+  const changed = () => sample();
+  const loaded = () => sample(true); // Same-epoch handshake resend, not another render.
+  const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(changed);
+  window.addEventListener('message', receive);
+  document.addEventListener('visibilitychange', changed);
+  window.addEventListener('resize', changed);
+  input.iframe.addEventListener('load', loaded);
+  observer?.observe(input.iframe);
+  sample();
+  return () => {
+    stopped = true;
+    observer?.disconnect();
+    window.removeEventListener('message', receive);
+    document.removeEventListener('visibilitychange', changed);
+    window.removeEventListener('resize', changed);
+    input.iframe.removeEventListener('load', loaded);
+  };
+}
+
 export function PdfViewerWebShell({
   asset,
   width,
@@ -60,18 +127,17 @@ export function PdfViewerWebShell({
   );
   const usesPooledFrame = !usesPdfJsFallback && canPoolWebPdfFrame(webEmbeddedUri);
 
+  const fallbackCallbacks = React.useRef({ onLoad, onError });
+  fallbackCallbacks.current = { onLoad, onError };
   React.useEffect(() => {
-    if (!usesPdfJsFallback) return;
-    const receiveRender = (event: MessageEvent) => {
-      if (event.source !== fallbackFrameRef.current?.contentWindow || event.origin !== window.location.origin) return;
-      const message = event.data;
-      if (message?.type !== "pdf-viewer-render" || message.renderInstanceKey !== renderInstanceKey) return;
-      if (message.kind === "ready") onLoad();
-      else if (message.kind === "error") onError();
-    };
-    window.addEventListener("message", receiveRender);
-    return () => window.removeEventListener("message", receiveRender);
-  }, [usesPdfJsFallback, renderInstanceKey, onLoad, onError]);
+    const iframe = fallbackFrameRef.current;
+    if (!usesPdfJsFallback || !iframe) return;
+    return observePdfViewerFallbackVisibility({
+      iframe, renderInstanceKey,
+      onLoad: () => fallbackCallbacks.current.onLoad(),
+      onError: () => fallbackCallbacks.current.onError(),
+    });
+  }, [usesPdfJsFallback, renderInstanceKey, webEmbeddedUri]);
 
   React.useEffect(() => {
     const container = pooledContainerRef.current;

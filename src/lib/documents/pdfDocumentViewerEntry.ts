@@ -4,6 +4,7 @@ import { registerTimeout } from "../lifecycle/timerRegistry";
 import { logger } from "../logger";
 import { normalizePostAuthReturnTo } from "../authRouting";
 import { redactSensitiveText } from "../security/redaction";
+import {parseCanonicalPdfRecoveryReference,type CanonicalPdfRecoveryReference} from "./pdfDocument";
 
 export type PdfViewerRouterLike = {
   push: (href: Href, options?: unknown) => void;
@@ -29,6 +30,7 @@ export function createPdfDocumentViewerHref(
   openToken: unknown,
   returnTo?: unknown,
   callerRouteKey?: unknown,
+  canonicalRecovery?:CanonicalPdfRecoveryReference|null,
 ) {
   const safeSessionId = toSafeRouteParam(sessionId);
   const safeOpenToken = toSafeRouteParam(openToken);
@@ -43,11 +45,14 @@ export function createPdfDocumentViewerHref(
   const callerQuery = safeCallerRouteKey
     ? `&callerRouteKey=${encodeURIComponent(safeCallerRouteKey)}`
     : "";
+  const recovery=canonicalRecovery==null?null:parseCanonicalPdfRecoveryReference(canonicalRecovery);
+  if(canonicalRecovery!=null&&!recovery)throw new Error("Invalid canonical PDF recovery reference");
+  const recoveryQuery=recovery?`&canonicalRecovery=${encodeURIComponent(JSON.stringify(recovery))}`:"";
   return {
     safeSessionId,
     safeOpenToken,
     safeReturnTo,
-    href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}${returnToQuery}${callerQuery}` as Href,
+    href: `/pdf-viewer?sessionId=${encodeURIComponent(safeSessionId)}&openToken=${encodeURIComponent(safeOpenToken)}${returnToQuery}${callerQuery}${recoveryQuery}` as Href,
   };
 }
 
@@ -56,7 +61,7 @@ export async function pushPdfDocumentViewerRouteSafely(
   href: Href,
   onBeforeNavigate?: (() => void | Promise<void>) | null,
 ) {
-  const hrefForDiagnostics = redactSensitiveText(String(href));
+  const hrefForDiagnostics = redactSensitiveText(String(href).replace(/([?&]canonicalRecovery=)[^&]*/gu,"$1[locator]"));
   logPdfViewerNavigationInfo("viewer_patch_v3_navigation_call", {
     href: hrefForDiagnostics,
     platform: Platform.OS,

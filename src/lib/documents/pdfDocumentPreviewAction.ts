@@ -46,7 +46,7 @@ import type {
   PersistCriticalPdfBreadcrumbInput,
   PreviewPdfDocumentOpts,
 } from "./pdfDocumentActionTypes";
-import type { DocumentDescriptor } from "./pdfDocument";
+import {canonicalPdfRecoveryReferenceFromDescriptor,type DocumentDescriptor} from "./pdfDocument";
 
 type PreviewActionDependencies = {
   persistCriticalPdfBreadcrumb: (input: PersistCriticalPdfBreadcrumbInput) => void;
@@ -227,6 +227,7 @@ async function executeDirectRemoteViewerSessionPath(args: {
     },
   });
   const { session, asset } = createInMemoryDocumentPreviewSession(doc);
+  const canonicalRecovery=canonicalPdfRecoveryReferenceFromDescriptor(doc);
   const {
     safeSessionId,
     safeOpenToken,
@@ -236,6 +237,7 @@ async function executeDirectRemoteViewerSessionPath(args: {
     opts?.openFlow?.openToken,
     opts?.returnTo,
     opts?.callerRouteKey,
+    ...(canonicalRecovery?[canonicalRecovery] as const:[] as const),
   );
   recordPdfOpenStage({
     context: opts?.openFlow,
@@ -544,6 +546,7 @@ async function executeStoredPreviewSessionPath(args: {
         materializationMode,
       },
     });
+    const canonicalRecovery=canonicalPdfRecoveryReferenceFromDescriptor(doc);
     const {
       safeSessionId,
       safeOpenToken,
@@ -553,6 +556,7 @@ async function executeStoredPreviewSessionPath(args: {
       opts.openFlow?.openToken,
       opts.returnTo,
       opts.callerRouteKey,
+      ...(canonicalRecovery?[canonicalRecovery] as const:[] as const),
     );
     const navDocumentType = asset?.documentType ?? doc.documentType;
     const navOriginModule = asset?.originModule ?? doc.originModule;

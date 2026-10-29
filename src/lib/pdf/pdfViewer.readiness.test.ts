@@ -9,3 +9,15 @@ it('preserves preparing, empty and explicit terminal error precedence',()=>{expe
 it.each([null,{...asset,uri:''}])('keeps a coherent ready session without a usable asset terminal',missing=>{const r=resolvePdfViewerReadinessModel({session,asset:missing,platform:'android'});expect(r.initialState).toBe('error');expect(content(r.initialState,r.resolvedSource).kind).toBe('error');});
 it('retains actual Android handoff before embedded render readiness',()=>{const r=resolvePdfViewerReadinessModel({session,asset,platform:'android'});expect(r.resolvedSource.kind).toBe('resolved-native-handoff');expect(resolvePdfViewerContentModel({state:'loading',errorText:'',asset,resolvedSource:r.resolvedSource,isReadyToRender:false,hasRenderableSource:false}).kind).toBe('native-handoff');});
 it.each(['web','ios'] as PdfViewerPlatform[])('keeps existing valid %s resolution independent of transient missing-asset guard',platform=>{const r=resolvePdfViewerReadinessModel({session,asset,platform});expect(r.resolvedSource.kind).not.toBe('missing-asset');expect(resolvePdfViewerContentModel({state:'ready',errorText:'',asset,resolvedSource:r.resolvedSource,isReadyToRender:true,hasRenderableSource:true}).kind).not.toBe('missing-asset');});
+
+it.each(['MISSING_SESSION','EXPIRED_SESSION','STORAGE_UNAVAILABLE','IDENTITY_MISMATCH'] as const)('uses neutral Russian recovery copy without claiming a stored PDF is missing: %s',recoveryReason=>{
+ const model=resolvePdfViewerContentModel({state:'empty',errorText:'',asset:null,resolvedSource:{kind:'missing-session'},
+  isReadyToRender:false,hasRenderableSource:false,canRecoverCanonical:true,recoveryReason});
+ expect(model).toMatchObject({kind:'empty',title:'Просмотр PDF недоступен',allowRecovery:true});
+ expect(JSON.stringify(model)).not.toMatch(/Document not found|has expired|Missing document|истёк/u);
+});
+it('leaves an honest return path when the exact target is gone and separates degraded access from expiry',()=>{
+ const model=resolvePdfViewerContentModel({state:'empty',errorText:'',asset:null,resolvedSource:{kind:'missing-session'},
+  isReadyToRender:false,hasRenderableSource:false,canRecoverCanonical:false,recoveryReason:'AUTHORIZATION_UNAVAILABLE'});
+ expect(model).toMatchObject({kind:'empty',allowRecovery:false});expect('subtitle' in model&&model.subtitle).toContain('подтвердить доступ');
+});

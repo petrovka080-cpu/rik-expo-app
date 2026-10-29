@@ -1,7 +1,8 @@
-import { createPdfDocumentDescriptor } from "./pdfDocument";
+import { createPdfDocumentDescriptor,canonicalPdfRecoveryReferenceFromDescriptor,canonicalPdfContentIdentityMatches,canonicalPdfRecoveryReferencesMatch,parseCanonicalPdfRecoveryReference,type DocumentDescriptor,type CanonicalPdfRecoveryReference } from "./pdfDocument";
 import {
   getDocumentSessionSnapshot,
   restoreInMemoryDocumentPreviewSession,
+  discardDocumentSession,
   type DocumentAsset,
   type DocumentSession,
 } from "./pdfDocumentSessions";
@@ -37,6 +38,8 @@ type PersistedPdfSession = {
   assetCreatedAt: string;
   sessionCreatedAt: string;
   lastAccessAt: string;
+  namespace?:string;
+  contentIdentity?:DocumentDescriptor["contentIdentity"];
 };
 
 const DB_NAME = "rik-pdf-preview-cache";
@@ -256,6 +259,8 @@ export async function persistWebPdfPreviewSession(input: {
 
   const persistedSession: PersistedPdfSession = {
     sessionId: input.session.sessionId,
+    namespace:input.namespace,
+    contentIdentity:input.asset.contentIdentity?{...input.asset.contentIdentity}:undefined,
     cacheKey,
     identityCanonical,
     principalKey,
@@ -285,65 +290,133 @@ export async function persistWebPdfPreviewSession(input: {
   return true;
 }
 
-export async function restoreWebPdfPreviewSession(
-  sessionIdInput: string,
-): Promise<boolean> {
-  if (!canUsePersistentWebCache()) return false;
-  const sessionId = String(sessionIdInput || "").trim();
-  if (!sessionId) return false;
-  if (getDocumentSessionSnapshot(sessionId).session) return true;
+export type WebPdfPreviewRestoreReason =
+  |'STORAGE_UNAVAILABLE'|'MISSING_SESSION'|'EXPIRED_SESSION'|'MISSING_ASSET'
+  |'PRINCIPAL_UNAVAILABLE'|'PRINCIPAL_MISMATCH'|'IDENTITY_MISMATCH'
+  |'CANONICAL_AUTHORIZATION_REQUIRED'|'AUTHORIZATION_CHANGED'|'FILE_SHA_MISMATCH'|'REFERENCE_MISMATCH';
+export type WebPdfPreviewRestoreResult =
+  |{restored:true}
+  |{restored:false;reason:WebPdfPreviewRestoreReason;canonicalRecovery?:CanonicalPdfRecoveryReference|null};
+export type CanonicalWebPdfRestoreAuthorization=Readonly<{
+  identity:WebPdfPreviewCacheIdentity;
+  contentIdentity:NonNullable<DocumentDescriptor['contentIdentity']>;
+  assertCurrentPrincipal:()=>Promise<void>;
+}>;
 
-  const epoch = principalEpoch;
-  const database = await openDatabase();
-  const readTransaction = database.transaction(SESSION_STORE, "readonly");
-  const persistedSession = await requestResult(
-    readTransaction.objectStore(SESSION_STORE).get(sessionId) as IDBRequest<
-      PersistedPdfSession | undefined
-    >,
-  );
-  if (!persistedSession || isExpired(persistedSession.lastAccessAt)) return false;
-  const activePrincipal = readBrowserActivePrincipal();
-  if (!activePrincipal || persistedSession.principalKey !== activePrincipal) return false;
-  const persistedAsset = await readAsset(database, persistedSession.cacheKey);
-  if (
-    !persistedAsset?.blob
-    || persistedAsset.principalKey !== activePrincipal
-    || persistedAsset.identityCanonical !== persistedSession.identityCanonical
-  ) return false;
+/** Legacy cache identities contain only a locator, never current authority. */
+function persistedCanonicalRecovery(session:PersistedPdfSession):CanonicalPdfRecoveryReference|null{
+  const typed=canonicalPdfRecoveryReferenceFromDescriptor({documentType:session.documentType,source:session.source,contentIdentity:session.contentIdentity});
+  if(typed)return typed;
+  try{
+    const values:unknown=JSON.parse(session.identityCanonical);
+    if(!Array.isArray(values)||values[1]!=='canonical-estimate'||typeof values[2]!=='string'||typeof values[6]!=='string')return null;
+    const snapshot:unknown=JSON.parse(values[6]);
+    if(!Array.isArray(snapshot)||snapshot.length!==5)return null;
+    return parseCanonicalPdfRecoveryReference({contractVersion:'canonical-pdf-recovery/v1',revisionId:values[5],releaseId:snapshot[0],
+      definitionVersionId:snapshot[1],checksumSha256:snapshot[2],issuancePurpose:snapshot[3],documentProfile:'professional_v1',
+      organizationId:values[2].startsWith('consumer:')?null:values[2]});
+  }catch{return null;}
+}
 
-  if (epoch !== principalEpoch || readBrowserActivePrincipal() !== activePrincipal) return false;
-  const objectUrl = URL.createObjectURL(persistedAsset.blob);
-  restoreInMemoryDocumentPreviewSession({
-    sessionId,
-    sessionCreatedAt: persistedSession.sessionCreatedAt,
-    doc: createPdfDocumentDescriptor({
-      uri: objectUrl,
-      objectUrlOwnership: "document-session",
-      title: persistedSession.title,
-      fileName: persistedSession.fileName,
-      documentType: persistedSession.documentType,
-      originModule: persistedSession.originModule,
-      source: persistedSession.source,
-      createdAt: persistedSession.assetCreatedAt,
-      entityId: persistedSession.entityId,
-    }),
-  });
+export async function restoreWebPdfPreviewSessionDetailed(
+  sessionIdInput:string,
+  authorization?:CanonicalWebPdfRestoreAuthorization,
+):Promise<WebPdfPreviewRestoreResult>{
+  const unavailable=(reason:WebPdfPreviewRestoreReason,canonicalRecovery?:CanonicalPdfRecoveryReference|null):WebPdfPreviewRestoreResult=>({restored:false,reason,...(canonicalRecovery?{canonicalRecovery}:{})});
+  const sessionId=String(sessionIdInput||'').trim();
+  if(!sessionId)return unavailable('MISSING_SESSION');
+  const epoch=principalEpoch;
+  const memory=getDocumentSessionSnapshot(sessionId);
+  if(memory.session&&memory.asset){
+    const canonical=canonicalPdfRecoveryReferenceFromDescriptor(memory.asset);
+    if(authorization||canonical||memory.asset.contentIdentity?.issuancePurpose){
+      if(authorization&&!canonical)return unavailable('REFERENCE_MISMATCH');
+      if(!authorization)return unavailable('CANONICAL_AUTHORIZATION_REQUIRED',canonical);
+      if(memory.asset.contentIdentity?.ownerUserId&&memory.asset.contentIdentity.ownerUserId!==authorization.contentIdentity.ownerUserId)return unavailable('REFERENCE_MISMATCH',canonical);
+      if(!canonicalPdfContentIdentityMatches(memory.asset.contentIdentity,authorization.contentIdentity))return unavailable('IDENTITY_MISMATCH',canonical);
+      if(memory.asset.fileSource.kind==='remote-url')return unavailable('MISSING_ASSET',canonical); // Signed URLs must be renewed from the fresh artifact.
+      try{await authorization.assertCurrentPrincipal();}catch{return unavailable('AUTHORIZATION_CHANGED',canonical);}
+      if(epoch!==principalEpoch)return unavailable('AUTHORIZATION_CHANGED',canonical);
+    }
+    return {restored:true};
+  }
+  if(!canUsePersistentWebCache())return unavailable('STORAGE_UNAVAILABLE');
+  let objectUrl:string|undefined,committed=false,validating=false;
+  let recovery:CanonicalPdfRecoveryReference|null=null;
+  try{
+    const database=await openDatabase();
+    const readTransaction=database.transaction(SESSION_STORE,'readonly');
+    const persistedSession=await requestResult(readTransaction.objectStore(SESSION_STORE).get(sessionId) as IDBRequest<PersistedPdfSession|undefined>);
+    if(!persistedSession)return unavailable('MISSING_SESSION');
+    recovery=persistedCanonicalRecovery(persistedSession);
+    if(authorization&&!recovery)return unavailable('REFERENCE_MISMATCH');
+    if(authorization&&recovery&&!canonicalPdfRecoveryReferencesMatch(recovery,canonicalPdfRecoveryReferenceFromDescriptor({documentType:'request',source:'generated',contentIdentity:authorization.contentIdentity})))
+      return unavailable('REFERENCE_MISMATCH',recovery);
+    if(isExpired(persistedSession.lastAccessAt))return unavailable('EXPIRED_SESSION',recovery);
+    const canonical=Boolean(authorization)||persistedSession.namespace==='canonical-professional-pdf'
+      ||persistedSession.cacheKey.split(':')[1]===encodeURIComponent('canonical-professional-pdf')||recovery!==null;
+    if(canonical&&!authorization)return unavailable('CANONICAL_AUTHORIZATION_REQUIRED',recovery);
+    const activePrincipal=readBrowserActivePrincipal();
+    if(!activePrincipal)return unavailable('PRINCIPAL_UNAVAILABLE',recovery);
+    if(persistedSession.principalKey!==activePrincipal)return unavailable('PRINCIPAL_MISMATCH',recovery);
+    if(canonical&&authorization){
+      if(persistedSession.contentIdentity?.ownerUserId&&persistedSession.contentIdentity.ownerUserId!==authorization.contentIdentity.ownerUserId)
+        return unavailable('REFERENCE_MISMATCH',recovery);
+      const expectedReference=canonicalPdfRecoveryReferenceFromDescriptor({documentType:'request',source:'generated',contentIdentity:authorization.contentIdentity});
+      if(recovery&&!canonicalPdfRecoveryReferencesMatch(recovery,expectedReference))return unavailable('REFERENCE_MISMATCH',recovery);
+      const expected=canonicalWebPdfPreviewCacheIdentity(authorization.identity);
+      if(persistedSession.identityCanonical!==expected
+        ||buildWebPdfPreviewPrincipalKey(authorization.identity)!==activePrincipal
+        ||persistedSession.contentIdentity&&!canonicalPdfContentIdentityMatches(persistedSession.contentIdentity,authorization.contentIdentity))
+        return unavailable('IDENTITY_MISMATCH',recovery);
+    }
+    const persistedAsset=await readAsset(database,persistedSession.cacheKey);
+    if(!persistedAsset?.blob)return unavailable('MISSING_ASSET',recovery);
+    if(persistedAsset.principalKey!==activePrincipal||persistedAsset.identityCanonical!==persistedSession.identityCanonical)
+      return unavailable('IDENTITY_MISMATCH',recovery);
+    if(canonical&&authorization){
+      // A current metadata match does not excuse damaged cached file bytes.
+      if(!globalThis.crypto?.subtle||typeof persistedAsset.blob.arrayBuffer!=='function')return unavailable('STORAGE_UNAVAILABLE',recovery);
+      const digest=await globalThis.crypto.subtle.digest('SHA-256',await persistedAsset.blob.arrayBuffer());
+      const hex=Array.from(new Uint8Array(digest)).map(value=>value.toString(16).padStart(2,'0')).join('');
+      validating=true;await authorization.assertCurrentPrincipal();validating=false;
+      if(epoch!==principalEpoch||readBrowserActivePrincipal()!==activePrincipal)return unavailable('AUTHORIZATION_CHANGED',recovery);
+      if(hex.toLowerCase()!==authorization.contentIdentity.artifactSha256?.toLowerCase()){
+        // Drop only the damaged disposable asset, so the existing persistence
+        // path can fetch the newly authorized exact bytes instead of reusing it.
+        try{const invalidation=database.transaction(ASSET_STORE,'readwrite');invalidation.objectStore(ASSET_STORE).delete(persistedSession.cacheKey);await transactionDone(invalidation);}catch{}
+        return unavailable('FILE_SHA_MISMATCH',recovery);
+      }
+    }
+    if(epoch!==principalEpoch||readBrowserActivePrincipal()!==activePrincipal)return unavailable('AUTHORIZATION_CHANGED',recovery);
+    try{
+      const now=new Date().toISOString(),writeTransaction=database.transaction([ASSET_STORE,SESSION_STORE],'readwrite');
+      writeTransaction.objectStore(ASSET_STORE).put({...persistedAsset,lastAccessAt:now} satisfies PersistedPdfAsset);
+      writeTransaction.objectStore(SESSION_STORE).put({...persistedSession,lastAccessAt:now} satisfies PersistedPdfSession);
+      await transactionDone(writeTransaction);
+    }catch{/* Cache timestamps grant no access. Fresh authorization below remains mandatory. */}
+    if(canonical&&authorization){validating=true;await authorization.assertCurrentPrincipal();validating=false;}
+    if(epoch!==principalEpoch||readBrowserActivePrincipal()!==activePrincipal){
+      return unavailable('AUTHORIZATION_CHANGED',recovery);
+    }
+    objectUrl=URL.createObjectURL(persistedAsset.blob);
+    restoreInMemoryDocumentPreviewSession({sessionId,sessionCreatedAt:persistedSession.sessionCreatedAt,
+      doc:createPdfDocumentDescriptor({uri:objectUrl,objectUrlOwnership:'document-session',title:persistedSession.title,fileName:persistedSession.fileName,
+        documentType:persistedSession.documentType,originModule:persistedSession.originModule,source:persistedSession.source,
+        createdAt:persistedSession.assetCreatedAt,entityId:persistedSession.entityId,
+        contentIdentity:canonical?{...authorization!.contentIdentity}:persistedSession.contentIdentity})});
+    committed=true;
+    return {restored:true};
+  }catch{
+    if(committed)discardDocumentSession(sessionId);
+    else if(objectUrl)URL.revokeObjectURL(objectUrl);
+    return unavailable(validating?'AUTHORIZATION_CHANGED':'STORAGE_UNAVAILABLE',recovery);
+  }
+}
 
-  const now = new Date().toISOString();
-  const writeTransaction = database.transaction(
-    [ASSET_STORE, SESSION_STORE],
-    "readwrite",
-  );
-  writeTransaction.objectStore(ASSET_STORE).put({
-    ...persistedAsset,
-    lastAccessAt: now,
-  } satisfies PersistedPdfAsset);
-  writeTransaction.objectStore(SESSION_STORE).put({
-    ...persistedSession,
-    lastAccessAt: now,
-  } satisfies PersistedPdfSession);
-  await transactionDone(writeTransaction);
-  return true;
+/** Generic compatibility entry; canonical bytes additionally require fresh authority. */
+export async function restoreWebPdfPreviewSession(sessionIdInput:string):Promise<boolean>{
+  return (await restoreWebPdfPreviewSessionDetailed(sessionIdInput)).restored;
 }
 
 export async function clearWebPdfPreviewCacheForSessionBoundary(): Promise<void> {

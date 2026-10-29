@@ -1,23 +1,34 @@
 import { MessageChannel, receiveMessageOnPort } from 'node:worker_threads';
+import {createHash,webcrypto} from 'node:crypto';
 import { Blob as NodeBlob } from 'node:buffer';
 import { Platform } from 'react-native';
 import { IDBFactory } from 'fake-indexeddb';
-import { createPdfDocumentDescriptor } from './pdfDocument';
+import { createPdfDocumentDescriptor,type DocumentDescriptor } from './pdfDocument';
 import { clearDocumentSessions, createPreparingDocumentPreviewSession, materializeDocumentPreviewSessionAsset, getDocumentSessionSnapshot } from './pdfDocumentSessions';
-import { __resetWebPdfPreviewCacheForTests, restoreWebPdfPreviewSession, persistWebPdfPreviewSession } from './pdfWebPreviewCache';
-import { persistCanonicalWebPdfPreview } from './pdfCanonicalWebPreviewPersistence';
+import { __resetWebPdfPreviewCacheForTests, restoreWebPdfPreviewSession, restoreWebPdfPreviewSessionDetailed,persistWebPdfPreviewSession } from './pdfWebPreviewCache';
+import { persistCanonicalWebPdfPreview,canonicalPdfPreviewCacheIdentity } from './pdfCanonicalWebPreviewPersistence';
+const digest=(value:string)=>createHash('sha256').update(value).digest('hex');
 const mockSessionSafe = jest.fn();
 jest.mock('../supabaseClient', () => ({ getSessionSafe: (...args: unknown[]) => mockSessionSafe(...args) }));
 
 describe('canonical PDF reload recovery through the real common materialization path', () => {
- const original = { clone: globalThis.structuredClone, blob: globalThis.Blob, os: Platform.OS, document: globalThis.document, indexedDB: globalThis.indexedDB,
+ const original = { crypto:globalThis.crypto,clone: globalThis.structuredClone, blob: globalThis.Blob, os: Platform.OS, document: globalThis.document, indexedDB: globalThis.indexedDB,
    fetch: globalThis.fetch, sessionStorage: globalThis.sessionStorage, create: URL.createObjectURL, revoke: URL.revokeObjectURL };
  const storage = new Map<string,string>();
  const identity = { ownerUserId:'user-1',viewerUserId:'user-1',organizationId:'company-1',currency:'KGS',revisionId:'revision-1',
-   releaseId:'release-1',definitionVersionId:'definition-1',checksumSha256:'a'.repeat(64),artifactSha256:'b'.repeat(64),rendererVersion:'renderer-1',issuancePurpose:'PRELIMINARY_REVIEW' as const };
+   releaseId:'release-1',definitionVersionId:'definition-1',checksumSha256:'a'.repeat(64),artifactSha256:digest('%PDF-1.7\nexact revision bytes'),rendererVersion:'renderer-1',issuancePurpose:'PRELIMINARY_REVIEW' as const };
+ async function trustedRestore(sessionId:string,contentIdentity:DocumentDescriptor['contentIdentity']){
+  const cacheIdentity=canonicalPdfPreviewCacheIdentity(contentIdentity);
+  if(!cacheIdentity||!contentIdentity)throw new Error('TEST_ONLY_TRUSTED_IDENTITY_REQUIRED');
+  return (await restoreWebPdfPreviewSessionDetailed(sessionId,{identity:cacheIdentity,contentIdentity,assertCurrentPrincipal:async()=>{
+   const current=await mockSessionSafe();
+   if(current.degraded||current.session?.user.id!==contentIdentity.viewerUserId)throw Object.assign(new Error('TEST_ONLY_ACTOR_CHANGED'),{name:'AbortError'});
+  }})).restored;
+ }
  const descriptor=()=>createPdfDocumentDescriptor({uri:'https://example.test/exact-saved.pdf',fileName:'exact.pdf',
    title:'Saved estimate',documentType:'request',source:'generated',originModule:'reports',entityId:'draft-1',contentIdentity:identity});
  beforeEach(()=>{
+  Object.defineProperty(globalThis,'crypto',{configurable:true,value:webcrypto});
   Object.defineProperty(globalThis,'Blob',{configurable:true,value:NodeBlob});
   Object.defineProperty(globalThis,'structuredClone',{configurable:true,value:<T,>(value:T):T=>{
     const channel=new MessageChannel();
@@ -37,6 +48,7 @@ describe('canonical PDF reload recovery through the real common materialization 
  afterEach(async()=>{
   clearDocumentSessions();await __resetWebPdfPreviewCacheForTests();storage.clear();
   Object.defineProperty(Platform,'OS',{configurable:true,value:original.os});
+  Object.defineProperty(globalThis,'crypto',{configurable:true,value:original.crypto});
   Object.defineProperty(globalThis,'Blob',{configurable:true,value:original.blob});
   Object.defineProperty(globalThis,'structuredClone',{configurable:true,value:original.clone});
   for(const k of ['document','indexedDB','fetch','sessionStorage'] as const)Object.defineProperty(globalThis,k,{configurable:true,value:original[k]});
@@ -49,8 +61,9 @@ describe('canonical PDF reload recovery through the real common materialization 
   expect(getDocumentSessionSnapshot(pending.session.sessionId).session?.status).toBe('ready');
   expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   clearDocumentSessions();
-  expect(await restoreWebPdfPreviewSession(pending.session.sessionId)).toBe(true);
+  expect(await trustedRestore(pending.session.sessionId,doc.contentIdentity)).toBe(true);
   const restored=getDocumentSessionSnapshot(pending.session.sessionId);
+  expect(restored.asset?.contentIdentity).toMatchObject(identity);
   expect(restored.session?.sessionId).toBe(pending.session.sessionId);
   expect(restored.asset).toMatchObject({uri:'blob:recovered-exact-pdf',fileName:asset.fileName,title:asset.title,entityId:'draft-1'});
   expect(globalThis.fetch).toHaveBeenCalledTimes(1);
@@ -61,21 +74,22 @@ describe('canonical PDF reload recovery through the real common materialization 
   const pending=createPreparingDocumentPreviewSession(doc);
   await materializeDocumentPreviewSessionAsset(pending.session.sessionId,doc,pending.session.preparationToken);
   clearDocumentSessions();
-  expect(await restoreWebPdfPreviewSession(pending.session.sessionId)).toBe(true);
+  expect(await trustedRestore(pending.session.sessionId,doc.contentIdentity)).toBe(true);
  });
  it('stores new file bytes when live report diagnostics refresh under the same revision and renderer',async()=>{
   (globalThis.fetch as jest.Mock)
    .mockResolvedValueOnce({ok:true,status:200,blob:async()=>new Blob(['%PDF-1.7 first'],{type:'application/pdf'})})
    .mockResolvedValueOnce({ok:true,status:200,blob:async()=>new Blob(['%PDF-1.7 refreshed'],{type:'application/pdf'})});
-  const doc=descriptor(),first=createPreparingDocumentPreviewSession(doc);
+  const doc=descriptor();doc.contentIdentity={...identity,artifactSha256:digest('%PDF-1.7 first')};
+  const first=createPreparingDocumentPreviewSession(doc);
   await materializeDocumentPreviewSessionAsset(first.session.sessionId,doc,first.session.preparationToken);
-  const refreshed={...doc,contentIdentity:{...identity,artifactSha256:'c'.repeat(64)}};
+  const refreshed={...doc,contentIdentity:{...identity,artifactSha256:digest('%PDF-1.7 refreshed')}};
   const second=createPreparingDocumentPreviewSession(refreshed);
   await materializeDocumentPreviewSessionAsset(second.session.sessionId,refreshed,second.session.preparationToken);
   expect(globalThis.fetch).toHaveBeenCalledTimes(2);
   clearDocumentSessions();
-  expect(await restoreWebPdfPreviewSession(first.session.sessionId)).toBe(true);
-  expect(await restoreWebPdfPreviewSession(second.session.sessionId)).toBe(true);
+  expect(await trustedRestore(first.session.sessionId,doc.contentIdentity)).toBe(true);
+  expect(await trustedRestore(second.session.sessionId,refreshed.contentIdentity)).toBe(true);
   const restoredBlobs=(URL.createObjectURL as jest.Mock).mock.calls.map(call=>call[0] as Blob);
   expect(await Promise.all(restoredBlobs.map(blob=>blob.text()))).toEqual(['%PDF-1.7 first','%PDF-1.7 refreshed']);
  });
@@ -106,7 +120,7 @@ describe('canonical PDF reload recovery through the real common materialization 
   const pending=createPreparingDocumentPreviewSession(doc);
   await materializeDocumentPreviewSessionAsset(pending.session.sessionId,doc,pending.session.preparationToken);
   clearDocumentSessions();
-  expect(await restoreWebPdfPreviewSession(pending.session.sessionId)).toBe(true);
+  expect(await trustedRestore(pending.session.sessionId,doc.contentIdentity)).toBe(true);
   expect(await restoreWebPdfPreviewSession(first.session.sessionId)).toBe(false);
  });
  it('purges persisted canonical sessions on the existing authentication boundary',async()=>{
