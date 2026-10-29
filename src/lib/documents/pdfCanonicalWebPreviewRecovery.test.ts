@@ -49,11 +49,12 @@ describe('canonical PDF exact saved recovery with real registry, IDB and artifac
   const hash=digest(bytes),signedUrl='https://example.test/artifact-'+hash+'.pdf';downloads.set(signedUrl,bytes);
   return{apiVersion:ESTIMATE_PLATFORM_API_VERSION,artifactId:'TEST_ONLY_ARTIFACT',revisionId:r.revisionId,releaseId:r.releaseId,kind:'pdf',status:'ready',
    contentType:'application/pdf',byteSize:new NodeBlob([bytes]).size,sha256:hash,
-   metadata:buildCanonicalArtifactMetadata({operation:'professional_pdf',renderer,
+   // Artifact GET adds this API presentation envelope to persisted metadata.
+   metadata:{...buildCanonicalArtifactMetadata({operation:'professional_pdf',renderer,
     revision:{id:r.revisionId,release_id:r.releaseId,catalog_id:r.catalogId,definition_version_id:r.definitionVersionId,
      checksum_sha256:r.checksumSha256,row_count:r.rowCount,owner_user_id:'TEST_ONLY_CREATOR',organization_id:r.organizationId},
     sourceRowCount:r.rowCount,projectedRowCount:1,selectedProcurementRowCount:0,definitionVersionId:r.definitionVersionId,
-    pageCount:1,grandTotalStatus:'PARTIAL_NEEDS_PRICE',issuancePurpose:purpose,...(purpose==='PRELIMINARY_REVIEW'?{reviewAcknowledgmentV1:ack}:{})}),
+    pageCount:1,grandTotalStatus:'PARTIAL_NEEDS_PRICE',issuancePurpose:purpose,...(purpose==='PRELIMINARY_REVIEW'?{reviewAcknowledgmentV1:ack}:{})}),documentProfile:'professional_v1'},
    errorCode:null,createdAt:r.createdAt,updatedAt:r.createdAt,readyAt:r.createdAt,signedUrl,signedUrlExpiresAt:'2030-01-01T00:00:00Z'};
  }
  function reference(purpose:CanonicalProfessionalPdfIssuancePurpose='PRELIMINARY_REVIEW'):CanonicalPdfRecoveryReference{
@@ -324,6 +325,18 @@ describe('canonical PDF exact saved recovery with real registry, IDB and artifac
   expect(await recoverCanonicalPdfViewerSession({sessionId:generic.session.sessionId,reference:reference()})).toEqual({recovered:false,reason:'IDENTITY_MISMATCH'});
   expect(mockRevision).not.toHaveBeenCalled();expect(mockArtifact).not.toHaveBeenCalled();expect(mockBuild).not.toHaveBeenCalled();
   expect(getDocumentSessionSnapshot(generic.session.sessionId).asset?.uri).toBe(doc.uri);
+ });
+ it.each(['absent','wrong'])('retains the real client guard for an %s professional API profile',async variant=>{
+  currentArtifact={...currentArtifact,metadata:{...currentArtifact.metadata}};
+  if(variant==='absent')delete currentArtifact.metadata.documentProfile;
+  else currentArtifact.metadata.documentProfile='TEST_ONLY_OTHER_PROFILE';
+  const client=await import('../estimate/backendPlatform/canonicalEstimateClient');
+  expect(()=>client.assertCanonicalEstimateArtifactIdentity({artifact:currentArtifact,revision,expectedKind:'pdf',
+   expectedDocumentProfile:'professional_v1',expectedIssuancePurpose:'PRELIMINARY_REVIEW',expectedCatalogId:revision.catalogId,expectedRowCount:revision.rowCount}))
+   .toThrow(expect.objectContaining({code:'ARTIFACT_REVISION_IDENTITY_MISMATCH'}));
+  expect(await recoverCanonicalPdfViewerSession({sessionId:'TEST_ONLY_BAD_PROFILE',reference:reference()}))
+   .toEqual({recovered:false,reason:'IDENTITY_MISMATCH'});
+  expect(mockBuild).not.toHaveBeenCalled();expect(globalThis.fetch).not.toHaveBeenCalled();expect(URL.createObjectURL).not.toHaveBeenCalled();
  });
  it('diagnoses the exact recovery lazy-import boundary outside the production catch',async()=>{
   // Keep this last: existing recovery cases retain their original cold loading.

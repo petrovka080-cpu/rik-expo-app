@@ -766,7 +766,7 @@
   "tests/releasePipeline/sourceChangedAfterFreezeBlocked.contract.test.ts": "33404267499bfc9d5802ad024c89624a00423be8903fef577cb46950510d9d07",
   "tests/releasePipeline/sourceFreezeWritesOnlyIgnoredRuntime.contract.test.ts": "21cb9f876c593e3e121b57dccbb5109351c2544b1a42828e05a775f169ed757e",
   "app/pdf-viewer.tsx": "39b83555c9b0ecefe42fe6474ee42af0c936026fe00157e36014dc6ac50d2db6",
-  "src/lib/documents/pdfCanonicalWebPreviewRecovery.test.ts": "a1dae77133bbb45d286536c1ff4239ec75d5bdd93f601ccec5eba9cc6e405818",
+  "src/lib/documents/pdfCanonicalWebPreviewRecovery.test.ts": "1b61bed40b4034b951f9320d27effaec583220df4782fc366b8e555266c14c1e",
   "src/lib/documents/pdfDocumentActions.ts": "775a455b91da54dd045dd7080c3a72455d9e987e56c70415c439e059cdec6aa5",
   "src/lib/documents/pdfDocumentPreviewAction.ts": "2491f3859e0134ae3c993deee4cba0ca93e03d1bb7508bb9614414365ea9ef86",
   "src/lib/documents/pdfDocumentViewerEntry.test.ts": "446b4e40d3c83b81a0270cdd9896ebf849efd1e474756d16dbdcd7cd8484678b",

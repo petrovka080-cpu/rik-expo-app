@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "PRIVATE_CAUSAL_JEST_CJS_IMPORT_TRANSFORM_AND_FULL_PUBLIC_PDF_ASSETS_BEFORE_25_APPLY",
+  "snapshotKind": "PRIVATE_CAUSAL_REAL_PROFESSIONAL_GET_DTO_FIXTURE_BEFORE_SAME_25_APPLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "ebcf6963ba78b301d60637c5cfa71a237ac3b9584e7ffa0f191bf43a4611dd67",
@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "73826cf966ff2b1f8d1beb87a9ca77053f648dfccfebfdadf300f86418fcef5f",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "2e449cf2305d43456b1efcde7ba941623732e5322b4b12fd1b0216d0c28fab4d",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "407fe2ac990fa706b0cc3e9f5e6ed155b1971063cf799c78df127644e33e0f75",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2744,7 +2744,7 @@
     "scripts/audit/runEstimateStructuredPipelineUiPdfBindingCloseout.ts": "7c1c2452010caed88e5cb457b2050b71d83627e75799dd8f645b33ea2071bc23",
     "tests/requestEstimate/estimateStructuredPipelineUiPdfBindingCloseout.contract.test.ts": "3c8da334f0f33210db898810508ce07970b4aaaa32e8eda3617f8b09c497f474",
     "tests/e2e/androidOfficialRouteToScreenAck.contract.test.ts": "dddeb63120a04c9c2c6040f5b576b92da2132aaa8270c8c8b715d67386e5af96",
-    "src/lib/documents/pdfCanonicalWebPreviewRecovery.test.ts": "a1dae77133bbb45d286536c1ff4239ec75d5bdd93f601ccec5eba9cc6e405818",
+    "src/lib/documents/pdfCanonicalWebPreviewRecovery.test.ts": "1b61bed40b4034b951f9320d27effaec583220df4782fc366b8e555266c14c1e",
     "src/lib/documents/pdfDocumentViewerEntry.test.ts": "446b4e40d3c83b81a0270cdd9896ebf849efd1e474756d16dbdcd7cd8484678b",
     "src/lib/pdf/pdfViewer.readiness.test.ts": "4d0a4a18523aa16d633fd8a7ace67409f67687444cb9f32609cd7fc9a11bfe9b",
     "src/lib/pdf/PdfViewerScreenContent.recovery.test.tsx": "99bae9a97be2628666e76f44c1d5ccf36d30eba460c66116c269764400d47c75",
@@ -4494,14 +4494,14 @@
     "node_modules/@babel/plugin-transform-dynamic-import/README.md": "6b56d36661f678d5d4645ddc5168d0f47df23f95c23d3b426fac9b186f2c1872"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "2e449cf2305d43456b1efcde7ba941623732e5322b4b12fd1b0216d0c28fab4d",
+  "originalSeedManifestSha256": "407fe2ac990fa706b0cc3e9f5e6ed155b1971063cf799c78df127644e33e0f75",
   "canonicalSourceFreezeSha256": "5a23e545a959b5d16f403b813ee94932b2f8af08b485de57c5e8bebe232c1012",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 182661567,
+    "sourceBytes": 182662787,
     "newInputs": "Exact official Jest-only pinned import-transform dependency/config; one appended uncaught recovery diagnostic with previous36 intact; all198 unchanged tracked public PDF.js/vendor bytes. No private history/auth/environment data."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -5373,6 +5373,20 @@
       "canonicalApplied": false,
       "prospectiveOwnedFiles": 166,
       "combinedPatchSha256": "db3b8a45be352f992ae10466999d7d541628960171f0c1e172d5c7a7036e49f4"
+    },
+    "ci25ExactGetEnvelopeFixtureSuccessorR1153": {
+      "actualPreviousRun": 40970887275,
+      "previousFailures": 17,
+      "sourceChanges": 0,
+      "testOnlySubject": "src/lib/documents/pdfCanonicalWebPreviewRecovery.test.ts",
+      "testAfterSha256": "1b61bed40b4034b951f9320d27effaec583220df4782fc366b8e555266c14c1e",
+      "newNegativeCases": 2,
+      "recoveryCases": 39,
+      "strictClientAndProductGuardsUnchanged": true,
+      "sourceAstraAcknowledged": true,
+      "actualAll79StillRequired": true,
+      "rootDiffRead": true,
+      "combinedPatchSha256": "a4359e39da7db237ced26f6e0257ebfd6f72c965c44f11b62e3a869007fcf393"
     }
   },
   "existingCiTypesStageBudget": {
