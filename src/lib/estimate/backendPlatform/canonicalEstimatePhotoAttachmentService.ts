@@ -74,6 +74,7 @@ async function readAndVerifyLocalAsset(asset: CapturedPhotoAsset): Promise<Array
 function assertCommittedAttachment(
   attachment: CanonicalEstimatePhotoAttachmentView,
   input: CommitCanonicalEstimateRowPhotoInput,
+  expectedAttachmentId: string,
 ): void {
   if (attachment.status !== "committed"
     || attachment.requestId !== input.requestId
@@ -84,6 +85,7 @@ function assertCommittedAttachment(
     || attachment.mimeType !== input.asset.mimeType
     || attachment.sizeBytes !== input.asset.byteSize
     || !attachment.attachmentId
+    || attachment.attachmentId !== expectedAttachmentId
     || !attachment.attachmentEventId) {
     throw new CanonicalEstimateApiError("Backend вернул вложение другой строки или версии сметы.", {
       code: "PHOTO_ATTACHMENT_IDENTITY_MISMATCH",
@@ -122,6 +124,7 @@ export async function commitCanonicalEstimateRowPhoto(
     replacesAttachmentId: input.replacesAttachmentId,
     signal: input.signal,
   });
+  const expectedAttachmentId = intent.attachmentId;
   if (intent.status === "staged") {
     if (!intent.uploadUrl || !intent.uploadToken) {
       throw new CanonicalEstimateApiError("Backend не выдал безопасную сессию загрузки снимка.", {
@@ -150,7 +153,7 @@ export async function commitCanonicalEstimateRowPhoto(
     uploadId: intent.uploadId,
     signal: input.signal,
   });
-  assertCommittedAttachment(finalized.attachment, input);
+  assertCommittedAttachment(finalized.attachment, input, expectedAttachmentId);
   return {
     attachment: finalized.attachment,
     created: finalized.created,

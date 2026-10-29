@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "PRIVATE_PROSPECTIVE10_CURRENT139_PLUS_A10_BEFORE_CANONICAL_APPLY",
+  "snapshotKind": "PRIVATE_PROSPECTIVE14_BEFORE_CANONICAL_APPLY",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "ebcf6963ba78b301d60637c5cfa71a237ac3b9584e7ffa0f191bf43a4611dd67",
@@ -561,8 +561,8 @@
     "scripts/verification/android-waterproof-current-v1/restore_exact_git_blobs.py": "5f9bc7f378374ef88b8dc3519dbd2222fc861c98614fd03c89c26a9018608756",
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "9b4390482d3a8f2024c64e8441b316a6337de87a2755cea5e22b70be0f33ea39",
-    "scripts/verification/gox-current-types-v1/jest-targets.json": "055278e98053125cc7523dbede324d637ba658ac01e31e878e8393e761f99eaf",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "ecd282b71574ac3f746142a720966031f49ab60a7d51ceee052c8920444241b1",
+    "scripts/verification/gox-current-types-v1/jest-targets.json": "afea0a0dc422a36bdfefc0ae2c1933662c086c5e52997792df3dd8a3ae700272",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "2ac201c02b1682924ec1ed866507f0e852f617aea79d16c604085f0f43f346a5",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -632,7 +632,7 @@
     "src/features/consumerRepair/consumerPublicParameterValues.test.tsx": "4fdbc3d0dab6a786b6c7a481fbc8f96d9afeed90a20f97e41065694a90765dd3",
     "src/features/consumerRepair/consumerPvcFloorCompleteFourS2769.test.ts": "e566e711f16b98ad662db199c93e191bb3251bae93eaa9ee1061fe147469d771",
     "src/features/consumerRepair/consumerRepairAiAdapter.ts": "89a7ad58dc40cd9640a2b829dfc906aa3900ab80fa4e5bb552e819883c295e4f",
-    "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx": "30a75b25106d0b4e71538e5587fdd2b9d7d1ce66cf9f88612ed65bfd3276169e",
+    "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx": "8ff27b2f0561ef524d4d2faba589967eacdc55c0208bcd82756f707449fa1323",
     "src/features/consumerRepair/consumerRepairBackendOwnership.ts": "b2e06cb186e2196fea3ab2b9f7ee496a25cdef520abe3d88046a961cdc6bcd35",
     "src/features/consumerRepair/consumerRepairCanonicalDraftReuse.ts": "5a2847f2bd6cf62d8a2ce6c8e25fb5289eef85b243de10e84a5dfdab5d597b0b",
     "src/features/consumerRepair/consumerRepairCanonicalEstimateReadiness.ts": "a862444e2a7938270a9ecf7b4f4f1a4c372960c215cacab8902f402b977b7bdf",
@@ -1242,7 +1242,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSemantics.ts": "cac2b06547720c704b21d15d87df00b1393966f5fd07c5a13884d7d10f045b81",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterSessionSnapshot.ts": "00951c3c11d9ab18190f2ad8f034dca95432bd93a8645154f6eb9e11ec98b185",
     "src/lib/estimate/backendPlatform/canonicalEstimateParameterValidation.ts": "802c611b65fa6de99044ab6544c8937e507e212d2a8592165d885d4b20e0893d",
-    "src/lib/estimate/backendPlatform/canonicalEstimatePhotoAttachmentService.ts": "21af705fe3d26035943570b21d366e1c8c36c4cdbac8ded79c061366f558051b",
+    "src/lib/estimate/backendPlatform/canonicalEstimatePhotoAttachmentService.ts": "b8f89a353045fd843f824384c5b34b8cc2e4e1fd8d7f0084990312f31874e8a8",
     "src/lib/estimate/backendPlatform/canonicalEstimatePhysicalNormProjection.ts": "f1efc4146454cb63583e00195eeeaf4f6d4df962a059fda66bba549e7b304492",
     "src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedEvidenceCache.ts": "67b39fb5b0d80046f74468ea57476220ae2f3d9eedfa10760ecb9e45c962efca",
     "src/lib/estimate/backendPlatform/canonicalEstimatePreliminaryNeedTransport.ts": "921abd1a43765647d1085a5f8b0af34e7c82745fcbf271ecf314490591be1de6",
@@ -2689,7 +2689,7 @@
     "src/lib/estimate/backendPlatform/canonicalEstimateClient.preliminaryReviewR1153.test.ts": "618ad10c398a873744bdff379d9ab0281487314d08c728103e7a5432cf39bdad",
     "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.preliminaryReviewR1153.test.ts": "ddcf8d6a156a5e0d79cc6e80224c774cc5fd1e290d08544ecebb7da7ebb7f69e",
     "supabase/functions/canonical-estimate-worker/index.ts": "8bcc417a5b8aaef8e9edc0735240d2444184d4c53b9696d9eceaef4da4989429",
-    "supabase/functions/canonical-estimate/index.ts": "f3e835226e56590877f737798029d81a7268a361c9f48589dc30377eb7cb9662",
+    "supabase/functions/canonical-estimate/index.ts": "8e59caf92b293ae6c9485971c19a17d9969c7a30d210490e9d8f1658a5f4b319",
     "supabase/migrations/20261029110000_saved_professional_pdf_review_purpose.sql": "b700e45c49072a26c98df0ccd55b1af4a0ff9af18acfb730f3fa9859c0908469",
     "scripts/render/serveExpoWebStaging.mjs": "f60c228b0af262e03beba2993526e67687dc0a5efd751a0ce0d33199ce839564",
     "tests/scale/renderExpoWebStagingServer.contract.test.ts": "4bfa3a9668dc485357742dc457f9659ea49051ec167ac006caa05796a965090a",
@@ -2704,7 +2704,7 @@
     "src/lib/estimatePresentation/buildCanonicalParameterCards.r3.test.ts": "3d14434693c91796ecc2dfe625b529c8a39c9aa15bfcc33d6213b7a64ce159b1",
     "src/lib/documents/pdfCanonicalWebPreviewPersistence.test.ts": "b4f63b31393e9e4f41ed48ff7977e175e287afc395fafa13f25f87aa3f501c6f",
     "src/lib/documents/pdfCanonicalWebPreviewPersistence.ts": "6a27ebfcfcfcb973088faa54efb201dc90f40b4a5de622c6a38f274aa364c1a5",
-    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts": "f54609070c40e5c0260e44f0db5ecdee6bcb780e418693f42cc0c1f577410648",
+    "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts": "17076f576d5e92d0a67ade82aafe597ac2355812953309166e6be2c6f75a596c",
     "supabase/migrations/20261029150000_professional_pdf_readonly_snapshot_report.sql": "239740d375bdaea37092f3ccef22eaadb25ddbfa2af8a8bdf5e0dd5cb6b2ce7c",
     "tests/realtime/realtimeClientBudget.test.ts": "fbb87a6bea70752b1a66ea54aee58cacacb707ad2bd737e6d9b97956635b659d",
     "scripts/dev/metroNavigationAndroidAssets.cjs": "af5e92c622d94f64715979eefcb8cde06f86574caa5aea52b8fb44d01bfb29f4",
@@ -2729,7 +2729,10 @@
     "src/lib/api/proposalAttachments.service.ts": "0b7f7efd431e8cbe48f7d4f8ac443b61742521bfd1ea85371f05ed10cd481a5b",
     "src/lib/api/proposalAttachments.service.test.ts": "eba9690df263f56f95e0e590bbedd0f6a336c1904abfc5f40d4eed2c189687bc",
     "src/screens/accountant/accountant.attachments.test.ts": "1edeb6d59e205c6daa1cb921933d2ea955a01a2f3c1d0bd129c6680f6e3100ef",
-    "src/screens/accountant/accountant.attachments.ts": "41dd523981e705ca824101551a2fd5b39ad6de49c99b27f30bf92b930e4b53d0"
+    "src/screens/accountant/accountant.attachments.ts": "41dd523981e705ca824101551a2fd5b39ad6de49c99b27f30bf92b930e4b53d0",
+    "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts": "f9f86a16ddb8e921e8a41c2626de9f4fcf1b77d9c97b5a941a303c60d2b38fd2",
+    "render.yaml": "263a45f3833c9e107830c48f81f57c9f3b05ffa60988bacc18df45e9e01fe369",
+    "scripts/e2e/checkAndroidEmulatorHealth.ts": "054f23c27e7f9d71b7f3d15fc1933d3e4b0310db44a3d1fd3fc65729645f17c6"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4265,7 +4268,7 @@
     "node_modules/@react-native-async-storage/async-storage/jest/async-storage-mock.d.ts": "ecf40ba1d79472eacf1dc2c54eae5ae9638aa8da8340f5c1166b6efb585aca13"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "ecd282b71574ac3f746142a720966031f49ab60a7d51ceee052c8920444241b1",
+  "originalSeedManifestSha256": "2ac201c02b1682924ec1ed866507f0e852f617aea79d16c604085f0f43f346a5",
   "canonicalSourceFreezeSha256": "eed1017fe7ca406723521d16b0436cb855b6706965b0aab9f14dd0c8100a572f",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
@@ -4279,12 +4282,12 @@
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2728,
+    "sourceFiles": 2731,
     "dependencyFiles": 1531,
-    "sourcePins": 2728,
+    "sourcePins": 2731,
     "r1152BffMfaForwardSourcePinCount": 2657,
     "r1152BffMfaDeclaredSeeds": 676,
-    "r1153CurrentDeclaredSeeds": 756
+    "r1153CurrentDeclaredSeeds": 758
   },
   "candidateSourceComposition": {
     "kind": "ActualCanonicalInputsWithoutUnintakenHistoricalPackages",
@@ -4797,6 +4800,41 @@
       "all8StillFatal": true,
       "resourcePolicyChanged": false,
       "canonicalSourceChanged": false
+    },
+    "reviewedFourteenCausalCorrectionsR1153": {
+      "parent": "4eba558fe9307e790ca9af4748d13bbd35ade267",
+      "createdAtUtc": "2026-10-29T18:12:37.681300+00:00",
+      "combinedPatchSha256": "3719abc24ecafe6efc8863c43d837f02f426d62fe6da0b524226225c4a7e7537",
+      "newSubjectPaths": [
+        "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts",
+        "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx",
+        "supabase/functions/canonical-estimate/index.ts",
+        "src/lib/estimate/backendPlatform/canonicalEstimatePhotoAttachmentService.ts",
+        "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts"
+      ],
+      "rawReadDependencies": [
+        {
+          "path": "render.yaml",
+          "sha256": "263a45f3833c9e107830c48f81f57c9f3b05ffa60988bacc18df45e9e01fe369",
+          "textReadDependencyOnly": true
+        },
+        {
+          "path": "scripts/e2e/checkAndroidEmulatorHealth.ts",
+          "sha256": "054f23c27e7f9d71b7f3d15fc1933d3e4b0310db44a3d1fd3fc65729645f17c6",
+          "textReadDependencyOnly": true
+        }
+      ],
+      "astReviewSha256": "3eaed8b7881e0e2485aab7fcf1637d511f02b939d8d492b4b7ebbbc6a932c4da",
+      "all8GroupsRequiredFresh": true,
+      "resourcePolicyChanged": false,
+      "privateSavedDataUploaded": false,
+      "requiredLocalTenCasesActuallyPassed": 10,
+      "localTenProofResultSha256": "c23930185c457ca17bd784bf89aae4075a5215621b7712721191c83fcb57c05a",
+      "emptySkippedPlaceholderRemovedAfterActualLocalCases": true,
+      "substantivePrivateAndCommonAssertionsRemoved": 0,
+      "existingZeroPendingCiGuardUnchanged": true,
+      "wholeDenoAndProviderVerification": "OPEN",
+      "canonicalApplied": false
     }
   },
   "existingCiTypesStageBudget": {

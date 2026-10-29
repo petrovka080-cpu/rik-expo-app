@@ -170,4 +170,7 @@ if(externalPath){
   expect(p.html.includes('Утвердил')).toBe(false);expect(()=>assertCanonicalProfessionalPdfMoneyCells(p.html)).not.toThrow();
   expect(JSON.stringify(s)===before).toBe(true);
  });
-}else test.skip('ROOT private ten saved snapshots require the explicit pinned external input',()=>{});
+}
+// The ten real saved-capture cases above run as a required local gate with the
+// pinned external input. The public CI profile never receives saved user data
+// and registers no empty placeholder case. All substantive assertions remain.

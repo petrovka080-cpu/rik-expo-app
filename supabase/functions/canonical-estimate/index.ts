@@ -760,8 +760,7 @@ async function finalizeRevisionPhotoUpload(
   if (reservationError) normalizeDbError(reservationError);
   if (reservation.status === "committed") {
     const projection = await listRevisionPhotoAttachments(requester, revisionId, false);
-    const attachment = projection.attachments.find((candidate) => candidate.attachmentId === reservation.attachment_id)
-      ?? projection.attachments.find((candidate) => candidate.parentRevisionId === revisionId);
+    const attachment = projection.attachments.find((candidate) => candidate.attachmentId === reservation.attachment_id);
     if (!attachment) throw new CanonicalEstimateApiError("committed photo projection is missing", {
       code: "PHOTO_ATTACHMENT_PROJECTION_MISSING",
       httpStatus: 409,

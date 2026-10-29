@@ -218,7 +218,7 @@
   "src/features/consumerRepair/consumerLegacyQuantityClarity.test.tsx": null,
   "src/features/consumerRepair/consumerParameterFeedbackUi.test.tsx": null,
   "src/features/consumerRepair/consumerPublicParameterValues.test.tsx": null,
-  "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx": null,
+  "src/features/consumerRepair/consumerRepairApplicationPending.test.tsx": "8ff27b2f0561ef524d4d2faba589967eacdc55c0208bcd82756f707449fa1323",
   "src/features/consumerRepair/consumerRepairRowRequirements.test.ts": null,
   "src/features/consumerRepair/requestEstimateScreenActions.ts": null,
   "src/features/consumerRepair/requestEstimateViewModel.r4.test.ts": null,
@@ -736,7 +736,7 @@
   "src/lib/documents/pdfCanonicalWebPreviewPersistence.ts": "6a27ebfcfcfcb973088faa54efb201dc90f40b4a5de622c6a38f274aa364c1a5",
   "src/lib/documents/pdfDocumentSessions.ts": "3008c11bce015e64f9b99cd5ac8051273b71eea6d904575dfbaa2736c7678b47",
   "src/lib/documents/pdfWebPreviewCache.ts": "74398dc0c5bed6beba27893b22bb3b597aea0c5e87df17405d0d295a5063b2be",
-  "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts": "f54609070c40e5c0260e44f0db5ecdee6bcb780e418693f42cc0c1f577410648",
+  "src/lib/estimate/backendPlatform/canonicalProfessionalPdf.savedReportR1153.test.ts": "17076f576d5e92d0a67ade82aafe597ac2355812953309166e6be2c6f75a596c",
   "src/lib/estimate/backendPlatform/canonicalEstimateRevisionReadMapper.test.ts": "8f6be304505b17766c00a5ad8a06d8c9bcf39aea96ccdace23abcb2fe959e757",
   "src/lib/realtime/realtime.client.ts": "14e1e7c10945635d85411e1e496eefe67916086f498bc9a9129133429021fe6a",
   "tests/realtime/realtimeClientBudget.test.ts": "fbb87a6bea70752b1a66ea54aee58cacacb707ad2bd737e6d9b97956635b659d",
@@ -754,5 +754,7 @@
   "src/lib/api/proposalAttachments.service.ts": "0b7f7efd431e8cbe48f7d4f8ac443b61742521bfd1ea85371f05ed10cd481a5b",
   "src/lib/api/proposalAttachments.service.test.ts": "eba9690df263f56f95e0e590bbedd0f6a336c1904abfc5f40d4eed2c189687bc",
   "src/screens/accountant/accountant.attachments.test.ts": "1edeb6d59e205c6daa1cb921933d2ea955a01a2f3c1d0bd129c6680f6e3100ef",
-  "src/screens/accountant/accountant.attachments.ts": "41dd523981e705ca824101551a2fd5b39ad6de49c99b27f30bf92b930e4b53d0"
+  "src/screens/accountant/accountant.attachments.ts": "41dd523981e705ca824101551a2fd5b39ad6de49c99b27f30bf92b930e4b53d0",
+  "src/lib/estimate/backendPlatform/canonicalEstimatePhotoAttachmentService.ts": "b8f89a353045fd843f824384c5b34b8cc2e4e1fd8d7f0084990312f31874e8a8",
+  "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts": "f9f86a16ddb8e921e8a41c2626de9f4fcf1b77d9c97b5a941a303c60d2b38fd2"
 }

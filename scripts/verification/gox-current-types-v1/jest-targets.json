@@ -42,7 +42,8 @@
     ],
     "ui-contract": [
       "tests/requestEstimate/requestEstimateViewModel.contract.test.ts",
-      "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx"
+      "tests/requestEstimate/consumerEstimateNotes.contract.test.tsx",
+      "tests/consumerRepair/estimateRowPhotoFinalizeIdentity.contract.test.ts"
     ],
     "ui-procurement": [
       "src/features/consumerRepair/ConsumerRepairProgressiveEstimatePanel.procurement.test.tsx",

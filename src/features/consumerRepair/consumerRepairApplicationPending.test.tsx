@@ -248,27 +248,33 @@ test('public row taxonomy uses only verified presentation even when public name 
  expect(r.root.findByProps({testID:'consumer-repair-item-resource-kind-unverified-kind'}).props.children).toBe('Оборудование');
  act(()=>r.unmount());
 });
-test.each([true,false])('unverified composition keeps explicit manual approval while PDF follows common pdfAllowed=%s',pdfAllowed=>{
- const manual=jest.fn(),result={contractVersion:'canonical-operation-resource-acceptance/v1' as const,
+test.each([true,false])('unverified composition keeps explicit manual approval and opens preliminary PDF for strict pdfAllowed=%s',pdfAllowed=>{
+ const manual=jest.fn(),normal=jest.fn(),makePdf=jest.fn(),openPdf=jest.fn(),result={contractVersion:'canonical-operation-resource-acceptance/v1' as const,
   status:'COMPOSITION_UNVERIFIED' as const,issues:[{code:pdfAllowed?'RESOURCE_QUANTITY_UNRESOLVED':'INDEPENDENT_OPERATION_COMPOSITION_UNVERIFIED'}],pdfAllowed,
   definitionAdmissionAllowed:false,completeClaimAllowed:false};
  const before=JSON.stringify(result),r=render(<ConsumerRepairRequestStickyActions approved={false} sent={false} hasBundle hasSnapshot
   operationCompositionDiagnostic={{state:'AVAILABLE',acceptance:result}} manualQuantityApprovalAvailable
-  approvalManualUnresolvedRowCount={1} onOpenPdf={noop} onMakePdf={noop} onCreateNew={noop} onDeleteDraft={noop}
-  onApproveDraft={noop} onApproveManualQuantities={manual} onPrepareDraft={noop}/>);
- expect(JSON.stringify(r.toJSON())).toContain(pdfAllowed?'Состав подработ ещё не подтверждён полностью':'Состав подработ не проверен. PDF пока недоступен.');
- expect(r.root.findByProps({testID:'consumer-estimate-make-pdf'}).props.disabled).toBe(!pdfAllowed);
+  approvalManualUnresolvedRowCount={1} onOpenPdf={openPdf} onMakePdf={makePdf} onCreateNew={noop} onDeleteDraft={noop}
+  onApproveDraft={normal} onApproveManualQuantities={manual} onPrepareDraft={noop}/>);
+ expect(JSON.stringify(r.toJSON())).toContain(pdfAllowed?'Состав подработ ещё не подтверждён полностью':'Состав подработ не проверен. Предварительный PDF доступен для чтения; закупка требует проверки.');
+ const pdf=r.root.findByProps({testID:'consumer-estimate-make-pdf'});expect(pdf.props.disabled).toBe(false);
+ act(()=>pdf.props.onPress());expect(makePdf).toHaveBeenCalledTimes(1);expect(openPdf).not.toHaveBeenCalled();
+ expect(manual).not.toHaveBeenCalled();expect(normal).not.toHaveBeenCalled();
+ expect(result).toMatchObject({pdfAllowed,definitionAdmissionAllowed:false,completeClaimAllowed:false});
  const approve=r.root.findByProps({testID:'consumer-repair-approve'});expect(approve.props.disabled).toBe(false);
  act(()=>approve.props.onPress());expect(manual).not.toHaveBeenCalled();
  act(()=>r.root.findByProps({testID:'consumer-repair-manual-quantity-confirm'}).props.onPress());
- expect(manual).toHaveBeenCalledTimes(1);expect(JSON.stringify(result)).toBe(before);act(()=>r.unmount());
+ expect(manual).toHaveBeenCalledTimes(1);expect(normal).not.toHaveBeenCalled();expect(JSON.stringify(result)).toBe(before);act(()=>r.unmount());
 });
-test('structurally invalid saved composition visibly blocks PDF while retaining the saved editor and manual path',()=>{
- const result={contractVersion:'canonical-operation-resource-acceptance/v1' as const,status:'STRUCTURE_INVALID' as const,
+test('structurally invalid saved composition opens its preliminary PDF while retaining strict diagnostics and saved state',()=>{
+ const openPdf=jest.fn(),makePdf=jest.fn(),normal=jest.fn(),result={contractVersion:'canonical-operation-resource-acceptance/v1' as const,status:'STRUCTURE_INVALID' as const,
   issues:[{code:'RESOURCE_OPERATION_MISSING'}],pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false};
- const r=render(<ConsumerRepairRequestStickyActions approved sent={false} hasBundle hasSnapshot
-  operationCompositionDiagnostic={{state:'AVAILABLE',acceptance:result}} onOpenPdf={noop} onMakePdf={noop}
-  onCreateNew={noop} onDeleteDraft={noop} onApproveDraft={noop} onPrepareDraft={noop}/>);
- expect(JSON.stringify(r.toJSON())).toContain('PDF и список закупки пока недоступны');
- expect(r.root.findByProps({testID:'consumer-repair-open-pdf'}).props.disabled).toBe(true);act(()=>r.unmount());
+ const before=JSON.stringify(result),r=render(<ConsumerRepairRequestStickyActions approved sent={false} hasBundle hasSnapshot
+  operationCompositionDiagnostic={{state:'AVAILABLE',acceptance:result}} onOpenPdf={openPdf} onMakePdf={makePdf}
+  onCreateNew={noop} onDeleteDraft={noop} onApproveDraft={normal} onPrepareDraft={noop}/>);
+ expect(JSON.stringify(r.toJSON())).toContain('Состав сметы требует исправления. Предварительный PDF показывает сохранённые сведения и предупреждения; список закупки пока недоступен.');
+ const pdf=r.root.findByProps({testID:'consumer-repair-open-pdf'});expect(pdf.props.disabled).toBe(false);
+ act(()=>pdf.props.onPress());expect(openPdf).toHaveBeenCalledTimes(1);expect(makePdf).not.toHaveBeenCalled();expect(normal).not.toHaveBeenCalled();
+ expect(result).toMatchObject({status:'STRUCTURE_INVALID',pdfAllowed:false,definitionAdmissionAllowed:false,completeClaimAllowed:false});
+ expect(JSON.stringify(result)).toBe(before);act(()=>r.unmount());
 });

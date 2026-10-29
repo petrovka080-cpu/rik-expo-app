@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: rik-expo-app-staging
+    runtime: node
+    plan: free
+    repo: https://github.com/petrovka080-cpu/rik-expo-app.git
+    branch: release/production-candidate
+    buildCommand: npm ci && npm run render:build:web
+    startCommand: npm run render:start:web
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.6
+      - key: RENDER_APP_SERVICE_NAME
+        value: rik-expo-app-staging
+      - key: EXPO_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: EXPO_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: EXPO_PUBLIC_BFF_STAGING_BASE_URL
+        sync: false
