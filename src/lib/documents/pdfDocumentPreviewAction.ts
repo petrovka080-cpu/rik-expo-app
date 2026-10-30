@@ -356,7 +356,7 @@ async function executeDirectRemoteViewerSessionPath(args: {
     });
     opts?.assertCurrentRun?.("viewer_entry");
     recordBoundary("pdf_viewer_entry_started", "viewer_entry");
-    await pushPdfDocumentViewerRouteSafely(opts!.router!, viewerHref, opts?.onBeforeNavigate);
+    await pushPdfDocumentViewerRouteSafely(opts!.router!, viewerHref, opts?.onBeforeNavigate, doc.deliveryBoundary?.assertActive);
     recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
     persistCriticalPdfBreadcrumb({
       marker: "viewer_route_pushed",
@@ -679,7 +679,7 @@ async function executeStoredPreviewSessionPath(args: {
       });
       opts?.assertCurrentRun?.("viewer_entry");
       recordBoundary("pdf_viewer_entry_started", "viewer_entry");
-      await pushPdfDocumentViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate);
+      await pushPdfDocumentViewerRouteSafely(opts.router, viewerHref, opts?.onBeforeNavigate, doc.deliveryBoundary?.assertActive);
       recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
       persistCriticalPdfBreadcrumb({
         marker: "viewer_route_pushed",

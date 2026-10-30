@@ -24,6 +24,29 @@ const formulaSource=(formula:{formula_id:string;expression_source?:string})=>{
  if(typeof formula.expression_source!=='string')throw Error('EXACT_FORMULA_SOURCE_REQUIRED:'+formula.formula_id);
  return formula.expression_source;
 };
+type ParameterDefinitions=Parameters<typeof validateCanonicalEstimateParameters>[0];
+const validateAuthorityChain=(definitions:ParameterDefinitions,submitted:Record<string,unknown>,confirmed:Record<string,unknown>={})=>{
+ assertCanonicalSubmittedSourceParameterAuthorityV1(definitions,submitted);
+ return validateCanonicalEstimateParameters(definitions,submitted,{confirmedParameters:confirmed,baselineContext:{catalogId:s.catalogId}});
+};
+const expectCanonicalNormRefusal=(attempt:()=>unknown,message:string)=>{
+ let caught:unknown;
+ try{attempt();}catch(error){caught=error;}
+ expect(caught).toBeInstanceOf(CanonicalParameterValidationError);
+ expect(caught).toHaveProperty('code','PARAMETER_VALIDATION_FAILED');
+ expect(caught).toHaveProperty('message',message);
+};
+const expectUnresolvedNormChannels=(definitions:ParameterDefinitions,id:string,value:unknown)=>{
+ const definition=definitions.find(parameter=>parameter.parameter_id===id);
+ if(!definition)throw Error('EXACT_UNRESOLVED_PARAMETER_REQUIRED:'+id);
+ expect(definition.truth_metadata).toMatchObject({visibility_role:'INTERNAL_ONLY',value_source_role:'UNRESOLVED_APPLICATION_NORM',provenance:{consumer_input_role_v1:'APPLICATION_TECHNICAL'}});
+ const beforeHash=stableHash(definitions),suppliedMessage='unresolved application norm cannot be supplied '+id;
+ expectCanonicalNormRefusal(()=>validateAuthorityChain(definitions,{[id]:value}),suppliedMessage);
+ expectCanonicalNormRefusal(()=>validateAuthorityChain(definitions,{},{[id]:value}),suppliedMessage);
+ const defaulted=definitions.map(parameter=>parameter.parameter_id===id?{...parameter,default_value:value}:parameter);
+ expectCanonicalNormRefusal(()=>validateAuthorityChain(defaulted,{}),'unresolved application norm cannot have a default '+id);
+ expect(stableHash(definitions)).toBe(beforeHash);
+};
 const final=()=>electricalPoles04kvWholeOrdinaryMaterializerInputR1117(parent());
 describe('Poles04 current public guide exact native final R1153 — authored UNRUN',()=>{
  it('R1153-01 freshcurrent6/63native and55parts13needs give100/131/map68 final',()=>{expect([s.currentNative.parameters.length,s.currentNative.formulas.length,s.currentNative.resources.length]).toEqual([6,63,63]);expect(s.parts.length+s.unresolvedNeeds.length).toBe(68);const r=final();expect([r.definition.parameters.length,r.definition.formulas.length,r.definition.resources.length,r.independentCompletenessMap.entries.length]).toEqual([100,131,131,68]);});
@@ -34,7 +57,7 @@ describe('Poles04 current public guide exact native final R1153 — authored UNR
  it('R1153-06 exactIMWScompatibleintersection doesnotadmitdiameterbelow11mm',()=>{const d=final().definition;expect(()=>validateCanonicalEstimateParameters(d.parameters,{[s.fields.messenger_diameter_mm]:'10.999999999'},{baselineContext:{catalogId:s.catalogId}})).toThrow(CanonicalParameterValidationError);});
  it('R1153-07 sourceST31twowedgesperactualtoolkit isnotoneperpole/newtoolpurchase',()=>{const d=final().definition,part=s.parts.find(p=>p.key.includes('wedge'))!;expect(part).toBeTruthy();const f=d.formulas.find(f=>f.formula_id===s.prefix+':formula:'+part.key)!;expect(f.expression_source).toBe(part.expression);expect(Number(evaluateFormulaGraph(compileFormulaGraph(formulaSource(f)),{[s.fields.toolkits_deployed]:2}))).toBe(4);const r=d.resources.find(r=>r.row_id===s.prefix+':'+part.key)!;expect(r.cost_owner_id).toBeNull();expect(r.procurement_eligible).toBe(false);});
  it('R1153-08 all260classes13needs17returns remainSOURCEHOLD/notfullbygrowingguides',()=>{const r=final(),classes=r.independentCompletenessMap.operationRequirements.flatMap(o=>Object.values(o.requirements))as Json[];expect(classes).toHaveLength(260);expect(classes.every(v=>v.status==='UNRESOLVED')).toBe(true);expect(s.unresolvedNeeds).toHaveLength(13);expect(s.returnWhen).toHaveLength(17);expect(r.sourceRegistryAdmission).toBeNull();expect(r.newReady).toBe(false);expect(r.fullTechnicalAcceptance).toBe(false);});
- it('R1153-09 wrongcurrentparentheader rejected and unresolvedsourcegate notconsumerapproval',()=>{const p=parent();p.header={...p.header,definition_sha256:'f'.repeat(64)};expect(()=>electricalPoles04kvWholeOrdinaryMaterializerInputR1117(p)).toThrow('ELECTRICAL_POLES_04KV_EXACT_CURRENT_R1117_HEADER_REQUIRED');const d=final().definition;expect(()=>assertCanonicalSubmittedSourceParameterAuthorityV1(d.parameters,{[s.fields.method_source_gate]:'SYNTHETIC_APPROVAL'})).toThrow(CanonicalParameterValidationError);});
+ it('R1153-09 wrongcurrentparentheader rejected and unresolvedsourcegate notconsumerapproval',()=>{const p=parent();p.header={...p.header,definition_sha256:'f'.repeat(64)};expect(()=>electricalPoles04kvWholeOrdinaryMaterializerInputR1117(p)).toThrow('ELECTRICAL_POLES_04KV_EXACT_CURRENT_R1117_HEADER_REQUIRED');const d=final().definition;expectUnresolvedNormChannels(d.parameters,s.fields.method_source_gate,'SYNTHETIC_APPROVAL');});
 });
 // R1153 exact OEM whole manual path; all quantities remain synthetic evaluations.
 describe('Poles04 exact complete manual ratchet BOM source successor R1153 — authored UNRUN',()=>{
@@ -63,7 +86,7 @@ describe('Poles04 exact complete manual ratchet BOM source successor R1153 — a
   expect(()=>validateCanonicalEstimateParameters(d.parameters,{[s.fields.method]:s.current150ManualToolDispositionR1153.supersededUnpublishedMethodValue},{baselineContext:{catalogId:s.catalogId}})).toThrow(CanonicalParameterValidationError);
   expect(s.proposedBranchLookupCount).toBe(0);expect(s.proposedBranchSourceCapture).toBeNull();expect(final().proposedLookupActualCount).toBe(0);expect(final().currentLookupIsNotFormalCapture).toBe(true);
   expect(s.current150ManualToolDispositionR1153.methodScope).toContain('Powered path needs');
-  expect(()=>assertCanonicalSubmittedSourceParameterAuthorityV1(d.parameters,{[s.fields.method_source_gate]:'SYNTHETIC_OEM_OR_SITE_APPROVAL'})).toThrow(CanonicalParameterValidationError);
+  expectUnresolvedNormChannels(d.parameters,s.fields.method_source_gate,'SYNTHETIC_OEM_OR_SITE_APPROVAL');
  });
  it('R1153-13 beforeuselubrication has no fabricatedunitdoseormaintenanceapproval andall13needsremain',()=>{
   const m=s.current150ManualToolDispositionR1153.maintenance;

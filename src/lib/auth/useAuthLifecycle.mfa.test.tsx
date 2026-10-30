@@ -16,7 +16,10 @@ const mockSubscribe = jest.fn();
 let mockAuthEvent: (event: AuthChangeEvent, value: Session | null) => void;
 jest.mock("../supabaseClient", () => ({ getSessionSafe: (...args: unknown[]) => mockGetSession(...args), hasPersistedAuthSessionHint: (...args: unknown[]) => mockHint(...args) }));
 jest.mock("../sessionRole", () => ({ warmCurrentSessionProfile: (...args: unknown[]) => mockWarm(...args) }));
-jest.mock("../session/sessionBoundary", () => ({ resetSessionBoundary: (...args: unknown[]) => mockReset(...args) }));
+jest.mock("../session/sessionBoundary", () => ({
+  ...jest.requireActual("../session/sessionBoundary"),
+  resetSessionBoundary: (...args: unknown[]) => mockReset(...args),
+}));
 jest.mock("../observability/platformObservability", () => ({ recordPlatformObservability: jest.fn() }));
 jest.mock("./mfaAssurance.auth.transport", () => ({ readMfaAssuranceForSessionToken: (...args: unknown[]) => mockRead(...args) }));
 jest.mock("./useAuthLifecycle.auth.transport", () => ({

@@ -95,7 +95,7 @@ function localDeveloperRuntimeExpectedTuple(): Record<string, string> | null {
     capabilityId: String(process.env.EXPO_PUBLIC_CANONICAL_ESTIMATE_CAPABILITY_ID ?? "").trim(),
   };
   if (Object.values(expected).some((value) => !value)) {
-    throw new CanonicalEstimateApiError("Локальная версия приложения не привязана к версии расчётного backend.", {
+    throw new CanonicalEstimateApiError("Обновите страницу или перезапустите приложение, чтобы проверить его версию.", {
       code: "RUNTIME_COMPATIBILITY_CONFIG_MISSING",
       httpStatus: 503,
       retryable: true,
@@ -132,21 +132,37 @@ async function ensureLocalDeveloperRuntimeCompatibility(token: string): Promise<
         sourceKind: "canonical_estimate_edge_function",
       },
     );
+    // Preserve transport/auth failures before interpreting any manifest tuple.
+    if (response.status === 401) {
+      throw new CanonicalEstimateApiError("Для расчёта сметы требуется авторизация.", { code: "AUTH_REQUIRED", httpStatus: 401 });
+    }
+    if (response.status === 403) {
+      throw new CanonicalEstimateApiError("Недостаточно прав для расчёта сметы.", { code: "PERMISSION_DENIED", httpStatus: 403 });
+    }
+    if (!response.ok) {
+      throw new CanonicalEstimateApiError("Проверка версии приложения временно недоступна. Повторите попытку.", {
+        code: "RUNTIME_MANIFEST_UNAVAILABLE", httpStatus: response.status,
+        retryable: response.status >= 500 || response.status === 408 || response.status === 429,
+      });
+    }
     const manifest = await response.json().catch(() => null) as CanonicalEstimateRuntimeManifest | null;
-    const tuple = manifest?.compatibilityTuple ?? {};
-    const mismatch = Object.entries(expected).find(([key, value]) => String(tuple[key] ?? "") !== value);
-    const manifestHealthy = response.ok &&
+    const manifestHealthy =
       manifest?.runtimeRole === "FULL_CANONICAL_ESTIMATE_BACKEND" &&
       manifest?.authMode === "STRICT_SESSION_INTROSPECTION" &&
       manifest?.capability?.status === "ACTIVE" &&
       Number(manifest.capability.ttlSeconds ?? 0) >= 60 * 60;
     // Active compile jobs do not change this runtime's identity or authority.
     // Requiring global idleness here can block a job's own polling/cancellation.
-    if (!manifestHealthy || mismatch) {
-      throw new CanonicalEstimateApiError("Версии приложения и расчётного backend не совпадают. Перезапустите локальный контур.", {
-        code: mismatch ? `RUNTIME_COMPATIBILITY_MISMATCH_${mismatch[0]}` : "RUNTIME_MANIFEST_NOT_READY",
-        httpStatus: 503,
-        retryable: true,
+    if (!manifestHealthy) {
+      throw new CanonicalEstimateApiError("Не удалось подтвердить версию приложения. Повторите попытку.", {
+        code: "RUNTIME_MANIFEST_NOT_READY", httpStatus: 503, retryable: true,
+      });
+    }
+    const tuple = manifest?.compatibilityTuple ?? {};
+    const mismatch = Object.entries(expected).find(([key, value]) => String(tuple[key] ?? "") !== value);
+    if (mismatch) {
+      throw new CanonicalEstimateApiError("Версия приложения устарела. Обновите страницу или перезапустите приложение.", {
+        code: `RUNTIME_COMPATIBILITY_MISMATCH_${mismatch[0]}`, httpStatus: 503, retryable: true,
       });
     }
     runtimeCompatibilityVerifiedAt = Date.now();
@@ -177,7 +193,7 @@ async function refreshAccessToken(): Promise<string> {
   }
 }
 
-async function accessToken(forceRefresh = false): Promise<string> {
+async function accessToken(forceRefresh = false, refreshBudget?: { used: boolean }): Promise<string> {
   const { data, error } = await readCanonicalEstimateSession();
   if (error || !data.session?.access_token) {
     throw new CanonicalEstimateApiError("Для расчёта сметы требуется авторизация.", {
@@ -190,7 +206,13 @@ async function accessToken(forceRefresh = false): Promise<string> {
     forceRefresh ||
     !Number.isFinite(expiresAt) ||
     expiresAt <= Math.floor(Date.now() / 1_000) + ACCESS_TOKEN_REFRESH_SKEW_SECONDS
-  ) return refreshAccessToken();
+  ) {
+    if (refreshBudget?.used) {
+      throw new CanonicalEstimateApiError("Для расчёта сметы требуется авторизация.", { code: "AUTH_REQUIRED", httpStatus: 401 });
+    }
+    if (refreshBudget) refreshBudget.used = true;
+    return refreshAccessToken();
+  }
   return data.session.access_token;
 }
 
@@ -230,14 +252,28 @@ async function invoke<T>(path: string, options: {
       sourceKind: "canonical_estimate_edge_function",
     },
   ));
-  let token = await measureTransport("PARAMETER_TRANSPORT_AUTH", () => accessToken());
-  await measureTransport("PARAMETER_TRANSPORT_COMPATIBILITY", () => ensureLocalDeveloperRuntimeCompatibility(token));
-  let response = await execute(token);
-  if (response.status === 401) {
-    token = await measureTransport("PARAMETER_TRANSPORT_AUTH", () => accessToken(true));
-    runtimeCompatibilityVerifiedAt = 0;
+  // One budget covers proactive expiry refresh, manifest 401 and operation 401.
+  // Existing refresh singleflight is shared; each request can consume it once.
+  const refreshBudget = { used: false };
+  let token = await measureTransport("PARAMETER_TRANSPORT_AUTH", () => accessToken(false, refreshBudget));
+  const executeCompatible = async () => {
     await measureTransport("PARAMETER_TRANSPORT_COMPATIBILITY", () => ensureLocalDeveloperRuntimeCompatibility(token));
-    response = await execute(token);
+    const result = await execute(token);
+    if (result.status === 401) {
+      throw new CanonicalEstimateApiError("Для расчёта сметы требуется авторизация.", { code: "AUTH_REQUIRED", httpStatus: 401 });
+    }
+    return result;
+  };
+  let response: Response;
+  try {
+    response = await executeCompatible();
+  } catch (error) {
+    if (!(error instanceof CanonicalEstimateApiError) || error.httpStatus !== 401 || refreshBudget.used) throw error;
+    token = await measureTransport("PARAMETER_TRANSPORT_AUTH", () => accessToken(true, refreshBudget));
+    runtimeCompatibilityVerifiedAt = 0;
+    // This single second attempt is outside the catch: no retry loop or second
+    // budget, and the refreshed token must pass the unchanged expected tuple.
+    response = await executeCompatible();
   }
   let payload: unknown = null;
   if(options.boundedCatalogPromptResponse){

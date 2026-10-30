@@ -1,5 +1,4 @@
 import { generateForemanRequestPdfViaBackend } from "./foremanRequestPdfBackend.service";
-import { buildForemanRequestManifestContract } from "../pdf/foremanRequestPdf.shared";
 
 const mockInvokeCanonicalPdfBackend = jest.fn();
 const mockBoundarySuccess = jest.fn();
@@ -28,6 +27,10 @@ jest.mock("../storage/classifiedStorage", () => ({
 jest.mock("../supabaseClient", () => ({
   SUPABASE_URL: "https://example.supabase.co",
   SUPABASE_ANON_KEY: "anon-key",
+  supabase: { auth: {
+    getSession: async () => ({ data: { session: { user: { id: "actor" } } }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: jest.fn() } } }),
+  } },
 }));
 
 const backendResult = {
@@ -63,14 +66,7 @@ const buildRequest = (fingerprint: string) => ({
   clientSourceFingerprint: fingerprint,
 });
 
-async function waitForBackendInvokeCount(expected: number) {
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    if (mockInvokeCanonicalPdfBackend.mock.calls.length === expected) return;
-    await new Promise((resolve) => setTimeout(resolve, 5));
-  }
-}
-
-describe("foremanRequestPdfBackend.service PDF-Z4 reuse", () => {
+describe("foremanRequestPdfBackend.service fresh authority", () => {
   beforeEach(() => {
     mockInvokeCanonicalPdfBackend.mockReset();
     mockBoundarySuccess.mockReset();
@@ -84,23 +80,14 @@ describe("foremanRequestPdfBackend.service PDF-Z4 reuse", () => {
     mockRemoveStoredValue.mockResolvedValue(undefined);
   });
 
-  it("reuses a Foreman request PDF for the same client source fingerprint", async () => {
-    const fingerprint = uniqueFingerprint("cache");
-    const first = await generateForemanRequestPdfViaBackend(buildRequest(fingerprint));
-    const second = await generateForemanRequestPdfViaBackend(buildRequest(fingerprint));
-
-    expect(first.signedUrl).toBe("https://example.com/foreman-request.pdf");
-    expect(second.signedUrl).toBe("https://example.com/foreman-request.pdf");
-    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(1);
-    expect(mockBoundarySuccess).toHaveBeenCalledWith(
-      "backend_invoke_success",
-      expect.objectContaining({
-        extra: expect.objectContaining({
-          cacheStatus: "manifest_version_hit",
-          requestId: "req-123",
-        }),
-      }),
-    );
+  it("rechecks backend authority for identical warm opens", async () => {
+    const request = buildRequest(uniqueFingerprint("warm"));
+    await generateForemanRequestPdfViaBackend(request);
+    mockInvokeCanonicalPdfBackend.mockRejectedValueOnce(new Error("MFA_SECOND_FACTOR_REQUIRED"));
+    await expect(generateForemanRequestPdfViaBackend(request)).rejects.toThrow("MFA_SECOND_FACTOR_REQUIRED");
+    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(2);
+    expect(mockReadStoredJson).not.toHaveBeenCalled();
+    expect(mockWriteStoredJson).not.toHaveBeenCalled();
   });
 
   it("passes caller abort signal into the canonical PDF backend", async () => {
@@ -143,53 +130,24 @@ describe("foremanRequestPdfBackend.service PDF-Z4 reuse", () => {
     expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(2);
   });
 
-  it("coalesces concurrent identical Foreman request PDF requests into one backend call", async () => {
-    const fingerprint = uniqueFingerprint("concurrent");
-    let resolveBackend!: (value: typeof backendResult) => void;
-    mockInvokeCanonicalPdfBackend.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          resolveBackend = resolve;
-        }),
-    );
-
-    const first = generateForemanRequestPdfViaBackend(buildRequest(fingerprint));
-    const second = generateForemanRequestPdfViaBackend(buildRequest(fingerprint));
-
-    await waitForBackendInvokeCount(1);
-    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(1);
-    resolveBackend(backendResult);
-
-    await expect(first).resolves.toMatchObject({ signedUrl: "https://example.com/foreman-request.pdf" });
-    await expect(second).resolves.toMatchObject({ signedUrl: "https://example.com/foreman-request.pdf" });
-    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(1);
+  it("does not coalesce calls across principal changes", async () => {
+    const request = buildRequest(uniqueFingerprint("concurrent"));
+    mockInvokeCanonicalPdfBackend.mockResolvedValueOnce(backendResult)
+      .mockRejectedValueOnce(new Error("actor B forbidden"));
+    const results = await Promise.allSettled([
+      generateForemanRequestPdfViaBackend(request), generateForemanRequestPdfViaBackend(request),
+    ]);
+    expect(results[0].status).toBe("fulfilled");
+    expect(results[1].status).toBe("rejected");
+    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(2);
   });
 
-  it("uses the persisted signed artifact handoff for a same-version warm open", async () => {
-    const fingerprint = uniqueFingerprint("persistent");
-    const request = buildRequest(fingerprint);
-    const manifest = await buildForemanRequestManifestContract({
-      requestId: request.requestId,
-      clientSourceFingerprint: request.clientSourceFingerprint,
-    });
-    mockReadStoredJson.mockResolvedValueOnce({
-      version: 1,
-      sourceVersion: manifest.sourceVersion,
-      value: backendResult,
-    });
-
-    const result = await generateForemanRequestPdfViaBackend(request);
-
-    expect(result.signedUrl).toBe("https://example.com/foreman-request.pdf");
-    expect(mockInvokeCanonicalPdfBackend).not.toHaveBeenCalled();
-    expect(mockBoundarySuccess).toHaveBeenCalledWith(
-      "backend_invoke_success",
-      expect.objectContaining({
-        extra: expect.objectContaining({
-          cacheStatus: "persistent_manifest_hit",
-          requestId: "req-123",
-        }),
-      }),
-    );
+  it("ignores persisted signed URLs and propagates revoked membership", async () => {
+    mockReadStoredJson.mockResolvedValueOnce({ version: 1, sourceVersion: "old", value: backendResult });
+    mockInvokeCanonicalPdfBackend.mockRejectedValueOnce(new Error("Forbidden"));
+    await expect(generateForemanRequestPdfViaBackend(buildRequest(uniqueFingerprint("persisted"))))
+      .rejects.toThrow("Forbidden");
+    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledTimes(1);
+    expect(mockReadStoredJson).not.toHaveBeenCalled();
   });
 });

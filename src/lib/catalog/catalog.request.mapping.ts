@@ -1,3 +1,4 @@
+import { parseRequestCompany } from "../api/requestCompanyScope";
 import {
   asLooseRecord,
   norm,
@@ -42,6 +43,7 @@ export type ReqItemRow = {
 };
 
 export type ForemanRequestSummary = {
+  company_id?: string | null;
   id: string;
   display_no?: string | null;
   status?: string | null;
@@ -55,6 +57,7 @@ export type ForemanRequestSummary = {
 };
 
 export type RequestDetails = {
+  company_id?: string | null;
   id: string;
   status?: string | null;
   display_no?: string | null;
@@ -210,6 +213,7 @@ export const mapDetailsFromRow = (row: unknown): RequestDetails | null => {
 
   return {
     id,
+    company_id: parseRequestCompany(source.company_id),
     status: pickFirstString(source.status, source.request_status),
     display_no: pickFirstString(
       source.display_no,
@@ -277,6 +281,7 @@ export const mapSummaryFromRow = (row: unknown): ForemanRequestSummary | null =>
     source.has_rejected ?? source.hasRejected ?? source.has_rej ?? null;
   return {
     id: details.id,
+    company_id: details.company_id ?? null,
     status: details.status ?? null,
     created_at: details.created_at ?? null,
     need_by: details.need_by ?? null,

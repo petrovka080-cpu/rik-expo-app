@@ -1,3 +1,7 @@
+import { loadRequestCreationIntent, persistRequestCreationIntent } from "./requestCreationIntent";
+import { assertRequestCompanyMatches } from "./requestCompanyScope";
+import { withRequestCompanySelection } from "./requestCompanySelection";
+import { requireExplicitRequestCompany } from "./requestCompanyScope";
 import type { ReqItemRow as CatalogReqItemRow } from "../catalog_api";
 import { createCancellableDelay } from "../async/mapWithConcurrencyLimit";
 import { mapRequestRow } from "./requests.parsers";
@@ -9,7 +13,7 @@ import {
   validateRpcResponse,
 } from "./queryBoundary";
 import { recordPlatformObservability } from "../observability/platformObservability";
-import { resolveRequestDraftSyncAccessToken } from "./requestDraftSync.auth.transport";
+import { resolveRequestDraftSyncAccessToken, withRequestDraftSyncActor } from "./requestDraftSync.auth.transport";
 import {
   createDirectorHandoffBroadcastChannel,
   insertDirectorRequestSubmittedNotification,
@@ -50,6 +54,7 @@ type RequestDraftSyncEnvelope = {
   items_payload: unknown[];
   submitted: boolean;
   request_created: boolean;
+  replayed: boolean;
 };
 
 export type RequestDraftSyncResult = {
@@ -305,6 +310,7 @@ const parseEnvelope = (value: RequestDraftSyncReturns): RequestDraftSyncEnvelope
     items_payload: value.items_payload,
     submitted: value.submitted === true,
     request_created: value.request_created === true,
+    replayed: value.replayed === true,
   };
 };
 
@@ -319,7 +325,11 @@ const isRequestDraftSyncRpcResponse = (value: unknown): value is RequestDraftSyn
 
 export const isRequestDraftSyncRpcEnabled = () => REQUEST_DRAFT_SYNC_RPC_V2_ENABLED;
 
-export async function syncRequestDraftViaRpc(params: {
+type ScopedRequestDraftSyncParams = {
+  creationScopeKey?: string | null;
+  assertCurrent?: () => Promise<void>;
+  creationActorId?: string | null;
+  companyId?: string | null;
   requestId?: string | null;
   meta?: RequestMeta | null;
   lines: RequestDraftSyncLineInput[];
@@ -331,7 +341,37 @@ export async function syncRequestDraftViaRpc(params: {
   levelName?: string | null;
   systemName?: string | null;
   zoneName?: string | null;
-}): Promise<RequestDraftSyncResult> {
+};
+
+export async function syncRequestDraftViaRpc(params: ScopedRequestDraftSyncParams): Promise<RequestDraftSyncResult> {
+  const joinActorFence = (assertCurrent: () => Promise<void>) => async () => {
+    await params.assertCurrent?.();
+    await assertCurrent();
+    await params.assertCurrent?.();
+  };
+  if (asTrimmedString(params.requestId)) return withRequestDraftSyncActor(async assertCurrent =>
+    syncScopedRequestDraftViaRpc({ ...params, assertCurrent: joinActorFence(assertCurrent) }));
+  const scope = asTrimmedString(params.creationScopeKey);
+  if (!scope) throw new Error("REQUEST_CREATION_INTENT_SCOPE_REQUIRED");
+  return withRequestDraftSyncActor(async (assertCurrent, actorId) => {
+    const assertJoinedCurrent = joinActorFence(assertCurrent);
+    await assertJoinedCurrent();
+    if (params.creationActorId && params.creationActorId !== actorId) throw new Error("REQUEST_CREATION_INTENT_ACTOR_CONFLICT");
+    const previous = await loadRequestCreationIntent(scope, actorId);
+    await assertJoinedCurrent();
+    const hint = params.companyId ?? params.meta?.company_id;
+    if (previous && hint != null && requireExplicitRequestCompany(hint) !== previous.companyId) {
+      throw new Error("REQUEST_CREATION_INTENT_COMPANY_CONFLICT");
+    }
+    return withRequestCompanySelection(previous?.companyId ?? hint, async (companyId, selectedActor) => {
+      if (selectedActor !== actorId) throw new Error("REQUEST_CREATION_INTENT_ACTOR_CONFLICT");
+      await assertJoinedCurrent();
+      return syncScopedRequestDraftViaRpc({ ...params, companyId, creationActorId: actorId, assertCurrent: assertJoinedCurrent });
+    });
+  });
+}
+
+async function syncScopedRequestDraftViaRpc(params: ScopedRequestDraftSyncParams): Promise<RequestDraftSyncResult> {
   if (!REQUEST_DRAFT_SYNC_RPC_V2_ENABLED) {
     throw new Error("request_sync_draft_v2 is disabled");
   }
@@ -351,7 +391,11 @@ export async function syncRequestDraftViaRpc(params: {
     new Set((params.pendingDeleteIds || []).map((id) => asTrimmedString(id)).filter(Boolean)),
   );
 
+  const companyId = params.companyId ?? params.meta?.company_id ?? null;
+  if (!asTrimmedString(params.requestId)) requireExplicitRequestCompany(companyId);
   const argsV2: RequestDraftSyncArgsV2 = {
+    p_company_id: companyId,
+    p_creation_actor_id: params.creationActorId ?? null,
     p_request_id: asTrimmedString(params.requestId) || null,
     p_submit: params.submit === true,
     p_foreman_name: params.meta?.foreman_name ?? null,
@@ -377,9 +421,29 @@ export async function syncRequestDraftViaRpc(params: {
     pendingDeleteCount: pendingDeleteIds.length,
   });
 
-  const { data, error } = await invokeRequestDraftSyncRpcV2(argsV2);
+  let transportArgs = argsV2;
+  let reconcileChangedPayload = false;
+  if (!argsV2.p_request_id) {
+    const scope = asTrimmedString(params.creationScopeKey);
+    const previous = await loadRequestCreationIntent(scope, asTrimmedString(params.creationActorId));
+    if (previous && previous.payload !== JSON.stringify(argsV2)) {
+      // Exact replay/readback of an unknown first commit comes BEFORE an edit
+      // of that same local operation. It can never become another no-ID create.
+      transportArgs = { ...JSON.parse(previous.payload) as RequestDraftSyncArgsV2, p_creation_intent_id: previous.id };
+      reconcileChangedPayload = true;
+    } else {
+      const intent = await persistRequestCreationIntent({
+        scope, actorId: asTrimmedString(params.creationActorId),
+        companyId: requireExplicitRequestCompany(companyId), args: argsV2 as Record<string, unknown>,
+      });
+      transportArgs = { ...argsV2, p_creation_intent_id: intent.id };
+    }
+  }
+  await params.assertCurrent?.();
+  const { data, error } = await invokeRequestDraftSyncRpcV2(transportArgs);
+  await params.assertCurrent?.();
   if (error) {
-    const normalizedError = new Error(`request_sync_draft_v2 failed: ${error.message}`);
+    const normalizedError = Object.assign(new Error(`request_sync_draft_v2 failed: ${error.message}`), { code: error.code });
     recordRequestDraftSyncMutationEvent("request_draft_sync_rpc_terminal_failure", "error", {
       submit: params.submit === true,
       lineCount: requestDraftSyncItems.length,
@@ -398,6 +462,14 @@ export async function syncRequestDraftViaRpc(params: {
   const request = mapRequestRow(envelope.request_payload);
   if (!request) {
     throw new Error("request_sync_draft invalid request_payload");
+  }
+
+  assertRequestCompanyMatches(request.company_id, companyId);
+  if (argsV2.p_request_id && request.id !== argsV2.p_request_id) throw new Error("REQUEST_TARGET_RESPONSE_CONFLICT");
+
+  if (reconcileChangedPayload) {
+    if (envelope.submitted) throw new Error(`REQUEST_CREATION_INTENT_ALREADY_SUBMITTED:${request.id}`);
+    return syncScopedRequestDraftViaRpc({ ...params, requestId: request.id });
   }
 
   const items = mergeRequestDraftSyncKinds(
@@ -430,7 +502,8 @@ export async function syncRequestDraftViaRpc(params: {
     });
   }
 
-  if (params.submit === true && envelope.submitted) {
+  if (params.submit === true && envelope.submitted && !envelope.replayed) {
+    await params.assertCurrent?.();
     await signalDirectorRequestSubmitted({
       requestId: String(request.id ?? ""),
       displayNo: request.display_no ?? null,

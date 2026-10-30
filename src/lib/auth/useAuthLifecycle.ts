@@ -26,7 +26,7 @@ import { useMfaSessionAssuranceGate, type MfaAuthAcceptedReason, type MfaSession
 import { getSessionSafe, hasPersistedAuthSessionHint } from "../supabaseClient";
 import { warmCurrentSessionProfile } from "../sessionRole";
 import { recordPlatformObservability } from "../observability/platformObservability";
-import { resetSessionBoundary } from "../session/sessionBoundary";
+import { resetSessionBoundary, observeSessionBoundaryPrincipal } from "../session/sessionBoundary";
 import {
   POST_AUTH_ENTRY_ROUTE,
   type PostAuthEntryPath,
@@ -196,6 +196,7 @@ export function useAuthLifecycle(deps: {
   const authExitSessionProbeTokenRef = useRef(0);
   const authExitSessionProbeInFlightRef = useRef(false);
   const authPrincipalFingerprintRef = useRef<string | null>(null);
+  const sessionBoundaryActorRef = useRef<string | null>(null);
   const authEventGenerationRef = useRef(0);
   const sessionReadEpochRef = useRef(0);
 
@@ -301,6 +302,9 @@ export function useAuthLifecycle(deps: {
 
   const clearSessionBoundaryState = useCallback(
     (reason: string) => {
+      sessionBoundaryActorRef.current = null;
+      authPrincipalFingerprintRef.current = null;
+      observeSessionBoundaryPrincipal(null);
       setAuthenticatedUserId(null);
       setAuthenticatedRole(null);
       return resetSessionBoundary(reason);
@@ -336,11 +340,16 @@ export function useAuthLifecycle(deps: {
 
   const { status: assuranceStatus, checkSession, cancel: cancelAssurance, markUnavailable, beginSessionRead } = useMfaSessionAssuranceGate({
     onAllowed: (session, context) => {
+      // Principal observation/reset precedes the asynchronous assurance check.
+      // A result may never silently install a different actor at settlement.
+      if (sessionBoundaryActorRef.current !== session.user.id) return;
+      observeSessionBoundaryPrincipal(session.user.id);
       setAuthenticatedUserId(session.user.id);
       setAuthSessionState({ status: "authenticated", reason: context.reason });
       if (context.warmRole) void loadRoleForCurrentSession(session.user);
     },
     onRequired: (session) => {
+      if (sessionBoundaryActorRef.current !== session.user.id) return;
       setAuthenticatedUserId(session.user.id);
       setAuthenticatedRole(null);
       setAuthSessionState({ status: "mfa_required", reason: "mfa_verification_required" });
@@ -348,10 +357,23 @@ export function useAuthLifecycle(deps: {
     onUnavailable: () => recordAuthGateEvent("auth_assurance_unavailable", "error"),
   });
 
-  const acceptSessionAfterAssurance = useCallback((session: Session, reason: MfaAuthAcceptedReason) => {
+  const acceptSessionAfterAssurance = useCallback((session: Session, reason: MfaAuthAcceptedReason, warmRole = true) => {
+    if (sessionBoundaryActorRef.current && sessionBoundaryActorRef.current !== session.user.id) {
+      // resetSessionBoundary advances the generation and clears delivered
+      // sessions synchronously, before its first cache-purge await.
+      void resetSessionBoundary("principal_replaced");
+      setAuthenticatedUserId(null);
+      setAuthenticatedRole(null);
+    }
+    if (sessionBoundaryActorRef.current !== session.user.id) {
+      authEventGenerationRef.current += 1;
+      sessionReadEpochRef.current += 1;
+    }
+    sessionBoundaryActorRef.current = session.user.id;
+    observeSessionBoundaryPrincipal(session.user.id);
     resetPendingAuthExitSessionProbe();
     authPrincipalFingerprintRef.current = authPrincipalFingerprint(session);
-    return checkSession(session, { reason, warmRole: true });
+    return checkSession(session, { reason, warmRole });
   }, [checkSession, resetPendingAuthExitSessionProbe]);
 
   const retryAuthAssurance = useCallback(async () => {
@@ -768,12 +790,11 @@ export function useAuthLifecycle(deps: {
           return;
         }
 
-        resetPendingAuthExitSessionProbe();
-        authPrincipalFingerprintRef.current = nextPrincipalFingerprint;
-        if (session) void checkSession(session, {
-          reason: "auth_event_authenticated",
-          warmRole: !duplicatePrincipalRefresh || authSessionStateRef.current.status !== "authenticated",
-        });
+        if (session) void acceptSessionAfterAssurance(
+          session,
+          "auth_event_authenticated",
+          !duplicatePrincipalRefresh || authSessionStateRef.current.status !== "authenticated",
+        );
       },
     );
 

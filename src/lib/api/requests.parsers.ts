@@ -1,3 +1,4 @@
+import { parseRequestCompany } from "./requestCompanyScope";
 import type { Database } from "../database.types";
 import type { ReqItemRow, RequestRecord } from "./types";
 
@@ -55,6 +56,7 @@ export function mapRequestRow(raw: unknown): RequestRecord | null {
 
   return {
     id,
+    company_id: parseRequestCompany(raw.company_id),
     status: typeof raw.status === "string" ? raw.status : null,
     display_no: norm(raw.display_no ?? raw.number ?? raw.label ?? raw.display) || null,
     year: asNumber(raw.year),

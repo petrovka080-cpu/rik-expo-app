@@ -45,7 +45,7 @@ it('R1153 actual ordinary Core EMPTY/N1 captures preserve exact original full in
   }
   expect(sha(fs.readFileSync(sourcePath))).toBe(pin.sha256);
  }
- expect(sha(fs.readFileSync(path.join(root,'tests/estimateNorms/electricalPoles04CurrentPreflightR1153.contract.test.ts')))).toBe('029ed3b013e51f1607a83a5b0b7810ec246886540282a1ab4c31ed87eddc4514');
+ expect(sha(fs.readFileSync(path.join(root,'tests/estimateNorms/electricalPoles04CurrentPreflightR1153.contract.test.ts')))).toBe('6af255c9d4b7b30db834cbbe24ebca76d3e92c1eba691cc23e48fd1c52782479');
  const final=electricalPoles04kvWholeOrdinaryMaterializerInputR1117(parent()),d=final.definition;
  expect([d.parameters.length,d.formulas.length,d.resources.length,final.independentCompletenessMap.entries.length]).toEqual([100,131,131,68]);
  expect(final.sourceRegistryAdmission).toBeNull();expect(final.fullTechnicalAcceptance).toBe(false);

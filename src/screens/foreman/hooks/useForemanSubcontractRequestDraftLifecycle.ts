@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from "react";
+import { Alert } from "react-native";
 import type { Dispatch, SetStateAction } from "react";
 
 import {
@@ -65,13 +66,22 @@ export function useForemanSubcontractRequestDraftLifecycle({
     if (!rid) return;
     let cancelled = false;
     void (async () => {
-      const ok = await updateRequestMeta(rid, requestMetaPersistPatch);
-      if (!ok || cancelled) return;
+      try {
+        const ok = await updateRequestMeta(rid, requestMetaPersistPatch);
+        if (cancelled) return;
+        if (!ok) throw new Error("Полная привязка заявки не сохранена.");
+      } catch (error) {
+        if (cancelled) return;
+        logDebugError("request metadata not saved", error);
+        const row = error && typeof error === "object" ? error as { message?: unknown; code?: unknown } : {};
+        const message = String(row.message ?? "Проверьте компанию, права и состояние заявки.");
+        Alert.alert("Заявка не сохранена", message);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [requestId, requestMetaPersistPatch]);
+  }, [requestId, requestMetaPersistPatch, logDebugError]);
 
   useEffect(() => {
     if (!requestId) return;

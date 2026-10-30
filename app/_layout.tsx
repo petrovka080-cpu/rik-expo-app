@@ -1,3 +1,4 @@
+import { RequestCompanySelectionHost } from "../src/components/RequestCompanySelectionHost";
 // app/_layout.tsx  (PROD — Stack root for native iOS navigation support)
 // AUTH-LIFECYCLE: Thin shell. Auth bootstrap + guard logic extracted to hooks.
 
@@ -1225,6 +1226,7 @@ function RootLayout() {
                   authState.authSessionState.status === "authenticated" && authState.assuranceStatus === "idle"
                 }
               />
+              <RequestCompanySelectionHost actorId={authState.authenticatedUserId} blocked={assuranceBlocked || authState.authSessionState.status !== "authenticated"} />
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen
                   name="add"

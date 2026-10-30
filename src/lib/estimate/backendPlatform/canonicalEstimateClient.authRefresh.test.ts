@@ -368,7 +368,7 @@ describe("canonicalEstimateClient access-token refresh", () => {
     if (invalid === "inactive-capability") manifest.capability.status = "REVOKED";
     if (invalid === "short-ttl") manifest.capability.ttlSeconds = 3599;
     mockFetchWithRequestTimeout.mockResolvedValue(new Response(JSON.stringify(manifest), { status: invalid === "http-error" ? 503 : 200 }));
-    await expect(getCanonicalEstimateJob("own-job")).rejects.toMatchObject({ code: "RUNTIME_MANIFEST_NOT_READY" });
+    await expect(getCanonicalEstimateJob("own-job")).rejects.toMatchObject({ code: invalid === "http-error" ? "RUNTIME_MANIFEST_UNAVAILABLE" : "RUNTIME_MANIFEST_NOT_READY" });
     expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
   });
 
@@ -460,4 +460,143 @@ describe("canonicalEstimateClient access-token refresh", () => {
     await expect(getCanonicalEstimateParameterSessionSnapshot(revisionId, null, trace)).rejects.toMatchObject({ code: "BACKEND_OPERATION_FAILED", httpStatus: 502 });
     expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
   });
+
+  it("refreshes an initially rejected manifest once, verifies the fresh tuple, then issues the operation", async () => {
+    configureCompatibleRuntime();
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: "fresh-token" } }, error: null });
+    mockFetchWithRequestTimeout
+      .mockResolvedValueOnce(new Response("private-manifest-auth-body", { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(busyCompatibleManifest()), { status: 200 }))
+      .mockResolvedValueOnce(successfulResponse());
+    await expect(getCanonicalEstimateRevision(revisionId)).resolves.toMatchObject({ revisionId });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout.mock.calls.map(([url]) => String(url).endsWith("/runtime-manifest"))).toEqual([true, true, false]);
+    expect(mockFetchWithRequestTimeout.mock.calls[0]?.[1]).toMatchObject({ headers: { Authorization: "Bearer token" } });
+    for (const call of mockFetchWithRequestTimeout.mock.calls.slice(1)) expect(call[1]).toMatchObject({ headers: { Authorization: "Bearer fresh-token" } });
+  });
+
+  it("terminates a repeated manifest 401 as typed auth without a business request", async () => {
+    configureCompatibleRuntime();
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: "fresh-token" } }, error: null });
+    mockFetchWithRequestTimeout.mockImplementation(async () => new Response("private-auth-body", { status: 401 }));
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({ code: "AUTH_REQUIRED", httpStatus: 401 });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
+    expect(mockFetchWithRequestTimeout.mock.calls.every(([url]) => String(url).endsWith("/runtime-manifest"))).toBe(true);
+  });
+
+  it("stops manifest authentication recovery when the existing refresh fails", async () => {
+    configureCompatibleRuntime();
+    mockRefreshSession.mockResolvedValue({ data: { session: null }, error: new Error("private-refresh-error") });
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response("private-auth-body", { status: 401 }));
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({ code: "AUTH_REQUIRED", httpStatus: 401 });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not refresh or transport an operation for a genuine healthy-manifest tuple mismatch", async () => {
+    configureCompatibleRuntime();
+    const manifest = busyCompatibleManifest(); manifest.compatibilityTuple.sourceTree = "stale-tree";
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response(JSON.stringify(manifest), { status: 200 }));
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({ code: "RUNTIME_COMPATIBILITY_MISMATCH_sourceTree", httpStatus: 503,
+      message: "Версия приложения устарела. Обновите страницу или перезапустите приложение." });
+    expect(mockRefreshSession).not.toHaveBeenCalled(); expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it("still blocks a tuple mismatch after the one auth refresh", async () => {
+    configureCompatibleRuntime();
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: "fresh-token" } }, error: null });
+    const manifest = busyCompatibleManifest(); manifest.compatibilityTuple.capabilityId = "stale-capability";
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response("auth", { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(manifest), { status: 200 }));
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({ code: "RUNTIME_COMPATIBILITY_MISMATCH_capabilityId" });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1); expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
+  });
+
+  it("shares one request refresh budget between manifest and operation refusals", async () => {
+    configureCompatibleRuntime();
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: "fresh-token" } }, error: null });
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response("auth", { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(busyCompatibleManifest()), { status: 200 }))
+      .mockResolvedValueOnce(new Response("auth", { status: 401 }));
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({ code: "AUTH_REQUIRED", httpStatus: 401 });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1); expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(3);
+    expect(mockFetchWithRequestTimeout.mock.calls.filter(([url]) => !String(url).endsWith("/runtime-manifest"))).toHaveLength(1);
+  });
+
+  it("rechecks compatibility after an operation 401 and still retries the operation once", async () => {
+    configureCompatibleRuntime();
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: "fresh-token" } }, error: null });
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response(JSON.stringify(busyCompatibleManifest()), { status: 200 }))
+      .mockResolvedValueOnce(new Response("auth", { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(busyCompatibleManifest()), { status: 200 }))
+      .mockResolvedValueOnce(successfulResponse());
+    await expect(getCanonicalEstimateRevision(revisionId)).resolves.toMatchObject({ revisionId });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout.mock.calls.map(([url]) => String(url).endsWith("/runtime-manifest"))).toEqual([true, false, true, false]);
+  });
+
+  it("does not spend a second refresh after proactive near-expiry recovery", async () => {
+    configureCompatibleRuntime();
+    mockGetSession.mockResolvedValue({ data: { session: { access_token: "near-expiry", expires_at: Math.floor(Date.now() / 1000) + 2 } }, error: null });
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: "fresh-token" } }, error: null });
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response("auth", { status: 401 }));
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({ code: "AUTH_REQUIRED", httpStatus: 401 });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1); expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([403, 502, 503])("keeps manifest HTTP %s separate from tuple mismatches without refresh", async status => {
+    configureCompatibleRuntime();
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response("private-http-error", { status }));
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({ httpStatus: status,
+      code: status === 403 ? "PERMISSION_DENIED" : "RUNTIME_MANIFEST_UNAVAILABLE" });
+    expect(mockRefreshSession).not.toHaveBeenCalled(); expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps an undecodable successful manifest unavailable without a guessed mismatch or refresh", async () => {
+    configureCompatibleRuntime();
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response("malformed", { status: 200 }));
+    await expect(getCanonicalEstimateRevision(revisionId)).rejects.toMatchObject({ code: "RUNTIME_MANIFEST_NOT_READY", httpStatus: 503 });
+    expect(mockRefreshSession).not.toHaveBeenCalled(); expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it("shares the existing refresh singleflight for concurrent manifest 401 refusals", async () => {
+    configureCompatibleRuntime();
+    let completeRefresh: ((value: unknown) => void) | null = null;
+    mockRefreshSession.mockImplementation(() => new Promise(resolve => { completeRefresh = resolve; }));
+    let manifests = 0;
+    mockFetchWithRequestTimeout.mockImplementation(async (url: string) => {
+      if (url.endsWith("/runtime-manifest")) {
+        manifests += 1;
+        return manifests === 1 ? new Response("auth", { status: 401 }) : new Response(JSON.stringify(busyCompatibleManifest()), { status: 200 });
+      }
+      return successfulResponse();
+    });
+    const pending = Promise.all([getCanonicalEstimateRevision(revisionId), getCanonicalEstimateRevision(revisionId)]);
+    for (let turn = 0; turn < 12 && !completeRefresh; turn += 1) await Promise.resolve();
+    const complete = completeRefresh as ((value: unknown) => void) | null;
+    if (!complete) throw new Error("refresh resolver was not installed");
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    complete({ data: { session: { access_token: "shared-fresh-token" } }, error: null });
+    await expect(pending).resolves.toHaveLength(2);
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(manifests).toBe(2);
+    expect(mockFetchWithRequestTimeout.mock.calls.filter(([url]) => !String(url).endsWith("/runtime-manifest"))).toHaveLength(2);
+  });
+
+  it("does not put manifest auth bodies or refreshed tokens into hydration trace events", async () => {
+    configureCompatibleRuntime();
+    const events: ConsumerEstimateHydrationPhaseEvent[] = [];
+    const trace = createConsumerEstimateHydrationTrace({ report: event => { events.push(event); } });
+    mockRefreshSession.mockResolvedValue({ data: { session: { access_token: "private-fresh-token" } }, error: null });
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(new Response("private-manifest-body", { status: 401 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(busyCompatibleManifest()), { status: 200 }))
+      .mockResolvedValueOnce(successfulResponse());
+    await expect(getCanonicalEstimateParameterSessionSnapshot(revisionId, null, trace)).resolves.toEqual({ revisionId });
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(events.map(event => event.phase)).toEqual(["PARAMETER_TRANSPORT_AUTH", "PARAMETER_TRANSPORT_COMPATIBILITY",
+      "PARAMETER_TRANSPORT_AUTH", "PARAMETER_TRANSPORT_COMPATIBILITY", "PARAMETER_TRANSPORT_HTTP", "PARAMETER_TRANSPORT_DECODE"]);
+    expect(JSON.stringify(events)).not.toMatch(/private-|Bearer|11111111/u);
+  });
+
 });
