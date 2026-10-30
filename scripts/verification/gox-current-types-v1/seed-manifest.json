@@ -786,5 +786,5 @@
   "src/lib/pdf/pdfViewerWebFallback.test.ts": "25e1c3ddff8497cbc82247e7b0e720b8c3ef6132d5564ed3ea935029a4c616f8",
   "src/lib/pdf/pdfViewerWebIframeReadyFallback.test.ts": "b8484b1dd7aa31adb5a0d8a2a2c56a9e4b422ff29d17e1d763fbceb2867fd092",
   "src/lib/pdf/usePdfViewerDiagnostics.test.ts": "4806fc22ebf5e4c641b90f0606cf50981a9fc1fc1fc628a6d6740f641eaba862",
-  "src/lib/pdf/PdfViewerCanonicalRecovery.lifecycle.test.tsx": "4b829ac303b640767be9fcf48751db1caab463e833c54ec6ce03575c98cf5589"
+  "src/lib/pdf/PdfViewerCanonicalRecovery.lifecycle.test.tsx": "350eaae5dfc0387159abba6f6febb1ee5013ffe305ff140ad6126132a7832661"
 }

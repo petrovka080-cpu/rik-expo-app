@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "PRIVATE_CAUSAL_PDF_BOOTSTRAP_CALLBACK_STABILITY_AND_REAL_MOUNTED_SCREEN_BEFORE_2_APPLY",
+  "snapshotKind": "PRIVATE_CAUSAL_TWO_NATIVE_VALIDATION_FIXTURES_SAME_BOOTSTRAP2_ALL80",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "ebcf6963ba78b301d60637c5cfa71a237ac3b9584e7ffa0f191bf43a4611dd67",
@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "77cd973995db7066972add4418b5073c14e623496a1f1587c3a74431917a64b8",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "ceed59854da89d1f805b2764aecafc09a5f5ad623a2afa378057a26dba6c8ec8",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "f2c29166a1c751bef05b080d80235ab58ecd8720fbda56d16315fc1d698f3cf8",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2954,7 +2954,7 @@
     "public/pdfjs/wasm/openjpeg.wasm": "67b8e2b162da472e98cb48d3d32e3e38fff481b9b32ff4818e78bb248af88ab2",
     "public/pdfjs/wasm/openjpeg_nowasm_fallback.js": "07c3c3361827308741bc31c561b59e705ebb4d1e8efb84e4d24884e230dbb894",
     "public/pdfjs/wasm/qcms_bg.wasm": "6017eca5939cde1836e88e6d8cd27ae039246f206515ea4487bdfd0e3fb16e26",
-    "src/lib/pdf/PdfViewerCanonicalRecovery.lifecycle.test.tsx": "4b829ac303b640767be9fcf48751db1caab463e833c54ec6ce03575c98cf5589"
+    "src/lib/pdf/PdfViewerCanonicalRecovery.lifecycle.test.tsx": "350eaae5dfc0387159abba6f6febb1ee5013ffe305ff140ad6126132a7832661"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4495,14 +4495,14 @@
     "node_modules/@babel/plugin-transform-dynamic-import/README.md": "6b56d36661f678d5d4645ddc5168d0f47df23f95c23d3b426fac9b186f2c1872"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "ceed59854da89d1f805b2764aecafc09a5f5ad623a2afa378057a26dba6c8ec8",
+  "originalSeedManifestSha256": "f2c29166a1c751bef05b080d80235ab58ecd8720fbda56d16315fc1d698f3cf8",
   "canonicalSourceFreezeSha256": "5a23e545a959b5d16f403b813ee94932b2f8af08b485de57c5e8bebe232c1012",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 182677462,
+    "sourceBytes": 182678048,
     "newInputs": "Exact official Jest-only pinned import-transform dependency/config; one appended uncaught recovery diagnostic with previous36 intact; all198 unchanged tracked public PDF.js/vendor bytes. No private history/auth/environment data."
   },
   "bootstrapHelperByteRegressionTests": 2,
@@ -5403,6 +5403,14 @@
       "noAlternateLifecycleOrAuthorizationCache": true,
       "actualAll80StillRequired": true,
       "combinedPatchSha256": "b23d61a7f4b9fb90effe8274c014e0f0a33934cde1f3d26fdf6b418548d694db"
+    },
+    "nativeValidationFixtureSuccessorR1153": {
+      "priorRun": 40976027359,
+      "actualPriorFailures": 2,
+      "testOnly": "iOS HTTPS reaches actual native-webview validation path; actualNativeLoadEnd ready. Prior12 and product6a4d unchanged.",
+      "sourceAstraAcknowledged": true,
+      "actualNewCasesUnrun": 14,
+      "combinedPatchSha256": "133c17db4be025eb66c1534b2c6bc3abee5471252ddc2ae92a8deeed47cb030f"
     }
   },
   "existingCiTypesStageBudget": {

@@ -137,15 +137,24 @@ describe('mounted canonical PDF bootstrap owns a route/retry, not an asset callb
   await settle(1);await loaded();expect(mockVisible).toHaveBeenCalledTimes(1);
  });
  it.each(['resolve','reject'])('late embedded validation %s cannot write URI, telemetry or ready into a newer route',async outcome=>{
+  // Web bootstrap intentionally skips embedded validation. Use the actual iOS
+  // remote-PDF/native-webview path to reach this awaited production boundary.
+  Object.defineProperty(Platform,'OS',{configurable:true,value:'ios'});
+  const oldUri='https://example.test/test-only-old-validation.pdf';
   const oldValidation=deferred<void>();mockValidate.mockReturnValueOnce(oldValidation.promise);
-  await mount();await settle(0,'data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK');
+  await mount();await settle(0,oldUri);
+  expect(mockContent.resolvedSource).toMatchObject({kind:'resolved-embedded',sourceKind:'remote-url',renderer:'native-webview'});
   expect(mockValidate).toHaveBeenCalledTimes(1);expect(mockVisible).not.toHaveBeenCalled();
-  mockParams=params(reference('B'),'TEST_ONLY_SESSION_B');await rerender();await settle(1);await loaded();
-  const currentUri=mockContent.webEmbeddedUri;
+  mockParams=params(reference('B'),'TEST_ONLY_SESSION_B');await rerender();await settle(1);
+  expect(mockValidate).toHaveBeenCalledTimes(2);
+  await act(async()=>{mockContent.onNativeLoadEnd();await flush();});
+  const currentUri=mockContent.asset?.uri;
   await act(async()=>{if(outcome==='resolve')oldValidation.resolve(undefined);else oldValidation.reject(new Error('TEST_ONLY_OLD_VALIDATION'));await flush();});
-  expect(mockContent.webEmbeddedUri).toBe(currentUri);expect(mockContent.asset?.contentIdentity?.revisionId).toBe(reference('B').revisionId);
-  expect(mockContent.contentModel.kind).toBe('embedded-web');expect(mockVisible).toHaveBeenCalledTimes(1);expect(mockRecover).toHaveBeenCalledTimes(2);
-  expect(mockBreadcrumb.mock.calls.some(call=>call[0]?.marker==='viewer_validation_success'&&call[0]?.uri?.startsWith('data:'))).toBe(false);
+  expect(currentUri).toBe(descriptor(reference('B')).uri);
+  expect(mockContent.asset?.uri).toBe(currentUri);expect(mockContent.source).toEqual({uri:currentUri});
+  expect(mockContent.asset?.contentIdentity?.revisionId).toBe(reference('B').revisionId);
+  expect(mockContent.contentModel.kind).toBe('embedded-native');expect(mockVisible).toHaveBeenCalledTimes(1);expect(mockRecover).toHaveBeenCalledTimes(2);
+  expect(mockBreadcrumb.mock.calls.some(call=>call[0]?.marker==='viewer_validation_success'&&call[0]?.uri===oldUri)).toBe(false);
  });
  it('the existing render timeout remains terminal rather than restarting the completed bootstrap',async()=>{
   await mount();await settle(0);
