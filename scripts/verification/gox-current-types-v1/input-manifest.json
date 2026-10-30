@@ -1,6 +1,6 @@
 {
   "contract": "gox-full-affected-types-source-snapshot/r1",
-  "snapshotKind": "PROSPECTIVE_FROZEN_POLES04_CURRENT167_20_NORMAL_JEST_AND_REAL_ORDINARY_CORE_CAPTURE_ALL80_RETAINED",
+  "snapshotKind": "TEST_ONLY_CAUSAL_TYPED_POLES04_JSON_AND_MUTABLE_CORE_INPUT_AFTER_ACTUAL15_DIAGNOSTICS_ALL82_ALL8",
   "sourcePins": {
     ".expo/types/router.d.ts": "3662bd3e705408ae1e6e70aaa131969da7637cab9b83b684c823505847a8139e",
     ".github/workflows/gox-current-core-types-v1.yml": "ebcf6963ba78b301d60637c5cfa71a237ac3b9584e7ffa0f191bf43a4611dd67",
@@ -562,7 +562,7 @@
     "scripts/verification/gox-current-types-v1/bootstrap_source.py": "d773820979b955ac989e2ac0a83cdd4b9ca72d653d7d3abd087e607f2fea7175",
     "scripts/verification/gox-current-types-v1/guard.py": "196c32eb94bc52c0909225d5ade7ab8cf7c6e25372a7cf99eb86b6dccc81e28c",
     "scripts/verification/gox-current-types-v1/jest-targets.json": "08d225f90911b5a271f3f57e8e00b8bad17c3cf187a09541848c216da149da99",
-    "scripts/verification/gox-current-types-v1/seed-manifest.json": "4f7e6c5a4e3a831994c2aa4d5aa4bbe18e6f0f853565a86f194c7021655f9120",
+    "scripts/verification/gox-current-types-v1/seed-manifest.json": "636a58fa95184427341803168b98ab4eb34c538db95320086cd30533514ae4ee",
     "scripts/verification/gox-current-types-v1/typecheck.mjs": "7feb4f7da021a2ce89ff5cae47136d1aefc8ac871ba79fa75c6bb9ec559c8e35",
     "src/components/BuildIdentityDiagnostic.tsx": "bc8d83fb25ba6c650495762fd7c95ce0399f860485f01bb1ec2076e36fb0e070",
     "src/components/PlatformOfflineStatusHost.tsx": "9829ba8939e642bd2b44c3dca4ac798f4e69f821c524692f09fd6811e69a6e76",
@@ -2955,12 +2955,13 @@
     "public/pdfjs/wasm/openjpeg_nowasm_fallback.js": "07c3c3361827308741bc31c561b59e705ebb4d1e8efb84e4d24884e230dbb894",
     "public/pdfjs/wasm/qcms_bg.wasm": "6017eca5939cde1836e88e6d8cd27ae039246f206515ea4487bdfd0e3fb16e26",
     "src/lib/pdf/PdfViewerCanonicalRecovery.lifecycle.test.tsx": "350eaae5dfc0387159abba6f6febb1ee5013ffe305ff140ad6126132a7832661",
-    "tests/estimateNorms/electricalPoles04CurrentPreflightR1153.contract.test.ts": "26a191affaca4edcce6c48e2ce5a7e4f0e7f2037c3d771303a17f820c702e694",
+    "tests/estimateNorms/electricalPoles04CurrentPreflightR1153.contract.test.ts": "029ed3b013e51f1607a83a5b0b7810ec246886540282a1ab4c31ed87eddc4514",
     "data/estimate-benchmarks/source-packs/electrical-poles-04kv-whole-current-r1117-r1.json": "11e582798496f47b3642d6c7ba1524176721592f272073e162fd7baacac5d032",
     "data/estimate-benchmarks/fixtures/electrical-poles-04kv-current-exact-parent-proof-r1117-r1.json.gz": "1f85c15b6847c099e5503091cd12d14b9591d71ba9bd3d3bc970d54dda3696cc",
     "tests/estimateNorms/electricalPoles04FinalNativeInvocationR1153.cjs": "0eabf6a8a23e19608c6252e2a70eb9b637d3a83c195f662bfa6140edf0c7feed",
     "scripts/verification/gox-current-types-v1/poles04-original-native-input-r1153.json": "2ff9f0581566aeff49c94560951026ed8e38f9fad28d9cc6a641a31301fb287e",
-    "tests/estimateNorms/electricalPoles04OrdinaryCoreR1153.contract.test.ts": "a1fe8e9019a2d790e92ba34cdc6b5ad7b42dd40ae55d9e8faff4ba5022a43634"
+    "tests/estimateNorms/electricalPoles04OrdinaryCoreR1153.contract.test.ts": "19c5e6b35b6860168caa97d3019ea3e6a437bbf652a833fb238217fa12269aac",
+    "scripts/verification/gox-current-types-v1/poles04-original20-source-r1153.txt": "26a191affaca4edcce6c48e2ce5a7e4f0e7f2037c3d771303a17f820c702e694"
   },
   "dependencyPins": {
     "node_modules/@babel/parser/typings/babel-parser.d.ts": "95aba78013d782537cc5e23868e736bec5d377b918990e28ed56110e3ae8b958",
@@ -4501,23 +4502,23 @@
     "node_modules/@babel/plugin-transform-dynamic-import/README.md": "6b56d36661f678d5d4645ddc5168d0f47df23f95c23d3b426fac9b186f2c1872"
   },
   "localSourceHead": "377d8c295d1b146c7941ace1c60f1900ef6f73c5",
-  "originalSeedManifestSha256": "4f7e6c5a4e3a831994c2aa4d5aa4bbe18e6f0f853565a86f194c7021655f9120",
+  "originalSeedManifestSha256": "636a58fa95184427341803168b98ab4eb34c538db95320086cd30533514ae4ee",
   "canonicalSourceFreezeSha256": "5a23e545a959b5d16f403b813ee94932b2f8af08b485de57c5e8bebe232c1012",
   "containsApplicationSecrets": false,
   "savedHistoryIncluded": false,
   "sourceReview": {
     "findings": [],
     "runtimeAuthEnvironmentAndHistoryFilesExcluded": true,
-    "sourceBytes": 183388865,
+    "sourceBytes": 183410027,
     "newInputs": "Exact official Jest-only pinned import-transform dependency/config; one appended uncaught recovery diagnostic with previous36 intact; all198 unchanged tracked public PDF.js/vendor bytes. No private history/auth/environment data."
   },
   "bootstrapHelperByteRegressionTests": 2,
   "sourceFreezeReferenceIsPredecessor": true,
   "historicalDisplayIdentityAllowlistIncluded": true,
   "stats": {
-    "sourceFiles": 2959,
+    "sourceFiles": 2960,
     "dependencyFiles": 1536,
-    "sourcePins": 2959,
+    "sourcePins": 2960,
     "r1152BffMfaForwardSourcePinCount": 2657,
     "r1152BffMfaDeclaredSeeds": 676,
     "r1153CurrentDeclaredSeeds": 791
@@ -5441,6 +5442,29 @@
       "localRawCaptureFilesUploaded": false,
       "secretsOrPrivateSavedHistoryIncluded": false,
       "resourcesOrWorkflowGuardsChanged": false
+    },
+    "causalTypedPoles04TestInputsAfter40997452689": {
+      "parent": "832a9a25a854ede506177c2173618ad7c395e020",
+      "actualRun": 40997452689,
+      "actualFullResult": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-30\\files-pasted-by-the-user-localhost\\work\\poles-ci-prospective-r1153\\ci40997452689\\full-result.json",
+        "sha256": "d237c4c089ab84d84271e5ed7a3dfb3100e46851e8017dcbe93468f9ca97619f",
+        "bytes": 4294370
+      },
+      "actualDiagnostics": 15,
+      "diagnosticOwner": "two new test input types only",
+      "newSource": "2test-only afterimages + original20 immutable .txt reference + existing seed/input manifest pins",
+      "original20Sha256": "26a191affaca4edcce6c48e2ce5a7e4f0e7f2037c3d771303a17f820c702e694",
+      "typed20Sha256": "029ed3b013e51f1607a83a5b0b7810ec246886540282a1ab4c31ed87eddc4514",
+      "all20CasesAndAssertionsPreservedByReversibleNarrowEdit": true,
+      "all82TargetsAnd8GroupsUnchanged": true,
+      "all1536DependencyPinsUnchanged": true,
+      "originalFiveSupplierSubjectsUnchanged": true,
+      "originalInputUnchanged": true,
+      "coreScope": "Normal Jest real ordinary Core with value/hash-equivalent mutable array copies; not identical original native execution proof",
+      "normal20Scope": "Typed SOURCE successor of frozen20 after actual15diagnostics; original frozen20 has not executed",
+      "actualAllGates": "UNRUN",
+      "noAddedAnyOrBlindAstCastOrSuppression": true
     }
   },
   "existingCiTypesStageBudget": {
