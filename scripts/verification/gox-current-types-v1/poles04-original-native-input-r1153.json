@@ -1,0 +1,482 @@
+{
+  "contract": "gox.poles04.existing-native-final-input/r1153",
+  "status": "CURRENT167_ACTUAL_PARENT_WHOLE_SOURCE_REBASE_UNRUN_NOT_ADMISSION",
+  "canonicalRoot": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7",
+  "sourceRoot": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\sol-poles04-materialization-r1153\\emitted-frontier-successor\\root-materialized-v2\\subjects",
+  "lineagePlan": {
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\ROOT_CURRENT_PREFLIGHT_PLAN.json",
+    "sha256": "ee47a40f9c799980387b75685b7e379cafe4c299719cfd416c617d3bc86d84f0",
+    "bytes": 17016
+  },
+  "subjects": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\sol-poles04-materialization-r1153\\emitted-frontier-successor\\root-materialized-v2\\subjects\\src\\lib\\estimate\\v4\\domains\\electricalComplete\\productionBinding.ts",
+      "sha256": "5cbbe53d63f014e60b10a1fc11f1711a7e7fb8c531bd8b830e76b48873b4f398",
+      "bytes": 49834,
+      "logicalPath": "src/lib/estimate/v4/domains/electricalComplete/productionBinding.ts"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\sol-poles04-materialization-r1153\\emitted-frontier-successor\\root-materialized-v2\\subjects\\tests\\estimateNorms\\electricalPoles04CurrentPreflightR1153.contract.test.ts",
+      "sha256": "26a191affaca4edcce6c48e2ce5a7e4f0e7f2037c3d771303a17f820c702e694",
+      "bytes": 17493,
+      "logicalPath": "tests/estimateNorms/electricalPoles04CurrentPreflightR1153.contract.test.ts"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\sol-poles04-materialization-r1153\\emitted-frontier-successor\\root-materialized-v2\\subjects\\data\\estimate-benchmarks\\source-packs\\electrical-poles-04kv-whole-current-r1117-r1.json",
+      "sha256": "11e582798496f47b3642d6c7ba1524176721592f272073e162fd7baacac5d032",
+      "bytes": 506644,
+      "logicalPath": "data/estimate-benchmarks/source-packs/electrical-poles-04kv-whole-current-r1117-r1.json"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\sol-poles04-materialization-r1153\\emitted-frontier-successor\\root-materialized-v2\\subjects\\data\\estimate-benchmarks\\fixtures\\electrical-poles-04kv-current-exact-parent-proof-r1117-r1.json.gz",
+      "sha256": "1f85c15b6847c099e5503091cd12d14b9591d71ba9bd3d3bc970d54dda3696cc",
+      "bytes": 116828,
+      "logicalPath": "data/estimate-benchmarks/fixtures/electrical-poles-04kv-current-exact-parent-proof-r1117-r1.json.gz"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\sol-poles04-materialization-r1153\\emitted-frontier-successor\\root-materialized-v2\\subjects\\tests\\estimateNorms\\electricalPoles04FinalNativeInvocationR1153.cjs",
+      "sha256": "0eabf6a8a23e19608c6252e2a70eb9b637d3a83c195f662bfa6140edf0c7feed",
+      "bytes": 7292,
+      "logicalPath": "tests/estimateNorms/electricalPoles04FinalNativeInvocationR1153.cjs"
+    }
+  ],
+  "allPins": [
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\current167-actual-parent-whole-rebase-r1153\\after\\src\\lib\\estimate\\v4\\domains\\electricalComplete\\productionBinding.ts",
+      "sha256": "5cbbe53d63f014e60b10a1fc11f1711a7e7fb8c531bd8b830e76b48873b4f398"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\current167-actual-parent-whole-rebase-r1153\\after\\tests\\estimateNorms\\electricalPoles04CurrentPreflightR1153.contract.test.ts",
+      "sha256": "26a191affaca4edcce6c48e2ce5a7e4f0e7f2037c3d771303a17f820c702e694"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\current167-actual-parent-whole-rebase-r1153\\after\\data\\estimate-benchmarks\\source-packs\\electrical-poles-04kv-whole-current-r1117-r1.json",
+      "sha256": "11e582798496f47b3642d6c7ba1524176721592f272073e162fd7baacac5d032"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\current167-actual-parent-whole-rebase-r1153\\after\\data\\estimate-benchmarks\\fixtures\\electrical-poles-04kv-current-exact-parent-proof-r1117-r1.json.gz",
+      "sha256": "1f85c15b6847c099e5503091cd12d14b9591d71ba9bd3d3bc970d54dda3696cc"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\current167-actual-parent-whole-rebase-r1153\\after\\tests\\estimateNorms\\electricalPoles04FinalNativeInvocationR1153.cjs",
+      "sha256": "0eabf6a8a23e19608c6252e2a70eb9b637d3a83c195f662bfa6140edf0c7feed"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\parameterConstraints.ts",
+      "sha256": "066fbb4f3f52d86eff3c40767bacb46c1964ce2e512dcd5db84aedecf26c22b8"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\automaticConstructionDefinitionR1.ts",
+      "sha256": "904c36c5f2a31c6e485895289e9913585f4887ab4c6f450edba1af49b02699af"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\automaticConstructionOwnerR1.ts",
+      "sha256": "13bfa791adb984860e92c668cfeafd290a34057f26038b44e065fa521e8a83d4"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalEstimateCompileCore.ts",
+      "sha256": "f2e20e41af7d12181c39d333a4ea9067cfaf2a37c6d2e31edbef02d98c25ccf6"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\formulaGraph.ts",
+      "sha256": "60ee28eaf8374f736f22c9f1ea7cd8827ef8fc98719c531cdb948ebe1c1fb17c"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalDefinitionParameterConsumersR1.ts",
+      "sha256": "1a374addf2d7b3c451c0c3672b94fdf1d115c84fc72491c69881970cf1fb145b"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalEstimateDeterminism.ts",
+      "sha256": "f40e1f5cf38d85485e1d4bf43b78874d3d8e6ad577740560b5b55021f83a5f6e"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalEstimateSha256.ts",
+      "sha256": "ea7b34b0fcba948cda37f1b9b6918727695a52871fecd5f93ff3ac0227e93433"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\estimateDeterministicHash.ts",
+      "sha256": "5a53bea2ea6e1cc5f3f22c95e4463c89a3d97a74c95856dde9d2670b3e5c096f"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\scripts\\estimate\\r4a13\\prepareMasterSingleDefinitionSuccessorR1.ts",
+      "sha256": "7a38f1023444c7a8a9bf2518c9f0ae680820d289cdb9cd367a68517b1a494896"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalScopeRequirementV1.ts",
+      "sha256": "be2d681dfee2f1c36ff36c44e2859816c000f522277c6a139697fba24b52379c"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalEstimateOperationComposition.ts",
+      "sha256": "26b8bfe99e495bb25b610ee46de33b6d526e51de8fe15caa9205b8ea9b41de4b"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalPublicResourcePresentationV1.ts",
+      "sha256": "f1cdce7321ad1981770485d3ff08b04155606edd034d5dcb0dc133f3833267b9"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalPublicEstimateLanguageRu.ts",
+      "sha256": "3548d19697a501bd96949c85a78aed9f2115fc0bbbac942184c96d3532272e16"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\backendPlatform\\canonicalEstimateArtifactContract.ts",
+      "sha256": "245087684cd5d872f1db4e883bcd9b0c9bab13e9bfaa370b2adeaa0b81861298"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\source-evidence\\Ensto-LV-ABC-handbook.pdf",
+      "sha256": "8a480161a31516368f3cd2ed9d1ca4900d48323249e59be1c34536ecb1217269"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\source-evidence\\Ensto-overhead-line-networks.pdf",
+      "sha256": "676f5d52ed2ab98d96cd35448c4eacbd51245ce863b6cd8cbb6824ac3b39dbc6"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\source-evidence\\Ensto-SLIP22-1-PEM275.pdf",
+      "sha256": "faf1e6e0d3a41e9247159cd897016eb01986be92372d08bc94e33e36ebc903f7"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\source-evidence\\Scanpole-wood-poles.html",
+      "sha256": "91d0cbf4ba12bdc1c7307884d990bd11cdd5aacbfa22e9805bd6a70dae04ac61"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\source-evidence\\Scanpole-wood-properties.html",
+      "sha256": "11d78ca12403c2e84bba6f3649449932ef65fd7942c986da8c200a4f018941de"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\source-evidence\\Ensto-download-index.html",
+      "sha256": "48bcb2443d1e72cd9f73b04e4b97489d8892ae59b775c291a85537ba549161fe"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\source-evidence\\ENSTO_CT6_1317_OFFICIAL.html",
+      "sha256": "cdd117797b2446ef1f136f3d037a078f98db9d436757b8f3778f8ee3362e451e"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\source-evidence\\ENSTO_ST34_OFFICIAL.html",
+      "sha256": "0269e18cee94effdeb49dcdd94f3895b07a360b4e9a7c11255893c1c7025c7a2"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\source-evidence\\ENSTO_SP19_OFFICIAL.html",
+      "sha256": "19cb54691d67ba2b0446aba4ce1681ff3f3a18faa118802edb3d94b412496301"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\WHOLE_SOURCE_BOM_EVIDENCE_DELTA_R1153.json",
+      "sha256": "d03a4af90d2a7bc314e54e6e24ab85593207ba5f7cdcfd37171b21c9108737b5",
+      "bytes": 6006
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\ROOT_CURRENT_PREFLIGHT_PLAN.json",
+      "sha256": "ee47a40f9c799980387b75685b7e379cafe4c299719cfd416c617d3bc86d84f0",
+      "bytes": 17016
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\PRIMARY_OFFICIAL_CAPTURE_RECEIPTS.json",
+      "sha256": "c9bd495ba25664724b6f326326408db178bd8f5200bfbe6ff26d798e42f8fcde",
+      "bytes": 2407
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\domainFactory\\index.ts",
+      "sha256": "6c23db7fac94be4a09f5ef01e04e3c4c49dabfd7e50fb80184863e138a816de5"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\domains\\professionalDomainVisibleBaselineV1.ts",
+      "sha256": "897e61b0c9fc566472101a44904cc07fc7d06631f92c7cab2b3c6a30fb13aa51"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\domains\\electricalComplete\\domainPackage.ts",
+      "sha256": "131f68616bce10b40ee3c4d278872b986f7d49666ac77692808e3477e376b5fc"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\domains\\electricalComplete\\inventory.ts",
+      "sha256": "e826d8602c8c07a495a44f7d2ac859a3d3fc57d569535a9f864ced1a84ed2141"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\POLES04_MANUAL_OEM_WHOLE_GUARDED_SUCCESSOR_R1153.json",
+      "sha256": "0376a359fd097c44a053e5093526d3bb2730f3bf3b8571f597e1e50dcf4af811"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\source-evidence\\sp19-exact-supply-vs-installation\\SP19_EXACT_SUPPLIED_BOM_AND_INSTALLATION_RANGE_R1153.json",
+      "sha256": "f890e0dea47ed4190f56c4a8f1ae1af980982f6b379334a540d12620a8a40cc3"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\package.json",
+      "sha256": "90229fbbbfb7373be55eef141bb167faa4737f3a2b59c7104a559d2955003e78"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\package-lock.json",
+      "sha256": "f8990847d69ff7c5c6eda3f5832ab941c2a32207030b32bf17a5aad3b8eda11c"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\receipt.json",
+      "sha256": "851710e704639415aaacdcb50db8e533fec6d02f566b6ef1bab93169f781739f"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\NATIVE_RESULT.json",
+      "sha256": "09a40f1e55127843a6d812ac32cc6f50434c79b18100d7db652e38aa0228c17a"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\CURRENT_R1_PREIMAGE.json",
+      "sha256": "8b7a9037e64cdedc5f9b487f98f0bfb427c0c4f5bc3933731da6e6f86010a0db"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\CURRENT_RAW_CAPTURE_INDEX.json",
+      "sha256": "9225203130b8c0371fc69ffe9b065de4f70b3c8548eab1ae2ea2d02d4f610c85"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\definition.json",
+      "sha256": "bef2619ef0e6f58f9c45ecf7c162da79a9c8383611d4ca3b5dd8019b4fb46617"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\baseline.json",
+      "sha256": "47efe9ca11c614fc4004b2d7ad3c6bd6da1d3dbc842674e90c329cb6575377ae"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\parameters.json",
+      "sha256": "501dc0f9d9fbc19984b216aa29f43abcb2047dedcbd1afc4f07f13c4a82441d4"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\formulas.json",
+      "sha256": "b31cccf8a1d60c1325a74c32f6d912df658ffbb5b520a1d7801a6542eb80bb47"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\resources.json",
+      "sha256": "35da9ac4f4c7884a6c567672f13f2252cbc18862a4b07937e84c0705c052ecda"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\bindings.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\locators.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\sources.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\newSource.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\identity.json",
+      "sha256": "1c28d4936f6f33faf1b4380eeaae0b1e72638d82d5db1b703c597f4b43555b46"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\source-evidence\\sp19-exact-supply-vs-installation\\ENSTO_SP19_FI_OFFICIAL.html",
+      "sha256": "0b064f4d8da32c7d467d2c9631e6de69814f7a04f283fa4bfd87f97ff64edc30"
+    },
+    {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\electrical\\electrical-poles-04kv-whole-current\\current-core-preflight-r1153\\current150-manual-ipc-whole-successor-r1153\\source-evidence\\sp19-exact-supply-vs-installation\\ENSTO_SP19_SV_OFFICIAL.html",
+      "sha256": "79cc0e4f2fc300643e2f998aee5fd266bd0882a61f21e87d415d9ea33ca7dee8"
+    }
+  ],
+  "canonicalBaseGuards": [
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\src\\lib\\estimate\\v4\\domains\\electricalComplete\\productionBinding.ts",
+      "exists": true,
+      "sha256": "b7753fe8acc472dcebb1b29bcd2cc68fffee69426e88e628ada90cb1de48e900"
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\estimateNorms\\electricalPoles04CurrentPreflightR1153.contract.test.ts",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\data\\estimate-benchmarks\\source-packs\\electrical-poles-04kv-whole-current-r1117-r1.json",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\data\\estimate-benchmarks\\fixtures\\electrical-poles-04kv-current-exact-parent-proof-r1117-r1.json.gz",
+      "exists": false,
+      "sha256": null
+    },
+    {
+      "path": "C:\\dev\\rik-expo-app-r4a5-dc4f0ce7\\tests\\estimateNorms\\electricalPoles04FinalNativeInvocationR1153.cjs",
+      "exists": false,
+      "sha256": null
+    }
+  ],
+  "entrypoint": {
+    "logicalPath": "tests/estimateNorms/electricalPoles04FinalNativeInvocationR1153.cjs",
+    "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-27\\files-pasted-by-the-user-c-2\\work\\sol-poles04-materialization-r1153\\emitted-frontier-successor\\root-materialized-v2\\subjects\\tests\\estimateNorms\\electricalPoles04FinalNativeInvocationR1153.cjs",
+    "sha256": "0eabf6a8a23e19608c6252e2a70eb9b637d3a83c195f662bfa6140edf0c7feed",
+    "export": "run",
+    "invoke": "Byte-check input.entrypoint.path against sha256, then require(input.entrypoint.path).run({loadSubject:load,canonicalRequire:loadCanonical,input,assert}); same explicit pinned CJS entry convention as actual read b2f, no unknown-module fallback."
+  },
+  "actualParent": {
+    "origin": "ACTUAL_CURRENT167_LOCAL_RUNTIME_PRIMARY_NORMAL_R1_TEN_FULL_RAW",
+    "releaseId": "6df52368-002e-51ea-b11d-39803f3c14c3",
+    "header": {
+      "definition_version_id": "8106d903-2026-5851-b00a-5eff9dadb8b5",
+      "approved_template_baseline_id": "1dd41e08-f821-5638-853c-03f1fceda7e2",
+      "definition_version": 3,
+      "definition_sha256": "c169b5bb01270804678987064579c0a2266a35fd86df39436fc86153c30dffe3"
+    },
+    "receipt": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\receipt.json",
+      "sha256": "851710e704639415aaacdcb50db8e533fec6d02f566b6ef1bab93169f781739f",
+      "bytes": 559
+    },
+    "native": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\NATIVE_RESULT.json",
+      "sha256": "09a40f1e55127843a6d812ac32cc6f50434c79b18100d7db652e38aa0228c17a",
+      "bytes": 19286
+    },
+    "preimage": {
+      "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\CURRENT_R1_PREIMAGE.json",
+      "sha256": "8b7a9037e64cdedc5f9b487f98f0bfb427c0c4f5bc3933731da6e6f86010a0db",
+      "bytes": 1803
+    },
+    "rawSets": {
+      "definition": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\definition.json",
+        "sha256": "bef2619ef0e6f58f9c45ecf7c162da79a9c8383611d4ca3b5dd8019b4fb46617",
+        "bytes": 4417,
+        "rowCount": 1,
+        "helperSetSha256": "8fbdf6a4aeeb0c28cbb48db83ba9cb462e6d2612d8bc7b0650b6bc4d7c65c5d9",
+        "querySha256": "3ec9512e0be77f1f9f256303bdaca7f00f4c2d1a0b27b2107686f096c1d63256",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "baseline": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\baseline.json",
+        "sha256": "47efe9ca11c614fc4004b2d7ad3c6bd6da1d3dbc842674e90c329cb6575377ae",
+        "bytes": 7848,
+        "rowCount": 1,
+        "helperSetSha256": "d2582b1e2fdc019f8de66136cceb526cd67aab85d68808a0d4eddf2316ecd680",
+        "querySha256": "1b1d10eab3ca96eb918a0f2643905082f8dc726bfdeef2a22164ef3fc1ec0607",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "parameters": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\parameters.json",
+        "sha256": "501dc0f9d9fbc19984b216aa29f43abcb2047dedcbd1afc4f07f13c4a82441d4",
+        "bytes": 25591,
+        "rowCount": 6,
+        "helperSetSha256": "e26807c83d4996467b163124149323fa12ba5e266e204533b8825d0994fd9fac",
+        "querySha256": "80f8a9c0bee66a90a034dbeb4ce3dee80fd22eea29e42c3126c97adde8f70257",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "formulas": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\formulas.json",
+        "sha256": "b31cccf8a1d60c1325a74c32f6d912df658ffbb5b520a1d7801a6542eb80bb47",
+        "bytes": 33179,
+        "rowCount": 63,
+        "helperSetSha256": "3687db7537f2574820bab6713b16b4095f77366d343d0565c9dfd29ba4955aca",
+        "querySha256": "4e17accae5f0d3a35d31dbe6a036ae01db7f1e0b8e68f2cb577fd5bb32d36e50",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "resources": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\resources.json",
+        "sha256": "35da9ac4f4c7884a6c567672f13f2252cbc18862a4b07937e84c0705c052ecda",
+        "bytes": 204964,
+        "rowCount": 63,
+        "helperSetSha256": "e320694f6035d0ac39ac00aa93458c1952ab26a9acee8b1f2ba6571e27ce81c5",
+        "querySha256": "7610786b0b6c9b8f96454bd8021d66211d4c1f4cf059681f420df1b5a08f1b5b",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "bindings": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\bindings.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "bytes": 3,
+        "rowCount": 0,
+        "helperSetSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "querySha256": "5cf393a025102ffb4d3b9df522ea28a516970ba793ea912bb5fed96b12747c4c",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "locators": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\locators.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "bytes": 3,
+        "rowCount": 0,
+        "helperSetSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "querySha256": "d91f082d1b528ce87e219aaaa05e6cbef7593743189bdef9b23b61a25d60de39",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "sources": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\sources.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "bytes": 3,
+        "rowCount": 0,
+        "helperSetSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "querySha256": "fc1fcdbb7b1cba43f0bea4383c59f7691f54cf400b77a54c7fc3f8fa86de6d41",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "newSource": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\newSource.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "bytes": 3,
+        "rowCount": 0,
+        "helperSetSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "querySha256": "993085f8bfe5264096c3498915978500df035308658c6d108eafe2d53d27a1a5",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      },
+      "identity": {
+        "path": "C:\\Users\\User\\Documents\\Codex\\2026-10-29\\files-pasted-by-the-user-gox\\work\\poles04-current167-r2-lock-causal-r1153\\raw\\identity.json",
+        "sha256": "1c28d4936f6f33faf1b4380eeaae0b1e72638d82d5db1b703c597f4b43555b46",
+        "bytes": 503,
+        "rowCount": 1,
+        "helperSetSha256": "a083375a43e0773b7d06881fbc1a51eb28cc56ffcbb64ce04b874923b45960cc",
+        "querySha256": "039b6983c9187e7c8965de2698a37594c29a3f283ff30d80a3b25dfa4e5048af",
+        "encoding": "Array of exact row_to_json UTF8 raw texts; query order retained; no parse/date/price normalization",
+        "fullRowsCaptured": true
+      }
+    },
+    "counts": {
+      "definition": 1,
+      "baseline": 1,
+      "parameters": 6,
+      "formulas": 63,
+      "resources": 63,
+      "bindings": 0,
+      "locators": 0,
+      "sources": 0,
+      "newSource": 0,
+      "identity": 1
+    },
+    "formalScopedCapture": false,
+    "sourceAdmission": false
+  },
+  "expected": {
+    "shape": [
+      100,
+      131,
+      131
+    ],
+    "mapEntries": 68,
+    "scopeGroups": [
+      104,
+      25
+    ],
+    "scopeUnion": 129,
+    "coreCalls": 2,
+    "coreCases": [
+      "EMPTY",
+      "SYNTHETIC_POLE_N1"
+    ],
+    "needs": 13,
+    "returns": 17,
+    "classDecisions": 260,
+    "coreResult": "ACTUAL_RESULT_OR_STOP_ONLY_NO_CLAIM_BEFORE_EXECUTION",
+    "mandatoryJestCases": 20,
+    "newSourceLookupActual": 0,
+    "noInferredObjectFacts": true
+  },
+  "authorRuntime": 0,
+  "publication": false,
+  "sourceAdmission": false,
+  "full": false,
+  "currentCommonClosure": {
+    "readIndex200Verified": "e02b1587a4b771831cc7712212550ca990300bc6b44f0b51e79a5c590994518c",
+    "electricalOwnerNotInReadIndex": true,
+    "newCompiledHashes": null,
+    "rule": "ROOT materializes all5 coherent subjects then existing239 compiles owner and the full actually-resolved canonical runtime closure. Directmissing4roots listed in handoff; strictunknownmodule and original filename/domain guards remain. Do not execute native against read-only CT126 index without this closure."
+  }
+}
