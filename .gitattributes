@@ -118,3 +118,9 @@ tests/requestEstimate/fixtures/master30-current29/SOURCE_REFERENCES.json -text w
 data/estimate-benchmarks/source-packs/monolithic-family-b-master212-r1.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 src/lib/estimate/v4/interiorWallFinishingProvisionGroupR7.test.ts -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 data/estimate-benchmarks/source-packs/interior-wall-finishing-provision-group-r8.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+supabase/migrations/20261101000100_req_docno_qualified_sequence.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+supabase/migrations/20261101000200_request_item_measured_fractional_qty.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+supabase/migrations/20261101000300_request_item_generic_fractional_authority.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/tests/office-request-fractional-quantity.rollback.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/tests/office-request-unit-authority.rollback.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+scripts/tests/office-request-generic-fractional-authority.rollback.sql -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

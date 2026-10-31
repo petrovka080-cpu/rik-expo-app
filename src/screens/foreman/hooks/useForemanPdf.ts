@@ -29,7 +29,9 @@ export function useForemanPdf(gbusy: BusyCtx) {
       if (!ridKey) return;
 
       try {
-        await syncMeta(ridKey, mode === "share" ? "onPdfShare" : "onPdfExport");
+        // Read the exact authorized saved snapshot. Opening a PDF must not
+        // mutate a draft or require write authority (including legacy reads).
+        void syncMeta;
 
         const createDescriptor = () => buildForemanRequestPdfDescriptor({
           requestId: ridKey,
@@ -62,6 +64,7 @@ export function useForemanPdf(gbusy: BusyCtx) {
           key: `pdf:request:${ridKey}`,
           label: "Открываю PDF…",
           createDescriptor,
+          requireActorBoundary: true,
           router,
           // XR-PDF: dismiss parent modal before pushing PDF viewer route
           onBeforeNavigate,

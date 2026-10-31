@@ -253,6 +253,7 @@ export function clearDocumentSessions() {
 }
 
 export async function materializePdfAsset(doc: DocumentDescriptor): Promise<DocumentAsset> {
+  await doc.deliveryBoundary?.assertCurrent();
   cleanupExpiredDocumentSessions();
   const rawSource = doc.fileSource ?? createPdfSource(doc.uri);
   const rawUri = String(rawSource.uri || "").trim();
@@ -349,6 +350,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
     }
   }
 
+  await doc.deliveryBoundary?.assertCurrent();
   const assetId = makeId("asset");
   const asset: DocumentAsset = {
     assetId,
@@ -415,8 +417,9 @@ export function createPreparingDocumentPreviewSession(
   doc: Pick<
     DocumentDescriptor,
     "documentType" | "originModule" | "fileName"
-  > & Partial<Pick<DocumentDescriptor, "uri" | "fileSource">>,
+  > & Partial<Pick<DocumentDescriptor, "uri" | "fileSource" | "deliveryBoundary">>,
 ): { session: DocumentSession; asset: null } {
+  doc.deliveryBoundary?.assertActive();
   cleanupExpiredDocumentSessions();
   const pendingAssetId = makeId("pending_asset");
   const now = nowIso();
@@ -496,7 +499,9 @@ export async function materializeDocumentPreviewSessionAsset(
       stale.name = "AbortError";
       throw stale;
     }
+    await doc.deliveryBoundary?.assertCurrent();
     const asset = await materializePdfAsset(doc);
+    await doc.deliveryBoundary?.assertCurrent();
     if (Platform.OS === "web" && doc.contentIdentity?.ownerUserId) {
       const { persistCanonicalWebPdfPreview } = require("./pdfCanonicalWebPreviewPersistence") as typeof import("./pdfCanonicalWebPreviewPersistence");
       const pending = getDocumentSession(sessionId);
@@ -507,6 +512,7 @@ export async function materializeDocumentPreviewSessionAsset(
       // existing Web cache and logout cleanup own lifetime and principal scope.
       await persistCanonicalWebPdfPreview({ doc, session: pending, asset });
     }
+    doc.deliveryBoundary?.assertActive();
     if (!completeDocumentPreviewSessionAsset(sessionId, asset, token)) {
       const stale = new Error("PDF preparation attempt is no longer active");
       stale.name = "AbortError";
@@ -523,6 +529,7 @@ export async function materializeDocumentPreviewSessionAsset(
 export function createInMemoryDocumentPreviewSession(
   doc: DocumentDescriptor,
 ): { session: DocumentSession; asset: DocumentAsset } {
+  doc.deliveryBoundary?.assertActive();
   cleanupExpiredDocumentSessions();
   const assetId = makeId("asset");
   const asset: DocumentAsset = {
@@ -542,6 +549,7 @@ export function createInMemoryDocumentPreviewSession(
     ...(doc.contentIdentity?{contentIdentity:{...doc.contentIdentity}}:{}),
   };
   assets.set(assetId, asset);
+  doc.deliveryBoundary?.assertActive();
   const session = createDocumentSession(asset, "ready");
   return { session, asset };
 }
@@ -598,6 +606,7 @@ export function restoreInMemoryDocumentPreviewSession(input: {
 
 export async function createDocumentPreviewSession(doc: DocumentDescriptor): Promise<{ session: DocumentSession; asset: DocumentAsset }> {
   const asset = await materializePdfAsset(doc);
+  await doc.deliveryBoundary?.assertCurrent();
   const session = createDocumentSession(asset, "ready");
   return { session, asset };
 }
@@ -617,7 +626,9 @@ export async function createInstantDocumentPreviewSession(
     };
   }
 
+  await doc.deliveryBoundary?.assertCurrent();
   const cacheStatus = await getPdfInstantCacheStatus(doc);
+  await doc.deliveryBoundary?.assertCurrent();
   if (cacheStatus.status === "ready" && cacheStatus.localUri) {
     const asset = createAssetForLocalUri(doc, cacheStatus.localUri, cacheStatus.sizeBytes);
     assets.set(asset.assetId, asset);

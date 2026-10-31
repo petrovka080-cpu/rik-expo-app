@@ -361,6 +361,7 @@ export function useForemanDraftBoundary({
       base: localDraftSnapshotRef.current,
       ownerId: activeDraftOwnerIdRef.current,
       requestId,
+      companyId: requestDetails?.company_id,
       displayNo: requestDetails?.display_no ?? null,
       status: requestDetails?.status ?? (items.length ? "draft" : null),
       header: currentHeaderState,
@@ -371,6 +372,7 @@ export function useForemanDraftBoundary({
     currentHeaderState,
     items,
     qtyDrafts,
+    requestDetails?.company_id,
     requestDetails?.display_no,
     requestDetails?.status,
     requestId,
@@ -399,7 +401,12 @@ export function useForemanDraftBoundary({
     ],
   );
   const draftActivityState = boundaryViewState.draftActivityState;
-  const { hasLocalDraft, isDraftActive } = draftActivityState;
+  const { hasLocalDraft, isDraftActive: lifecycleDraftActive } = draftActivityState;
+  // Actual DTO mappers preserve legacy null. Its saved rows/history/PDF remain
+  // readable; null never becomes a new tenant choice or write affordance.
+  const legacyReadOnly = Boolean(requestDetails && requestDetails.id !== FOREMAN_LOCAL_ONLY_REQUEST_ID
+    && requestDetails.company_id === null);
+  const isDraftActive = lifecycleDraftActive && !legacyReadOnly;
 
   const canEditRequestItem = useCallback(
     (row?: ReqItemRow | null) => {

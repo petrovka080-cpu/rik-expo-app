@@ -1,3 +1,4 @@
+import { discardDocumentSession } from "./pdfDocumentSessions";
 import {canonicalPdfRecoveryReferenceFromDescriptor,type DocumentDescriptor} from "./pdfDocument";
 import {
   beginPdfOpenVisibilityWait,
@@ -141,7 +142,8 @@ export async function prepareAndPreviewPdfDocument(
 ): Promise<DocumentDescriptor> {
   const descriptorUri =
     args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null;
-  const flowKey = createPdfActionBoundaryKey({
+  await args.descriptor.deliveryBoundary?.assertCurrent();
+  const documentFlowKey = createPdfActionBoundaryKey({
     key: args.key,
     documentType: args.descriptor.documentType,
     originModule: args.descriptor.originModule,
@@ -149,6 +151,11 @@ export async function prepareAndPreviewPdfDocument(
     fileName: args.descriptor.fileName,
     uri: descriptorUri,
   });
+  // Resolve the existing descriptor fallback before adding the actor lifetime.
+  // An omitted caller key must not become a truthy global "|" explicit key.
+  const flowKey = args.descriptor.deliveryBoundary
+    ? JSON.stringify([documentFlowKey, args.descriptor.deliveryBoundary.key])
+    : documentFlowKey;
   const runId = nextPdfActionRunId();
   const boundaryRun = createPdfActionBoundaryRun({
     runId,
@@ -222,6 +229,7 @@ export async function prepareAndPreviewPdfDocument(
 
   latestPreviewRunByKey.set(flowKey, runId);
   const assertCurrentRun = (stage: "prepare" | "viewer_entry" | "visibility") => {
+    args.descriptor.deliveryBoundary?.assertActive();
     assertCurrentPdfActionRun(flowKey, runId, stage);
   };
 
@@ -273,6 +281,7 @@ export async function prepareAndPreviewPdfDocument(
       recordBoundary("pdf_access_requested", "access");
       recordBoundary("pdf_document_prepare_started", "prepare");
 
+      await args.descriptor.deliveryBoundary?.assertCurrent();
       const visibilityStartPlan = resolvePdfDocumentVisibilityStartPlan({
         hasRouter: Boolean(args.router),
       });
@@ -314,11 +323,19 @@ export async function prepareAndPreviewPdfDocument(
           },
         });
         recordBoundary("pdf_viewer_entry_started", "viewer_entry");
-        await pushPdfDocumentViewerRouteSafely(
-          args.router,
-          viewerHref,
-          args.onBeforeNavigate,
-        );
+        try {
+          await pushPdfDocumentViewerRouteSafely(
+            args.router,
+            viewerHref,
+            args.onBeforeNavigate,
+            args.descriptor.deliveryBoundary?.assertActive,
+          );
+          await args.descriptor.deliveryBoundary?.assertCurrent();
+        } catch (error) {
+          discardDocumentSession(earlyViewerSession.session.sessionId);
+          if (visibilityWait) failPdfOpenVisible(visibilityWait.token, error);
+          throw error;
+        }
         recordBoundary("pdf_viewer_entry_confirmed", "viewer_entry");
       }
 
@@ -332,6 +349,7 @@ export async function prepareAndPreviewPdfDocument(
             ...args,
             busy: undefined,
           });
+          await args.descriptor.deliveryBoundary?.assertCurrent();
           recordBoundary("pdf_access_resolved", "access", "success", undefined, {
             sourceKind: document.fileSource.kind,
           });
@@ -370,6 +388,7 @@ export async function prepareAndPreviewPdfDocument(
           throw boundaryError;
         }
         if (capturedPreparation) {
+          await args.descriptor.deliveryBoundary?.assertCurrent();
           await materializePreparingPdfDocumentViewerSession({
             sessionId: capturedPreparation.sessionId,
             doc: document,

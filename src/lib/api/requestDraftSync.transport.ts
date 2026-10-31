@@ -8,7 +8,7 @@ import {
 import { supabase } from "../supabaseClient";
 
 export type RequestDraftSyncArgsV2 =
-  Database["public"]["Functions"]["request_sync_draft_v2"]["Args"];
+  Database["public"]["Functions"]["request_sync_draft_v2"]["Args"] & { p_company_id?: string | null; p_creation_actor_id?: string | null; p_creation_intent_id?: string | null };
 export type RequestDraftSyncReturns =
   Database["public"]["Functions"]["request_sync_draft_v2"]["Returns"];
 

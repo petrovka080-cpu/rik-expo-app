@@ -21,6 +21,10 @@ type ForemanDraftSyncSourcePath = "foreman_materials" | "foreman_subcontract";
 export type { RequestDraftSyncLineInput };
 
 export type ForemanAtomicDraftSyncCommand = {
+  companyId?: string | null;
+  creationScopeKey?: string | null;
+  creationActorId?: string | null;
+  assertCurrent?: () => Promise<void>;
   mutationKind: ForemanDraftSyncMutationKind;
   sourcePath: ForemanDraftSyncSourcePath;
   draftScopeKey?: string | null;
@@ -102,6 +106,10 @@ export async function syncForemanAtomicDraft(
 
   try {
     const result = await syncRequestDraftViaRpc({
+      creationScopeKey: command.creationScopeKey,
+      creationActorId: command.creationActorId,
+      assertCurrent: command.assertCurrent,
+      companyId: command.companyId ?? command.meta?.company_id,
       requestId: command.requestId,
       meta: command.meta,
       lines: command.lines,

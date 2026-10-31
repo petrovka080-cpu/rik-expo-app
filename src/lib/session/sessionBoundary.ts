@@ -14,6 +14,16 @@
  * `_layout.tsx` calls `resetSessionBoundary(reason)` — nothing else.
  */
 
+// Monotonic session lifetime, owned by this existing central boundary. A return
+// A→B→A cannot revive an operation captured before the replacement.
+let sessionGeneration = 0;
+let observedPrincipal: string | null | undefined;
+export const getSessionBoundaryGeneration = () => sessionGeneration;
+export function observeSessionBoundaryPrincipal(actorId: string | null): void {
+  if (observedPrincipal !== undefined && observedPrincipal !== actorId) sessionGeneration += 1;
+  observedPrincipal = actorId;
+}
+
 type SessionBoundaryCleaners = {
   clearDocumentSessions: () => void;
   clearPooledWebPdfFrames: () => void;
@@ -124,6 +134,8 @@ function recordSessionBoundaryPurgeFailure(reason: string, purgeError: unknown) 
  * - All subsystem cleaners run in a single predictable path
  */
 export async function resetSessionBoundary(reason: string): Promise<void> {
+  sessionGeneration += 1;
+  observedPrincipal = null;
   const cleaners = loadSessionBoundaryCleaners();
 
   // --- Synchronous resets (module-level singletons) ---

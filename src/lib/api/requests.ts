@@ -1,3 +1,6 @@
+import { assertRequestCompanyMatches } from "./requestCompanyScope";
+import { withRequestCompanySelection } from "./requestCompanySelection";
+import { requireExplicitRequestCompany } from "./requestCompanyScope";
 import type { Database } from "../database.types";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { client, normalizeUuid, parseErr, toFilterId } from "./_core";
@@ -45,9 +48,10 @@ const logRequestsDebug = (...args: unknown[]) => {
 
 // cache id черновика на сессию (uuid или int)
 let _draftRequestIdAny: string | number | null = null;
+let _draftRequestScopeKey: string | null = null;
 
 type RequestsTable = Database["public"]["Tables"]["requests"];
-type RequestDraftInsertPayload = Pick<
+type RequestDraftInsertPayload = { company_id: string; created_by?: string } & Pick<
   RequestsTable["Insert"],
   | "status"
   | "foreman_name"
@@ -58,7 +62,7 @@ type RequestDraftInsertPayload = Pick<
   | "system_code"
   | "zone_code"
 >;
-type RequestDraftUpsertPayload = Pick<RequestsTable["Insert"], "id" | "status">;
+type RequestDraftUpsertPayload = { company_id: string; created_by?: string } & Pick<RequestsTable["Insert"], "id" | "status">;
 type RequestItemMetaPatch = RequestItemMetaPatchTransport;
 type RequestItemAddOpts = {
   note?: string | null;
@@ -93,11 +97,9 @@ type RequestDraftSelectRow = Pick<
 type RequestItemAddOrIncArgs = RequestItemAddOrIncTransportArgs;
 type RequestItemAddOrIncResult = Database["public"]["Functions"]["request_item_add_or_inc"]["Returns"];
 type RequestItemsByRequestArgs = Database["public"]["Functions"]["request_items_by_request"]["Args"];
-type RequestFindReusableEmptyDraftArgs =
-  Database["public"]["Functions"]["request_find_reusable_empty_draft_v1"]["Args"];
 type RequestSubmitAtomicArgs =
   Database["public"]["Functions"]["request_submit_atomic_v1"]["Args"];
-type RequestDraftCacheProbeRow = Pick<RequestsTable["Row"], "id" | "status" | "created_by" | "submitted_at">;
+type RequestDraftCacheProbeRow = { company_id: string | null } & Pick<RequestsTable["Row"], "id" | "status" | "created_by" | "submitted_at">;
 export type RequestSubmitPath =
   | "rpc_submit"
   | "server_reconcile_existing";
@@ -191,6 +193,8 @@ const normalizeRequestFilterId = (value: number | string): string => {
 // ============================== Boundary builders ==============================
 function buildRequestDraftInsert(meta?: RequestMeta): RequestDraftInsertPayload {
   return {
+    company_id: requireExplicitRequestCompany(meta?.company_id),
+    ...(meta?.creation_actor_id ? { created_by: meta.creation_actor_id } : {}),
     status: REQUEST_DRAFT_STATUS,
     foreman_name: meta?.foreman_name ?? null,
     need_by: meta?.need_by ?? null,
@@ -202,8 +206,10 @@ function buildRequestDraftInsert(meta?: RequestMeta): RequestDraftInsertPayload 
   };
 }
 
-function buildRequestDraftUpsert(requestId: number | string): RequestDraftUpsertPayload {
+function buildRequestDraftUpsert(requestId: number | string, companyId?: string | null, actorId?: string): RequestDraftUpsertPayload {
   return {
+    company_id: requireExplicitRequestCompany(companyId),
+    ...(actorId ? { created_by: actorId } : {}),
     id: normalizeRequestFilterId(requestId),
     status: REQUEST_DRAFT_STATUS,
   };
@@ -343,20 +349,20 @@ async function resolveDraftOwnerUserId(): Promise<string | null> {
   }
 }
 
-async function isCachedDraftRequestIdValid(requestId: number | string): Promise<boolean> {
+async function isCachedDraftRequestIdValid(requestId: number | string, companyId: string): Promise<boolean> {
   const requestFilterId = normalizeRequestFilterId(requestId);
   if (!requestFilterId) return false;
 
   const result = await client
     .from("requests")
-    .select("id,status,created_by,submitted_at")
+    .select("id,status,created_by,submitted_at,company_id")
     .eq("id", requestFilterId)
     .maybeSingle<RequestDraftCacheProbeRow>();
 
   if (result.error) throw result.error;
 
   const row = result.data ?? null;
-  if (!row?.id) return false;
+  if (!row?.id || row.company_id !== companyId) return false;
   if (!isDraftRequestStatusValue(row.status ?? null)) return false;
   if (row.submitted_at != null) return false;
 
@@ -367,17 +373,19 @@ async function isCachedDraftRequestIdValid(requestId: number | string): Promise<
   return true;
 }
 
-async function findReusableEmptyDraftRequestId(): Promise<string | null> {
+async function findReusableEmptyDraftRequestId(companyId: string): Promise<string | null> {
   const userId = await resolveDraftOwnerUserId();
-  if (!userId) return null;
+  if (!userId) throw new Error("REQUEST_AUTHENTICATED_ACTOR_REQUIRED");
 
   try {
-    const args: RequestFindReusableEmptyDraftArgs = { p_user_id: userId };
-    const { data, error } = await client.rpc("request_find_reusable_empty_draft_v1", args);
+    const scopedRpc = client.rpc.bind(client) as unknown as (
+      name: "request_find_reusable_empty_draft_v2", args: { p_company_id: string },
+    ) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
+    const { data, error } = await scopedRpc("request_find_reusable_empty_draft_v2", { p_company_id: companyId });
     if (error) throw error;
 
     const reusableIdRaw = validateRpcResponse(data, isRpcNullableNonEmptyStringResponse, {
-      rpcName: "request_find_reusable_empty_draft_v1",
+      rpcName: "request_find_reusable_empty_draft_v2",
       caller: "findReusableEmptyDraftRequestId",
       domain: "proposal",
     });
@@ -391,7 +399,7 @@ async function findReusableEmptyDraftRequestId(): Promise<string | null> {
       category: "reload",
       event: "draft_reused_existing",
       result: "success",
-      sourceKind: "rpc:request_find_reusable_empty_draft_v1",
+      sourceKind: "rpc:request_find_reusable_empty_draft_v2",
       extra: {
         requestId: reusableId,
       },
@@ -404,66 +412,44 @@ async function findReusableEmptyDraftRequestId(): Promise<string | null> {
       category: "reload",
       event: "draft_reuse_probe_failed",
       result: "error",
-      sourceKind: "rpc:request_find_reusable_empty_draft_v1",
+      sourceKind: "rpc:request_find_reusable_empty_draft_v2",
       errorStage: "rpc_probe",
       errorClass: error instanceof Error ? error.name : undefined,
       errorMessage: parseErr(error),
     });
-    return null;
+    throw error;
   }
 }
 
-async function reuseExistingDraftRequest(
-  requestId: number | string,
-  meta?: RequestMeta,
-): Promise<RequestRecord | null> {
-  const requestFilterId = normalizeRequestFilterId(requestId);
-  if (!requestFilterId) return null;
-
-  const payload = buildRequestDraftInsert(meta);
-  const result = await client
-    .from("requests")
-    .update(payload)
-    .eq("id", requestFilterId)
-    .select(REQUEST_DRAFT_SELECT)
-    .maybeSingle();
-
+async function callScopedRequestDraftCreator(meta: RequestMeta | undefined, requestId: number | string | null) {
+  const companyId = requireExplicitRequestCompany(meta?.company_id);
+  const rpc = client.rpc.bind(client) as unknown as (name: "request_create_draft", args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
+  const result = await rpc("request_create_draft", {
+    p_company_id: companyId, p_creation_actor_id: meta?.creation_actor_id ?? null,
+    p_request_id: requestId == null ? null : normalizeRequestFilterId(requestId),
+    p_foreman_name: meta?.foreman_name ?? null, p_need_by: meta?.need_by ?? null,
+    p_comment: meta?.comment ?? null, p_object_type_code: meta?.object_type_code ?? null,
+    p_level_code: meta?.level_code ?? null, p_system_code: meta?.system_code ?? null,
+    p_zone_code: meta?.zone_code ?? null,
+  });
   if (result.error) throw result.error;
-
-  const row = mapRequestRow(result.data as RequestDraftSelectRow | null);
-  if (!row?.id) return null;
-
+  const raw = Array.isArray(result.data) ? result.data[0] : result.data;
+  const row = mapRequestRow(raw);
+  if (!row?.id) throw new Error("request_create_draft returned invalid payload");
+  assertRequestCompanyMatches(row.company_id, companyId);
   _draftRequestIdAny = row.id;
   return row;
 }
 
+async function reuseExistingDraftRequest(requestId: number | string, meta?: RequestMeta): Promise<RequestRecord | null> {
+  return callScopedRequestDraftCreator(meta, requestId);
+}
+
 async function insertDraftRequest(meta?: RequestMeta): Promise<RequestRecord | null> {
-  const payload = buildRequestDraftInsert(meta);
-
-  const { data, error } = await client
-    .from("requests")
-    .insert(payload)
-    .select(REQUEST_DRAFT_SELECT)
-    .single();
-
-  if (error) throw error;
-
-  const row = mapRequestRow(data as RequestDraftSelectRow | null);
-  if (!row?.id) {
-    throw new Error("requests.insert returned invalid payload");
-  }
-
-  _draftRequestIdAny = row.id;
+  const row = await callScopedRequestDraftCreator(meta, null);
   recordPlatformObservability({
-    screen: "request",
-    surface: "draft",
-    category: "reload",
-    event: "draft_created_new",
-    result: "success",
-    sourceKind: "table:requests.insert",
-    extra: {
-      requestId: row.id,
-    },
+    screen: "request", surface: "draft", category: "reload", event: "draft_created_new",
+    result: "success", sourceKind: "rpc:request_create_draft", extra: { requestId: row.id },
   });
   return row;
 }
@@ -476,10 +462,10 @@ async function selectRequestIdByFilter(requestFilterId: string): Promise<Request
   return found.data ?? null;
 }
 
-async function upsertDraftRequestId(requestId: number | string): Promise<RequestIdLookupRow | null> {
+async function upsertDraftRequestId(requestId: number | string, companyId?: string | null, actorId?: string): Promise<RequestIdLookupRow | null> {
   const up = await client
     .from("requests")
-    .upsert(buildRequestDraftUpsert(requestId), { onConflict: "id" })
+    .upsert(buildRequestDraftUpsert(requestId, companyId, actorId), { onConflict: "id" })
     .select("id")
     .single();
 
@@ -531,8 +517,13 @@ export async function listRequestItems(requestId: number | string): Promise<ReqI
 }
 
 export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRecord | null> {
+  return withRequestCompanySelection(meta?.company_id, (companyId, actorId) => createScopedRequestDraft({ ...meta, company_id: companyId, creation_actor_id: actorId }));
+}
+
+async function createScopedRequestDraft(meta?: RequestMeta): Promise<RequestRecord | null> {
+  const companyId = requireExplicitRequestCompany(meta?.company_id);
   try {
-    const reusableId = await findReusableEmptyDraftRequestId();
+    const reusableId = await findReusableEmptyDraftRequestId(companyId);
     if (reusableId) {
       try {
         const reused = await reuseExistingDraftRequest(reusableId, meta);
@@ -552,6 +543,7 @@ export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRec
             requestId: reusableId,
           },
         });
+        throw error;
       }
     }
 
@@ -574,14 +566,27 @@ export async function ensureRequestSmart(currentId?: number | string, meta?: Req
     if (created?.id) return created.id;
   } catch (e) {
     logRequestsDebug("[ensureRequestSmart]", parseErr(e));
+    throw e;
   }
   return currentId ?? "";
 }
 
-export async function getOrCreateDraftRequestId(): Promise<string | number> {
+export async function getOrCreateDraftRequestId(explicitCompanyId?: string | null): Promise<string | number> {
+  return withRequestCompanySelection(explicitCompanyId, (companyId, actorId) => getOrCreateScopedDraftRequestId(companyId, actorId));
+}
+
+async function getOrCreateScopedDraftRequestId(explicitCompanyId: string, expectedActorId: string): Promise<string | number> {
+  const companyId = requireExplicitRequestCompany(explicitCompanyId);
+  const actorId = await resolveDraftOwnerUserId();
+  if (!actorId || actorId !== expectedActorId) throw new Error("REQUEST_AUTHENTICATED_ACTOR_REQUIRED");
+  const scopeKey = `${actorId}|${companyId}`;
+  if (_draftRequestScopeKey !== scopeKey) {
+    _draftRequestIdAny = null;
+    _draftRequestScopeKey = scopeKey;
+  }
   if (_draftRequestIdAny != null) {
     try {
-      const valid = await isCachedDraftRequestIdValid(_draftRequestIdAny);
+      const valid = await isCachedDraftRequestIdValid(_draftRequestIdAny, companyId);
       if (valid) return _draftRequestIdAny;
       recordPlatformObservability({
         screen: "request",
@@ -609,35 +614,25 @@ export async function getOrCreateDraftRequestId(): Promise<string | number> {
           requestId: String(_draftRequestIdAny),
         },
       });
+      throw error;
     }
     _draftRequestIdAny = null;
   }
-  const reusableId = await findReusableEmptyDraftRequestId();
+  const reusableId = await findReusableEmptyDraftRequestId(companyId);
   if (reusableId) return reusableId;
-  const created = await insertDraftRequest();
+  const created = await insertDraftRequest({ company_id: companyId, creation_actor_id: expectedActorId });
   if (created?.id) return created.id;
   throw new Error("requestCreateDraft returned invalid id");
 }
 
-export async function ensureRequest(requestId: number | string): Promise<number | string> {
-  const rid = requestId;
-  const requestFilterId = normalizeRequestFilterId(rid);
-
-  try {
-    const found = await selectRequestIdByFilter(requestFilterId);
-    if (found?.id != null) return found.id;
-  } catch (e) {
-    logRequestsDebug("[ensureRequest/select]", parseErr(e));
-  }
-
-  try {
-    const up = await upsertDraftRequestId(rid);
+export async function ensureRequest(requestId: number | string, companyId?: string | null): Promise<number | string> {
+  const found = await selectRequestIdByFilter(normalizeRequestFilterId(requestId));
+  if (found?.id != null) return found.id;
+  return withRequestCompanySelection(companyId, async (scope, actorId) => {
+    const up = await upsertDraftRequestId(requestId, scope, actorId);
     if (up?.id != null) return up.id;
-  } catch (e) {
-    logRequestsDebug("[ensureRequest/upsert]", parseErr(e));
-  }
-
-  return rid;
+    throw new Error("Request create/read returned no identity");
+  });
 }
 
 export async function addRequestItemFromRik(

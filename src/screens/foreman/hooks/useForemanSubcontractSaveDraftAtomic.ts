@@ -1,3 +1,5 @@
+import { resolveRequestCreationScope, acknowledgeRequestCreationScope } from "../../../lib/api/requestCreationIntent";
+import { withRequestDraftSyncActor } from "../../../lib/api/requestDraftSync.auth.transport";
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 import { Alert } from "react-native";
 
@@ -118,23 +120,37 @@ export function useForemanSubcontractSaveDraftAtomic({
           templateObjectName || objectName || templateContract?.object_name || "",
         ).trim();
 
-        const res = await syncForemanAtomicDraft({
-          mutationKind: params.mutationKind,
-          sourcePath: "foreman_subcontract",
-          draftScopeKey,
-          requestId: requestId || null,
-          submit: params.submit,
-          pendingDeleteIds,
-          lines,
-          meta: requestMetaFromTemplate,
-          subcontractId,
-          contractorJobId: subcontractId,
-          objectName: objectNameForRequest || null,
-          levelName: levelName || templateLevelName || null,
-          systemName: systemName || templateSystemName || null,
-          zoneName: trim(form.zoneText) || null,
-          beforeLineCount: params.localBeforeCount ?? draftItems.length,
-          afterLocalSnapshotLineCount: params.localAfterCount ?? snapshotItems.length,
+        const creationLane = `foreman-subcontract:${subcontractId}`;
+        const res = await withRequestDraftSyncActor(async (assertCurrent, actorId) => {
+          if (actorId !== userId) throw new Error("REQUEST_CREATION_INTENT_ACTOR_CONFLICT");
+          await assertCurrent();
+          const creationScopeKey = requestId ? null : await resolveRequestCreationScope(creationLane, actorId);
+          await assertCurrent();
+          const result = await syncForemanAtomicDraft({
+            creationScopeKey,
+            creationActorId: actorId,
+            assertCurrent,
+            mutationKind: params.mutationKind,
+            sourcePath: "foreman_subcontract",
+            draftScopeKey,
+            requestId: requestId || null,
+            submit: params.submit,
+            pendingDeleteIds,
+            lines,
+            meta: requestMetaFromTemplate,
+            subcontractId,
+            contractorJobId: subcontractId,
+            objectName: objectNameForRequest || null,
+            levelName: levelName || templateLevelName || null,
+            systemName: systemName || templateSystemName || null,
+            zoneName: trim(form.zoneText) || null,
+            beforeLineCount: params.localBeforeCount ?? draftItems.length,
+            afterLocalSnapshotLineCount: params.localAfterCount ?? snapshotItems.length,
+          });
+          await assertCurrent();
+          if (creationScopeKey) await acknowledgeRequestCreationScope(creationLane, actorId, creationScopeKey, String(result.request.id));
+          await assertCurrent();
+          return result;
         });
 
         const rid = String(res.request.id);

@@ -29,6 +29,8 @@ export type ReqItemRow = {
 };
 
 export type RequestMeta = {
+  creation_actor_id?: string | null;
+  company_id?: string | null;
   foreman_name?: string | null;
   need_by?: string | null;
   comment?: string | null;
@@ -39,6 +41,7 @@ export type RequestMeta = {
 };
 
 export type RequestRecord = {
+  company_id?: string | null;
   id: string;
   status?: string | null;
   display_no?: string | null;

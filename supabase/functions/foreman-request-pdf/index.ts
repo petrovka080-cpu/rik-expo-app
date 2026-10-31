@@ -3,7 +3,6 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
-  FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS,
   buildForemanRequestManifestContract,
   normalizeForemanRequestPdfRequest,
 } from "../../../src/lib/pdf/foremanRequestPdf.shared.ts";
@@ -12,7 +11,7 @@ import {
   createCanonicalPdfOptionsResponse,
   createCanonicalPdfSuccessResponse,
 } from "../../../src/lib/pdf/canonicalPdfPlatformContract.ts";
-import { resolveForemanRequestPdfAccess } from "../../../src/lib/pdf/rolePdfAuth.ts";
+import { assertForemanRequestPdfSnapshotCurrent, loadForemanRequestPdfAuthoritySnapshot } from "../../../src/lib/pdf/foremanRequestPdfAuthority.ts";
 import {
   buildCanonicalPdfFileName,
   cleanText,
@@ -28,59 +27,6 @@ const DEFAULT_BUCKET = "role_pdf_exports";
 const RENDER_BRANCH = "backend_foreman_request_v1";
 const FOREMAN_REQUEST_ARTIFACT_CACHE_VERSION =
   "pdf_z4_foreman_request_artifact_v1";
-
-const toPositiveInteger = (value: unknown, fallback: number) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : fallback;
-};
-
-function buildForemanRequestPdfChildListCeilingError(maxRows: number) {
-  return new Error(
-    `Foreman request PDF child list exceeded max row ceiling (${maxRows})`,
-  );
-}
-
-async function loadForemanRequestPdfChildRows(admin: any, requestId: string) {
-  const pageSize = toPositiveInteger(
-    FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS.pageSize,
-    100,
-  );
-  const maxRows = toPositiveInteger(
-    FOREMAN_REQUEST_PDF_CHILD_LIST_PAGE_DEFAULTS.maxRows,
-    5000,
-  );
-  const rows: Record<string, unknown>[] = [];
-
-  for (let from = 0; from < maxRows; from += pageSize) {
-    const to = Math.min(from + pageSize - 1, maxRows - 1);
-    const page = await admin
-      .from("request_items")
-      .select("id, name_human, uom, qty, note, status, app_code, rik_code, item_kind")
-      .eq("request_id", requestId)
-      .order("id", { ascending: true })
-      .range(from, to);
-
-    if (page.error) throw page.error;
-
-    const pageRows = Array.isArray(page.data) ? page.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < pageSize) return rows;
-  }
-
-  const overflowProbe = await admin
-    .from("request_items")
-    .select("id")
-    .eq("request_id", requestId)
-    .order("id", { ascending: true })
-    .range(maxRows, maxRows);
-
-  if (overflowProbe.error) throw overflowProbe.error;
-  if (Array.isArray(overflowProbe.data) && overflowProbe.data.length > 0) {
-    throw buildForemanRequestPdfChildListCeilingError(maxRows);
-  }
-
-  return rows;
-}
 
 const asObject = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -266,191 +212,14 @@ async function requireForemanAuth(request: Request, supabaseUrl: string) {
   };
 }
 
-async function assertForemanRequestAccess(args: {
-  admin: any;
-  requestId: string;
-  userId: string;
-}) {
-  const { data, error } = await args.admin
-    .from("requests")
-    .select("id, created_by")
-    .eq("id", args.requestId)
-    .maybeSingle();
-
-  if (error || !data) {
-    console.log(
-      `[${FUNCTION_NAME}] foreman access reject ${JSON.stringify({
-        rejectionReason: "request_not_found",
-        requestFound: Boolean(data),
-        requestId: args.requestId,
-        authUid: args.userId,
-        error: error?.message ?? null,
-      })}`,
-    );
-    console.log(
-      `[${FUNCTION_NAME}] foreman request access denied ${JSON.stringify({
-        requestId: args.requestId,
-        uid: args.userId,
-        error: error?.message ?? null,
-        found: Boolean(data),
-      })}`,
-    );
-    throw createCanonicalPdfErrorResponse({
-      status: 403,
-      role: "foreman",
-      documentType: "request",
-      errorCode: "auth_failed",
-      error: "Forbidden.",
-    });
-  }
-
-  const requestCreatedBy = cleanText(data.created_by);
-  const actorMemberships = await args.admin
-    .from("company_members")
-    .select("role, company_id")
-    .eq("user_id", args.userId)
-    .in("role", ["foreman", "director"]);
-
-  const creatorMemberships = requestCreatedBy
-    ? await args.admin
-        .from("company_members")
-        .select("company_id")
-        .eq("user_id", requestCreatedBy)
-    : { data: [], error: null };
-  const decision = resolveForemanRequestPdfAccess({
-    authUid: args.userId,
-    requestFound: true,
-    requestCreatedBy,
-    actorMembershipRows: actorMemberships.data,
-    creatorCompanyIds: Array.isArray(creatorMemberships.data)
-      ? creatorMemberships.data.map((row) => row.company_id)
-      : [],
-  });
-
-  if (!decision.allowed && decision.reason !== "owner_mismatch") {
-    console.log(
-      `[${FUNCTION_NAME}] foreman access reject ${JSON.stringify({
-        rejectionReason: decision.reason,
-        requestFound: true,
-        requestId: args.requestId,
-        authUid: args.userId,
-        requestCompanyId: decision.companyId,
-        requestCreatedBy,
-        membershipFound: decision.membershipFound,
-        membershipCompanyIds: decision.membershipCompanyIds,
-        membershipRoles: decision.membershipRoles,
-        creatorMembershipCompanyIds: Array.isArray(creatorMemberships.data)
-          ? creatorMemberships.data
-              .map((row) => cleanText(row.company_id))
-              .filter(Boolean)
-          : [],
-        sharedCompanyIds: decision.companyId ? [decision.companyId] : [],
-        isDirector: decision.isDirector,
-        ownerCheckApplied: decision.ownerCheckApplied,
-        membershipError: actorMemberships.error?.message ?? null,
-        creatorMembershipError: creatorMemberships.error?.message ?? null,
-      })}`,
-    );
-    console.log(
-      `[${FUNCTION_NAME}] foreman membership forbidden ${JSON.stringify({
-        requestId: args.requestId,
-        uid: args.userId,
-        companyId: decision.companyId,
-        membershipRoles: decision.membershipRoles,
-        membershipError: actorMemberships.error?.message ?? null,
-      })}`,
-    );
-    throw createCanonicalPdfErrorResponse({
-      status: 403,
-      role: "foreman",
-      documentType: "request",
-      errorCode: "auth_failed",
-      error: "Forbidden.",
-    });
-  }
-
-  if (!decision.allowed && decision.reason === "owner_mismatch") {
-    console.log(
-      `[${FUNCTION_NAME}] foreman access reject ${JSON.stringify({
-        rejectionReason: decision.reason,
-        requestFound: true,
-        requestId: args.requestId,
-        authUid: args.userId,
-        requestCompanyId: decision.companyId,
-        requestCreatedBy,
-        membershipFound: decision.membershipFound,
-        membershipCompanyIds: decision.membershipCompanyIds,
-        membershipRoles: decision.membershipRoles,
-        isDirector: decision.isDirector,
-        ownerCheckApplied: decision.ownerCheckApplied,
-      })}`,
-    );
-    console.log(
-      `[${FUNCTION_NAME}] foreman request owner mismatch ${JSON.stringify({
-        requestId: args.requestId,
-        uid: args.userId,
-        createdBy: cleanText(data.created_by),
-      })}`,
-    );
-    throw createCanonicalPdfErrorResponse({
-      status: 403,
-      role: "foreman",
-      documentType: "request",
-      errorCode: "auth_failed",
-      error: "Forbidden.",
-    });
-  }
-}
-
-async function loadRequestPdfModel(admin: any, requestId: string) {
+function loadRequestPdfModel(snapshot: Awaited<ReturnType<typeof loadForemanRequestPdfAuthoritySnapshot>>, requestId: string) {
   const locale = "ru-RU";
-
-  const head = await admin
-    .from("requests")
-    .select(
-      "id, display_no, foreman_name, need_by, comment, status, created_at, object_type_code, level_code, system_code, zone_code",
-    )
-    .eq("id", requestId)
-    .maybeSingle();
-
-  if (head.error || !head.data) {
-    throw new Error("Заявка не найдена");
-  }
-
-  const request = head.data;
-  const [objectRef, levelRef, systemRef, zoneRef, itemRows] = await Promise.all(
-    [
-      request.object_type_code
-        ? admin
-            .from("ref_object_types")
-            .select("name,name_ru,name_human_ru,display_name,alias_ru")
-            .eq("code", request.object_type_code)
-            .maybeSingle()
-        : Promise.resolve({ data: null, error: null }),
-      request.level_code
-        ? admin
-            .from("ref_levels")
-            .select("name,name_ru,name_human_ru,display_name,alias_ru")
-            .eq("code", request.level_code)
-            .maybeSingle()
-        : Promise.resolve({ data: null, error: null }),
-      request.system_code
-        ? admin
-            .from("ref_systems")
-            .select("name,name_ru,name_human_ru,display_name,alias_ru")
-            .eq("code", request.system_code)
-            .maybeSingle()
-        : Promise.resolve({ data: null, error: null }),
-      request.zone_code
-        ? admin
-            .from("ref_zones")
-            .select("name,name_ru,name_human_ru,display_name,alias_ru")
-            .eq("code", request.zone_code)
-            .maybeSingle()
-        : Promise.resolve({ data: null, error: null }),
-      loadForemanRequestPdfChildRows(admin, requestId),
-    ],
-  );
+  const request = snapshot.request;
+  const itemRows = snapshot.items;
+  const objectRef = { data: snapshot.refs.object };
+  const levelRef = { data: snapshot.refs.level };
+  const systemRef = { data: snapshot.refs.system };
+  const zoneRef = { data: snapshot.refs.zone };
 
   const objectName = pickRefName(asObject(objectRef.data));
   const levelName = pickRefName(asObject(levelRef.data));
@@ -636,15 +405,24 @@ Deno.serve(
       });
       const payload = normalizeForemanRequestPdfRequest(await request.json());
       const auth = await requireForemanAuth(request, supabaseUrl);
-      await assertForemanRequestAccess({
-        admin,
-        requestId: payload.requestId,
-        userId: auth.userId,
-      });
-
       const totalStartedAt = Date.now();
       const sourceStartedAt = Date.now();
-      const model = await loadRequestPdfModel(admin, payload.requestId);
+      // The caller JWT, never the service role, authorizes and loads the snapshot.
+      // A missing/denied RPC is terminal: there is no metadata or admin fallback.
+      let snapshot;
+      try {
+        snapshot = await loadForemanRequestPdfAuthoritySnapshot({
+          requester: auth.requester,
+          requestId: payload.requestId,
+          actorId: auth.userId,
+        });
+      } catch {
+        throw createCanonicalPdfErrorResponse({
+          status: 403, role: "foreman", documentType: "request",
+          errorCode: "auth_failed", error: "Forbidden.",
+        });
+      }
+      const model = loadRequestPdfModel(snapshot, payload.requestId);
       const sourceLoadedAt = Date.now();
       const title = model.requestLabel
         ? `Заявка ${model.requestLabel}`
@@ -659,7 +437,10 @@ Deno.serve(
       );
       const artifact = await buildForemanRequestManifestContract({
         requestId: payload.requestId,
-        sourceModel: buildForemanRequestSourceModel(model),
+        sourceModel: {
+          authorityScope: snapshot.authority,
+          model: buildForemanRequestSourceModel(model),
+        },
         fileName,
       });
       const cachedArtifact = await trySignExistingPdfArtifact({
@@ -714,6 +495,15 @@ Deno.serve(
       const renderStartedAt = Date.now();
       const { pdfBytes, renderer } = await renderPdfBytes(html);
       const renderFinishedAt = Date.now();
+      // Rendering can outlive membership/factor or source changes.
+      try {
+        await assertForemanRequestPdfSnapshotCurrent({ requester: auth.requester, snapshot });
+      } catch {
+        throw createCanonicalPdfErrorResponse({
+          status: 403, role: "foreman", documentType: "request",
+          errorCode: "auth_failed", error: "PDF source or authority changed; retry required.",
+        });
+      }
       const uploadStartedAt = Date.now();
       const uploaded = await uploadForemanRequestPdfArtifact({
         admin,

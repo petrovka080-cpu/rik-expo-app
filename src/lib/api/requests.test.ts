@@ -1,3 +1,10 @@
+jest.mock("./requestCompanySelection", () => ({
+  withRequestCompanySelection: async (hint: string | null | undefined, operation: (companyId: string, actorId: string) => Promise<unknown>) => {
+    if (!hint) throw new Error("REQUEST_EXPLICIT_COMPANY_REQUIRED");
+    return operation(hint, "user-1");
+  },
+}));
+const COMPANY = "11111111-1111-1111-1111-111111111111";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
@@ -44,16 +51,7 @@ jest.mock("./integrity.guards", () => ({
 }));
 
 jest.mock("./requests.parsers", () => ({
-  mapRequestRow: jest.fn((row: Record<string, unknown> | null | undefined) => {
-    if (!row) return null;
-    return {
-      id: String(row.id ?? ""),
-      status: row.status ?? null,
-      submitted_at: row.submitted_at ?? null,
-      comment: row.comment ?? null,
-      display_no: row.display_no ?? null,
-    };
-  }),
+  mapRequestRow: jest.fn(jest.requireActual("./requests.parsers").mapRequestRow),
   parseRequestItemsByRequestRows: jest.fn((rows: unknown) => (Array.isArray(rows) ? rows : [])),
   parseRequestSubmitResultRow: jest.fn((row: Record<string, unknown> | null | undefined) => {
     if (!row) return null;
@@ -183,60 +181,40 @@ describe("requests mutation boundary", () => {
     mockEnsureRequestExists.mockReset().mockResolvedValue(undefined);
   });
 
-  it("reuses eligible empty draft before inserting a new request draft", async () => {
+  it("reuses eligible empty draft via actor-bound canonical creator", async () => {
     mockClient.rpc.mockImplementation((fn: string) => {
-      if (fn === "request_find_reusable_empty_draft_v1") {
-        return Promise.resolve({ data: "draft-1", error: null });
-      }
+      if (fn === "request_find_reusable_empty_draft_v2") return Promise.resolve({ data: "draft-1", error: null });
+      if (fn === "request_create_draft") return Promise.resolve({ data: { id: "draft-1", company_id: COMPANY, status: "draft", comment: "reused comment" }, error: null });
       throw new Error(`Unexpected rpc ${fn}`);
     });
-
-    const updatedRow = {
-      id: "draft-1",
-      status: "draft",
-      comment: "reused comment",
-      submitted_at: null,
-    };
-
-    mockClient.from.mockImplementation((table: string) => {
-      if (table !== "requests") throw new Error(`Unexpected table ${table}`);
-      return {
-        update: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            select: jest.fn(() => ({
-              maybeSingle: jest.fn<MockResult<typeof updatedRow>, []>(() =>
-                Promise.resolve({ data: updatedRow, error: null }),
-              ),
-            })),
-          })),
-        })),
-      };
-    });
-
-    const created = await requestCreateDraft({ comment: "reused comment" });
-
-    expect(created).toMatchObject({
-      id: "draft-1",
-      comment: "reused comment",
-    });
-    expect(mockClient.rpc).toHaveBeenCalledWith("request_find_reusable_empty_draft_v1", {
-      p_user_id: "user-1",
-    });
-    expect(mockClient.from).toHaveBeenCalledWith("requests");
+    const created = await requestCreateDraft({ company_id: COMPANY, comment: "reused comment" });
+    expect(created).toMatchObject({ id: "draft-1", company_id: COMPANY, comment: "reused comment" });
+    expect(mockClient.rpc).toHaveBeenCalledWith("request_create_draft", expect.objectContaining({
+      p_company_id: COMPANY, p_creation_actor_id: "user-1", p_request_id: "draft-1", p_comment: "reused comment",
+    }));
+    expect(mockClient.from).not.toHaveBeenCalled();
     expect(mockSupabase.from).not.toHaveBeenCalled();
-    expect(
-      getPlatformObservabilityEvents().some(
-        (event) =>
-          event.event === "draft_reused_existing" &&
-          event.result === "success" &&
-          event.extra?.requestId === "draft-1",
-      ),
-    ).toBe(true);
+  });
+
+  it.each([
+    [null, "REQUEST_COMPANY_RESPONSE_CONFLICT"],
+    ["22222222-2222-2222-2222-222222222222", "REQUEST_COMPANY_RESPONSE_CONFLICT"],
+    ["first membership", "REQUEST_EXPLICIT_COMPANY_REQUIRED"],
+  ])("rejects an untrusted creator company %s through the real mapper", async (company, code) => {
+    mockClient.rpc.mockImplementation((fn: string) => {
+      if (fn === "request_find_reusable_empty_draft_v2") return Promise.resolve({ data: "draft-1", error: null });
+      if (fn === "request_create_draft") return Promise.resolve({ data: { id: "draft-1", company_id: company, status: "draft" }, error: null });
+      throw new Error(`Unexpected rpc ${fn}`);
+    });
+    await expect(requestCreateDraft({ company_id: COMPANY })).rejects.toThrow(String(code));
+    expect(mockClient.rpc).toHaveBeenCalledTimes(2);
+    expect(mockClient.from).not.toHaveBeenCalled();
+    expect(mockSupabase.from).not.toHaveBeenCalled();
   });
 
   it("reuses the cached draft id when it is still valid", async () => {
     mockClient.rpc.mockImplementation((fn: string) => {
-      if (fn === "request_find_reusable_empty_draft_v1") {
+      if (fn === "request_find_reusable_empty_draft_v2") {
         return Promise.resolve({ data: "draft-cached", error: null });
       }
       throw new Error(`Unexpected rpc ${fn}`);
@@ -252,6 +230,7 @@ describe("requests mutation boundary", () => {
                 id: "draft-cached",
                 status: "draft",
                 created_by: "user-1",
+                company_id: COMPANY,
                 submitted_at: null,
               },
               error: null,
@@ -261,8 +240,8 @@ describe("requests mutation boundary", () => {
       };
     });
 
-    const first = await getOrCreateDraftRequestId();
-    const second = await getOrCreateDraftRequestId();
+    const first = await getOrCreateDraftRequestId(COMPANY);
+    const second = await getOrCreateDraftRequestId(COMPANY);
 
     expect(first).toBe("draft-cached");
     expect(second).toBe("draft-cached");
@@ -271,7 +250,7 @@ describe("requests mutation boundary", () => {
 
   it("verifies rpc submit path and clears cached draft id after success", async () => {
     mockClient.rpc.mockImplementation((fn: string) => {
-      if (fn === "request_find_reusable_empty_draft_v1") {
+      if (fn === "request_find_reusable_empty_draft_v2") {
         return Promise.resolve({ data: "request-1", error: null });
       }
       if (fn === "request_submit_atomic_v1") {
@@ -316,7 +295,7 @@ describe("requests mutation boundary", () => {
       throw new Error(`Unexpected table ${table}`);
     });
 
-    const cachedId = await getOrCreateDraftRequestId();
+    const cachedId = await getOrCreateDraftRequestId(COMPANY);
     expect(cachedId).toBe("request-1");
 
     const result = await requestSubmitMutation("request-1");
@@ -332,7 +311,7 @@ describe("requests mutation boundary", () => {
       status: "pending",
     });
 
-    const afterSubmit = await getOrCreateDraftRequestId();
+    const afterSubmit = await getOrCreateDraftRequestId(COMPANY);
     expect(afterSubmit).toBe("request-1");
     expect(mockClient.rpc).toHaveBeenNthCalledWith(2, "request_submit_atomic_v1", {
       p_request_id_text: "request-1",
@@ -464,10 +443,11 @@ describe("requests mutation boundary", () => {
 
     const record = await requestReopen("request-4");
 
+    // RequestRecord exposes the reopened identity/status; submitted_at is a
+    // transport/cache probe field, not a field returned by the real mapper.
     expect(record).toMatchObject({
       id: "request-4",
       status: "Черновик",
-      submitted_at: null,
     });
     expect(mockClient.rpc).toHaveBeenCalledWith("request_reopen_atomic_v1", {
       p_request_id_text: "request-4",
@@ -513,4 +493,17 @@ describe("requests mutation boundary", () => {
     expect(firstPatch).toBeDefined();
     expect(firstPatch).not.toHaveProperty("uom");
   });
+  it("does not create/reuse without explicit company context", async () => {
+    await expect(requestCreateDraft({ comment: "legacy" })).rejects.toThrow("EXPLICIT_COMPANY_REQUIRED");
+    await expect(getOrCreateDraftRequestId()).rejects.toThrow("EXPLICIT_COMPANY_REQUIRED");
+    expect(mockClient.rpc).not.toHaveBeenCalled();
+    expect(mockClient.from).not.toHaveBeenCalled();
+  });
+  it.each(["MFA_SECOND_FACTOR_REQUIRED", "42501", "57014", "PGRST202"])("does not create after reuse error %s", async code => {
+    mockClient.rpc.mockResolvedValue({ data: null, error: { code, message: code } });
+    await expect(requestCreateDraft({ company_id: COMPANY })).rejects.toMatchObject({ message: code });
+    expect(mockClient.rpc).toHaveBeenCalledTimes(1);
+    expect(mockClient.from).not.toHaveBeenCalled();
+  });
+
 });

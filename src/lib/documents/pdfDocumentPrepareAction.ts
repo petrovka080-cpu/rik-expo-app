@@ -45,6 +45,7 @@ export async function executePreparePdfDocument(
         fileName: args.descriptor.fileName,
         busyKey: args.key ?? null,
       });
+      await args.descriptor.deliveryBoundary?.assertCurrent();
       const preparedSource = await preparePdfExecutionSource({
         supabase: args.supabase as Parameters<typeof preparePdfExecutionSource>[0]["supabase"],
         source:
@@ -56,6 +57,7 @@ export async function executePreparePdfDocument(
         getRemoteUrl: args.getRemoteUrl,
         fileName: args.descriptor.fileName,
       });
+      await args.descriptor.deliveryBoundary?.assertCurrent();
       assertCanonicalRemotePdfSource(args.descriptor, preparedSource);
       const uri = preparedSource.uri;
       if (__DEV__) console.info("[pdf-document-actions] prepare_ready", {

@@ -71,6 +71,7 @@ export type ForemanLocalDraftSnapshot = {
   version: 1;
   ownerId: string;
   requestId: string;
+  companyId?: string | null;
   displayNo: string | null;
   status: string | null;
   header: ForemanLocalDraftHeader;
@@ -256,6 +257,7 @@ const parseForemanLocalDraftSnapshotRecord = (
     version: 1,
     ownerId: resolveDraftOwnerId(row.ownerId, requestId),
     requestId,
+    companyId: row.companyId == null ? null : String(row.companyId),
     displayNo: trim(row.displayNo) || null,
     status: trim(row.status) || "draft",
     header: normalizeHeader(asRecord(row.header) ?? undefined),
@@ -350,6 +352,7 @@ export const buildForemanDraftRequestDetails = (
 ): RequestDetails => ({
   ...(snapshot.requestId ? (previous ?? { id: snapshot.requestId }) : { id: FOREMAN_LOCAL_ONLY_REQUEST_ID }),
   id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID,
+  company_id: snapshot.companyId ?? previous?.company_id ?? null,
   status: snapshot.status ?? previous?.status ?? "draft",
   display_no: snapshot.displayNo ?? (snapshot.requestId ? previous?.display_no ?? null : null),
   foreman_name: snapshot.header.foreman || previous?.foreman_name || null,
@@ -574,6 +577,7 @@ export async function loadForemanRemoteDraftSnapshot(params: {
       version: 1,
       ownerId: resolveDraftOwnerId(null, requestId),
       requestId,
+      companyId: details.company_id ?? null,
       displayNo: trim(details.display_no) || null,
       status: trim(details.status) || "draft",
       header: normalizeHeader({
@@ -639,6 +643,7 @@ export function snapshotToReqItems(snapshot: ForemanLocalDraftSnapshot | null | 
 export function buildForemanLocalDraftSnapshot(params: {
   base: ForemanLocalDraftSnapshot | null;
   ownerId?: string | null;
+  companyId?: string | null;
   requestId: string;
   displayNo?: string | null;
   status?: string | null;
@@ -665,6 +670,7 @@ export function buildForemanLocalDraftSnapshot(params: {
     version: 1,
     ownerId: resolveDraftOwnerId(base?.ownerId ?? params.ownerId, requestId),
     requestId,
+    companyId: base?.companyId ?? params.companyId ?? null,
     displayNo: trim(params.displayNo) || base?.displayNo || null,
     status: trim(params.status) || base?.status || "draft",
     header: normalizeHeader({
@@ -890,6 +896,8 @@ export async function syncForemanLocalDraftSnapshot(params: {
   const rpc = await syncForemanAtomicDraft({
     mutationKind: params.mutationKind ?? (next.submitRequested ? "submit" : "background_sync"),
     sourcePath: "foreman_materials",
+    creationScopeKey: `foreman-materials:${next.ownerId}`,
+    companyId: next.companyId,
     requestId: next.requestId,
     meta: params.headerMeta,
     submit: next.submitRequested,
@@ -910,6 +918,7 @@ export async function syncForemanLocalDraftSnapshot(params: {
   });
 
   next.requestId = trim(rpc.request.id);
+  next.companyId = rpc.request.company_id ?? null;
   next.displayNo = trim(rpc.request.display_no) || next.displayNo || null;
   next.status = trim(rpc.request.status) || next.status || "draft";
 

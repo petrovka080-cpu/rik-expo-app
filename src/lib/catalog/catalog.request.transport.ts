@@ -99,7 +99,7 @@ const REQUEST_ITEM_SELECT =
 const CATALOG_REQUEST_EXTENDED_META_PROBE_SELECT =
   "id,subcontract_id,contractor_job_id,contractor_org,subcontractor_org,contractor_phone,subcontractor_phone,planned_volume,qty_plan,volume,object_name,level_name,system_name,zone_name";
 
-const FOREMAN_REQUEST_SELECT = `id,status,created_at,need_by,display_no,
+const FOREMAN_REQUEST_SELECT = `id,company_id,status,created_at,need_by,display_no,
      object_type_code,level_code,system_code,zone_code,
      object:ref_object_types(*),
      level:ref_levels(*),

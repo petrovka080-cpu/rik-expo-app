@@ -1,3 +1,13 @@
+jest.mock("./requestCreationIntent", () => ({
+  loadRequestCreationIntent: async () => null,
+  persistRequestCreationIntent: async (params: { scope: string }) => ({ id: `v4:${params.scope}` }),
+}));
+jest.mock("./requestCompanySelection", () => ({
+  withRequestCompanySelection: async (hint: string | null | undefined, operation: (companyId: string, actorId: string) => Promise<unknown>) => {
+    if (!hint) throw new Error("REQUEST_EXPLICIT_COMPANY_REQUIRED");
+    return operation(hint, "user-1");
+  },
+}));
 import fs from "fs";
 import path from "path";
 import { supabase } from "../supabaseClient";
@@ -9,6 +19,7 @@ jest.mock("../supabaseClient", () => ({
   supabase: {
     auth: {
       getSession: jest.fn(),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     },
     realtime: {
       setAuth: jest.fn(),
@@ -50,7 +61,7 @@ describe("request draft sync lifecycle boundary", () => {
   beforeEach(() => {
     jest.useRealTimers();
     mockSupabase.auth.getSession.mockReset().mockResolvedValue({
-      data: { session: { access_token: "access-token" } },
+      data: { session: { user: { id: "user-1" }, access_token: "access-token" } }, error: null,
     });
     mockSupabase.realtime.setAuth.mockReset().mockResolvedValue(undefined);
     mockSupabase.channel.mockReset();
@@ -213,8 +224,10 @@ describe("request draft sync lifecycle boundary", () => {
 
   it("times out a silent handoff broadcast subscribe and removes the channel", async () => {
     jest.useFakeTimers();
+    let markSubscribed!: () => void;
+    const subscribed = new Promise<void>((resolve) => { markSubscribed = resolve; });
     const channel = {} as MockHandoffChannel;
-    channel.subscribe = jest.fn<MockHandoffChannel, [(status: string) => void]>(() => channel);
+    channel.subscribe = jest.fn<MockHandoffChannel, [(status: string) => void]>(() => { markSubscribed(); return channel; });
     channel.send = jest.fn<Promise<string>, []>();
 
     mockSupabase.channel.mockReturnValue(channel);
@@ -241,15 +254,13 @@ describe("request draft sync lifecycle boundary", () => {
       submit: true,
     });
 
-    for (let index = 0; index < 20 && channel.subscribe.mock.calls.length === 0; index += 1) {
-      await Promise.resolve();
-    }
+    await subscribed;
     expect(channel.subscribe).toHaveBeenCalledTimes(1);
 
-    jest.advanceTimersByTime(5000);
-    for (let index = 0; index < 20; index += 1) {
-      await Promise.resolve();
-    }
+    await jest.advanceTimersByTimeAsync(4999);
+    expect(mockSupabase.removeChannel).not.toHaveBeenCalled();
+    expect(channel.send).not.toHaveBeenCalled();
+    await jest.advanceTimersByTimeAsync(1);
 
     await expect(resultPromise).resolves.toMatchObject({
       request: {
@@ -285,4 +296,17 @@ describe("request draft sync lifecycle boundary", () => {
     expect(syncTransportSource).toContain(directClientCall("channel"));
     expect(syncTransportSource).toContain(directClientCall("removeChannel"));
   });
+  it("blocks missing company creation before RPC without affecting existing-target updates", async () => {
+    await expect(syncRequestDraftViaRpc({ creationScopeKey: "guard-missing-company", requestId: null, lines: [] })).rejects.toThrow("EXPLICIT_COMPANY_REQUIRED");
+    expect(mockSupabase.rpc).not.toHaveBeenCalled();
+  });
+  it("passes explicit company to canonical sync and propagates refusal without fallback", async () => {
+    const companyId = "11111111-1111-1111-1111-111111111111";
+    mockSupabase.rpc.mockResolvedValue({ data: null, error: { message: "REQUEST_TARGET_WRITE_DENIED" } });
+    await expect(syncRequestDraftViaRpc({ creationScopeKey: "guard-denied-company", companyId, requestId: null, lines: [] })).rejects.toThrow("TARGET_WRITE_DENIED");
+    expect(mockSupabase.rpc).toHaveBeenCalledTimes(1);
+    expect(mockSupabase.rpc).toHaveBeenCalledWith("request_sync_draft_v2", expect.objectContaining({ p_company_id: companyId }));
+    expect(mockSupabase.from).not.toHaveBeenCalled();
+  });
+
 });

@@ -1,3 +1,5 @@
+import { withPdfActorBoundary } from "../../lib/pdf/withPdfActorBoundary";
+import { supabase as requestPdfClient } from "../../lib/supabaseClient";
 import { Alert } from "react-native";
 
 import { generateForemanRequestPdfViaBackend } from "../../lib/api/foremanRequestPdfBackend.service";
@@ -53,6 +55,7 @@ export async function buildForemanRequestPdfDescriptor(args: {
   title?: string | null;
   signal?: AbortSignal | null;
 }) {
+  return withPdfActorBoundary(requestPdfClient.auth, async (assertCurrent, _actorId, deliveryBoundary) => {
   const requestId = normalizeRequestId(args.requestId);
   if (!requestId) {
     throw new Error("Foreman request PDF requestId is required");
@@ -86,6 +89,7 @@ export async function buildForemanRequestPdfDescriptor(args: {
     ? await generateForemanRequestPdfViaBackend(request, { signal: args.signal })
     : await generateForemanRequestPdfViaBackend(request);
 
+  await assertCurrent();
   const displayNo = String(args.displayNo ?? "").trim();
   const title =
     String(args.title ?? "").trim() ||
@@ -116,7 +120,9 @@ export async function buildForemanRequestPdfDescriptor(args: {
     });
   }
 
-  return descriptor;
+  await assertCurrent();
+  return { ...descriptor, deliveryBoundary };
+  });
 }
 
 export function createForemanHistoryPdfPreviewPlan(
@@ -133,6 +139,7 @@ export function createForemanHistoryPdfPreviewPlan(
     busy: args.busy,
     supabase: args.supabase,
     key: `pdf:history:${requestId}`,
+    requireActorBoundary: true,
     label: "Открываю PDF…",
     router: args.router,
     onBeforeNavigate: args.closeHistory,

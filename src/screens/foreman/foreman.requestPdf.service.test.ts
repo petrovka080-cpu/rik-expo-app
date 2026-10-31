@@ -1,3 +1,7 @@
+jest.mock("../../lib/supabaseClient", () => ({ supabase: { auth: {
+  getSession: async () => ({ data: { session: { user: { id: "actor-A" } } }, error: null }),
+  onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+} } }));
 import { Alert } from "react-native";
 
 import {

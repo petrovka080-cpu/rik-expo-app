@@ -57,6 +57,7 @@ export function useForemanSubcontractPdfActions({
       key: `pdf:subcontracts-request:${rid}`,
       label: "Открываю PDF…",
       createDescriptor,
+      requireActorBoundary: true,
       router,
       // XR-PDF: dismiss the subcontract DraftSheet modal before pushing PDF viewer
       onBeforeNavigate: closeSubcontractFlow,
@@ -87,6 +88,7 @@ export function useForemanSubcontractPdfActions({
       key: `pdf:history:${rid}`,
       label: "Открываю PDF…",
       createDescriptor,
+      requireActorBoundary: true,
       router,
       // XR-PDF: dismiss the request history modal before pushing PDF viewer
       onBeforeNavigate: closeRequestHistory,

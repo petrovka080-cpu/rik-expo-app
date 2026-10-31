@@ -19,6 +19,7 @@ type CompactItemV1 = [
   string | null,
   string | null,
   number | null,
+  (number | null)?,
 ];
 
 type CompactDeleteV1 = [string, string];
@@ -37,6 +38,7 @@ export type CompactForemanLocalDraftSnapshotV1 = {
   e: string | null;
   u: string;
   b?: string | null;
+  c?: string | null;
 };
 
 export type ForemanLocalDraftSnapshotPayload =
@@ -95,6 +97,7 @@ const toCompactItem = (item: ForemanLocalDraftItem): CompactItemV1 => [
   item.app_code,
   item.kind,
   item.line_no,
+  item.price ?? null,
 ];
 
 const fromCompactItem = (item: CompactItemV1): ForemanLocalDraftItem => ({
@@ -109,6 +112,7 @@ const fromCompactItem = (item: CompactItemV1): ForemanLocalDraftItem => ({
   app_code: item[8],
   kind: item[9],
   line_no: item[10],
+  price: item[11] ?? null,
 });
 
 const toCompactDelete = (item: ForemanLocalDraftDelete): CompactDeleteV1 => [
@@ -128,7 +132,7 @@ const isCompactHeader = (value: unknown): value is CompactHeaderV1 =>
 
 const isCompactItem = (value: unknown): value is CompactItemV1 =>
   Array.isArray(value) &&
-  value.length === 11 &&
+  (value.length === 11 || value.length === 12) &&
   typeof value[0] === "string" &&
   isStringOrNull(value[1]) &&
   isStringOrNull(value[2]) &&
@@ -140,7 +144,8 @@ const isCompactItem = (value: unknown): value is CompactItemV1 =>
   isStringOrNull(value[7]) &&
   isStringOrNull(value[8]) &&
   isStringOrNull(value[9]) &&
-  isNumberOrNull(value[10]);
+  isNumberOrNull(value[10]) &&
+  (value.length === 11 || isNumberOrNull(value[11]));
 
 const isCompactDelete = (value: unknown): value is CompactDeleteV1 =>
   Array.isArray(value) &&
@@ -168,6 +173,7 @@ const isCompactSnapshot = (
     typeof value.sub === "boolean" &&
     isStringOrNull(value.e) &&
     typeof value.u === "string" &&
+    (value.c === undefined || isStringOrNull(value.c)) &&
     (value.b === undefined || isStringOrNull(value.b))
   );
 };
@@ -180,6 +186,7 @@ export const buildCompactForemanLocalDraftSnapshotPayload = (
     v: 1,
     o: snapshot.ownerId,
     r: snapshot.requestId,
+    c: snapshot.companyId ?? null,
     d: snapshot.displayNo,
     s: snapshot.status,
     h: toCompactHeader(snapshot.header),
@@ -236,6 +243,7 @@ export const restoreForemanLocalDraftSnapshotFromPayload = (
     version: 1,
     ownerId: payload.snapshot.o,
     requestId: payload.snapshot.r,
+    companyId: payload.snapshot.c ?? null,
     displayNo: payload.snapshot.d,
     status: payload.snapshot.s,
     header: fromCompactHeader(payload.snapshot.h),

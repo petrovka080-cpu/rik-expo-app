@@ -60,7 +60,9 @@ export async function pushPdfDocumentViewerRouteSafely(
   router: PdfViewerRouterLike,
   href: Href,
   onBeforeNavigate?: (() => void | Promise<void>) | null,
+  assertDeliveryCurrent?: () => void,
 ) {
+  assertDeliveryCurrent?.();
   const hrefForDiagnostics = redactSensitiveText(String(href).replace(/([?&]canonicalRecovery=)[^&]*/gu,"$1[locator]"));
   logPdfViewerNavigationInfo("viewer_patch_v3_navigation_call", {
     href: hrefForDiagnostics,
@@ -79,9 +81,11 @@ export async function pushPdfDocumentViewerRouteSafely(
       if (__DEV__) console.warn("[pdf-document-actions] onBeforeNavigate error (non-fatal)", error);
     }
   }
+  assertDeliveryCurrent?.();
   await new Promise<void>((resolve, reject) => {
     const runPush = () => {
       try {
+        assertDeliveryCurrent?.();
         logPdfViewerNavigationInfo("viewer_route_replace_start", {
           href: hrefForDiagnostics,
           platform: Platform.OS,

@@ -13,6 +13,7 @@ export const APPROVED_PROCUREMENT_REQUEST_BOUNDARY_RPC = "request_sync_draft_v2"
 
 export type ApprovedProcurementRequestBffMutationBoundaryOptions = {
   syncRequestDraft?: (params: {
+    creationScopeKey?: string | null;
     requestId?: string | null;
     meta?: { comment?: string | null } | null;
     lines: RequestDraftSyncLineInput[];
@@ -96,6 +97,7 @@ export function createApprovedProcurementRequestBffMutationBoundary(
       }
 
       const result = await syncDraft({
+        creationScopeKey: `ai-procurement:${input.idempotencyKey}`,
         requestId: null,
         meta: {
           comment: buildExecutionComment(input),

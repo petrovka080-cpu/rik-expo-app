@@ -25,7 +25,9 @@ export async function executeSharePdfDocument(
   });
 
   try {
-    await openPdfShare(doc.fileSource.uri, doc.fileName);
+    await doc.deliveryBoundary?.assertCurrent();
+    await openPdfShare(doc.fileSource.uri, doc.fileName, doc.deliveryBoundary);
+    await doc.deliveryBoundary?.assertCurrent();
     observation.success({
       extra: {
         openStrategy: "share_sheet",

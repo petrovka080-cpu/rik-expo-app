@@ -157,7 +157,8 @@ describe("foreman PDF wave 1 hardening", () => {
       );
     });
 
-    expect(syncMeta).toHaveBeenCalledWith("REQ-2", "onPdfExport");
+    // PDF reads the same authorized saved snapshot without a metadata mutation.
+    expect(syncMeta).not.toHaveBeenCalled();
     expect(mockBuildForemanRequestPdfDescriptor).not.toHaveBeenCalled();
     const prepareArgs = mockPrepareAndPreviewGeneratedPdfFromDescriptorFactory.mock.calls[0]?.[0] as {
       createDescriptor: () => Promise<unknown>;

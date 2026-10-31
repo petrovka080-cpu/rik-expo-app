@@ -1,3 +1,4 @@
+import { withPdfActorBoundary, type PdfDeliveryBoundary } from "./withPdfActorBoundary";
 import { openHtmlAsPdfUniversal } from "../api/pdf";
 import {
   createPdfDocumentDescriptor,
@@ -39,6 +40,8 @@ type PrepareGeneratedPdfArgs = {
 
 type PrepareGeneratedPdfFromDescriptorFactoryArgs = Omit<PrepareGeneratedPdfArgs, "descriptor"> & {
   createDescriptor: () => Promise<DocumentDescriptor>;
+  requireActorBoundary?: boolean;
+  deliveryBoundary?: PdfDeliveryBoundary;
   router?: PdfViewerRouterLike;
   /** Called before router.push - use to dismiss native Modals that sit above the navigation Stack. */
   onBeforeNavigate?: (() => void | Promise<void>) | null;
@@ -308,13 +311,26 @@ const activeGeneratedPreviewDescriptorFactories = new Map<string, Promise<Docume
 export async function prepareAndPreviewGeneratedPdfFromDescriptorFactory(
   args: PrepareGeneratedPdfFromDescriptorFactoryArgs,
 ): Promise<DocumentDescriptor> {
-  const flowKey = String(args.key ?? "").trim();
+  if (args.requireActorBoundary && !args.deliveryBoundary) {
+    if (!args.supabase.auth) throw new Error("PDF authenticated actor required");
+    return withPdfActorBoundary(args.supabase.auth, async (_assert, _actor, deliveryBoundary) =>
+      prepareAndPreviewGeneratedPdfFromDescriptorFactory({ ...args, deliveryBoundary }));
+  }
+  await args.deliveryBoundary?.assertCurrent();
+  const requestedFlowKey = String(args.key ?? "").trim();
+  // No explicit key means independent work, even within the same actor fence.
+  const flowKey = requestedFlowKey && args.deliveryBoundary
+    ? JSON.stringify([requestedFlowKey, args.deliveryBoundary.key])
+    : requestedFlowKey;
   const existing = flowKey ? activeGeneratedPreviewDescriptorFactories.get(flowKey) : undefined;
   if (existing) return await existing;
   const openFlowStartedAt = nowMs();
 
   const run = async () => {
-    const descriptor = await args.createDescriptor();
+    await args.deliveryBoundary?.assertCurrent();
+    const created = await args.createDescriptor();
+    await args.deliveryBoundary?.assertCurrent();
+    const descriptor = args.deliveryBoundary ? { ...created, deliveryBoundary: args.deliveryBoundary } : created;
     return await prepareAndPreviewGeneratedPdf({
       busy: undefined,
       supabase: args.supabase,
@@ -330,12 +346,13 @@ export async function prepareAndPreviewGeneratedPdfFromDescriptorFactory(
   const promise = (async () => {
     const output = args.busy?.run
       ? await args.busy.run(run, {
-          key: args.key,
+          key: flowKey,
           label: args.label,
           minMs: 200,
         })
       : await run();
     if (!output) throw new Error("PDF preparation cancelled");
+    await args.deliveryBoundary?.assertCurrent();
     return output;
   })().finally(() => {
     if (flowKey && activeGeneratedPreviewDescriptorFactories.get(flowKey) === promise) {
@@ -353,7 +370,9 @@ export async function prepareAndShareGeneratedPdf(
   args: PrepareGeneratedPdfArgs,
 ): Promise<DocumentDescriptor> {
   const document = await prepareGeneratedPdf(args);
+  await document.deliveryBoundary?.assertCurrent();
   await sharePdfDocument(document);
+  await document.deliveryBoundary?.assertCurrent();
   return document;
 }
 

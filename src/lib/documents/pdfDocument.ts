@@ -1,3 +1,4 @@
+import type { PdfDeliveryBoundary } from "../pdf/withPdfActorBoundary";
 import { createPdfSource, type PdfSource } from "../pdfFileContract";
 
 export type PdfDocumentType =
@@ -23,6 +24,8 @@ export type PdfOriginModule =
   | "reports";
 
 export type DocumentDescriptor = {
+  /** Ephemeral session lease, checked at every actual delivery effect. Never serialized as permission. */
+  deliveryBoundary?: PdfDeliveryBoundary;
   uri: string;
   fileSource: PdfSource;
   objectUrlOwnership?: "document-session";

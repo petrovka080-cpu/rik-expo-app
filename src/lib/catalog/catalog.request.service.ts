@@ -34,9 +34,6 @@ import {
   type RequestMetaPatch,
 } from "./catalog.request.mapping";
 import {
-  getCompatErrorInfo,
-  isBaseRequestPayloadKey,
-  pickBaseRequestPayload,
   type RequestsExtendedMetaUpdate,
 } from "./catalog.request.metaPayload";
 import {
@@ -48,7 +45,6 @@ import {
   loadCatalogRequestDetailsRowById,
   loadCatalogRequestDisplayNoViaFallbacks,
   loadCatalogRequestDraftStatusRow,
-  loadCatalogRequestExtendedMetaSampleRows,
   loadCatalogRequestItemRows,
   loadCatalogRequestItemStatusRows,
   selectCatalogDynamicReadSingle,
@@ -156,62 +152,6 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
   }
 }
 
-let requestsExtendedMetaWriteSupportedCache: boolean | null = null;
-let requestsExtendedMetaWriteSupportInFlight: Promise<boolean> | null = null;
-
-async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
-  if (requestsExtendedMetaWriteSupportedCache != null)
-    return requestsExtendedMetaWriteSupportedCache;
-  if (requestsExtendedMetaWriteSupportInFlight)
-    return requestsExtendedMetaWriteSupportInFlight;
-
-  requestsExtendedMetaWriteSupportInFlight = (async () => {
-    try {
-      const q = await loadCatalogRequestExtendedMetaSampleRows();
-      if (q.error) throw q.error;
-      const sample =
-        Array.isArray(q.data) && q.data.length > 0
-          ? (q.data[0] as Record<string, unknown>)
-          : null;
-      if (!sample) {
-        requestsExtendedMetaWriteSupportedCache = false;
-        return false;
-      }
-      requestsExtendedMetaWriteSupportedCache = [
-        "subcontract_id",
-        "contractor_job_id",
-        "contractor_org",
-        "subcontractor_org",
-        "contractor_phone",
-        "subcontractor_phone",
-        "planned_volume",
-        "qty_plan",
-        "volume",
-        "object_name",
-        "level_name",
-        "system_name",
-        "zone_name",
-      ].every((key) => Object.prototype.hasOwnProperty.call(sample, key));
-      return requestsExtendedMetaWriteSupportedCache;
-    } catch (error: unknown) {
-      const msg =
-        error instanceof Error
-          ? error.message.toLowerCase()
-          : String(error ?? "").toLowerCase();
-      const schemaMismatch =
-        msg.includes("column") ||
-        msg.includes("does not exist") ||
-        msg.includes("schema cache");
-      requestsExtendedMetaWriteSupportedCache = schemaMismatch ? false : true;
-      return requestsExtendedMetaWriteSupportedCache;
-    } finally {
-      requestsExtendedMetaWriteSupportInFlight = null;
-    }
-  })();
-
-  return requestsExtendedMetaWriteSupportInFlight;
-}
-
 export function getLocalDraftId(): string | null {
   return getStoredLocalDraftId();
 }
@@ -224,34 +164,14 @@ export function clearLocalDraftId() {
   clearStoredLocalDraftId();
 }
 
-export async function getOrCreateDraftRequestId(): Promise<string> {
-  const cached = getLocalDraftId();
-  if (cached) {
-    const valid = await isCachedDraftValid(cached);
-    if (valid) return cached;
-    clearLocalDraftId();
-    clearCachedDraftRequestId();
-  }
-
-  try {
-    const resolved = await getOrCreateLowLevelDraftRequestId();
-    const id = String(resolved ?? "").trim();
-    if (id) {
-      setLocalDraftId(id);
-      return id;
-    }
-  } catch (error: unknown) {
-    if (__DEV__)
-      console.warn(
-        "[catalog_api.getOrCreateDraftRequestId]",
-        error instanceof Error ? error.message : error,
-      );
-    throw error;
-  }
-
-  throw new Error(
-    "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0438\u043b\u0438 \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a \u0437\u0430\u044f\u0432\u043a\u0438",
-  );
+export async function getOrCreateDraftRequestId(companyId?: string | null): Promise<string> {
+  // Always validate the actor/company-scoped canonical cache; the old local
+  // pointer is retained as private UI state, never used as write authority.
+  const resolved = await getOrCreateLowLevelDraftRequestId(companyId);
+  const id = String(resolved ?? "").trim();
+  if (!id) throw new Error("Request draft identity required");
+  setLocalDraftId(id);
+  return id;
 }
 
 export async function getRequestHeader(
@@ -311,7 +231,7 @@ export async function fetchRequestDetails(
 ): Promise<RequestDetails | null> {
   const id = norm(requestId);
   if (!id) return null;
-  const requestDetailsSelect = `id,status,display_no,year,seq,created_at,updated_at,need_by,comment,foreman_name,
+  const requestDetailsSelect = `id,company_id,status,display_no,year,seq,created_at,updated_at,need_by,comment,foreman_name,
      object_type_code,level_code,system_code,zone_code,
      object:ref_object_types(*),
      level:ref_levels(*),
@@ -518,57 +438,11 @@ export async function updateRequestMeta(
 
   if (!Object.keys(payload).length) return true;
 
-  const hasExtendedPayload = Object.keys(payload).some(
-    (key) => !isBaseRequestPayloadKey(key),
-  );
-
   try {
-    const fullPayloadAllowed =
-      !hasExtendedPayload ||
-      requestsExtendedMetaWriteSupportedCache === true ||
-      (requestsExtendedMetaWriteSupportedCache == null &&
-        (await resolveRequestsExtendedMetaWriteSupport()));
-    const primaryPayload = fullPayloadAllowed
-      ? payload
-      : pickBaseRequestPayload(payload);
-    let { error } = await updateCatalogRequestRow(id, primaryPayload);
-
-    if (!error && hasExtendedPayload && fullPayloadAllowed) {
-      requestsExtendedMetaWriteSupportedCache = true;
-    }
-
-    if (error && hasExtendedPayload && fullPayloadAllowed) {
-      const primaryErr = error;
-      const fallbackPayload = pickBaseRequestPayload(payload);
-      const msg = String(error?.message ?? "").toLowerCase();
-      if (
-        msg.includes("column") ||
-        msg.includes("does not exist") ||
-        msg.includes("schema cache")
-      ) {
-        requestsExtendedMetaWriteSupportedCache = false;
-      }
-      if (Object.keys(fallbackPayload).length) {
-        const fallbackRes = await updateCatalogRequestRow(id, fallbackPayload);
-        if (fallbackRes.error) {
-          if (__DEV__)
-            console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
-              request_id: id,
-              payload_keys: Object.keys(fallbackPayload).sort(),
-              error: getCompatErrorInfo(fallbackRes.error),
-            });
-        }
-        if (primaryErr) {
-          if (__DEV__)
-            console.warn("[catalog_api.updateRequestMeta][patch400.primary]", {
-              request_id: id,
-              payload_keys: Object.keys(primaryPayload).sort(),
-              error: getCompatErrorInfo(primaryErr),
-            });
-        }
-        error = fallbackRes.error ?? null;
-      }
-    }
+    // A refused whole patch is terminal. No weaker base-field write may hide
+    // company/MFA/lifecycle/link refusal or an unknown transport outcome. There
+    // is no proven optional-column compatibility contract for these identities.
+    const { error } = await updateCatalogRequestRow(id, payload);
 
     if (error) {
       if (__DEV__)
@@ -576,7 +450,7 @@ export async function updateRequestMeta(
           "[catalog_api.updateRequestMeta] table requests:",
           error.message,
         );
-      return false;
+      throw error;
     }
 
     return true;
@@ -586,7 +460,7 @@ export async function updateRequestMeta(
         "[catalog_api.updateRequestMeta] table requests:",
         error instanceof Error ? error.message : error,
       );
-    return false;
+    throw error;
   }
 }
 

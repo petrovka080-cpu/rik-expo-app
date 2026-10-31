@@ -5,6 +5,7 @@ import * as Sharing from "expo-sharing";
 import * as FileSystemModule from "expo-file-system/legacy";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
+import type { PdfDeliveryBoundary } from "./pdf/withPdfActorBoundary";
 import { getFileSystemPaths } from "./fileSystemPaths";
 import { beginPdfLifecycleObservation } from "./pdf/pdfLifecycle";
 import { recordCatchDiscipline } from "./observability/catchDiscipline";
@@ -174,7 +175,8 @@ async function resolvePdfSource(args: {
   return createPdfSource(url);
 }
 
-async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promise<string> {
+async function ensureNativePdfHandoffUri(uri: string, fileName?: string, deliveryBoundary?: PdfDeliveryBoundary): Promise<string> {
+  await deliveryBoundary?.assertCurrent();
   const value = String(uri || "").trim();
   if (!value) throw new Error("PDF handoff URI is empty");
   if (Platform.OS === "web") return value;
@@ -190,19 +192,24 @@ async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promis
     const cacheDir = paths.cacheDir;
     const targetUri = `${cacheDir}handoff_${hashString32(value)}_${safeName(fileName, value)}`;
     const downloaded = await FileSystemCompat.downloadAsync(value, targetUri);
+    await deliveryBoundary?.assertCurrent();
     localUri = String(downloaded?.uri || targetUri);
   }
 
   let normalizedLocalUri = normalizeLocalFileUri(localUri);
   const info = await FileSystemCompat.getInfoAsync(normalizedLocalUri);
+  await deliveryBoundary?.assertCurrent();
   if (!info?.exists) throw new Error("Native handoff source PDF file is missing");
 
   if (!/\.pdf$/i.test(normalizedLocalUri)) {
     const paths = getFileSystemPaths();
     const cacheDir = paths.cacheDir;
     const targetUri = `${cacheDir}handoff_${hashString32(normalizedLocalUri)}_${safeName(fileName, normalizedLocalUri)}`;
-    if (!(await fileExists(targetUri))) {
+    const targetExists = await fileExists(targetUri);
+    await deliveryBoundary?.assertCurrent();
+    if (!targetExists) {
       await FileSystemCompat.copyAsync({ from: normalizedLocalUri, to: targetUri });
+      await deliveryBoundary?.assertCurrent();
     }
     normalizedLocalUri = normalizeLocalFileUri(targetUri);
   }
@@ -213,6 +220,7 @@ async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promis
     failureLabel: "Native handoff PDF",
     mode: Platform.OS === "ios" ? "size-only" : "content-probe",
   });
+  await deliveryBoundary?.assertCurrent();
 
   return normalizedLocalUri;
 }
@@ -251,12 +259,14 @@ async function openAndroidPdfContentUri(localUri: string, fileName?: string, opt
   return contentUri;
 }
 
-async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogTitle = "Открыть PDF") {
-  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
+async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogTitle = "Открыть PDF", deliveryBoundary?: PdfDeliveryBoundary) {
+  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName, deliveryBoundary);
+  await deliveryBoundary?.assertCurrent();
   if (getUriScheme(handoffUri) !== "file") {
     throw new Error("iOS PDF share requires a local file:// handoff.");
   }
   const info = await FileSystemCompat.getInfoAsync(handoffUri);
+  await deliveryBoundary?.assertCurrent();
   const sizeBytes = getFileInfoSize(info);
   if (!Number.isFinite(sizeBytes) || !sizeBytes || sizeBytes <= 0) {
     throw new Error("iOS PDF share file is empty.");
@@ -279,6 +289,7 @@ async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogT
       extra: { sizeBytes, maxBytes: IOS_PDF_SHARE_MAX_BYTES, fileName: fileName ?? null },
     });
     await new Promise<void>((resolve) => {
+      deliveryBoundary?.assertActive();
       Alert.alert(
         "Большой файл",
         `PDF слишком большой для предпросмотра (${Math.round(sizeBytes / 1024 / 1024)} МБ). Открыть через системный просмотрщик?`,
@@ -288,6 +299,8 @@ async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogT
             text: "Открыть",
             onPress: async () => {
               try {
+                await deliveryBoundary?.assertCurrent();
+                deliveryBoundary?.assertActive();
                 await Linking.openURL(handoffUri);
               } catch (linkError) {
                 recordPdfRunnerCatch({
@@ -306,6 +319,7 @@ async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogT
         ],
       );
     });
+    await deliveryBoundary?.assertCurrent();
     return;
   }
   logPdfRunnerStage("pdf_ios_share_handoff_ready", {
@@ -316,6 +330,7 @@ async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogT
     fileName,
   });
   const canShare = await Sharing.isAvailableAsync();
+  await deliveryBoundary?.assertCurrent();
   if (!canShare) {
     throw new Error("Sharing is unavailable on this device");
   }
@@ -324,6 +339,8 @@ async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogT
   // Without this, the UIActivityViewController can appear behind the
   // current screen when triggered during a navigation transition.
   await waitForInteractions();
+  await deliveryBoundary?.assertCurrent();
+  deliveryBoundary?.assertActive();
   await Sharing.shareAsync(handoffUri, {
     mimeType: "application/pdf",
     UTI: "com.adobe.pdf",
@@ -512,8 +529,10 @@ export async function openPdfPreview(localUri: string, fileName?: string, option
   throw new Error("iOS PDF preview must use the in-app viewer route");
 }
 
-export async function openPdfShare(localUri: string, fileName?: string) {
+export async function openPdfShare(localUri: string, fileName?: string, deliveryBoundary?: PdfDeliveryBoundary) {
+  await deliveryBoundary?.assertCurrent();
   if (Platform.OS === "web") {
+    deliveryBoundary?.assertActive();
     const win = window.open(localUri, "_blank");
     if (!win) {
       Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
@@ -523,13 +542,16 @@ export async function openPdfShare(localUri: string, fileName?: string) {
   }
 
   if (Platform.OS === "ios") {
-    await openIosPdfShareSheet(localUri, fileName, "Поделиться PDF");
+    await openIosPdfShareSheet(localUri, fileName, "Поделиться PDF", deliveryBoundary);
     return;
   }
 
-  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
+  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName, deliveryBoundary);
+  await deliveryBoundary?.assertCurrent();
   const canShare = await Sharing.isAvailableAsync();
+  await deliveryBoundary?.assertCurrent();
   if (!canShare) throw new Error("Sharing is unavailable on this device");
+  deliveryBoundary?.assertActive();
   await Sharing.shareAsync(handoffUri, {
     mimeType: "application/pdf",
     UTI: "com.adobe.pdf",
